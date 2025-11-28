@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { createPortal } from 'react-dom';
-import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory, FaCircle, FaVolumeUp, FaVolumeMute, FaEye, FaEyeSlash, FaExpand, FaCompress, FaPowerOff } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory, FaCircle, FaVolumeUp, FaVolumeMute, FaEye, FaEyeSlash, FaExpand, FaCompress, FaPowerOff, FaCog } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -18,6 +18,8 @@ import { exportEnhancedChatToPDF } from '../utils/pdfExport';
 import ExportChatModal from '../components/ExportChatModal';
 import CallHistoryModal from '../components/CallHistoryModal';
 import axios from 'axios';
+import ChatSettingsModal from '../components/ChatSettingsModal';
+import { useChatSettings } from '../hooks/useChatSettings';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSignout } from '../hooks/useSignout';
 // Note: Do not import server-only libs here
@@ -3248,6 +3250,8 @@ function AdminAppointmentRow({
 
   // Chat options menu state
   const [showChatOptionsMenu, setShowChatOptionsMenu] = useLocalState(false);
+  const { settings, updateSetting } = useChatSettings('admin_appointments_chat_settings');
+  const [showSettingsModal, setShowSettingsModal] = useLocalState(false);
 
   // Text styling panel state
   const [showTextStylingPanel, setShowTextStylingPanel] = useLocalState(false);
@@ -6901,6 +6905,17 @@ function AdminAppointmentRow({
                               <FaSync className="text-sm" />
                               Refresh Messages
                             </button>
+                            {/* Settings option */}
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              onClick={() => {
+                                setShowSettingsModal(true);
+                                setShowChatOptionsMenu(false);
+                              }}
+                            >
+                              <FaCog className="text-sm" />
+                              Settings
+                            </button>
                             {/* Starred Messages option */}
                             <button
                               className="w-full px-4 py-2 text-left text-sm text-yellow-600 hover:bg-yellow-50 flex items-center gap-2"
@@ -7065,6 +7080,12 @@ function AdminAppointmentRow({
                           {activeLiveCall ? 'Live' : 'Not Live'}
                         </span>
                       </button>
+                      <ChatSettingsModal
+                        isOpen={showSettingsModal}
+                        onClose={() => setShowSettingsModal(false)}
+                        settings={settings}
+                        updateSetting={updateSetting}
+                      />
                       {showShortcutTip && (
                         <div className="absolute top-full right-0 mt-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-20 max-w-xs animate-fadeIn">
                           <div className="font-semibold mb-2">⌨️ Keyboard Shortcuts:</div>
@@ -7484,9 +7505,11 @@ function AdminAppointmentRow({
                           <div
                             ref={el => messageRefs.current[c && c._id ? c._id : 'unknown'] = el}
                             data-message-id={c && c._id ? c._id : 'unknown'}
-                            className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c && c.audioUrl ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${isMe
-                              ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl'
-                              : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                            className={`relative rounded-2xl px-4 sm:px-5 shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c && c.audioUrl ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${settings.messageDensity === 'compact' ? 'py-1' : settings.messageDensity === 'spacious' ? 'py-5' : 'py-3'
+                              } ${settings.fontSize === 'small' ? 'text-xs' : settings.fontSize === 'large' ? 'text-base' : 'text-sm'
+                              } ${isMe
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl'
+                                : 'bg-white hover:bg-gray-100 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
                               } ${isSelectionMode && selectedMessages.some(msg => msg._id === (c && c._id)) ? 'ring-2 ring-blue-400' : ''}`}
                           >
 
@@ -7548,7 +7571,8 @@ function AdminAppointmentRow({
                                 })()}
                               </span>
                             </div>
-                            <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
+                            <div className={`text-left ${isMe ? 'font-medium' : ''} ${settings.fontSize === 'small' ? 'text-sm' : settings.fontSize === 'large' ? 'text-lg' : 'text-base'
+                              }`}>
                               {c && c.deleted ? (
                                 (() => {
                                   // Check if admin has hidden this deleted message locally using state
@@ -8281,9 +8305,11 @@ function AdminAppointmentRow({
                               {c && c.starredBy && c.starredBy.includes(currentUser._id) && (
                                 <FaStar className={`${isMe ? 'text-yellow-300' : 'text-yellow-500'} text-[10px]`} />
                               )}
-                              <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
-                                {new Date(c && c.timestamp ? c.timestamp : Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                              </span>
+                              {settings.showTimestamps && (
+                                <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
+                                  {new Date(c && c.timestamp ? c.timestamp : Date.now()).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                </span>
+                              )}
                               {/* Report flag right after time and before three dots */}
                               {reportedMessageIds?.includes(c && c._id) && (
                                 <FaFlag

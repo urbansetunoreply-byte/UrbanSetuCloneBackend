@@ -1,10 +1,3 @@
-import React, { useEffect, useState, useRef, useCallback } from "react";
-import { FaTrash, FaSearch, FaPen, FaCheck, FaTimes, FaUserShield, FaUser, FaEnvelope, FaPhone, FaVideo, FaArchive, FaUndo, FaCommentDots, FaCheckDouble, FaBan, FaPaperPlane, FaCalendar, FaLightbulb, FaCopy, FaEllipsisV, FaFlag, FaCircle, FaInfoCircle, FaSync, FaStar, FaRegStar, FaThumbtack, FaCalendarAlt, FaCheckSquare, FaDownload, FaDollarSign, FaCreditCard, FaSpinner, FaExclamationTriangle, FaMoneyBill, FaHistory, FaWallet, FaFileContract } from "react-icons/fa";
-import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
-import UserAvatar from '../components/UserAvatar';
-import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
-import ImagePreview from '../components/ImagePreview';
-import LinkPreview from '../components/LinkPreview';
 import { EmojiButton } from '../components/EmojiPicker';
 import CustomEmojiPicker from '../components/EmojiPicker';
 import { useSoundEffects, SoundControl } from '../components/SoundEffects';
@@ -20,6 +13,8 @@ import axios from 'axios';
 import PaymentModal from '../components/PaymentModal';
 import { useCallContext } from '../contexts/CallContext';
 import CallHistoryModal from '../components/CallHistoryModal';
+import ChatSettingsModal from '../components/ChatSettingsModal';
+import { useChatSettings } from '../hooks/useChatSettings';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -55,7 +50,7 @@ export default function MyAppointments() {
   const handlePhoneClick = (phoneNumber) => {
     // Check if it's a mobile device
     const isMobile = /Android|webOS|iPhone|iPad|iPod|BlackBerry|IEMobile|Opera Mini/i.test(navigator.userAgent);
-    
+
     if (isMobile) {
       // For mobile devices, open phone dialer
       window.location.href = `tel:${phoneNumber}`;
@@ -152,7 +147,7 @@ export default function MyAppointments() {
       toast.error('Appointment not found');
       return;
     }
-    
+
     try {
       await initiateCall(appointment._id, receiverId, callType);
     } catch (error) {
@@ -186,10 +181,10 @@ export default function MyAppointments() {
   // Close audio menus when clicking outside
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (!event.target.closest('[data-audio-menu]') && 
-          !event.target.closest('[data-audio-speed-menu]') && 
-          !event.target.closest('[data-audio-controls-menu]') && 
-          !event.target.closest('button[title="Audio options"]')) {
+      if (!event.target.closest('[data-audio-menu]') &&
+        !event.target.closest('[data-audio-speed-menu]') &&
+        !event.target.closest('[data-audio-controls-menu]') &&
+        !event.target.closest('button[title="Audio options"]')) {
         document.querySelectorAll('[data-audio-menu]').forEach(menu => {
           menu.classList.add('hidden');
         });
@@ -218,16 +213,16 @@ export default function MyAppointments() {
       try {
         setLoading(true);
         setError(null);
-        
+
         // First, fetch all appointments without pagination
         const { data } = await axios.get(`${API_BASE_URL}/api/bookings/my`, {
           withCredentials: true
         });
-        
+
         console.log('All appointments fetched:', data);
         const allAppts = data.appointments || data;
         setAllAppointments(allAppts);
-        
+
         // Just store all appointments, filtering and pagination will be handled in separate useEffect
       } catch (err) {
         setError("Failed to load appointments. Please try again.");
@@ -258,7 +253,7 @@ export default function MyAppointments() {
   // Separate useEffect for pagination and filtering
   useEffect(() => {
     if (allAppointments.length === 0) return;
-    
+
     // Apply filters
     let filteredAppts = allAppointments.filter((appt) => {
       if (currentUser._id === appt.buyerId?._id?.toString() && appt.visibleToBuyer === false) return false;
@@ -275,23 +270,23 @@ export default function MyAppointments() {
         appt.sellerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
         appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
         appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase());
-      const matchesDateRange = 
+      const matchesDateRange =
         (!startDate || new Date(appt.date) >= new Date(startDate)) &&
         (!endDate || new Date(appt.date) <= new Date(endDate));
-      
+
       return matchesStatus && matchesRole && matchesSearch && matchesDateRange;
     });
-    
+
     // Calculate pagination
     const itemsPerPage = 10;
     const totalPages = Math.ceil(filteredAppts.length / itemsPerPage);
     setTotalPages(totalPages);
-    
+
     // Get current page items
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPageAppts = filteredAppts.slice(startIndex, endIndex);
-    
+
     console.log(`Page ${currentPage} of ${totalPages}, showing ${currentPageAppts.length} appointments`);
     setAppointments(currentPageAppts);
   }, [allAppointments, currentPage, search, statusFilter, roleFilter, startDate, endDate, currentUser]);
@@ -299,37 +294,37 @@ export default function MyAppointments() {
   // Separate useEffect for archived appointments pagination and filtering
   useEffect(() => {
     if (archivedAppointments.length === 0) return;
-    
+
     // Apply filters to archived appointments
     let filteredArchivedAppts = archivedAppointments.filter((appt) => {
       const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
       const matchesStatus =
         statusFilter === "all" ? true :
-        statusFilter === "outdated" ? isOutdated :
-        appt.status === statusFilter;
+          statusFilter === "outdated" ? isOutdated :
+            appt.status === statusFilter;
       const matchesRole = roleFilter === "all" ? true : appt.role === roleFilter;
       const matchesSearch =
         appt.propertyName?.toLowerCase().includes(search.toLowerCase()) ||
         appt.message?.toLowerCase().includes(search.toLowerCase()) ||
         appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
         appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase());
-      const matchesDateRange = 
+      const matchesDateRange =
         (!startDate || new Date(appt.date) >= new Date(startDate)) &&
         (!endDate || new Date(appt.date) <= new Date(endDate));
-      
+
       return matchesStatus && matchesRole && matchesSearch && matchesDateRange;
     });
-    
+
     // Calculate pagination for archived appointments
     const itemsPerPage = 10;
     const totalPages = Math.ceil(filteredArchivedAppts.length / itemsPerPage);
     setArchivedTotalPages(totalPages);
-    
+
     // Get current page items for archived appointments
     const startIndex = (archivedCurrentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPageArchivedAppts = filteredArchivedAppts.slice(startIndex, endIndex);
-    
+
     console.log(`Archived Page ${archivedCurrentPage} of ${totalPages}, showing ${currentPageArchivedAppts.length} archived appointments`);
     setFilteredArchivedAppointments(currentPageArchivedAppts);
   }, [archivedAppointments, archivedCurrentPage, search, statusFilter, roleFilter, startDate, endDate]);
@@ -353,7 +348,7 @@ export default function MyAppointments() {
         navigate(`/user/my-appointments/chat/${appointmentId}`, { replace: false });
       }
     };
-    
+
     window.addEventListener('openChatFromNotification', handleNotificationClick);
     return () => {
       window.removeEventListener('openChatFromNotification', handleNotificationClick);
@@ -378,7 +373,7 @@ export default function MyAppointments() {
         }, 300);
       }
     };
-    
+
     window.addEventListener('highlightAppointment', handleHighlightAppointment);
     return () => {
       window.removeEventListener('highlightAppointment', handleHighlightAppointment);
@@ -405,7 +400,7 @@ export default function MyAppointments() {
     } else {
       document.body.classList.remove('modal-open');
     }
-    
+
     return () => {
       document.body.classList.remove('modal-open');
     };
@@ -416,7 +411,7 @@ export default function MyAppointments() {
     if (!currentUser) return;
     setAppointments(prevAppointments => prevAppointments.map(appt => {
       const updated = { ...appt };
-      
+
       // Update buyer info if current user is the buyer
       if (appt.buyerId && (appt.buyerId._id === currentUser._id || appt.buyerId === currentUser._id)) {
         updated.buyerId = {
@@ -427,7 +422,7 @@ export default function MyAppointments() {
           avatar: currentUser.avatar
         };
       }
-      
+
       // Update seller info if current user is the seller
       if (appt.sellerId && (appt.sellerId._id === currentUser._id || appt.sellerId === currentUser._id)) {
         updated.sellerId = {
@@ -438,7 +433,7 @@ export default function MyAppointments() {
           avatar: currentUser.avatar
         };
       }
-      
+
       return updated;
     }));
   }, [currentUser]);
@@ -451,7 +446,7 @@ export default function MyAppointments() {
         )
       );
     }
-    
+
     function handlePaymentStatusUpdate(data) {
       setAppointments((prev) =>
         prev.map(appt =>
@@ -459,7 +454,7 @@ export default function MyAppointments() {
         )
       );
     }
-    
+
     // Handle custom DOM events (fallback from MyPayments page)
     function handleCustomPaymentStatusUpdate(event) {
       const { appointmentId, paymentConfirmed } = event.detail;
@@ -471,11 +466,11 @@ export default function MyAppointments() {
         );
       }
     }
-    
+
     socket.on('appointmentUpdate', handleAppointmentUpdate);
     socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
     window.addEventListener('paymentStatusUpdated', handleCustomPaymentStatusUpdate);
-    
+
     return () => {
       socket.off('appointmentUpdate', handleAppointmentUpdate);
       socket.off('paymentStatusUpdated', handlePaymentStatusUpdate);
@@ -495,12 +490,12 @@ export default function MyAppointments() {
       setAppointments((prev) => [appt, ...prev]);
     }
     socket.on('appointmentCreated', handleAppointmentCreated);
-    
+
     // Listen for profile updates to update user info in appointments
     const handleProfileUpdate = (profileData) => {
       setAppointments(prevAppointments => prevAppointments.map(appt => {
         const updated = { ...appt };
-        
+
         // Update buyer info if the updated user is the buyer
         if (appt.buyerId && (appt.buyerId._id === profileData.userId || appt.buyerId === profileData.userId)) {
           updated.buyerId = {
@@ -511,7 +506,7 @@ export default function MyAppointments() {
             avatar: profileData.avatar
           };
         }
-        
+
         // Update seller info if the updated user is the seller
         if (appt.sellerId && (appt.sellerId._id === profileData.userId || appt.sellerId === profileData.userId)) {
           updated.sellerId = {
@@ -522,12 +517,12 @@ export default function MyAppointments() {
             avatar: profileData.avatar
           };
         }
-        
+
         return updated;
       }));
     };
     socket.on('profileUpdated', handleProfileUpdate);
-    
+
     return () => {
       socket.off('appointmentCreated', handleAppointmentCreated);
       socket.off('profileUpdated', handleProfileUpdate);
@@ -557,7 +552,7 @@ export default function MyAppointments() {
   const location = useLocation();
   const params = useParams();
   const chatRouteResolvedRef = useRef(null);
-  
+
   useEffect(() => {
     const chatIdFromUrl = params.chatId;
 
@@ -670,9 +665,9 @@ export default function MyAppointments() {
   // Handle highlightAppointmentId from location.state (must be after location declaration)
   useEffect(() => {
     if (appointments.length === 0) return;
-    
+
     const highlightAppointmentId = location.state?.highlightAppointmentId;
-    
+
     if (highlightAppointmentId) {
       setTimeout(() => {
         const appointmentRow = document.querySelector(`[data-appointment-id="${highlightAppointmentId}"]`);
@@ -692,9 +687,9 @@ export default function MyAppointments() {
   const handleStatusUpdate = async (id, status) => {
     setActionLoading(id + status);
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/status`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/status`,
         { status },
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
@@ -732,9 +727,9 @@ export default function MyAppointments() {
       toast.error('Please provide a reason for deleting this appointment.');
       return;
     }
-    
+
     try {
-      const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appointmentToHandle}`, { 
+      const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appointmentToHandle}`, {
         withCredentials: true,
         headers: { "Content-Type": "application/json" },
         data: { reason: deleteReason }
@@ -769,9 +764,9 @@ export default function MyAppointments() {
 
   const confirmArchive = async () => {
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/archive`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/archive`,
         {},
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
@@ -801,9 +796,9 @@ export default function MyAppointments() {
 
   const confirmUnarchive = async () => {
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/unarchive`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appointmentToHandle}/unarchive`,
         {},
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
@@ -865,7 +860,7 @@ export default function MyAppointments() {
     if (!reinitiateData) return;
     const isBuyer = currentUser && (reinitiateData.buyerId?._id === currentUser._id || reinitiateData.buyerId === currentUser._id);
     const isSeller = currentUser && (reinitiateData.sellerId?._id === currentUser._id || reinitiateData.sellerId === currentUser._id);
-    
+
     // Check if payment is refunded for cancelled appointment
     if ((reinitiateData.status === 'cancelledByBuyer' || reinitiateData.status === 'cancelledBySeller') && reinitiatePaymentStatus) {
       if (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded') {
@@ -879,7 +874,7 @@ export default function MyAppointments() {
       const cancellationDate = reinitiateData.updatedAt ? new Date(reinitiateData.updatedAt) : new Date();
       const now = new Date();
       const hoursSinceCancellation = (now - cancellationDate) / (1000 * 60 * 60);
-      
+
       if (hoursSinceCancellation > 72) {
         toast.error('Reinitiation not possible now. The 72-hour reinitiation window has expired.');
         return;
@@ -900,9 +895,9 @@ export default function MyAppointments() {
       status: 'pending',
     };
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/reinitiate`, 
+      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/reinitiate`,
         payload,
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
@@ -922,7 +917,7 @@ export default function MyAppointments() {
       toast.error(err.response?.data?.message || 'Failed to reinitiate appointment.');
     }
   }
-//next
+  //next
   const handleCancelRefresh = (cancelledId, cancelledStatus) => {
     setAppointments((prev) => prev.map(appt => appt._id === cancelledId ? { ...appt, status: cancelledStatus } : appt));
   };
@@ -932,15 +927,15 @@ export default function MyAppointments() {
     setLoading(true);
     setError(null);
     try {
-      const { data } = await axios.get(`${API_BASE_URL}/api/bookings/my`, { 
-        withCredentials: true 
+      const { data } = await axios.get(`${API_BASE_URL}/api/bookings/my`, {
+        withCredentials: true
       });
       setAppointments(data);
-      
+
       // Fetch archived appointments for all users
       if (currentUser) {
-        const { data: archivedData } = await axios.get(`${API_BASE_URL}/api/bookings/archived`, { 
-          withCredentials: true 
+        const { data: archivedData } = await axios.get(`${API_BASE_URL}/api/bookings/archived`, {
+          withCredentials: true
         });
         setArchivedAppointments(Array.isArray(archivedData) ? archivedData : []);
       } else {
@@ -959,7 +954,7 @@ export default function MyAppointments() {
       toast.error('No message to copy');
       return;
     }
-    
+
     // Try modern clipboard API first
     if (navigator.clipboard && navigator.clipboard.writeText) {
       navigator.clipboard.writeText(messageText)
@@ -992,7 +987,7 @@ export default function MyAppointments() {
       textArea.select();
       const success = document.execCommand('copy');
       document.body.removeChild(textArea);
-      
+
       if (success) {
         toast.success('Copied', {
           autoClose: 2000,
@@ -1092,11 +1087,10 @@ export default function MyAppointments() {
                 setCurrentPage(1); // Reset to first page when switching
                 setArchivedCurrentPage(1); // Reset archived page to first page when switching
               }}
-              className={`bg-gradient-to-r text-white px-2.5 py-1.5 rounded-md transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-base flex-1 sm:flex-none sm:w-auto sm:px-4 sm:py-2 sm:rounded-md justify-center ${
-                showArchived 
-                  ? 'from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600' 
-                  : 'from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
-              }`}
+              className={`bg-gradient-to-r text-white px-2.5 py-1.5 rounded-md transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2 text-xs sm:text-base flex-1 sm:flex-none sm:w-auto sm:px-4 sm:py-2 sm:rounded-md justify-center ${showArchived
+                ? 'from-blue-500 to-purple-500 hover:from-blue-600 hover:to-purple-600'
+                : 'from-gray-500 to-gray-600 hover:from-gray-600 hover:to-gray-700'
+                }`}
             >
               {showArchived ? (
                 <>
@@ -1176,14 +1170,14 @@ export default function MyAppointments() {
             </div>
           </div>
         </div>
-        
+
         {/* Description text for archived appointments */}
         {showArchived && (
           <p className="text-center text-gray-600 mb-6">
             📋 View and manage archived appointments. You can unarchive them to move them back to active appointments.
           </p>
         )}
-        
+
         {/* Show archived appointments table for all users */}
         {showArchived ? (
           filteredArchivedAppointments.length === 0 ? (
@@ -1249,48 +1243,48 @@ export default function MyAppointments() {
                   ))}
                 </tbody>
               </table>
-          </div>
+            </div>
           )
         ) : (
           appointments.length === 0 ? (
             <div className="text-center py-12">
               <div className="text-gray-500 text-lg mb-6">No appointments found.</div>
-              <Link 
-                to="/search" 
+              <Link
+                to="/search"
                 className="inline-flex items-center px-6 py-3 bg-gradient-to-r from-blue-600 to-purple-600 text-white font-semibold rounded-lg hover:from-blue-700 hover:to-purple-700 transition-all duration-200 transform hover:scale-105 shadow-lg"
               >
                 <FaCalendarAlt className="mr-2" />
                 Book Appointment
               </Link>
             </div>
-        ) : (
-          <div className="overflow-x-auto">
-            <table className="w-full border-collapse rounded-lg overflow-hidden">
-              <thead>
-                <tr className="bg-gradient-to-r from-blue-100 to-purple-100">
-                  <th className="border p-2">Date & Time</th>
-                  <th className="border p-2">Property</th>
-                  <th className="border p-2">Role</th>
-                  <th className="border p-2">Other Party</th>
-                  <th className="border p-2">Purpose</th>
-                  <th className="border p-2">Message</th>
-                  <th className="border p-2">Status</th>
-                  <th className="border p-2">Payment</th>
-                  <th className="border p-2">Actions</th>
-                  <th className="border p-2">Connect</th>
-                </tr>
-              </thead>
-              <tbody>
-                {appointments.map((appt) => (
-                  <AppointmentRow 
-                    key={appt._id} 
-                    appt={appt} 
-                    currentUser={currentUser} 
-                    handleStatusUpdate={handleStatusUpdate}
-                    handleAdminDelete={handleAdminDelete}
-                    actionLoading={actionLoading}
-                    onShowOtherParty={(party, appointment) => { setSelectedOtherParty(party); setSelectedAppointment(appointment); setShowOtherPartyModal(true); }}
-                    onOpenReinitiate={() => handleOpenReinitiate(appt)}
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="w-full border-collapse rounded-lg overflow-hidden">
+                <thead>
+                  <tr className="bg-gradient-to-r from-blue-100 to-purple-100">
+                    <th className="border p-2">Date & Time</th>
+                    <th className="border p-2">Property</th>
+                    <th className="border p-2">Role</th>
+                    <th className="border p-2">Other Party</th>
+                    <th className="border p-2">Purpose</th>
+                    <th className="border p-2">Message</th>
+                    <th className="border p-2">Status</th>
+                    <th className="border p-2">Payment</th>
+                    <th className="border p-2">Actions</th>
+                    <th className="border p-2">Connect</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {appointments.map((appt) => (
+                    <AppointmentRow
+                      key={appt._id}
+                      appt={appt}
+                      currentUser={currentUser}
+                      handleStatusUpdate={handleStatusUpdate}
+                      handleAdminDelete={handleAdminDelete}
+                      actionLoading={actionLoading}
+                      onShowOtherParty={(party, appointment) => { setSelectedOtherParty(party); setSelectedAppointment(appointment); setShowOtherPartyModal(true); }}
+                      onOpenReinitiate={() => handleOpenReinitiate(appt)}
                       handleArchiveAppointment={handleArchiveAppointment}
                       handleUnarchiveAppointment={handleUnarchiveAppointment}
                       isArchived={false}
@@ -1330,11 +1324,11 @@ export default function MyAppointments() {
                       // Call History Modal props
                       setShowCallHistoryModal={setShowCallHistoryModal}
                       setCallHistoryAppointmentId={setCallHistoryAppointmentId}
-                  />
-                ))}
-              </tbody>
-            </table>
-          </div>
+                    />
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )
         )}
 
@@ -1400,471 +1394,471 @@ export default function MyAppointments() {
           </div>
         )}
 
-      {/* Other Party Details Modal - Enhanced Design */}
-      {showOtherPartyModal && selectedOtherParty && selectedAppointment && createPortal((() => {
-        // Determine if contact details should be shown based on appointment status
-        const isUpcoming = new Date(selectedAppointment.date) > new Date() || (new Date(selectedAppointment.date).toDateString() === new Date().toDateString() && (!selectedAppointment.time || selectedAppointment.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
-        const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
-        const canSeeContactInfo = (isAdmin || selectedAppointment.status === 'accepted') && isUpcoming && 
-          selectedAppointment.status !== 'cancelledByBuyer' && selectedAppointment.status !== 'cancelledBySeller' && 
-          selectedAppointment.status !== 'cancelledByAdmin' && selectedAppointment.status !== 'rejected' && 
-          selectedAppointment.status !== 'deletedByAdmin';
-        
-        return (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-2 sm:p-4" style={{ overflow: 'hidden' }}>
-                      <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto relative animate-fadeIn">
-              {/* Close button */}
-              <button
-                className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors z-10 shadow"
-                onClick={() => setShowOtherPartyModal(false)}
-                title="Close"
-                aria-label="Close"
-              >
-                <FaTimes className="w-4 h-4" />
-              </button>
-              
-              {/* Header with gradient background */}
-            <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-2xl px-6 py-6 border-b border-gray-200">
-              <div className="flex items-center gap-4">
-                <div className="relative">
-                  <UserAvatar 
-                    user={{ username: selectedOtherParty.username, avatar: selectedOtherParty.avatar }} 
-                    size="w-16 h-16" 
-                    textSize="text-lg"
-                    showBorder={true}
-                    className="border-4 border-white shadow-lg"
-                  />
-                  {/* Online status indicator */}
-                  <div className="absolute -bottom-1 -right-1 w-6 h-6 border-2 border-white rounded-full flex items-center justify-center">
-                    {!canSeeContactInfo ? (
-                      <div className="w-full h-full bg-gray-400 rounded-full flex items-center justify-center">
-                        <span className="text-white text-[8px] font-bold">N/A</span>
-                      </div>
-                    ) : selectedOtherParty.isTyping ? (
-                      <div className="w-full h-full bg-yellow-500 rounded-full flex items-center justify-center">
-                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                      </div>
-                    ) : selectedOtherParty.isOnline ? (
-                      <div className="w-full h-full bg-green-500 rounded-full flex items-center justify-center">
-                        <FaCircle className="w-2 h-2 text-white" />
-                      </div>
-                    ) : (
-                      <div className="w-full h-full bg-gray-400 rounded-full flex items-center justify-center">
-                        <FaCircle className="w-2 h-2 text-white" />
-                      </div>
-                    )}
-                  </div>
-                </div>
-                <div className="text-center">
-                  <h2 className="text-xl font-bold text-blue-800 flex items-center gap-2">
-                    {selectedOtherParty.username || 'User'}
-                    {selectedOtherParty.role === 'admin' && (
-                      <FaUserShield className="text-purple-600 text-base" title="Admin user" />
-                    )}
-                  </h2>
-                  <p className="text-sm text-gray-600 capitalize font-medium bg-white px-3 py-1 rounded-full shadow-sm">
-                    {(() => {
-                      // Determine the opposite role based on current user's role in the appointment
-                      const currentUserRole = selectedAppointment.buyerId?._id === currentUser._id || selectedAppointment.buyerId === currentUser._id ? 'buyer' : 'seller';
-                      return currentUserRole === 'buyer' ? 'seller' : 'buyer';
-                    })()}
-                  </p>
-                  {/* Status text below role */}
-                  {!canSeeContactInfo ? (
-                    <div className="mt-2">
-                      <span className="text-gray-600 font-medium text-xs bg-gray-100 px-3 py-1 rounded-full">
-                        Not available
-                      </span>
-                    </div>
-                  ) : selectedOtherParty.isTyping ? (
-                    <div className="mt-2">
-                      <span className="text-yellow-600 font-medium text-xs bg-yellow-100 px-3 py-1 rounded-full">
-                        Typing...
-                      </span>
-                    </div>
-                  ) : selectedOtherParty.isOnline ? (
-                    <div className="mt-2">
-                      <span className="text-green-600 font-medium text-xs bg-green-100 px-3 py-1 rounded-full">
-                        Online
-                      </span>
-                    </div>
-                  ) : (
-                    <div className="mt-2">
-                      <span className="text-gray-600 font-medium text-xs bg-gray-100 px-3 py-1 rounded-full">
-                        {(() => {
-                          if (!selectedOtherParty.lastSeen) return 'Offline';
-                          
-                          const lastSeenDate = new Date(selectedOtherParty.lastSeen);
-                          const now = new Date();
-                          const diffInMinutes = Math.floor((now - lastSeenDate) / (1000 * 60));
-                          const diffInHours = Math.floor(diffInMinutes / 60);
-                          const diffInDays = Math.floor(diffInHours / 24);
-                          
-                          if (diffInMinutes < 1) {
-                            return 'Last seen just now';
-                          } else if (diffInMinutes < 60) {
-                            return `Last seen ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
-                          } else if (diffInHours < 24) {
-                            return `Last seen ${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
-                          } else if (diffInDays < 7) {
-                            return `Last seen ${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
-                          } else {
-                            return `Last seen ${lastSeenDate.toLocaleDateString('en-US', { 
-                              month: 'short', 
-                              day: 'numeric' 
-                            })}`;
-                          }
-                        })()}
-                      </span>
-                    </div>
-                  )}
-                </div>
-              </div>
-            </div>
+        {/* Other Party Details Modal - Enhanced Design */}
+        {showOtherPartyModal && selectedOtherParty && selectedAppointment && createPortal((() => {
+          // Determine if contact details should be shown based on appointment status
+          const isUpcoming = new Date(selectedAppointment.date) > new Date() || (new Date(selectedAppointment.date).toDateString() === new Date().toDateString() && (!selectedAppointment.time || selectedAppointment.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
+          const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
+          const canSeeContactInfo = (isAdmin || selectedAppointment.status === 'accepted') && isUpcoming &&
+            selectedAppointment.status !== 'cancelledByBuyer' && selectedAppointment.status !== 'cancelledBySeller' &&
+            selectedAppointment.status !== 'cancelledByAdmin' && selectedAppointment.status !== 'rejected' &&
+            selectedAppointment.status !== 'deletedByAdmin';
 
-            {/* Body with enhanced styling */}
-            <div className="px-6 py-6 space-y-4">
-              <div className="space-y-4">
-                {canSeeContactInfo ? (
-                  <>
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
-                      <FaEnvelope className="text-blue-500 w-5 h-5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Email</p>
-                        <a
-                          href={`mailto:${selectedOtherParty.email}`}
-                          className="text-blue-700 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
-                          title="Click to send email"
-                        >
-                          {selectedOtherParty.email}
-                        </a>
-                      </div>
-                    </div>
-                    
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
-                      <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
-                      <div className="flex-1">
-                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Phone</p>
-                        {selectedOtherParty.mobileNumber && selectedOtherParty.mobileNumber !== '' ? (
-                          <button
-                            onClick={() => handlePhoneClick(selectedOtherParty.mobileNumber)}
-                            className="text-green-700 hover:text-green-800 hover:underline font-medium transition-colors duration-200 text-left"
-                            title="Click to call or copy phone number"
-                          >
-                            {selectedOtherParty.mobileNumber}
-                          </button>
+          return (
+            <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-2 sm:p-4" style={{ overflow: 'hidden' }}>
+              <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto relative animate-fadeIn">
+                {/* Close button */}
+                <button
+                  className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors z-10 shadow"
+                  onClick={() => setShowOtherPartyModal(false)}
+                  title="Close"
+                  aria-label="Close"
+                >
+                  <FaTimes className="w-4 h-4" />
+                </button>
+
+                {/* Header with gradient background */}
+                <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-2xl px-6 py-6 border-b border-gray-200">
+                  <div className="flex items-center gap-4">
+                    <div className="relative">
+                      <UserAvatar
+                        user={{ username: selectedOtherParty.username, avatar: selectedOtherParty.avatar }}
+                        size="w-16 h-16"
+                        textSize="text-lg"
+                        showBorder={true}
+                        className="border-4 border-white shadow-lg"
+                      />
+                      {/* Online status indicator */}
+                      <div className="absolute -bottom-1 -right-1 w-6 h-6 border-2 border-white rounded-full flex items-center justify-center">
+                        {!canSeeContactInfo ? (
+                          <div className="w-full h-full bg-gray-400 rounded-full flex items-center justify-center">
+                            <span className="text-white text-[8px] font-bold">N/A</span>
+                          </div>
+                        ) : selectedOtherParty.isTyping ? (
+                          <div className="w-full h-full bg-yellow-500 rounded-full flex items-center justify-center">
+                            <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                          </div>
+                        ) : selectedOtherParty.isOnline ? (
+                          <div className="w-full h-full bg-green-500 rounded-full flex items-center justify-center">
+                            <FaCircle className="w-2 h-2 text-white" />
+                          </div>
                         ) : (
-                          <p className="text-gray-800 font-medium">Not provided</p>
+                          <div className="w-full h-full bg-gray-400 rounded-full flex items-center justify-center">
+                            <FaCircle className="w-2 h-2 text-white" />
+                          </div>
                         )}
                       </div>
                     </div>
-                  </>
-                ) : (
-                  <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
-                    <FaExclamationTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0" />
-                    <div>
-                      <p className="text-xs text-yellow-700 uppercase tracking-wide font-semibold">Contact Information Restricted</p>
-                      <p className="text-yellow-800 font-medium">Contact details are only available for accepted appointments</p>
+                    <div className="text-center">
+                      <h2 className="text-xl font-bold text-blue-800 flex items-center gap-2">
+                        {selectedOtherParty.username || 'User'}
+                        {selectedOtherParty.role === 'admin' && (
+                          <FaUserShield className="text-purple-600 text-base" title="Admin user" />
+                        )}
+                      </h2>
+                      <p className="text-sm text-gray-600 capitalize font-medium bg-white px-3 py-1 rounded-full shadow-sm">
+                        {(() => {
+                          // Determine the opposite role based on current user's role in the appointment
+                          const currentUserRole = selectedAppointment.buyerId?._id === currentUser._id || selectedAppointment.buyerId === currentUser._id ? 'buyer' : 'seller';
+                          return currentUserRole === 'buyer' ? 'seller' : 'buyer';
+                        })()}
+                      </p>
+                      {/* Status text below role */}
+                      {!canSeeContactInfo ? (
+                        <div className="mt-2">
+                          <span className="text-gray-600 font-medium text-xs bg-gray-100 px-3 py-1 rounded-full">
+                            Not available
+                          </span>
+                        </div>
+                      ) : selectedOtherParty.isTyping ? (
+                        <div className="mt-2">
+                          <span className="text-yellow-600 font-medium text-xs bg-yellow-100 px-3 py-1 rounded-full">
+                            Typing...
+                          </span>
+                        </div>
+                      ) : selectedOtherParty.isOnline ? (
+                        <div className="mt-2">
+                          <span className="text-green-600 font-medium text-xs bg-green-100 px-3 py-1 rounded-full">
+                            Online
+                          </span>
+                        </div>
+                      ) : (
+                        <div className="mt-2">
+                          <span className="text-gray-600 font-medium text-xs bg-gray-100 px-3 py-1 rounded-full">
+                            {(() => {
+                              if (!selectedOtherParty.lastSeen) return 'Offline';
+
+                              const lastSeenDate = new Date(selectedOtherParty.lastSeen);
+                              const now = new Date();
+                              const diffInMinutes = Math.floor((now - lastSeenDate) / (1000 * 60));
+                              const diffInHours = Math.floor(diffInMinutes / 60);
+                              const diffInDays = Math.floor(diffInHours / 24);
+
+                              if (diffInMinutes < 1) {
+                                return 'Last seen just now';
+                              } else if (diffInMinutes < 60) {
+                                return `Last seen ${diffInMinutes} minute${diffInMinutes > 1 ? 's' : ''} ago`;
+                              } else if (diffInHours < 24) {
+                                return `Last seen ${diffInHours} hour${diffInHours > 1 ? 's' : ''} ago`;
+                              } else if (diffInDays < 7) {
+                                return `Last seen ${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
+                              } else {
+                                return `Last seen ${lastSeenDate.toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric'
+                                })}`;
+                              }
+                            })()}
+                          </span>
+                        </div>
+                      )}
                     </div>
                   </div>
-                )}
-
-                <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-purple-500">
-                  <FaCalendar className="text-purple-500 w-5 h-5 flex-shrink-0" />
-                  <div>
-                    <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Member Since</p>
-                    <p className="text-gray-800 font-medium">
-                      {selectedOtherParty.createdAt ? new Date(selectedOtherParty.createdAt).toLocaleDateString('en-US', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      }) : 'Not available'}
-                    </p>
-                  </div>
                 </div>
-              </div>
 
+                {/* Body with enhanced styling */}
+                <div className="px-6 py-6 space-y-4">
+                  <div className="space-y-4">
+                    {canSeeContactInfo ? (
+                      <>
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-blue-500">
+                          <FaEnvelope className="text-blue-500 w-5 h-5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Email</p>
+                            <a
+                              href={`mailto:${selectedOtherParty.email}`}
+                              className="text-blue-700 hover:text-blue-800 hover:underline font-medium transition-colors duration-200"
+                              title="Click to send email"
+                            >
+                              {selectedOtherParty.email}
+                            </a>
+                          </div>
+                        </div>
 
-            </div>
-          </div>
-        </div>
-        );
-      })(), document.body)}
-      {/* Reinitiate Modal */}
-      {showReinitiateModal && reinitiateData && (() => {
-        // Calculate hours since cancellation (72-hour window)
-        const isCancelled = reinitiateData.status === 'cancelledByBuyer' || reinitiateData.status === 'cancelledBySeller';
-        const cancellationDate = reinitiateData.updatedAt ? new Date(reinitiateData.updatedAt) : new Date();
-        const now = new Date();
-        const hoursSinceCancellation = (now - cancellationDate) / (1000 * 60 * 60);
-        const hoursLeft = 72 - hoursSinceCancellation;
-        const daysLeft = Math.floor(hoursLeft / 24);
-        const remainingHours = Math.floor(hoursLeft % 24);
-        const isRefunded = reinitiatePaymentStatus && (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded');
-        const canReinitiate = !(isCancelled && (isRefunded || hoursSinceCancellation > 72));
-        
-        // Determine if current user is buyer or seller
-        const isBuyer = currentUser && (reinitiateData.buyerId?._id === currentUser._id || reinitiateData.buyerId === currentUser._id);
-        const isSeller = currentUser && (reinitiateData.sellerId?._id === currentUser._id || reinitiateData.sellerId === currentUser._id);
-        const reinitiationCount = isBuyer ? (reinitiateData.buyerReinitiationCount || 0) : isSeller ? (reinitiateData.sellerReinitiationCount || 0) : 0;
-        const maxReinitiations = 2;
-        const reinitiationsLeft = maxReinitiations - reinitiationCount;
-
-        return (
-        <div className="modal-backdrop">
-            <div className="modal-content" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
-              <div className="p-5">
-                <div className="flex items-center justify-between mb-4">
-                  <h3 className="text-xl font-bold text-blue-700">Reinitiate Appointment</h3>
-                  <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
-                    {reinitiationCount}/{maxReinitiations} used
-                  </span>
-                </div>
-                
-                {/* Reinitiation count info */}
-                {reinitiationsLeft > 0 && (
-                  <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded">
-                    <p className="text-sm">
-                      <span className="font-semibold">Reinitiations remaining:</span> {reinitiationsLeft} out of {maxReinitiations}
-                    </p>
-                  </div>
-                )}
-                
-                {reinitiationCount >= maxReinitiations && (
-                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                    <p className="font-semibold">Maximum reinitiations reached</p>
-                    <p className="text-sm">You have used all {maxReinitiations} reinitiation attempts for this appointment.</p>
-                  </div>
-                )}
-                
-                {/* Show warning messages */}
-                {isCancelled && isRefunded && (
-                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                    <p className="font-semibold">Reinitiation not possible now</p>
-                    <p className="text-sm">Payment has been refunded for this cancelled appointment. Reinitiation is not allowed after refund.</p>
-                  </div>
-                )}
-                
-                {isCancelled && !isRefunded && hoursSinceCancellation > 72 && (
-                  <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
-                    <p className="font-semibold">Reinitiation not possible now</p>
-                    <p className="text-sm">The 72-hour (3-day) reinitiation window has expired. You can only reinitiate within 72 hours of cancellation.</p>
-                  </div>
-                )}
-                
-                {isCancelled && !isRefunded && hoursSinceCancellation <= 72 && (
-                  <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded">
-                    <p className="font-semibold">Reinitiation Window (72 hours)</p>
-                    <p className="text-sm">
-                      You can reinitiate this appointment within 72 hours of cancellation. 
-                      {hoursLeft > 0 ? (
-                        <span className="font-bold">
-                          {' '}
-                          {daysLeft > 0 ? `${daysLeft}d ` : ''}
-                          {remainingHours > 0 ? `${remainingHours}h` : ''}
-                          {daysLeft === 0 && remainingHours === 0 ? 'Less than 1h' : ''} left.
-                        </span>
-                      ) : (
-                        <span className="font-bold"> Window expired.</span>
-                      )}
-                    </p>
-                  </div>
-                )}
-
-              <form onSubmit={handleReinitiateSubmit} className="space-y-4">
-                <div>
-                  <label className="block font-semibold mb-1">Date</label>
-                    <input type="date" className="border rounded px-2 py-1 w-full" value={reinitiateData.date} onChange={e => setReinitiateData(d => ({ ...d, date: e.target.value }))} required disabled={!canReinitiate} />
-                </div>
-                <div>
-                  <label className="block font-semibold mb-1">Time (9 AM - 7 PM)</label>
-                  <select
-                    className="border rounded px-2 py-1 w-full"
-                    value={reinitiateData.time}
-                    onChange={e => setReinitiateData(d => ({ ...d, time: e.target.value }))}
-                    required
-                      disabled={!canReinitiate}
-                  >
-                    <option value="">Select Time (9 AM - 7 PM)</option>
-                    {reinitiateData.time && !APPOINTMENT_TIME_SLOTS.some(slot => slot.value === reinitiateData.time) && (
-                      <option value={reinitiateData.time}>
-                        {`Current time (${formatTimeDisplay(reinitiateData.time)})`}
-                      </option>
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-green-500">
+                          <FaPhone className="text-green-500 w-5 h-5 flex-shrink-0" />
+                          <div className="flex-1">
+                            <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Phone</p>
+                            {selectedOtherParty.mobileNumber && selectedOtherParty.mobileNumber !== '' ? (
+                              <button
+                                onClick={() => handlePhoneClick(selectedOtherParty.mobileNumber)}
+                                className="text-green-700 hover:text-green-800 hover:underline font-medium transition-colors duration-200 text-left"
+                                title="Click to call or copy phone number"
+                              >
+                                {selectedOtherParty.mobileNumber}
+                              </button>
+                            ) : (
+                              <p className="text-gray-800 font-medium">Not provided</p>
+                            )}
+                          </div>
+                        </div>
+                      </>
+                    ) : (
+                      <div className="flex items-center gap-3 p-3 bg-yellow-50 rounded-lg border-l-4 border-yellow-500">
+                        <FaExclamationTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0" />
+                        <div>
+                          <p className="text-xs text-yellow-700 uppercase tracking-wide font-semibold">Contact Information Restricted</p>
+                          <p className="text-yellow-800 font-medium">Contact details are only available for accepted appointments</p>
+                        </div>
+                      </div>
                     )}
-                    {APPOINTMENT_TIME_SLOTS.map((slot) => (
-                      <option key={slot.value} value={slot.value}>
-                        {slot.label}
-                      </option>
-                    ))}
-                  </select>
+
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border-l-4 border-purple-500">
+                      <FaCalendar className="text-purple-500 w-5 h-5 flex-shrink-0" />
+                      <div>
+                        <p className="text-xs text-gray-500 uppercase tracking-wide font-semibold">Member Since</p>
+                        <p className="text-gray-800 font-medium">
+                          {selectedOtherParty.createdAt ? new Date(selectedOtherParty.createdAt).toLocaleDateString('en-US', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          }) : 'Not available'}
+                        </p>
+                      </div>
+                    </div>
+                  </div>
+
+
                 </div>
-                <div>
-                  <label className="block font-semibold mb-1">Message (optional)</label>
-                    <textarea className="border rounded px-2 py-1 w-full" value={reinitiateData.message} onChange={e => setReinitiateData(d => ({ ...d, message: e.target.value }))} disabled={!canReinitiate} />
+              </div>
+            </div>
+          );
+        })(), document.body)}
+        {/* Reinitiate Modal */}
+        {showReinitiateModal && reinitiateData && (() => {
+          // Calculate hours since cancellation (72-hour window)
+          const isCancelled = reinitiateData.status === 'cancelledByBuyer' || reinitiateData.status === 'cancelledBySeller';
+          const cancellationDate = reinitiateData.updatedAt ? new Date(reinitiateData.updatedAt) : new Date();
+          const now = new Date();
+          const hoursSinceCancellation = (now - cancellationDate) / (1000 * 60 * 60);
+          const hoursLeft = 72 - hoursSinceCancellation;
+          const daysLeft = Math.floor(hoursLeft / 24);
+          const remainingHours = Math.floor(hoursLeft % 24);
+          const isRefunded = reinitiatePaymentStatus && (reinitiatePaymentStatus.status === 'refunded' || reinitiatePaymentStatus.status === 'partially_refunded');
+          const canReinitiate = !(isCancelled && (isRefunded || hoursSinceCancellation > 72));
+
+          // Determine if current user is buyer or seller
+          const isBuyer = currentUser && (reinitiateData.buyerId?._id === currentUser._id || reinitiateData.buyerId === currentUser._id);
+          const isSeller = currentUser && (reinitiateData.sellerId?._id === currentUser._id || reinitiateData.sellerId === currentUser._id);
+          const reinitiationCount = isBuyer ? (reinitiateData.buyerReinitiationCount || 0) : isSeller ? (reinitiateData.sellerReinitiationCount || 0) : 0;
+          const maxReinitiations = 2;
+          const reinitiationsLeft = maxReinitiations - reinitiationCount;
+
+          return (
+            <div className="modal-backdrop">
+              <div className="modal-content" style={{ maxHeight: '70vh', overflowY: 'auto' }}>
+                <div className="p-5">
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="text-xl font-bold text-blue-700">Reinitiate Appointment</h3>
+                    <span className="text-sm text-gray-600 bg-gray-100 px-3 py-1 rounded-full font-medium">
+                      {reinitiationCount}/{maxReinitiations} used
+                    </span>
+                  </div>
+
+                  {/* Reinitiation count info */}
+                  {reinitiationsLeft > 0 && (
+                    <div className="mb-4 p-3 bg-blue-50 border border-blue-200 text-blue-800 rounded">
+                      <p className="text-sm">
+                        <span className="font-semibold">Reinitiations remaining:</span> {reinitiationsLeft} out of {maxReinitiations}
+                      </p>
+                    </div>
+                  )}
+
+                  {reinitiationCount >= maxReinitiations && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                      <p className="font-semibold">Maximum reinitiations reached</p>
+                      <p className="text-sm">You have used all {maxReinitiations} reinitiation attempts for this appointment.</p>
+                    </div>
+                  )}
+
+                  {/* Show warning messages */}
+                  {isCancelled && isRefunded && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                      <p className="font-semibold">Reinitiation not possible now</p>
+                      <p className="text-sm">Payment has been refunded for this cancelled appointment. Reinitiation is not allowed after refund.</p>
+                    </div>
+                  )}
+
+                  {isCancelled && !isRefunded && hoursSinceCancellation > 72 && (
+                    <div className="mb-4 p-3 bg-red-100 border border-red-400 text-red-700 rounded">
+                      <p className="font-semibold">Reinitiation not possible now</p>
+                      <p className="text-sm">The 72-hour (3-day) reinitiation window has expired. You can only reinitiate within 72 hours of cancellation.</p>
+                    </div>
+                  )}
+
+                  {isCancelled && !isRefunded && hoursSinceCancellation <= 72 && (
+                    <div className="mb-4 p-3 bg-yellow-100 border border-yellow-400 text-yellow-800 rounded">
+                      <p className="font-semibold">Reinitiation Window (72 hours)</p>
+                      <p className="text-sm">
+                        You can reinitiate this appointment within 72 hours of cancellation.
+                        {hoursLeft > 0 ? (
+                          <span className="font-bold">
+                            {' '}
+                            {daysLeft > 0 ? `${daysLeft}d ` : ''}
+                            {remainingHours > 0 ? `${remainingHours}h` : ''}
+                            {daysLeft === 0 && remainingHours === 0 ? 'Less than 1h' : ''} left.
+                          </span>
+                        ) : (
+                          <span className="font-bold"> Window expired.</span>
+                        )}
+                      </p>
+                    </div>
+                  )}
+
+                  <form onSubmit={handleReinitiateSubmit} className="space-y-4">
+                    <div>
+                      <label className="block font-semibold mb-1">Date</label>
+                      <input type="date" className="border rounded px-2 py-1 w-full" value={reinitiateData.date} onChange={e => setReinitiateData(d => ({ ...d, date: e.target.value }))} required disabled={!canReinitiate} />
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1">Time (9 AM - 7 PM)</label>
+                      <select
+                        className="border rounded px-2 py-1 w-full"
+                        value={reinitiateData.time}
+                        onChange={e => setReinitiateData(d => ({ ...d, time: e.target.value }))}
+                        required
+                        disabled={!canReinitiate}
+                      >
+                        <option value="">Select Time (9 AM - 7 PM)</option>
+                        {reinitiateData.time && !APPOINTMENT_TIME_SLOTS.some(slot => slot.value === reinitiateData.time) && (
+                          <option value={reinitiateData.time}>
+                            {`Current time (${formatTimeDisplay(reinitiateData.time)})`}
+                          </option>
+                        )}
+                        {APPOINTMENT_TIME_SLOTS.map((slot) => (
+                          <option key={slot.value} value={slot.value}>
+                            {slot.label}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
+                    <div>
+                      <label className="block font-semibold mb-1">Message (optional)</label>
+                      <textarea className="border rounded px-2 py-1 w-full" value={reinitiateData.message} onChange={e => setReinitiateData(d => ({ ...d, message: e.target.value }))} disabled={!canReinitiate} />
+                    </div>
+                    <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full disabled:bg-gray-400 disabled:cursor-not-allowed" disabled={!canReinitiate}>Submit</button>
+                    <button type="button" className="mt-2 w-full bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400" onClick={() => {
+                      setShowReinitiateModal(false);
+                      setReinitiateData(null);
+                      setReinitiatePaymentStatus(null);
+                    }}>Cancel</button>
+                  </form>
                 </div>
-                  <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 w-full disabled:bg-gray-400 disabled:cursor-not-allowed" disabled={!canReinitiate}>Submit</button>
-                  <button type="button" className="mt-2 w-full bg-gray-300 text-gray-700 px-4 py-2 rounded hover:bg-gray-400" onClick={() => {
-                    setShowReinitiateModal(false);
-                    setReinitiateData(null);
-                    setReinitiatePaymentStatus(null);
-                  }}>Cancel</button>
-              </form>
+              </div>
             </div>
-          </div>
-        </div>
-        );
-      })()}
+          );
+        })()}
 
-      {/* Archive Appointment Confirmation Modal */}
-      {showArchiveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaArchive className="text-blue-500" />
-              Archive Appointment
-            </h3>
-            
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to archive this appointment? It will be moved to the archived section.
-            </p>
-            
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowArchiveModal(false);
-                  setAppointmentToHandle(null);
-                }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmArchive}
-                className="px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
-              >
-                <FaArchive size={12} />
-                Archive
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        {/* Archive Appointment Confirmation Modal */}
+        {showArchiveModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaArchive className="text-blue-500" />
+                Archive Appointment
+              </h3>
 
-      {/* Unarchive Appointment Confirmation Modal */}
-      {showUnarchiveModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaUndo className="text-green-500" />
-              Unarchive Appointment
-            </h3>
-            
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to unarchive this appointment? It will be moved back to the active appointments.
-            </p>
-            
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowUnarchiveModal(false);
-                  setAppointmentToHandle(null);
-                }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmUnarchive}
-                className="px-4 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
-              >
-                <FaUndo size={12} />
-                Unarchive
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Missing Chatbox Error Modal */}
-      {missingChatbookError && (
-        <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
-          <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full animate-fadeIn">
-            <div className="text-center">
-              <div className="text-red-500 text-5xl mb-4">❌</div>
-              <h2 className="text-2xl font-bold text-gray-800 mb-2">Appointment Not Found</h2>
               <p className="text-gray-600 mb-6">
-                The appointment you're looking for doesn't exist or you don't have access to it. It may have been deleted or archived.
+                Are you sure you want to archive this appointment? It will be moved to the archived section.
               </p>
-              <div className="flex gap-3">
+
+              <div className="flex gap-3 justify-end">
                 <button
+                  type="button"
                   onClick={() => {
-                    setMissingChatbookError(null);
-                    navigate('/user/my-appointments', { replace: true });
+                    setShowArchiveModal(false);
+                    setAppointmentToHandle(null);
                   }}
-                  className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
                 >
-                  Back to Appointments
+                  Cancel
                 </button>
                 <button
-                  onClick={() => setMissingChatbookError(null)}
-                  className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  type="button"
+                  onClick={confirmArchive}
+                  className="px-4 py-2 rounded bg-blue-600 text-white font-semibold hover:bg-blue-700 transition-colors flex items-center gap-2"
                 >
-                  Dismiss
+                  <FaArchive size={12} />
+                  Archive
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )}
+
+        {/* Unarchive Appointment Confirmation Modal */}
+        {showUnarchiveModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaUndo className="text-green-500" />
+                Unarchive Appointment
+              </h3>
+
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to unarchive this appointment? It will be moved back to the active appointments.
+              </p>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowUnarchiveModal(false);
+                    setAppointmentToHandle(null);
+                  }}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmUnarchive}
+                  className="px-4 py-2 rounded bg-green-600 text-white font-semibold hover:bg-green-700 transition-colors flex items-center gap-2"
+                >
+                  <FaUndo size={12} />
+                  Unarchive
+                </button>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Missing Chatbox Error Modal */}
+        {missingChatbookError && (
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full animate-fadeIn">
+              <div className="text-center">
+                <div className="text-red-500 text-5xl mb-4">❌</div>
+                <h2 className="text-2xl font-bold text-gray-800 mb-2">Appointment Not Found</h2>
+                <p className="text-gray-600 mb-6">
+                  The appointment you're looking for doesn't exist or you don't have access to it. It may have been deleted or archived.
+                </p>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setMissingChatbookError(null);
+                      navigate('/user/my-appointments', { replace: true });
+                    }}
+                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                  >
+                    Back to Appointments
+                  </button>
+                  <button
+                    onClick={() => setMissingChatbookError(null)}
+                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                  >
+                    Dismiss
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
       </div>
 
       {/* Export Chat Modal */}
       {showExportModal && createPortal((
-      <ExportChatModal
-        isOpen={showExportModal}
-        onClose={() => {
-          setShowExportModal(false);
-          setExportAppointment(null);
-          setExportComments([]);
-          setExportCallHistory([]);
-        }}
-        onExport={async (includeMedia) => {
-          try {
-            toast.info('Generating PDF...', { autoClose: 2000 });
-            // Determine the other party based on the export appointment
-            const otherParty = exportAppointment?.buyerId?._id === currentUser._id ? 
-              exportAppointment?.sellerId : exportAppointment?.buyerId;
-            
-            const result = await exportEnhancedChatToPDF(
-              exportAppointment, 
-              exportComments, 
-              currentUser, 
-              otherParty,
-              includeMedia,
-              exportCallHistory
-            );
-            if (result.success) {
-              toast.success(`Chat transcript exported as ${result.filename}`);
-            } else {
-              toast.error(`Export failed: ${result.error}`);
+        <ExportChatModal
+          isOpen={showExportModal}
+          onClose={() => {
+            setShowExportModal(false);
+            setExportAppointment(null);
+            setExportComments([]);
+            setExportCallHistory([]);
+          }}
+          onExport={async (includeMedia) => {
+            try {
+              toast.info('Generating PDF...', { autoClose: 2000 });
+              // Determine the other party based on the export appointment
+              const otherParty = exportAppointment?.buyerId?._id === currentUser._id ?
+                exportAppointment?.sellerId : exportAppointment?.buyerId;
+
+              const result = await exportEnhancedChatToPDF(
+                exportAppointment,
+                exportComments,
+                currentUser,
+                otherParty,
+                includeMedia,
+                exportCallHistory
+              );
+              if (result.success) {
+                toast.success(`Chat transcript exported as ${result.filename}`);
+              } else {
+                toast.error(`Export failed: ${result.error}`);
+              }
+            } catch (error) {
+              toast.error('Failed to export chat transcript');
+              console.error('Export error:', error);
             }
-          } catch (error) {
-            toast.error('Failed to export chat transcript');
-            console.error('Export error:', error);
-          }
-        }}
-        appointment={exportAppointment}
-        messageCount={exportComments.filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl)).length}
-        imageCount={exportComments.filter(msg => msg.imageUrl && !msg.deleted).length}
-      />
+          }}
+          appointment={exportAppointment}
+          messageCount={exportComments.filter(msg => !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl)).length}
+          imageCount={exportComments.filter(msg => msg.imageUrl && !msg.deleted).length}
+        />
       ), document.body)}
-      
+
       {/* Call modals are now global - rendered in App.jsx via GlobalCallModals */}
-      
+
       {/* Call History Modal */}
       <CallHistoryModal
         appointmentId={callHistoryAppointmentId}
@@ -1876,7 +1870,7 @@ export default function MyAppointments() {
         currentUser={currentUser}
         isAdmin={false}
       />
-      
+
     </div>
   );
 }
@@ -1892,7 +1886,7 @@ function getDateLabel(date) {
 function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName, setShowCallHistoryModal, setCallHistoryAppointmentId }) {
   // Camera modal state - moved to main MyAppointments component
   const navigate = useNavigate();
-  
+
   const [replyTo, setReplyTo] = useState(null);
   const [comment, setComment] = useState("");
   const [comments, setComments] = useState(appt.comments || []);
@@ -1929,7 +1923,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const inputRef = useRef(null); // Add inputRef here
   const [allProperties, setAllProperties] = useState([]);
   const [propertiesLoaded, setPropertiesLoaded] = useState(false);
-  
+
   // Reinitiation countdown timer state
   const [paymentStatusForReinitiate, setPaymentStatusForReinitiate] = useState(null);
   const [reinitiateCountdown, setReinitiateCountdown] = useState(null);
@@ -1951,7 +1945,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             // Auto-resize textarea for drafted content
             autoResizeTextarea(inputRef.current);
           }
-        } catch (_) {}
+        } catch (_) { }
       }, 0);
     }
   }, [showChatModal, appt?._id]);
@@ -1959,13 +1953,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Fetch call history for appointment when chat modal opens
   useEffect(() => {
     if (!showChatModal || !appt?._id) return;
-    
+
     const fetchCallHistory = async () => {
       try {
         const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
           credentials: 'include'
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           if (data.calls) {
@@ -1976,7 +1970,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         console.error('Error fetching call history:', error);
       }
     };
-    
+
     fetchCallHistory();
   }, [showChatModal, appt?._id]);
 
@@ -1990,7 +1984,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         const response = await fetch(`${API_BASE_URL}/api/calls/history/${appt._id}`, {
           credentials: 'include'
         });
-        
+
         if (response.ok) {
           const data = await response.json();
           if (data.calls) {
@@ -2056,7 +2050,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     const isBuyer = currentUser && (appt.buyerId?._id === currentUser._id || appt.buyerId === currentUser._id);
     const isSeller = currentUser && (appt.sellerId?._id === currentUser._id || appt.sellerId === currentUser._id);
     const canShowReinitiate = (appt.status === 'cancelledByBuyer' && isBuyer) || (appt.status === 'cancelledBySeller' && isSeller);
-    
+
     if (isCancelled && canShowReinitiate && appt._id) {
       const fetchPaymentStatus = async () => {
         try {
@@ -2083,7 +2077,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     const isBuyer = currentUser && (appt.buyerId?._id === currentUser._id || appt.buyerId === currentUser._id);
     const isSeller = currentUser && (appt.sellerId?._id === currentUser._id || appt.sellerId === currentUser._id);
     const canShowReinitiate = (appt.status === 'cancelledByBuyer' && isBuyer) || (appt.status === 'cancelledBySeller' && isSeller);
-    
+
     if (!isCancelled || !canShowReinitiate) {
       setReinitiateCountdown(null);
       return;
@@ -2094,15 +2088,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       const now = new Date();
       const hoursSinceCancellation = (now - cancellationDate) / (1000 * 60 * 60);
       const hoursLeft = 72 - hoursSinceCancellation;
-      
+
       if (hoursLeft <= 0) {
         setReinitiateCountdown({ expired: true });
         return;
       }
-      
+
       const daysLeft = Math.floor(hoursLeft / 24);
       const remainingHours = Math.floor(hoursLeft % 24);
-      
+
       setReinitiateCountdown({
         expired: false,
         days: daysLeft,
@@ -2113,7 +2107,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
     updateCountdown();
     const interval = setInterval(updateCountdown, 1000);
-    
+
     return () => clearInterval(interval);
   }, [appt.status, appt.updatedAt, currentUser, appt.buyerId, appt.sellerId]);
 
@@ -2127,7 +2121,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [messageToDelete, setMessageToDelete] = useState(null);
   const [deleteForBoth, setDeleteForBoth] = useState(true);
   const [showClearChatModal, setShowClearChatModal] = useState(false);
-  
+
   // Undo functionality for messages deleted for me
   const [recentlyDeletedMessage, setRecentlyDeletedMessage] = useState(null);
   const [undoTimer, setUndoTimer] = useState(null);
@@ -2137,13 +2131,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [reportDetails, setReportDetails] = useState('');
   const [reportingMessage, setReportingMessage] = useState(null);
   const [submittingReport, setSubmittingReport] = useState(false);
-  
+
   // Report chat modal states
   const [showReportChatModal, setShowReportChatModal] = useState(false);
   const [reportChatReason, setReportChatReason] = useState('');
   const [reportChatDetails, setReportChatDetails] = useState('');
   const [submittingChatReport, setSubmittingChatReport] = useState(false);
-  
+
   // New modal states for various confirmations
   const [showDeleteAppointmentModal, setShowDeleteAppointmentModal] = useState(false);
   const [showCancelModal, setShowCancelModal] = useState(false);
@@ -2164,18 +2158,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [removeLockPassword, setRemoveLockPassword] = useState('');
   const [showLockPassword, setShowLockPassword] = useState(false);
   const [showUnlockPassword, setShowUnlockPassword] = useState(false);
-  
+
   // Camera modal state - moved to top of component
   const [showRemoveLockPassword, setShowRemoveLockPassword] = useState(false);
   const [lockingChat, setLockingChat] = useState(false);
   const [unlockingChat, setUnlockingChat] = useState(false);
   const [removingLock, setRemovingLock] = useState(false);
   const [forgotPasswordProcessing, setForgotPasswordProcessing] = useState(false);
-  
+
   // Refund and appeal modal states
   const [showRefundRequestModal, setShowRefundRequestModal] = useState(false);
   const [showAppealModal, setShowAppealModal] = useState(false);
-  
+
   // Lock body scroll when specific modals are open (Cancel or Remove Appointment)
   useEffect(() => {
     const shouldLock = showCancelModal || showPermanentDeleteModal;
@@ -2225,7 +2219,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       document.body.classList.remove('modal-open');
     };
   }, [showAppealModal]);
-  
+
   // Cleanup undo timer when chat modal closes or component unmounts
   useEffect(() => {
     return () => {
@@ -2234,7 +2228,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       }
     };
   }, [undoTimer]);
-  
+
   // Clear undo state when chat modal closes
   useEffect(() => {
     if (!showChatModal) {
@@ -2274,7 +2268,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           if (typeof onConsumePreferUnread === 'function') onConsumePreferUnread(appt._id);
         }
       };
-      
+
       if (isChatLocked) {
         if (chatAccessGranted) {
           openChat();
@@ -2294,36 +2288,36 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       setShowChatUnlockModal(false);
     }
   }, [showChatModal, showChatUnlockModal]);
-  
+
   // Store appointment and reasons for modals
   const [appointmentToHandle, setAppointmentToHandle] = useState(null);
   const [cancelReason, setCancelReason] = useState('');
   const [deleteReason, setDeleteReason] = useState('');
   const messageRefs = useRef({}); // Add messageRefs here
-  
+
   // New: track which message's options are shown in the header
   const [headerOptionsMessageId, setHeaderOptionsMessageId] = useState(null);
   const [privacyNoticeHighlighted, setPrivacyNoticeHighlighted] = useState(false);
   const [showHeaderMoreMenu, setShowHeaderMoreMenu] = useState(false);
-  
+
   // Reactions state
   const [showReactionsBar, setShowReactionsBar] = useState(false);
   const [reactionsMessageId, setReactionsMessageId] = useState(null);
   const [showReactionsEmojiPicker, setShowReactionsEmojiPicker] = useState(false);
-  
+
   // Check if device is mobile for conditional animation
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
-  
+
   // Update mobile state on window resize
   useEffect(() => {
     const handleResize = () => {
       setIsMobile(window.innerWidth <= 768);
     };
-    
+
     window.addEventListener('resize', handleResize);
     return () => window.removeEventListener('resize', handleResize);
   }, []);
-  
+
   // Message info modal state
   const [showMessageInfoModal, setShowMessageInfoModal] = useState(false);
   const [selectedMessageForInfo, setSelectedMessageForInfo] = useState(null);
@@ -2332,7 +2326,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [selectedCallForInfo, setSelectedCallForInfo] = useState(null);
   const [sendIconAnimating, setSendIconAnimating] = useState(false);
   const [sendIconSent, setSendIconSent] = useState(false);
-  
+
   // Starred messages states
   const [showStarredModal, setShowStarredModal] = useState(false);
   const [starredMessages, setStarredMessages] = useState([]);
@@ -2340,7 +2334,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [loadingStarredMessages, setLoadingStarredMessages] = useState(false);
   const [unstarringMessageId, setUnstarringMessageId] = useState(null);
   const [removingAllStarred, setRemovingAllStarred] = useState(false);
-  
+
   // Pinned messages states
   const [pinnedMessages, setPinnedMessages] = useState([]);
   const [loadingPinnedMessages, setLoadingPinnedMessages] = useState(false);
@@ -2350,10 +2344,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const [pinDuration, setPinDuration] = useState('24hrs');
   const [customHours, setCustomHours] = useState(24);
   const [highlightedPinnedMessage, setHighlightedPinnedMessage] = useState(null);
-  
+
   // Chat options menu state
   const [showChatOptionsMenu, setShowChatOptionsMenu] = useState(false);
-  
+  const { settings, updateSetting } = useChatSettings('my_appointments_chat_settings');
+  const [showSettingsModal, setShowSettingsModal] = useState(false);
+
   // Multi-select message states
   const [isSelectionMode, setIsSelectionMode] = useState(false);
   const [selectedMessages, setSelectedMessages] = useState([]);
@@ -2363,18 +2359,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     copying: false,
     deleting: false
   });
-  
+
   // Search functionality state
   const [showSearchBox, setShowSearchBox] = useState(false);
   const [searchQuery, setSearchQuery] = useState("");
   const [searchResults, setSearchResults] = useState([]);
   const [currentSearchIndex, setCurrentSearchIndex] = useState(-1);
-  
+
   // Calendar functionality state
   const [showCalendar, setShowCalendar] = useState(false);
   const [selectedDate, setSelectedDate] = useState("");
   const [highlightedDateMessage, setHighlightedDateMessage] = useState(null);
-  
+
   // File upload states
   const [uploadingFile, setUploadingFile] = useState(false);
   const [fileUploadError, setFileUploadError] = useState('');
@@ -2402,7 +2398,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const documentCaptionRef = useRef(null);
   // Attachment panel and new media states
   const [showAttachmentPanel, setShowAttachmentPanel] = useState(false);
-  
+
   // Camera modal state - moved to AppointmentRow component
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [showVideoPreviewModal, setShowVideoPreviewModal] = useState(false);
@@ -2452,26 +2448,26 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   // Sound effects
   const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted, getCurrentVolume } = useSoundEffects();
-  
+
   // Reactive state for volume control UI
   const [currentVolume, setCurrentVolume] = useState(1.0); // Default volume
   const [isSoundMuted, setIsSoundMuted] = useState(false);
-  
+
   // Text styling panel state
   const [showTextStylingPanel, setShowTextStylingPanel] = useState(false);
-  
+
   // Helper function to apply formatting and close panel
   const applyFormattingAndClose = (formatFunction) => {
     formatFunction();
     setTimeout(() => setShowTextStylingPanel(false), 100); // Small delay for better UX
   };
-  
+
   // Sync reactive state with sound effects hook on initialization
   useEffect(() => {
     setCurrentVolume(getCurrentVolume());
     setIsSoundMuted(isMuted());
   }, [getCurrentVolume, isMuted]);
-  
+
   // Update all existing audio elements when volume or mute state changes
   useEffect(() => {
     document.querySelectorAll('audio[data-audio-id]').forEach(audioEl => {
@@ -2572,7 +2568,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     if (!mediaRecorderRef.current) return;
     try {
       mediaRecorderRef.current.stop();
-    } catch {}
+    } catch { }
   };
 
   const pauseAudioRecording = () => {
@@ -2599,7 +2595,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       const pauseEndTime = Date.now();
       const pauseStartTime = recordingStartTimeRef.current + recordingElapsedMs + pausedTimeRef.current;
       pausedTimeRef.current += (pauseEndTime - pauseStartTime);
-      
+
       // Restart the timer
       recordingTimerRef.current = setInterval(() => {
         const elapsed = Date.now() - recordingStartTimeRef.current - pausedTimeRef.current;
@@ -2616,7 +2612,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       if (mediaRecorderRef.current && mediaRecorderRef.current.state !== 'inactive') {
         mediaRecorderRef.current.stop();
       }
-    } catch {}
+    } catch { }
     if (recordingStream) recordingStream.getTracks().forEach(t => t.stop());
     setRecordingStream(null);
     setIsRecording(false);
@@ -2646,10 +2642,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // File upload handler
   const handleFileUpload = async (files) => {
     if (!files || files.length === 0) return;
-    
+
     const validFiles = [];
     const errors = [];
-    
+
     // Validate each file
     Array.from(files).forEach((file, index) => {
       // Validate file type
@@ -2657,30 +2653,30 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         errors.push(`File ${index + 1}: Please select an image file`);
         return;
       }
-      
+
       // Validate file size (5MB limit)
       if (file.size > 5 * 1024 * 1024) {
         errors.push(`File ${index + 1}: File size must be less than 5MB`);
         return;
       }
-      
+
       validFiles.push(file);
     });
-    
+
     // Show errors if any
     if (errors.length > 0) {
       setFileUploadError(errors.join(', '));
       setTimeout(() => setFileUploadError(''), 5000);
       return;
     }
-    
+
     // Limit to 10 images maximum
     if (validFiles.length > 10) {
       setFileUploadError('Maximum 10 images allowed at once');
       setTimeout(() => setFileUploadError(''), 3000);
       return;
     }
-    
+
     // Show preview with caption input instead of directly sending
     setSelectedFiles(validFiles);
     setPreviewIndex(0); // Reset to first image
@@ -2706,7 +2702,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
     // Immediately update UI
     setComments(prev => [...prev, tempMessage]);
-    
+
     // Scroll to bottom
     if (chatEndRef.current) {
       chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
@@ -2714,26 +2710,26 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
     // Send message in background
     try {
-      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, 
-        { 
+      const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`,
+        {
           message: caption || '',
           imageUrl: imageUrl,
           type: "image"
         },
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
       );
-        // Find the new comment from the response
-        const newComment = data.comments[data.comments.length - 1];
-        
-        // Replace the temp message with the real one
-        setComments(prev => prev.map(msg => 
-          msg._id === tempId 
-            ? { ...newComment }
-            : msg
-        ));
+      // Find the new comment from the response
+      const newComment = data.comments[data.comments.length - 1];
+
+      // Replace the temp message with the real one
+      setComments(prev => prev.map(msg =>
+        msg._id === tempId
+          ? { ...newComment }
+          : msg
+      ));
     } catch (error) {
       console.error('Send image error:', error);
       setComments(prev => prev.filter(msg => msg._id !== tempId));
@@ -2747,38 +2743,38 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       toast.error('Error: Invalid image URL. Cannot download image.');
       return;
     }
-    
+
     try {
       // Extract filename from URL or generate one
       const urlParts = imageUrl.split('/');
       const originalFilename = urlParts[urlParts.length - 1];
       let filename = originalFilename;
-      
+
       // If filename doesn't have an extension or is just a hash, generate a proper name
       if (!filename.includes('.') || filename.length < 5) {
         // Try to determine file extension from URL or default to jpg
         const extension = imageUrl.match(/\.(jpg|jpeg|png|gif|webp|bmp|svg)(\?|$)/i)?.[1] || 'jpg';
         filename = `chat-image-${messageId || Date.now()}.${extension}`;
       }
-      
+
       // Try to fetch the image to handle CORS and get proper blob
       try {
         const response = await fetch(imageUrl, {
           mode: 'cors',
           cache: 'no-cache'
         });
-        
+
         if (response.ok) {
           try {
             const blob = await response.blob();
-            
+
             // Validate blob
             if (!blob || blob.size === 0) {
               throw new Error('Downloaded image is empty or corrupted');
             }
-            
+
             const blobUrl = window.URL.createObjectURL(blob);
-            
+
             const link = document.createElement('a');
             link.href = blobUrl;
             link.download = filename;
@@ -2786,14 +2782,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
-            
+
             // Clean up blob URL
             setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
-            
+
             // Show success feedback
             toast.success(`Image "${filename}" downloaded successfully!`);
             return; // Exit early on success
-            
+
           } catch (blobError) {
             console.error('Blob processing error:', blobError);
             throw new Error(`Failed to process image data: ${blobError.message}`);
@@ -2818,7 +2814,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }
       } catch (fetchError) {
         console.warn('Fetch failed, trying direct download:', fetchError);
-        
+
         // Show specific error for fetch failure
         if (fetchError.name === 'TypeError' && fetchError.message.includes('Failed to fetch')) {
           toast.warn('Network error: Trying alternative download method...');
@@ -2827,7 +2823,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         } else {
           toast.warn(`Fetch error: ${fetchError.message}. Trying alternative download method...`);
         }
-        
+
         // Fallback to direct link download for CORS issues
         try {
           const link = document.createElement('a');
@@ -2839,11 +2835,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           document.body.appendChild(link);
           link.click();
           document.body.removeChild(link);
-          
+
           // Show info message for direct download attempt
           toast.info('Alternative download initiated. If it doesn\'t start automatically, please try right-clicking the image and selecting "Save image as..."');
           return; // Exit early on fallback attempt
-          
+
         } catch (directDownloadError) {
           console.error('Direct download failed:', directDownloadError);
           throw new Error(`Direct download failed: ${directDownloadError.message}`);
@@ -2851,14 +2847,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       }
     } catch (error) {
       console.error('Download process failed:', error);
-      
+
       // Show error notification for the main download process failure
       toast.error(`Download failed: ${error.message}. Attempting to open image in new tab...`);
-      
+
       // Final fallback - open image in new tab
       try {
         const newWindow = window.open(imageUrl, '_blank', 'noopener,noreferrer');
-        
+
         if (newWindow) {
           toast.info('Image opened in new tab. You can right-click to save it manually.');
         } else {
@@ -2867,7 +2863,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }
       } catch (openError) {
         console.error('Failed to open image in new tab:', openError);
-        
+
         // Final error - all methods failed
         if (openError.message.includes('Pop-up blocked')) {
           toast.error('Error: Pop-up blocked. Please allow pop-ups for this site or right-click the image and select "Save image as..."');
@@ -3051,53 +3047,53 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       toast.info('Image sending disabled for this appointment status. You can view chat history.');
       return;
     }
-    
+
     // Check if adding these files would exceed the 10 image limit
     const totalFiles = (selectedFiles?.length || 0) + files.length;
     if (totalFiles > 10) {
       toast.error('Maximum 10 images allowed. Please remove some images first.');
       return;
     }
-    
+
     // Filter only image files
     const imageFiles = files.filter(file => file.type.startsWith('image/'));
     if (imageFiles.length === 0) {
       toast.error('No valid image files found');
       return;
     }
-    
+
     // Add new files to existing selection
     setSelectedFiles(prev => [...(prev || []), ...imageFiles]);
-    
+
     // Initialize captions for new files
     const newCaptions = {};
     imageFiles.forEach(file => {
       newCaptions[file.name] = '';
     });
     setImageCaptions(prev => ({ ...prev, ...newCaptions }));
-    
+
     // Show image preview modal
     setShowImagePreviewModal(true);
-    
+
     toast.success(`${imageFiles.length} image${imageFiles.length > 1 ? 's' : ''} added successfully!`);
   };
 
   const handleSendImagesWithCaptions = async () => {
     if (!selectedFiles || selectedFiles.length === 0) return;
-    
+
     // Check if chat sending is blocked for this appointment status
     if (isChatSendBlocked) {
       toast.info('Image sending disabled for this appointment status. You can view chat history.');
       return;
     }
-    
+
     setUploadingFile(true);
     setUploadProgress(0);
     setCurrentFileIndex(-1);
     setCurrentFileProgress(0);
     setFailedFiles([]);
     setIsCancellingUpload(false);
-    
+
     try {
       // Upload images sequentially so we can show progress
       let cancelledByUser = false;
@@ -3115,9 +3111,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         currentUploadControllerRef.current = controller;
 
         try {
-          const { data } = await axios.post(`${API_BASE_URL}/api/upload/image`, 
+          const { data } = await axios.post(`${API_BASE_URL}/api/upload/image`,
             uploadFormData,
-            { 
+            {
               withCredentials: true,
               headers: { 'Content-Type': 'multipart/form-data' },
               signal: controller.signal,
@@ -3150,7 +3146,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           }
         }
       }
-      
+
       // Persist failed files to state
       if (failedLocal.length) setFailedFiles(failedLocal);
 
@@ -3178,7 +3174,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Cancel in-flight upload
   const handleCancelInFlightUpload = () => {
     if (currentUploadControllerRef.current) {
-      try { currentUploadControllerRef.current.abort(); } catch (_) {}
+      try { currentUploadControllerRef.current.abort(); } catch (_) { }
     }
     // Do not close preview; ensure send button remains available
     setUploadingFile(false);
@@ -3202,32 +3198,32 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       toast.error('Please fill in both password fields');
       return;
     }
-    
+
     if (lockPassword !== lockConfirmPassword) {
       toast.error('Passwords do not match');
       return;
     }
-    
+
     if (lockPassword.length < 4) {
       toast.error('Password must be at least 4 characters long');
       return;
     }
-    
+
     setLockingChat(true);
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/lock`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/lock`,
         { password: lockPassword },
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
       );
-        setChatLocked(true);
-        setChatAccessGranted(false);
-        setShowChatLockModal(false);
-        setLockPassword('');
-        setLockConfirmPassword('');
-        toast.success('Chat locked successfully.');
+      setChatLocked(true);
+      setChatAccessGranted(false);
+      setShowChatLockModal(false);
+      setLockPassword('');
+      setLockConfirmPassword('');
+      toast.success('Chat locked successfully.');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to lock chat');
     } finally {
@@ -3239,33 +3235,33 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       toast.error('Please enter your password');
       return;
     }
-    
+
     setUnlockingChat(true);
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/unlock`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/unlock`,
         { password: unlockPassword },
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
       );
-        setChatAccessGranted(true);
-        setShowChatUnlockModal(false);
-        setUnlockPassword('');
-        toast.success('Chat access granted.');
-        
-        // Open chat modal after successful unlock
-        setShowChatModal(true);
-        // Update URL when opening chatbox
-        navigate(`/user/my-appointments/chat/${appt._id}`, { replace: false });
-        // Dispatch event to notify App.jsx that chat is opened
-        window.dispatchEvent(new CustomEvent('chatOpened', {
-          detail: { appointmentId: appt._id }
-        }));
-        // Notify parent that chat has been opened
-        if (onChatOpened) {
-          onChatOpened();
-        }
+      setChatAccessGranted(true);
+      setShowChatUnlockModal(false);
+      setUnlockPassword('');
+      toast.success('Chat access granted.');
+
+      // Open chat modal after successful unlock
+      setShowChatModal(true);
+      // Update URL when opening chatbox
+      navigate(`/user/my-appointments/chat/${appt._id}`, { replace: false });
+      // Dispatch event to notify App.jsx that chat is opened
+      window.dispatchEvent(new CustomEvent('chatOpened', {
+        detail: { appointmentId: appt._id }
+      }));
+      // Notify parent that chat has been opened
+      if (onChatOpened) {
+        onChatOpened();
+      }
     } catch (err) {
       toast.error(err.response?.data?.message || 'Incorrect password');
     } finally {
@@ -3278,21 +3274,21 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       toast.error('Please enter your password');
       return;
     }
-    
+
     setUnlockingChat(true);
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/remove-lock`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/remove-lock`,
         { password: unlockPassword },
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
       );
-        setChatLocked(false);
-        setChatAccessGranted(false);
-        setShowChatUnlockModal(false);
-        setUnlockPassword('');
-        toast.success('Chat lock removed successfully.');
+      setChatLocked(false);
+      setChatAccessGranted(false);
+      setShowChatUnlockModal(false);
+      setUnlockPassword('');
+      toast.success('Chat lock removed successfully.');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Incorrect password');
     } finally {
@@ -3304,22 +3300,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       toast.error('Please enter your password');
       return;
     }
-    
+
     setRemovingLock(true);
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/remove-lock`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/remove-lock`,
         { password: removeLockPassword },
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
       );
-        setChatLocked(false);
-        setChatAccessGranted(false);
-        setShowRemoveLockModal(false);
-        setRemoveLockPassword('');
-        setShowRemoveLockPassword(false);
-        toast.success('Chat lock removed.');
+      setChatLocked(false);
+      setChatAccessGranted(false);
+      setShowRemoveLockModal(false);
+      setRemoveLockPassword('');
+      setShowRemoveLockPassword(false);
+      toast.success('Chat lock removed.');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Incorrect password');
     } finally {
@@ -3330,17 +3326,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const handleForgotPassword = async () => {
     setForgotPasswordProcessing(true);
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/forgot-password`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/forgot-password`,
         {},
-        { 
+        {
           withCredentials: true
         }
       );
-        setChatLocked(false);
-        setChatAccessGranted(false);
-        setShowForgotPasswordModal(false);
-        setComments([]); // Clear chat messages locally
-        toast.success('Chat lock removed and cleared successfully.');
+      setChatLocked(false);
+      setChatAccessGranted(false);
+      setShowForgotPasswordModal(false);
+      setComments([]); // Clear chat messages locally
+      toast.success('Chat lock removed and cleared successfully.');
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to reset chat');
     } finally {
@@ -3353,16 +3349,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setShowChatModal(false);
     // Revert URL when closing chatbox
     navigate(`/user/my-appointments`, { replace: false });
-    
+
     // Dispatch event to notify App.jsx that chat is closed
     window.dispatchEvent(new CustomEvent('chatClosed'));
-    
+
     // Reset chat access if it was temporarily granted
     if (chatLocked && chatAccessGranted) {
       try {
-        await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/reset-access`, 
+        await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/reset-access`,
           {},
-          { 
+          {
             withCredentials: true
           }
         );
@@ -3389,7 +3385,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         setChatLockStatusLoading(false);
       }
     };
-    
+
     fetchChatLockStatus();
   }, [appt._id]);
 
@@ -3434,7 +3430,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Function to fetch starred messages
   const fetchStarredMessages = async () => {
     if (!appt?._id) return;
-    
+
     setLoadingStarredMessages(true);
     try {
       const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}/starred-messages`, {
@@ -3461,52 +3457,52 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Function to remove all starred messages
   const handleRemoveAllStarredMessages = async () => {
     if (starredMessages.length === 0) return;
-    
+
     const messageCount = starredMessages.length; // Store count before clearing
     setRemovingAllStarred(true);
-    
+
     try {
       console.log('Starting remove all starred messages operation for', starredMessages.length, 'messages');
-      
+
       // Process messages one by one to handle individual failures gracefully
       let successCount = 0;
       let failureCount = 0;
       const failedMessages = [];
-      
+
       for (const message of starredMessages) {
         try {
           console.log(`Unstarring message ${message._id}`);
-          
-          const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`, 
+
+          const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`,
             { starred: false },
             {
               withCredentials: true,
               headers: { 'Content-Type': 'application/json' }
             }
           );
-          
+
           console.log(`Successfully unstarred message ${message._id}`);
           successCount++;
-          
+
           // Update this specific message in comments
-          setComments(prev => prev.map(c => 
-            c._id === message._id 
+          setComments(prev => prev.map(c =>
+            c._id === message._id
               ? { ...c, starredBy: (c.starredBy || []).filter(id => id !== currentUser._id) }
               : c
           ));
-          
+
         } catch (err) {
           console.error(`Failed to unstar message ${message._id}:`, err);
           failureCount++;
           failedMessages.push(message);
         }
       }
-      
+
       console.log(`Remove all operation completed: ${successCount} successful, ${failureCount} failed`);
-      
+
       // Remove successfully unstarred messages from starred messages list
       setStarredMessages(prev => prev.filter(msg => !failedMessages.some(failed => failed._id === msg._id)));
-      
+
       // Show appropriate feedback
       if (successCount > 0 && failureCount === 0) {
         toast.success(`Successfully removed ${successCount} starred message${successCount !== 1 ? 's' : ''}`);
@@ -3517,7 +3513,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       } else {
         toast.error(`Failed to unstar any messages. Please try again.`);
       }
-      
+
     } catch (err) {
       console.error('Error removing all starred messages:', err);
       toast.error('Failed to remove all starred messages. Please try again.');
@@ -3578,7 +3574,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     document.addEventListener('mousedown', handleSearchClickOutside);
     document.addEventListener('mousedown', handleCalendarClickOutside);
     document.addEventListener('scroll', handleScroll, true); // Use capture phase to catch all scroll events
-    
+
     return () => {
       document.removeEventListener('mousedown', handleClickOutside);
       document.removeEventListener('mousedown', handleSearchClickOutside);
@@ -3631,8 +3627,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   useEffect(() => {
     if (!showChatModal) return;
     // Ensure at least unread messages are visible when opening
-    const computedUnread = comments.filter(c => 
-      c.senderEmail !== currentUser.email && 
+    const computedUnread = comments.filter(c =>
+      c.senderEmail !== currentUser.email &&
       (!c.readBy || !c.readBy.includes(currentUser._id))
     ).length;
     const shouldPreferUnread = preferUnreadOnOpen || (preferUnreadForAppointmentId === appt._id);
@@ -3646,7 +3642,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         if (targetMsg && messageRefs.current[targetMsg._id]) {
           try {
             messageRefs.current[targetMsg._id].scrollIntoView({ behavior: 'auto', block: 'center' });
-          } catch (_) {}
+          } catch (_) { }
         }
         // Show divider only on open case
         setShowUnreadDividerOnOpen(true);
@@ -3689,7 +3685,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       localStorage.setItem(`removedDeletedMsgs_${apptId}`, JSON.stringify(updated));
     }
   }
-  
+
   // Undo functionality for messages deleted for me
   const handleUndoDelete = () => {
     if (recentlyDeletedMessage) {
@@ -3697,15 +3693,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       const ids = getLocallyRemovedIds(appt._id);
       const updatedIds = ids.filter(id => id !== recentlyDeletedMessage._id);
       localStorage.setItem(`removedDeletedMsgs_${appt._id}`, JSON.stringify(updatedIds));
-      
+
       // Find the correct position to insert the message back
       setComments(prev => {
         const newComments = [...prev];
         // Find where this message should be inserted based on timestamp
-        const insertIndex = newComments.findIndex(msg => 
+        const insertIndex = newComments.findIndex(msg =>
           new Date(msg.timestamp) > new Date(recentlyDeletedMessage.timestamp)
         );
-        
+
         if (insertIndex === -1) {
           // If no message is newer, add to the end
           newComments.push(recentlyDeletedMessage);
@@ -3713,36 +3709,36 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           // Insert at the correct position
           newComments.splice(insertIndex, 0, recentlyDeletedMessage);
         }
-        
+
         return newComments;
       });
-      
+
       // Clear the undo state
       setRecentlyDeletedMessage(null);
       if (undoTimer) {
         clearTimeout(undoTimer);
         setUndoTimer(null);
       }
-      
+
       toast.success('Message restored!');
     }
   };
-  
+
   const startUndoTimer = (message) => {
     // Clear any existing timer
     if (undoTimer) {
       clearTimeout(undoTimer);
     }
-    
+
     // Set the recently deleted message
     setRecentlyDeletedMessage(message);
-    
+
     // Start 5 second timer
     const timer = setTimeout(() => {
       setRecentlyDeletedMessage(null);
       setUndoTimer(null);
     }, 5000);
-    
+
     setUndoTimer(timer);
   };
   // Fetch latest comments when refresh button is clicked
@@ -3757,23 +3753,23 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         setComments(prev => {
           const serverCommentIds = new Set(data.comments.map(c => c._id));
           const localTempMessages = prev.filter(c => c._id.startsWith('temp-'));
-          
+
           // Combine server comments with local temp messages
           const mergedComments = [...data.comments];
-          
+
           // Add back any local temp messages that haven't been confirmed yet
           localTempMessages.forEach(tempMsg => {
             if (!serverCommentIds.has(tempMsg._id)) {
               mergedComments.push(tempMsg);
             }
           });
-          
+
           return mergedComments;
         });
         setUnreadNewMessages(0); // Reset unread count after refresh
-        
+
         // Don't auto-scroll to bottom - retain current scroll position
-        
+
         // Show success toast notification
         toast.success('Messages refreshed successfully!', {
           autoClose: 2000,
@@ -3791,7 +3787,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Fetch pinned messages from backend
   const fetchPinnedMessages = async () => {
     if (!appt?._id) return;
-    
+
     setLoadingPinnedMessages(true);
     try {
       const { data } = await axios.get(`${API_BASE_URL}/api/bookings/${appt._id}/pinned-messages`, {
@@ -3807,58 +3803,58 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Pin/unpin a message
   const handlePinMessage = async (message, pinned, duration = '24hrs', customHrs = 24) => {
     if (!appt?._id) return;
-    
+
     setPinningSaving(true);
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/pin`, 
-        { 
-          pinned, 
-          pinDuration: duration, 
-          customHours: duration === 'custom' ? customHrs : undefined 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/pin`,
+        {
+          pinned,
+          pinDuration: duration,
+          customHours: duration === 'custom' ? customHrs : undefined
         },
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
       );
-        
-        // Update the local state
-        setComments(prev => prev.map(c => 
-          c._id === message._id 
-            ? { 
-                ...c, 
-                pinned: data.pinned,
-                pinnedBy: data.pinned ? currentUser._id : null,
-                pinnedAt: data.pinned ? new Date() : null,
-                pinExpiresAt: data.pinned ? new Date(data.pinExpiresAt) : null,
-                pinDuration: data.pinned ? duration : null
-              }
-            : c
-        ));
-        
-        // Update pinned messages list
-        if (pinned) {
-          // Add to pinned messages
-          const pinnedMsg = { 
-            ...message, 
-            pinned: true, 
-            pinnedBy: currentUser._id, 
-            pinnedAt: new Date(),
-            pinExpiresAt: new Date(data.pinExpiresAt),
-            pinDuration: duration
-          };
-          setPinnedMessages(prev => {
-            const newPinned = [...prev, pinnedMsg];
-            return newPinned;
-          });
-        } else {
-          // Remove from pinned messages
-          setPinnedMessages(prev => prev.filter(m => m._id !== message._id));
-        }
-        
-        toast.success(data.message);
-        setShowPinModal(false);
-        setMessageToPin(null);
+
+      // Update the local state
+      setComments(prev => prev.map(c =>
+        c._id === message._id
+          ? {
+            ...c,
+            pinned: data.pinned,
+            pinnedBy: data.pinned ? currentUser._id : null,
+            pinnedAt: data.pinned ? new Date() : null,
+            pinExpiresAt: data.pinned ? new Date(data.pinExpiresAt) : null,
+            pinDuration: data.pinned ? duration : null
+          }
+          : c
+      ));
+
+      // Update pinned messages list
+      if (pinned) {
+        // Add to pinned messages
+        const pinnedMsg = {
+          ...message,
+          pinned: true,
+          pinnedBy: currentUser._id,
+          pinnedAt: new Date(),
+          pinExpiresAt: new Date(data.pinExpiresAt),
+          pinDuration: duration
+        };
+        setPinnedMessages(prev => {
+          const newPinned = [...prev, pinnedMsg];
+          return newPinned;
+        });
+      } else {
+        // Remove from pinned messages
+        setPinnedMessages(prev => prev.filter(m => m._id !== message._id));
+      }
+
+      toast.success(data.message);
+      setShowPinModal(false);
+      setMessageToPin(null);
     } catch (err) {
       toast.error('Failed to update pin status');
     } finally {
@@ -3872,10 +3868,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const isAdminContext = location.pathname.includes('/admin');
   const isSeller = appt.role === 'seller';
   const isBuyer = appt.role === 'buyer';
-  
+
   // Add function to check if appointment is upcoming
   const isUpcoming = new Date(appt.date) > new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && (!appt.time || appt.time > new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })));
-  
+
   const frozenStatuses = ['rejected', 'cancelledByAdmin', 'cancelledByBuyer', 'cancelledBySeller', 'deletedByAdmin'];
   const hasMoveOutCompleted =
     appt.purpose === 'rent' &&
@@ -3885,13 +3881,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const isChatSendBlocked =
     frozenStatuses.includes(appt.status) ||
     (appt.purpose === 'rent' ? (!isUpcoming && hasMoveOutCompleted) : false);
-  
+
   // Status indicators: hide for pending and frozen appointments
   const isStatusHidden = appt.status === 'pending' || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
-  
-  const canSeeContactInfo = (isAdmin || appt.status === 'accepted') && isUpcoming && 
-    appt.status !== 'cancelledByBuyer' && appt.status !== 'cancelledBySeller' && 
-    appt.status !== 'cancelledByAdmin' && appt.status !== 'rejected' && 
+
+  const canSeeContactInfo = (isAdmin || appt.status === 'accepted') && isUpcoming &&
+    appt.status !== 'cancelledByBuyer' && appt.status !== 'cancelledBySeller' &&
+    appt.status !== 'cancelledByAdmin' && appt.status !== 'rejected' &&
     appt.status !== 'deletedByAdmin';
   const otherParty = isSeller ? appt.buyerId : appt.sellerId;
 
@@ -3910,12 +3906,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   };
   const handleConfirmDelete = async () => {
     if (!messageToDelete) return;
-    
+
     try {
       // Handle call deletion (calls are stored in DB, we just remove from local display)
       if (messageToDelete.isCall || (messageToDelete._id && messageToDelete._id.startsWith('call-'))) {
         const callToDelete = messageToDelete.call || messageToDelete;
-        setCallHistory(prev => prev.filter(call => 
+        setCallHistory(prev => prev.filter(call =>
           (call._id || call.callId) !== (callToDelete._id || callToDelete.callId)
         ));
         toast.success('Call removed from chat');
@@ -3924,7 +3920,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         setDeleteForBoth(true);
         return;
       }
-      
+
       // Multi-select branch
       if (Array.isArray(messageToDelete)) {
         const ids = messageToDelete.map(m => m._id);
@@ -3951,7 +3947,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           }
         } else {
           try {
-            await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comments/removed/sync`, 
+            await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comments/removed/sync`,
               { removedIds: ids },
               {
                 withCredentials: true,
@@ -3960,12 +3956,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             );
             setComments(prev => prev.filter(msg => !ids.includes(msg._id)));
             ids.forEach(cid => addLocallyRemovedId(appt._id, cid));
-            
+
             // Start undo timer for the first message (for bulk deletes, we'll show undo for the first one)
             if (messageToDelete.length > 0) {
               startUndoTimer(messageToDelete[0]);
             }
-            
+
             toast.success(`Deleted ${ids.length} messages for you!`);
           } catch (err) {
             toast.error(err.response?.data?.message || 'Failed to delete selected messages for you.');
@@ -3974,44 +3970,44 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }
       } else if (deleteForBoth) {
         // Single delete for everyone
-        const wasUnread = !messageToDelete.readBy?.includes(currentUser._id) && 
-                         messageToDelete.senderEmail !== currentUser.email;
+        const wasUnread = !messageToDelete.readBy?.includes(currentUser._id) &&
+          messageToDelete.senderEmail !== currentUser.email;
         const { data } = await axios.delete(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageToDelete._id}`, {
           withCredentials: true
         });
-          setComments(prev => data.comments.map(newC => {
-            const localC = prev.find(lc => lc._id === newC._id);
-            if (localC && localC.status === 'read' && newC.status !== 'read') {
-              return { ...newC, status: 'read' };
-            }
-            return newC;
-          }));
-          if (wasUnread) {
-            setUnreadNewMessages(prev => Math.max(0, prev - 1));
+        setComments(prev => data.comments.map(newC => {
+          const localC = prev.find(lc => lc._id === newC._id);
+          if (localC && localC.status === 'read' && newC.status !== 'read') {
+            return { ...newC, status: 'read' };
           }
-          toast.success('Message deleted for everyone!');
+          return newC;
+        }));
+        if (wasUnread) {
+          setUnreadNewMessages(prev => Math.max(0, prev - 1));
+        }
+        toast.success('Message deleted for everyone!');
       } else {
         // Single delete for me
         try {
-          await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageToDelete._id}/remove-for-me`, 
+          await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageToDelete._id}/remove-for-me`,
             {},
-            { 
+            {
               withCredentials: true
             }
           );
-        } catch {}
+        } catch { }
         setComments(prev => prev.filter(msg => msg._id !== messageToDelete._id));
         addLocallyRemovedId(appt._id, messageToDelete._id);
-        
+
         // Start undo timer for messages deleted for me
         startUndoTimer(messageToDelete);
-        
+
         toast.success('Message deleted for you!');
       }
     } catch (err) {
       toast.error(err.response?.data?.message || 'An error occurred. Please try again.');
     }
-    
+
     // Close modal and reset state
     setShowDeleteModal(false);
     setMessageToDelete(null);
@@ -4027,9 +4023,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       setCallHistory([]); // Also clear call history bubbles when clearing chat
 
       // Persist to server so it applies across devices for this user
-      await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/clear-local`, 
+      await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/chat/clear-local`,
         {},
-        { 
+        {
           withCredentials: true
         }
       );
@@ -4055,17 +4051,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     }
     // Close emoji picker on send
     window.dispatchEvent(new Event('closeEmojiPicker'));
-    
+
     // Trigger send icon animation
     setSendIconAnimating(true);
-    
+
     // Store the message content and reply before clearing the input
     const messageContent = comment.trim();
     const replyToData = replyTo;
-    
+
     // Store original replyTo for display purposes (even if it's a call)
     const originalReplyToId = replyToData ? replyToData._id : null;
-    
+
     // Create a temporary message object with immediate display
     const tempId = `temp-${Date.now()}`;
     const tempMessage = {
@@ -4088,7 +4084,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     try {
       const draftKey = `appt_draft_${appt._id}_${currentUser._id}`;
       localStorage.removeItem(draftKey);
-    } catch (_) {}
+    } catch (_) { }
     setDetectedUrl(null);
     setPreviewDismissed(false);
     setReplyTo(null);
@@ -4110,10 +4106,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       try {
         // Check if replyTo is a call (starts with "call-") - if so, don't send replyTo as backend can't validate call IDs
         const replyToId = replyToData && !replyToData._id?.startsWith('call-') ? replyToData._id : null;
-        
-        const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`, 
-          { 
-            message: messageContent, 
+
+        const { data } = await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comment`,
+          {
+            message: messageContent,
             ...(replyToId ? { replyTo: replyToId } : {}),
             ...(previewDismissed ? { previewDismissed: true } : {})
           },
@@ -4122,26 +4118,26 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             headers: { "Content-Type": "application/json" }
           }
         );
-        
+
         // Find the new comment from the response
         const newComment = data.comments[data.comments.length - 1];
-        
+
         // Update only the status and ID of the temp message, keeping it visible
         // Preserve replyTo if it was a call (not sent to backend but stored locally)
-        setComments(prev => prev.map(msg => 
-          msg._id === tempId 
-            ? { 
-                ...msg, 
-                _id: newComment._id,
-                status: newComment.status,
-                readBy: newComment.readBy || msg.readBy,
-                timestamp: newComment.timestamp || msg.timestamp,
-                // Preserve original replyTo if it was a call (backend won't return it)
-                replyTo: originalReplyToId || newComment.replyTo || msg.replyTo
-              }
+        setComments(prev => prev.map(msg =>
+          msg._id === tempId
+            ? {
+              ...msg,
+              _id: newComment._id,
+              status: newComment.status,
+              readBy: newComment.readBy || msg.readBy,
+              timestamp: newComment.timestamp || msg.timestamp,
+              // Preserve original replyTo if it was a call (backend won't return it)
+              replyTo: originalReplyToId || newComment.replyTo || msg.replyTo
+            }
             : msg
         ));
-        
+
         // Don't show success toast as it's too verbose for chat
         playMessageSent(); // Play send sound
       } catch (err) {
@@ -4156,68 +4152,68 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   const handleEditComment = async (commentId) => {
     if (!editText.trim()) return;
-    
+
     setSavingComment(commentId);
-    
+
     // Optimistic update - update UI immediately
-    const optimisticUpdate = prev => prev.map(c => 
-      c._id === commentId 
+    const optimisticUpdate = prev => prev.map(c =>
+      c._id === commentId
         ? { ...c, message: editText, edited: true, editedAt: new Date() }
         : c
     );
     setComments(optimisticUpdate);
-    
+
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${commentId}`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${commentId}`,
         { message: editText },
-        { 
+        {
           withCredentials: true,
           headers: { "Content-Type": "application/json" }
         }
       );
-        // Update with server response - simpler and faster approach
-        setComments(prev => prev.map(c => {
-          const serverComment = data.comments.find(sc => sc._id === c._id);
-          if (serverComment) {
-            // For the edited message, use server data
-            if (serverComment._id === commentId) {
-              return serverComment;
-            }
-            // For other messages, preserve local read status if it exists
-            return c.status === 'read' && serverComment.status !== 'read' 
-              ? { ...serverComment, status: 'read' }
-              : serverComment;
+      // Update with server response - simpler and faster approach
+      setComments(prev => prev.map(c => {
+        const serverComment = data.comments.find(sc => sc._id === c._id);
+        if (serverComment) {
+          // For the edited message, use server data
+          if (serverComment._id === commentId) {
+            return serverComment;
           }
-          return c;
-        }));
-        setEditingComment(null);
-        setEditText("");
-        // Restore original draft and clear it after a small delay to ensure state update
-        const draftToRestore = originalDraft;
-        setComment(draftToRestore);
-        setTimeout(() => {
-          setOriginalDraft(""); // Clear stored draft after restoration
-        }, 100);
-        setDetectedUrl(null);
-        setPreviewDismissed(false);
-        // Auto-resize textarea for restored draft
-        setTimeout(() => {
-          if (inputRef.current) {
-            // Force a re-render by triggering the input event
-            const event = new Event('input', { bubbles: true });
-            inputRef.current.dispatchEvent(event);
-            autoResizeTextarea(inputRef.current);
-          }
-        }, 50);
-        
-        // Removed auto-focus: Don't automatically focus input after editing
-        // User can manually click to focus when needed
-        
-        toast.success("Message edited successfully!");
+          // For other messages, preserve local read status if it exists
+          return c.status === 'read' && serverComment.status !== 'read'
+            ? { ...serverComment, status: 'read' }
+            : serverComment;
+        }
+        return c;
+      }));
+      setEditingComment(null);
+      setEditText("");
+      // Restore original draft and clear it after a small delay to ensure state update
+      const draftToRestore = originalDraft;
+      setComment(draftToRestore);
+      setTimeout(() => {
+        setOriginalDraft(""); // Clear stored draft after restoration
+      }, 100);
+      setDetectedUrl(null);
+      setPreviewDismissed(false);
+      // Auto-resize textarea for restored draft
+      setTimeout(() => {
+        if (inputRef.current) {
+          // Force a re-render by triggering the input event
+          const event = new Event('input', { bubbles: true });
+          inputRef.current.dispatchEvent(event);
+          autoResizeTextarea(inputRef.current);
+        }
+      }, 50);
+
+      // Removed auto-focus: Don't automatically focus input after editing
+      // User can manually click to focus when needed
+
+      toast.success("Message edited successfully!");
     } catch (err) {
       // Revert optimistic update on error
-      setComments(prev => prev.map(c => 
-        c._id === commentId 
+      setComments(prev => prev.map(c =>
+        c._id === commentId
           ? { ...c, message: c.originalMessage || c.message, edited: c.wasEdited || false }
           : c
       ));
@@ -4237,8 +4233,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     setEditText(message.message);
     setComment(message.message); // Set the message in the main input
     // Store original data for potential rollback
-    setComments(prev => prev.map(c => 
-      c._id === message._id 
+    setComments(prev => prev.map(c =>
+      c._id === message._id
         ? { ...c, originalMessage: c.message, wasEdited: c.edited }
         : c
     ));
@@ -4249,7 +4245,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         // Place cursor at end of text instead of selecting all
         const length = inputRef.current.value.length;
         inputRef.current.setSelectionRange(length, length);
-        
+
         // Auto-resize textarea for edited content
         autoResizeTextarea(inputRef.current);
       }
@@ -4262,7 +4258,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       textarea.style.height = '48px';
       const scrollHeight = textarea.scrollHeight;
       const maxHeight = 144;
-      
+
       if (scrollHeight <= maxHeight) {
         // If content fits within max height, expand the textarea
         textarea.style.height = scrollHeight + 'px';
@@ -4301,9 +4297,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         autoResizeTextarea(inputRef.current);
       }
     };
-    
-        // Removed auto-focus: Don't automatically focus input
-        // User can manually click to focus when needed
+
+    // Removed auto-focus: Don't automatically focus input
+    // User can manually click to focus when needed
   };
 
   const getStatusColor = (status) => {
@@ -4321,10 +4317,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Function to highlight searched text within message content
   const highlightSearchedText = (text, searchQuery) => {
     if (!searchQuery || !text) return text;
-    
+
     const regex = new RegExp(`(${searchQuery.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
     const parts = text.split(regex);
-    
+
     return parts.map((part, index) => {
       if (regex.test(part)) {
         return `<span class="search-text-highlight">${part}</span>`;
@@ -4348,19 +4344,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       });
       return;
     }
-    
+
     // Get filtered comments (only visible messages)
     const filteredComments = comments.filter(c => {
       const clearTime = c.clearTime || 0;
       const effectiveClearMs = Math.max(clearTime, 0);
-      return new Date(c.timestamp).getTime() > effectiveClearMs && 
-             !locallyRemovedIds.includes(c._id) && 
-             !(c.removedFor?.includes?.(currentUser._id));
+      return new Date(c.timestamp).getTime() > effectiveClearMs &&
+        !locallyRemovedIds.includes(c._id) &&
+        !(c.removedFor?.includes?.(currentUser._id));
     });
-    
+
     const results = filteredComments
       .filter(comment => !comment.deleted)
-      .filter(comment => 
+      .filter(comment =>
         comment.message.toLowerCase().includes(query.toLowerCase()) ||
         comment.senderName?.toLowerCase().includes(query.toLowerCase()) ||
         comment.senderEmail?.toLowerCase().includes(query.toLowerCase())
@@ -4369,9 +4365,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         ...comment,
         matchIndex: comment.message.toLowerCase().indexOf(query.toLowerCase())
       }));
-    
+
     setSearchResults(results);
-    
+
     // Auto-scroll to first result if results found
     if (results.length > 0) {
       setCurrentSearchIndex(0);
@@ -4395,7 +4391,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       e.preventDefault();
       if (searchResults.length > 0) {
         // Navigate to next result
-        setCurrentSearchIndex((prev) => 
+        setCurrentSearchIndex((prev) =>
           prev < searchResults.length - 1 ? prev + 1 : 0
         );
       }
@@ -4415,35 +4411,35 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     const messageElement = messageRefs.current[commentId];
     if (messageElement) {
       // Enhanced scroll animation with better timing
-      messageElement.scrollIntoView({ 
-        behavior: 'smooth', 
+      messageElement.scrollIntoView({
+        behavior: 'smooth',
         block: 'center',
         inline: 'nearest'
       });
-      
+
       // Enhanced search highlight animation with multiple effects
       setTimeout(() => {
         // Remove any existing highlights first
         document.querySelectorAll('.search-highlight').forEach(el => {
           el.classList.remove('search-highlight', 'search-pulse', 'search-glow');
         });
-        
+
         // Add enhanced search highlight with multiple animation classes
         messageElement.classList.add('search-highlight', 'search-pulse', 'search-glow');
-        
+
         // Add a search ripple effect
         const ripple = document.createElement('div');
         ripple.className = 'search-ripple';
         messageElement.style.position = 'relative';
         messageElement.appendChild(ripple);
-        
+
         // Remove ripple after animation
         setTimeout(() => {
           if (ripple.parentNode) {
             ripple.parentNode.removeChild(ripple);
           }
         }, 1000);
-        
+
         // Remove highlight effects after enhanced duration
         setTimeout(() => {
           messageElement.classList.remove('search-highlight', 'search-pulse', 'search-glow');
@@ -4455,58 +4451,58 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const handleDateSelect = (date) => {
     setSelectedDate(date);
     setShowCalendar(false);
-    
+
     // Get filtered comments (only visible messages)
     const filteredComments = comments.filter(c => {
       const clearTime = c.clearTime || 0;
       const effectiveClearMs = Math.max(clearTime, 0);
-      return new Date(c.timestamp).getTime() > effectiveClearMs && 
-             !locallyRemovedIds.includes(c._id) && 
-             !(c.removedFor?.includes?.(currentUser._id));
+      return new Date(c.timestamp).getTime() > effectiveClearMs &&
+        !locallyRemovedIds.includes(c._id) &&
+        !(c.removedFor?.includes?.(currentUser._id));
     });
-    
+
     // Find the first message from the selected date
     const targetDate = new Date(date);
     const targetDateString = targetDate.toDateString();
-    
+
     const firstMessageOfDate = filteredComments.find(comment => {
       const commentDate = new Date(comment.timestamp);
       return commentDate.toDateString() === targetDateString;
     });
-    
+
     if (firstMessageOfDate) {
       // Enhanced animation for scrolling to the message
       const messageElement = messageRefs.current[firstMessageOfDate._id];
       if (messageElement) {
         // Add a pre-animation class for better visual feedback
         messageElement.classList.add('date-jump-preparing');
-        
+
         // Smooth scroll with enhanced timing
-        messageElement.scrollIntoView({ 
-          behavior: 'smooth', 
+        messageElement.scrollIntoView({
+          behavior: 'smooth',
           block: 'center',
           inline: 'nearest'
         });
-        
+
         // Enhanced highlight animation with multiple effects
         setTimeout(() => {
           messageElement.classList.remove('date-jump-preparing');
           setHighlightedDateMessage(firstMessageOfDate._id);
           messageElement.classList.add('date-highlight', 'date-jump-pulse');
-          
+
           // Add a ripple effect
           const ripple = document.createElement('div');
           ripple.className = 'date-jump-ripple';
           messageElement.style.position = 'relative';
           messageElement.appendChild(ripple);
-          
+
           // Remove ripple after animation
           setTimeout(() => {
             if (ripple.parentNode) {
               ripple.parentNode.removeChild(ripple);
             }
           }, 1000);
-          
+
           // Remove highlight effects after enhanced duration
           setTimeout(() => {
             messageElement.classList.remove('date-highlight', 'date-jump-pulse');
@@ -4544,7 +4540,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       return;
     }
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/cancel`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/cancel`,
         { reason: cancelReason },
         {
           withCredentials: true,
@@ -4576,15 +4572,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       return;
     }
     try {
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/cancel`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/cancel`,
         { reason: cancelReason },
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
       );
-        toast.success('Appointment cancelled by admin.');
-        navigate('/user/my-appointments');
+      toast.success('Appointment cancelled by admin.');
+      navigate('/user/my-appointments');
       setShowAdminCancelModal(false);
       setCancelReason('');
     } catch (err) {
@@ -4605,19 +4601,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     try {
       const who = isBuyer ? 'buyer' : isSeller ? 'seller' : null;
       if (!who) return;
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/soft-delete`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/soft-delete`,
         { who },
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
       );
-        // Remove from UI immediately
-        if (typeof window !== 'undefined') {
-          const event = new CustomEvent('removeAppointmentRow', { detail: appt._id });
-          window.dispatchEvent(event);
-          toast.success("Appointment removed from your table successfully.");
-        }
+      // Remove from UI immediately
+      if (typeof window !== 'undefined') {
+        const event = new CustomEvent('removeAppointmentRow', { detail: appt._id });
+        window.dispatchEvent(event);
+        toast.success("Appointment removed from your table successfully.");
+      }
       setShowPermanentDeleteModal(false);
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to remove appointment from table.');
@@ -4637,30 +4633,30 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       toast.info('Reactions disabled for this appointment status. You can view chat history.');
       return;
     }
-    
+
     try {
       const message = comments.find(c => c._id === messageId);
       if (!message) {
         toast.error('Message not found');
         return;
       }
-      
+
       // Add reaction to the message
-      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageId}/react`, 
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${messageId}/react`,
         { emoji },
-        { 
+        {
           withCredentials: true,
           headers: { 'Content-Type': 'application/json' }
         }
       );
 
       // Update local state
-      setComments(prev => prev.map(c => 
-        c._id === messageId 
-          ? { 
-              ...c, 
-              reactions: data.reactions || c.reactions || []
-            }
+      setComments(prev => prev.map(c =>
+        c._id === messageId
+          ? {
+            ...c,
+            reactions: data.reactions || c.reactions || []
+          }
           : c
       ));
 
@@ -4670,7 +4666,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       setReactionsMessageId(null);
 
       toast.success('Reaction added!');
-      
+
     } catch (err) {
       toast.error(err.response?.data?.message || 'Failed to add reaction');
     }
@@ -4687,7 +4683,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       toast.info('Reactions disabled for this appointment status. You can view chat history.');
       return;
     }
-    
+
     if (reactionsMessageId === messageId && showReactionsBar) {
       setShowReactionsBar(false);
       setReactionsMessageId(null);
@@ -5333,17 +5329,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     if (!searchTerm.trim()) {
       return emojiData.map(item => item.emoji);
     }
-    
+
     const lowercaseSearch = searchTerm.toLowerCase();
     return emojiData
-      .filter(item => 
-        item.keywords.some(keyword => 
+      .filter(item =>
+        item.keywords.some(keyword =>
           keyword.toLowerCase().includes(lowercaseSearch)
         )
       )
       .map(item => item.emoji);
   };
-  
+
   const toggleReactionsEmojiPicker = () => {
     const newState = !showReactionsEmojiPicker;
     setShowReactionsEmojiPicker(newState);
@@ -5364,7 +5360,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         start = el.selectionStart;
         end = el.selectionEnd;
       }
-    } catch (_) {}
+    } catch (_) { }
     const newText = baseText.slice(0, start) + emoji + baseText.slice(end);
     setComment(newText);
     if (editingComment) {
@@ -5377,10 +5373,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           el.focus();
           el.setSelectionRange(caretPos, caretPos);
         }
-      } catch (_) {}
+      } catch (_) { }
     }, 0);
   };
-  
+
   // Prevent quick reactions model from closing unexpectedly
   const preventModalClose = useCallback((e) => {
     if (showReactionsEmojiPicker) {
@@ -5392,53 +5388,53 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   // Mark messages as read when user can actually see them at the bottom of chat
   const markingReadRef = useRef(false);
-  
+
   const markVisibleMessagesAsRead = useCallback(async () => {
     if (!chatContainerRef.current || markingReadRef.current || !appt?._id) return;
-    
+
     // Only mark messages as read when user is at the bottom of chat AND has manually scrolled
     const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
     const isAtBottom = scrollHeight - scrollTop - clientHeight < 10; // 10px threshold
-    
+
     if (!isAtBottom) return; // Don't mark as read if not at bottom
-    
-    const unreadMessages = comments.filter(c => 
-      !c.readBy?.includes(currentUser._id) && 
+
+    const unreadMessages = comments.filter(c =>
+      !c.readBy?.includes(currentUser._id) &&
       c.senderEmail !== currentUser.email
     );
-    
+
     if (unreadMessages.length > 0) {
       markingReadRef.current = true; // Prevent concurrent requests
       try {
         // Mark messages as read in backend
-        const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`, 
+        const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comments/read`,
           {},
-          { 
+          {
             withCredentials: true,
             headers: { 'Content-Type': 'application/json' }
           }
         );
-          // Update local state immediately
-          setComments(prev => 
-            prev.map(c => 
-              unreadMessages.some(unread => unread._id === c._id)
-                ? { ...c, readBy: [...(c.readBy || []), currentUser._id], status: 'read' }
-                : c
-            )
-          );
-          
-          // Emit socket event for real-time updates to sender (user1)
-          unreadMessages.forEach(msg => {
-            socket.emit('messageRead', {
-              appointmentId: appt._id,
-              messageId: msg._id,
-              userId: currentUser._id,
-              readBy: currentUser._id
-            });
+        // Update local state immediately
+        setComments(prev =>
+          prev.map(c =>
+            unreadMessages.some(unread => unread._id === c._id)
+              ? { ...c, readBy: [...(c.readBy || []), currentUser._id], status: 'read' }
+              : c
+          )
+        );
+
+        // Emit socket event for real-time updates to sender (user1)
+        unreadMessages.forEach(msg => {
+          socket.emit('messageRead', {
+            appointmentId: appt._id,
+            messageId: msg._id,
+            userId: currentUser._id,
+            readBy: currentUser._id
           });
-          
-          // Update unreadNewMessages to reflect the actual unread count
-          setUnreadNewMessages(prev => Math.max(0, prev - unreadMessages.length));
+        });
+
+        // Update unreadNewMessages to reflect the actual unread count
+        setUnreadNewMessages(prev => Math.max(0, prev - unreadMessages.length));
       } catch (error) {
         // Only log error if it's not a 500 server error (which might be temporary)
         if (error.response?.status !== 500) {
@@ -5465,13 +5461,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       const hasSentMessages = newMessages.some(msg => msg.senderEmail === currentUser.email);
       // Check if any new messages are from other users (received messages)
       const receivedMessages = newMessages.filter(msg => msg.senderEmail !== currentUser.email);
-      
+
       if (hasSentMessages || isAtBottom) {
         // Auto-scroll if user sent a message OR if user is at bottom
         setTimeout(() => {
           if (chatEndRef.current) {
             chatEndRef.current.scrollIntoView({ behavior: 'smooth' });
-            
+
             // If user was at bottom and received new messages, mark them as read after scroll
             // Only if they had manually scrolled before (showing they were actively using chat)
             if (isAtBottom && receivedMessages.length > 0) {
@@ -5494,18 +5490,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       const { scrollTop, scrollHeight, clientHeight } = chatContainerRef.current;
       const atBottom = scrollHeight - scrollTop - clientHeight < 10; // 10px threshold
       setIsAtBottom(atBottom);
-      
+
       // When user reaches bottom, mark unread messages as read ONLY if they manually scrolled
       if (atBottom) {
-        const unreadCount = comments.filter(c => 
-          !c.readBy?.includes(currentUser._id) && 
+        const unreadCount = comments.filter(c =>
+          !c.readBy?.includes(currentUser._id) &&
           c.senderEmail !== currentUser.email
         ).length;
-        
+
         if (unreadCount > 0) {
           markVisibleMessagesAsRead();
         }
-        
+
         // Clear unread notification count
         if (unreadNewMessages > 0) {
           setUnreadNewMessages(0);
@@ -5517,7 +5513,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Function to update floating date based on visible messages
   const updateFloatingDate = useCallback(() => {
     if (!chatContainerRef.current || comments.length === 0) return;
-    
+
     // Filter comments inside the function to avoid dependency on filteredComments
     const clearTimeKey = `chatClearTime_${appt._id}`;
     const localClearMs = Number(localStorage.getItem(clearTimeKey)) || 0;
@@ -5528,13 +5524,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     const effectiveClearMs = Math.max(localClearMs, serverClearMs);
     const locallyRemovedIds = getLocallyRemovedIds(appt._id);
     const filteredComments = comments.filter(c => new Date(c.timestamp).getTime() > effectiveClearMs && !locallyRemovedIds.includes(c._id));
-    
+
     if (filteredComments.length === 0) return;
-    
+
     const container = chatContainerRef.current;
     const containerRect = container.getBoundingClientRect();
     const containerTop = containerRect.top + 60; // Account for header
-    
+
     // Find the first visible message
     let visibleDate = '';
     for (let i = 0; i < filteredComments.length; i++) {
@@ -5548,7 +5544,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }
       }
     }
-    
+
     // If no message is fully visible, find the one that's partially visible at the top
     if (!visibleDate) {
       for (let i = 0; i < filteredComments.length; i++) {
@@ -5563,7 +5559,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         }
       }
     }
-    
+
     if (visibleDate && visibleDate !== currentFloatingDate) {
       setCurrentFloatingDate(visibleDate);
     }
@@ -5577,23 +5573,23 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         // User has scrolled - this will trigger checkIfAtBottom and updateFloatingDate
         checkIfAtBottom();
         updateFloatingDate();
-        
+
         // Show floating date when scrolling starts
         setIsScrolling(true);
-        
+
         // Removed: no special highlight when scrolled to top for privacy notice
-        
+
         // Clear existing timeout
         if (scrollTimeoutRef.current) {
           clearTimeout(scrollTimeoutRef.current);
         }
-        
+
         // Hide floating date after scrolling stops (1 second of inactivity)
         scrollTimeoutRef.current = setTimeout(() => {
           setIsScrolling(false);
         }, 1000);
       };
-      
+
       chatContainer.addEventListener('scroll', handleScroll);
       // Only check initial position for setting isAtBottom state, don't mark as read automatically
       if (chatContainer) {
@@ -5601,10 +5597,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         const atBottom = scrollHeight - scrollTop - clientHeight < 10;
         setIsAtBottom(atBottom);
       }
-      
+
       // Initialize floating date
       setTimeout(updateFloatingDate, 100);
-      
+
       return () => {
         chatContainer.removeEventListener('scroll', handleScroll);
         if (scrollTimeoutRef.current) {
@@ -5625,19 +5621,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   const scrollToBottom = useCallback(() => {
     // Clear unread count immediately
     setUnreadNewMessages(0);
-    
+
     // Use multiple methods to ensure scroll works
     setTimeout(() => {
       if (chatContainerRef.current) {
         // Method 1: Scroll the container to bottom
         chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
       }
-      
+
       // Method 2: Also use scrollIntoView as backup
       if (chatEndRef.current) {
         chatEndRef.current.scrollIntoView({ behavior: 'smooth', block: 'end' });
       }
-      
+
       // Mark visible messages as read after scrolling
       setTimeout(() => {
         markVisibleMessagesAsRead();
@@ -5665,19 +5661,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             updated[idx] = { ...incomingComment, status };
             return updated;
           } else {
-                    // Only add if not present and not a temporary message
-        const isTemporaryMessage = prev.some(msg => msg._id.toString().startsWith('temp-'));
-        if (!isTemporaryMessage || data.comment.senderEmail !== currentUser.email) {
-                      // If this is a new message from another user and chat is not open, increment unread count
-            if (data.comment.senderEmail !== currentUser.email && !showChatModal && !data.comment.readBy?.includes(currentUser._id)) {
-              setUnreadNewMessages(prev => prev + 1);
-              // Do not play notification sound here; App.jsx handles global notifications
-            } else {
-              playMessageReceived(); // Play receive sound
+            // Only add if not present and not a temporary message
+            const isTemporaryMessage = prev.some(msg => msg._id.toString().startsWith('temp-'));
+            if (!isTemporaryMessage || data.comment.senderEmail !== currentUser.email) {
+              // If this is a new message from another user and chat is not open, increment unread count
+              if (data.comment.senderEmail !== currentUser.email && !showChatModal && !data.comment.readBy?.includes(currentUser._id)) {
+                setUnreadNewMessages(prev => prev + 1);
+                // Do not play notification sound here; App.jsx handles global notifications
+              } else {
+                playMessageReceived(); // Play receive sound
+              }
+              return [...prev, data.comment];
             }
-          return [...prev, data.comment];
-        }
-        return prev;
+            return prev;
           }
         });
       }
@@ -5692,7 +5688,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         const serverMs = clearedAt ? new Date(clearedAt).getTime() : 0;
         const effective = Math.max(localMs, serverMs);
         localStorage.setItem(clearTimeKey, String(effective));
-      } catch {}
+      } catch { }
       setComments([]);
       setCallHistory([]); // Also clear call history bubbles when chat is cleared
       setUnreadNewMessages(0);
@@ -5786,8 +5782,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
   // Calculate unread messages for the current user (exclude deleted/cleared/locally removed)
   const locallyRemovedIds = getLocallyRemovedIds(appt._id);
-  const unreadCount = comments.filter(c => 
-    !c.readBy?.includes(currentUser._id) && 
+  const unreadCount = comments.filter(c =>
+    !c.readBy?.includes(currentUser._id) &&
     c.senderEmail !== currentUser.email &&
     !c.deleted &&
     new Date(c.timestamp).getTime() > clearTime &&
@@ -5821,15 +5817,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     const restoreUnreadCount = async () => {
       if (comments.length > 0 && unreadNewMessages === 0) {
         // Calculate actual unread count from backend data
-        const actualUnreadCount = comments.filter(c => 
-          !c.readBy?.includes(currentUser._id) && 
+        const actualUnreadCount = comments.filter(c =>
+          !c.readBy?.includes(currentUser._id) &&
           c.senderEmail !== currentUser.email &&
           !c.deleted &&
           new Date(c.timestamp).getTime() > clearTime &&
           !(c.removedFor?.includes?.(currentUser._id)) &&
           !getLocallyRemovedIds(appt._id).includes(c._id)
         ).length;
-        
+
         if (actualUnreadCount > 0) {
           setUnreadNewMessages(actualUnreadCount);
         }
@@ -5884,10 +5880,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Check online status for table display (independent of chat modal)
   useEffect(() => {
     if (!otherParty?._id) return;
-    
+
     // Ask backend if the other party is online for table display
     socket.emit('checkUserOnline', { userId: otherParty._id });
-    
+
     // Listen for response
     function handleTableUserOnlineStatus(data) {
       if (data.userId === otherParty._id) {
@@ -5895,10 +5891,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         setOtherPartyLastSeenInTable(data.lastSeen || null);
       }
     }
-    
+
     socket.on('userOnlineStatus', handleTableUserOnlineStatus);
     socket.on('userOnlineUpdate', handleTableUserOnlineStatus);
-    
+
     return () => {
       socket.off('userOnlineStatus', handleTableUserOnlineStatus);
       socket.off('userOnlineUpdate', handleTableUserOnlineStatus);
@@ -5924,7 +5920,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Keyboard shortcut Ctrl+F to focus message input
   useEffect(() => {
     if (!showChatModal) return;
-    
+
     // Focus input when chat modal opens
     const focusInput = () => {
       if (inputRef.current) {
@@ -5932,10 +5928,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         focusWithoutKeyboard(inputRef.current, inputRef.current.value.length);
       }
     };
-    
+
     // Focus input after a short delay to ensure modal is fully rendered
     setTimeout(focusInput, 100);
-    
+
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === 'f') {
         event.preventDefault(); // Prevent browser find dialog
@@ -5947,7 +5943,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         setShowChatModal(false);
       }
     };
-    
+
     document.addEventListener('keydown', handleKeyDown);
     return () => {
       document.removeEventListener('keydown', handleKeyDown);
@@ -5966,13 +5962,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
   // Format last seen time like WhatsApp
   function formatLastSeen(lastSeenTime) {
     if (!lastSeenTime) return null;
-    
+
     const lastSeen = new Date(lastSeenTime);
     const now = new Date();
     const diffInMinutes = Math.floor((now - lastSeen) / (1000 * 60));
     const diffInHours = Math.floor(diffInMinutes / 60);
     const diffInDays = Math.floor(diffInHours / 24);
-    
+
     if (diffInMinutes < 1) {
       return 'last seen just now';
     } else if (diffInMinutes < 60) {
@@ -5982,18 +5978,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     } else if (diffInDays < 7) {
       return `last seen ${diffInDays} day${diffInDays > 1 ? 's' : ''} ago`;
     } else {
-      return `last seen ${lastSeen.toLocaleDateString('en-US', { 
-        month: 'short', 
+      return `last seen ${lastSeen.toLocaleDateString('en-US', {
+        month: 'short',
         day: 'numeric',
         year: lastSeen.getFullYear() !== now.getFullYear() ? 'numeric' : undefined
       })}`;
     }
   }
   // Message selected for header options overlay
-  const selectedMessageForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-') 
+  const selectedMessageForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-')
     ? null // Call items handled separately
     : (headerOptionsMessageId ? comments.find(msg => msg._id === headerOptionsMessageId) : null);
-  
+
   // Call selected for header options overlay
   const selectedCallForHeaderOptions = headerOptionsMessageId && headerOptionsMessageId.startsWith('call-')
     ? callHistory.find(call => `call-${call._id || call.callId}` === headerOptionsMessageId)
@@ -6018,7 +6014,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         <td className="border p-2">
           <div>
             {appt.listingId ? (
-              <Link 
+              <Link
                 to={isAdminContext ? `/admin/listing/${appt.listingId._id}` : `/user/listing/${appt.listingId._id}`}
                 className="font-semibold text-blue-600 hover:text-blue-800 hover:underline cursor-pointer"
               >
@@ -6030,9 +6026,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           </div>
         </td>
         <td className="border p-2 text-center">
-          <span className={`px-3 py-1 rounded-full text-xs font-bold ${
-            isSeller ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"
-          }`}>
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${isSeller ? "bg-blue-100 text-blue-700" : "bg-green-100 text-green-700"
+            }`}>
             {isSeller ? "Seller" : "Buyer"}
           </span>
         </td>
@@ -6096,23 +6091,22 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             <span>{appt.purpose}</span>
             {/* Rental Status Badge */}
             {appt.purpose === 'rent' && appt.rentalStatus && (
-              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                appt.rentalStatus === 'active_rental' ? 'bg-green-100 text-green-700' :
+              <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${appt.rentalStatus === 'active_rental' ? 'bg-green-100 text-green-700' :
                 appt.rentalStatus === 'contract_signed' ? 'bg-blue-100 text-blue-700' :
-                appt.rentalStatus === 'move_in_pending' ? 'bg-yellow-100 text-yellow-700' :
-                appt.rentalStatus === 'move_out_pending' ? 'bg-orange-100 text-orange-700' :
-                appt.rentalStatus === 'completed' ? 'bg-gray-100 text-gray-700' :
-                appt.rentalStatus === 'terminated' ? 'bg-red-100 text-red-700' :
-                'bg-purple-100 text-purple-700'
-              }`}>
+                  appt.rentalStatus === 'move_in_pending' ? 'bg-yellow-100 text-yellow-700' :
+                    appt.rentalStatus === 'move_out_pending' ? 'bg-orange-100 text-orange-700' :
+                      appt.rentalStatus === 'completed' ? 'bg-gray-100 text-gray-700' :
+                        appt.rentalStatus === 'terminated' ? 'bg-red-100 text-red-700' :
+                          'bg-purple-100 text-purple-700'
+                }`}>
                 {appt.rentalStatus === 'pending_contract' ? 'Contract Pending' :
-                 appt.rentalStatus === 'contract_signed' ? 'Contract Signed' :
-                 appt.rentalStatus === 'move_in_pending' ? 'Move-In Pending' :
-                 appt.rentalStatus === 'active_rental' ? 'Active Rental' :
-                 appt.rentalStatus === 'move_out_pending' ? 'Move-Out Pending' :
-                 appt.rentalStatus === 'completed' ? 'Completed' :
-                 appt.rentalStatus === 'terminated' ? 'Terminated' :
-                 appt.rentalStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                  appt.rentalStatus === 'contract_signed' ? 'Contract Signed' :
+                    appt.rentalStatus === 'move_in_pending' ? 'Move-In Pending' :
+                      appt.rentalStatus === 'active_rental' ? 'Active Rental' :
+                        appt.rentalStatus === 'move_out_pending' ? 'Move-Out Pending' :
+                          appt.rentalStatus === 'completed' ? 'Completed' :
+                            appt.rentalStatus === 'terminated' ? 'Terminated' :
+                              appt.rentalStatus.replace('_', ' ').replace(/\b\w/g, l => l.toUpperCase())}
               </span>
             )}
           </div>
@@ -6123,10 +6117,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             {appt.status === "cancelledByBuyer"
               ? "Cancelled by Buyer"
               : appt.status === "cancelledBySeller"
-              ? "Cancelled by Seller"
-              : appt.status === "cancelledByAdmin"
-              ? "Cancelled by Admin"
-              : appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
+                ? "Cancelled by Seller"
+                : appt.status === "cancelledByAdmin"
+                  ? "Cancelled by Admin"
+                  : appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
           </span>
         </td>
         <td className="border p-2 text-center">
@@ -6180,14 +6174,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           <FaCheck />
                         </button>
                         {!appt.paymentConfirmed && (
-                        <button
-                          className="text-red-500 hover:text-red-700 text-xl disabled:opacity-50"
-                          onClick={() => handleStatusUpdate(appt._id, "rejected")}
-                          disabled={actionLoading === appt._id + "rejected"}
-                          title="Reject Appointment"
-                        >
-                          <FaTimes />
-                        </button>
+                          <button
+                            className="text-red-500 hover:text-red-700 text-xl disabled:opacity-50"
+                            onClick={() => handleStatusUpdate(appt._id, "rejected")}
+                            disabled={actionLoading === appt._id + "rejected"}
+                            title="Reject Appointment"
+                          >
+                            <FaTimes />
+                          </button>
                         )}
                       </>
                     )}
@@ -6255,7 +6249,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     {((appt.status === 'cancelledByBuyer' && isBuyer) || (appt.status === 'cancelledBySeller' && isSeller)) && (() => {
                       const isRefunded = paymentStatusForReinitiate && (paymentStatusForReinitiate.status === 'refunded' || paymentStatusForReinitiate.status === 'partially_refunded');
                       const isExpired = reinitiateCountdown?.expired || false;
-                      const isDisabled = 
+                      const isDisabled =
                         (appt.status === 'cancelledByBuyer' && isBuyer && (appt.buyerReinitiationCount || 0) >= 2) ||
                         (appt.status === 'cancelledBySeller' && isSeller && (appt.sellerReinitiationCount || 0) >= 2) ||
                         !appt.buyerId || !appt.sellerId ||
@@ -6263,25 +6257,24 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         isExpired;
 
                       return (
-                      <div className="flex flex-col items-center">
-                        <button
-                            className={`text-xs border rounded px-2 py-1 mt-1 ${
-                              isDisabled 
-                                ? 'text-gray-400 border-gray-300 cursor-not-allowed' 
-                                : 'text-blue-500 hover:text-blue-700 border-blue-500'
-                            }`}
-                          onClick={() => onOpenReinitiate(appt)}
+                        <div className="flex flex-col items-center">
+                          <button
+                            className={`text-xs border rounded px-2 py-1 mt-1 ${isDisabled
+                              ? 'text-gray-400 border-gray-300 cursor-not-allowed'
+                              : 'text-blue-500 hover:text-blue-700 border-blue-500'
+                              }`}
+                            onClick={() => onOpenReinitiate(appt)}
                             disabled={isDisabled}
                             title={
-                              isRefunded 
+                              isRefunded
                                 ? "Reinitiation not possible - Payment refunded"
-                                : isExpired 
-                                ? "Reinitiation window expired"
-                                : "Reinitiate or Reschedule Appointment"
+                                : isExpired
+                                  ? "Reinitiation window expired"
+                                  : "Reinitiate or Reschedule Appointment"
                             }
-                        >
-                          Reinitiate
-                        </button>
+                          >
+                            Reinitiate
+                          </button>
                           <span className="text-xs text-gray-500 mt-1 flex flex-col items-center gap-0.5">
                             {isExpired ? (
                               <span className="text-red-500 font-semibold">Window expired</span>
@@ -6292,8 +6285,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                 Reinitiation possible for: {reinitiateCountdown.days > 0 ? `${reinitiateCountdown.days}d ` : ''}{reinitiateCountdown.hours}h left
                               </span>
                             ) : null}
-                        </span>
-                      </div>
+                          </span>
+                        </div>
                       );
                     })()}
                     {/* View Contract button: show for rental appointments with contract */}
@@ -6326,9 +6319,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         </td>
         <td className="border p-2 text-center relative">
           <button
-            className={`flex items-center justify-center rounded-full p-3 shadow-lg mx-auto relative transform transition-all duration-200 group ${
-              'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white hover:shadow-xl hover:scale-105'
-            }`}
+            className={`flex items-center justify-center rounded-full p-3 shadow-lg mx-auto relative transform transition-all duration-200 group ${'bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700 text-white hover:shadow-xl hover:scale-105'
+              }`}
             title={"Open Chat"}
             onClick={() => {
               if ((chatLocked || chatLockStatusLoading) && !chatAccessGranted) {
@@ -6353,7 +6345,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 }}
               ></div>
             )}
-            
+
             <FaCommentDots size={22} className={"group-hover:animate-pulse"} />
             {
               <div className="absolute inset-0 bg-white rounded-full opacity-0 group-hover:opacity-20 transition-opacity duration-200"></div>
@@ -6385,10 +6377,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       </tr>
       {showChatModal && createPortal((
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-md flex items-center justify-center z-50 p-4">
-          
+
           {/* Quick Reactions Model - Fixed Overlay */}
           {showReactionsEmojiPicker && reactionsMessageId && (
-            <div 
+            <div
               className="fixed inset-0 bg-black bg-opacity-30 backdrop-blur-sm flex items-center justify-center z-[999999] animate-fadeIn"
               onMouseDown={(e) => {
                 // Only close on backdrop mousedown, not modal content
@@ -6403,7 +6395,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 }
               }}
             >
-              <div 
+              <div
                 className="bg-white rounded-2xl shadow-2xl border border-gray-200 p-6 max-w-md w-full mx-4 max-h-[80vh] overflow-hidden quick-reactions-modal"
                 onMouseDown={(e) => {
                   e.stopPropagation(); // Prevent any event bubbling
@@ -6430,7 +6422,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     <FaTimes size={16} />
                   </button>
                 </div>
-                
+
                 {/* Search Box */}
                 <div className="mb-4">
                   <div className="relative">
@@ -6455,7 +6447,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     </div>
                   )}
                 </div>
-                <div 
+                <div
                   className="overflow-y-auto max-h-[60vh] scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
                   onMouseDown={(e) => {
                     e.stopPropagation(); // Prevent any event bubbling
@@ -6464,7 +6456,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     e.stopPropagation(); // Prevent any event bubbling
                   }}
                 >
-                  <div 
+                  <div
                     className="grid grid-cols-10 gap-2"
                     onMouseDown={(e) => {
                       e.stopPropagation(); // Prevent any event bubbling
@@ -6483,12 +6475,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         onClick={(e) => {
                           e.stopPropagation(); // Prevent event bubbling
                           e.preventDefault(); // Prevent default behavior
-                          
+
                           // Ensure we have the required IDs
                           if (reactionsMessageId && appt._id) {
                             // Call the function directly
                             handleQuickReaction(reactionsMessageId, emoji);
-                            
+
                             // Close the modal after successful reaction selection
                             setShowReactionsEmojiPicker(false);
                           } else {
@@ -6508,906 +6500,477 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           )}
           <div className="bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl shadow-2xl w-full h-full max-w-6xl max-h-full p-0 relative animate-fadeIn flex flex-col border border-gray-200 transform transition-all duration-500 hover:shadow-3xl overflow-hidden">
             <>
-                {/* Chat Header (sticky on mobile to avoid URL bar overlap) */}
-                <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 border-b-2 border-blue-700 bg-gradient-to-r from-blue-700 via-purple-700 to-blue-900 rounded-t-3xl relative shadow-2xl flex-shrink-0 md:sticky md:top-0 sticky top-[env(safe-area-inset-top,0px)] z-30">
-                  {isSelectionMode ? (
-                    // Multi-select header
-                    <div className="flex items-center justify-between w-full">
-                      <div className="flex items-center gap-3">
-                        <label className="flex items-center gap-2 text-white text-sm cursor-pointer hover:text-blue-200 transition-colors">
-                          <input
-                            type="checkbox"
-                            checked={selectedMessages.length === filteredComments.length && filteredComments.length > 0}
-                            onChange={() => {
-                              if (selectedMessages.length === filteredComments.length) {
-                                // If all are selected, deselect all
-                                setSelectedMessages([]);
-                              } else {
-                                // Select all non-deleted messages
-                                setSelectedMessages([...filteredComments]);
-                              }
-                            }}
-                            className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                          />
-                          <span className="font-medium">Select All Messages</span>
-                        </label>
-                        <span className="text-white text-sm font-medium">
-                          ({selectedMessages.length} message{selectedMessages.length !== 1 ? 's' : ''} selected)
-                        </span>
-                      </div>
-                      <div className="flex items-center gap-4">
-                        {selectedMessages.length === 1 ? (
-                          // Single message selected - show individual message options
-                          <div className="flex items-center gap-2">
-                            {(() => {
-                              const selectedMsg = selectedMessages[0];
-                              const isSentMessage = selectedMsg.senderEmail === currentUser.email;
-                              return (
-                                <>
-                                  {!selectedMsg.deleted && (
-                                    <>
-                                      <button
-                                        className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                                        onClick={() => { 
-                                          startReply(selectedMsg);
-                                          setIsSelectionMode(false);
-                                          setSelectedMessages([]);
-                                        }}
-                                        title="Reply"
-                                        aria-label="Reply"
-                                      >
-                                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z"/></svg>
-                                      </button>
-                                      <button
-                                        className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                                        onClick={() => { 
-                                          copyMessageToClipboard(selectedMsg.message); 
-                                          setIsSelectionMode(false);
-                                          setSelectedMessages([]);
-                                        }}
-                                        title="Copy message"
-                                        aria-label="Copy message"
-                                      >
-                                        <FaCopy size={18} />
-                                      </button>
-                                      <button
-                                        className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                                        onClick={async () => { 
-                                          const isStarred = selectedMsg.starredBy?.includes(currentUser._id);
-                                          setMultiSelectActions(prev => ({ ...prev, starring: true }));
-                                          try {
-                                            const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMsg._id}/star`, 
-                                              { starred: !isStarred },
-                                              {
-                                                withCredentials: true,
-                                                headers: { 'Content-Type': 'application/json' }
-                                              }
-                                            );
-                                            setComments(prev => prev.map(c => 
-                                              c._id === selectedMsg._id 
-                                                ? { 
-                                                    ...c, 
-                                                    starredBy: isStarred 
-                                                      ? (c.starredBy || []).filter(id => id !== currentUser._id)
-                                                      : [...(c.starredBy || []), currentUser._id]
-                                                  }
-                                                : c
-                                            ));
-                                            toast.success(isStarred ? 'Message unstarred.' : 'Message starred.');
-                                          } catch (err) {
-                                            toast.error(err.response?.data?.message || 'Failed to update star status');
-                                          } finally {
-                                            setMultiSelectActions(prev => ({ ...prev, starring: false }));
-                                          }
-                                          setIsSelectionMode(false);
-                                          setSelectedMessages([]);
-                                        }}
-                                        title={selectedMsg.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
-                                        aria-label={selectedMsg.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
-                                        disabled={multiSelectActions.starring}
-                                      >
-                                        {multiSelectActions.starring ? (
-                                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                                        ) : selectedMsg.starredBy?.includes(currentUser._id) ? (
-                                          <FaStar size={18} />
-                                        ) : (
-                                          <FaRegStar size={18} />
-                                        )}
-                                      </button>
-                                      {isSentMessage && null}
-                                      <button
-                                        className={`rounded-full p-2 transition-colors ${
-                                          isChatSendBlocked 
-                                            ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
-                                            : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
-                                        }`}
-                                        onClick={() => { 
-                                          if (isChatSendBlocked) {
-                                            toast.info('Delete disabled for this appointment status. You can view chat history.');
-                                            return;
-                                          }
-                                          setMessageToDelete(selectedMsg);
-                                          setDeleteForBoth(isChatSendBlocked ? false : isSentMessage);
-                                          setShowDeleteModal(true);
-                                          setIsSelectionMode(false);
-                                          setSelectedMessages([]);
-                                        }}
-                                        disabled={isChatSendBlocked}
-                                        title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
-                                        aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
-                                      >
-                                        <FaTrash size={18} />
-                                      </button>
-                                    </>
-                                  )}
-                                  {selectedMsg.deleted && (
+              {/* Chat Header (sticky on mobile to avoid URL bar overlap) */}
+              <div className="flex items-center gap-2 sm:gap-3 px-4 sm:px-6 py-2 sm:py-3 border-b-2 border-blue-700 bg-gradient-to-r from-blue-700 via-purple-700 to-blue-900 rounded-t-3xl relative shadow-2xl flex-shrink-0 md:sticky md:top-0 sticky top-[env(safe-area-inset-top,0px)] z-30">
+                {isSelectionMode ? (
+                  // Multi-select header
+                  <div className="flex items-center justify-between w-full">
+                    <div className="flex items-center gap-3">
+                      <label className="flex items-center gap-2 text-white text-sm cursor-pointer hover:text-blue-200 transition-colors">
+                        <input
+                          type="checkbox"
+                          checked={selectedMessages.length === filteredComments.length && filteredComments.length > 0}
+                          onChange={() => {
+                            if (selectedMessages.length === filteredComments.length) {
+                              // If all are selected, deselect all
+                              setSelectedMessages([]);
+                            } else {
+                              // Select all non-deleted messages
+                              setSelectedMessages([...filteredComments]);
+                            }
+                          }}
+                          className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                        />
+                        <span className="font-medium">Select All Messages</span>
+                      </label>
+                      <span className="text-white text-sm font-medium">
+                        ({selectedMessages.length} message{selectedMessages.length !== 1 ? 's' : ''} selected)
+                      </span>
+                    </div>
+                    <div className="flex items-center gap-4">
+                      {selectedMessages.length === 1 ? (
+                        // Single message selected - show individual message options
+                        <div className="flex items-center gap-2">
+                          {(() => {
+                            const selectedMsg = selectedMessages[0];
+                            const isSentMessage = selectedMsg.senderEmail === currentUser.email;
+                            return (
+                              <>
+                                {!selectedMsg.deleted && (
+                                  <>
                                     <button
-                                      className={`rounded-full p-2 transition-colors ${
-                                        isChatSendBlocked 
-                                          ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
-                                          : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
-                                      }`}
-                                      onClick={async () => { 
+                                      className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                                      onClick={() => {
+                                        startReply(selectedMsg);
+                                        setIsSelectionMode(false);
+                                        setSelectedMessages([]);
+                                      }}
+                                      title="Reply"
+                                      aria-label="Reply"
+                                    >
+                                      <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z" /></svg>
+                                    </button>
+                                    <button
+                                      className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                                      onClick={() => {
+                                        copyMessageToClipboard(selectedMsg.message);
+                                        setIsSelectionMode(false);
+                                        setSelectedMessages([]);
+                                      }}
+                                      title="Copy message"
+                                      aria-label="Copy message"
+                                    >
+                                      <FaCopy size={18} />
+                                    </button>
+                                    <button
+                                      className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                                      onClick={async () => {
+                                        const isStarred = selectedMsg.starredBy?.includes(currentUser._id);
+                                        setMultiSelectActions(prev => ({ ...prev, starring: true }));
+                                        try {
+                                          const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMsg._id}/star`,
+                                            { starred: !isStarred },
+                                            {
+                                              withCredentials: true,
+                                              headers: { 'Content-Type': 'application/json' }
+                                            }
+                                          );
+                                          setComments(prev => prev.map(c =>
+                                            c._id === selectedMsg._id
+                                              ? {
+                                                ...c,
+                                                starredBy: isStarred
+                                                  ? (c.starredBy || []).filter(id => id !== currentUser._id)
+                                                  : [...(c.starredBy || []), currentUser._id]
+                                              }
+                                              : c
+                                          ));
+                                          toast.success(isStarred ? 'Message unstarred.' : 'Message starred.');
+                                        } catch (err) {
+                                          toast.error(err.response?.data?.message || 'Failed to update star status');
+                                        } finally {
+                                          setMultiSelectActions(prev => ({ ...prev, starring: false }));
+                                        }
+                                        setIsSelectionMode(false);
+                                        setSelectedMessages([]);
+                                      }}
+                                      title={selectedMsg.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
+                                      aria-label={selectedMsg.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
+                                      disabled={multiSelectActions.starring}
+                                    >
+                                      {multiSelectActions.starring ? (
+                                        <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                      ) : selectedMsg.starredBy?.includes(currentUser._id) ? (
+                                        <FaStar size={18} />
+                                      ) : (
+                                        <FaRegStar size={18} />
+                                      )}
+                                    </button>
+                                    {isSentMessage && null}
+                                    <button
+                                      className={`rounded-full p-2 transition-colors ${isChatSendBlocked
+                                        ? 'text-gray-400 bg-white/5 cursor-not-allowed'
+                                        : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                                        }`}
+                                      onClick={() => {
                                         if (isChatSendBlocked) {
                                           toast.info('Delete disabled for this appointment status. You can view chat history.');
                                           return;
                                         }
-                                        try {
-                                          await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMsg._id}/remove-for-me`, 
-                                            {},
-                                            {
-                                              withCredentials: true
-                                            }
-                                          );
-                                        } catch {}
-                                        setComments(prev => prev.filter(msg => msg._id !== selectedMsg._id));
-                                        addLocallyRemovedId(appt._id, selectedMsg._id);
-                                        toast.success('Message deleted for you!');
+                                        setMessageToDelete(selectedMsg);
+                                        setDeleteForBoth(isChatSendBlocked ? false : isSentMessage);
+                                        setShowDeleteModal(true);
                                         setIsSelectionMode(false);
                                         setSelectedMessages([]);
                                       }}
                                       disabled={isChatSendBlocked}
-                                      title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete for me"}
-                                      aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete for me"}
+                                      title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
+                                      aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
                                     >
                                       <FaTrash size={18} />
                                     </button>
-                                  )}
-                                </>
-                              );
-                            })()}
-                          </div>
-                        ) : selectedMessages.length > 1 ? (
-                          // Multiple messages selected - show bulk actions
-                          <div className="flex items-center gap-2">
-                            {selectedMessages.some(msg => msg.deleted) ? (
-                              <button
-                                className={`rounded-full p-2 transition-colors ${
-                                  isChatSendBlocked 
-                                    ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
-                                    : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
-                                }`}
-                                onClick={async () => {
-                                  if (isChatSendBlocked) {
-                                    toast.info('Delete disabled for this appointment status. You can view chat history.');
-                                    return;
-                                  }
-                                  const ids = selectedMessages.map(msg => msg._id);
-                                  try {
-                                    await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comments/removed/sync`, 
-                                      { removedIds: ids },
-                                      {
-                                        withCredentials: true,
-                                        headers: { 'Content-Type': 'application/json' }
+                                  </>
+                                )}
+                                {selectedMsg.deleted && (
+                                  <button
+                                    className={`rounded-full p-2 transition-colors ${isChatSendBlocked
+                                      ? 'text-gray-400 bg-white/5 cursor-not-allowed'
+                                      : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                                      }`}
+                                    onClick={async () => {
+                                      if (isChatSendBlocked) {
+                                        toast.info('Delete disabled for this appointment status. You can view chat history.');
+                                        return;
                                       }
-                                    );
-                                    setComments(prev => prev.filter(msg => !ids.includes(msg._id)));
-                                    ids.forEach(cid => addLocallyRemovedId(appt._id, cid));
-                                    toast.success(`Deleted ${ids.length} messages for you!`);
-                                    setIsSelectionMode(false);
-                                    setSelectedMessages([]);
-                                  } catch (e) {
-                                    toast.error(e.response?.data?.message || 'Failed to delete selected messages for you.');
-                                  }
-                                }}
-                                disabled={isChatSendBlocked}
-                                title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete selected (for me)"}
-                                aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete selected (for me)"}
-                              >
-                                <FaTrash size={18} />
-                              </button>
-                            ) : (
-                            <>
-                            <button
-                              className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                              onClick={async () => {
-                                setMultiSelectActions(prev => ({ ...prev, starring: true }));
-                                try {
-            
-                                  
-                                  // Process messages one by one to handle individual failures gracefully
-                                  let successCount = 0;
-                                  let failureCount = 0;
-                                  const failedMessages = [];
-                                  
-                                  for (const msg of selectedMessages) {
-                                    try {
-                                      const isStarred = msg.starredBy?.includes(currentUser._id);
-                                      console.log(`Processing message ${msg._id}: currently starred = ${isStarred}, will set starred = ${!isStarred}`);
-                                      
-                                      const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/star`, 
-                                        { starred: !isStarred },
-                                        {
-                                          withCredentials: true,
-                                          headers: { 'Content-Type': 'application/json' }
-                                        }
-                                      );
-                                      
-                                      console.log(`Successfully processed message ${msg._id}`);
-                                      successCount++;
-                                      
-                                      // Update this specific message in comments
-                                      setComments(prev => prev.map(c => 
-                                        c._id === msg._id 
-                                          ? { 
-                                              ...c, 
-                                              starredBy: isStarred 
-                                                ? (c.starredBy || []).filter(id => id !== currentUser._id)
-                                                : [...(c.starredBy || []), currentUser._id]
-                                            }
-                                          : c
-                                      ));
-                                      
-                                      // Update starred messages list for this message
-                                      setStarredMessages(prev => {
-                                        if (isStarred) {
-                                          // Remove from starred messages
-                                          return prev.filter(m => m._id !== msg._id);
-                                        } else {
-                                          // Add to starred messages
-                                          if (!prev.some(m => m._id === msg._id)) {
-                                            return [...prev, { ...msg, starredBy: [...(msg.starredBy || []), currentUser._id] }];
+                                      try {
+                                        await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMsg._id}/remove-for-me`,
+                                          {},
+                                          {
+                                            withCredentials: true
                                           }
-                                          return prev;
-                                        }
-                                      });
-                                      
-                                    } catch (err) {
-                                      console.error(`Failed to process message ${msg._id}:`, err);
-                                      failureCount++;
-                                      failedMessages.push(msg);
-                                    }
-                                  }
-                                  
-                                  console.log(`Bulk operation completed: ${successCount} successful, ${failureCount} failed`);
-                                  
-                                  // Show appropriate feedback
-                                  if (successCount > 0 && failureCount === 0) {
-                                    toast.success(`Successfully updated star status for ${successCount} messages`);
-                                  } else if (successCount > 0 && failureCount > 0) {
-                                    toast.warning(`Partially successful: ${successCount} messages updated, ${failureCount} failed`);
-                                  } else {
-                                    toast.error(`Failed to update any messages. Please try again.`);
-                                  }
-                                  
-                                  // Clear selection mode if all messages were processed successfully
-                                  if (failureCount === 0) {
-                                    setIsSelectionMode(false);
-                                    setSelectedMessages([]);
-                                  }
-                                } catch (err) {
-                                  console.error('Error in bulk starring operation:', err);
-                                  if (err.response) {
-                                    console.error('Response data:', err.response.data);
-                                    console.error('Response status:', err.response.status);
-                                  }
-                                  toast.error(err.response?.data?.message || 'Failed to star messages. Please try again.');
-                                } finally {
-                                  setMultiSelectActions(prev => ({ ...prev, starring: false }));
-                                }
-                              }}
-                              title="Star all selected messages"
-                              aria-label="Star all selected messages"
-                              disabled={multiSelectActions.starring}
-                            >
-                              {multiSelectActions.starring ? (
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                <FaStar size={18} />
-                              )}
-                            </button>
+                                        );
+                                      } catch { }
+                                      setComments(prev => prev.filter(msg => msg._id !== selectedMsg._id));
+                                      addLocallyRemovedId(appt._id, selectedMsg._id);
+                                      toast.success('Message deleted for you!');
+                                      setIsSelectionMode(false);
+                                      setSelectedMessages([]);
+                                    }}
+                                    disabled={isChatSendBlocked}
+                                    title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete for me"}
+                                    aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete for me"}
+                                  >
+                                    <FaTrash size={18} />
+                                  </button>
+                                )}
+                              </>
+                            );
+                          })()}
+                        </div>
+                      ) : selectedMessages.length > 1 ? (
+                        // Multiple messages selected - show bulk actions
+                        <div className="flex items-center gap-2">
+                          {selectedMessages.some(msg => msg.deleted) ? (
                             <button
-                              className={`rounded-full p-2 transition-colors ${
-                                isChatSendBlocked 
-                                  ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
-                                  : 'text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20'
-                              }`}
-                              onClick={() => {
-                                if (isChatSendBlocked) {
-                                  toast.info('Pinning disabled for this appointment status. You can view chat history.');
-                                  return;
-                                }
-                                // For multi-select, open pin modal with selected messages
-                                setMessageToPin(selectedMessages);
-                                setShowPinModal(true);
-                              }}
-                              title={isChatSendBlocked ? "Pinning disabled for this appointment status" : "Pin all selected messages"}
-                              aria-label={isChatSendBlocked ? "Pinning disabled for this appointment status" : "Pin all selected messages"}
-                              disabled={multiSelectActions.pinning || isChatSendBlocked}
-                            >
-                              {multiSelectActions.pinning ? (
-                                <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                <FaThumbtack size={18} />
-                              )}
-                            </button>
-                            <button
-                              className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                              onClick={() => {
-                                const allMessages = selectedMessages.map(msg => msg.message).join('\n\n');
-                                copyMessageToClipboard(allMessages);
-                                toast.success('Copied all selected messages');
-                                setIsSelectionMode(false);
-                                setSelectedMessages([]);
-                              }}
-                              title="Copy all selected messages"
-                              aria-label="Copy all selected messages"
-                            >
-                              <FaCopy size={18} />
-                            </button>
-                            <button
-                              className={`rounded-full p-2 transition-colors ${
-                                isChatSendBlocked 
-                                  ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
-                                  : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
-                              }`}
-                              onClick={() => {
+                              className={`rounded-full p-2 transition-colors ${isChatSendBlocked
+                                ? 'text-gray-400 bg-white/5 cursor-not-allowed'
+                                : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                                }`}
+                              onClick={async () => {
                                 if (isChatSendBlocked) {
                                   toast.info('Delete disabled for this appointment status. You can view chat history.');
                                   return;
                                 }
-                                const allSent = selectedMessages.every(msg => msg.senderEmail === currentUser.email);
-                                const hasReceived = selectedMessages.some(msg => msg.senderEmail !== currentUser.email);
-                                setMessageToDelete(selectedMessages);
-                                setDeleteForBoth(isChatSendBlocked ? false : (allSent && !hasReceived));
-                                setShowDeleteModal(true);
-                                setIsSelectionMode(false);
-                                setSelectedMessages([]);
+                                const ids = selectedMessages.map(msg => msg._id);
+                                try {
+                                  await axios.post(`${API_BASE_URL}/api/bookings/${appt._id}/comments/removed/sync`,
+                                    { removedIds: ids },
+                                    {
+                                      withCredentials: true,
+                                      headers: { 'Content-Type': 'application/json' }
+                                    }
+                                  );
+                                  setComments(prev => prev.filter(msg => !ids.includes(msg._id)));
+                                  ids.forEach(cid => addLocallyRemovedId(appt._id, cid));
+                                  toast.success(`Deleted ${ids.length} messages for you!`);
+                                  setIsSelectionMode(false);
+                                  setSelectedMessages([]);
+                                } catch (e) {
+                                  toast.error(e.response?.data?.message || 'Failed to delete selected messages for you.');
+                                }
                               }}
                               disabled={isChatSendBlocked}
-                              title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete all selected messages"}
-                              aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete all selected messages"}
+                              title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete selected (for me)"}
+                              aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete selected (for me)"}
                             >
                               <FaTrash size={18} />
                             </button>
+                          ) : (
+                            <>
+                              <button
+                                className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                                onClick={async () => {
+                                  setMultiSelectActions(prev => ({ ...prev, starring: true }));
+                                  try {
+
+
+                                    // Process messages one by one to handle individual failures gracefully
+                                    let successCount = 0;
+                                    let failureCount = 0;
+                                    const failedMessages = [];
+
+                                    for (const msg of selectedMessages) {
+                                      try {
+                                        const isStarred = msg.starredBy?.includes(currentUser._id);
+                                        console.log(`Processing message ${msg._id}: currently starred = ${isStarred}, will set starred = ${!isStarred}`);
+
+                                        const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/star`,
+                                          { starred: !isStarred },
+                                          {
+                                            withCredentials: true,
+                                            headers: { 'Content-Type': 'application/json' }
+                                          }
+                                        );
+
+                                        console.log(`Successfully processed message ${msg._id}`);
+                                        successCount++;
+
+                                        // Update this specific message in comments
+                                        setComments(prev => prev.map(c =>
+                                          c._id === msg._id
+                                            ? {
+                                              ...c,
+                                              starredBy: isStarred
+                                                ? (c.starredBy || []).filter(id => id !== currentUser._id)
+                                                : [...(c.starredBy || []), currentUser._id]
+                                            }
+                                            : c
+                                        ));
+
+                                        // Update starred messages list for this message
+                                        setStarredMessages(prev => {
+                                          if (isStarred) {
+                                            // Remove from starred messages
+                                            return prev.filter(m => m._id !== msg._id);
+                                          } else {
+                                            // Add to starred messages
+                                            if (!prev.some(m => m._id === msg._id)) {
+                                              return [...prev, { ...msg, starredBy: [...(msg.starredBy || []), currentUser._id] }];
+                                            }
+                                            return prev;
+                                          }
+                                        });
+
+                                      } catch (err) {
+                                        console.error(`Failed to process message ${msg._id}:`, err);
+                                        failureCount++;
+                                        failedMessages.push(msg);
+                                      }
+                                    }
+
+                                    console.log(`Bulk operation completed: ${successCount} successful, ${failureCount} failed`);
+
+                                    // Show appropriate feedback
+                                    if (successCount > 0 && failureCount === 0) {
+                                      toast.success(`Successfully updated star status for ${successCount} messages`);
+                                    } else if (successCount > 0 && failureCount > 0) {
+                                      toast.warning(`Partially successful: ${successCount} messages updated, ${failureCount} failed`);
+                                    } else {
+                                      toast.error(`Failed to update any messages. Please try again.`);
+                                    }
+
+                                    // Clear selection mode if all messages were processed successfully
+                                    if (failureCount === 0) {
+                                      setIsSelectionMode(false);
+                                      setSelectedMessages([]);
+                                    }
+                                  } catch (err) {
+                                    console.error('Error in bulk starring operation:', err);
+                                    if (err.response) {
+                                      console.error('Response data:', err.response.data);
+                                      console.error('Response status:', err.response.status);
+                                    }
+                                    toast.error(err.response?.data?.message || 'Failed to star messages. Please try again.');
+                                  } finally {
+                                    setMultiSelectActions(prev => ({ ...prev, starring: false }));
+                                  }
+                                }}
+                                title="Star all selected messages"
+                                aria-label="Star all selected messages"
+                                disabled={multiSelectActions.starring}
+                              >
+                                {multiSelectActions.starring ? (
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                  <FaStar size={18} />
+                                )}
+                              </button>
+                              <button
+                                className={`rounded-full p-2 transition-colors ${isChatSendBlocked
+                                  ? 'text-gray-400 bg-white/5 cursor-not-allowed'
+                                  : 'text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20'
+                                  }`}
+                                onClick={() => {
+                                  if (isChatSendBlocked) {
+                                    toast.info('Pinning disabled for this appointment status. You can view chat history.');
+                                    return;
+                                  }
+                                  // For multi-select, open pin modal with selected messages
+                                  setMessageToPin(selectedMessages);
+                                  setShowPinModal(true);
+                                }}
+                                title={isChatSendBlocked ? "Pinning disabled for this appointment status" : "Pin all selected messages"}
+                                aria-label={isChatSendBlocked ? "Pinning disabled for this appointment status" : "Pin all selected messages"}
+                                disabled={multiSelectActions.pinning || isChatSendBlocked}
+                              >
+                                {multiSelectActions.pinning ? (
+                                  <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                  <FaThumbtack size={18} />
+                                )}
+                              </button>
+                              <button
+                                className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                                onClick={() => {
+                                  const allMessages = selectedMessages.map(msg => msg.message).join('\n\n');
+                                  copyMessageToClipboard(allMessages);
+                                  toast.success('Copied all selected messages');
+                                  setIsSelectionMode(false);
+                                  setSelectedMessages([]);
+                                }}
+                                title="Copy all selected messages"
+                                aria-label="Copy all selected messages"
+                              >
+                                <FaCopy size={18} />
+                              </button>
+                              <button
+                                className={`rounded-full p-2 transition-colors ${isChatSendBlocked
+                                  ? 'text-gray-400 bg-white/5 cursor-not-allowed'
+                                  : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                                  }`}
+                                onClick={() => {
+                                  if (isChatSendBlocked) {
+                                    toast.info('Delete disabled for this appointment status. You can view chat history.');
+                                    return;
+                                  }
+                                  const allSent = selectedMessages.every(msg => msg.senderEmail === currentUser.email);
+                                  const hasReceived = selectedMessages.some(msg => msg.senderEmail !== currentUser.email);
+                                  setMessageToDelete(selectedMessages);
+                                  setDeleteForBoth(isChatSendBlocked ? false : (allSent && !hasReceived));
+                                  setShowDeleteModal(true);
+                                  setIsSelectionMode(false);
+                                  setSelectedMessages([]);
+                                }}
+                                disabled={isChatSendBlocked}
+                                title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete all selected messages"}
+                                aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete all selected messages"}
+                              >
+                                <FaTrash size={18} />
+                              </button>
                             </>
-                            )}
-                          </div>
-                        ) : null}
-                        <button
-                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                          onClick={() => {
-                            setIsSelectionMode(false);
-                            setSelectedMessages([]);
-                          }}
-                          title="Exit selection mode"
-                          aria-label="Exit selection mode"
-                        >
-                          <FaTimes className="w-4 h-4" />
-                        </button>
-                      </div>
+                          )}
+                        </div>
+                      ) : null}
+                      <button
+                        className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                        onClick={() => {
+                          setIsSelectionMode(false);
+                          setSelectedMessages([]);
+                        }}
+                        title="Exit selection mode"
+                        aria-label="Exit selection mode"
+                      >
+                        <FaTimes className="w-4 h-4" />
+                      </button>
                     </div>
-                  ) : headerOptionsMessageId && selectedCallForHeaderOptions ? (
-                    // Header-level options overlay for call history items (same options as regular messages)
-                    <div className="flex items-center justify-end w-full gap-4">
-                      <div className="flex items-center gap-4">
-                        {/* Reply */}
+                  </div>
+                ) : headerOptionsMessageId && selectedCallForHeaderOptions ? (
+                  // Header-level options overlay for call history items (same options as regular messages)
+                  <div className="flex items-center justify-end w-full gap-4">
+                    <div className="flex items-center gap-4">
+                      {/* Reply */}
+                      <button
+                        className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                        onClick={() => {
+                          // Create a fake message-like object for reply functionality
+                          const fakeMessage = {
+                            _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
+                            senderEmail: (selectedCallForHeaderOptions.callerId?._id === currentUser._id || selectedCallForHeaderOptions.callerId === currentUser._id)
+                              ? currentUser.email
+                              : (selectedCallForHeaderOptions.receiverId?.email || otherParty?.email),
+                            message: `${selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio'} call`,
+                            timestamp: selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt,
+                            isCall: true,
+                            call: selectedCallForHeaderOptions
+                          };
+                          startReply(fakeMessage);
+                          setHeaderOptionsMessageId(null);
+                        }}
+                        title="Reply"
+                        aria-label="Reply"
+                      >
+                        <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z" /></svg>
+                      </button>
+                      {/* Call info modal */}
+                      <button
+                        className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                        onClick={() => {
+                          setSelectedCallForInfo(selectedCallForHeaderOptions);
+                          setShowCallInfoModal(true);
+                          setHeaderOptionsMessageId(null);
+                        }}
+                        title="Call info"
+                        aria-label="Call info"
+                      >
+                        <FaInfoCircle size={18} />
+                      </button>
+                      {/* Pin */}
+                      {!isChatSendBlocked && (
                         <button
                           className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                          onClick={() => { 
-                            // Create a fake message-like object for reply functionality
+                          onClick={() => {
+                            // Create a fake message-like object for pin functionality
                             const fakeMessage = {
                               _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
-                              senderEmail: (selectedCallForHeaderOptions.callerId?._id === currentUser._id || selectedCallForHeaderOptions.callerId === currentUser._id) 
-                                ? currentUser.email 
+                              senderEmail: (selectedCallForHeaderOptions.callerId?._id === currentUser._id || selectedCallForHeaderOptions.callerId === currentUser._id)
+                                ? currentUser.email
                                 : (selectedCallForHeaderOptions.receiverId?.email || otherParty?.email),
                               message: `${selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio'} call`,
                               timestamp: selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt,
                               isCall: true,
                               call: selectedCallForHeaderOptions
                             };
-                            startReply(fakeMessage);
+                            setMessageToPin([fakeMessage]);
+                            setShowPinModal(true);
                             setHeaderOptionsMessageId(null);
                           }}
-                          title="Reply"
-                          aria-label="Reply"
+                          title="Pin call"
+                          aria-label="Pin call"
                         >
-                          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z"/></svg>
+                          <FaThumbtack size={18} />
                         </button>
-                        {/* Call info modal */}
+                      )}
+                      {/* Delete */}
+                      {!isChatSendBlocked && (
                         <button
-                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
                           onClick={() => {
-                            setSelectedCallForInfo(selectedCallForHeaderOptions);
-                            setShowCallInfoModal(true);
+                            // Show confirmation modal for call deletion
+                            setMessageToDelete({
+                              _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
+                              isCall: true,
+                              call: selectedCallForHeaderOptions
+                            });
+                            setShowDeleteModal(true);
                             setHeaderOptionsMessageId(null);
                           }}
-                          title="Call info"
-                          aria-label="Call info"
+                          title="Delete call"
+                          aria-label="Delete call"
                         >
-                          <FaInfoCircle size={18} />
+                          <FaTrash size={18} />
                         </button>
-                        {/* Pin */}
-                        {!isChatSendBlocked && (
-                          <button
-                            className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={() => { 
-                              // Create a fake message-like object for pin functionality
-                              const fakeMessage = {
-                                _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
-                                senderEmail: (selectedCallForHeaderOptions.callerId?._id === currentUser._id || selectedCallForHeaderOptions.callerId === currentUser._id) 
-                                  ? currentUser.email 
-                                  : (selectedCallForHeaderOptions.receiverId?.email || otherParty?.email),
-                                message: `${selectedCallForHeaderOptions.callType === 'video' ? 'Video' : 'Audio'} call`,
-                                timestamp: selectedCallForHeaderOptions.startTime || selectedCallForHeaderOptions.createdAt,
-                                isCall: true,
-                                call: selectedCallForHeaderOptions
-                              };
-                              setMessageToPin([fakeMessage]);
-                              setShowPinModal(true);
-                              setHeaderOptionsMessageId(null);
-                            }}
-                            title="Pin call"
-                            aria-label="Pin call"
-                          >
-                            <FaThumbtack size={18} />
-                          </button>
-                        )}
-                        {/* Delete */}
-                        {!isChatSendBlocked && (
-                          <button
-                            className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={() => { 
-                              // Show confirmation modal for call deletion
-                              setMessageToDelete({
-                                _id: `call-${selectedCallForHeaderOptions._id || selectedCallForHeaderOptions.callId}`,
-                                isCall: true,
-                                call: selectedCallForHeaderOptions
-                              });
-                              setShowDeleteModal(true);
-                              setHeaderOptionsMessageId(null);
-                            }}
-                            title="Delete call"
-                            aria-label="Delete call"
-                          >
-                            <FaTrash size={18} />
-                          </button>
-                        )}
-                        {/* Close button */}
-                        <button
-                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors z-10 shadow"
-                          onClick={() => { setHeaderOptionsMessageId(null); setShowHeaderMoreMenu(false); }}
-                          title="Close options"
-                          aria-label="Close options"
-                        >
-                          <FaTimes className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </div>
-                  ) : headerOptionsMessageId && selectedMessageForHeaderOptions ? (
-                    // Header-level options overlay (inline icons + three-dots menu + close)
-                    <div className="flex items-center justify-end w-full gap-4">
-                      <div className="flex items-center gap-4">
-                        {/* Reply */}
-                        {!selectedMessageForHeaderOptions.deleted && (
-                          <button
-                            className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={() => { 
-                              startReply(selectedMessageForHeaderOptions);
-                              setHeaderOptionsMessageId(null);
-                            }}
-                            title="Reply"
-                            aria-label="Reply"
-                          >
-                            <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z"/></svg>
-                          </button>
-                        )}
-                        {/* Copy - only for non-deleted messages */}
-                        {!selectedMessageForHeaderOptions.deleted && (
-                          <button
-                            className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={() => { copyMessageToClipboard(selectedMessageForHeaderOptions.message); setHeaderOptionsMessageId(null); }}
-                            title="Copy message"
-                            aria-label="Copy message"
-                          >
-                            <FaCopy size={18} />
-                          </button>
-                        )}
-                        {/* Star/Unstar */}
-                        {/* Star/Unstar - for all messages (sent and received) */}
-                        {!selectedMessageForHeaderOptions.deleted && (
-                          <button
-                            className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={async () => { 
-                              const isStarred = selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
-                              setStarringSaving(true);
-                              try {
-                                const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions._id}/star`, 
-                                  { starred: !isStarred },
-                                  {
-                                    withCredentials: true,
-                                    headers: { 'Content-Type': 'application/json' }
-                                  }
-                                );
-                                // Update the local state
-                                setComments(prev => prev.map(c => 
-                                  c._id === selectedMessageForHeaderOptions._id 
-                                    ? { 
-                                        ...c, 
-                                        starredBy: isStarred 
-                                          ? (c.starredBy || []).filter(id => id !== currentUser._id)
-                                          : [...(c.starredBy || []), currentUser._id]
-                                      }
-                                    : c
-                                ));
-                                
-                                // Update starred messages list
-                                if (isStarred) {
-                                  // Remove from starred messages
-                                  setStarredMessages(prev => prev.filter(m => m._id !== selectedMessageForHeaderOptions._id));
-                                } else {
-                                  // Add to starred messages
-                                  setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
-                                }
-                                
-                                toast.success(isStarred ? 'Message unstarred.' : 'Message starred.');
-                              } catch (err) {
-                                toast.error(err.response?.data?.message || 'Failed to update star status');
-                              } finally {
-                                setStarringSaving(false);
-                              }
-                              setHeaderOptionsMessageId(null);
-                            }}
-                            title={selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
-                            aria-label={selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
-                            disabled={starringSaving}
-                          >
-                            {starringSaving ? (
-                              <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            ) : selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? (
-                              <FaStar size={18} />
-                            ) : (
-                              <FaRegStar size={18} />
-                            )}
-                          </button>
-                        )}
-                        {/* Delete inline (sent: delete for everyone; received: delete locally) */}
-                        {!selectedMessageForHeaderOptions.deleted && (
-                          <button
-                            className={`rounded-full p-2 transition-colors ${
-                              isChatSendBlocked 
-                                ? 'text-gray-400 bg-white/5 cursor-not-allowed' 
-                                : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
-                            }`}
-                            onClick={() => { 
-                              if (isChatSendBlocked) {
-                                toast.info('Delete disabled for this appointment status. You can view chat history.');
-                                return;
-                              }
-                              if (selectedMessageForHeaderOptions.senderEmail === currentUser.email) {
-                                handleDeleteClick(selectedMessageForHeaderOptions);
-                              } else {
-                                handleDeleteReceivedMessage(selectedMessageForHeaderOptions);
-                              }
-                              setHeaderOptionsMessageId(null);
-                            }}
-                            disabled={isChatSendBlocked}
-                            title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
-                            aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
-                          >
-                            <FaTrash size={18} />
-                          </button>
-                        )}
-                        {/* Three dots menu (Info/Pin/Edit for sent; Pin/Report for received) */}
-                        {!selectedMessageForHeaderOptions.deleted && (
-                          <div className="relative">
-                            <button
-                              className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                              onClick={() => setShowHeaderMoreMenu(prev => !prev)}
-                              title="More options"
-                              aria-label="More options"
-                            >
-                              <FaEllipsisV size={14} />
-                            </button>
-                            {showHeaderMoreMenu && (
-                              <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
-                                {(selectedMessageForHeaderOptions.senderEmail === currentUser.email) ? (
-                                  <>
-                                    {/* Download option for image messages */}
-                                    {selectedMessageForHeaderOptions.imageUrl && (
-                                      <button
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                        onClick={() => { 
-                                          handleDownloadChatImage(selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions._id); 
-                                          setShowHeaderMoreMenu(false); 
-                                          setHeaderOptionsMessageId(null); 
-                                        }}
-                                      >
-                                        <FaDownload className="text-sm" />
-                                        Download Image
-                                      </button>
-                                    )}
-                                    {/* Download option for video messages */}
-                                    {selectedMessageForHeaderOptions.videoUrl && (
-                                      <button
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                        onClick={async () => { 
-                                          try {
-                                            const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
-                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                            const blob = await response.blob();
-                                            const blobUrl = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = blobUrl;
-                                            a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                            toast.success('Video downloaded successfully');
-                                          } catch (error) {
-                                            console.error('Video download failed:', error);
-                                            // Fallback to direct link
-                                            const a = document.createElement('a');
-                                            a.href = selectedMessageForHeaderOptions.videoUrl;
-                                            a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
-                                            a.target = '_blank';
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                            toast.success('Video download started');
-                                          }
-                                          setShowHeaderMoreMenu(false); 
-                                          setHeaderOptionsMessageId(null); 
-                                        }}
-                                      >
-                                        <FaDownload className="text-sm" />
-                                        Download Video
-                                      </button>
-                                    )}
-                                    {/* Download option for audio messages */}
-                                    {selectedMessageForHeaderOptions.audioUrl && (
-                                      <button
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                        onClick={async () => { 
-                                          try {
-                                            const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
-                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                            const blob = await response.blob();
-                                            const blobUrl = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = blobUrl;
-                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                            toast.success('Audio downloaded successfully');
-                                          } catch (error) {
-                                            const a = document.createElement('a');
-                                            a.href = selectedMessageForHeaderOptions.audioUrl;
-                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
-                                            a.target = '_blank';
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                            toast.success('Audio download started');
-                                          }
-                                          setShowHeaderMoreMenu(false); 
-                                          setHeaderOptionsMessageId(null); 
-                                        }}
-                                      >
-                                        <FaDownload className="text-sm" />
-                                        Download Audio
-                                      </button>
-                                    )}
-                                    <button
-                                      className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                      onClick={() => { showMessageInfo(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
-                                    >
-                                      <FaInfoCircle className="text-sm" />
-                                      Info
-                                    </button>
-                                    <button
-                                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                                        isChatSendBlocked 
-                                          ? 'text-gray-400 cursor-not-allowed' 
-                                          : 'text-gray-700 hover:bg-gray-100'
-                                      }`}
-                                      onClick={() => {
-                                        if (isChatSendBlocked) {
-                                          toast.info('Pinning disabled for this appointment status. You can view chat history.');
-                                          return;
-                                        }
-                                        if (selectedMessageForHeaderOptions.pinned) {
-                                          handlePinMessage(selectedMessageForHeaderOptions, false);
-                                        } else {
-                                          setMessageToPin(selectedMessageForHeaderOptions);
-                                          setShowPinModal(true);
-                                        }
-                                        setShowHeaderMoreMenu(false);
-                                        setHeaderOptionsMessageId(null);
-                                      }}
-                                      disabled={pinningSaving || isChatSendBlocked}
-                                    >
-                                      <FaThumbtack className="text-sm" />
-                                      {selectedMessageForHeaderOptions.pinned ? 'Unpin' : 'Pin'}
-                                    </button>
-                                    <button
-                                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                                        isChatSendBlocked || editingComment !== null
-                                          ? 'text-gray-400 cursor-not-allowed'
-                                          : 'text-gray-700 hover:bg-gray-100'
-                                      }`}
-                                      onClick={() => { 
-                                        if (isChatSendBlocked) {
-                                          toast.info('Edit disabled for this appointment status. You can view chat history.');
-                                          return;
-                                        }
-                                        startEditing(selectedMessageForHeaderOptions); 
-                                        setShowHeaderMoreMenu(false); 
-                                        setHeaderOptionsMessageId(null); 
-                                      }}
-                                      disabled={isChatSendBlocked || editingComment !== null}
-                                      title={isChatSendBlocked ? "Edit disabled for this appointment status" : "Edit message"}
-                                    >
-                                      <FaPen className="text-sm" />
-                                      Edit
-                                    </button>
-                                  </>
-                                ) : (
-                                  <>
-                                    {/* Download option for image messages (for received messages) */}
-                                    {selectedMessageForHeaderOptions.imageUrl && (
-                                      <button
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                        onClick={() => { 
-                                          handleDownloadChatImage(selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions._id); 
-                                          setShowHeaderMoreMenu(false); 
-                                          setHeaderOptionsMessageId(null); 
-                                        }}
-                                      >
-                                        <FaDownload className="text-sm" />
-                                        Download Image
-                                      </button>
-                                    )}
-                                    {/* Download option for video messages (for received messages) */}
-                                    {selectedMessageForHeaderOptions.videoUrl && (
-                                      <button
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                        onClick={async () => { 
-                                          try {
-                                            const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
-                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                            const blob = await response.blob();
-                                            const blobUrl = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = blobUrl;
-                                            a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                          } catch (error) {
-                                            console.error('Video download failed:', error);
-                                            // Fallback to direct link
-                                            const a = document.createElement('a');
-                                            a.href = selectedMessageForHeaderOptions.videoUrl;
-                                            a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
-                                            a.target = '_blank';
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                          }
-                                          setShowHeaderMoreMenu(false); 
-                                          setHeaderOptionsMessageId(null); 
-                                        }}
-                                      >
-                                        <FaDownload className="text-sm" />
-                                        Download Video
-                                      </button>
-                                    )}
-                                    {/* Download option for audio messages (for received messages) */}
-                                    {selectedMessageForHeaderOptions.audioUrl && (
-                                      <button
-                                        className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                        onClick={async () => { 
-                                          try {
-                                            const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
-                                            if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                            const blob = await response.blob();
-                                            const blobUrl = window.URL.createObjectURL(blob);
-                                            const a = document.createElement('a');
-                                            a.href = blobUrl;
-                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                            toast.success('Audio downloaded successfully');
-                                          } catch (error) {
-                                            const a = document.createElement('a');
-                                            a.href = selectedMessageForHeaderOptions.audioUrl;
-                                            a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
-                                            a.target = '_blank';
-                                            document.body.appendChild(a);
-                                            a.click();
-                                            a.remove();
-                                            toast.success('Audio download started');
-                                          }
-                                          setShowHeaderMoreMenu(false); 
-                                          setHeaderOptionsMessageId(null); 
-                                        }}
-                                      >
-                                        <FaDownload className="text-sm" />
-                                        Download Audio
-                                      </button>
-                                    )}
-                                    <button
-                                      className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${
-                                        isChatSendBlocked 
-                                          ? 'text-gray-400 cursor-not-allowed' 
-                                          : 'text-gray-700 hover:bg-gray-100'
-                                      }`}
-                                      onClick={() => {
-                                        if (isChatSendBlocked) {
-                                          toast.info('Pinning disabled for this appointment status. You can view chat history.');
-                                          return;
-                                        }
-                                        if (selectedMessageForHeaderOptions.pinned) {
-                                          handlePinMessage(selectedMessageForHeaderOptions, false);
-                                        } else {
-                                          setMessageToPin(selectedMessageForHeaderOptions);
-                                          setShowPinModal(true);
-                                        }
-                                        setShowHeaderMoreMenu(false);
-                                        setHeaderOptionsMessageId(null);
-                                      }}
-                                      disabled={pinningSaving || isChatSendBlocked}
-                                    >
-                                      <FaThumbtack className="text-sm" />
-                                      {selectedMessageForHeaderOptions.pinned ? 'Unpin' : 'Pin'}
-                                    </button>
-                                    <button
-                                      className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                      onClick={() => { setReportingMessage(selectedMessageForHeaderOptions); setShowReportModal(true); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
-                                    >
-                                      <FaFlag className="text-sm" />
-                                      Report
-                                    </button>
-                                  </>
-                                )}
-                              </div>
-                            )}
-                          </div>
-                        )}
-                        {/* Delete from chat locally for deleted messages */}
-                        {selectedMessageForHeaderOptions.deleted && (
-                          <button
-                            className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
-                            onClick={() => { 
-                              setMessageToDelete(selectedMessageForHeaderOptions);
-                              setDeleteForBoth(false); // Always delete locally for deleted messages
-                              setShowDeleteModal(true);
-                              setHeaderOptionsMessageId(null); 
-                            }}
-                            title="Delete from chat locally"
-                            aria-label="Delete from chat locally"
-                          >
-                            <FaTrash size={18} />
-                          </button>
-                        )}
-                      </div>
+                      )}
+                      {/* Close button */}
                       <button
                         className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors z-10 shadow"
                         onClick={() => { setHeaderOptionsMessageId(null); setShowHeaderMoreMenu(false); }}
@@ -7417,206 +6980,637 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         <FaTimes className="w-4 h-4" />
                       </button>
                     </div>
-                  ) : (
-                    // Original header content
-                    <>
-                      <div 
-                        className="bg-white rounded-full p-1 sm:p-1.5 shadow-lg flex-shrink-0 cursor-pointer hover:scale-105 transition-transform duration-200"
-                        onClick={() => onShowOtherParty({
-                          ...otherParty,
-                          isOnline: isOtherPartyOnlineInTable,
-                          isTyping: isOtherPartyTyping,
-                          lastSeen: otherPartyLastSeenInTable
-                        }, appt)}
-                        title="Click to view user details"
-                      >
-                        {otherParty?.avatar ? (
-                          <img 
-                            src={otherParty.avatar} 
-                            alt={otherParty.username || 'User'} 
-                            className="w-8 h-8 rounded-full object-cover"
-                          />
-                        ) : (
-                          <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
-                            {(otherParty?.username || 'U').charAt(0).toUpperCase()}
-                          </div>
-                        )}
-                      </div>
-                      <div className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0 flex-1 ${(chatLocked || chatLockStatusLoading) ? 'pr-2 sm:pr-0' : ''}`}>
-                        <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
-                          <h3 
-                            className="text-sm sm:text-lg font-bold text-white truncate cursor-pointer hover:underline"
-                            onClick={() => onShowOtherParty({
-                              ...otherParty,
-                              isOnline: isOtherPartyOnlineInTable,
-                              isTyping: isOtherPartyTyping,
-                              lastSeen: otherPartyLastSeenInTable
-                            }, appt)}
-                            title="Click to view user details"
-                          >
-                            {otherParty?.username || 'Unknown User'}
-                          </h3>
-                          {/* Online status indicator - below name on mobile, inline on desktop */}
-                          <div className={`flex items-center gap-1 sm:hidden ${(chatLocked || chatLockStatusLoading) ? 'max-w-[120px]' : ''}`}>
-                            {isStatusHidden ? (
-                              <span className={`text-gray-100 font-semibold text-[10px] bg-gray-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>Not available</span>
-                            ) : isOtherPartyTyping ? (
-                              <span className={`text-yellow-100 font-semibold text-[10px] bg-yellow-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>Typing...</span>
-                            ) : isOtherPartyOnline ? (
-                              <span className={`text-green-100 font-semibold text-[10px] bg-green-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>Online</span>
-                            ) : (
-                              <span className={`text-gray-100 font-semibold text-[10px] bg-gray-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>
-                                {formatLastSeen(otherPartyLastSeen) || 'Offline'}
-                              </span>
-                            )}
-                          </div>
-                          {/* Online status indicator - inline on desktop only */}
-                          <div className="hidden sm:flex items-center gap-1">
-                            {isStatusHidden ? (
-                              <span className="text-gray-100 font-semibold text-xs bg-gray-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">Not available</span>
-                            ) : isOtherPartyTyping ? (
-                              <span className="text-yellow-100 font-semibold text-xs bg-yellow-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">Typing...</span>
-                            ) : isOtherPartyOnline ? (
-                              <span className="text-green-100 font-semibold text-xs bg-green-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">Online</span>
-                            ) : (
-                              <span className="text-gray-100 font-semibold text-xs bg-gray-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">
-                                {formatLastSeen(otherPartyLastSeen) || 'Offline'}
-                              </span>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                      <div className="flex items-center gap-2 sm:gap-4 ml-auto flex-shrink-0">
-                        {/* Sound Controls */}
-                        <div className="hidden sm:block">
-                          <SoundControl 
-                            onToggleMute={() => {
-                              const muted = toggleMute();
-                              setIsSoundMuted(muted); // Update reactive state immediately
-                              toast.info(`All sounds ${muted ? 'muted' : 'unmuted'}`);
-                            }}
-                            isMuted={isSoundMuted}
-                            currentVolume={currentVolume}
-                            onVolumeChange={(volume) => {
-                              setVolume(volume);
-                              setCurrentVolume(volume); // Update reactive state immediately
-                            }}
-                          />
-                        </div>
-                        {/* Lock indicator */}
-                        {(chatLocked || chatLockStatusLoading) && (
-                          <div className="flex items-center gap-1 bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold flex-shrink-0">
-                            {chatLockStatusLoading ? (
-                              <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                              <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
-                                <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z"/>
-                              </svg>
-                            )}
-                            {chatLockStatusLoading ? 'Loading...' : 'Locked'}
-                          </div>
-                        )}
+                  </div>
+                ) : headerOptionsMessageId && selectedMessageForHeaderOptions ? (
+                  // Header-level options overlay (inline icons + three-dots menu + close)
+                  <div className="flex items-center justify-end w-full gap-4">
+                    <div className="flex items-center gap-4">
+                      {/* Reply */}
+                      {!selectedMessageForHeaderOptions.deleted && (
+                        <button
+                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          onClick={() => {
+                            startReply(selectedMessageForHeaderOptions);
+                            setHeaderOptionsMessageId(null);
+                          }}
+                          title="Reply"
+                          aria-label="Reply"
+                        >
+                          <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24"><path d="M10 9V5l-7 7 7 7v-4.1c4.28 0 6.92 1.45 8.84 4.55.23.36.76.09.65-.32C18.31 13.13 15.36 10.36 10 9z" /></svg>
+                        </button>
+                      )}
+                      {/* Copy - only for non-deleted messages */}
+                      {!selectedMessageForHeaderOptions.deleted && (
+                        <button
+                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          onClick={() => { copyMessageToClipboard(selectedMessageForHeaderOptions.message); setHeaderOptionsMessageId(null); }}
+                          title="Copy message"
+                          aria-label="Copy message"
+                        >
+                          <FaCopy size={18} />
+                        </button>
+                      )}
+                      {/* Star/Unstar */}
+                      {/* Star/Unstar - for all messages (sent and received) */}
+                      {!selectedMessageForHeaderOptions.deleted && (
+                        <button
+                          className="text-white hover:text-yellow-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          onClick={async () => {
+                            const isStarred = selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id);
+                            setStarringSaving(true);
+                            try {
+                              const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${selectedMessageForHeaderOptions._id}/star`,
+                                { starred: !isStarred },
+                                {
+                                  withCredentials: true,
+                                  headers: { 'Content-Type': 'application/json' }
+                                }
+                              );
+                              // Update the local state
+                              setComments(prev => prev.map(c =>
+                                c._id === selectedMessageForHeaderOptions._id
+                                  ? {
+                                    ...c,
+                                    starredBy: isStarred
+                                      ? (c.starredBy || []).filter(id => id !== currentUser._id)
+                                      : [...(c.starredBy || []), currentUser._id]
+                                  }
+                                  : c
+                              ));
 
+                              // Update starred messages list
+                              if (isStarred) {
+                                // Remove from starred messages
+                                setStarredMessages(prev => prev.filter(m => m._id !== selectedMessageForHeaderOptions._id));
+                              } else {
+                                // Add to starred messages
+                                setStarredMessages(prev => [...prev, selectedMessageForHeaderOptions]);
+                              }
 
-                        
-                        {/* Call buttons */}
-                        <div className="relative flex items-center gap-2">
-                          {/* Audio Call Button */}
+                              toast.success(isStarred ? 'Message unstarred.' : 'Message starred.');
+                            } catch (err) {
+                              toast.error(err.response?.data?.message || 'Failed to update star status');
+                            } finally {
+                              setStarringSaving(false);
+                            }
+                            setHeaderOptionsMessageId(null);
+                          }}
+                          title={selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
+                          aria-label={selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? "Unstar message" : "Star message"}
+                          disabled={starringSaving}
+                        >
+                          {starringSaving ? (
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : selectedMessageForHeaderOptions.starredBy?.includes(currentUser._id) ? (
+                            <FaStar size={18} />
+                          ) : (
+                            <FaRegStar size={18} />
+                          )}
+                        </button>
+                      )}
+                      {/* Delete inline (sent: delete for everyone; received: delete locally) */}
+                      {!selectedMessageForHeaderOptions.deleted && (
+                        <button
+                          className={`rounded-full p-2 transition-colors ${isChatSendBlocked
+                            ? 'text-gray-400 bg-white/5 cursor-not-allowed'
+                            : 'text-white hover:text-red-200 bg-white/10 hover:bg-white/20'
+                            }`}
+                          onClick={() => {
+                            if (isChatSendBlocked) {
+                              toast.info('Delete disabled for this appointment status. You can view chat history.');
+                              return;
+                            }
+                            if (selectedMessageForHeaderOptions.senderEmail === currentUser.email) {
+                              handleDeleteClick(selectedMessageForHeaderOptions);
+                            } else {
+                              handleDeleteReceivedMessage(selectedMessageForHeaderOptions);
+                            }
+                            setHeaderOptionsMessageId(null);
+                          }}
+                          disabled={isChatSendBlocked}
+                          title={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
+                          aria-label={isChatSendBlocked ? "Delete disabled for this appointment status" : "Delete"}
+                        >
+                          <FaTrash size={18} />
+                        </button>
+                      )}
+                      {/* Three dots menu (Info/Pin/Edit for sent; Pin/Report for received) */}
+                      {!selectedMessageForHeaderOptions.deleted && (
+                        <div className="relative">
                           <button
-                            className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
-                            onClick={() => {
-                              const receiverId = appt.buyerId._id === currentUser._id 
-                                ? appt.sellerId._id 
-                                : appt.buyerId._id;
-                              
-                              onInitiateCall(appt, 'audio', receiverId);
-                            }}
-                            title="Audio Call"
-                            aria-label="Audio Call"
-                            disabled={callState === 'active' || callState === 'ringing'}
+                            className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                            onClick={() => setShowHeaderMoreMenu(prev => !prev)}
+                            title="More options"
+                            aria-label="More options"
                           >
-                            <FaPhone className="text-sm" />
+                            <FaEllipsisV size={14} />
                           </button>
-                          
-                          {/* Video Call Button */}
-                          <button
-                            className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
-                            onClick={() => {
-                              const receiverId = appt.buyerId._id === currentUser._id 
-                                ? appt.sellerId._id 
-                                : appt.buyerId._id;
-                              
-                              onInitiateCall(appt, 'video', receiverId);
-                            }}
-                            title="Video Call"
-                            aria-label="Video Call"
-                            disabled={callState === 'active' || callState === 'ringing'}
-                          >
-                            <FaVideo className="text-sm" />
-                          </button>
-                        </div>
-                        
-                        {/* Search functionality */}
-                        <div className="relative search-container">
-                          <button
-                            className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
-                            onClick={() => setShowSearchBox(true)}
-                            title="Search messages"
-                            aria-label="Search messages"
-                          >
-                            <FaSearch className="text-sm" />
-                          </button>
-                        </div>
-                        
-                        {/* Chat options menu */}
-                        <div className="relative flex items-center gap-2">
-                          {/* Loading icon when refreshing messages */}
-                          {loadingComments && (
-                            <div className="text-white bg-white/10 rounded-full p-2 shadow">
-                              <FaSpinner className="text-sm animate-spin" />
+                          {showHeaderMoreMenu && (
+                            <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
+                              {(selectedMessageForHeaderOptions.senderEmail === currentUser.email) ? (
+                                <>
+                                  {/* Download option for image messages */}
+                                  {selectedMessageForHeaderOptions.imageUrl && (
+                                    <button
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      onClick={() => {
+                                        handleDownloadChatImage(selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions._id);
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
+                                      }}
+                                    >
+                                      <FaDownload className="text-sm" />
+                                      Download Image
+                                    </button>
+                                  )}
+                                  {/* Download option for video messages */}
+                                  {selectedMessageForHeaderOptions.videoUrl && (
+                                    <button
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      onClick={async () => {
+                                        try {
+                                          const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                          const blob = await response.blob();
+                                          const blobUrl = window.URL.createObjectURL(blob);
+                                          const a = document.createElement('a');
+                                          a.href = blobUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                          toast.success('Video downloaded successfully');
+                                        } catch (error) {
+                                          console.error('Video download failed:', error);
+                                          // Fallback to direct link
+                                          const a = document.createElement('a');
+                                          a.href = selectedMessageForHeaderOptions.videoUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          a.target = '_blank';
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                          toast.success('Video download started');
+                                        }
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
+                                      }}
+                                    >
+                                      <FaDownload className="text-sm" />
+                                      Download Video
+                                    </button>
+                                  )}
+                                  {/* Download option for audio messages */}
+                                  {selectedMessageForHeaderOptions.audioUrl && (
+                                    <button
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      onClick={async () => {
+                                        try {
+                                          const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                          const blob = await response.blob();
+                                          const blobUrl = window.URL.createObjectURL(blob);
+                                          const a = document.createElement('a');
+                                          a.href = blobUrl;
+                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                          toast.success('Audio downloaded successfully');
+                                        } catch (error) {
+                                          const a = document.createElement('a');
+                                          a.href = selectedMessageForHeaderOptions.audioUrl;
+                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                          a.target = '_blank';
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                          toast.success('Audio download started');
+                                        }
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
+                                      }}
+                                    >
+                                      <FaDownload className="text-sm" />
+                                      Download Audio
+                                    </button>
+                                  )}
+                                  <button
+                                    className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                    onClick={() => { showMessageInfo(selectedMessageForHeaderOptions); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
+                                  >
+                                    <FaInfoCircle className="text-sm" />
+                                    Info
+                                  </button>
+                                  <button
+                                    className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${isChatSendBlocked
+                                      ? 'text-gray-400 cursor-not-allowed'
+                                      : 'text-gray-700 hover:bg-gray-100'
+                                      }`}
+                                    onClick={() => {
+                                      if (isChatSendBlocked) {
+                                        toast.info('Pinning disabled for this appointment status. You can view chat history.');
+                                        return;
+                                      }
+                                      if (selectedMessageForHeaderOptions.pinned) {
+                                        handlePinMessage(selectedMessageForHeaderOptions, false);
+                                      } else {
+                                        setMessageToPin(selectedMessageForHeaderOptions);
+                                        setShowPinModal(true);
+                                      }
+                                      setShowHeaderMoreMenu(false);
+                                      setHeaderOptionsMessageId(null);
+                                    }}
+                                    disabled={pinningSaving || isChatSendBlocked}
+                                  >
+                                    <FaThumbtack className="text-sm" />
+                                    {selectedMessageForHeaderOptions.pinned ? 'Unpin' : 'Pin'}
+                                  </button>
+                                  <button
+                                    className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${isChatSendBlocked || editingComment !== null
+                                      ? 'text-gray-400 cursor-not-allowed'
+                                      : 'text-gray-700 hover:bg-gray-100'
+                                      }`}
+                                    onClick={() => {
+                                      if (isChatSendBlocked) {
+                                        toast.info('Edit disabled for this appointment status. You can view chat history.');
+                                        return;
+                                      }
+                                      startEditing(selectedMessageForHeaderOptions);
+                                      setShowHeaderMoreMenu(false);
+                                      setHeaderOptionsMessageId(null);
+                                    }}
+                                    disabled={isChatSendBlocked || editingComment !== null}
+                                    title={isChatSendBlocked ? "Edit disabled for this appointment status" : "Edit message"}
+                                  >
+                                    <FaPen className="text-sm" />
+                                    Edit
+                                  </button>
+                                </>
+                              ) : (
+                                <>
+                                  {/* Download option for image messages (for received messages) */}
+                                  {selectedMessageForHeaderOptions.imageUrl && (
+                                    <button
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      onClick={() => {
+                                        handleDownloadChatImage(selectedMessageForHeaderOptions.imageUrl, selectedMessageForHeaderOptions._id);
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
+                                      }}
+                                    >
+                                      <FaDownload className="text-sm" />
+                                      Download Image
+                                    </button>
+                                  )}
+                                  {/* Download option for video messages (for received messages) */}
+                                  {selectedMessageForHeaderOptions.videoUrl && (
+                                    <button
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      onClick={async () => {
+                                        try {
+                                          const response = await fetch(selectedMessageForHeaderOptions.videoUrl, { mode: 'cors' });
+                                          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                          const blob = await response.blob();
+                                          const blobUrl = window.URL.createObjectURL(blob);
+                                          const a = document.createElement('a');
+                                          a.href = blobUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                        } catch (error) {
+                                          console.error('Video download failed:', error);
+                                          // Fallback to direct link
+                                          const a = document.createElement('a');
+                                          a.href = selectedMessageForHeaderOptions.videoUrl;
+                                          a.download = `video-${selectedMessageForHeaderOptions._id || Date.now()}.mp4`;
+                                          a.target = '_blank';
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                        }
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
+                                      }}
+                                    >
+                                      <FaDownload className="text-sm" />
+                                      Download Video
+                                    </button>
+                                  )}
+                                  {/* Download option for audio messages (for received messages) */}
+                                  {selectedMessageForHeaderOptions.audioUrl && (
+                                    <button
+                                      className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                      onClick={async () => {
+                                        try {
+                                          const response = await fetch(selectedMessageForHeaderOptions.audioUrl, { mode: 'cors' });
+                                          if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                          const blob = await response.blob();
+                                          const blobUrl = window.URL.createObjectURL(blob);
+                                          const a = document.createElement('a');
+                                          a.href = blobUrl;
+                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                          setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                          toast.success('Audio downloaded successfully');
+                                        } catch (error) {
+                                          const a = document.createElement('a');
+                                          a.href = selectedMessageForHeaderOptions.audioUrl;
+                                          a.download = selectedMessageForHeaderOptions.audioName || `audio-${selectedMessageForHeaderOptions._id || Date.now()}`;
+                                          a.target = '_blank';
+                                          document.body.appendChild(a);
+                                          a.click();
+                                          a.remove();
+                                          toast.success('Audio download started');
+                                        }
+                                        setShowHeaderMoreMenu(false);
+                                        setHeaderOptionsMessageId(null);
+                                      }}
+                                    >
+                                      <FaDownload className="text-sm" />
+                                      Download Audio
+                                    </button>
+                                  )}
+                                  <button
+                                    className={`w-full px-4 py-2 text-left text-sm flex items-center gap-2 ${isChatSendBlocked
+                                      ? 'text-gray-400 cursor-not-allowed'
+                                      : 'text-gray-700 hover:bg-gray-100'
+                                      }`}
+                                    onClick={() => {
+                                      if (isChatSendBlocked) {
+                                        toast.info('Pinning disabled for this appointment status. You can view chat history.');
+                                        return;
+                                      }
+                                      if (selectedMessageForHeaderOptions.pinned) {
+                                        handlePinMessage(selectedMessageForHeaderOptions, false);
+                                      } else {
+                                        setMessageToPin(selectedMessageForHeaderOptions);
+                                        setShowPinModal(true);
+                                      }
+                                      setShowHeaderMoreMenu(false);
+                                      setHeaderOptionsMessageId(null);
+                                    }}
+                                    disabled={pinningSaving || isChatSendBlocked}
+                                  >
+                                    <FaThumbtack className="text-sm" />
+                                    {selectedMessageForHeaderOptions.pinned ? 'Unpin' : 'Pin'}
+                                  </button>
+                                  <button
+                                    className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                    onClick={() => { setReportingMessage(selectedMessageForHeaderOptions); setShowReportModal(true); setShowHeaderMoreMenu(false); setHeaderOptionsMessageId(null); }}
+                                  >
+                                    <FaFlag className="text-sm" />
+                                    Report
+                                  </button>
+                                </>
+                              )}
                             </div>
                           )}
-                          
-                          <button
-                            className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors shadow"
-                            onClick={() => setShowChatOptionsMenu(!showChatOptionsMenu)}
-                            title="Chat options"
-                            aria-label="Chat options"
-                          >
-                            <FaEllipsisV className="text-sm" />
-                          </button>
-                          {showChatOptionsMenu && (
-                            <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
-                              {/* Contact Information option - only show for accepted status */}
-                              {canSeeContactInfo && (
-                                <button
-                                  className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                  onClick={() => {
-                                    onShowOtherParty({
-                                      ...otherParty,
-                                      isOnline: isOtherPartyOnlineInTable,
-                                      isTyping: isOtherPartyTyping,
-                                      lastSeen: otherPartyLastSeenInTable
-                                    }, appt);
-                                    setShowChatOptionsMenu(false);
-                                  }}
-                                >
-                                  <FaInfoCircle className="text-sm" />
-                                  Contact Information
-                                </button>
-                              )}
-                              {/* Refresh option */}
+                        </div>
+                      )}
+                      {/* Delete from chat locally for deleted messages */}
+                      {selectedMessageForHeaderOptions.deleted && (
+                        <button
+                          className="text-white hover:text-red-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors"
+                          onClick={() => {
+                            setMessageToDelete(selectedMessageForHeaderOptions);
+                            setDeleteForBoth(false); // Always delete locally for deleted messages
+                            setShowDeleteModal(true);
+                            setHeaderOptionsMessageId(null);
+                          }}
+                          title="Delete from chat locally"
+                          aria-label="Delete from chat locally"
+                        >
+                          <FaTrash size={18} />
+                        </button>
+                      )}
+                    </div>
+                    <button
+                      className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors z-10 shadow"
+                      onClick={() => { setHeaderOptionsMessageId(null); setShowHeaderMoreMenu(false); }}
+                      title="Close options"
+                      aria-label="Close options"
+                    >
+                      <FaTimes className="w-4 h-4" />
+                    </button>
+                  </div>
+                ) : (
+                  // Original header content
+                  <>
+                    <div
+                      className="bg-white rounded-full p-1 sm:p-1.5 shadow-lg flex-shrink-0 cursor-pointer hover:scale-105 transition-transform duration-200"
+                      onClick={() => onShowOtherParty({
+                        ...otherParty,
+                        isOnline: isOtherPartyOnlineInTable,
+                        isTyping: isOtherPartyTyping,
+                        lastSeen: otherPartyLastSeenInTable
+                      }, appt)}
+                      title="Click to view user details"
+                    >
+                      {otherParty?.avatar ? (
+                        <img
+                          src={otherParty.avatar}
+                          alt={otherParty.username || 'User'}
+                          className="w-8 h-8 rounded-full object-cover"
+                        />
+                      ) : (
+                        <div className="w-8 h-8 rounded-full bg-gradient-to-r from-blue-400 to-purple-500 flex items-center justify-center text-white font-semibold text-sm">
+                          {(otherParty?.username || 'U').charAt(0).toUpperCase()}
+                        </div>
+                      )}
+                    </div>
+                    <div className={`flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-3 min-w-0 flex-1 ${(chatLocked || chatLockStatusLoading) ? 'pr-2 sm:pr-0' : ''}`}>
+                      <div className="flex flex-col sm:flex-row sm:items-center gap-1 sm:gap-2">
+                        <h3
+                          className="text-sm sm:text-lg font-bold text-white truncate cursor-pointer hover:underline"
+                          onClick={() => onShowOtherParty({
+                            ...otherParty,
+                            isOnline: isOtherPartyOnlineInTable,
+                            isTyping: isOtherPartyTyping,
+                            lastSeen: otherPartyLastSeenInTable
+                          }, appt)}
+                          title="Click to view user details"
+                        >
+                          {otherParty?.username || 'Unknown User'}
+                        </h3>
+                        {/* Online status indicator - below name on mobile, inline on desktop */}
+                        <div className={`flex items-center gap-1 sm:hidden ${(chatLocked || chatLockStatusLoading) ? 'max-w-[120px]' : ''}`}>
+                          {isStatusHidden ? (
+                            <span className={`text-gray-100 font-semibold text-[10px] bg-gray-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>Not available</span>
+                          ) : isOtherPartyTyping ? (
+                            <span className={`text-yellow-100 font-semibold text-[10px] bg-yellow-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>Typing...</span>
+                          ) : isOtherPartyOnline ? (
+                            <span className={`text-green-100 font-semibold text-[10px] bg-green-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>Online</span>
+                          ) : (
+                            <span className={`text-gray-100 font-semibold text-[10px] bg-gray-500 bg-opacity-80 px-1.5 py-0.5 rounded-full whitespace-nowrap ${(chatLocked || chatLockStatusLoading) ? 'truncate' : ''}`}>
+                              {formatLastSeen(otherPartyLastSeen) || 'Offline'}
+                            </span>
+                          )}
+                        </div>
+                        {/* Online status indicator - inline on desktop only */}
+                        <div className="hidden sm:flex items-center gap-1">
+                          {isStatusHidden ? (
+                            <span className="text-gray-100 font-semibold text-xs bg-gray-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">Not available</span>
+                          ) : isOtherPartyTyping ? (
+                            <span className="text-yellow-100 font-semibold text-xs bg-yellow-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">Typing...</span>
+                          ) : isOtherPartyOnline ? (
+                            <span className="text-green-100 font-semibold text-xs bg-green-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">Online</span>
+                          ) : (
+                            <span className="text-gray-100 font-semibold text-xs bg-gray-500 bg-opacity-80 px-2 py-1 rounded-full whitespace-nowrap">
+                              {formatLastSeen(otherPartyLastSeen) || 'Offline'}
+                            </span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                    <div className="flex items-center gap-2 sm:gap-4 ml-auto flex-shrink-0">
+                      {/* Sound Controls */}
+                      <div className="hidden sm:block">
+                        <SoundControl
+                          onToggleMute={() => {
+                            const muted = toggleMute();
+                            setIsSoundMuted(muted); // Update reactive state immediately
+                            toast.info(`All sounds ${muted ? 'muted' : 'unmuted'}`);
+                          }}
+                          isMuted={isSoundMuted}
+                          currentVolume={currentVolume}
+                          onVolumeChange={(volume) => {
+                            setVolume(volume);
+                            setCurrentVolume(volume); // Update reactive state immediately
+                          }}
+                        />
+                      </div>
+                      {/* Lock indicator */}
+                      {(chatLocked || chatLockStatusLoading) && (
+                        <div className="flex items-center gap-1 bg-orange-500 text-white text-xs px-2 py-1 rounded-full font-bold flex-shrink-0">
+                          {chatLockStatusLoading ? (
+                            <div className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <svg width="12" height="12" fill="currentColor" viewBox="0 0 24 24">
+                              <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
+                            </svg>
+                          )}
+                          {chatLockStatusLoading ? 'Loading...' : 'Locked'}
+                        </div>
+                      )}
+
+
+
+                      {/* Call buttons */}
+                      <div className="relative flex items-center gap-2">
+                        {/* Audio Call Button */}
+                        <button
+                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
+                          onClick={() => {
+                            const receiverId = appt.buyerId._id === currentUser._id
+                              ? appt.sellerId._id
+                              : appt.buyerId._id;
+
+                            onInitiateCall(appt, 'audio', receiverId);
+                          }}
+                          title="Audio Call"
+                          aria-label="Audio Call"
+                          disabled={callState === 'active' || callState === 'ringing'}
+                        >
+                          <FaPhone className="text-sm" />
+                        </button>
+
+                        {/* Video Call Button */}
+                        <button
+                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
+                          onClick={() => {
+                            const receiverId = appt.buyerId._id === currentUser._id
+                              ? appt.sellerId._id
+                              : appt.buyerId._id;
+
+                            onInitiateCall(appt, 'video', receiverId);
+                          }}
+                          title="Video Call"
+                          aria-label="Video Call"
+                          disabled={callState === 'active' || callState === 'ringing'}
+                        >
+                          <FaVideo className="text-sm" />
+                        </button>
+                      </div>
+
+                      {/* Search functionality */}
+                      <div className="relative search-container">
+                        <button
+                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
+                          onClick={() => setShowSearchBox(true)}
+                          title="Search messages"
+                          aria-label="Search messages"
+                        >
+                          <FaSearch className="text-sm" />
+                        </button>
+                      </div>
+
+                      {/* Chat options menu */}
+                      <div className="relative flex items-center gap-2">
+                        {/* Loading icon when refreshing messages */}
+                        {loadingComments && (
+                          <div className="text-white bg-white/10 rounded-full p-2 shadow">
+                            <FaSpinner className="text-sm animate-spin" />
+                          </div>
+                        )}
+
+                        <button
+                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-colors shadow"
+                          onClick={() => setShowChatOptionsMenu(!showChatOptionsMenu)}
+                          title="Chat options"
+                          aria-label="Chat options"
+                        >
+                          <FaEllipsisV className="text-sm" />
+                        </button>
+                        {showChatOptionsMenu && (
+                          <div className="absolute top-full right-0 mt-2 bg-white rounded-lg shadow-lg border border-gray-200 z-20 min-w-[180px] chat-options-menu">
+                            {/* Contact Information option - only show for accepted status */}
+                            {canSeeContactInfo && (
                               <button
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
                                 onClick={() => {
-                                  fetchLatestComments();
+                                  onShowOtherParty({
+                                    ...otherParty,
+                                    isOnline: isOtherPartyOnlineInTable,
+                                    isTyping: isOtherPartyTyping,
+                                    lastSeen: otherPartyLastSeenInTable
+                                  }, appt);
                                   setShowChatOptionsMenu(false);
                                 }}
                               >
-                                <FaSync className="text-sm" />
-                                Refresh Messages
+                                <FaInfoCircle className="text-sm" />
+                                Contact Information
                               </button>
-                                                          {/* Starred Messages option */}
+                            )}
+                            {/* Refresh option */}
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              onClick={() => {
+                                fetchLatestComments();
+                                setShowChatOptionsMenu(false);
+                              }}
+                            >
+                              <FaSync className="text-sm" />
+                              Refresh Messages
+                            </button>
+                            {/* Settings option */}
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              onClick={() => {
+                                setShowSettingsModal(true);
+                                setShowChatOptionsMenu(false);
+                              }}
+                            >
+                              <FaCog className="text-sm" />
+                              Settings
+                            </button>
+                            {/* Starred Messages option */}
                             <button
                               className="w-full px-4 py-2 text-left text-sm text-yellow-600 hover:bg-yellow-50 flex items-center gap-2"
                               onClick={() => {
@@ -7627,7 +7621,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               <FaStar className="text-sm" />
                               Starred Messages
                             </button>
-                            
+
                             {/* Select Messages option */}
                             <button
                               className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
@@ -7641,122 +7635,128 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                               Select Messages
                             </button>
 
-                              {/* Keyboard shortcuts and file upload guidelines */}
-                              <button
-                                className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                onClick={() => {
-                                  setShowShortcutTip(!showShortcutTip);
-                                  setShowChatOptionsMenu(false);
-                                }}
-                              >
-                                <FaLightbulb className="text-sm" />
-                                Tips & Guidelines
-                              </button>
-                              
-                              {/* Export Chat option */}
-                              {filteredComments.length > 0 && (
-                                <button
-                                  className="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-green-50 flex items-center gap-2"
-                                  onClick={() => {
-                                    setShowChatOptionsMenu(false);
-                                    onExportChat(appt, filteredComments, callHistory);
-                                  }}
-                                >
-                                  <FaDownload className="text-sm" />
-                                  Export Chat Transcript (PDF)
-                                </button>
-                              )}
+                            {/* Keyboard shortcuts and file upload guidelines */}
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                              onClick={() => {
+                                setShowShortcutTip(!showShortcutTip);
+                                setShowChatOptionsMenu(false);
+                              }}
+                            >
+                              <FaLightbulb className="text-sm" />
+                              Tips & Guidelines
+                            </button>
 
-                              {/* Call History option */}
+                            {/* Export Chat option */}
+                            {filteredComments.length > 0 && (
                               <button
-                                className="w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50 flex items-center gap-2"
+                                className="w-full px-4 py-2 text-left text-sm text-green-600 hover:bg-green-50 flex items-center gap-2"
                                 onClick={() => {
-                                  setCallHistoryAppointmentId(appt._id);
-                                  setShowCallHistoryModal(true);
                                   setShowChatOptionsMenu(false);
+                                  onExportChat(appt, filteredComments, callHistory);
                                 }}
                               >
-                                <FaHistory className="text-sm" />
-                                Call History
+                                <FaDownload className="text-sm" />
+                                Export Chat Transcript (PDF)
                               </button>
+                            )}
 
-                              {/* Line divider */}
-                              <div className="border-t border-gray-200 my-1"></div>
-                              
-                              {/* Chat Lock/Unlock option */}
-                              {(chatLocked || chatLockStatusLoading) ? (
-                                <button
-                                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                  onClick={() => {
-                                    setShowRemoveLockModal(true);
-                                    setShowChatOptionsMenu(false);
-                                  }}
-                                >
-                                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z"/>
-                                  </svg>
-                                  Remove Chat Lock
-                                </button>
-                              ) : (
-                                <button
-                                  className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
-                                  onClick={() => {
-                                    setShowChatLockModal(true);
-                                    setShowChatOptionsMenu(false);
-                                  }}
-                                >
-                                  <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                                    <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z"/>
-                                  </svg>
-                                  Lock Chat
-                                </button>
-                              )}
-                              {/* Text Styling option */}
-                              <button
-                                className="w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50 flex items-center gap-2"
-                                onClick={() => {
-                                  setShowTextStylingPanel(!showTextStylingPanel);
-                                  setShowChatOptionsMenu(false);
-                                }}
-                              >
-                                <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                  <path d="M5 4v3h5.5v12h3V7H19V4H5z"/>
-                                </svg>
-                                Text Styling
-                              </button>
-                              {/* Report Chat option */}
+                            {/* Call History option */}
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50 flex items-center gap-2"
+                              onClick={() => {
+                                setCallHistoryAppointmentId(appt._id);
+                                setShowCallHistoryModal(true);
+                                setShowChatOptionsMenu(false);
+                              }}
+                            >
+                              <FaHistory className="text-sm" />
+                              Call History
+                            </button>
+
+                            {/* Line divider */}
+                            <div className="border-t border-gray-200 my-1"></div>
+
+                            {/* Chat Lock/Unlock option */}
+                            {(chatLocked || chatLockStatusLoading) ? (
                               <button
                                 className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
                                 onClick={() => {
-                                  setShowReportChatModal(true);
+                                  setShowRemoveLockModal(true);
                                   setShowChatOptionsMenu(false);
                                 }}
                               >
-                                <FaFlag className="text-sm" />
-                                Report Chat
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
+                                </svg>
+                                Remove Chat Lock
                               </button>
-                              {/* Clear chat option */}
-                              {filteredComments.length > 0 && (
-                                <button
-                                  className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
-                                  onClick={() => {
-                                    setShowClearChatModal(true);
-                                    setShowChatOptionsMenu(false);
-                                  }}
-                                >
-                                  <FaTrash className="text-sm" />
-                                  Clear Chat
-                                </button>
-                              )}
-                            </div>
-                          )}
-                        </div>
-                        {/* Tips & Guidelines popup */}
-                        {showShortcutTip && (
-                          <div className="absolute top-full right-0 mt-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-20 max-w-xs animate-fadeIn">
-                            <div className="font-semibold mb-2">⌨️ Keyboard Shortcuts:</div>
-                            <div className="mb-2">• Press Ctrl + F to quickly focus and type your message</div>
-                            <div className="mb-2">• Press Esc to close chatbox.</div>
+                            ) : (
+                              <button
+                                className="w-full px-4 py-2 text-left text-sm text-blue-600 hover:bg-blue-50 flex items-center gap-2"
+                                onClick={() => {
+                                  setShowChatLockModal(true);
+                                  setShowChatOptionsMenu(false);
+                                }}
+                              >
+                                <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                                  <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
+                                </svg>
+                                Lock Chat
+                              </button>
+                            )}
+                            {/* Text Styling option */}
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm text-purple-600 hover:bg-purple-50 flex items-center gap-2"
+                              onClick={() => {
+                                setShowTextStylingPanel(!showTextStylingPanel);
+                                setShowChatOptionsMenu(false);
+                              }}
+                            >
+                              <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                <path d="M5 4v3h5.5v12h3V7H19V4H5z" />
+                              </svg>
+                              Text Styling
+                            </button>
+                            {/* Report Chat option */}
+                            <button
+                              className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                              onClick={() => {
+                                setShowReportChatModal(true);
+                                setShowChatOptionsMenu(false);
+                              }}
+                            >
+                              <FaFlag className="text-sm" />
+                              Report Chat
+                            </button>
+                            {/* Clear chat option */}
+                            {filteredComments.length > 0 && (
+                              <button
+                                className="w-full px-4 py-2 text-left text-sm text-red-600 hover:bg-red-50 flex items-center gap-2"
+                                onClick={() => {
+                                  setShowClearChatModal(true);
+                                  setShowChatOptionsMenu(false);
+                                }}
+                              >
+                                <FaTrash className="text-sm" />
+                                Clear Chat
+                              </button>
+                            )}
+                          </div>
+                        )}
+                      </div>
+                      <ChatSettingsModal
+                        isOpen={showSettingsModal}
+                        onClose={() => setShowSettingsModal(false)}
+                        settings={settings}
+                        updateSetting={updateSetting}
+                      />
+                      {/* Tips & Guidelines popup */}
+                      {showShortcutTip && (
+                        <div className="absolute top-full right-0 mt-2 bg-gray-800 text-white text-xs rounded-lg px-3 py-2 shadow-lg z-20 max-w-xs animate-fadeIn">
+                          <div className="font-semibold mb-2">⌨️ Keyboard Shortcuts:</div>
+                          <div className="mb-2">• Press Ctrl + F to quickly focus and type your message</div>
+                          <div className="mb-2">• Press Esc to close chatbox.</div>
                           <div className="border-t border-gray-600 pt-2 mt-2">
                             <div className="font-semibold mb-2">📎 File Upload Guidelines:</div>
                             <div>• Photos: JPG, PNG, GIF, WebP (≤ 5MB)</div>
@@ -7765,130 +7765,130 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             <div>• Audio: MP3, WAV, M4A, OGG (≤ 5MB)</div>
                             <div>• Camera: Direct photo capture from device</div>
                             <div>• Add captions to all media types</div>
-                            </div>
-                            <div className="border-t border-gray-600 pt-2 mt-2">
-                              <div className="font-semibold mb-2">💬 Chat Features:</div>
-                              <div>• Real-time messaging with socket.io</div>
-                              <div>• Message reactions and emoji support</div>
-                              <div>• File sharing and media previews</div>
-                              <div>• Audio recording with pause/resume</div>
-                              <div>• Audio playback with speed controls</div>
-                              <div>• Message editing and deletion</div>
-                              <div>• Message starring and search</div>
-                              <div>• Chat export to PDF</div>
-                              <div>• Chat locking for dispute resolution</div>
-                            </div>
-                            <div className="border-t border-gray-600 pt-2 mt-2">
-                              <div className="font-semibold mb-2">🔒 Security & Moderation:</div>
-                              <div>• Report inappropriate content</div>
-                              <div>• Report chat</div>
-                              <div>• Content filtering and moderation</div>
-                              <div>• User blocking capabilities</div>
-                            </div>
-                            <div className="absolute -top-1 right-4 w-2 h-2 bg-gray-800 transform rotate-45"></div>
                           </div>
-                        )}
-                        <button
-                          className="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors z-10 shadow"
-                          onClick={handleChatModalClose}
-                          title="Close"
-                          aria-label="Close"
-                        >
-                          <FaTimes className="w-4 h-4" />
-                        </button>
-                      </div>
-                    </>
-                  )}
-                </div>
-                {/* Enhanced Search Header */}
-                {showSearchBox && (
-                  <div className="enhanced-search-header bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 px-3 sm:px-4 py-3 border-b-2 border-blue-700 flex-shrink-0 animate-slideDown">
-                    <div className="flex items-center gap-2 sm:gap-3 flex-nowrap">
-                      {/* Calendar Search Icon */}
-                      <div className="relative calendar-container">
-                        <button
-                          className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
-                          onClick={(e) => {
-                            e.stopPropagation();
-                            setShowCalendar(!showCalendar);
-                          }}
-                          title="Jump to date"
-                          aria-label="Jump to date"
-                        >
-                          <FaCalendarAlt className="text-sm" />
-                        </button>
-                        {showCalendar && (
-                          <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 min-w-[250px] animate-fadeIn" 
-                               style={{zIndex: 9999}}>
-                            <div className="flex items-center justify-between mb-3">
-                              <span className="text-sm font-medium text-gray-700">Jump to Date</span>
-                              <button
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  setShowCalendar(false);
-                                }}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
-                              >
-                                <FaTimes size={14} />
-                              </button>
-                            </div>
-                            <input
-                              type="date"
-                              value={selectedDate}
-                              onChange={(e) => {
-                                e.stopPropagation();
-                                handleDateSelect(e.target.value);
-                              }}
-                              className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
-                              max={formatDateForInput(new Date())}
-                            />
-                            <div className="text-xs text-gray-500 mt-2">
-                              Select a date to jump to the first message from that day
-                            </div>
+                          <div className="border-t border-gray-600 pt-2 mt-2">
+                            <div className="font-semibold mb-2">💬 Chat Features:</div>
+                            <div>• Real-time messaging with socket.io</div>
+                            <div>• Message reactions and emoji support</div>
+                            <div>• File sharing and media previews</div>
+                            <div>• Audio recording with pause/resume</div>
+                            <div>• Audio playback with speed controls</div>
+                            <div>• Message editing and deletion</div>
+                            <div>• Message starring and search</div>
+                            <div>• Chat export to PDF</div>
+                            <div>• Chat locking for dispute resolution</div>
                           </div>
-                        )}
-                      </div>
-                      
-                      {/* Enhanced Search Bar */}
-                      <div className="flex-1 flex items-center gap-2 bg-white/20 rounded-full px-3 sm:px-4 py-2 backdrop-blur-sm min-w-0 overflow-hidden">
-                        <FaSearch className="text-white/70 text-sm" />
-                        <input
-                          type="text"
-                          placeholder="Search messages..."
-                          value={searchQuery}
-                          onChange={handleSearchInputChange}
-                          onKeyDown={handleSearchKeyDown}
-                          className="bg-transparent text-white placeholder-white/70 text-sm outline-none flex-1 min-w-0 w-full"
-                          autoFocus
-                        />
-                        {searchResults.length > 0 && (
-                          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
-                            <span className="text-white/80 text-xs bg-white/10 px-2 py-1 rounded-full">
-                              {currentSearchIndex + 1}/{searchResults.length}
-                            </span>
-                            <div className="flex gap-1">
-                              <button
-                                onClick={() => setCurrentSearchIndex(prev => prev > 0 ? prev - 1 : searchResults.length - 1)}
-                                className="text-white/80 hover:text-white p-1 rounded transition-colors text-xs"
-                                title="Previous result"
-                              >
-                                ↑
-                              </button>
-                              <button
-                                onClick={() => setCurrentSearchIndex(prev => prev < searchResults.length - 1 ? prev + 1 : 0)}
-                                className="text-white/80 hover:text-white p-1 rounded transition-colors text-xs"
-                                title="Next result"
-                              >
-                                ↓
-                              </button>
-                            </div>
+                          <div className="border-t border-gray-600 pt-2 mt-2">
+                            <div className="font-semibold mb-2">🔒 Security & Moderation:</div>
+                            <div>• Report inappropriate content</div>
+                            <div>• Report chat</div>
+                            <div>• Content filtering and moderation</div>
+                            <div>• User blocking capabilities</div>
                           </div>
-                        )}
-                      </div>
-                      
-                      {/* Close Icon */}
+                          <div className="absolute -top-1 right-4 w-2 h-2 bg-gray-800 transform rotate-45"></div>
+                        </div>
+                      )}
                       <button
-                                              onClick={() => {
+                        className="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors z-10 shadow"
+                        onClick={handleChatModalClose}
+                        title="Close"
+                        aria-label="Close"
+                      >
+                        <FaTimes className="w-4 h-4" />
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+              {/* Enhanced Search Header */}
+              {showSearchBox && (
+                <div className="enhanced-search-header bg-gradient-to-r from-blue-600 via-purple-600 to-blue-800 px-3 sm:px-4 py-3 border-b-2 border-blue-700 flex-shrink-0 animate-slideDown">
+                  <div className="flex items-center gap-2 sm:gap-3 flex-nowrap">
+                    {/* Calendar Search Icon */}
+                    <div className="relative calendar-container">
+                      <button
+                        className="text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
+                        onClick={(e) => {
+                          e.stopPropagation();
+                          setShowCalendar(!showCalendar);
+                        }}
+                        title="Jump to date"
+                        aria-label="Jump to date"
+                      >
+                        <FaCalendarAlt className="text-sm" />
+                      </button>
+                      {showCalendar && (
+                        <div className="absolute top-full left-0 mt-2 bg-white rounded-lg shadow-xl border border-gray-200 p-3 min-w-[250px] animate-fadeIn"
+                          style={{ zIndex: 9999 }}>
+                          <div className="flex items-center justify-between mb-3">
+                            <span className="text-sm font-medium text-gray-700">Jump to Date</span>
+                            <button
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                setShowCalendar(false);
+                              }}
+                              className="text-gray-400 hover:text-gray-600 transition-colors"
+                            >
+                              <FaTimes size={14} />
+                            </button>
+                          </div>
+                          <input
+                            type="date"
+                            value={selectedDate}
+                            onChange={(e) => {
+                              e.stopPropagation();
+                              handleDateSelect(e.target.value);
+                            }}
+                            className="w-full p-2 border border-gray-300 rounded-lg text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all"
+                            max={formatDateForInput(new Date())}
+                          />
+                          <div className="text-xs text-gray-500 mt-2">
+                            Select a date to jump to the first message from that day
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Enhanced Search Bar */}
+                    <div className="flex-1 flex items-center gap-2 bg-white/20 rounded-full px-3 sm:px-4 py-2 backdrop-blur-sm min-w-0 overflow-hidden">
+                      <FaSearch className="text-white/70 text-sm" />
+                      <input
+                        type="text"
+                        placeholder="Search messages..."
+                        value={searchQuery}
+                        onChange={handleSearchInputChange}
+                        onKeyDown={handleSearchKeyDown}
+                        className="bg-transparent text-white placeholder-white/70 text-sm outline-none flex-1 min-w-0 w-full"
+                        autoFocus
+                      />
+                      {searchResults.length > 0 && (
+                        <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
+                          <span className="text-white/80 text-xs bg-white/10 px-2 py-1 rounded-full">
+                            {currentSearchIndex + 1}/{searchResults.length}
+                          </span>
+                          <div className="flex gap-1">
+                            <button
+                              onClick={() => setCurrentSearchIndex(prev => prev > 0 ? prev - 1 : searchResults.length - 1)}
+                              className="text-white/80 hover:text-white p-1 rounded transition-colors text-xs"
+                              title="Previous result"
+                            >
+                              ↑
+                            </button>
+                            <button
+                              onClick={() => setCurrentSearchIndex(prev => prev < searchResults.length - 1 ? prev + 1 : 0)}
+                              className="text-white/80 hover:text-white p-1 rounded transition-colors text-xs"
+                              title="Next result"
+                            >
+                              ↓
+                            </button>
+                          </div>
+                        </div>
+                      )}
+                    </div>
+
+                    {/* Close Icon */}
+                    <button
+                      onClick={() => {
                         setShowSearchBox(false);
                         setSearchQuery("");
                         setSearchResults([]);
@@ -7899,128 +7899,127 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           el.outerHTML = el.innerHTML;
                         });
                       }}
-                        className="flex-shrink-0 text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
-                        title="Close search"
-                        aria-label="Close search"
-                      >
-                        <FaTimes className="text-sm" />
-                      </button>
+                      className="flex-shrink-0 text-white hover:text-gray-200 bg-white/10 hover:bg-white/20 rounded-full p-2 transition-all duration-300 transform hover:scale-110 shadow"
+                      title="Close search"
+                      aria-label="Close search"
+                    >
+                      <FaTimes className="text-sm" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              {/* Chat Content Area */}
+              <div className="flex-1 flex flex-col min-h-0">
+                {/* Pinned Messages Section */}
+                {pinnedMessages.length > 0 && (
+                  <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-b border-purple-200 px-4 py-3 flex-shrink-0">
+                    <div className="flex items-center gap-2 mb-2">
+                      <FaThumbtack className="text-purple-600 text-sm" />
+                      <span className="text-purple-700 font-semibold text-sm">Pinned Messages</span>
+                      <span className="text-purple-600 text-xs">({pinnedMessages.length})</span>
+                    </div>
+                    <div className="space-y-2 max-h-24 overflow-y-auto">
+                      {pinnedMessages.map((pinnedMsg) => (
+                        <div
+                          key={pinnedMsg._id}
+                          className={`bg-white rounded-lg p-2 border-l-4 border-purple-500 cursor-pointer transition-all duration-200 hover:shadow-md ${highlightedPinnedMessage === pinnedMsg._id ? 'ring-2 ring-purple-400 shadow-lg' : ''
+                            }`}
+                          onClick={() => {
+                            // Highlight the pinned message and scroll to it
+                            setHighlightedPinnedMessage(pinnedMsg._id);
+                            const messageElement = document.getElementById(`message-${pinnedMsg._id}`);
+                            if (messageElement) {
+                              messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                              // Remove highlight after 3 seconds
+                              setTimeout(() => setHighlightedPinnedMessage(null), 3000);
+                            }
+                          }}
+                        >
+                          <div className="flex items-start justify-between">
+                            <div className="flex-1 min-w-0">
+                              <div className="flex items-center gap-2 mb-1">
+                                <span className="text-xs text-purple-600 font-medium">
+                                  {pinnedMsg.senderEmail === currentUser.email ? 'You' : otherParty?.username || 'Other'}
+                                </span>
+                                <span className="text-xs text-gray-500">
+                                  {pinnedMsg.pinDuration === 'custom'
+                                    ? `${Math.round((new Date(pinnedMsg.pinExpiresAt) - new Date()) / (1000 * 60 * 60))}h left`
+                                    : pinnedMsg.pinDuration === '24hrs'
+                                      ? '24h left'
+                                      : pinnedMsg.pinDuration === '7days'
+                                        ? '7d left'
+                                        : '30d left'
+                                  }
+                                </span>
+                              </div>
+                              <div className="text-sm text-gray-800 line-clamp-2">
+                                {pinnedMsg.message}
+                              </div>
+                            </div>
+                            <button
+                              className="text-purple-600 hover:text-purple-800 p-1 rounded-full hover:bg-purple-100 transition-colors"
+                              onClick={(e) => {
+                                e.stopPropagation();
+                                handlePinMessage(pinnedMsg, false);
+                              }}
+                              title="Unpin message"
+                            >
+                              <FaThumbtack size={14} />
+                            </button>
+                          </div>
+                        </div>
+                      ))}
                     </div>
                   </div>
                 )}
-                {/* Chat Content Area */}
-                <div className="flex-1 flex flex-col min-h-0">
-                  {/* Pinned Messages Section */}
-                  {pinnedMessages.length > 0 && (
-                    <div className="bg-gradient-to-r from-purple-50 to-blue-50 border-b border-purple-200 px-4 py-3 flex-shrink-0">
-                      <div className="flex items-center gap-2 mb-2">
-                        <FaThumbtack className="text-purple-600 text-sm" />
-                        <span className="text-purple-700 font-semibold text-sm">Pinned Messages</span>
-                        <span className="text-purple-600 text-xs">({pinnedMessages.length})</span>
-                      </div>
-                      <div className="space-y-2 max-h-24 overflow-y-auto">
-                        {pinnedMessages.map((pinnedMsg) => (
-                          <div
-                            key={pinnedMsg._id}
-                            className={`bg-white rounded-lg p-2 border-l-4 border-purple-500 cursor-pointer transition-all duration-200 hover:shadow-md ${
-                              highlightedPinnedMessage === pinnedMsg._id ? 'ring-2 ring-purple-400 shadow-lg' : ''
-                            }`}
-                            onClick={() => {
-                              // Highlight the pinned message and scroll to it
-                              setHighlightedPinnedMessage(pinnedMsg._id);
-                              const messageElement = document.getElementById(`message-${pinnedMsg._id}`);
-                              if (messageElement) {
-                                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                // Remove highlight after 3 seconds
-                                setTimeout(() => setHighlightedPinnedMessage(null), 3000);
-                              }
-                            }}
-                          >
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1 min-w-0">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <span className="text-xs text-purple-600 font-medium">
-                                    {pinnedMsg.senderEmail === currentUser.email ? 'You' : otherParty?.username || 'Other'}
-                                  </span>
-                                  <span className="text-xs text-gray-500">
-                                    {pinnedMsg.pinDuration === 'custom' 
-                                      ? `${Math.round((new Date(pinnedMsg.pinExpiresAt) - new Date()) / (1000 * 60 * 60))}h left`
-                                      : pinnedMsg.pinDuration === '24hrs' 
-                                        ? '24h left'
-                                        : pinnedMsg.pinDuration === '7days' 
-                                          ? '7d left'
-                                          : '30d left'
-                                    }
-                                  </span>
-                                </div>
-                                <div className="text-sm text-gray-800 line-clamp-2">
-                                  {pinnedMsg.message}
-                                </div>
-                              </div>
-                              <button
-                                className="text-purple-600 hover:text-purple-800 p-1 rounded-full hover:bg-purple-100 transition-colors"
-                                onClick={(e) => {
-                                  e.stopPropagation();
-                                  handlePinMessage(pinnedMsg, false);
-                                }}
-                                title="Unpin message"
-                              >
-                                <FaThumbtack size={14} />
-                              </button>
-                            </div>
-                          </div>
-                        ))}
-                      </div>
-                    </div>
-                  )}
-                  
-                  {/* Messages Container */}
-                  <div 
-                    ref={chatContainerRef} 
-                    className={`flex-1 overflow-y-auto space-y-2 px-4 pt-4 animate-fadeInChat relative bg-gradient-to-b from-transparent to-blue-50/30 ${isDragOver ? 'bg-blue-50/50 border-2 border-dashed border-blue-300' : ''}`}
-                    onDragOver={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!isChatSendBlocked) {
-                        setIsDragOver(true);
-                      }
-                    }}
-                    onDragEnter={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!isChatSendBlocked) {
-                        setIsDragOver(true);
-                      }
-                    }}
-                    onDragLeave={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
-                      if (!e.currentTarget.contains(e.relatedTarget)) {
-                        setIsDragOver(false);
-                      }
-                    }}
-                    onDrop={(e) => {
-                      e.preventDefault();
-                      e.stopPropagation();
+
+                {/* Messages Container */}
+                <div
+                  ref={chatContainerRef}
+                  className={`flex-1 overflow-y-auto space-y-2 px-4 pt-4 animate-fadeInChat relative bg-gradient-to-b from-transparent to-blue-50/30 ${isDragOver ? 'bg-blue-50/50 border-2 border-dashed border-blue-300' : ''}`}
+                  onDragOver={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!isChatSendBlocked) {
+                      setIsDragOver(true);
+                    }
+                  }}
+                  onDragEnter={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!isChatSendBlocked) {
+                      setIsDragOver(true);
+                    }
+                  }}
+                  onDragLeave={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    if (!e.currentTarget.contains(e.relatedTarget)) {
                       setIsDragOver(false);
-                      
-                      if (isChatSendBlocked) {
-                        toast.info('Image sending disabled for this appointment status. You can view chat history.');
-                        return;
-                      }
-                      
-                      const files = Array.from(e.dataTransfer.files);
-                      const imageFiles = files.filter(file => file.type.startsWith('image/'));
-                      
-                      if (imageFiles.length > 0) {
-                        handleImageFiles(imageFiles);
-                      } else if (files.length > 0) {
-                        toast.error('Only image files are supported');
-                      }
-                    }}
-                  >
+                    }
+                  }}
+                  onDrop={(e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+                    setIsDragOver(false);
+
+                    if (isChatSendBlocked) {
+                      toast.info('Image sending disabled for this appointment status. You can view chat history.');
+                      return;
+                    }
+
+                    const files = Array.from(e.dataTransfer.files);
+                    const imageFiles = files.filter(file => file.type.startsWith('image/'));
+
+                    if (imageFiles.length > 0) {
+                      handleImageFiles(imageFiles);
+                    } else if (files.length > 0) {
+                      toast.error('Only image files are supported');
+                    }
+                  }}
+                >
                   {/* Privacy Notice - First item in chat */}
-                  <div 
+                  <div
                     className="px-4 py-3 bg-gradient-to-r from-blue-50 to-purple-50 border-l-4 border-blue-400 rounded-r-lg mb-4 backdrop-blur-sm"
                   >
                     <p className="text-sm text-blue-700 font-medium text-center flex items-center justify-center gap-2">
@@ -8028,12 +8027,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       Your privacy is our top priority — all your chats and data are fully encrypted for your safety
                     </p>
                   </div>
-                  
+
                   {/* Floating Date Indicator */}
                   {currentFloatingDate && filteredComments.length > 0 && (
-                    <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-300 ease-in-out ${
-                      isScrolling ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-                    }`}>
+                    <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-300 ease-in-out ${isScrolling ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                      }`}>
                       <div className="w-full flex justify-center py-2">
                         <div className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">
                           {currentFloatingDate}
@@ -8060,7 +8058,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       const callTimestamp = new Date(call.startTime || call.createdAt).getTime();
                       return callTimestamp > clearTime;
                     });
-                    
+
                     const mergedTimeline = [
                       // Convert filtered call history to timeline items
                       ...filteredCallHistory.map(call => ({
@@ -8085,17 +8083,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     // If no items at all
                     if (mergedTimeline.length === 0) {
                       return (
-                    <div className="flex flex-col items-center justify-center h-full text-center py-8">
-                      <FaCommentDots className="text-gray-300 text-4xl mb-3" />
-                      <p className="text-gray-500 font-medium text-sm">No messages yet</p>
-                      <p className="text-gray-400 text-xs mt-1">Start the conversation and connect with the other party</p>
-                    </div>
+                        <div className="flex flex-col items-center justify-center h-full text-center py-8">
+                          <FaCommentDots className="text-gray-300 text-4xl mb-3" />
+                          <p className="text-gray-500 font-medium text-sm">No messages yet</p>
+                          <p className="text-gray-400 text-xs mt-1">Start the conversation and connect with the other party</p>
+                        </div>
                       );
                     }
 
                     // Render visible items
                     const visibleItems = mergedTimeline.slice(Math.max(0, mergedTimeline.length - Math.min(visibleCount, mergedTimeline.length)));
-                    
+
                     return visibleItems.map((item, mapIndex) => {
                       const index = mergedTimeline.length - visibleItems.length + mapIndex;
                       const previousItem = index > 0 ? mergedTimeline[index - 1] : null;
@@ -8107,12 +8105,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       if (item.type === 'call') {
                         const call = item.call;
                         const isCaller = call.callerId?._id === currentUser._id || call.callerId === currentUser._id;
-                        const otherPartyName = isCaller 
+                        const otherPartyName = isCaller
                           ? (call.receiverId?.username || 'Unknown')
                           : (call.callerId?.username || 'Unknown');
                         // For message bubble: isMe = true if user is caller (right side, blue), false if receiver (left side, white)
                         const isMe = isCaller;
-                        
+
                         return (
                           <React.Fragment key={`call-${call._id || call.callId}`}>
                             {isNewDay && (
@@ -8124,11 +8122,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                             )}
                             <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
                               <div
-                                className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 ${
-                                  isMe 
-                                    ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
-                                    : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
-                                }`}
+                                className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 ${isMe
+                                  ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl'
+                                  : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                                  }`}
                                 style={{ animationDelay: `${0.03 * index}s` }}
                               >
                                 <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
@@ -8147,18 +8144,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                   </div>
                                 </div>
                                 <div className="flex items-center gap-1 justify-end mt-2" data-message-actions>
-                                  <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
-                                    {currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                  </span>
+                                  {settings.showTimestamps && (
+                                    <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
+                                      {currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
+                                    </span>
+                                  )}
                                   {/* Options icon - three dots menu */}
                                   <button
-                                    className={`${
-                                      isMe 
-                                        ? 'text-blue-200 hover:text-white' 
-                                        : 'text-gray-500 hover:text-gray-700'
-                                    } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
-                                    onClick={(e) => { 
-                                      e.stopPropagation(); 
+                                    className={`${isMe
+                                      ? 'text-blue-200 hover:text-white'
+                                      : 'text-gray-500 hover:text-gray-700'
+                                      } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
+                                    onClick={(e) => {
+                                      e.stopPropagation();
                                       // Show reactions bar for calls (like regular messages)
                                       setReactionsMessageId(`call-${call._id || call.callId}`);
                                       setShowReactionsBar(true);
@@ -8179,86 +8177,86 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
 
                       // If it's a message, render chat message (existing logic)
                       const c = item.message;
-                    const isMe = c.senderEmail === currentUser.email;
-                    const isEditing = editingComment === c._id;
-                    const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
+                      const isMe = c.senderEmail === currentUser.email;
+                      const isEditing = editingComment === c._id;
+                      const formattedDate = currentDate.toLocaleDateString('en-US', { month: 'numeric', day: 'numeric', hour: 'numeric', minute: 'numeric' });
 
-                    return (
-                      <React.Fragment key={c._id || index}>
-                        {isNewDay && (
-                          <div className="w-full flex justify-center my-2">
-                            <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
-                          </div>
-                        )}
-                        {/* New messages divider: only right after opening when unread exists */}
+                      return (
+                        <React.Fragment key={c._id || index}>
+                          {isNewDay && (
+                            <div className="w-full flex justify-center my-2">
+                              <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">{getDateLabel(currentDate)}</span>
+                            </div>
+                          )}
+                          {/* New messages divider: only right after opening when unread exists */}
                           {showUnreadDividerOnOpen && unreadNewMessages > 0 && item.type === 'message' && (() => {
                             // Find the index of this message in filteredComments
                             const messageIndex = filteredComments.findIndex(msg => msg._id === c._id);
                             return messageIndex === filteredComments.length - unreadNewMessages;
                           })() && (
-                          <div className="w-full flex items-center my-2">
-                            <div className="flex-1 h-px bg-gray-300"></div>
-                            <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
-                              {unreadNewMessages} unread message{unreadNewMessages > 1 ? 's' : ''}
-                            </span>
-                            <div className="flex-1 h-px bg-gray-300"></div>
-                          </div>
-                        )}
-                        <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
-                          {/* Selection checkbox - only show in selection mode */}
-                          {isSelectionMode && (
-                            <div className={`flex items-start ${isMe ? 'order-2 ml-2' : 'order-1 mr-2'}`}>
-                              <input
-                                type="checkbox"
-                                checked={selectedMessages.some(msg => msg._id === c._id)}
-                                onChange={(e) => {
-                                  if (e.target.checked) {
-                                    setSelectedMessages(prev => [...prev, c]);
-                                  } else {
-                                    setSelectedMessages(prev => prev.filter(msg => msg._id !== c._id));
+                              <div className="w-full flex items-center my-2">
+                                <div className="flex-1 h-px bg-gray-300"></div>
+                                <span className="mx-2 text-xs font-semibold text-red-600 bg-red-50 px-2 py-1 rounded-full border border-red-200">
+                                  {unreadNewMessages} unread message{unreadNewMessages > 1 ? 's' : ''}
+                                </span>
+                                <div className="flex-1 h-px bg-gray-300"></div>
+                              </div>
+                            )}
+                          <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
+                            {/* Selection checkbox - only show in selection mode */}
+                            {isSelectionMode && (
+                              <div className={`flex items-start ${isMe ? 'order-2 ml-2' : 'order-1 mr-2'}`}>
+                                <input
+                                  type="checkbox"
+                                  checked={selectedMessages.some(msg => msg._id === c._id)}
+                                  onChange={(e) => {
+                                    if (e.target.checked) {
+                                      setSelectedMessages(prev => [...prev, c]);
+                                    } else {
+                                      setSelectedMessages(prev => prev.filter(msg => msg._id !== c._id));
+                                    }
+                                  }}
+                                  className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
+                                />
+                              </div>
+                            )}
+                            <div
+                              ref={el => messageRefs.current[c._id] = el}
+                              id={`message-${c._id}`}
+                              data-message-id={c._id}
+                              className={`relative rounded-2xl px-4 sm:px-5 shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c.audioUrl && !c.deleted ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${settings.messageDensity === 'compact' ? 'py-1' : settings.messageDensity === 'spacious' ? 'py-5' : 'py-3'
+                                } ${settings.fontSize === 'small' ? 'text-xs' : settings.fontSize === 'large' ? 'text-base' : 'text-sm'
+                                } ${isMe
+                                  ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl'
+                                  : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
+                                } ${highlightedPinnedMessage === c._id ? 'ring-4 ring-purple-400 shadow-2xl scale-105' : ''
+                                } ${isSelectionMode && selectedMessages.some(msg => msg._id === c._id) ? 'ring-2 ring-blue-400' : ''}`}
+                              style={{ animationDelay: `${0.03 * index}s` }}
+                            >
+                              {/* Reply preview above message if this is a reply */}
+                              {c.replyTo && (() => {
+                                // Check if replyTo is a call (starts with "call-")
+                                const isCallReply = c.replyTo.startsWith('call-');
+                                let repliedMessage = null;
+
+                                if (isCallReply) {
+                                  // Look for the call in callHistory
+                                  const callId = c.replyTo.replace('call-', '');
+                                  const repliedCall = callHistory.find(call =>
+                                    (call._id || call.callId) === callId
+                                  );
+                                  if (repliedCall) {
+                                    repliedMessage = {
+                                      message: `${repliedCall.callType === 'video' ? 'Video' : 'Audio'} call`
+                                    };
                                   }
-                                }}
-                                className="w-4 h-4 text-blue-600 bg-gray-100 border-gray-300 rounded focus:ring-blue-500 focus:ring-2"
-                              />
-                            </div>
-                          )}
-                          <div
-                            ref={el => messageRefs.current[c._id] = el}
-                            id={`message-${c._id}`}
-                            data-message-id={c._id}
-                            className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 min-h-[60px] ${c.audioUrl && !c.deleted ? 'min-w-[280px] sm:min-w-[320px]' : ''} ${
-                              isMe 
-                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl' 
-                                : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
-                            } ${
-                              highlightedPinnedMessage === c._id ? 'ring-4 ring-purple-400 shadow-2xl scale-105' : ''
-                            } ${isSelectionMode && selectedMessages.some(msg => msg._id === c._id) ? 'ring-2 ring-blue-400' : ''}`}
-                            style={{ animationDelay: `${0.03 * index}s` }}
-                          >
-                            {/* Reply preview above message if this is a reply */}
-                            {c.replyTo && (() => {
-                              // Check if replyTo is a call (starts with "call-")
-                              const isCallReply = c.replyTo.startsWith('call-');
-                              let repliedMessage = null;
-                              
-                              if (isCallReply) {
-                                // Look for the call in callHistory
-                                const callId = c.replyTo.replace('call-', '');
-                                const repliedCall = callHistory.find(call => 
-                                  (call._id || call.callId) === callId
-                                );
-                                if (repliedCall) {
-                                  repliedMessage = {
-                                    message: `${repliedCall.callType === 'video' ? 'Video' : 'Audio'} call`
-                                  };
+                                } else {
+                                  // Look for the message in comments
+                                  repliedMessage = comments.find(msg => msg._id === c.replyTo);
                                 }
-                              } else {
-                                // Look for the message in comments
-                                repliedMessage = comments.find(msg => msg._id === c.replyTo);
-                              }
-                              
-                              return (
-                                <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
+
+                                return (
+                                  <div className="border-l-4 border-purple-400 pl-3 mb-2 text-xs bg-gradient-to-r from-purple-50 to-blue-50 hover:from-purple-100 hover:to-blue-100 rounded-lg w-full max-w-full break-words cursor-pointer transition-all duration-200 hover:shadow-sm" onClick={() => {
                                     if (messageRefs.current[c.replyTo]) {
                                       messageRefs.current[c.replyTo].scrollIntoView({ behavior: 'smooth', block: 'center' });
                                       messageRefs.current[c.replyTo].classList.add('reply-highlight');
@@ -8267,2122 +8265,1892 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                                       }, 1600);
                                     }
                                   }} role="button" tabIndex={0} aria-label="Go to replied message">
-                                  <span className="text-xs text-gray-700 font-medium truncate max-w-[150px] flex items-center gap-1">
-                                    <span className="text-purple-500">↩</span>
-                                    {repliedMessage?.message?.substring(0, 30) || 'Original message'}{repliedMessage?.message?.length > 30 ? '...' : ''}
+                                    <span className="text-xs text-gray-700 font-medium truncate max-w-[150px] flex items-center gap-1">
+                                      <span className="text-purple-500">↩</span>
+                                      {repliedMessage?.message?.substring(0, 30) || 'Original message'}{repliedMessage?.message?.length > 30 ? '...' : ''}
+                                    </span>
+                                  </div>
+                                );
+                              })()}
+                              {/* Sender label for admin messages */}
+                              {!isMe && (c.senderEmail !== appt.buyerId?.email) && (c.senderEmail !== appt.sellerId?.email) && (
+                                <div className="font-semibold mb-1 text-xs text-purple-600">UrbanSetu</div>
+                              )}
+                              <div className={`text-left ${isMe ? 'font-medium' : ''} ${settings.fontSize === 'small' ? 'text-sm' : settings.fontSize === 'large' ? 'text-lg' : 'text-base'
+                                }`}>
+                                {c.deleted ? (
+                                  <span className="flex items-center gap-1 text-gray-400 italic">
+                                    <FaBan className="inline-block text-lg" /> {c.senderEmail === currentUser.email ? "You deleted this message" : "This message was deleted."}
                                   </span>
-                                </div>
-                              );
-                            })()}
-                            {/* Sender label for admin messages */}
-                            {!isMe && (c.senderEmail !== appt.buyerId?.email) && (c.senderEmail !== appt.sellerId?.email) && (
-                              <div className="font-semibold mb-1 text-xs text-purple-600">UrbanSetu</div>
-                            )}
-                            <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
-                              {c.deleted ? (
-                                <span className="flex items-center gap-1 text-gray-400 italic">
-                                  <FaBan className="inline-block text-lg" /> {c.senderEmail === currentUser.email ? "You deleted this message" : "This message was deleted."}
-                                </span>
-                              ) : (
-                                <div>
-                                  {isEditing ? (
-                                    <div className="bg-yellow-100 border-l-4 border-yellow-400 px-2 py-1 rounded">
-                                      <span className="text-yellow-800 text-xs font-medium">✏️ Editing this message below...</span>
-                                    </div>
-                                  ) : (
-                                    <>
-                                      {/* Image Message */}
-                                      {c.imageUrl && (
-                                        <div className="mb-2">
-                                          <img
-                                            src={c.imageUrl}
-                                            alt="Shared image"
-                                            className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                            onClick={() => {
-                                              const imageUrls = (comments || []).filter(msg => !!msg.imageUrl).map(msg => msg.imageUrl);
-                                              const startIndex = Math.max(0, imageUrls.indexOf(c.imageUrl));
-                                              setPreviewImages(imageUrls);
-                                              setPreviewIndex(startIndex);
-                                              setShowImagePreview(true);
-                                            }}
-                                            onError={(e) => {
-                                              e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
-                                              e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
-                                            }}
-                                          />
-                                        </div>
-                                      )}
-                                      {/* Video Message */}
-                                      {c.videoUrl && (
-                                        <div className="mb-2">
-                                          <div className="relative">
-                                            <video
-                                              src={c.videoUrl}
-                                              className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
-                                              controls
-                                              onClick={(e) => {
-                                                e.preventDefault();
-                                                e.stopPropagation();
-                                                if (e.target.requestFullscreen) {
-                                                  e.target.requestFullscreen();
-                                                } else if (e.target.webkitRequestFullscreen) {
-                                                  e.target.webkitRequestFullscreen();
-                                                } else if (e.target.msRequestFullscreen) {
-                                                  e.target.msRequestFullscreen();
-                                                }
+                                ) : (
+                                  <div>
+                                    {isEditing ? (
+                                      <div className="bg-yellow-100 border-l-4 border-yellow-400 px-2 py-1 rounded">
+                                        <span className="text-yellow-800 text-xs font-medium">✏️ Editing this message below...</span>
+                                      </div>
+                                    ) : (
+                                      <>
+                                        {/* Image Message */}
+                                        {c.imageUrl && (
+                                          <div className="mb-2">
+                                            <img
+                                              src={c.imageUrl}
+                                              alt="Shared image"
+                                              className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                              onClick={() => {
+                                                const imageUrls = (comments || []).filter(msg => !!msg.imageUrl).map(msg => msg.imageUrl);
+                                                const startIndex = Math.max(0, imageUrls.indexOf(c.imageUrl));
+                                                setPreviewImages(imageUrls);
+                                                setPreviewIndex(startIndex);
+                                                setShowImagePreview(true);
+                                              }}
+                                              onError={(e) => {
+                                                e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
+                                                e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
                                               }}
                                             />
                                           </div>
-                                          <div className={`mt-1 text-xs flex gap-3 ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
-                                            <button
-                                              className={`${isMe ? 'text-white hover:text-blue-100' : 'text-blue-600 hover:underline'}`}
-                                              onClick={(e) => {
-                                                e.stopPropagation();
-                                                // download video
-                                                const a = document.createElement('a');
-                                                a.href = c.videoUrl;
-                                                a.download = `video-${c._id || Date.now()}`;
-                                                a.target = '_blank';
-                                                document.body.appendChild(a);
-                                                a.click();
-                                                a.remove();
-                                                toast.success('Video download started');
-                                              }}
-                                            >Download</button>
-                                          </div>
-                                        </div>
-                                      )}
-                                      {/* Audio Message */}
-                                      {c.audioUrl && (
-                                        <div className="mb-2">
-                                          <div className="relative">
-                                            <div className="w-full min-w-[280px] sm:min-w-[320px]">
-                                              <audio
-                                                src={c.audioUrl}
-                                                className="w-full"
+                                        )}
+                                        {/* Video Message */}
+                                        {c.videoUrl && (
+                                          <div className="mb-2">
+                                            <div className="relative">
+                                              <video
+                                                src={c.videoUrl}
+                                                className="max-w-full max-h-64 rounded-lg border cursor-pointer hover:opacity-90 transition-opacity"
                                                 controls
-                                                preload="metadata"
-                                                onClick={(e) => e.stopPropagation()}
-                                                ref={(audioEl) => {
-                                                  if (audioEl && !audioEl.dataset.audioId) {
-                                                    audioEl.dataset.audioId = c._id;
-                                                    
-                                                    // Sync with header volume control
-                                                    audioEl.volume = currentVolume;
-                                                    audioEl.muted = isSoundMuted;
-                                                    
-                                                    // Add play event listener to pause other audios
-                                                    audioEl.addEventListener('play', () => {
-                                                      // Pause all other audio elements
-                                                      document.querySelectorAll('audio[data-audio-id]').forEach(otherAudio => {
-                                                        if (otherAudio !== audioEl && !otherAudio.paused) {
-                                                          otherAudio.pause();
-                                                        }
-                                                      });
-                                                    });
-                                                    
-                                                    // Add playback rate change listener
-                                                    audioEl.addEventListener('ratechange', () => {
-                                                      const rate = audioEl.playbackRate;
-                                                      const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
-                                                      if (rateDisplay) {
-                                                        rateDisplay.textContent = `${rate}x`;
-                                                      }
-                                                      // Update active speed in dropdown
-                                                      const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
-                                                      if (speedMenu) {
-                                                        const speedButtons = speedMenu.querySelectorAll('[data-speed-option]');
-                                                        speedButtons.forEach(btn => {
-                                                          btn.classList.remove('bg-blue-100', 'text-blue-700');
-                                                          btn.classList.add('text-gray-700', 'hover:bg-gray-100');
-                                                          if (parseFloat(btn.dataset.speedOption) === rate) {
-                                                            btn.classList.remove('text-gray-700', 'hover:bg-gray-100');
-                                                            btn.classList.add('bg-blue-100', 'text-blue-700');
-                                                          }
-                                                        });
-                                                      }
-                                                    });
-                                                    
-                                                    // Add volume change listener for bidirectional sync
-                                                    audioEl.addEventListener('volumechange', () => {
-                                                      // Update header volume bar when audio player volume changes
-                                                      if (!audioEl.muted) {
-                                                        setCurrentVolume(audioEl.volume);
-                                                        setVolume(audioEl.volume, true); // Skip audio elements to prevent circular updates
-                                                      }
-                                                      
-                                                      // Check if all audio elements are muted to update header mute state
-                                                      const allAudioElements = document.querySelectorAll('audio[data-audio-id]');
-                                                      const allMuted = Array.from(allAudioElements).every(audio => audio.muted);
-                                                      const anyUnmuted = Array.from(allAudioElements).some(audio => !audio.muted);
-                                                      
-                                                      // Only update header mute state if all are muted or if this was a global unmute action
-                                                      if (allMuted && !isSoundMuted) {
-                                                        // All audio elements are now muted, update header to muted
-                                                        setIsSoundMuted(true);
-                                                      } else if (anyUnmuted && isSoundMuted) {
-                                                        // At least one audio is unmuted and header shows muted, update header to unmuted
-                                                        setIsSoundMuted(false);
-                                                      }
-                                                    });
-                                                    
-                                                    // Set initial speed display
-                                                    const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
-                                                      if (rateDisplay) {
-                                                        rateDisplay.textContent = `${audioEl.playbackRate}x`;
-                                                      }
+                                                onClick={(e) => {
+                                                  e.preventDefault();
+                                                  e.stopPropagation();
+                                                  if (e.target.requestFullscreen) {
+                                                    e.target.requestFullscreen();
+                                                  } else if (e.target.webkitRequestFullscreen) {
+                                                    e.target.webkitRequestFullscreen();
+                                                  } else if (e.target.msRequestFullscreen) {
+                                                    e.target.msRequestFullscreen();
                                                   }
                                                 }}
                                               />
                                             </div>
-                                            <div className="mt-2 flex justify-between items-center">
-                                              <div className="flex items-center gap-2">
+                                            <div className={`mt-1 text-xs flex gap-3 ${isMe ? 'text-blue-100' : 'text-gray-500'}`}>
                                               <button
-                                                className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
-                                                onClick={async (e) => {
+                                                className={`${isMe ? 'text-white hover:text-blue-100' : 'text-blue-600 hover:underline'}`}
+                                                onClick={(e) => {
                                                   e.stopPropagation();
-                                                  try {
-                                                    const response = await fetch(c.audioUrl, { mode: 'cors' });
-                                                    if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                    const blob = await response.blob();
-                                                    const blobUrl = window.URL.createObjectURL(blob);
-                                                    const a = document.createElement('a');
-                                                    a.href = blobUrl;
-                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
-                                                    document.body.appendChild(a);
-                                                    a.click();
-                                                    a.remove();
-                                                    setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                                    toast.success('Audio downloaded successfully');
-                                                  } catch (error) {
-                                                    const a = document.createElement('a');
-                                                    a.href = c.audioUrl;
-                                                    a.download = c.audioName || `audio-${c._id || Date.now()}`;
-                                                    a.target = '_blank';
-                                                    document.body.appendChild(a);
-                                                    a.click();
-                                                    a.remove();
-                                                    toast.success('Audio download started');
-                                                  }
+                                                  // download video
+                                                  const a = document.createElement('a');
+                                                  a.href = c.videoUrl;
+                                                  a.download = `video-${c._id || Date.now()}`;
+                                                  a.target = '_blank';
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  a.remove();
+                                                  toast.success('Video download started');
                                                 }}
-                                                title="Download audio"
-                                              >
-                                                <span className="inline-flex items-center gap-1">
-                                                  <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
-                                                  Download
-                                                </span>
-                                              </button>
-                                                <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500'}`} data-audio-id={c._id}>1x</span>
-                                              </div>
-                                              
-                                              {/* Three dots menu for audio options */}
-                                              <div className="relative">
-                                                <button
-                                                  className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${isMe ? 'text-white hover:bg-blue-500' : 'text-gray-600 hover:bg-gray-200'}`}
-                                                  onClick={(e) => {
-                                                    e.stopPropagation();
-                                                    const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
-                                                    if (menu) {
-                                                      menu.classList.toggle('hidden');
-                                                      // Close other audio menus when opening this one
-                                                      if (!menu.classList.contains('hidden')) {
-                                                        document.querySelectorAll('[data-audio-menu]').forEach(otherMenu => {
-                                                          if (otherMenu !== menu) {
-                                                            otherMenu.classList.add('hidden');
+                                              >Download</button>
+                                            </div>
+                                          </div>
+                                        )}
+                                        {/* Audio Message */}
+                                        {c.audioUrl && (
+                                          <div className="mb-2">
+                                            <div className="relative">
+                                              <div className="w-full min-w-[280px] sm:min-w-[320px]">
+                                                <audio
+                                                  src={c.audioUrl}
+                                                  className="w-full"
+                                                  controls
+                                                  preload="metadata"
+                                                  onClick={(e) => e.stopPropagation()}
+                                                  ref={(audioEl) => {
+                                                    if (audioEl && !audioEl.dataset.audioId) {
+                                                      audioEl.dataset.audioId = c._id;
+
+                                                      // Sync with header volume control
+                                                      audioEl.volume = currentVolume;
+                                                      audioEl.muted = isSoundMuted;
+
+                                                      // Add play event listener to pause other audios
+                                                      audioEl.addEventListener('play', () => {
+                                                        // Pause all other audio elements
+                                                        document.querySelectorAll('audio[data-audio-id]').forEach(otherAudio => {
+                                                          if (otherAudio !== audioEl && !otherAudio.paused) {
+                                                            otherAudio.pause();
                                                           }
                                                         });
+                                                      });
+
+                                                      // Add playback rate change listener
+                                                      audioEl.addEventListener('ratechange', () => {
+                                                        const rate = audioEl.playbackRate;
+                                                        const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
+                                                        if (rateDisplay) {
+                                                          rateDisplay.textContent = `${rate}x`;
+                                                        }
+                                                        // Update active speed in dropdown
+                                                        const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
+                                                        if (speedMenu) {
+                                                          const speedButtons = speedMenu.querySelectorAll('[data-speed-option]');
+                                                          speedButtons.forEach(btn => {
+                                                            btn.classList.remove('bg-blue-100', 'text-blue-700');
+                                                            btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+                                                            if (parseFloat(btn.dataset.speedOption) === rate) {
+                                                              btn.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                                                              btn.classList.add('bg-blue-100', 'text-blue-700');
+                                                            }
+                                                          });
+                                                        }
+                                                      });
+
+                                                      // Add volume change listener for bidirectional sync
+                                                      audioEl.addEventListener('volumechange', () => {
+                                                        // Update header volume bar when audio player volume changes
+                                                        if (!audioEl.muted) {
+                                                          setCurrentVolume(audioEl.volume);
+                                                          setVolume(audioEl.volume, true); // Skip audio elements to prevent circular updates
+                                                        }
+
+                                                        // Check if all audio elements are muted to update header mute state
+                                                        const allAudioElements = document.querySelectorAll('audio[data-audio-id]');
+                                                        const allMuted = Array.from(allAudioElements).every(audio => audio.muted);
+                                                        const anyUnmuted = Array.from(allAudioElements).some(audio => !audio.muted);
+
+                                                        // Only update header mute state if all are muted or if this was a global unmute action
+                                                        if (allMuted && !isSoundMuted) {
+                                                          // All audio elements are now muted, update header to muted
+                                                          setIsSoundMuted(true);
+                                                        } else if (anyUnmuted && isSoundMuted) {
+                                                          // At least one audio is unmuted and header shows muted, update header to unmuted
+                                                          setIsSoundMuted(false);
+                                                        }
+                                                      });
+
+                                                      // Set initial speed display
+                                                      const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
+                                                      if (rateDisplay) {
+                                                        rateDisplay.textContent = `${audioEl.playbackRate}x`;
                                                       }
                                                     }
                                                   }}
-                                                  title="Audio options"
-                                                >
-                                                  <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
-                                                    <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/>
-                                                  </svg>
-                                                </button>
-                                                
-                                                {/* Audio options dropdown - Main Menu */}
-                                                <div 
-                                                  data-audio-menu={c._id}
-                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
-                                                >
-                                                  <div className="py-1">
-                                                    <button
-                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
-                                                        const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
-                                                        if (mainMenu && speedMenu) {
-                                                          mainMenu.classList.add('hidden');
-                                                          speedMenu.classList.remove('hidden');
-                                                        }
-                                                      }}
-                                                    >
-                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                                                      </svg>
-                                                      Playback Speed
-                                                      <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                      </svg>
-                                                    </button>
-                                                    
-                                                    <button
-                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
-                                                        const controlsMenu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
-                                                        if (mainMenu && controlsMenu) {
-                                                          mainMenu.classList.add('hidden');
-                                                          controlsMenu.classList.remove('hidden');
-                                                        }
-                                                      }}
-                                                    >
-                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
-                                                      </svg>
-                                                      Audio Controls
-                                                      <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                                                      </svg>
-                                                    </button>
-                                                  </div>
+                                                />
+                                              </div>
+                                              <div className="mt-2 flex justify-between items-center">
+                                                <div className="flex items-center gap-2">
+                                                  <button
+                                                    className={`px-3 py-1.5 text-xs rounded-full shadow-sm border transition-colors ${isMe ? 'bg-white text-blue-600 hover:bg-blue-50 border-blue-200' : 'bg-blue-600 text-white hover:bg-blue-700 border-transparent'}`}
+                                                    onClick={async (e) => {
+                                                      e.stopPropagation();
+                                                      try {
+                                                        const response = await fetch(c.audioUrl, { mode: 'cors' });
+                                                        if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                        const blob = await response.blob();
+                                                        const blobUrl = window.URL.createObjectURL(blob);
+                                                        const a = document.createElement('a');
+                                                        a.href = blobUrl;
+                                                        a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                        document.body.appendChild(a);
+                                                        a.click();
+                                                        a.remove();
+                                                        setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                        toast.success('Audio downloaded successfully');
+                                                      } catch (error) {
+                                                        const a = document.createElement('a');
+                                                        a.href = c.audioUrl;
+                                                        a.download = c.audioName || `audio-${c._id || Date.now()}`;
+                                                        a.target = '_blank';
+                                                        document.body.appendChild(a);
+                                                        a.click();
+                                                        a.remove();
+                                                        toast.success('Audio download started');
+                                                      }
+                                                    }}
+                                                    title="Download audio"
+                                                  >
+                                                    <span className="inline-flex items-center gap-1">
+                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
+                                                      Download
+                                                    </span>
+                                                  </button>
+                                                  <span className={`text-xs playback-rate-display ${isMe ? 'text-blue-100' : 'text-gray-500'}`} data-audio-id={c._id}>1x</span>
                                                 </div>
 
-                                                {/* Audio Speed Menu */}
-                                                <div 
-                                                  data-audio-speed-menu={c._id}
-                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
-                                                >
-                                                  <div className="py-1">
-                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                                                {/* Three dots menu for audio options */}
+                                                <div className="relative">
+                                                  <button
+                                                    className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${isMe ? 'text-white hover:bg-blue-500' : 'text-gray-600 hover:bg-gray-200'}`}
+                                                    onClick={(e) => {
+                                                      e.stopPropagation();
+                                                      const menu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                      if (menu) {
+                                                        menu.classList.toggle('hidden');
+                                                        // Close other audio menus when opening this one
+                                                        if (!menu.classList.contains('hidden')) {
+                                                          document.querySelectorAll('[data-audio-menu]').forEach(otherMenu => {
+                                                            if (otherMenu !== menu) {
+                                                              otherMenu.classList.add('hidden');
+                                                            }
+                                                          });
+                                                        }
+                                                      }
+                                                    }}
+                                                    title="Audio options"
+                                                  >
+                                                    <svg className="w-4 h-4" fill="currentColor" viewBox="0 0 24 24">
+                                                      <path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z" />
+                                                    </svg>
+                                                  </button>
+
+                                                  {/* Audio options dropdown - Main Menu */}
+                                                  <div
+                                                    data-audio-menu={c._id}
+                                                    className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                  >
+                                                    <div className="py-1">
                                                       <button
-                                                        className="p-1 hover:bg-gray-100 rounded"
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
                                                           const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
                                                           if (mainMenu && speedMenu) {
-                                                            speedMenu.classList.add('hidden');
-                                                            mainMenu.classList.remove('hidden');
+                                                            mainMenu.classList.add('hidden');
+                                                            speedMenu.classList.remove('hidden');
                                                           }
                                                         }}
                                                       >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                                        </svg>
+                                                        Playback Speed
+                                                        <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                         </svg>
                                                       </button>
-                                                      Playback Speed
-                                                    </div>
-                                                    {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
-                                                      <button
-                                                        key={speed}
-                                                        data-speed-option={speed}
-                                                        className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${
-                                                          speed === 1 ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
-                                                        }`}
-                                                        onClick={(e) => {
-                                                          e.stopPropagation();
-                                                          const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
-                                                          if (audioEl) {
-                                                            audioEl.playbackRate = speed;
-                                                            // Update speed display immediately
-                                                            const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
-                                                            if (rateDisplay) {
-                                                              rateDisplay.textContent = `${speed}x`;
-                                                            }
-                                                          }
-                                                          
-                                                          // Update highlighting in the speed menu
-                                                          const menu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
-                                                          if (menu) {
-                                                            // Remove highlighting from all speed buttons
-                                                            const speedButtons = menu.querySelectorAll('[data-speed-option]');
-                                                            speedButtons.forEach(btn => {
-                                                              btn.classList.remove('bg-blue-100', 'text-blue-700');
-                                                              btn.classList.add('text-gray-700', 'hover:bg-gray-100');
-                                                            });
-                                                            
-                                                            // Add highlighting to the selected speed button
-                                                            const selectedButton = menu.querySelector(`[data-speed-option="${speed}"]`);
-                                                            if (selectedButton) {
-                                                              selectedButton.classList.remove('text-gray-700', 'hover:bg-gray-100');
-                                                              selectedButton.classList.add('bg-blue-100', 'text-blue-700');
-                                                            }
-                                                          }
-                                                          
-                                                          const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
-                                                          if (speedMenu) {
-                                                            speedMenu.classList.add('hidden');
-                                                          }
-                                                        }}
-                                                      >
-                                                        <span>{speed}x</span>
-                                                        {speed === 1 && <span className="text-xs text-gray-400">Normal</span>}
-                                                      </button>
-                                                    ))}
-                                                  </div>
-                                                </div>
 
-                                                {/* Audio Controls Menu */}
-                                                <div 
-                                                  data-audio-controls-menu={c._id}
-                                                  className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
-                                                >
-                                                  <div className="py-1">
-                                                    <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
                                                       <button
-                                                        className="p-1 hover:bg-gray-100 rounded"
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
                                                         onClick={(e) => {
                                                           e.stopPropagation();
                                                           const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
                                                           const controlsMenu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
                                                           if (mainMenu && controlsMenu) {
-                                                            controlsMenu.classList.add('hidden');
-                                                            mainMenu.classList.remove('hidden');
+                                                            mainMenu.classList.add('hidden');
+                                                            controlsMenu.classList.remove('hidden');
                                                           }
                                                         }}
                                                       >
                                                         <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                                                        </svg>
+                                                        Audio Controls
+                                                        <svg className="w-4 h-4 ml-auto" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                                                         </svg>
                                                       </button>
-                                                      Audio Controls
                                                     </div>
-                                                    
-                                                    <button
-                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
-                                                        if (audioEl) {
-                                                          if (audioEl.paused) {
-                                                            audioEl.play();
-                                                          } else {
-                                                            audioEl.pause();
+                                                  </div>
+
+                                                  {/* Audio Speed Menu */}
+                                                  <div
+                                                    data-audio-speed-menu={c._id}
+                                                    className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                  >
+                                                    <div className="py-1">
+                                                      <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                                                        <button
+                                                          className="p-1 hover:bg-gray-100 rounded"
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                            const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
+                                                            if (mainMenu && speedMenu) {
+                                                              speedMenu.classList.add('hidden');
+                                                              mainMenu.classList.remove('hidden');
+                                                            }
+                                                          }}
+                                                        >
+                                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                          </svg>
+                                                        </button>
+                                                        Playback Speed
+                                                      </div>
+                                                      {[0.5, 0.75, 1, 1.25, 1.5, 2].map(speed => (
+                                                        <button
+                                                          key={speed}
+                                                          data-speed-option={speed}
+                                                          className={`w-full px-3 py-2 text-left text-sm flex items-center justify-between transition-colors ${speed === 1 ? 'bg-blue-100 text-blue-700' : 'text-gray-700 hover:bg-gray-100'
+                                                            }`}
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
+                                                            if (audioEl) {
+                                                              audioEl.playbackRate = speed;
+                                                              // Update speed display immediately
+                                                              const rateDisplay = document.querySelector(`[data-audio-id="${c._id}"].playback-rate-display`);
+                                                              if (rateDisplay) {
+                                                                rateDisplay.textContent = `${speed}x`;
+                                                              }
+                                                            }
+
+                                                            // Update highlighting in the speed menu
+                                                            const menu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
+                                                            if (menu) {
+                                                              // Remove highlighting from all speed buttons
+                                                              const speedButtons = menu.querySelectorAll('[data-speed-option]');
+                                                              speedButtons.forEach(btn => {
+                                                                btn.classList.remove('bg-blue-100', 'text-blue-700');
+                                                                btn.classList.add('text-gray-700', 'hover:bg-gray-100');
+                                                              });
+
+                                                              // Add highlighting to the selected speed button
+                                                              const selectedButton = menu.querySelector(`[data-speed-option="${speed}"]`);
+                                                              if (selectedButton) {
+                                                                selectedButton.classList.remove('text-gray-700', 'hover:bg-gray-100');
+                                                                selectedButton.classList.add('bg-blue-100', 'text-blue-700');
+                                                              }
+                                                            }
+
+                                                            const speedMenu = document.querySelector(`[data-audio-speed-menu="${c._id}"]`);
+                                                            if (speedMenu) {
+                                                              speedMenu.classList.add('hidden');
+                                                            }
+                                                          }}
+                                                        >
+                                                          <span>{speed}x</span>
+                                                          {speed === 1 && <span className="text-xs text-gray-400">Normal</span>}
+                                                        </button>
+                                                      ))}
+                                                    </div>
+                                                  </div>
+
+                                                  {/* Audio Controls Menu */}
+                                                  <div
+                                                    data-audio-controls-menu={c._id}
+                                                    className="hidden absolute right-0 bottom-full mb-1 w-48 bg-white rounded-lg shadow-lg border border-gray-200 z-[9999]"
+                                                  >
+                                                    <div className="py-1">
+                                                      <div className="px-3 py-2 text-xs font-medium text-gray-500 uppercase tracking-wide flex items-center gap-2">
+                                                        <button
+                                                          className="p-1 hover:bg-gray-100 rounded"
+                                                          onClick={(e) => {
+                                                            e.stopPropagation();
+                                                            const mainMenu = document.querySelector(`[data-audio-menu="${c._id}"]`);
+                                                            const controlsMenu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
+                                                            if (mainMenu && controlsMenu) {
+                                                              controlsMenu.classList.add('hidden');
+                                                              mainMenu.classList.remove('hidden');
+                                                            }
+                                                          }}
+                                                        >
+                                                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                                                          </svg>
+                                                        </button>
+                                                        Audio Controls
+                                                      </div>
+
+                                                      <button
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
+                                                          if (audioEl) {
+                                                            if (audioEl.paused) {
+                                                              audioEl.play();
+                                                            } else {
+                                                              audioEl.pause();
+                                                            }
                                                           }
-                                                        }
-                                                        const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
-                                                        if (menu) {
-                                                          menu.classList.add('hidden');
-                                                        }
-                                                      }}
-                                                    >
-                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
-                                                      </svg>
-                                                      Toggle Play/Pause
-                                                    </button>
-                                                    
-                                                    <button
-                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
-                                                        if (audioEl) {
-                                                          audioEl.currentTime = 0;
-                                                        }
-                                                        const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
-                                                        if (menu) {
-                                                          menu.classList.add('hidden');
-                                                        }
-                                                      }}
-                                                    >
-                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                                                      </svg>
-                                                      Restart Audio
-                                                    </button>
-                                                    
-                                                    <button
-                                                      className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
-                                                      onClick={(e) => {
-                                                        e.stopPropagation();
-                                                        const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
-                                                        if (audioEl) {
-                                                          audioEl.muted = !audioEl.muted;
-                                                          // Trigger volumechange event to sync with header
-                                                          audioEl.dispatchEvent(new Event('volumechange'));
-                                                        }
-                                                        const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
-                                                        if (menu) {
-                                                          menu.classList.add('hidden');
-                                                        }
-                                                      }}
-                                                    >
-                                                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
-                                                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
-                                                      </svg>
-                                                      Toggle Mute
-                                                    </button>
+                                                          const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
+                                                          if (menu) {
+                                                            menu.classList.add('hidden');
+                                                          }
+                                                        }}
+                                                      >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M14.828 14.828a4 4 0 01-5.656 0M9 10h1m4 0h1m-6 4h1m4 0h1m-6-8h8a2 2 0 012 2v8a2 2 0 01-2 2H8a2 2 0 01-2-2V6a2 2 0 012-2z" />
+                                                        </svg>
+                                                        Toggle Play/Pause
+                                                      </button>
+
+                                                      <button
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
+                                                          if (audioEl) {
+                                                            audioEl.currentTime = 0;
+                                                          }
+                                                          const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
+                                                          if (menu) {
+                                                            menu.classList.add('hidden');
+                                                          }
+                                                        }}
+                                                      >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
+                                                        </svg>
+                                                        Restart Audio
+                                                      </button>
+
+                                                      <button
+                                                        className="w-full px-3 py-2 text-left text-sm text-gray-700 hover:bg-gray-100 flex items-center gap-2"
+                                                        onClick={(e) => {
+                                                          e.stopPropagation();
+                                                          const audioEl = document.querySelector(`[data-audio-id="${c._id}"]`);
+                                                          if (audioEl) {
+                                                            audioEl.muted = !audioEl.muted;
+                                                            // Trigger volumechange event to sync with header
+                                                            audioEl.dispatchEvent(new Event('volumechange'));
+                                                          }
+                                                          const menu = document.querySelector(`[data-audio-controls-menu="${c._id}"]`);
+                                                          if (menu) {
+                                                            menu.classList.add('hidden');
+                                                          }
+                                                        }}
+                                                      >
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5.586 15H4a1 1 0 01-1-1v-4a1 1 0 011-1h1.586l4.707-4.707C10.923 3.663 12 4.109 12 5v14c0 .891-1.077 1.337-1.707.707L5.586 15z" />
+                                                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 14l2-2m0 0l2-2m-2 2l-2-2m2 2l2 2" />
+                                                        </svg>
+                                                        Toggle Mute
+                                                      </button>
+                                                    </div>
                                                   </div>
                                                 </div>
                                               </div>
                                             </div>
+                                            {c.message && (
+                                              <div className={`mt-2 text-sm whitespace-pre-wrap break-words ${isMe ? 'text-white' : 'text-gray-700'}`}>
+                                                {c.message}
+                                                {c.edited && (
+                                                  <span className={`ml-2 text-[10px] italic whitespace-nowrap ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>(Edited)</span>
+                                                )}
+                                              </div>
+                                            )}
                                           </div>
-                                          {c.message && (
-                                            <div className={`mt-2 text-sm whitespace-pre-wrap break-words ${isMe ? 'text-white' : 'text-gray-700'}`}>
-                                              {c.message}
-                                              {c.edited && (
-                                                <span className={`ml-2 text-[10px] italic whitespace-nowrap ${isMe ? 'text-blue-200' : 'text-gray-400'}`}>(Edited)</span>
-                                              )}
-                                            </div>
-                                          )}
-                                        </div>
-                                      )}
-                                      {/* Document Message */}
-                                      {c.documentUrl && (
-                                        <div className="mb-2">
-                                          <button
-                                            className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
-                                            onClick={async (e) => {
-                                              e.stopPropagation();
-                                              try {
-                                                const response = await fetch(c.documentUrl, { mode: 'cors' });
-                                                if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                const blob = await response.blob();
-                                                const blobUrl = window.URL.createObjectURL(blob);
-                                                const a = document.createElement('a');
-                                                a.href = blobUrl;
-                                                a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                                document.body.appendChild(a);
-                                                a.click();
-                                                a.remove();
-                                                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                                toast.success('Document downloaded successfully');
-                                              } catch (error) {
-                                                console.error('Download failed:', error);
-                                                // Fallback to direct link
-                                                const a = document.createElement('a');
-                                                a.href = c.documentUrl;
-                                                a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                                a.target = '_blank';
-                                                document.body.appendChild(a);
-                                                a.click();
-                                                a.remove();
-                                                toast.success('Document download started');
-                                              }
-                                            }}
-                                          >
-                                            <span className="text-2xl">📄</span>
-                                            <span className={`text-sm truncate max-w-[200px] ${isMe ? 'text-white' : 'text-blue-700'}`}>{c.documentName || 'Document'}</span>
-                                          </button>
-                                        </div>
-                                      )}
-                                      {/* Link Preview in Message */}
-                                      {(() => {
-                                        // Only show preview if it wasn't dismissed before sending
-                                        if (c.previewDismissed) return null;
-                                        
-                                        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-                                        const urls = (c.message || '').match(urlRegex);
-                                        if (urls && urls.length > 0) {
-                                          return (
-                                            <div className="mb-2 max-h-40 overflow-hidden">
-                                              <LinkPreview
-                                                url={urls[0]}
-                                                className="max-w-xs"
-                                                showRemoveButton={false}
-                                                clickable={true}
-                                              />
-                                            </div>
-                                          );
-                                        }
-                                        return null;
-                                      })()}
-                                      
-                                      {/* Only show message text for non-audio messages (audio messages handle their caption internally) */}
-                                      {!c.audioUrl && (
-                                        <div className="inline">
-                                      <FormattedTextWithReadMore 
-                                        text={(c.message || '').replace(/\n+$/, '')}
-                                        isSentMessage={isMe}
-                                        className="whitespace-pre-wrap break-words"
-                                        searchQuery={searchQuery}
-                                      />
-                                      {c.edited && (
-                                        <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
-                                          )}
-                                        </div>
-                                      )}
-                                    </>
-                                  )}
-                                </div>
-                              )}
-                            </div>
-                            <div className="flex items-center gap-1 justify-end mt-2" data-message-actions>
-                              {/* Pin indicator for pinned messages */}
-                              {c.pinned && (
-                                <FaThumbtack className={`${isMe ? 'text-purple-300' : 'text-purple-500'} text-[10px]`} title="Pinned message" />
-                              )}
-                              {/* Star indicator for starred messages */}
-                              {c.starredBy?.includes(currentUser._id) && (
-                                <FaStar className={`${isMe ? 'text-yellow-300' : 'text-yellow-500'} text-[10px]`} title="Starred message" />
-                              )}
-                              <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
-                                {new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                              </span>
-                              {/* Options icon - visible for all messages including deleted ones */}
-                              <button
-                                className={`${
-                                  c.senderEmail === currentUser.email 
-                                    ? 'text-blue-200 hover:text-white' 
-                                    : 'text-gray-500 hover:text-gray-700'
-                                } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
-                                onClick={(e) => { 
-                                  e.stopPropagation(); 
-                                  setHeaderOptionsMessageId(c._id); 
-                                  if (!isChatSendBlocked) {
-                                    toggleReactionsBar(c._id);
-                                  }
-                                }}
-                                title="Message options"
-                                aria-label="Message options"
-                              >
-                                <FaEllipsisV size={12} />
-                              </button>
-                              
-                              {/* Display reactions */}
-                              {!c.deleted && c.reactions && c.reactions.length > 0 && (
-                                <div className="flex items-center gap-1 ml-1">
-                                  {(() => {
-                                    // Group reactions by emoji
-                                    const groupedReactions = {};
-                                    c.reactions.forEach(reaction => {
-                                      if (!groupedReactions[reaction.emoji]) {
-                                        groupedReactions[reaction.emoji] = [];
-                                      }
-                                      groupedReactions[reaction.emoji].push(reaction);
-                                    });
-                                    
-                                    return Object.entries(groupedReactions).map(([emoji, reactions]) => {
-                                      const hasUserReaction = reactions.some(r => r.userId === currentUser._id);
-                                      const userNames = reactions.map(r => r.userName).join(', ');
-                                      
-                                      return (
-                                        <button
-                                          key={emoji}
-                                          onClick={() => handleQuickReaction(c._id, emoji)}
-                                          className={`text-xs rounded-full px-2 py-1 flex items-center gap-1 transition-all duration-200 hover:scale-105 ${
-                                            hasUserReaction 
-                                              ? 'bg-blue-500 border-2 border-blue-600 hover:bg-blue-600 shadow-md' 
-                                              : 'bg-gray-100 border border-gray-300 hover:bg-gray-200'
-                                          }`}
-                                          title={`${userNames} reacted with ${emoji}${hasUserReaction ? ' (Click to remove)' : ' (Click to add)'}`}
-                                        >
-                                          <span>{emoji}</span>
-                                          <span className={`${hasUserReaction ? 'text-white font-semibold' : 'text-gray-600'}`}>
-                                            {reactions.length}
-                                          </span>
-                                        </button>
-                                      );
-                                    });
-                                  })()}
-                                </div>
-                              )}
-                              {(c.senderEmail === currentUser.email) && !c.deleted && (
-                                <span className="flex items-center gap-1 ml-1">
-                                  {c.readBy?.includes(otherParty?._id)
-                                    ? <FaCheckDouble className="text-green-400 text-xs transition-all duration-300 animate-fadeIn" title="Read" />
-                                    : c.status === 'delivered'
-                                      ? <FaCheckDouble className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Delivered" />
-                                      : c.status === 'sending'
-                                        ? <FaCheck className="text-blue-200 text-xs animate-pulse transition-all duration-300" title="Sending..." />
-                                        : <FaCheck className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Sent" />}
+                                        )}
+                                        {/* Document Message */}
+                                        {c.documentUrl && (
+                                          <div className="mb-2">
+                                            <button
+                                              className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
+                                                try {
+                                                  const response = await fetch(c.documentUrl, { mode: 'cors' });
+                                                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                  const blob = await response.blob();
+                                                  const blobUrl = window.URL.createObjectURL(blob);
+                                                  const a = document.createElement('a');
+                                                  a.href = blobUrl;
+                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  a.remove();
+                                                  setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                  toast.success('Document downloaded successfully');
+                                                } catch (error) {
+                                                  console.error('Download failed:', error);
+                                                  // Fallback to direct link
+                                                  const a = document.createElement('a');
+                                                  a.href = c.documentUrl;
+                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                  a.target = '_blank';
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  a.remove();
+                                                  toast.success('Document download started');
+                                                }
+                                              }}
+                                            >
+                                              <span className="text-2xl">📄</span>
+                                              <span className={`text-sm truncate max-w-[200px] ${isMe ? 'text-white' : 'text-blue-700'}`}>{c.documentName || 'Document'}</span>
+                                            </button>
+                                          </div>
+                                        )}
+                                        {/* Link Preview in Message */}
+                                        {(() => {
+                                          // Only show preview if it wasn't dismissed before sending
+                                          if (c.previewDismissed) return null;
+
+                                          const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+                                          const urls = (c.message || '').match(urlRegex);
+                                          if (urls && urls.length > 0) {
+                                            return (
+                                              <div className="mb-2 max-h-40 overflow-hidden">
+                                                <LinkPreview
+                                                  url={urls[0]}
+                                                  className="max-w-xs"
+                                                  showRemoveButton={false}
+                                                  clickable={true}
+                                                />
+                                              </div>
+                                            );
+                                          }
+                                          return null;
+                                        })()}
+
+                                        {/* Only show message text for non-audio messages (audio messages handle their caption internally) */}
+                                        {!c.audioUrl && (
+                                          <div className="inline">
+                                            <FormattedTextWithReadMore
+                                              text={(c.message || '').replace(/\n+$/, '')}
+                                              isSentMessage={isMe}
+                                              className="whitespace-pre-wrap break-words"
+                                              searchQuery={searchQuery}
+                                            />
+                                            {c.edited && (
+                                              <span className="ml-2 text-[10px] italic text-gray-300 whitespace-nowrap">(Edited)</span>
+                                            )}
+                                          </div>
+                                        )}
+                                      </>
+                                    )}
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex items-center gap-1 justify-end mt-2" data-message-actions>
+                                {/* Pin indicator for pinned messages */}
+                                {c.pinned && (
+                                  <FaThumbtack className={`${isMe ? 'text-purple-300' : 'text-purple-500'} text-[10px]`} title="Pinned message" />
+                                )}
+                                {/* Star indicator for starred messages */}
+                                {c.starredBy?.includes(currentUser._id) && (
+                                  <FaStar className={`${isMe ? 'text-yellow-300' : 'text-yellow-500'} text-[10px]`} title="Starred message" />
+                                )}
+                                <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
+                                  {new Date(c.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
                                 </span>
-                              )}
+                                {/* Options icon - visible for all messages including deleted ones */}
+                                <button
+                                  className={`${c.senderEmail === currentUser.email
+                                    ? 'text-blue-200 hover:text-white'
+                                    : 'text-gray-500 hover:text-gray-700'
+                                    } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
+                                  onClick={(e) => {
+                                    e.stopPropagation();
+                                    setHeaderOptionsMessageId(c._id);
+                                    if (!isChatSendBlocked) {
+                                      toggleReactionsBar(c._id);
+                                    }
+                                  }}
+                                  title="Message options"
+                                  aria-label="Message options"
+                                >
+                                  <FaEllipsisV size={12} />
+                                </button>
+
+                                {/* Display reactions */}
+                                {!c.deleted && c.reactions && c.reactions.length > 0 && (
+                                  <div className="flex items-center gap-1 ml-1">
+                                    {(() => {
+                                      // Group reactions by emoji
+                                      const groupedReactions = {};
+                                      c.reactions.forEach(reaction => {
+                                        if (!groupedReactions[reaction.emoji]) {
+                                          groupedReactions[reaction.emoji] = [];
+                                        }
+                                        groupedReactions[reaction.emoji].push(reaction);
+                                      });
+
+                                      return Object.entries(groupedReactions).map(([emoji, reactions]) => {
+                                        const hasUserReaction = reactions.some(r => r.userId === currentUser._id);
+                                        const userNames = reactions.map(r => r.userName).join(', ');
+
+                                        return (
+                                          <button
+                                            key={emoji}
+                                            onClick={() => handleQuickReaction(c._id, emoji)}
+                                            className={`text-xs rounded-full px-2 py-1 flex items-center gap-1 transition-all duration-200 hover:scale-105 ${hasUserReaction
+                                              ? 'bg-blue-500 border-2 border-blue-600 hover:bg-blue-600 shadow-md'
+                                              : 'bg-gray-100 border border-gray-300 hover:bg-gray-200'
+                                              }`}
+                                            title={`${userNames} reacted with ${emoji}${hasUserReaction ? ' (Click to remove)' : ' (Click to add)'}`}
+                                          >
+                                            <span>{emoji}</span>
+                                            <span className={`${hasUserReaction ? 'text-white font-semibold' : 'text-gray-600'}`}>
+                                              {reactions.length}
+                                            </span>
+                                          </button>
+                                        );
+                                      });
+                                    })()}
+                                  </div>
+                                )}
+                                {(c.senderEmail === currentUser.email) && !c.deleted && (
+                                  <span className="flex items-center gap-1 ml-1">
+                                    {c.readBy?.includes(otherParty?._id)
+                                      ? <FaCheckDouble className="text-green-400 text-xs transition-all duration-300 animate-fadeIn" title="Read" />
+                                      : c.status === 'delivered'
+                                        ? <FaCheckDouble className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Delivered" />
+                                        : c.status === 'sending'
+                                          ? <FaCheck className="text-blue-200 text-xs animate-pulse transition-all duration-300" title="Sending..." />
+                                          : <FaCheck className="text-blue-200 text-xs transition-all duration-300 animate-fadeIn" title="Sent" />}
+                                  </span>
+                                )}
+                              </div>
                             </div>
-                          </div>
-                          
-                          {/* Reactions Bar - positioned inside message container (above only) */}
-                          {(() => {
-                            const shouldShow = !c.deleted && showReactionsBar && reactionsMessageId === c._id;
-                            if (!shouldShow) return false;
-                            
-                            // Only show inline reaction bar if message should be positioned above
-                            const messageElement = document.querySelector(`[data-message-id="${c._id}"]`);
-                            if (messageElement) {
-                              const messageRect = messageElement.getBoundingClientRect();
-                              const chatContainer = chatContainerRef.current;
-                              if (chatContainer) {
-                                const containerRect = chatContainer.getBoundingClientRect();
-                                const distanceFromTop = messageRect.top - containerRect.top;
-                                
-                                // If message is near top and has space below, don't show inline bar (floating bar will handle it)
-                                if (distanceFromTop < 120) {
-                                  const spaceBelow = containerRect.bottom - messageRect.bottom;
-                                  const reactionBarHeight = 60;
-                                  
-                                  if (spaceBelow >= reactionBarHeight + 20) {
-                                    return false; // Don't show inline bar, floating bar will handle it
+
+                            {/* Reactions Bar - positioned inside message container (above only) */}
+                            {(() => {
+                              const shouldShow = !c.deleted && showReactionsBar && reactionsMessageId === c._id;
+                              if (!shouldShow) return false;
+
+                              // Only show inline reaction bar if message should be positioned above
+                              const messageElement = document.querySelector(`[data-message-id="${c._id}"]`);
+                              if (messageElement) {
+                                const messageRect = messageElement.getBoundingClientRect();
+                                const chatContainer = chatContainerRef.current;
+                                if (chatContainer) {
+                                  const containerRect = chatContainer.getBoundingClientRect();
+                                  const distanceFromTop = messageRect.top - containerRect.top;
+
+                                  // If message is near top and has space below, don't show inline bar (floating bar will handle it)
+                                  if (distanceFromTop < 120) {
+                                    const spaceBelow = containerRect.bottom - messageRect.bottom;
+                                    const reactionBarHeight = 60;
+
+                                    if (spaceBelow >= reactionBarHeight + 20) {
+                                      return false; // Don't show inline bar, floating bar will handle it
+                                    }
                                   }
                                 }
                               }
-                            }
-                            return true; // Show inline bar for above positioning
-                          })() && (
-                            <div className={`absolute -top-8 ${isMe ? 'right-0' : 'left-0'} bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300`} style={{ minWidth: 'max-content' }}>
-                              {/* Quick reaction buttons */}
-                              <button
-                                onClick={() => handleQuickReaction(c._id, '👍')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                                  isChatSendBlocked 
-                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                    : c.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                                      ? 'bg-blue-100 border-2 border-blue-400'
+                              return true; // Show inline bar for above positioning
+                            })() && (
+                                <div className={`absolute -top-8 ${isMe ? 'right-0' : 'left-0'} bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300`} style={{ minWidth: 'max-content' }}>
+                                  {/* Quick reaction buttons */}
+                                  <button
+                                    onClick={() => handleQuickReaction(c._id, '👍')}
+                                    className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      : c.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                      }`}
+                                    disabled={isChatSendBlocked}
+                                    title={isChatSendBlocked ? "Reactions disabled" : "Like"}
+                                  >
+                                    👍
+                                  </button>
+                                  <button
+                                    onClick={() => handleQuickReaction(c._id, '❤️')}
+                                    className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      : c.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                      }`}
+                                    disabled={isChatSendBlocked}
+                                    title={isChatSendBlocked ? "Reactions disabled" : "Love"}
+                                  >
+                                    ❤️
+                                  </button>
+                                  <button
+                                    onClick={() => handleQuickReaction(c._id, '😂')}
+                                    className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      : c.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                      }`}
+                                    disabled={isChatSendBlocked}
+                                    title={isChatSendBlocked ? "Reactions disabled" : "Laugh"}
+                                  >
+                                    😂
+                                  </button>
+                                  <button
+                                    onClick={() => handleQuickReaction(c._id, '😮')}
+                                    className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      : c.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                      }`}
+                                    disabled={isChatSendBlocked}
+                                    title={isChatSendBlocked ? "Reactions disabled" : "Wow"}
+                                  >
+                                    😮
+                                  </button>
+                                  <button
+                                    onClick={() => handleQuickReaction(c._id, '😢')}
+                                    className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      : c.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                      }`}
+                                    disabled={isChatSendBlocked}
+                                    title={isChatSendBlocked ? "Reactions disabled" : "Sad"}
+                                  >
+                                    😢
+                                  </button>
+                                  <button
+                                    onClick={() => handleQuickReaction(c._id, '😡')}
+                                    className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                                      : c.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
+                                        ? 'bg-blue-100 border-2 border-blue-400'
+                                        : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                                      }`}
+                                    disabled={isChatSendBlocked}
+                                    title={isChatSendBlocked ? "Reactions disabled" : "Angry"}
+                                  >
+                                    😡
+                                  </button>
+                                  <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                                  <button
+                                    onClick={toggleReactionsEmojiPicker}
+                                    className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                                      ? 'bg-gray-200 cursor-not-allowed opacity-50'
                                       : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                                }`}
-                                disabled={isChatSendBlocked}
-                                title={isChatSendBlocked ? "Reactions disabled" : "Like"}
-                              >
-                                👍
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c._id, '❤️')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                                  isChatSendBlocked 
-                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                    : c.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                                      ? 'bg-blue-100 border-2 border-blue-400'
-                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                                }`}
-                                disabled={isChatSendBlocked}
-                                title={isChatSendBlocked ? "Reactions disabled" : "Love"}
-                              >
-                                ❤️
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c._id, '😂')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                                  isChatSendBlocked 
-                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                    : c.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                                      ? 'bg-blue-100 border-2 border-blue-400'
-                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                                }`}
-                                disabled={isChatSendBlocked}
-                                title={isChatSendBlocked ? "Reactions disabled" : "Laugh"}
-                              >
-                                😂
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c._id, '😮')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                                  isChatSendBlocked 
-                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                    : c.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                                      ? 'bg-blue-100 border-2 border-blue-400'
-                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                                }`}
-                                disabled={isChatSendBlocked}
-                                title={isChatSendBlocked ? "Reactions disabled" : "Wow"}
-                              >
-                                😮
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c._id, '😢')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                                  isChatSendBlocked 
-                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                    : c.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                                      ? 'bg-blue-100 border-2 border-blue-400'
-                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                                }`}
-                                disabled={isChatSendBlocked}
-                                title={isChatSendBlocked ? "Reactions disabled" : "Sad"}
-                              >
-                                😢
-                              </button>
-                              <button
-                                onClick={() => handleQuickReaction(c._id, '😡')}
-                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                                  isChatSendBlocked 
-                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                    : c.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                                      ? 'bg-blue-100 border-2 border-blue-400'
-                                      : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                                }`}
-                                disabled={isChatSendBlocked}
-                                title={isChatSendBlocked ? "Reactions disabled" : "Angry"}
-                              >
-                                😡
-                              </button>
-                              <div className="w-px h-6 bg-gray-300 mx-1"></div>
-                              <button
-                                onClick={toggleReactionsEmojiPicker}
-                                className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                                  isChatSendBlocked 
-                                    ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                    : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                                }`}
-                                disabled={isChatSendBlocked}
-                                title={isChatSendBlocked ? "Reactions disabled" : "More emojis"}
-                              >
-                                ➕
-                              </button>
-                              
+                                      }`}
+                                    disabled={isChatSendBlocked}
+                                    title={isChatSendBlocked ? "Reactions disabled" : "More emojis"}
+                                  >
+                                    ➕
+                                  </button>
 
-                            </div>
-                          )}
-                        </div>
-                        
 
-                      </React.Fragment>
-                    );
+                                </div>
+                              )}
+                          </div>
+
+
+                        </React.Fragment>
+                      );
                     });
                   })()}
-                  
+
                   <div ref={chatEndRef} />
                 </div>
-                </div>
-                
-                {/* Floating Reaction Bar for Bottom Positioning */}
-                {(() => {
-                  const shouldShow = showReactionsBar && reactionsMessageId;
-                  if (!shouldShow) return null;
-                  
-                  const messageElement = document.querySelector(`[data-message-id="${reactionsMessageId}"]`);
-                  if (!messageElement) return null;
-                  
-                  const messageRect = messageElement.getBoundingClientRect();
-                  const chatContainer = chatContainerRef.current;
-                  if (!chatContainer) return null;
-                  
-                  const containerRect = chatContainer.getBoundingClientRect();
-                  const distanceFromTop = messageRect.top - containerRect.top;
-                  
-                  // Only show floating bar if message is near top and needs bottom positioning
-                  if (distanceFromTop < 120) {
-                    const spaceBelow = containerRect.bottom - messageRect.bottom;
-                    const reactionBarHeight = 60;
-                    
-                    if (spaceBelow >= reactionBarHeight + 20) {
-                      const comment = comments.find(c => c._id === reactionsMessageId);
-                      if (!comment || comment.deleted) return null;
-                      
-                      const isMe = comment.senderEmail === currentUser.email;
-                      
-                      return (
-                        <div 
-                          className="fixed bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300"
-                          style={{ 
-                            minWidth: 'max-content',
-                            top: `${messageRect.bottom + 2}px`,
-                            left: isMe ? 'auto' : `${messageRect.left}px`,
-                            right: isMe ? `${window.innerWidth - messageRect.right}px` : 'auto'
-                          }}
-                        >
-                          {/* Quick reaction buttons */}
-                          <button
-                            onClick={() => handleQuickReaction(comment._id, '👍')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                              isChatSendBlocked 
-                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                : comment.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
-                                  ? 'bg-blue-100 border-2 border-blue-400'
-                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                            }`}
-                            disabled={isChatSendBlocked}
-                            title={isChatSendBlocked ? "Reactions disabled" : "Like"}
-                          >
-                            👍
-                          </button>
-                          <button
-                            onClick={() => handleQuickReaction(comment._id, '❤️')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                              isChatSendBlocked 
-                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                : comment.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
-                                  ? 'bg-blue-100 border-2 border-blue-400'
-                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                            }`}
-                            disabled={isChatSendBlocked}
-                            title={isChatSendBlocked ? "Reactions disabled" : "Love"}
-                          >
-                            ❤️
-                          </button>
-                          <button
-                            onClick={() => handleQuickReaction(comment._id, '😂')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                              isChatSendBlocked 
-                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                : comment.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
-                                  ? 'bg-blue-100 border-2 border-blue-400'
-                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                            }`}
-                            disabled={isChatSendBlocked}
-                            title={isChatSendBlocked ? "Reactions disabled" : "Laugh"}
-                          >
-                            😂
-                          </button>
-                          <button
-                            onClick={() => handleQuickReaction(comment._id, '😮')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                              isChatSendBlocked 
-                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                : comment.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
-                                  ? 'bg-blue-100 border-2 border-blue-400'
-                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                            }`}
-                            disabled={isChatSendBlocked}
-                            title={isChatSendBlocked ? "Reactions disabled" : "Wow"}
-                          >
-                            😮
-                          </button>
-                          <button
-                            onClick={() => handleQuickReaction(comment._id, '😢')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                              isChatSendBlocked 
-                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                : comment.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
-                                  ? 'bg-blue-100 border-2 border-blue-400'
-                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                            }`}
-                            disabled={isChatSendBlocked}
-                            title={isChatSendBlocked ? "Reactions disabled" : "Sad"}
-                          >
-                            😢
-                          </button>
-                          <button
-                            onClick={() => handleQuickReaction(comment._id, '😡')}
-                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                              isChatSendBlocked 
-                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                : comment.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
-                                  ? 'bg-blue-100 border-2 border-blue-400'
-                                  : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                            }`}
-                            disabled={isChatSendBlocked}
-                            title={isChatSendBlocked ? "Reactions disabled" : "Angry"}
-                          >
-                            😡
-                          </button>
-                          <div className="w-px h-6 bg-gray-300 mx-1"></div>
-                          <button
-                            onClick={toggleReactionsEmojiPicker}
-                            className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${
-                              isChatSendBlocked 
-                                ? 'bg-gray-200 cursor-not-allowed opacity-50' 
-                                : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
-                            }`}
-                            disabled={isChatSendBlocked}
-                            title={isChatSendBlocked ? "Reactions disabled" : "More emojis"}
-                          >
-                            ➕
-                          </button>
-                        </div>
-                      );
-                    }
-                  }
-                  return null;
-                })()}
-                
-                {/* Reply indicator */}
-                {replyTo && (
-                  <div className="px-4 mb-2">
-                    <div className="flex items-center bg-blue-50 border-l-4 border-blue-400 px-2 py-1 rounded">
-                      <span className="text-xs text-gray-700 font-semibold mr-2">Replying to:</span>
-                      <span className="text-xs text-gray-600 truncate max-w-[200px]">{replyTo.message?.substring(0, 40)}{replyTo.message?.length > 40 ? '...' : ''}</span>
-                      <button className="ml-auto text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors" onClick={() => setReplyTo(null)} title="Cancel reply">
-                        <FaTimes className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                )}
+              </div>
 
+              {/* Floating Reaction Bar for Bottom Positioning */}
+              {(() => {
+                const shouldShow = showReactionsBar && reactionsMessageId;
+                if (!shouldShow) return null;
 
-                
-                {/* Edit indicator */}
-                {editingComment && (
-                  <div className="px-4 mb-2">
-                    <div className="flex items-center bg-yellow-50 border-l-4 border-yellow-400 px-2 py-1 rounded">
-                      <span className="text-xs text-yellow-700 font-semibold mr-2">✏️ Editing message:</span>
-                      <span className="text-xs text-yellow-600 truncate">{editText}</span>
-                      <button 
-                        className="ml-auto text-yellow-400 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-full p-1 transition-colors" 
-                        onClick={() => { 
-                          setEditingComment(null); 
-                          setEditText(""); 
-                          // Restore original draft and clear it after a small delay to ensure state update
-                          const draftToRestore = originalDraft;
-                          setComment(draftToRestore);
-                          setTimeout(() => {
-                            setOriginalDraft(""); // Clear stored draft after restoration
-                          }, 100);
-                          setDetectedUrl(null);
-                          setPreviewDismissed(false);
-                          // Auto-resize textarea for restored draft with proper timing
-                          setTimeout(() => {
-                            if (inputRef.current) {
-                              // Force a re-render by triggering the input event
-                              const event = new Event('input', { bubbles: true });
-                              inputRef.current.dispatchEvent(event);
-                              // Reset height first, then calculate proper height
-                              inputRef.current.style.height = '48px';
-                              const scrollHeight = inputRef.current.scrollHeight;
-                              const maxHeight = 144;
-                              
-                              if (scrollHeight <= maxHeight) {
-                                inputRef.current.style.height = scrollHeight + 'px';
-                                inputRef.current.style.overflowY = 'hidden';
-                              } else {
-                                inputRef.current.style.height = maxHeight + 'px';
-                                inputRef.current.style.overflowY = 'auto';
-                              }
-                            }
-                          }, 100);
-                        }} 
-                        title="Cancel edit"
-                      >
-                        <FaTimes className="w-3 h-3" />
-                      </button>
-                    </div>
-                  </div>
-                )}
-                {/* Message Input Footer - Sticky */}
-                <div className="flex gap-2 mt-1 px-3 pb-2 flex-shrink-0 bg-gradient-to-b from-transparent to-white pt-2 items-end">
-                  {/* Message Input Container with Attachment and Emoji Icons Inside */}
-                  <div className="flex-1 relative">
-                    {/* Link Preview Container with Height and Width Constraints */}
-                    {detectedUrl && (
-                      <div className="max-h-32 max-w-full overflow-y-auto mb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
-                        <LinkPreview
-                          url={detectedUrl}
-                          onRemove={() => {
-                            setDetectedUrl(null);
-                            setPreviewDismissed(true);
-                          }}
-                          className="w-full"
-                          showRemoveButton={true}
-                          clickable={false}
-                        />
-                      </div>
-                    )}
-                    {/* Formatting toolbar - Collapsible */}
-                    {showTextStylingPanel && (
-                      <div className="relative mb-2 animate-slideDown bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded-lg border border-purple-200 shadow-sm">
-                        {/* Close button */}
-                        <button
-                          className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 hover:bg-white hover:bg-opacity-50 rounded-full p-1 transition-colors z-10"
-                          onClick={() => setShowTextStylingPanel(false)}
-                          title="Close text styling panel"
-                          aria-label="Close text styling panel"
-                        >
-                          <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                          </svg>
-                        </button>
-                        <div className="flex flex-wrap items-center gap-2 pr-8">
-                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        applyFormattingAndClose(() => {
-                          const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `**${selected || 'bold'}**`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+(selected||'bold').length);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>B</button>
-                      <button type="button" className={`px-2 py-1 text-xs rounded border italic ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        applyFormattingAndClose(() => {
-                          const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `*${selected || 'italic'}*`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1, start+1+(selected||'italic').length);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>I</button>
-                      <button type="button" className={`px-2 py-1 text-xs rounded border underline ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        applyFormattingAndClose(() => {
-                          const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `__${selected || 'underline'}__`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+(selected||'underline').length);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>U</button>
-                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        applyFormattingAndClose(() => {
-                          const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0,start)+wrapped+base.slice(end); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2+(selected||'strike').length);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>S</button>
-                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        applyFormattingAndClose(() => {
-                          const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}- ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>• List</button>
-                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); 
-                        // Find existing numbered list items to determine next number
-                        const lines = before.split('\n');
-                        const lastLine = lines[lines.length - 1];
-                        let nextNum = 1;
-                        
-                        // Check if we're continuing a list
-                        for (let i = lines.length - 1; i >= 0; i--) {
-                          const line = lines[i].trim();
-                          const match = line.match(/^(\d+)\.\s/);
-                          if (match) {
-                            nextNum = parseInt(match[1]) + 1;
-                            break;
-                          } else if (line && !line.match(/^\s*$/)) {
-                            // Non-empty, non-numbered line found, reset to 1
-                            break;
-                          }
-                        }
-                        
-                        applyFormattingAndClose(() => {
-                          const next = `${before}${nextNum}. ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+(nextNum.toString().length)+2, start+(nextNum.toString().length)+2);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>1. List</button>
-                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        applyFormattingAndClose(() => {
-                          const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0,start); const after = base.slice(start); const next = `${before}> ${after}`; setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+2, start+2);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>&gt; Quote</button>
-                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Tag Property" onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        applyFormattingAndClose(() => {
-                          const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const insert = '@'; const next = base.slice(0,start)+insert+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+1, start+1);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>@Prop</button>
-                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Insert appointment card" onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        applyFormattingAndClose(() => {
-                          const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const card = '[Appointment: date • time • with]'; const next = base.slice(0,start)+card+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start+13, start+13);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>Appt</button>
-                      <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Insert service link" onClick={() => {
-                        if (isChatSendBlocked) {
-                          toast.info('Formatting disabled for this appointment status. You can view chat history.');
-                          return;
-                        }
-                        applyFormattingAndClose(() => {
-                          const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const link = 'Book Movers: /user/movers'; const next = base.slice(0,start)+link+base.slice(start); setComment(next); setTimeout(()=>{ try{ el.focus(); el.setSelectionRange(start, start);}catch(_){}} ,0);
-                        });
-                      }} disabled={isChatSendBlocked}>Service</button>
-                        </div>
-                      </div>
-                    )}
-                    {/* Property mention suggestions */}
-                    {comment && /@[^\s]*$/.test(comment) && (
-                      <div className="absolute bottom-16 left-2 right-2 bg-white border-2 border-blue-300 rounded-lg shadow-2xl max-h-60 overflow-auto z-30 animate-fadeIn">
-                        <div className="p-3 text-sm font-medium text-blue-600 border-b border-gray-200 bg-blue-50">
-                          <div className="flex items-center gap-2">
-                            {!propertiesLoaded ? (
-                              <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
-                            ) : (
-                              <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
-                            )}
-                            {!propertiesLoaded ? 'Loading properties...' : 'Select a property to reference:'}
-                          </div>
-                        </div>
-                        {(() => {
-                          const query = (comment.match(/@([^\s]*)$/)?.[1] || '').toLowerCase();
-                          const apptSource = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
-                          const apptProps = apptSource.map(a => {
-                            const l = a?.listingId && typeof a.listingId === 'object' ? a.listingId : {};
-                            return {
-                              id: a?.listingId?._id || a?.listingId,
-                              name: a?.propertyName || l?.name || 'Property',
-                              city: l?.city || 'City',
-                              state: l?.state || 'State',
-                              price: (l?.discountPrice ?? l?.regularPrice) || 0,
-                              bedrooms: l?.bedrooms || 0,
-                              bathrooms: l?.bathrooms || 0,
-                              area: l?.area || 0,
-                              image: Array.isArray(l?.imageUrls) ? l.imageUrls[0] : (l?.imageUrl || l?.image || null)
-                            };
-                          });
-                          const propList = Array.isArray(allProperties) ? allProperties : [];
-                          const allPropsDetailed = propList.map(p => {
-                            return {
-                              id: p?.id,
-                              name: p?.name || 'Property',
-                              city: p?.city || 'City',
-                              state: p?.state || 'State',
-                              price: p?.price || 0,
-                              bedrooms: p?.bedrooms || 0,
-                              bathrooms: p?.bathrooms || 0,
-                              area: p?.area || 0,
-                              image: Array.isArray(p?.imageUrls) ? p.imageUrls[0] : (p?.imageUrl || p?.image || p?.thumbnail || null)
-                            };
-                          });
-                          // Combine and deduplicate by ID
-                          const combined = [...apptProps, ...allPropsDetailed];
-                          const uniquePropsMap = new Map();
-                          
-                          // Add appointment properties first (they have more complete data)
-                          apptProps.forEach(prop => {
-                            if (prop.id && prop.name) {
-                              uniquePropsMap.set(prop.id, prop);
-                            }
-                          });
-                          
-                          // Add all properties, but don't override existing ones
-                          allPropsDetailed.forEach(prop => {
-                            if (prop.id && prop.name && !uniquePropsMap.has(prop.id)) {
-                              uniquePropsMap.set(prop.id, prop);
-                            }
-                          });
-                          
-                          const uniqueProps = Array.from(uniquePropsMap.values())
-                            .filter(p => p.name && p.name.toLowerCase().includes(query));
-                          
-                          
-                          if (uniqueProps.length === 0) return <div className="p-3 text-sm text-gray-500 text-center">No properties found. Try typing more characters.</div>;
-                          return uniqueProps.slice(0,8).map((p, index) => (
-                            <button key={`${p.id}-${index}`} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 transition-colors" onClick={() => {
-                              const el = inputRef.current; const base = comment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
-                              const token = `@[${p.name}](${p.id})`;
-                              const next = base.slice(0,start) + token + ' ' + base.slice(start + m[0].length);
-                              setComment(next);
-                              setTimeout(()=>{ try{ el?.focus(); el?.setSelectionRange(start+token.length+1, start+token.length+1);}catch(_){}} ,0);
-                            }}>
-                              <div className="flex items-center space-x-3">
-                                <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
-                                  {p.image ? (
-                                    <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
-                                  ) : (
-                                    <div className="text-gray-500 text-xs text-center">
-                                      <div className="font-bold">🏠</div>
-                                    </div>
-                                  )}
-                                </div>
-                                <div className="flex-1 min-w-0">
-                                  <div className="font-medium text-gray-900 truncate">{p.name}</div>
-                                  <div className="text-sm text-gray-500">
-                                    {p.city && p.state ? `${p.city}, ${p.state}` : (p.city || p.state || 'Location not available')}
-                                  </div>
-                                  {p.price && p.price > 0 ? (
-                                    <div className="text-sm font-semibold text-green-600">₹{Number(p.price).toLocaleString()}</div>
-                                  ) : (
-                                    <div className="text-sm text-gray-400">Price not available</div>
-                                  )}
-                                  <div className="text-xs text-gray-400">
-                                    {[p.bedrooms > 0 && `${p.bedrooms}BHK`, p.area > 0 && `${p.area} sq ft`].filter(Boolean).join(' • ') || 'Details not available'}
-                                  </div>
-                                </div>
-                              </div>
-                            </button>
-                          ));
-                        })()}
-                      </div>
-                    )}
-                    <textarea
-                      rows={1}
-                      className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
-                      style={{
-                        minHeight: '48px',
-                        maxHeight: '144px', // 6 lines * 24px line height
-                        lineHeight: '24px',
-                        wordBreak: 'break-all',
-                        overflowWrap: 'break-word'
-                      }}
-                      placeholder={isChatSendBlocked ? "Sending disabled for this appointment status. Chat history is available." : (editingComment ? "Edit your message..." : "Type a message...")}
-                      value={comment}
-                      onChange={e => {
-                        if (isChatSendBlocked) { return; }
-                        const value = e.target.value;
-                        setComment(value);
-                        
-                        // Detect URLs in the input
-                        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-                        const urls = value.match(urlRegex);
-                        if (urls && urls.length > 0) {
-                          setDetectedUrl(urls[0]);
-                          setPreviewDismissed(false); // Reset dismissed flag for new URL
-                        } else {
-                          setDetectedUrl(null);
-                          setPreviewDismissed(false);
-                        }
-                        
-                        if (editingComment) {
-                          setEditText(value);
-                        }
-                        if (!editingComment) {
-                          socket.emit('typing', { toUserId: otherParty._id, fromUserId: currentUser._id, appointmentId: appt._id });
-                        }
-                        
-                        // If cleared entirely, restore to original height
-                        if ((value || '').trim() === '') {
-                          const textarea = e.target;
-                          textarea.style.height = '48px';
-                          textarea.style.overflowY = 'hidden';
-                          return;
-                        }
-                        
-                        // Auto-expand textarea (WhatsApp style) with scrolling support
-                        const textarea = e.target;
-                        textarea.style.height = '48px'; // Reset to min height
-                        const scrollHeight = textarea.scrollHeight;
-                        const maxHeight = 144; // 6 lines max
-                        
-                        if (scrollHeight <= maxHeight) {
-                          // If content fits within max height, expand the textarea
-                          textarea.style.height = scrollHeight + 'px';
-                          textarea.style.overflowY = 'hidden';
-                        } else {
-                          // If content exceeds max height, set to max height and enable scrolling
-                          textarea.style.height = maxHeight + 'px';
-                          textarea.style.overflowY = 'auto';
-                        }
-                      }}
-                      onClick={() => {
-                        if (headerOptionsMessageId) {
-                          setHeaderOptionsMessageId(null);
-                          toast.info("You can hit reply icon in header to reply");
-                        }
-                      }}
-                      onScroll={(e) => {
-                        // Prevent scroll event from propagating to parent chat container
-                        e.stopPropagation();
-                      }}
-                      onPaste={(e) => {
-                        const items = Array.from(e.clipboardData.items);
-                        const imageItems = items.filter(item => item.type.startsWith('image/'));
-                        
-                        if (imageItems.length > 0) {
-                          e.preventDefault();
-                          const imageItem = imageItems[0];
-                          const file = imageItem.getAsFile();
-                          if (file) {
-                            handleImageFiles([file]);
-                          }
-                        }
-                      }}
-                      onKeyDown={e => { 
-                        if (isChatSendBlocked) {
-                          // Allow navigation keys but block input/submit
-                          if (e.key === 'Enter' || e.key.length === 1) {
-                            e.preventDefault();
-                            toast.info('Sending disabled for this appointment status.');
-                          }
-                          return;
-                        }
-                        // Check if this is a desktop viewport only
-                        const isDesktop = window.matchMedia('(min-width: 768px)').matches;
-                        
-                        if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) { e.preventDefault(); document.querySelector('button:contains("B")'); }
-                        if (e.ctrlKey && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=comment||''; const selected=base.slice(start,end); const wrapped=`*${selected||'italic'}*`; setComment(base.slice(0,start)+wrapped+base.slice(end)); return; }
-                        if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) { e.preventDefault(); const el = inputRef.current; if (!el) return; const start = el.selectionStart||0; const end=el.selectionEnd||0; const base=comment||''; const selected=base.slice(start,end); const wrapped=`__${selected||'underline'}__`; setComment(base.slice(0,start)+wrapped+base.slice(end)); return; }
-                        if (e.shiftKey && e.altKey && e.key === '7') { e.preventDefault(); const el=inputRef.current; if(!el)return; const base=comment||''; const start=el.selectionStart||0; setComment(base.slice(0,start)+'> '+base.slice(start)); return; }
+                const messageElement = document.querySelector(`[data-message-id="${reactionsMessageId}"]`);
+                if (!messageElement) return null;
 
-                        if (e.key === 'Enter') {
-                          // Avoid sending while composing (IME)
-                          if (e.isComposing || e.keyCode === 229) return;
-                          // For desktop: Enter sends message, Shift+Enter creates new line
-                          if (isDesktop && !e.shiftKey) {
-                            e.preventDefault();
-                            if (editingComment) {
-                              handleEditComment(editingComment);
-                            } else {
-                              handleCommentSend();
-                            }
-                          }
-                          // For mobile or with Shift+Enter: allow new line (default behavior)
-                          // Ctrl+Enter or Cmd+Enter still works on all devices
-                          else if ((e.ctrlKey || e.metaKey)) {
-                            e.preventDefault();
-                            if (editingComment) {
-                              handleEditComment(editingComment);
-                            } else {
-                              handleCommentSend();
-                            }
-                          }
-                        }
-                      }}
-                      ref={inputRef}
-                    />
-                    {/* Emoji Button - Inside textarea on the right */}
-                    <div className="absolute right-12 bottom-3">
-                      <EmojiButton 
-                        onEmojiClick={(emoji) => {
-                          // Check if chat sending is blocked for this appointment status
-                          if (isChatSendBlocked) {
-                            toast.info('Emoji sending disabled for this appointment status. You can view chat history.');
-                            return;
-                          }
-                          
-                          // Use live input value and caret selection for robust insertion
-                          const el = inputRef?.current;
-                          const baseText = el ? el.value : comment;
-                          let start = baseText.length;
-                          let end = baseText.length;
-                          try {
-                            if (el && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
-                              start = el.selectionStart;
-                              end = el.selectionEnd;
-                            }
-                          } catch (_) {}
-                          const newText = baseText.slice(0, start) + emoji + baseText.slice(end);
-                          setComment(newText);
-                          if (editingComment) {
-                            setEditText(newText);
-                          }
-                          // Restore caret after inserted emoji just after the emoji
-                          setTimeout(() => {
-                            try {
-                              if (el) {
-                                const caretPos = start + emoji.length;
-                                el.focus();
-                                el.setSelectionRange(caretPos, caretPos);
-                              }
-                            } catch (_) {}
-                          }, 0);
+                const messageRect = messageElement.getBoundingClientRect();
+                const chatContainer = chatContainerRef.current;
+                if (!chatContainer) return null;
+
+                const containerRect = chatContainer.getBoundingClientRect();
+                const distanceFromTop = messageRect.top - containerRect.top;
+
+                // Only show floating bar if message is near top and needs bottom positioning
+                if (distanceFromTop < 120) {
+                  const spaceBelow = containerRect.bottom - messageRect.bottom;
+                  const reactionBarHeight = 60;
+
+                  if (spaceBelow >= reactionBarHeight + 20) {
+                    const comment = comments.find(c => c._id === reactionsMessageId);
+                    if (!comment || comment.deleted) return null;
+
+                    const isMe = comment.senderEmail === currentUser.email;
+
+                    return (
+                      <div
+                        className="fixed bg-red-500 rounded-full shadow-lg border-2 border-red-600 p-1 flex items-center gap-1 animate-reactions-bar z-[999999] reactions-bar transition-all duration-300"
+                        style={{
+                          minWidth: 'max-content',
+                          top: `${messageRect.bottom + 2}px`,
+                          left: isMe ? 'auto' : `${messageRect.left}px`,
+                          right: isMe ? `${window.innerWidth - messageRect.right}px` : 'auto'
                         }}
-                        className="w-8 h-8"
-                        inputRef={inputRef}
-                        disabled={isChatSendBlocked}
+                      >
+                        {/* Quick reaction buttons */}
+                        <button
+                          onClick={() => handleQuickReaction(comment._id, '👍')}
+                          className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            : comment.reactions?.some(r => r.emoji === '👍' && r.userId === currentUser._id)
+                              ? 'bg-blue-100 border-2 border-blue-400'
+                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                            }`}
+                          disabled={isChatSendBlocked}
+                          title={isChatSendBlocked ? "Reactions disabled" : "Like"}
+                        >
+                          👍
+                        </button>
+                        <button
+                          onClick={() => handleQuickReaction(comment._id, '❤️')}
+                          className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            : comment.reactions?.some(r => r.emoji === '❤️' && r.userId === currentUser._id)
+                              ? 'bg-blue-100 border-2 border-blue-400'
+                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                            }`}
+                          disabled={isChatSendBlocked}
+                          title={isChatSendBlocked ? "Reactions disabled" : "Love"}
+                        >
+                          ❤️
+                        </button>
+                        <button
+                          onClick={() => handleQuickReaction(comment._id, '😂')}
+                          className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            : comment.reactions?.some(r => r.emoji === '😂' && r.userId === currentUser._id)
+                              ? 'bg-blue-100 border-2 border-blue-400'
+                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                            }`}
+                          disabled={isChatSendBlocked}
+                          title={isChatSendBlocked ? "Reactions disabled" : "Laugh"}
+                        >
+                          😂
+                        </button>
+                        <button
+                          onClick={() => handleQuickReaction(comment._id, '😮')}
+                          className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            : comment.reactions?.some(r => r.emoji === '😮' && r.userId === currentUser._id)
+                              ? 'bg-blue-100 border-2 border-blue-400'
+                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                            }`}
+                          disabled={isChatSendBlocked}
+                          title={isChatSendBlocked ? "Reactions disabled" : "Wow"}
+                        >
+                          😮
+                        </button>
+                        <button
+                          onClick={() => handleQuickReaction(comment._id, '😢')}
+                          className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            : comment.reactions?.some(r => r.emoji === '😢' && r.userId === currentUser._id)
+                              ? 'bg-blue-100 border-2 border-blue-400'
+                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                            }`}
+                          disabled={isChatSendBlocked}
+                          title={isChatSendBlocked ? "Reactions disabled" : "Sad"}
+                        >
+                          😢
+                        </button>
+                        <button
+                          onClick={() => handleQuickReaction(comment._id, '😡')}
+                          className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            : comment.reactions?.some(r => r.emoji === '😡' && r.userId === currentUser._id)
+                              ? 'bg-blue-100 border-2 border-blue-400'
+                              : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                            }`}
+                          disabled={isChatSendBlocked}
+                          title={isChatSendBlocked ? "Reactions disabled" : "Angry"}
+                        >
+                          😡
+                        </button>
+                        <div className="w-px h-6 bg-gray-300 mx-1"></div>
+                        <button
+                          onClick={toggleReactionsEmojiPicker}
+                          className={`w-8 h-8 flex items-center justify-center text-lg transition-transform rounded-full ${isChatSendBlocked
+                            ? 'bg-gray-200 cursor-not-allowed opacity-50'
+                            : 'bg-gray-50 hover:bg-gray-100 hover:scale-110'
+                            }`}
+                          disabled={isChatSendBlocked}
+                          title={isChatSendBlocked ? "Reactions disabled" : "More emojis"}
+                        >
+                          ➕
+                        </button>
+                      </div>
+                    );
+                  }
+                }
+                return null;
+              })()}
+
+              {/* Reply indicator */}
+              {replyTo && (
+                <div className="px-4 mb-2">
+                  <div className="flex items-center bg-blue-50 border-l-4 border-blue-400 px-2 py-1 rounded">
+                    <span className="text-xs text-gray-700 font-semibold mr-2">Replying to:</span>
+                    <span className="text-xs text-gray-600 truncate max-w-[200px]">{replyTo.message?.substring(0, 40)}{replyTo.message?.length > 40 ? '...' : ''}</span>
+                    <button className="ml-auto text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-1 transition-colors" onClick={() => setReplyTo(null)} title="Cancel reply">
+                      <FaTimes className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              )}
+
+
+
+              {/* Edit indicator */}
+              {editingComment && (
+                <div className="px-4 mb-2">
+                  <div className="flex items-center bg-yellow-50 border-l-4 border-yellow-400 px-2 py-1 rounded">
+                    <span className="text-xs text-yellow-700 font-semibold mr-2">✏️ Editing message:</span>
+                    <span className="text-xs text-yellow-600 truncate">{editText}</span>
+                    <button
+                      className="ml-auto text-yellow-400 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-full p-1 transition-colors"
+                      onClick={() => {
+                        setEditingComment(null);
+                        setEditText("");
+                        // Restore original draft and clear it after a small delay to ensure state update
+                        const draftToRestore = originalDraft;
+                        setComment(draftToRestore);
+                        setTimeout(() => {
+                          setOriginalDraft(""); // Clear stored draft after restoration
+                        }, 100);
+                        setDetectedUrl(null);
+                        setPreviewDismissed(false);
+                        // Auto-resize textarea for restored draft with proper timing
+                        setTimeout(() => {
+                          if (inputRef.current) {
+                            // Force a re-render by triggering the input event
+                            const event = new Event('input', { bubbles: true });
+                            inputRef.current.dispatchEvent(event);
+                            // Reset height first, then calculate proper height
+                            inputRef.current.style.height = '48px';
+                            const scrollHeight = inputRef.current.scrollHeight;
+                            const maxHeight = 144;
+
+                            if (scrollHeight <= maxHeight) {
+                              inputRef.current.style.height = scrollHeight + 'px';
+                              inputRef.current.style.overflowY = 'hidden';
+                            } else {
+                              inputRef.current.style.height = maxHeight + 'px';
+                              inputRef.current.style.overflowY = 'auto';
+                            }
+                          }
+                        }, 100);
+                      }}
+                      title="Cancel edit"
+                    >
+                      <FaTimes className="w-3 h-3" />
+                    </button>
+                  </div>
+                </div>
+              )}
+              {/* Message Input Footer - Sticky */}
+              <div className="flex gap-2 mt-1 px-3 pb-2 flex-shrink-0 bg-gradient-to-b from-transparent to-white pt-2 items-end">
+                {/* Message Input Container with Attachment and Emoji Icons Inside */}
+                <div className="flex-1 relative">
+                  {/* Link Preview Container with Height and Width Constraints */}
+                  {detectedUrl && (
+                    <div className="max-h-32 max-w-full overflow-y-auto mb-2 scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100">
+                      <LinkPreview
+                        url={detectedUrl}
+                        onRemove={() => {
+                          setDetectedUrl(null);
+                          setPreviewDismissed(true);
+                        }}
+                        className="w-full"
+                        showRemoveButton={true}
+                        clickable={false}
                       />
                     </div>
-                    {/* Attachment Button with panel */}
-                    <div className="absolute right-3 bottom-3">
+                  )}
+                  {/* Formatting toolbar - Collapsible */}
+                  {showTextStylingPanel && (
+                    <div className="relative mb-2 animate-slideDown bg-gradient-to-r from-purple-50 to-blue-50 p-3 rounded-lg border border-purple-200 shadow-sm">
+                      {/* Close button */}
                       <button
-                        ref={attachmentButtonRef}
-                        type="button"
-                        onClick={() => setShowAttachmentPanel(prev => !prev)}
-                        disabled={uploadingFile || isChatSendBlocked}
-                        className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${
-                          uploadingFile || isChatSendBlocked
-                            ? 'bg-gray-400 cursor-not-allowed'
-                            : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
-                        }`}
-                        aria-haspopup="true"
-                        aria-expanded={showAttachmentPanel}
-                        aria-label="Attachments"
+                        className="absolute top-2 right-2 text-gray-500 hover:text-gray-700 hover:bg-white hover:bg-opacity-50 rounded-full p-1 transition-colors z-10"
+                        onClick={() => setShowTextStylingPanel(false)}
+                        title="Close text styling panel"
+                        aria-label="Close text styling panel"
                       >
-                        {uploadingFile ? (
-                          <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
-                        ) : (
-                          <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
-                          </svg>
-                        )}
+                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                        </svg>
                       </button>
-                      {showAttachmentPanel && !isChatSendBlocked && (
-                        <div ref={attachmentPanelRef} className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-48 py-2 z-20"> 
-                          <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                            <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
-                            </svg>
-                            Photos
-                            <input
-                              type="file"
-                              accept="image/*"
-                              multiple
-                              className="hidden"
-                              onChange={(e) => {
-                                const files = e.target.files;
-                                if (files && files.length > 0) {
-                                  handleFileUpload(files);
-                                }
-                                e.target.value = '';
-                                setShowAttachmentPanel(false);
-                              }}
-                            />
-                          </label>
-                          {/* Camera - Simple file input approach */}
-                          <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                            <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h2l1-2h6l1 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
-                            </svg>
-                            Camera
-                            <input
-                              type="file"
-                              accept="image/*"
-                              capture="environment"
-                              className="hidden"
-                              onChange={(e) => {
-                                if (e.target.files && e.target.files[0]) {
-                                  handleFileUpload([e.target.files[0]]);
-                                }
-                                e.target.value = '';
-                                setShowAttachmentPanel(false);
-                              }}
-                            />
-                          </label>
-                          <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                            <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
-                            </svg>
-                            Videos
-                            <input
-                              ref={videoInputRef}
-                              type="file"
-                              accept="video/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files && e.target.files[0];
-                                if (file) {
-                                  if (file.size > 5 * 1024 * 1024) {
-                                    toast.error('Maximum video size is 5MB');
-                                  } else {
-                                    setSelectedVideo(file);
-                                    setShowVideoPreviewModal(true);
-                                  }
-                                }
-                                e.target.value = '';
-                                setShowAttachmentPanel(false);
-                              }}
-                            />
-                          </label>
-                          <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                            <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                            </svg>
-                            Documents
-                            <input
-                              ref={documentInputRef}
-                              type="file"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files && e.target.files[0];
-                                if (file) {
-                                  if (file.size > 5 * 1024 * 1024) {
-                                    toast.error('Maximum document size is 5MB');
-                                  } else {
-                                    setSelectedDocument(file);
-                                    setShowDocumentPreviewModal(true);
-                                  }
-                                }
-                                e.target.value = '';
-                                setShowAttachmentPanel(false);
-                              }}
-                            />
-                          </label>
-                          {/* Audio */}
-                          <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
-                            <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
-                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
-                            </svg>
-                            Audio
-                            <input
-                              type="file"
-                              accept="audio/*"
-                              className="hidden"
-                              onChange={(e) => {
-                                const file = e.target.files && e.target.files[0];
-                                if (file) {
-                                  if (file.size > 5 * 1024 * 1024) {
-                                    toast.error('Maximum audio size is 5MB');
-                                  } else {
-                                    setSelectedAudio(file);
-                                    setShowAudioPreviewModal(true);
-                                  }
-                                }
-                                e.target.value = '';
-                                setShowAttachmentPanel(false);
-                              }}
-                            />
-                          </label>
-                          {/* Record Audio */}
-                          <button
-                            type="button"
-                            className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
-                            onClick={() => {
-                              setShowRecordAudioModal(true);
+                      <div className="flex flex-wrap items-center gap-2 pr-8">
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `**${selected || 'bold'}**`; const next = base.slice(0, start) + wrapped + base.slice(end); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'bold').length); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>B</button>
+                        <button type="button" className={`px-2 py-1 text-xs rounded border italic ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `*${selected || 'italic'}*`; const next = base.slice(0, start) + wrapped + base.slice(end); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 1, start + 1 + (selected || 'italic').length); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>I</button>
+                        <button type="button" className={`px-2 py-1 text-xs rounded border underline ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `__${selected || 'underline'}__`; const next = base.slice(0, start) + wrapped + base.slice(end); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'underline').length); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>U</button>
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `~~${selected || 'strike'}~~`; const next = base.slice(0, start) + wrapped + base.slice(end); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2 + (selected || 'strike').length); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>S</button>
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0, start); const after = base.slice(start); const next = `${before}- ${after}`; setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>• List</button>
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0, start); const after = base.slice(start);
+                          // Find existing numbered list items to determine next number
+                          const lines = before.split('\n');
+                          const lastLine = lines[lines.length - 1];
+                          let nextNum = 1;
+
+                          // Check if we're continuing a list
+                          for (let i = lines.length - 1; i >= 0; i--) {
+                            const line = lines[i].trim();
+                            const match = line.match(/^(\d+)\.\s/);
+                            if (match) {
+                              nextNum = parseInt(match[1]) + 1;
+                              break;
+                            } else if (line && !line.match(/^\s*$/)) {
+                              // Non-empty, non-numbered line found, reset to 1
+                              break;
+                            }
+                          }
+
+                          applyFormattingAndClose(() => {
+                            const next = `${before}${nextNum}. ${after}`; setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + (nextNum.toString().length) + 2, start + (nextNum.toString().length) + 2); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>1. List</button>
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; const before = base.slice(0, start); const after = base.slice(start); const next = `${before}> ${after}`; setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 2, start + 2); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>&gt; Quote</button>
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Tag Property" onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const insert = '@'; const next = base.slice(0, start) + insert + base.slice(start); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 1, start + 1); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>@Prop</button>
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Insert appointment card" onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const card = '[Appointment: date • time • with]'; const next = base.slice(0, start) + card + base.slice(start); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start + 13, start + 13); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>Appt</button>
+                        <button type="button" className={`px-2 py-1 text-xs rounded border ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed bg-gray-50' : 'hover:bg-gray-100'}`} title="Insert service link" onClick={() => {
+                          if (isChatSendBlocked) {
+                            toast.info('Formatting disabled for this appointment status. You can view chat history.');
+                            return;
+                          }
+                          applyFormattingAndClose(() => {
+                            const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const base = comment || ''; const link = 'Book Movers: /user/movers'; const next = base.slice(0, start) + link + base.slice(start); setComment(next); setTimeout(() => { try { el.focus(); el.setSelectionRange(start, start); } catch (_) { } }, 0);
+                          });
+                        }} disabled={isChatSendBlocked}>Service</button>
+                      </div>
+                    </div>
+                  )}
+                  {/* Property mention suggestions */}
+                  {comment && /@[^\s]*$/.test(comment) && (
+                    <div className="absolute bottom-16 left-2 right-2 bg-white border-2 border-blue-300 rounded-lg shadow-2xl max-h-60 overflow-auto z-30 animate-fadeIn">
+                      <div className="p-3 text-sm font-medium text-blue-600 border-b border-gray-200 bg-blue-50">
+                        <div className="flex items-center gap-2">
+                          {!propertiesLoaded ? (
+                            <div className="w-4 h-4 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                          ) : (
+                            <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
+                          )}
+                          {!propertiesLoaded ? 'Loading properties...' : 'Select a property to reference:'}
+                        </div>
+                      </div>
+                      {(() => {
+                        const query = (comment.match(/@([^\s]*)$/)?.[1] || '').toLowerCase();
+                        const apptSource = (typeof appointments !== 'undefined' && Array.isArray(appointments) && appointments.length > 0) ? appointments : [appt].filter(Boolean);
+                        const apptProps = apptSource.map(a => {
+                          const l = a?.listingId && typeof a.listingId === 'object' ? a.listingId : {};
+                          return {
+                            id: a?.listingId?._id || a?.listingId,
+                            name: a?.propertyName || l?.name || 'Property',
+                            city: l?.city || 'City',
+                            state: l?.state || 'State',
+                            price: (l?.discountPrice ?? l?.regularPrice) || 0,
+                            bedrooms: l?.bedrooms || 0,
+                            bathrooms: l?.bathrooms || 0,
+                            area: l?.area || 0,
+                            image: Array.isArray(l?.imageUrls) ? l.imageUrls[0] : (l?.imageUrl || l?.image || null)
+                          };
+                        });
+                        const propList = Array.isArray(allProperties) ? allProperties : [];
+                        const allPropsDetailed = propList.map(p => {
+                          return {
+                            id: p?.id,
+                            name: p?.name || 'Property',
+                            city: p?.city || 'City',
+                            state: p?.state || 'State',
+                            price: p?.price || 0,
+                            bedrooms: p?.bedrooms || 0,
+                            bathrooms: p?.bathrooms || 0,
+                            area: p?.area || 0,
+                            image: Array.isArray(p?.imageUrls) ? p.imageUrls[0] : (p?.imageUrl || p?.image || p?.thumbnail || null)
+                          };
+                        });
+                        // Combine and deduplicate by ID
+                        const combined = [...apptProps, ...allPropsDetailed];
+                        const uniquePropsMap = new Map();
+
+                        // Add appointment properties first (they have more complete data)
+                        apptProps.forEach(prop => {
+                          if (prop.id && prop.name) {
+                            uniquePropsMap.set(prop.id, prop);
+                          }
+                        });
+
+                        // Add all properties, but don't override existing ones
+                        allPropsDetailed.forEach(prop => {
+                          if (prop.id && prop.name && !uniquePropsMap.has(prop.id)) {
+                            uniquePropsMap.set(prop.id, prop);
+                          }
+                        });
+
+                        const uniqueProps = Array.from(uniquePropsMap.values())
+                          .filter(p => p.name && p.name.toLowerCase().includes(query));
+
+
+                        if (uniqueProps.length === 0) return <div className="p-3 text-sm text-gray-500 text-center">No properties found. Try typing more characters.</div>;
+                        return uniqueProps.slice(0, 8).map((p, index) => (
+                          <button key={`${p.id}-${index}`} type="button" className="w-full text-left p-3 text-sm hover:bg-gray-100 transition-colors" onClick={() => {
+                            const el = inputRef.current; const base = comment || ''; const m = base.match(/@([^\s]*)$/); if (!m) return; const start = base.lastIndexOf('@');
+                            const token = `@[${p.name}](${p.id})`;
+                            const next = base.slice(0, start) + token + ' ' + base.slice(start + m[0].length);
+                            setComment(next);
+                            setTimeout(() => { try { el?.focus(); el?.setSelectionRange(start + token.length + 1, start + token.length + 1); } catch (_) { } }, 0);
+                          }}>
+                            <div className="flex items-center space-x-3">
+                              <div className="w-12 h-12 flex-shrink-0 rounded-lg overflow-hidden bg-gray-200 flex items-center justify-center">
+                                {p.image ? (
+                                  <img src={p.image} alt={p.name} className="w-full h-full object-cover" />
+                                ) : (
+                                  <div className="text-gray-500 text-xs text-center">
+                                    <div className="font-bold">🏠</div>
+                                  </div>
+                                )}
+                              </div>
+                              <div className="flex-1 min-w-0">
+                                <div className="font-medium text-gray-900 truncate">{p.name}</div>
+                                <div className="text-sm text-gray-500">
+                                  {p.city && p.state ? `${p.city}, ${p.state}` : (p.city || p.state || 'Location not available')}
+                                </div>
+                                {p.price && p.price > 0 ? (
+                                  <div className="text-sm font-semibold text-green-600">₹{Number(p.price).toLocaleString()}</div>
+                                ) : (
+                                  <div className="text-sm text-gray-400">Price not available</div>
+                                )}
+                                <div className="text-xs text-gray-400">
+                                  {[p.bedrooms > 0 && `${p.bedrooms}BHK`, p.area > 0 && `${p.area} sq ft`].filter(Boolean).join(' • ') || 'Details not available'}
+                                </div>
+                              </div>
+                            </div>
+                          </button>
+                        ));
+                      })()}
+                    </div>
+                  )}
+                  <textarea
+                    rows={1}
+                    className="w-full pl-4 pr-20 py-3 border-2 border-gray-200 rounded-2xl text-sm focus:ring-2 focus:ring-blue-300 focus:border-blue-400 shadow-lg transition-all duration-300 bg-white resize-none whitespace-pre-wrap break-all hover:border-blue-300 hover:shadow-xl focus:shadow-2xl transform hover:scale-[1.01] overflow-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100"
+                    style={{
+                      minHeight: '48px',
+                      maxHeight: '144px', // 6 lines * 24px line height
+                      lineHeight: '24px',
+                      wordBreak: 'break-all',
+                      overflowWrap: 'break-word'
+                    }}
+                    placeholder={isChatSendBlocked ? "Sending disabled for this appointment status. Chat history is available." : (editingComment ? "Edit your message..." : "Type a message...")}
+                    value={comment}
+                    onChange={e => {
+                      if (isChatSendBlocked) { return; }
+                      const value = e.target.value;
+                      setComment(value);
+
+                      // Detect URLs in the input
+                      const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+                      const urls = value.match(urlRegex);
+                      if (urls && urls.length > 0) {
+                        setDetectedUrl(urls[0]);
+                        setPreviewDismissed(false); // Reset dismissed flag for new URL
+                      } else {
+                        setDetectedUrl(null);
+                        setPreviewDismissed(false);
+                      }
+
+                      if (editingComment) {
+                        setEditText(value);
+                      }
+                      if (!editingComment) {
+                        socket.emit('typing', { toUserId: otherParty._id, fromUserId: currentUser._id, appointmentId: appt._id });
+                      }
+
+                      // If cleared entirely, restore to original height
+                      if ((value || '').trim() === '') {
+                        const textarea = e.target;
+                        textarea.style.height = '48px';
+                        textarea.style.overflowY = 'hidden';
+                        return;
+                      }
+
+                      // Auto-expand textarea (WhatsApp style) with scrolling support
+                      const textarea = e.target;
+                      textarea.style.height = '48px'; // Reset to min height
+                      const scrollHeight = textarea.scrollHeight;
+                      const maxHeight = 144; // 6 lines max
+
+                      if (scrollHeight <= maxHeight) {
+                        // If content fits within max height, expand the textarea
+                        textarea.style.height = scrollHeight + 'px';
+                        textarea.style.overflowY = 'hidden';
+                      } else {
+                        // If content exceeds max height, set to max height and enable scrolling
+                        textarea.style.height = maxHeight + 'px';
+                        textarea.style.overflowY = 'auto';
+                      }
+                    }}
+                    onClick={() => {
+                      if (headerOptionsMessageId) {
+                        setHeaderOptionsMessageId(null);
+                        toast.info("You can hit reply icon in header to reply");
+                      }
+                    }}
+                    onScroll={(e) => {
+                      // Prevent scroll event from propagating to parent chat container
+                      e.stopPropagation();
+                    }}
+                    onPaste={(e) => {
+                      const items = Array.from(e.clipboardData.items);
+                      const imageItems = items.filter(item => item.type.startsWith('image/'));
+
+                      if (imageItems.length > 0) {
+                        e.preventDefault();
+                        const imageItem = imageItems[0];
+                        const file = imageItem.getAsFile();
+                        if (file) {
+                          handleImageFiles([file]);
+                        }
+                      }
+                    }}
+                    onKeyDown={e => {
+                      if (isChatSendBlocked) {
+                        // Allow navigation keys but block input/submit
+                        if (e.key === 'Enter' || e.key.length === 1) {
+                          e.preventDefault();
+                          toast.info('Sending disabled for this appointment status.');
+                        }
+                        return;
+                      }
+                      // Check if this is a desktop viewport only
+                      const isDesktop = window.matchMedia('(min-width: 768px)').matches;
+
+                      if (e.ctrlKey && (e.key === 'b' || e.key === 'B')) { e.preventDefault(); document.querySelector('button:contains("B")'); }
+                      if (e.ctrlKey && (e.key === 'i' || e.key === 'I')) { e.preventDefault(); const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `*${selected || 'italic'}*`; setComment(base.slice(0, start) + wrapped + base.slice(end)); return; }
+                      if (e.ctrlKey && (e.key === 'u' || e.key === 'U')) { e.preventDefault(); const el = inputRef.current; if (!el) return; const start = el.selectionStart || 0; const end = el.selectionEnd || 0; const base = comment || ''; const selected = base.slice(start, end); const wrapped = `__${selected || 'underline'}__`; setComment(base.slice(0, start) + wrapped + base.slice(end)); return; }
+                      if (e.shiftKey && e.altKey && e.key === '7') { e.preventDefault(); const el = inputRef.current; if (!el) return; const base = comment || ''; const start = el.selectionStart || 0; setComment(base.slice(0, start) + '> ' + base.slice(start)); return; }
+
+                      if (e.key === 'Enter') {
+                        // Avoid sending while composing (IME)
+                        if (e.isComposing || e.keyCode === 229) return;
+                        // For desktop: Enter sends message, Shift+Enter creates new line
+                        if (isDesktop && !e.shiftKey) {
+                          e.preventDefault();
+                          if (editingComment) {
+                            handleEditComment(editingComment);
+                          } else {
+                            handleCommentSend();
+                          }
+                        }
+                        // For mobile or with Shift+Enter: allow new line (default behavior)
+                        // Ctrl+Enter or Cmd+Enter still works on all devices
+                        else if ((e.ctrlKey || e.metaKey)) {
+                          e.preventDefault();
+                          if (editingComment) {
+                            handleEditComment(editingComment);
+                          } else {
+                            handleCommentSend();
+                          }
+                        }
+                      }
+                    }}
+                    ref={inputRef}
+                  />
+                  {/* Emoji Button - Inside textarea on the right */}
+                  <div className="absolute right-12 bottom-3">
+                    <EmojiButton
+                      onEmojiClick={(emoji) => {
+                        // Check if chat sending is blocked for this appointment status
+                        if (isChatSendBlocked) {
+                          toast.info('Emoji sending disabled for this appointment status. You can view chat history.');
+                          return;
+                        }
+
+                        // Use live input value and caret selection for robust insertion
+                        const el = inputRef?.current;
+                        const baseText = el ? el.value : comment;
+                        let start = baseText.length;
+                        let end = baseText.length;
+                        try {
+                          if (el && typeof el.selectionStart === 'number' && typeof el.selectionEnd === 'number') {
+                            start = el.selectionStart;
+                            end = el.selectionEnd;
+                          }
+                        } catch (_) { }
+                        const newText = baseText.slice(0, start) + emoji + baseText.slice(end);
+                        setComment(newText);
+                        if (editingComment) {
+                          setEditText(newText);
+                        }
+                        // Restore caret after inserted emoji just after the emoji
+                        setTimeout(() => {
+                          try {
+                            if (el) {
+                              const caretPos = start + emoji.length;
+                              el.focus();
+                              el.setSelectionRange(caretPos, caretPos);
+                            }
+                          } catch (_) { }
+                        }, 0);
+                      }}
+                      className="w-8 h-8"
+                      inputRef={inputRef}
+                      disabled={isChatSendBlocked}
+                    />
+                  </div>
+                  {/* Attachment Button with panel */}
+                  <div className="absolute right-3 bottom-3">
+                    <button
+                      ref={attachmentButtonRef}
+                      type="button"
+                      onClick={() => setShowAttachmentPanel(prev => !prev)}
+                      disabled={uploadingFile || isChatSendBlocked}
+                      className={`flex items-center justify-center w-8 h-8 rounded-full transition-all duration-300 ${uploadingFile || isChatSendBlocked
+                        ? 'bg-gray-400 cursor-not-allowed'
+                        : 'bg-gray-100 hover:bg-gray-200 hover:shadow-md active:scale-95'
+                        }`}
+                      aria-haspopup="true"
+                      aria-expanded={showAttachmentPanel}
+                      aria-label="Attachments"
+                    >
+                      {uploadingFile ? (
+                        <div className="animate-spin w-4 h-4 border-2 border-gray-600 border-t-transparent rounded-full"></div>
+                      ) : (
+                        <svg className="w-4 h-4 text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15.172 7l-6.586 6.586a2 2 0 102.828 2.828l6.414-6.586a4 4 0 00-5.656-5.656l-6.415 6.585a6 6 0 108.486 8.486L20.5 13" />
+                        </svg>
+                      )}
+                    </button>
+                    {showAttachmentPanel && !isChatSendBlocked && (
+                      <div ref={attachmentPanelRef} className="absolute bottom-10 right-0 bg-white border border-gray-200 shadow-xl rounded-lg w-48 py-2 z-20">
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <svg className="w-4 h-4 text-blue-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z" />
+                          </svg>
+                          Photos
+                          <input
+                            type="file"
+                            accept="image/*"
+                            multiple
+                            className="hidden"
+                            onChange={(e) => {
+                              const files = e.target.files;
+                              if (files && files.length > 0) {
+                                handleFileUpload(files);
+                              }
+                              e.target.value = '';
                               setShowAttachmentPanel(false);
                             }}
-                          >
-                            <svg className="w-4 h-4 text-rose-500" viewBox="0 0 24 24" fill="currentColor">
-                              <path d="M12 14a3 3 0 003-3V7a3 3 0 10-6 0v4a3 3 0 003 3z" />
-                              <path d="M19 11a7 7 0 11-14 0h2a5 5 0 0010 0h2z" />
-                              <path d="M13 19h-2v2h2v-2z" />
-                            </svg>
-                            Record Audio
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                  
-                  <button
-                    onClick={(e) => {
-      e.preventDefault();
-      if (editingComment) {
-        handleEditComment(editingComment);
-      } else {
-        handleCommentSend();
-      }
-    }}
-                    disabled={editingComment ? savingComment === editingComment : !comment.trim()}
-                    className="bg-gradient-to-r from-blue-600 to-purple-700 text-white w-12 h-12 rounded-full shadow-lg hover:from-blue-700 hover:to-purple-800 hover:shadow-xl transform hover:scale-110 transition-all duration-300 disabled:opacity-50 disabled:transform-none flex items-center justify-center hover:shadow-2xl active:scale-95 group"
-                  >
-                    {editingComment ? (
-                      savingComment === editingComment ? (
-                        <FaPen className="text-lg text-white animate-editSaving" />
-                      ) : (
-                        <FaPen className="text-lg text-white group-hover:scale-110 transition-transform duration-200" />
-                      )
-                    ) : (
-                      <div className="relative">
-                        {sendIconSent ? (
-                          <FaCheck className="text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon animate-sent" />
-                        ) : (
-                          <FaPaperPlane className={`text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon ${sendIconAnimating ? 'animate-fly' : ''}`} />
-                        )}
-                      </div>
-                    )}
-                  </button>
-                </div>
-                
-                {/* File Upload Error */}
-                {fileUploadError && (
-                  <div className="px-3 pb-2">
-                    <div className="text-red-500 text-sm bg-red-50 p-2 rounded-lg border border-red-200">
-                      {fileUploadError}
-                    </div>
-                  </div>
-                )}
-                
-                {/* Multi-Image Preview Modal - Positioned as overlay */}
-                {showImagePreviewModal && selectedFiles.length > 0 && (
-                  <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-medium text-gray-700">
-                          Image Preview ({selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''})
-                        </span>
+                          />
+                        </label>
+                        {/* Camera - Simple file input approach */}
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <svg className="w-4 h-4 text-purple-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 7a2 2 0 012-2h2l1-2h6l1 2h2a2 2 0 012 2v10a2 2 0 01-2 2H5a2 2 0 01-2-2V7z" />
+                          </svg>
+                          Camera
+                          <input
+                            type="file"
+                            accept="image/*"
+                            capture="environment"
+                            className="hidden"
+                            onChange={(e) => {
+                              if (e.target.files && e.target.files[0]) {
+                                handleFileUpload([e.target.files[0]]);
+                              }
+                              e.target.value = '';
+                              setShowAttachmentPanel(false);
+                            }}
+                          />
+                        </label>
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <svg className="w-4 h-4 text-red-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 10l4.553-2.276A1 1 0 0121 8.618v6.764a1 1 0 01-1.447.894L15 14M5 18h8a2 2 0 002-2V8a2 2 0 00-2-2H5a2 2 0 00-2 2v8a2 2 0 002 2z" />
+                          </svg>
+                          Videos
+                          <input
+                            ref={videoInputRef}
+                            type="file"
+                            accept="video/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files && e.target.files[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error('Maximum video size is 5MB');
+                                } else {
+                                  setSelectedVideo(file);
+                                  setShowVideoPreviewModal(true);
+                                }
+                              }
+                              e.target.value = '';
+                              setShowAttachmentPanel(false);
+                            }}
+                          />
+                        </label>
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <svg className="w-4 h-4 text-green-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                          </svg>
+                          Documents
+                          <input
+                            ref={documentInputRef}
+                            type="file"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files && e.target.files[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error('Maximum document size is 5MB');
+                                } else {
+                                  setSelectedDocument(file);
+                                  setShowDocumentPreviewModal(true);
+                                }
+                              }
+                              e.target.value = '';
+                              setShowAttachmentPanel(false);
+                            }}
+                          />
+                        </label>
+                        {/* Audio */}
+                        <label className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 cursor-pointer">
+                          <svg className="w-4 h-4 text-indigo-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 1a3 3 0 00-3 3v8a3 3 0 106 0V4a3 3 0 00-3-3z" />
+                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 10v2a7 7 0 11-14 0v-2" />
+                          </svg>
+                          Audio
+                          <input
+                            type="file"
+                            accept="audio/*"
+                            className="hidden"
+                            onChange={(e) => {
+                              const file = e.target.files && e.target.files[0];
+                              if (file) {
+                                if (file.size > 5 * 1024 * 1024) {
+                                  toast.error('Maximum audio size is 5MB');
+                                } else {
+                                  setSelectedAudio(file);
+                                  setShowAudioPreviewModal(true);
+                                }
+                              }
+                              e.target.value = '';
+                              setShowAttachmentPanel(false);
+                            }}
+                          />
+                        </label>
+                        {/* Record Audio */}
                         <button
+                          type="button"
+                          className="flex items-center gap-3 px-3 py-2 text-sm text-gray-700 hover:bg-gray-100 w-full text-left"
                           onClick={() => {
-                            setSelectedFiles([]);
-                            setImageCaptions({});
-                            setPreviewIndex(0);
-                            setShowImagePreviewModal(false);
+                            setShowRecordAudioModal(true);
+                            setShowAttachmentPanel(false);
                           }}
-                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
                         >
-                          <FaTimes className="w-5 h-5" />
+                          <svg className="w-4 h-4 text-rose-500" viewBox="0 0 24 24" fill="currentColor">
+                            <path d="M12 14a3 3 0 003-3V7a3 3 0 10-6 0v4a3 3 0 003 3z" />
+                            <path d="M19 11a7 7 0 11-14 0h2a5 5 0 0010 0h2z" />
+                            <path d="M13 19h-2v2h2v-2z" />
+                          </svg>
+                          Record Audio
                         </button>
                       </div>
-                      
-                      {/* Image Slideshow */}
-                      <div className="relative mb-4">
-                        {/* Navigation Arrows */}
-                        {selectedFiles.length > 1 && (
+                    )}
+                  </div>
+                </div>
+
+                <button
+                  onClick={(e) => {
+                    e.preventDefault();
+                    if (editingComment) {
+                      handleEditComment(editingComment);
+                    } else {
+                      handleCommentSend();
+                    }
+                  }}
+                  disabled={editingComment ? savingComment === editingComment : !comment.trim()}
+                  className="bg-gradient-to-r from-blue-600 to-purple-700 text-white w-12 h-12 rounded-full shadow-lg hover:from-blue-700 hover:to-purple-800 hover:shadow-xl transform hover:scale-110 transition-all duration-300 disabled:opacity-50 disabled:transform-none flex items-center justify-center hover:shadow-2xl active:scale-95 group"
+                >
+                  {editingComment ? (
+                    savingComment === editingComment ? (
+                      <FaPen className="text-lg text-white animate-editSaving" />
+                    ) : (
+                      <FaPen className="text-lg text-white group-hover:scale-110 transition-transform duration-200" />
+                    )
+                  ) : (
+                    <div className="relative">
+                      {sendIconSent ? (
+                        <FaCheck className="text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon animate-sent" />
+                      ) : (
+                        <FaPaperPlane className={`text-lg text-white group-hover:scale-110 transition-all duration-300 send-icon ${sendIconAnimating ? 'animate-fly' : ''}`} />
+                      )}
+                    </div>
+                  )}
+                </button>
+              </div>
+
+              {/* File Upload Error */}
+              {fileUploadError && (
+                <div className="px-3 pb-2">
+                  <div className="text-red-500 text-sm bg-red-50 p-2 rounded-lg border border-red-200">
+                    {fileUploadError}
+                  </div>
+                </div>
+              )}
+
+              {/* Multi-Image Preview Modal - Positioned as overlay */}
+              {showImagePreviewModal && selectedFiles.length > 0 && (
+                <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-lg font-medium text-gray-700">
+                        Image Preview ({selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''})
+                      </span>
+                      <button
+                        onClick={() => {
+                          setSelectedFiles([]);
+                          setImageCaptions({});
+                          setPreviewIndex(0);
+                          setShowImagePreviewModal(false);
+                        }}
+                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                      >
+                        <FaTimes className="w-5 h-5" />
+                      </button>
+                    </div>
+
+                    {/* Image Slideshow */}
+                    <div className="relative mb-4">
+                      {/* Navigation Arrows */}
+                      {selectedFiles.length > 1 && (
+                        <>
+                          <button
+                            onClick={() => setPreviewIndex(prev => prev > 0 ? prev - 1 : selectedFiles.length - 1)}
+                            className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition-all duration-200"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
+                            </svg>
+                          </button>
+                          <button
+                            onClick={() => setPreviewIndex(prev => prev < selectedFiles.length - 1 ? prev + 1 : 0)}
+                            className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition-all duration-200"
+                          >
+                            <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+                            </svg>
+                          </button>
+                        </>
+                      )}
+
+                      {/* Current Image */}
+                      <div className="mb-3">
+                        <img
+                          src={URL.createObjectURL(selectedFiles[previewIndex])}
+                          alt={`Preview ${previewIndex + 1}`}
+                          className="w-full h-64 object-contain rounded-lg border"
+                        />
+                      </div>
+
+                      {/* Image Counter */}
+                      <div className="text-center text-sm text-gray-600 mb-3">
+                        {previewIndex + 1} of {selectedFiles.length}
+                      </div>
+
+                      {/* Image Thumbnails */}
+                      <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2 min-w-0 max-w-full" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6' }}>
+                        {selectedFiles.map((file, index) => (
+                          <div key={index} className="relative">
+                            <button
+                              onClick={() => setPreviewIndex(index)}
+                              className={`flex-shrink-0 w-12 h-12 rounded-lg border-2 transition-all duration-200 ${index === previewIndex
+                                ? 'border-blue-500 shadow-lg'
+                                : 'border-gray-300 hover:border-gray-400'
+                                }`}
+                            >
+                              <img
+                                src={URL.createObjectURL(file)}
+                                alt={`Thumbnail ${index + 1}`}
+                                className="w-full h-full object-cover rounded-lg"
+                              />
+                            </button>
+                            {/* Delete Icon on Thumbnail - Only show when multiple images are selected */}
+                            {selectedFiles.length > 1 && (
+                              <button
+                                onClick={(e) => {
+                                  e.stopPropagation(); // Prevent triggering the thumbnail selection
+                                  const newFiles = selectedFiles.filter((_, fileIndex) => fileIndex !== index);
+                                  const newCaptions = { ...imageCaptions };
+                                  // Remove caption for deleted image
+                                  delete newCaptions[file.name];
+
+                                  if (newFiles.length === 0) {
+                                    // If no images left, close modal
+                                    setSelectedFiles([]);
+                                    setImageCaptions({});
+                                    setShowImagePreviewModal(false);
+                                  } else {
+                                    // Update files and adjust preview index
+                                    setSelectedFiles(newFiles);
+                                    setImageCaptions(newCaptions);
+                                    // Adjust preview index if needed
+                                    if (previewIndex >= newFiles.length) {
+                                      setPreviewIndex(newFiles.length - 1);
+                                    } else if (previewIndex > index) {
+                                      // If we deleted an image before the current preview, adjust index
+                                      setPreviewIndex(previewIndex - 1);
+                                    }
+                                  }
+                                }}
+                                className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-all duration-200 hover:scale-110 z-10"
+                                title="Remove this image"
+                                aria-label="Remove this image"
+                              >
+                                <FaTimes className="w-2 h-2" />
+                              </button>
+                            )}
+                          </div>
+                        ))}
+
+                        {/* Add More Images Button - Only show when less than 10 images */}
+                        {selectedFiles.length < 10 && (
+                          <div className="relative">
+                            <label className="flex-shrink-0 w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer flex items-center justify-center group">
+                              <input
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => {
+                                  const files = e.target.files;
+                                  if (files && files.length > 0) {
+                                    // Calculate how many more images can be added
+                                    const remainingSlots = 10 - selectedFiles.length;
+                                    const filesToAdd = Array.from(files).slice(0, remainingSlots);
+
+                                    if (filesToAdd.length > 0) {
+                                      // Add new files to existing selection
+                                      const newFiles = [...selectedFiles, ...filesToAdd];
+                                      setSelectedFiles(newFiles);
+
+                                      // Show notification if some files were skipped
+                                      if (filesToAdd.length < files.length) {
+                                        toast.info(`Added ${filesToAdd.length} images. Maximum limit of 10 images reached.`);
+                                      }
+                                    }
+                                    // Reset the input
+                                    e.target.value = '';
+                                  }
+                                }}
+                              />
+                              <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
+                              </svg>
+                            </label>
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Caption for Current Image */}
+                    <div className="relative mb-4">
+                      <textarea
+                        placeholder={`Add a caption for ${selectedFiles[previewIndex]?.name}...`}
+                        value={imageCaptions[selectedFiles[previewIndex]?.name] || ''}
+                        onChange={(e) => setImageCaptions(prev => ({
+                          ...prev,
+                          [selectedFiles[previewIndex]?.name]: e.target.value
+                        }))}
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        rows={3}
+                        maxLength={500}
+                      />
+                      {/* Emoji Picker for Caption */}
+                      <div className="absolute right-2 top-2">
+                        <EmojiButton
+                          onEmojiClick={(emoji) => {
+                            // Check if chat sending is blocked for this appointment status
+                            if (isChatSendBlocked) {
+                              toast.info('Emoji sending disabled for this appointment status. You can view chat history.');
+                              return;
+                            }
+
+                            const currentCaption = imageCaptions[selectedFiles[previewIndex]?.name] || '';
+                            setImageCaptions(prev => ({
+                              ...prev,
+                              [selectedFiles[previewIndex]?.name]: currentCaption + emoji
+                            }));
+                          }}
+                          className="w-6 h-6"
+                          disabled={isChatSendBlocked}
+                        />
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 text-right">
+                        {(imageCaptions[selectedFiles[previewIndex]?.name] || '').length}/500
+                      </div>
+                    </div>
+
+                    <div className="flex justify-between items-center">
+                      <div className="text-sm text-gray-600">
+                        {uploadingFile && currentFileIndex >= 0 ? (
+                          <span>
+                            Uploading {currentFileIndex + 1} / {selectedFiles.length}
+                            {` • ${currentFileProgress}%`}
+                          </span>
+                        ) : (
+                          <>
+                            {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''} ready to send
+                            {failedFiles.length > 0 && (
+                              <span className="ml-2 text-red-600">• {failedFiles.length} failed</span>
+                            )}
+                          </>
+                        )}
+                      </div>
+                      <div className="flex items-center gap-2">
+                        {uploadingFile ? (
                           <>
                             <button
-                              onClick={() => setPreviewIndex(prev => prev > 0 ? prev - 1 : selectedFiles.length - 1)}
-                              className="absolute left-2 top-1/2 transform -translate-y-1/2 z-10 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition-all duration-200"
+                              onClick={handleCancelInFlightUpload}
+                              className="bg-red-600 text-white py-2 px-3 rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
                             >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                              </svg>
+                              Cancel Upload
                             </button>
+                            <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                            </div>
+                            <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                          </>
+                        ) : (
+                          <>
+                            {failedFiles.length > 0 && (
+                              <button
+                                onClick={handleRetryFailedUploads}
+                                className="bg-yellow-500 text-white py-2 px-3 rounded-lg hover:bg-yellow-600 text-sm font-medium transition-colors"
+                              >
+                                Retry Failed ({failedFiles.length})
+                              </button>
+                            )}
                             <button
-                              onClick={() => setPreviewIndex(prev => prev < selectedFiles.length - 1 ? prev + 1 : 0)}
-                              className="absolute right-2 top-1/2 transform -translate-y-1/2 z-10 bg-black bg-opacity-50 text-white rounded-full p-2 hover:bg-opacity-70 transition-all duration-200"
+                              onClick={handleSendImagesWithCaptions}
+                              disabled={isChatSendBlocked}
+                              className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${isChatSendBlocked
+                                ? 'bg-gray-400 text-gray-200 cursor-not-allowed'
+                                : 'bg-blue-600 text-white hover:bg-blue-700'
+                                }`}
                             >
-                              <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                              </svg>
+                              {`Send ${selectedFiles.length} Image${selectedFiles.length !== 1 ? 's' : ''}`}
                             </button>
                           </>
                         )}
-                        
-                        {/* Current Image */}
-                        <div className="mb-3">
-                          <img
-                            src={URL.createObjectURL(selectedFiles[previewIndex])}
-                            alt={`Preview ${previewIndex + 1}`}
-                            className="w-full h-64 object-contain rounded-lg border"
-                          />
-                        </div>
-                        
-                        {/* Image Counter */}
-                        <div className="text-center text-sm text-gray-600 mb-3">
-                          {previewIndex + 1} of {selectedFiles.length}
-                        </div>
-                        
-                        {/* Image Thumbnails */}
-                        <div className="flex gap-2 mb-3 overflow-x-auto scrollbar-thin scrollbar-thumb-gray-300 scrollbar-track-gray-100 pb-2 min-w-0 max-w-full" style={{ scrollbarWidth: 'thin', scrollbarColor: '#d1d5db #f3f4f6' }}>
-                          {selectedFiles.map((file, index) => (
-                            <div key={index} className="relative">
-                              <button
-                                onClick={() => setPreviewIndex(index)}
-                                className={`flex-shrink-0 w-12 h-12 rounded-lg border-2 transition-all duration-200 ${
-                                  index === previewIndex 
-                                    ? 'border-blue-500 shadow-lg' 
-                                    : 'border-gray-300 hover:border-gray-400'
-                                }`}
-                              >
-                                <img
-                                  src={URL.createObjectURL(file)}
-                                  alt={`Thumbnail ${index + 1}`}
-                                  className="w-full h-full object-cover rounded-lg"
-                                />
-                              </button>
-                              {/* Delete Icon on Thumbnail - Only show when multiple images are selected */}
-                              {selectedFiles.length > 1 && (
-                                <button
-                                  onClick={(e) => {
-                                    e.stopPropagation(); // Prevent triggering the thumbnail selection
-                                    const newFiles = selectedFiles.filter((_, fileIndex) => fileIndex !== index);
-                                    const newCaptions = { ...imageCaptions };
-                                    // Remove caption for deleted image
-                                    delete newCaptions[file.name];
-                                    
-                                    if (newFiles.length === 0) {
-                                      // If no images left, close modal
-                                      setSelectedFiles([]);
-                                      setImageCaptions({});
-                                      setShowImagePreviewModal(false);
-                                    } else {
-                                      // Update files and adjust preview index
-                                      setSelectedFiles(newFiles);
-                                      setImageCaptions(newCaptions);
-                                      // Adjust preview index if needed
-                                      if (previewIndex >= newFiles.length) {
-                                        setPreviewIndex(newFiles.length - 1);
-                                      } else if (previewIndex > index) {
-                                        // If we deleted an image before the current preview, adjust index
-                                        setPreviewIndex(previewIndex - 1);
-                                      }
-                                    }
-                                  }}
-                                  className="absolute -top-1 -right-1 bg-red-500 hover:bg-red-600 text-white rounded-full p-1 shadow-lg transition-all duration-200 hover:scale-110 z-10"
-                                  title="Remove this image"
-                                  aria-label="Remove this image"
-                                >
-                                  <FaTimes className="w-2 h-2" />
-                                </button>
-                              )}
-                            </div>
-                          ))}
-                          
-                          {/* Add More Images Button - Only show when less than 10 images */}
-                          {selectedFiles.length < 10 && (
-                            <div className="relative">
-                              <label className="flex-shrink-0 w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer flex items-center justify-center group">
-                                <input
-                                  type="file"
-                                  accept="image/*"
-                                  multiple
-                                  className="hidden"
-                                  onChange={(e) => {
-                                    const files = e.target.files;
-                                    if (files && files.length > 0) {
-                                      // Calculate how many more images can be added
-                                      const remainingSlots = 10 - selectedFiles.length;
-                                      const filesToAdd = Array.from(files).slice(0, remainingSlots);
-                                      
-                                      if (filesToAdd.length > 0) {
-                                        // Add new files to existing selection
-                                        const newFiles = [...selectedFiles, ...filesToAdd];
-                                        setSelectedFiles(newFiles);
-                                        
-                                        // Show notification if some files were skipped
-                                        if (filesToAdd.length < files.length) {
-                                          toast.info(`Added ${filesToAdd.length} images. Maximum limit of 10 images reached.`);
-                                        }
-                                      }
-                                      // Reset the input
-                                      e.target.value = '';
-                                    }
-                                  }}
-                                />
-                                <svg className="w-5 h-5 text-gray-400 group-hover:text-blue-500 transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 6v6m0 0v6m0-6h6m-6 0H6" />
-                                </svg>
-                              </label>
-                            </div>
-                          )}
-                        </div>
                       </div>
-                      
-                      {/* Caption for Current Image */}
-                      <div className="relative mb-4">
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Video Preview Modal */}
+              {showVideoPreviewModal && selectedVideo && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-lg font-medium text-gray-700">Video Preview</span>
+                      <button
+                        onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }}
+                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                      >
+                        <FaTimes className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="flex-1 mb-4 min-h-0">
+                      <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
+                    </div>
+
+                    {/* Caption for Video */}
+                    <div className="relative mb-4">
+                      <div className="relative">
                         <textarea
-                          placeholder={`Add a caption for ${selectedFiles[previewIndex]?.name}...`}
-                          value={imageCaptions[selectedFiles[previewIndex]?.name] || ''}
-                          onChange={(e) => setImageCaptions(prev => ({
-                            ...prev,
-                            [selectedFiles[previewIndex]?.name]: e.target.value
-                          }))}
-                          className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                          rows={3}
+                          ref={videoCaptionRef}
+                          placeholder={`Add a caption for ${selectedVideo.name}...`}
+                          value={videoCaption}
+                          onChange={(e) => setVideoCaption(e.target.value)}
+                          className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows={2}
                           maxLength={500}
                         />
-                        {/* Emoji Picker for Caption */}
                         <div className="absolute right-2 top-2">
-                          <EmojiButton 
+                          <EmojiButton
                             onEmojiClick={(emoji) => {
-                              // Check if chat sending is blocked for this appointment status
-                              if (isChatSendBlocked) {
-                                toast.info('Emoji sending disabled for this appointment status. You can view chat history.');
-                                return;
+                              const textarea = videoCaptionRef.current;
+                              if (textarea) {
+                                const start = textarea.selectionStart;
+                                const end = textarea.selectionEnd;
+                                const newValue = videoCaption.slice(0, start) + emoji + videoCaption.slice(end);
+                                setVideoCaption(newValue);
+                                setTimeout(() => {
+                                  textarea.focus();
+                                  textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                                }, 0);
                               }
-                              
-                              const currentCaption = imageCaptions[selectedFiles[previewIndex]?.name] || '';
-                              setImageCaptions(prev => ({
-                                ...prev,
-                                [selectedFiles[previewIndex]?.name]: currentCaption + emoji
-                              }));
                             }}
-                            className="w-6 h-6"
-                            disabled={isChatSendBlocked}
+                            inputRef={videoCaptionRef}
                           />
                         </div>
-                        <div className="text-xs text-gray-500 mt-1 text-right">
-                          {(imageCaptions[selectedFiles[previewIndex]?.name] || '').length}/500
-                        </div>
                       </div>
-                      
-                      <div className="flex justify-between items-center">
-                        <div className="text-sm text-gray-600">
-                          {uploadingFile && currentFileIndex >= 0 ? (
-                            <span>
-                              Uploading {currentFileIndex + 1} / {selectedFiles.length}
-                              {` • ${currentFileProgress}%`}
-                            </span>
-                          ) : (
-                            <>
-                              {selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''} ready to send
-                              {failedFiles.length > 0 && (
-                                <span className="ml-2 text-red-600">• {failedFiles.length} failed</span>
-                              )}
-                            </>
-                          )}
-                        </div>
-                        <div className="flex items-center gap-2">
-                          {uploadingFile ? (
-                            <>
-                              <button
-                                onClick={handleCancelInFlightUpload}
-                                className="bg-red-600 text-white py-2 px-3 rounded-lg hover:bg-red-700 text-sm font-medium transition-colors"
-                              >
-                                Cancel Upload
-                              </button>
-                              <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
-                              </div>
-                              <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
-                            </>
-                          ) : (
-                            <>
-                              {failedFiles.length > 0 && (
-                                <button
-                                  onClick={handleRetryFailedUploads}
-                                  className="bg-yellow-500 text-white py-2 px-3 rounded-lg hover:bg-yellow-600 text-sm font-medium transition-colors"
-                                >
-                                  Retry Failed ({failedFiles.length})
-                                </button>
-                              )}
-                              <button
-                                onClick={handleSendImagesWithCaptions}
-                                disabled={isChatSendBlocked}
-                                className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                                  isChatSendBlocked 
-                                    ? 'bg-gray-400 text-gray-200 cursor-not-allowed' 
-                                    : 'bg-blue-600 text-white hover:bg-blue-700'
-                                }`}
-                              >
-                                {`Send ${selectedFiles.length} Image${selectedFiles.length !== 1 ? 's' : ''}`}
-                              </button>
-                            </>
-                          )}
-                        </div>
+                      <div className="text-xs text-gray-500 mt-1 text-right">
+                        {videoCaption.length}/500
                       </div>
                     </div>
-                  </div>
-                )}
 
-                {/* Video Preview Modal */}
-                {showVideoPreviewModal && selectedVideo && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-medium text-gray-700">Video Preview</span>
-                        <button
-                          onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }}
-                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
-                        >
-                          <FaTimes className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <div className="flex-1 mb-4 min-h-0">
-                        <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
-                      </div>
-                      
-                      {/* Caption for Video */}
-                      <div className="relative mb-4">
-                        <div className="relative">
-                          <textarea
-                            ref={videoCaptionRef}
-                            placeholder={`Add a caption for ${selectedVideo.name}...`}
-                            value={videoCaption}
-                            onChange={(e) => setVideoCaption(e.target.value)}
-                            className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            rows={2}
-                            maxLength={500}
-                          />
-                          <div className="absolute right-2 top-2">
-                            <EmojiButton
-                              onEmojiClick={(emoji) => {
-                                const textarea = videoCaptionRef.current;
-                                if (textarea) {
-                                  const start = textarea.selectionStart;
-                                  const end = textarea.selectionEnd;
-                                  const newValue = videoCaption.slice(0, start) + emoji + videoCaption.slice(end);
-                                  setVideoCaption(newValue);
-                                  setTimeout(() => {
-                                    textarea.focus();
-                                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-                                  }, 0);
-                                }
-                              }}
-                              inputRef={videoCaptionRef}
-                            />
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1 text-right">
-                          {videoCaption.length}/500
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedVideo.name}</div>
-                        <div className="flex gap-2 flex-shrink-0">
-                          {uploadingFile ? (
-                            <>
-                              <button 
-                                onClick={handleCancelInFlightUpload}
-                                className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
-                              >
-                                Cancel
-                              </button>
-                              <div className="flex items-center gap-2">
-                                <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
-                                  <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
-                                </div>
-                                <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
-                              </div>
-                            </>
-                          ) : (
-                            <>
-                              <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
-                              <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
-                            </>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Audio Preview Modal */}
-                {showAudioPreviewModal && selectedAudio && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-medium text-gray-700">Audio Preview</span>
-                        <button
-                          onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
-                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
-                        >
-                          <FaTimes className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <div className="mb-4">
-                        <audio controls className="w-full" src={audioObjectURL} />
-                      </div>
-                      <div className="relative mb-4">
-                        <div className="relative">
-                          <textarea
-                            ref={audioCaptionRef}
-                            placeholder={`Add a caption for ${selectedAudio.name}...`}
-                            value={audioCaption}
-                            onChange={(e) => setAudioCaption(e.target.value)}
-                            className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            rows={2}
-                            maxLength={500}
-                          />
-                          <div className="absolute right-2 top-2">
-                            <EmojiButton
-                              onEmojiClick={(emoji) => {
-                                const textarea = audioCaptionRef.current;
-                                if (textarea) {
-                                  const start = textarea.selectionStart;
-                                  const end = textarea.selectionEnd;
-                                  const newValue = audioCaption.slice(0, start) + emoji + audioCaption.slice(end);
-                                  setAudioCaption(newValue);
-                                  setTimeout(() => {
-                                    textarea.focus();
-                                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-                                  }, 0);
-                                }
-                              }}
-                              inputRef={audioCaptionRef}
-                            />
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1 text-right">
-                          {audioCaption.length}/500
-                        </div>
-                      </div>
-                      <div className="flex items-center justify-between">
-                        <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedAudio.name}</div>
-                        <div className="flex items-center gap-2">
-                          <button
-                            onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
-                            className="py-2 px-4 rounded-lg text-sm font-medium border hover:bg-gray-50"
-                          >Cancel</button>
-                          <button
-                            onClick={handleSendSelectedAudio}
-                            disabled={isChatSendBlocked}
-                            className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${
-                              isChatSendBlocked ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
-                            }`}
-                          >Send Audio</button>
-                        </div>
-                      </div>
-                      {uploadingFile && (
-                        <div className="mt-3">
-                          <div className="w-full bg-gray-200 rounded-full h-2">
-                            <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
-                          </div>
-                          <div className="text-xs text-gray-500 mt-1 text-right">{uploadProgress}%</div>
-                        </div>
-                      )}
-                    </div>
-                  </div>
-                )}
-
-                {/* Record Audio Modal */}
-                {showRecordAudioModal && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-medium text-gray-700">Record Audio</span>
-                        <button
-                          onClick={cancelAudioRecording}
-                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
-                        >
-                          <FaTimes className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <div className="flex flex-col items-center gap-4 py-4">
-                        <div className={`w-24 h-24 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-100' : 'bg-gray-100'}`}>
-                          <svg className={`w-10 h-10 ${isRecording ? 'text-red-600 animate-pulse' : 'text-gray-600'}`} viewBox="0 0 24 24" fill="currentColor">
-                            <path d="M12 14a3 3 0 003-3V7a3 3 0 10-6 0v4a3 3 0 003 3z" />
-                            <path d="M19 11a7 7 0 11-14 0h2a5 5 0 0010 0h2z" />
-                          </svg>
-                        </div>
-                        <div className="text-sm text-gray-600">
-                          {isRecording ? (
-                            isPaused ? 
-                              `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')} (Paused)` : 
-                              `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')}`
-                          ) : 'Ready'}
-                        </div>
-                        <div className="flex items-center gap-3">
-                          {!isRecording ? (
-                            <button onClick={startAudioRecording} className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Start</button>
-                          ) : (
-                            <>
-                            <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop & Preview</button>
-                              {isPaused ? (
-                                <button onClick={resumeAudioRecording} className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Resume</button>
-                              ) : (
-                                <button onClick={pauseAudioRecording} className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700">Pause</button>
-                              )}
-                            </>
-                          )}
-                          <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
-                        </div>
-                        <div className="text-xs text-gray-500">Your mic input stays on device until you choose to send.</div>
-                      </div>
-                    </div>
-                  </div>
-                )}
-
-                {/* Document Preview Modal */}
-                {showDocumentPreviewModal && selectedDocument && (
-                  <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
-                      <div className="flex items-center justify-between mb-3">
-                        <span className="text-lg font-medium text-gray-700">Document Preview</span>
-                        <button
-                          onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }}
-                          className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
-                        >
-                          <FaTimes className="w-5 h-5" />
-                        </button>
-                      </div>
-                      <div className="mb-4 flex items-center gap-3">
-                        <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-600">📄</div>
-                        <div className="min-w-0">
-                          <div className="text-sm font-medium truncate">{selectedDocument.name}</div>
-                          <div className="text-xs text-gray-500 truncate">{selectedDocument.type || 'Document'}</div>
-                        </div>
-                      </div>
-                      
-                      {/* Caption for Document */}
-                      <div className="relative mb-4">
-                        <div className="relative">
-                          <textarea
-                            ref={documentCaptionRef}
-                            placeholder={`Add a caption for ${selectedDocument.name}...`}
-                            value={documentCaption}
-                            onChange={(e) => setDocumentCaption(e.target.value)}
-                            className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
-                            rows={2}
-                            maxLength={500}
-                          />
-                          <div className="absolute right-2 top-2">
-                            <EmojiButton
-                              onEmojiClick={(emoji) => {
-                                const textarea = documentCaptionRef.current;
-                                if (textarea) {
-                                  const start = textarea.selectionStart;
-                                  const end = textarea.selectionEnd;
-                                  const newValue = documentCaption.slice(0, start) + emoji + documentCaption.slice(end);
-                                  setDocumentCaption(newValue);
-                                  setTimeout(() => {
-                                    textarea.focus();
-                                    textarea.setSelectionRange(start + emoji.length, start + emoji.length);
-                                  }, 0);
-                                }
-                              }}
-                              inputRef={documentCaptionRef}
-                            />
-                          </div>
-                        </div>
-                        <div className="text-xs text-gray-500 mt-1 text-right">
-                          {documentCaption.length}/500
-                        </div>
-                      </div>
-                      
-                      <div className="flex items-center justify-between">
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedVideo.name}</div>
+                      <div className="flex gap-2 flex-shrink-0">
                         {uploadingFile ? (
                           <>
-                            <button 
+                            <button
                               onClick={handleCancelInFlightUpload}
                               className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
                             >
@@ -10397,17 +10165,227 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                           </>
                         ) : (
                           <>
-                            <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
-                            <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                            <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                            <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                           </>
                         )}
                       </div>
                     </div>
                   </div>
-                )}
-                
-                {/* Animations for chat bubbles */}
-                <style jsx>{`
+                </div>
+              )}
+
+              {/* Audio Preview Modal */}
+              {showAudioPreviewModal && selectedAudio && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-lg font-medium text-gray-700">Audio Preview</span>
+                      <button
+                        onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
+                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                      >
+                        <FaTimes className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="mb-4">
+                      <audio controls className="w-full" src={audioObjectURL} />
+                    </div>
+                    <div className="relative mb-4">
+                      <div className="relative">
+                        <textarea
+                          ref={audioCaptionRef}
+                          placeholder={`Add a caption for ${selectedAudio.name}...`}
+                          value={audioCaption}
+                          onChange={(e) => setAudioCaption(e.target.value)}
+                          className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows={2}
+                          maxLength={500}
+                        />
+                        <div className="absolute right-2 top-2">
+                          <EmojiButton
+                            onEmojiClick={(emoji) => {
+                              const textarea = audioCaptionRef.current;
+                              if (textarea) {
+                                const start = textarea.selectionStart;
+                                const end = textarea.selectionEnd;
+                                const newValue = audioCaption.slice(0, start) + emoji + audioCaption.slice(end);
+                                setAudioCaption(newValue);
+                                setTimeout(() => {
+                                  textarea.focus();
+                                  textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                                }, 0);
+                              }
+                            }}
+                            inputRef={audioCaptionRef}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 text-right">
+                        {audioCaption.length}/500
+                      </div>
+                    </div>
+                    <div className="flex items-center justify-between">
+                      <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedAudio.name}</div>
+                      <div className="flex items-center gap-2">
+                        <button
+                          onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
+                          className="py-2 px-4 rounded-lg text-sm font-medium border hover:bg-gray-50"
+                        >Cancel</button>
+                        <button
+                          onClick={handleSendSelectedAudio}
+                          disabled={isChatSendBlocked}
+                          className={`py-2 px-4 rounded-lg text-sm font-medium transition-colors ${isChatSendBlocked ? 'bg-gray-400 text-gray-200 cursor-not-allowed' : 'bg-blue-600 text-white hover:bg-blue-700'
+                            }`}
+                        >Send Audio</button>
+                      </div>
+                    </div>
+                    {uploadingFile && (
+                      <div className="mt-3">
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
+                        </div>
+                        <div className="text-xs text-gray-500 mt-1 text-right">{uploadProgress}%</div>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              )}
+
+              {/* Record Audio Modal */}
+              {showRecordAudioModal && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-lg font-medium text-gray-700">Record Audio</span>
+                      <button
+                        onClick={cancelAudioRecording}
+                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                      >
+                        <FaTimes className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="flex flex-col items-center gap-4 py-4">
+                      <div className={`w-24 h-24 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-100' : 'bg-gray-100'}`}>
+                        <svg className={`w-10 h-10 ${isRecording ? 'text-red-600 animate-pulse' : 'text-gray-600'}`} viewBox="0 0 24 24" fill="currentColor">
+                          <path d="M12 14a3 3 0 003-3V7a3 3 0 10-6 0v4a3 3 0 003 3z" />
+                          <path d="M19 11a7 7 0 11-14 0h2a5 5 0 0010 0h2z" />
+                        </svg>
+                      </div>
+                      <div className="text-sm text-gray-600">
+                        {isRecording ? (
+                          isPaused ?
+                            `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')} (Paused)` :
+                            `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')}`
+                        ) : 'Ready'}
+                      </div>
+                      <div className="flex items-center gap-3">
+                        {!isRecording ? (
+                          <button onClick={startAudioRecording} className="px-4 py-2 rounded-lg bg-rose-600 text-white hover:bg-rose-700">Start</button>
+                        ) : (
+                          <>
+                            <button onClick={stopAudioRecording} className="px-4 py-2 rounded-lg bg-blue-600 text-white hover:bg-blue-700">Stop & Preview</button>
+                            {isPaused ? (
+                              <button onClick={resumeAudioRecording} className="px-4 py-2 rounded-lg bg-green-600 text-white hover:bg-green-700">Resume</button>
+                            ) : (
+                              <button onClick={pauseAudioRecording} className="px-4 py-2 rounded-lg bg-yellow-600 text-white hover:bg-yellow-700">Pause</button>
+                            )}
+                          </>
+                        )}
+                        <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
+                      </div>
+                      <div className="text-xs text-gray-500">Your mic input stays on device until you choose to send.</div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Document Preview Modal */}
+              {showDocumentPreviewModal && selectedDocument && (
+                <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+                    <div className="flex items-center justify-between mb-3">
+                      <span className="text-lg font-medium text-gray-700">Document Preview</span>
+                      <button
+                        onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }}
+                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                      >
+                        <FaTimes className="w-5 h-5" />
+                      </button>
+                    </div>
+                    <div className="mb-4 flex items-center gap-3">
+                      <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-600">📄</div>
+                      <div className="min-w-0">
+                        <div className="text-sm font-medium truncate">{selectedDocument.name}</div>
+                        <div className="text-xs text-gray-500 truncate">{selectedDocument.type || 'Document'}</div>
+                      </div>
+                    </div>
+
+                    {/* Caption for Document */}
+                    <div className="relative mb-4">
+                      <div className="relative">
+                        <textarea
+                          ref={documentCaptionRef}
+                          placeholder={`Add a caption for ${selectedDocument.name}...`}
+                          value={documentCaption}
+                          onChange={(e) => setDocumentCaption(e.target.value)}
+                          className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          rows={2}
+                          maxLength={500}
+                        />
+                        <div className="absolute right-2 top-2">
+                          <EmojiButton
+                            onEmojiClick={(emoji) => {
+                              const textarea = documentCaptionRef.current;
+                              if (textarea) {
+                                const start = textarea.selectionStart;
+                                const end = textarea.selectionEnd;
+                                const newValue = documentCaption.slice(0, start) + emoji + documentCaption.slice(end);
+                                setDocumentCaption(newValue);
+                                setTimeout(() => {
+                                  textarea.focus();
+                                  textarea.setSelectionRange(start + emoji.length, start + emoji.length);
+                                }, 0);
+                              }
+                            }}
+                            inputRef={documentCaptionRef}
+                          />
+                        </div>
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1 text-right">
+                        {documentCaption.length}/500
+                      </div>
+                    </div>
+
+                    <div className="flex items-center justify-between">
+                      {uploadingFile ? (
+                        <>
+                          <button
+                            onClick={handleCancelInFlightUpload}
+                            className="px-4 py-2 rounded-lg border border-red-300 text-red-600 hover:bg-red-50"
+                          >
+                            Cancel
+                          </button>
+                          <div className="flex items-center gap-2">
+                            <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
+                              <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
+                            </div>
+                            <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                          </div>
+                        </>
+                      ) : (
+                        <>
+                          <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                          <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
+                        </>
+                      )}
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {/* Animations for chat bubbles */}
+              <style jsx>{`
                   @keyframes fadeInChatBubble {
                     from { opacity: 0; transform: translateY(20px) scale(0.95); }
                     to { opacity: 1; transform: translateY(0) scale(1); }
@@ -10533,17 +10511,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     50% { box-shadow: 0 0 25px rgba(168, 85, 247, 0.9); }
                   }
                 `}</style>
-                {/* If sending is blocked, show an informational banner under header */}
-                { (typeof isChatDisabled !== 'undefined' ? isChatDisabled : isChatSendBlocked) && (
-                  <div className="px-4 sm:px-6 py-2 bg-blue-50 text-blue-800 text-sm border-b border-blue-200 flex items-center gap-2">
-                    <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
-                      <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-                    </svg>
-                    <span>Chat is read-only for this appointment status</span>
-                  </div>
-                )}
-              </>
-            
+              {/* If sending is blocked, show an informational banner under header */}
+              {(typeof isChatDisabled !== 'undefined' ? isChatDisabled : isChatSendBlocked) && (
+                <div className="px-4 sm:px-6 py-2 bg-blue-50 text-blue-800 text-sm border-b border-blue-200 flex items-center gap-2">
+                  <svg className="w-4 h-4 flex-shrink-0" fill="currentColor" viewBox="0 0 20 20">
+                    <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
+                  </svg>
+                  <span>Chat is read-only for this appointment status</span>
+                </div>
+              )}
+            </>
+
             {/* Floating Scroll to bottom button - WhatsApp style */}
             {!isAtBottom && !(typeof isChatDisabled !== 'undefined' ? isChatDisabled : isChatSendBlocked) && !editingComment && !replyTo && (
               <div className="absolute bottom-20 right-6 z-20">
@@ -10573,7 +10551,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 </button>
               </div>
             )}
-            
+
             {/* Undo Delete Message Button - Fixed at bottom */}
             {recentlyDeletedMessage && (
               <div className="absolute bottom-4 left-1/2 transform -translate-x-1/2 z-30">
@@ -10598,15 +10576,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-blue-600">
-                <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z"/>
+                <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
               </svg>
               Lock Chat
             </h3>
-            
+
             <p className="text-gray-600 mb-4">
               Create a password to lock your chat. You'll need this password to access the chat later.
             </p>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -10629,7 +10607,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                   </button>
                 </div>
               </div>
-              
+
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">
                   Confirm Password
@@ -10643,7 +10621,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 />
               </div>
             </div>
-            
+
             <div className="flex gap-3 justify-end mt-6">
               <button
                 type="button"
@@ -10671,7 +10649,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 ) : (
                   <>
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z"/>
+                      <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
                     </svg>
                     Lock Chat
                   </>
@@ -10688,15 +10666,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-orange-600">
-                <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z"/>
+                <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
               </svg>
               Chat is Locked
             </h3>
-            
+
             <p className="text-gray-600 mb-4">
               This chat is protected with a password. Enter your password to access the chat.
             </p>
-            
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -10719,7 +10697,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 </button>
               </div>
             </div>
-            
+
             <div className="flex items-center justify-end mb-4">
               <button
                 type="button"
@@ -10732,7 +10710,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 Forgot password?
               </button>
             </div>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
@@ -10770,11 +10748,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-red-600">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z"/>
+                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
               </svg>
               Forgot Password
             </h3>
-            
+
             <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -10795,11 +10773,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                 </div>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-6">
               This action cannot be undone. Are you sure you want to proceed?
             </p>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
@@ -10834,11 +10812,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-red-600">
-                <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z"/>
+                <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
               </svg>
               Remove Chat Lock
             </h3>
-            
+
             <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
               <div className="flex">
                 <div className="flex-shrink-0">
@@ -10850,16 +10828,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                   <h3 className="text-sm font-medium text-red-800">Permanent Action</h3>
                   <div className="mt-2 text-sm text-red-700">
                     <p>This will remove the chat lock and disable password protection for this conversation.
-You can lock this chat again at any time from the options.</p>
+                      You can lock this chat again at any time from the options.</p>
                   </div>
                 </div>
               </div>
             </div>
-            
+
             <p className="text-gray-600 mb-4">
               Enter your chat lock password to confirm this action.
             </p>
-            
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Password
@@ -10882,7 +10860,7 @@ You can lock this chat again at any time from the options.</p>
                 </button>
               </div>
             </div>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
@@ -10909,7 +10887,7 @@ You can lock this chat again at any time from the options.</p>
                 ) : (
                   <>
                     <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z"/>
+                      <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
                     </svg>
                     Remove Lock
                   </>
@@ -10926,11 +10904,11 @@ You can lock this chat again at any time from the options.</p>
           <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaTrash className="text-red-500" />
-              {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) 
-                ? 'Delete Call' 
+              {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-'))
+                ? 'Delete Call'
                 : Array.isArray(messageToDelete) ? 'Delete Selected Messages' : 'Delete Message'}
             </h3>
-            
+
             {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) ? (
               // Call deletion - show simplified message
               <p className="text-gray-600 mb-6">
@@ -10947,7 +10925,7 @@ You can lock this chat again at any time from the options.</p>
                 <p className="text-gray-600 mb-4">
                   {Array.isArray(messageToDelete) ? `Are you sure you want to delete ${messageToDelete.length} messages?` : 'Are you sure you want to delete this message?'}
                 </p>
-                
+
                 <div className="mb-6">
                   <label className={`flex items-center gap-3 ${isChatSendBlocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
                     <input
@@ -10961,9 +10939,8 @@ You can lock this chat again at any time from the options.</p>
                         setDeleteForBoth(e.target.checked);
                       }}
                       disabled={isChatSendBlocked}
-                      className={`form-checkbox h-4 w-4 text-red-600 rounded border-gray-300 focus:ring-red-500 ${
-                        isChatSendBlocked ? 'opacity-50 cursor-not-allowed' : ''
-                      }`}
+                      className={`form-checkbox h-4 w-4 text-red-600 rounded border-gray-300 focus:ring-red-500 ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed' : ''
+                        }`}
                     />
                     <span className={`text-sm ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-700'}`}>
                       Also delete for{' '}
@@ -10974,9 +10951,9 @@ You can lock this chat again at any time from the options.</p>
                     </span>
                   </label>
                   <p className={`text-xs mt-1 ml-7 ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {isChatSendBlocked 
+                    {isChatSendBlocked
                       ? (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
-                      : deleteForBoth 
+                      : deleteForBoth
                         ? (Array.isArray(messageToDelete) ? 'The selected messages will be permanently deleted for everyone' : 'The message will be permanently deleted for everyone')
                         : (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
                     }
@@ -10993,7 +10970,7 @@ You can lock this chat again at any time from the options.</p>
                 )}
               </p>
             )}
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
@@ -11017,10 +10994,10 @@ You can lock this chat again at any time from the options.</p>
                   : Array.isArray(messageToDelete)
                     ? ((messageToDelete.every(m => m.senderEmail === currentUser.email) && deleteForBoth) ? 'Delete for everyone' : 'Delete for me')
                     : (messageToDelete?.deleted
-                        ? 'Delete for me'
-                        : messageToDelete?.senderEmail === currentUser.email
-                          ? (deleteForBoth ? 'Delete for everyone' : 'Delete for me')
-                          : 'Delete for me')
+                      ? 'Delete for me'
+                      : messageToDelete?.senderEmail === currentUser.email
+                        ? (deleteForBoth ? 'Delete for everyone' : 'Delete for me')
+                        : 'Delete for me')
                 }
               </button>
             </div>
@@ -11036,11 +11013,11 @@ You can lock this chat again at any time from the options.</p>
               <FaTrash className="text-red-500" />
               Clear Chat
             </h3>
-            
+
             <p className="text-gray-600 mb-6">
               Are you sure you want to clear chat? This action cannot be undone.
             </p>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
@@ -11070,11 +11047,11 @@ You can lock this chat again at any time from the options.</p>
               <FaTrash className="text-red-500" />
               Delete Appointment
             </h3>
-            
+
             <p className="text-gray-600 mb-4">
               Are you sure you want to delete this appointment?
             </p>
-            
+
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Reason for deletion (required):
@@ -11087,7 +11064,7 @@ You can lock this chat again at any time from the options.</p>
                 placeholder="Please provide a reason for deleting this appointment..."
               />
             </div>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
@@ -11121,11 +11098,11 @@ You can lock this chat again at any time from the options.</p>
               <FaBan className="text-orange-500" />
               Cancel Appointment
             </h3>
-            
+
             <p className="text-gray-600 mb-4">
               Are you sure you want to cancel this appointment?
             </p>
-            
+
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Reason for cancellation (required):
@@ -11138,7 +11115,7 @@ You can lock this chat again at any time from the options.</p>
                 placeholder={isSeller ? "Please provide a reason for cancelling..." : "Optional reason for cancelling..."}
               />
             </div>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
@@ -11171,11 +11148,11 @@ You can lock this chat again at any time from the options.</p>
               <FaBan className="text-red-500" />
               Admin Cancel Appointment
             </h3>
-            
+
             <p className="text-gray-600 mb-4">
               Are you sure you want to cancel this appointment as admin?
             </p>
-            
+
             <div className="mb-6">
               <label className="block text-sm font-medium text-gray-700 mb-2">
                 Reason for admin cancellation (required):
@@ -11188,7 +11165,7 @@ You can lock this chat again at any time from the options.</p>
                 placeholder="Please provide a reason for admin cancellation..."
               />
             </div>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
@@ -11221,11 +11198,11 @@ You can lock this chat again at any time from the options.</p>
               <FaTrash className="text-red-500" />
               Remove Appointment
             </h3>
-            
+
             <p className="text-gray-600 mb-6">
               Are you sure you want to permanently remove this appointment from your table? This action cannot be undone.
             </p>
-            
+
             <div className="flex gap-3 justify-end">
               <button
                 type="button"
@@ -11301,7 +11278,7 @@ You can lock this chat again at any time from the options.</p>
                   if (!reportReason) { toast.error('Please select a reason'); return; }
                   setSubmittingReport(true);
                   try {
-                    const { data } = await axios.post(`${API_BASE_URL}/api/notifications/report-chat`, 
+                    const { data } = await axios.post(`${API_BASE_URL}/api/notifications/report-chat`,
                       {
                         appointmentId: appt._id,
                         commentId: reportingMessage._id,
@@ -11341,7 +11318,7 @@ You can lock this chat again at any time from the options.</p>
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
               <FaFlag className="text-red-500" /> Report Chat
             </h3>
-            
+
             {/* Last 5 Messages Preview */}
             <div className="mb-6">
               <div className="flex items-center gap-2 mb-3">
@@ -11369,9 +11346,9 @@ You can lock this chat again at any time from the options.</p>
                             <div className="flex items-center gap-2">
                               <span>📷 Image: {message.message}</span>
                               {message.imageUrl && (
-                                <img 
-                                  src={message.imageUrl} 
-                                  alt="Reported image" 
+                                <img
+                                  src={message.imageUrl}
+                                  alt="Reported image"
                                   className="w-8 h-8 object-cover rounded"
                                   onError={(e) => e.target.style.display = 'none'}
                                 />
@@ -11392,7 +11369,7 @@ You can lock this chat again at any time from the options.</p>
                 )}
               </div>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
@@ -11439,13 +11416,13 @@ You can lock this chat again at any time from the options.</p>
               </button>
               <button
                 onClick={async () => {
-                  if (!reportChatReason) { 
-                    toast.error('Please select a reason'); 
-                    return; 
+                  if (!reportChatReason) {
+                    toast.error('Please select a reason');
+                    return;
                   }
                   setSubmittingChatReport(true);
                   try {
-                    const { data } = await axios.post(`${API_BASE_URL}/api/notifications/report-chat-conversation`, 
+                    const { data } = await axios.post(`${API_BASE_URL}/api/notifications/report-chat-conversation`,
                       {
                         appointmentId: appt._id,
                         reason: reportChatReason,
@@ -11488,7 +11465,7 @@ You can lock this chat again at any time from the options.</p>
                 <div className="font-semibold mb-2">Message:</div>
                 <div className="whitespace-pre-wrap break-words">{(selectedMessageForInfo.message || '').slice(0, 200)}{(selectedMessageForInfo.message || '').length > 200 ? '...' : ''}</div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Sent:</span>
@@ -11503,7 +11480,7 @@ You can lock this chat again at any time from the options.</p>
                     })}
                   </span>
                 </div>
-                
+
                 {selectedMessageForInfo.deliveredAt && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Delivered:</span>
@@ -11519,7 +11496,7 @@ You can lock this chat again at any time from the options.</p>
                     </span>
                   </div>
                 )}
-                
+
                 {selectedMessageForInfo.readAt && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Read:</span>
@@ -11535,21 +11512,21 @@ You can lock this chat again at any time from the options.</p>
                     </span>
                   </div>
                 )}
-                
+
                 {!selectedMessageForInfo.deliveredAt && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Status:</span>
                     <span className="text-sm text-gray-500">Not delivered yet</span>
                   </div>
                 )}
-                
+
                 {selectedMessageForInfo.deliveredAt && !selectedMessageForInfo.readAt && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Status:</span>
                     <span className="text-sm text-blue-600">Delivered</span>
                   </div>
                 )}
-                
+
                 {selectedMessageForInfo.readAt && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Status:</span>
@@ -11582,19 +11559,18 @@ You can lock this chat again at any time from the options.</p>
                 <div className="font-semibold mb-2">Call Type:</div>
                 <div>{selectedCallForInfo.callType === 'video' ? 'Video Call' : 'Audio Call'}</div>
               </div>
-              
+
               <div className="space-y-3">
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Status:</span>
-                  <span className={`text-sm font-medium ${
-                    selectedCallForInfo.status === 'accepted' ? 'text-green-600' :
+                  <span className={`text-sm font-medium ${selectedCallForInfo.status === 'accepted' ? 'text-green-600' :
                     selectedCallForInfo.status === 'missed' || selectedCallForInfo.status === 'rejected' || selectedCallForInfo.status === 'cancelled' ? 'text-red-600' :
-                    'text-yellow-600'
-                  }`}>
+                      'text-yellow-600'
+                    }`}>
                     {selectedCallForInfo.status.charAt(0).toUpperCase() + selectedCallForInfo.status.slice(1)}
                   </span>
                 </div>
-                
+
                 {selectedCallForInfo.duration && selectedCallForInfo.duration > 0 && (
                   <div className="flex justify-between items-center">
                     <span className="text-sm font-medium text-gray-600">Duration:</span>
@@ -11611,7 +11587,7 @@ You can lock this chat again at any time from the options.</p>
                     </span>
                   </div>
                 )}
-                
+
                 <div className="flex justify-between items-center">
                   <span className="text-sm font-medium text-gray-600">Started:</span>
                   <span className="text-sm text-gray-800">
@@ -11625,7 +11601,7 @@ You can lock this chat again at any time from the options.</p>
                     })}
                   </span>
                 </div>
-                
+
                 {(() => {
                   const isCaller = selectedCallForInfo.callerId?._id === currentUser._id || selectedCallForInfo.callerId === currentUser._id;
                   const callerName = selectedCallForInfo.callerId?.username || 'Unknown';
@@ -11694,7 +11670,7 @@ You can lock this chat again at any time from the options.</p>
                   {starredMessages.map((message, index) => {
                     const isMe = message.senderEmail === currentUser.email;
                     const messageDate = new Date(message.timestamp);
-                    
+
                     return (
                       <div key={message._id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} mb-4`}>
                         <div className={`relative max-w-[80%] ${isMe ? 'ml-12' : 'mr-12'}`}>
@@ -11718,7 +11694,7 @@ You can lock this chat again at any time from the options.</p>
                               onClick={async () => {
                                 setUnstarringMessageId(message._id);
                                 try {
-                                  const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`, 
+                                  const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`,
                                     { starred: false },
                                     {
                                       withCredentials: true,
@@ -11726,15 +11702,15 @@ You can lock this chat again at any time from the options.</p>
                                     }
                                   );
                                   // Update the local comments state
-                                  setComments(prev => prev.map(c => 
-                                    c._id === message._id 
+                                  setComments(prev => prev.map(c =>
+                                    c._id === message._id
                                       ? { ...c, starredBy: (c.starredBy || []).filter(id => id !== currentUser._id) }
                                       : c
                                   ));
-                                  
+
                                   // Remove from starred messages list
                                   setStarredMessages(prev => prev.filter(m => m._id !== message._id));
-                                  
+
                                   toast.success('Message unstarred.');
                                 } catch (err) {
                                   toast.error(err.response?.data?.message || 'Failed to unstar message');
@@ -11753,14 +11729,13 @@ You can lock this chat again at any time from the options.</p>
                               )}
                             </button>
                           </div>
-                          
+
                           {/* Message bubble - styled like chatbox */}
-                          <div 
-                            className={`rounded-2xl px-4 py-3 text-sm shadow-lg break-words relative group cursor-pointer hover:shadow-xl transition-all duration-200 ${
-                              isMe 
-                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600' 
-                                : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                            }`}
+                          <div
+                            className={`rounded-2xl px-4 py-3 text-sm shadow-lg break-words relative group cursor-pointer hover:shadow-xl transition-all duration-200 ${isMe
+                              ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600'
+                              : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                              }`}
                             onClick={() => {
                               setShowStarredModal(false);
                               // Scroll to the message in the main chat if it exists
@@ -11803,7 +11778,7 @@ You can lock this chat again at any time from the options.</p>
                                       />
                                     </div>
                                   )}
-                                  <FormattedTextWithReadMore 
+                                  <FormattedTextWithReadMore
                                     text={(message.message || '').replace(/\n+$/, '')}
                                     isSentMessage={isMe}
                                     className="whitespace-pre-wrap break-words"
@@ -11812,27 +11787,25 @@ You can lock this chat again at any time from the options.</p>
                                 </>
                               )}
                             </div>
-                            
+
                             {/* Copy button - appears on hover, only for non-deleted messages */}
                             {!message.deleted && (
                               <button
                                 onClick={(e) => { e.stopPropagation(); copyMessageToClipboard(message.message); }}
-                                className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-full ${
-                                  isMe 
-                                    ? 'bg-white/20 hover:bg-white/30 text-white' 
-                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                                }`}
+                                className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-full ${isMe
+                                  ? 'bg-white/20 hover:bg-white/30 text-white'
+                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                  }`}
                                 title="Copy message"
                               >
                                 <FaCopy className="w-3 h-3" />
                               </button>
                             )}
-                            
+
                             {/* Edited indicator only (no time display) */}
                             {message.edited && (
-                              <div className={`flex justify-end mt-2 text-xs ${
-                                isMe ? 'text-blue-200' : 'text-gray-500'
-                              }`}>
+                              <div className={`flex justify-end mt-2 text-xs ${isMe ? 'text-blue-200' : 'text-gray-500'
+                                }`}>
                                 <span className="italic">(Edited)</span>
                               </div>
                             )}
@@ -11899,11 +11872,11 @@ You can lock this chat again at any time from the options.</p>
             <div className="p-6">
               <div className="mb-4">
                 <p className="text-gray-600 mb-4">
-                  {Array.isArray(messageToPin) 
-                    ? `Choose how long to pin these ${messageToPin.length} messages:` 
+                  {Array.isArray(messageToPin)
+                    ? `Choose how long to pin these ${messageToPin.length} messages:`
                     : 'Choose how long to pin this message:'}
                 </p>
-                
+
                 {/* Pin Duration Options */}
                 <div className="space-y-3">
                   <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
@@ -11920,7 +11893,7 @@ You can lock this chat again at any time from the options.</p>
                       <div className="text-sm text-gray-500">Pin for 24 hours</div>
                     </div>
                   </label>
-                  
+
                   <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                     <input
                       type="radio"
@@ -11935,7 +11908,7 @@ You can lock this chat again at any time from the options.</p>
                       <div className="text-sm text-gray-500">Pin for 7 days</div>
                     </div>
                   </label>
-                  
+
                   <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                     <input
                       type="radio"
@@ -11950,7 +11923,7 @@ You can lock this chat again at any time from the options.</p>
                       <div className="text-sm text-gray-500">Pin for 30 days</div>
                     </div>
                   </label>
-                  
+
                   <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
                     <input
                       type="radio"
@@ -11966,7 +11939,7 @@ You can lock this chat again at any time from the options.</p>
                     </div>
                   </label>
                 </div>
-                
+
                 {/* Custom Hours Input */}
                 {pinDuration === 'custom' && (
                   <div className="mt-4">
@@ -11987,7 +11960,7 @@ You can lock this chat again at any time from the options.</p>
                     </p>
                   </div>
                 )}
-                
+
                 {/* Message Preview */}
                 <div className="mt-4 p-3 bg-gray-50 rounded-lg">
                   <div className="text-sm text-gray-600 mb-2">
@@ -12033,42 +12006,42 @@ You can lock this chat again at any time from the options.</p>
                     setPinningSaving(true);
                     try {
 
-                      
+
                       // Process messages one by one to handle individual failures gracefully
                       let successCount = 0;
                       let failureCount = 0;
                       const failedMessages = [];
                       const successfulMessages = [];
-                      
+
                       for (const msg of messageToPin) {
                         try {
 
-                          
-                          const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/pin`, 
-                            { 
-                              pinned: true, 
-                              pinDuration: pinDuration, 
-                              customHours: pinDuration === 'custom' ? customHours : undefined 
+
+                          const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/pin`,
+                            {
+                              pinned: true,
+                              pinDuration: pinDuration,
+                              customHours: pinDuration === 'custom' ? customHours : undefined
                             },
                             {
                               withCredentials: true,
                               headers: { 'Content-Type': 'application/json' }
                             }
                           );
-                          
+
 
                           successCount++;
                           successfulMessages.push(msg);
-                          
+
                         } catch (err) {
                           console.error(`Failed to pin message ${msg._id}:`, err);
                           failureCount++;
                           failedMessages.push(msg);
                         }
                       }
-                      
 
-                      
+
+
                       if (successCount > 0) {
                         // Calculate expiry date based on duration
                         const now = new Date();
@@ -12082,7 +12055,7 @@ You can lock this chat again at any time from the options.</p>
                         } else if (pinDuration === 'custom') {
                           expiryDate = new Date(now.getTime() + customHours * 60 * 60 * 1000);
                         }
-                        
+
                         // Update UI state for successfully pinned messages
                         setComments(prev => prev.map(c => {
                           const pinnedMsg = successfulMessages.find(msg => msg._id === c._id);
@@ -12098,7 +12071,7 @@ You can lock this chat again at any time from the options.</p>
                           }
                           return c;
                         }));
-                        
+
                         // Update pinned messages list
                         const newPinnedMessages = successfulMessages.map(msg => ({
                           ...msg,
@@ -12108,12 +12081,12 @@ You can lock this chat again at any time from the options.</p>
                           pinExpiresAt: expiryDate,
                           pinDuration: pinDuration
                         }));
-                        
+
                         setPinnedMessages(prev => {
                           const filtered = prev.filter(m => !successfulMessages.some(msg => msg._id === m._id));
                           return [...filtered, ...newPinnedMessages];
                         });
-                        
+
                         // Show appropriate feedback
                         if (successCount > 0 && failureCount === 0) {
                           toast.success(`Successfully pinned ${successCount} messages`);
@@ -12128,7 +12101,7 @@ You can lock this chat again at any time from the options.</p>
                       } else {
                         toast.error(`Failed to pin any messages. Please try again.`);
                       }
-                      
+
                     } catch (err) {
                       console.error('Error in bulk pinning operation:', err);
                       if (err.response) {
@@ -12202,7 +12175,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     text: ''
   });
   const [submittingAppeal, setSubmittingAppeal] = useState(false);
-  
+
   useEffect(() => {
     fetchPaymentStatus();
   }, [appointment._id]); // Removed paymentConfirmed to prevent premature refetch before backend updates
@@ -12210,11 +12183,11 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   // Listen for payment status updates via socket or custom events
   useEffect(() => {
     let refetchTimeout = null;
-    
+
     function handlePaymentUpdate(event) {
       const appointmentId = event.detail?.appointmentId || event.appointmentId;
       const paymentConfirmed = event.detail?.paymentConfirmed ?? event.paymentConfirmed;
-      
+
       if (appointmentId === appointment._id && paymentConfirmed) {
         // Clear any pending refetch
         if (refetchTimeout) {
@@ -12227,15 +12200,15 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         }, 2000);
       }
     }
-    
+
     // Listen for custom DOM events (from MyPayments page)
     window.addEventListener('paymentStatusUpdated', handlePaymentUpdate);
-    
+
     // Listen for socket events
     if (socket) {
       socket.on('paymentStatusUpdated', handlePaymentUpdate);
     }
-    
+
     return () => {
       if (refetchTimeout) {
         clearTimeout(refetchTimeout);
@@ -12296,21 +12269,21 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         // Prioritize completed or admin-marked payments first
         // Then prioritize non-cancelled payments
         // This ensures completed payments are always shown even if cancelled payments were created later
-        const completedPayment = data.payments.find(p => 
+        const completedPayment = data.payments.find(p =>
           p.status === 'completed' || p.metadata?.adminMarked
         );
-        const latestPayment = completedPayment || 
-          data.payments.find(p => p.status !== 'cancelled') || 
+        const latestPayment = completedPayment ||
+          data.payments.find(p => p.status !== 'cancelled') ||
           data.payments[0];
-        
+
         // Only update if we got a valid payment with status
         if (latestPayment && latestPayment.status) {
           // Only update if we're setting a completed payment, or if current status is not completed
           // This prevents overwriting completed status with cancelled/failed status
-          if (latestPayment.status === 'completed' || latestPayment.metadata?.adminMarked || 
-              !paymentStatus || (paymentStatus.status !== 'completed' && !paymentStatus.metadata?.adminMarked)) {
+          if (latestPayment.status === 'completed' || latestPayment.metadata?.adminMarked ||
+            !paymentStatus || (paymentStatus.status !== 'completed' && !paymentStatus.metadata?.adminMarked)) {
             setPaymentStatus(latestPayment);
-        // Fetch refund request status
+            // Fetch refund request status
             await fetchRefundRequestStatus(latestPayment.paymentId);
           }
         }
@@ -12322,7 +12295,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       console.error('Error fetching payment status:', error);
     } finally {
       if (!skipLoading) {
-      setLoading(false);
+        setLoading(false);
       }
     }
   };
@@ -12353,16 +12326,16 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         credentials: 'include'
       });
       const data = await response.json();
-      
+
       if (response.ok && data.payments && data.payments.length > 0) {
         // Prioritize completed or admin-marked payments first
-        const completedPayment = data.payments.find(p => 
+        const completedPayment = data.payments.find(p =>
           p.status === 'completed' || p.metadata?.adminMarked
         );
-        const latestPayment = completedPayment || 
-          data.payments.find(p => p.status !== 'cancelled') || 
+        const latestPayment = completedPayment ||
+          data.payments.find(p => p.status !== 'cancelled') ||
           data.payments[0];
-        
+
         // Check if payment is already completed
         if (latestPayment.status === 'completed' || latestPayment.metadata?.adminMarked) {
           toast.success('Payment already completed!');
@@ -12372,7 +12345,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           // Update appointment paymentConfirmed flag immediately
           if (appointment.paymentConfirmed !== true) {
             window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
-              detail: { 
+              detail: {
                 appointmentId: appointment._id,
                 paymentConfirmed: true
               }
@@ -12383,13 +12356,13 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           setPaying(false);
           return;
         }
-        
+
         // Check for active (pending/processing) payments that are NOT cancelled
-        const activePayment = data.payments.find(payment => 
-          (payment.status === 'pending' || payment.status === 'processing') && 
+        const activePayment = data.payments.find(payment =>
+          (payment.status === 'pending' || payment.status === 'processing') &&
           payment.status !== 'cancelled'
         );
-        
+
         if (activePayment) {
           // Check if another tab/window/browser has the payment modal open using backend lock
           try {
@@ -12397,9 +12370,9 @@ function PaymentStatusCell({ appointment, isBuyer }) {
               method: 'GET',
               credentials: 'include'
             });
-            
+
             const lockCheckData = await lockCheckResponse.json();
-            
+
             if (lockCheckData.ok && lockCheckData.locked === true && !lockCheckData.ownedByUser) {
               // Another browser/device has the payment modal open
               toast.warning(lockCheckData.message || 'A payment session is already open for this appointment in another browser/device. Please close that browser/device first before opening a new payment session.');
@@ -12408,17 +12381,17 @@ function PaymentStatusCell({ appointment, isBuyer }) {
               setPaying(false);
               return;
             }
-            
+
             // Also check localStorage for same-browser detection (fallback)
             const lockKey = `payment_lock_${appointment._id}`;
             const lockData = localStorage.getItem(lockKey);
-            
+
             if (lockData) {
               try {
                 const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
                 const currentTabId = sessionStorage.getItem('paymentTabId');
                 const now = Date.now();
-                
+
                 // If lock is not stale (less than 5 seconds old) and owned by another tab
                 if (now - timestamp <= 5000 && ownerTabId !== currentTabId) {
                   toast.warning('A payment session is already open for this appointment in another tab. Please close that tab first before opening a new payment session.');
@@ -12435,12 +12408,12 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             console.error('Error checking payment lock:', lockCheckError);
             // If lock check fails, continue (allow opening modal as fallback)
           }
-          
+
           // Check if the active payment has expired
           const now = new Date();
           const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
           let isExpired = false;
-          
+
           if (activePayment.expiresAt) {
             const expiresAt = new Date(activePayment.expiresAt);
             isExpired = expiresAt <= now;
@@ -12448,7 +12421,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             const createdAt = new Date(activePayment.createdAt);
             isExpired = createdAt <= tenMinutesAgo;
           }
-          
+
           if (isExpired) {
             // Payment expired, allow opening modal (will create new payment)
             toast.info('Previous payment session expired. Opening a new payment session.');
@@ -12460,7 +12433,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           }
           // Continue to open modal - backend will handle creating new payment
         }
-        
+
         // If latest payment is cancelled, failed, or expired, show appropriate message and allow retry
         if (latestPayment.status === 'cancelled' && !activePayment) {
           toast.info('Previous payment was cancelled. You can initiate a new payment.');
@@ -12468,7 +12441,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           toast.info('Previous payment failed. You can retry the payment.');
         }
       }
-      
+
       // Initialize appointment lock before opening modal (timer is tied to appointment slot, not payment ID)
       try {
         const lockInitResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/initialize`, {
@@ -12479,7 +12452,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           credentials: 'include',
           body: JSON.stringify({ appointmentId: appointment._id })
         });
-        
+
         if (lockInitResponse.ok) {
           const lockData = await lockInitResponse.json();
           // Update appointment with lock info if provided
@@ -12492,7 +12465,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         console.error('Error initializing appointment lock:', lockError);
         // Continue anyway - backend will initialize lock when creating payment intent
       }
-      
+
       // If payment is not completed and no active payment, proceed with opening the modal
       setShowPayModal(true);
       setPaying(false); // Clear loading when modal opens
@@ -12514,20 +12487,20 @@ function PaymentStatusCell({ appointment, isBuyer }) {
     if (!paymentStatus) {
       return { status: 'pending', text: 'Pending', color: 'bg-yellow-100 text-yellow-800' };
     }
-    
+
     // Check if admin marked this payment
     const isAdminMarked = Boolean(paymentStatus?.metadata?.adminMarked);
     if (isAdminMarked) {
       return { status: 'admin_confirmed', text: 'Paid (Admin)', color: 'bg-green-100 text-green-800' };
     }
-    
+
     // For sellers, hide refund-related statuses (refunded, partially_refunded, failed)
     // Only show these statuses to buyers
     if (!isBuyer && ['refunded', 'partially_refunded', 'failed'].includes(paymentStatus.status)) {
       // For sellers, show as completed/paid instead of refund statuses
       return { status: 'completed', text: 'Paid', color: 'bg-green-100 text-green-800' };
     }
-    
+
     // For user payments, show regular payment status
     return getPaymentStatusInfo(paymentStatus.status);
   };
@@ -12630,21 +12603,21 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   const isFrozenStatus = ['rejected', 'cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin', 'outdated'].includes(appointment.status);
   const isAdminMarked = Boolean(paymentStatus?.metadata?.adminMarked);
   const isPending = !isAdminMarked && (!paymentStatus || paymentStatus.status !== 'completed') && !isFrozenStatus;
-  
+
   // Check if there's a pending, approved, or rejected refund request
   const hasRefundRequest = refundRequestStatus && ['pending', 'rejected', 'approved', 'processed'].includes(refundRequestStatus.status);
   const isRefundRequestRejected = refundRequestStatus && refundRequestStatus.status === 'rejected';
   const isRefundRequestPending = refundRequestStatus && refundRequestStatus.status === 'pending';
   const isRefundRequestApproved = refundRequestStatus && ['approved', 'processed'].includes(refundRequestStatus.status);
   const isCaseReopened = refundRequestStatus && refundRequestStatus.caseReopened;
-  
-  
+
+
   return (
     <div className="flex flex-col items-center gap-2">
       <span className={`px-2 py-1 rounded-full text-xs font-medium ${displayStatus.color}`}>
         {displayStatus.text}
       </span>
-      
+
       {/* Only show payment amount and Pay Now button for buyers */}
       {isBuyer && (
         <>
@@ -12652,8 +12625,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             {/* Show info icon only when not paid and not admin-marked */}
             {(!paymentStatus || (paymentStatus.status !== 'completed' && !isAdminMarked)) && (appointment.status === 'pending' || appointment.status === 'accepted') && (
               <div className="relative group">
-                <FaInfoCircle 
-                  className="text-blue-500 hover:text-blue-700 cursor-pointer" 
+                <FaInfoCircle
+                  className="text-blue-500 hover:text-blue-700 cursor-pointer"
                   title="Pay the advance amount to confirm your booking and unlock full chat features."
                 />
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-gray-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
@@ -12662,12 +12635,12 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 </div>
               </div>
             )}
-            
+
             {/* Show info icon for paid appointments */}
             {((paymentStatus && paymentStatus.status === 'completed') || isAdminMarked) && !isFrozenStatus ? (
               <div className="relative group">
-                <FaInfoCircle 
-                  className="text-green-500 hover:text-green-700 cursor-pointer" 
+                <FaInfoCircle
+                  className="text-green-500 hover:text-green-700 cursor-pointer"
                   title="You have unlocked full features of chat. Enjoy seamlessly!"
                 />
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-green-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
@@ -12680,8 +12653,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           {/* Info icon for processing refund request */}
           {hasRefundRequest && isRefundRequestPending && (
             <div className="relative group mb-1">
-              <FaInfoCircle 
-                className="text-orange-500 hover:text-orange-700 cursor-pointer text-xs" 
+              <FaInfoCircle
+                className="text-orange-500 hover:text-orange-700 cursor-pointer text-xs"
                 title="Processing Refund Request..."
               />
               <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-orange-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
@@ -12702,7 +12675,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 </>
               ) : (
                 <>
-              <FaCreditCard /> Pay Now
+                  <FaCreditCard /> Pay Now
                 </>
               )}
             </button>
@@ -12718,20 +12691,20 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 </>
               ) : (
                 <>
-              <FaCreditCard /> Retry Payment
+                  <FaCreditCard /> Retry Payment
                 </>
               )}
             </button>
-          ) : paymentStatus && paymentStatus.status === 'completed' && 
-            ['rejected', 'cancelledBySeller', 'cancelledByAdmin'].includes(appointment.status) && 
+          ) : paymentStatus && paymentStatus.status === 'completed' &&
+            ['rejected', 'cancelledBySeller', 'cancelledByAdmin'].includes(appointment.status) &&
             (!paymentStatus.refundAmount || paymentStatus.refundAmount === 0) ? (
             <>
               {!isRefundRequestApproved && !isRefundRequestPending && (
                 <>
                   {isRefundRequestRejected && refundRequestStatus.isAppealed ? (
                     <div className="relative group mb-1">
-                      <FaInfoCircle 
-                        className="text-blue-500 hover:text-blue-700 cursor-pointer text-xs" 
+                      <FaInfoCircle
+                        className="text-blue-500 hover:text-blue-700 cursor-pointer text-xs"
                         title="Appeal submitted please wait for response..."
                       />
                       <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-blue-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
@@ -12743,8 +12716,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                     <>
                       {/* Combined info icon for refund request rejected and appeal guidance */}
                       <div className="relative group mb-1">
-                        <FaInfoCircle 
-                          className="text-purple-500 hover:text-purple-700 cursor-pointer text-xs" 
+                        <FaInfoCircle
+                          className="text-purple-500 hover:text-purple-700 cursor-pointer text-xs"
                           title="Refund Request Rejected - You can appeal your refund with valid proofs and reason"
                         />
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-purple-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
@@ -12764,8 +12737,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                     <>
                       {/* Info icon for refund request */}
                       <div className="relative group mb-1">
-                        <FaInfoCircle 
-                          className="text-orange-500 hover:text-orange-700 cursor-pointer text-xs" 
+                        <FaInfoCircle
+                          className="text-orange-500 hover:text-orange-700 cursor-pointer text-xs"
                           title="You can raise a refund request now"
                         />
                         <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-orange-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
@@ -12790,8 +12763,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
                 {/* Info icon for refunded status */}
                 {(paymentStatus.status === 'refunded' || paymentStatus.status === 'partially_refunded') && (
                   <div className="relative group mb-1">
-                    <FaInfoCircle 
-                      className="text-red-500 hover:text-red-700 cursor-pointer text-xs" 
+                    <FaInfoCircle
+                      className="text-red-500 hover:text-red-700 cursor-pointer text-xs"
                       title="Refund processed successfully"
                     />
                     <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 px-3 py-2 bg-red-800 text-white text-xs rounded-lg opacity-0 group-hover:opacity-100 transition-opacity duration-200 pointer-events-none whitespace-nowrap z-10">
@@ -12819,7 +12792,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
           )}
         </>
       )}
-      
+
       {isAdminMarked && (
         <div className="text-[10px] text-green-700 font-semibold">✓ Admin Confirmed</div>
       )}
@@ -12831,8 +12804,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             setShowPayModal(false);
             setPaying(false); // Clear loading state when modal closes
           }}
-          appointment={{ 
-            ...appointment, 
+          appointment={{
+            ...appointment,
             region: appointment.region || 'india' // Use actual region or default to 'india'
           }}
           onPaymentSuccess={async (payment) => {
@@ -12846,7 +12819,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
             // Update appointment paymentConfirmed flag immediately
             if (appointment.paymentConfirmed !== true) {
               window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
-                detail: { 
+                detail: {
                   appointmentId: appointment._id,
                   paymentConfirmed: true
                 }
