@@ -5,6 +5,7 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
   const [preview, setPreview] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(false);
+  const [ignored, setIgnored] = useState(false);
 
   const handlePreviewClick = () => {
     if (clickable && url) {
@@ -15,50 +16,77 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
   useEffect(() => {
     if (!url) return;
 
+    // Check if it's a likely file reference that shouldn't be previewed
+    // We ignore common code/config file extensions if they don't explicitly start with http/https
+    // This prevents "filename.js" from being treated as a URL to fetch
+    const isCodeFile = /\.(js|jsx|ts|tsx|css|scss|json|map|xml|yml|yaml|md|txt)$/i.test(url);
+    const hasProtocol = /^https?:\/\//i.test(url);
+
+    if (isCodeFile && !hasProtocol) {
+      setIgnored(true);
+      setLoading(false);
+      return;
+    }
+
     const fetchPreview = async () => {
       setLoading(true);
       setError(false);
-      
+
       try {
+        let fetchUrl = url;
+        if (!hasProtocol) {
+          fetchUrl = 'https://' + url;
+        }
+
+        // Validate URL object
+        try {
+          new URL(fetchUrl);
+        } catch {
+          setError(true);
+          setLoading(false);
+          return;
+        }
+
         // Use a link preview service (you can replace with your own backend endpoint)
-        const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(url)}&meta=true`, {
+        const response = await fetch(`https://api.microlink.io?url=${encodeURIComponent(fetchUrl)}&meta=true`, {
           timeout: 5000 // 5 second timeout
         });
-        
+
         if (!response.ok) {
           throw new Error(`HTTP error! status: ${response.status}`);
         }
-        
+
         const data = await response.json();
-        
+
         if (data.status === 'success' && data.data) {
           setPreview({
             title: data.data.title || 'No title available',
             description: data.data.description || 'No description available',
             image: data.data.image?.url || null,
-            siteName: data.data.publisher || new URL(url).hostname,
-            url: url
+            siteName: data.data.publisher || new URL(fetchUrl).hostname,
+            url: fetchUrl
           });
         } else {
           // Fallback: create a basic preview with just the URL
           setPreview({
-            title: new URL(url).hostname,
-            description: url,
+            title: new URL(fetchUrl).hostname,
+            description: fetchUrl,
             image: null,
-            siteName: new URL(url).hostname,
-            url: url
+            siteName: new URL(fetchUrl).hostname,
+            url: fetchUrl
           });
         }
       } catch (err) {
         console.error('Error fetching link preview:', err);
         // Fallback: create a basic preview with just the URL
         try {
+          const fallbackUrl = hasProtocol ? url : 'https://' + url;
           setPreview({
-            title: new URL(url).hostname,
-            description: url,
+            title: new URL(fallbackUrl).hostname,
+            description: fallbackUrl,
             image: null,
-            siteName: new URL(url).hostname,
-            url: url
+            siteName: new URL(fallbackUrl).hostname,
+            url: fallbackUrl
           });
         } catch (urlErr) {
           console.error('Error creating URL object:', urlErr);
@@ -71,6 +99,8 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
 
     fetchPreview();
   }, [url]);
+
+  if (ignored) return null;
 
   if (loading) {
     return (
@@ -100,21 +130,21 @@ const LinkPreview = ({ url, onRemove, className = "", showRemoveButton = true, c
               <div className="text-xs text-gray-500 break-all">{url}</div>
             </div>
           </div>
-                      {onRemove && showRemoveButton && (
-              <button
-                onClick={onRemove}
-                className="text-gray-400 hover:text-gray-600 transition-colors"
-              >
-                <FaTimes className="text-sm" />
-              </button>
-            )}
+          {onRemove && showRemoveButton && (
+            <button
+              onClick={onRemove}
+              className="text-gray-400 hover:text-gray-600 transition-colors"
+            >
+              <FaTimes className="text-sm" />
+            </button>
+          )}
         </div>
       </div>
     );
   }
 
   return (
-    <div 
+    <div
       className={`bg-gray-50 border border-gray-200 rounded-lg p-3 mb-2 hover:border-gray-300 transition-colors max-w-full ${clickable ? 'cursor-pointer hover:bg-gray-100' : ''} ${className}`}
       onClick={clickable ? handlePreviewClick : undefined}
       role={clickable ? 'button' : undefined}
