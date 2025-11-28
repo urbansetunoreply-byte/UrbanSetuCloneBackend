@@ -4,6 +4,7 @@ import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar,
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
+import { getThemeColors, getDarkModeContainerClass, getDarkModeInputClass, getDarkModeTextClass, getDarkModeSecondaryTextClass, getDarkModeBorderClass, getDarkModeHoverClass } from '../utils/chatTheme';
 import ImagePreview from '../components/ImagePreview';
 import LinkPreview from '../components/LinkPreview';
 import { EmojiButton } from '../components/EmojiPicker';
@@ -101,6 +102,10 @@ export default function AdminAppointments() {
   // Chat settings
   const { settings, updateSetting } = useChatSettings('admin_appointments_chat_settings');
   const [showChatSettings, setShowChatSettings] = useState(false);
+
+  // Compute theme colors and dark mode from settings
+  const themeColors = useMemo(() => getThemeColors(settings.themeColor || 'blue'), [settings.themeColor]);
+  const isDarkMode = settings.theme === 'dark';
 
   // Reactions state
   const [showReactionsBar, setShowReactionsBar] = useState(false);

@@ -22,6 +22,7 @@ import LinkPreview from '../components/LinkPreview';
 import UserAvatar from '../components/UserAvatar';
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
+import { getThemeColors, getDarkModeContainerClass, getDarkModeInputClass, getDarkModeTextClass, getDarkModeSecondaryTextClass, getDarkModeBorderClass, getDarkModeHoverClass } from '../utils/chatTheme';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -151,6 +152,10 @@ export default function MyAppointments() {
   // Chat settings
   const { settings, updateSetting } = useChatSettings('myappointments_chat_settings');
   const [showChatSettings, setShowChatSettings] = useState(false);
+
+  // Compute theme colors and dark mode from settings
+  const themeColors = useMemo(() => getThemeColors(settings.themeColor || 'blue'), [settings.themeColor]);
+  const isDarkMode = settings.theme === 'dark';
 
   // Handle initiate call
   const handleInitiateCall = async (appointment, callType, receiverId) => {
