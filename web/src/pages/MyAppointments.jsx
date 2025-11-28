@@ -17,6 +17,10 @@ import { useCallContext } from '../contexts/CallContext';
 import CallHistoryModal from '../components/CallHistoryModal';
 import ChatSettingsModal from '../components/ChatSettingsModal';
 import { useChatSettings } from '../hooks/useChatSettings';
+import ImagePreview from '../components/ImagePreview';
+import LinkPreview from '../components/LinkPreview';
+import UserAvatar from '../components/UserAvatar';
+import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
