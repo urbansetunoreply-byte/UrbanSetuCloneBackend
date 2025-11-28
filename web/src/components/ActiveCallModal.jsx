@@ -61,6 +61,19 @@ const ActiveCallModal = ({
   const isLocalSpeaking = useAudioActivity(localStream);
   const isRemoteSpeaking = useAudioActivity(remoteStream);
 
+  const [isRemoteAudioLocallyMuted, setIsRemoteAudioLocallyMuted] = useState(false);
+
+  // Apply local mute to remote streams whenever the state or refs change
+  useEffect(() => {
+    if (remoteVideoRef.current) {
+      remoteVideoRef.current.muted = isRemoteAudioLocallyMuted;
+    }
+    if (remoteAudioRef.current) {
+      remoteAudioRef.current.muted = isRemoteAudioLocallyMuted;
+    }
+  }, [isRemoteAudioLocallyMuted, remoteStream]); // Re-run when stream changes to ensure mute persists
+
+
   useEffect(() => {
     setIsVisible(true);
   }, []);
@@ -122,7 +135,7 @@ const ActiveCallModal = ({
         // Ensure the video element is in sync with the remote stream
         if (remoteVideoRef.current.srcObject !== remoteStream) {
           remoteVideoRef.current.srcObject = remoteStream;
-          remoteVideoRef.current.muted = false;
+          remoteVideoRef.current.muted = isRemoteAudioLocallyMuted;
           remoteVideoRef.current.play().catch(err => {
             console.error('Error playing remote video after screen share ends:', err);
           });
@@ -217,7 +230,7 @@ const ActiveCallModal = ({
         if (remoteVideoRef.current && remoteStreamObj) {
           if (remoteVideoRef.current.srcObject !== remoteStreamObj) {
             remoteVideoRef.current.srcObject = remoteStreamObj;
-            remoteVideoRef.current.muted = false;
+            remoteVideoRef.current.muted = isRemoteAudioLocallyMuted;
           }
           remoteVideoRef.current.play().catch(err => console.error('Error playing remote video after swap:', err));
         }
@@ -226,7 +239,7 @@ const ActiveCallModal = ({
         if (remoteVideoRef.current && remoteStreamObj) {
           if (remoteVideoRef.current.srcObject !== remoteStreamObj) {
             remoteVideoRef.current.srcObject = remoteStreamObj;
-            remoteVideoRef.current.muted = false;
+            remoteVideoRef.current.muted = isRemoteAudioLocallyMuted;
           }
           remoteVideoRef.current.play().catch(err => console.error('Error playing remote video after swap:', err));
         }
@@ -422,10 +435,10 @@ const ActiveCallModal = ({
                       ref={remoteVideoRef}
                       autoPlay
                       playsInline
-                      muted={false}
+                      muted={isRemoteAudioLocallyMuted}
                       className="w-full h-full object-contain max-w-full max-h-full"
                       onLoadedMetadata={(e) => {
-                        e.target.muted = false;
+                        e.target.muted = isRemoteAudioLocallyMuted;
                         e.target.play().catch(err => console.error('Error playing remote screen share:', err));
                       }}
                     />
@@ -489,10 +502,10 @@ const ActiveCallModal = ({
                     ref={remoteVideoRef}
                     autoPlay
                     playsInline
-                    muted={false}
+                    muted={isRemoteAudioLocallyMuted}
                     className="w-full h-full object-contain max-w-full max-h-full"
                     onLoadedMetadata={(e) => {
-                      e.target.muted = false; // Ensure audio is not muted
+                      e.target.muted = isRemoteAudioLocallyMuted; // Ensure audio respects local mute state
                       e.target.play().catch(err => console.error('Error playing remote video:', err));
                     }}
                   />
@@ -583,6 +596,7 @@ const ActiveCallModal = ({
               ref={remoteAudioRef}
               autoPlay
               playsInline
+              muted={isRemoteAudioLocallyMuted}
               className="hidden"
             />
             <div className="text-center text-white">
@@ -641,10 +655,10 @@ const ActiveCallModal = ({
                     ref={remoteVideoRef}
                     autoPlay
                     playsInline
-                    muted={false}
+                    muted={isRemoteAudioLocallyMuted}
                     className="w-full h-full object-cover"
                     onLoadedMetadata={(e) => {
-                      e.target.muted = false;
+                      e.target.muted = isRemoteAudioLocallyMuted;
                       e.target.play().catch(err => console.error('Error playing remote video:', err));
                     }}
                   />
@@ -716,10 +730,10 @@ const ActiveCallModal = ({
                   ref={remoteVideoRef}
                   autoPlay
                   playsInline
-                  muted={false}
+                  muted={isRemoteAudioLocallyMuted}
                   className="w-full h-full object-cover"
                   onLoadedMetadata={(e) => {
-                    e.target.muted = false;
+                    e.target.muted = isRemoteAudioLocallyMuted;
                     e.target.play().catch(err => console.error('Error playing remote video:', err));
                   }}
                 />
@@ -910,6 +924,16 @@ const ActiveCallModal = ({
               )}
             </div>
           ) : null}
+
+          {/* Mute Remote Audio (Speaker) */}
+          <button
+            onClick={() => setIsRemoteAudioLocallyMuted(!isRemoteAudioLocallyMuted)}
+            className={`w-12 h-12 rounded-full flex items-center justify-center transition-all duration-300 ${isRemoteAudioLocallyMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
+              } text-white shadow-xl hover:scale-110 active:scale-95 transform`}
+            title={isRemoteAudioLocallyMuted ? 'Unmute Remote Audio' : 'Mute Remote Audio'}
+          >
+            {isRemoteAudioLocallyMuted ? <FaVolumeMute className="text-xl" /> : <FaVolumeUp className="text-xl" />}
+          </button>
 
           {/* Mute/Unmute */}
           <button
