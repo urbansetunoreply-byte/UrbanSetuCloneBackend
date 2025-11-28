@@ -1,3 +1,5 @@
+import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
+import { FaArchive, FaBan, FaCalendar, FaCalendarAlt, FaCheck, FaCheckDouble, FaCheckSquare, FaCircle, FaCog, FaCommentDots, FaCopy, FaCreditCard, FaDownload, FaEllipsisV, FaEnvelope, FaExclamationTriangle, FaFileContract, FaFlag, FaHistory, FaInfoCircle, FaLightbulb, FaPaperPlane, FaPen, FaPhone, FaRegStar, FaSearch, FaSpinner, FaStar, FaSync, FaThumbtack, FaTimes, FaTrash, FaUndo, FaUserShield, FaVideo, FaWallet } from 'react-icons/fa';
 import { EmojiButton } from '../components/EmojiPicker';
 import CustomEmojiPicker from '../components/EmojiPicker';
 import { useSoundEffects, SoundControl } from '../components/SoundEffects';

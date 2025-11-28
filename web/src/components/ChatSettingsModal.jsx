@@ -1,5 +1,5 @@
 import React from 'react';
-import { FaTimes, FaPalette, FaFont, FaExpandAlt, FaVolumeUp, FaKeyboard, FaClock, FaArrowDown } from 'react-icons/fa';
+import { FaTimes, FaPalette, FaFont, FaExpandAlt, FaVolumeUp, FaKeyboard, FaClock, FaArrowDown, FaCog } from 'react-icons/fa';
 
 const ChatSettingsModal = ({ isOpen, onClose, settings, updateSetting }) => {
     if (!isOpen) return null;
@@ -67,8 +67,8 @@ const ChatSettingsModal = ({ isOpen, onClose, settings, updateSetting }) => {
                                             key={size}
                                             onClick={() => updateSetting('fontSize', size)}
                                             className={`px-3 py-1.5 rounded-md text-sm capitalize transition-all ${settings.fontSize === size
-                                                    ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-600 dark:text-white'
-                                                    : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
+                                                ? 'bg-white text-blue-600 shadow-sm dark:bg-gray-600 dark:text-white'
+                                                : 'text-gray-500 hover:text-gray-700 dark:text-gray-400'
                                                 }`}
                                         >
                                             {size}
@@ -90,8 +90,8 @@ const ChatSettingsModal = ({ isOpen, onClose, settings, updateSetting }) => {
                                     value={settings.messageDensity}
                                     onChange={(e) => updateSetting('messageDensity', e.target.value)}
                                     className={`px-3 py-1.5 rounded-lg border text-sm focus:ring-2 focus:ring-blue-500 outline-none ${isDarkMode
-                                            ? 'bg-gray-700 border-gray-600 text-white'
-                                            : 'bg-gray-50 border-gray-300 text-gray-900'
+                                        ? 'bg-gray-700 border-gray-600 text-white'
+                                        : 'bg-gray-50 border-gray-300 text-gray-900'
                                         }`}
                                 >
                                     <option value="compact">Compact</option>
