@@ -2,8 +2,8 @@ import React, { useEffect, useState, useRef } from 'react';
 import { FaPhone, FaVideo, FaMicrophone, FaMicrophoneSlash, FaVideoSlash, FaSync, FaExpand, FaCompress, FaDesktop, FaSignLanguage, FaWifi, FaVolumeUp } from 'react-icons/fa';
 import UserAvatar from './UserAvatar';
 
-const ActiveCallModal = ({ 
-  callType, 
+const ActiveCallModal = ({
+  callType,
   otherPartyName,
   otherPartyData, // Add other party data for avatar
   isMuted,
@@ -108,10 +108,10 @@ const ActiveCallModal = ({
       setVideoZoom(1);
       setVideoPanX(0);
       setVideoPanY(0);
-      
+
       // Force a re-render to update the UI layout immediately
       setForceRender(prev => prev + 1);
-      
+
       // When remote stops screen sharing, ensure the video element is updated
       if (remoteVideoRef.current && remoteStream) {
         // Ensure the video element is in sync with the remote stream
@@ -132,12 +132,12 @@ const ActiveCallModal = ({
   // Handle zoom with mouse wheel
   const handleWheel = (e) => {
     if (!isScreenSharing && !remoteIsScreenSharing) return;
-    
+
     e.preventDefault();
     const delta = e.deltaY > 0 ? 0.9 : 1.1;
     const newZoom = Math.max(1, Math.min(3, videoZoom * delta));
     setVideoZoom(newZoom);
-    
+
     // Center zoom on mouse position
     if (newZoom > 1 && e.currentTarget) {
       const rect = e.currentTarget.getBoundingClientRect();
@@ -188,15 +188,15 @@ const ActiveCallModal = ({
   // Maintain video streams when views are swapped
   useEffect(() => {
     if (callType !== 'video') return;
-    
+
     // Get streams from ref (persistent across re-renders) or from props
     const localStreamObj = streamsRef.current.local || localStream;
     const remoteStreamObj = streamsRef.current.remote || remoteStream;
-    
+
     if (!localStreamObj || !remoteStreamObj) {
       return;
     }
-    
+
     // Small delay to ensure React has updated the DOM with new video elements
     const timeoutId = setTimeout(() => {
       // Re-attach streams to the new video elements after swap
@@ -234,7 +234,7 @@ const ActiveCallModal = ({
         }
       }
     }, 100); // Slightly longer delay to ensure DOM is ready
-    
+
     return () => clearTimeout(timeoutId);
   }, [videoSwapped, callType, localStream, remoteStream, localVideoRef, remoteVideoRef]);
 
@@ -315,7 +315,7 @@ const ActiveCallModal = ({
   };
 
   return (
-    <div 
+    <div
       ref={containerRef}
       className="fixed inset-0 bg-black flex flex-col z-[9999] transition-opacity duration-300 overflow-hidden"
       style={{ animation: 'fadeIn 0.3s ease-in' }}
@@ -330,20 +330,19 @@ const ActiveCallModal = ({
           to { transform: translateY(0); }
         }
       `}</style>
-      
+
       {/* Connection Quality Indicator - positioned below timer */}
       {connectionQuality && (
         <div className="absolute top-16 right-4 z-30 flex items-center gap-2 bg-black bg-opacity-70 rounded-full px-3 py-2">
-          <div className={`w-2 h-2 rounded-full ${
-            connectionQuality === 'excellent' ? 'bg-green-500' :
-            connectionQuality === 'good' ? 'bg-green-400' :
-            connectionQuality === 'fair' ? 'bg-yellow-500' :
-            'bg-red-500'
-          }`}></div>
+          <div className={`w-2 h-2 rounded-full ${connectionQuality === 'excellent' ? 'bg-green-500' :
+              connectionQuality === 'good' ? 'bg-green-400' :
+                connectionQuality === 'fair' ? 'bg-yellow-500' :
+                  'bg-red-500'
+            }`}></div>
           <span className="text-white text-xs font-medium capitalize">{connectionQuality}</span>
         </div>
       )}
-      
+
       {/* Top Controls for Video Calls */}
       {callType === 'video' && (
         <div className="absolute top-4 left-4 z-30 flex items-center gap-2">
@@ -353,14 +352,13 @@ const ActiveCallModal = ({
               e.stopPropagation();
               onToggleScreenShare?.();
             }}
-            className={`p-2 rounded-full transition-all duration-300 ${
-              isScreenSharing ? 'bg-blue-500 hover:bg-blue-600' : 'bg-black bg-opacity-70 hover:bg-opacity-90'
-            } text-white`}
+            className={`p-2 rounded-full transition-all duration-300 ${isScreenSharing ? 'bg-blue-500 hover:bg-blue-600' : 'bg-black bg-opacity-70 hover:bg-opacity-90'
+              } text-white`}
             title={isScreenSharing ? 'Stop sharing screen' : 'Share screen'}
           >
             <FaDesktop className="text-lg" />
           </button>
-          
+
           {/* Fullscreen Toggle */}
           <button
             onClick={(e) => {
@@ -374,10 +372,10 @@ const ActiveCallModal = ({
           </button>
         </div>
       )}
-      
+
       {/* Remote Video/Audio */}
-      <div 
-        className="flex-1 relative min-h-0 overflow-hidden" 
+      <div
+        className="flex-1 relative min-h-0 overflow-hidden"
         onClick={handleVideoClick}
         onWheel={handleWheel}
         onMouseDown={handleMouseDown}
@@ -392,7 +390,7 @@ const ActiveCallModal = ({
             {((isScreenSharing && screenShareStream) || remoteIsScreenSharing) ? (
               // Screen share in large view (either local or remote)
               <>
-                <div 
+                <div
                   className="w-full h-full bg-black overflow-hidden relative"
                   style={{
                     transform: `scale(${videoZoom}) translate(${videoPanX}%, ${videoPanY}%)`,
@@ -452,6 +450,7 @@ const ActiveCallModal = ({
                     playsInline
                     muted
                     className="w-full h-full object-contain max-w-full max-h-full"
+                    style={{ transform: 'scaleX(-1)' }}
                     onLoadedMetadata={(e) => {
                       e.target.play().catch(err => console.error('Error playing local video:', err));
                     }}
@@ -543,9 +542,8 @@ const ActiveCallModal = ({
                             onSwitchCamera(camera.deviceId);
                             setShowCameraMenu(false);
                           }}
-                          className={`w-full text-left px-4 py-3 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
-                            currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
-                          }`}
+                          className={`w-full text-left px-4 py-3 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
+                            }`}
                         >
                           <div className="flex items-center gap-2">
                             {currentCameraId === camera.deviceId && (
@@ -574,9 +572,9 @@ const ActiveCallModal = ({
             />
             <div className="text-center text-white">
               {otherPartyData ? (
-                <UserAvatar 
-                  user={{ username: otherPartyData.username, avatar: otherPartyData.avatar }} 
-                  size="w-32 h-32" 
+                <UserAvatar
+                  user={{ username: otherPartyData.username, avatar: otherPartyData.avatar }}
+                  size="w-32 h-32"
                   textSize="text-4xl"
                   showBorder={true}
                   className="border-4 border-white shadow-2xl mx-auto mb-4"
@@ -598,13 +596,12 @@ const ActiveCallModal = ({
             </div>
           </div>
         )}
-        
+
         {/* Local Video (Picture-in-Picture) - Shows remote when swapped, local when not swapped */}
         {callType === 'video' && (
-          <div 
-            className={`absolute right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-white shadow-lg bg-black z-20 cursor-pointer hover:border-blue-400 transition-all duration-300 ${
-              controlsVisible ? 'bottom-24' : 'bottom-6'
-            }`}
+          <div
+            className={`absolute right-4 w-48 h-36 rounded-lg overflow-hidden border-2 border-white shadow-lg bg-black z-20 cursor-pointer hover:border-blue-400 transition-all duration-300 ${controlsVisible ? 'bottom-24' : 'bottom-6'
+              }`}
             onClick={handleLocalVideoClick}
             title="Click to swap video views"
           >
@@ -650,6 +647,7 @@ const ActiveCallModal = ({
                       playsInline
                       muted
                       className="w-full h-full object-cover"
+                      style={{ transform: 'scaleX(-1)' }}
                       onLoadedMetadata={(e) => {
                         e.target.play().catch(err => console.error('Error playing camera video:', err));
                       }}
@@ -662,6 +660,7 @@ const ActiveCallModal = ({
                       playsInline
                       muted
                       className="w-full h-full object-cover"
+                      style={{ transform: 'scaleX(-1)' }}
                       onLoadedMetadata={(e) => {
                         e.target.play().catch(err => console.error('Error playing local video:', err));
                       }}
@@ -711,6 +710,7 @@ const ActiveCallModal = ({
                   playsInline
                   muted
                   className="w-full h-full object-cover"
+                  style={{ transform: 'scaleX(-1)' }}
                   onLoadedMetadata={(e) => {
                     e.target.play().catch(err => console.error('Error playing local video:', err));
                   }}
@@ -744,10 +744,9 @@ const ActiveCallModal = ({
         )}
         {/* Camera selection menu - positioned above small video window in green circled location */}
         {callType === 'video' && !videoSwapped && showCameraMenu && availableCameras && availableCameras.length > 1 && (
-          <div 
-            className={`absolute right-4 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20 ${
-              controlsVisible ? 'bottom-[200px]' : 'bottom-[182px]'
-            }`}
+          <div
+            className={`absolute right-4 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20 ${controlsVisible ? 'bottom-[200px]' : 'bottom-[182px]'
+              }`}
           >
             <div className="py-2">
               <div className="px-3 py-2 border-b border-white border-opacity-10">
@@ -761,9 +760,8 @@ const ActiveCallModal = ({
                     onSwitchCamera(camera.deviceId);
                     setShowCameraMenu(false);
                   }}
-                  className={`w-full text-left px-4 py-3 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
-                    currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
-                  }`}
+                  className={`w-full text-left px-4 py-3 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${currentCameraId === camera.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
+                    }`}
                 >
                   <div className="flex items-center gap-2">
                     {currentCameraId === camera.deviceId && (
@@ -779,12 +777,11 @@ const ActiveCallModal = ({
           </div>
         )}
       </div>
-      
+
       {/* Call Controls */}
-      <div 
-        className={`bg-black bg-opacity-70 backdrop-blur-sm p-6 transition-opacity duration-300 ${
-          callType === 'video' && !controlsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'
-        }`}
+      <div
+        className={`bg-black bg-opacity-70 backdrop-blur-sm p-6 transition-opacity duration-300 ${callType === 'video' && !controlsVisible ? 'opacity-0 pointer-events-none' : 'opacity-100'
+          }`}
         style={{ animation: 'slideIn 0.4s ease-out' }}
         onClick={(e) => e.stopPropagation()}
       >
@@ -802,7 +799,7 @@ const ActiveCallModal = ({
               >
                 <FaVolumeUp className="text-lg" />
               </button>
-              
+
               {/* Audio Device Menu */}
               {showAudioMenu && (
                 <div className="absolute bottom-full left-1/2 transform -translate-x-1/2 mb-2 bg-black bg-opacity-95 rounded-lg shadow-xl min-w-[220px] max-w-[280px] z-50 border border-white border-opacity-20">
@@ -821,9 +818,8 @@ const ActiveCallModal = ({
                               onSwitchMicrophone?.(mic.deviceId);
                               setShowAudioMenu(false);
                             }}
-                            className={`w-full text-left px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
-                              currentMicrophoneId === mic.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
-                            }`}
+                            className={`w-full text-left px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${currentMicrophoneId === mic.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
+                              }`}
                           >
                             <div className="flex items-center gap-2">
                               {currentMicrophoneId === mic.deviceId && (
@@ -837,7 +833,7 @@ const ActiveCallModal = ({
                         ))}
                       </>
                     )}
-                    
+
                     {/* Speakers */}
                     {availableSpeakers && availableSpeakers.length > 1 && (
                       <>
@@ -852,9 +848,8 @@ const ActiveCallModal = ({
                               onSwitchSpeaker?.(speaker.deviceId);
                               setShowAudioMenu(false);
                             }}
-                            className={`w-full text-left px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${
-                              currentSpeakerId === speaker.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
-                            }`}
+                            className={`w-full text-left px-4 py-2 text-sm text-white hover:bg-white hover:bg-opacity-20 transition-colors ${currentSpeakerId === speaker.deviceId ? 'bg-white bg-opacity-20 font-medium' : ''
+                              }`}
                           >
                             <div className="flex items-center gap-2">
                               {currentSpeakerId === speaker.deviceId && (
@@ -873,31 +868,29 @@ const ActiveCallModal = ({
               )}
             </div>
           ) : null}
-          
+
           {/* Mute/Unmute */}
           <button
             onClick={onToggleMute}
-            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
-              isMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
-            } text-white shadow-xl hover:scale-110 active:scale-95 transform`}
+            className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${isMuted ? 'bg-red-500 hover:bg-red-600' : 'bg-gray-700 hover:bg-gray-600'
+              } text-white shadow-xl hover:scale-110 active:scale-95 transform`}
             title={isMuted ? 'Unmute' : 'Mute'}
           >
             {isMuted ? <FaMicrophoneSlash className="text-2xl" /> : <FaMicrophone className="text-2xl" />}
           </button>
-          
+
           {/* Video On/Off (only for video calls) */}
           {callType === 'video' && (
             <button
               onClick={onToggleVideo}
-              className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${
-                isVideoEnabled ? 'bg-gray-700 hover:bg-gray-600' : 'bg-red-500 hover:bg-red-600'
-              } text-white shadow-xl hover:scale-110 active:scale-95 transform`}
+              className={`w-16 h-16 rounded-full flex items-center justify-center transition-all duration-300 ${isVideoEnabled ? 'bg-gray-700 hover:bg-gray-600' : 'bg-red-500 hover:bg-red-600'
+                } text-white shadow-xl hover:scale-110 active:scale-95 transform`}
               title={isVideoEnabled ? 'Turn off video' : 'Turn on video'}
             >
               {isVideoEnabled ? <FaVideo className="text-2xl" /> : <FaVideoSlash className="text-2xl" />}
             </button>
           )}
-          
+
           {/* End Call */}
           <button
             onClick={onEndCall}
@@ -907,7 +900,7 @@ const ActiveCallModal = ({
             <FaPhone className="text-2xl rotate-[135deg]" />
           </button>
         </div>
-        
+
         {/* Call Duration for video calls (also shown at top) */}
         {callType === 'video' && (
           <div className="text-center mt-4 text-white">
