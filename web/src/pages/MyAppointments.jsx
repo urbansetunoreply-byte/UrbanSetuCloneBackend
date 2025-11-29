@@ -1066,6 +1066,14 @@ export default function MyAppointments() {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 to-blue-100 py-10 px-2 md:px-8">
+      {/* Chat Settings Modal */}
+      <ChatSettingsModal
+        isOpen={showChatSettings}
+        onClose={() => setShowChatSettings(false)}
+        settings={settings}
+        updateSetting={updateSetting}
+      />
+
       {currentUser && (
         <div className="max-w-7xl mx-auto mb-4 flex justify-end">
           <Link to="/user/my-payments" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-700 text-white text-sm font-semibold shadow">
@@ -1096,14 +1104,7 @@ export default function MyAppointments() {
             >
               Refresh
             </button>
-            <button
-              onClick={() => setShowChatSettings(true)}
-              className="bg-gradient-to-r from-gray-600 to-gray-700 text-white px-2.5 py-1.5 rounded-md hover:from-gray-700 hover:to-gray-800 transition-all font-semibold shadow-md text-xs sm:text-base sm:px-3 sm:py-1.5 sm:rounded-md flex items-center gap-2"
-              title="Chat Settings"
-            >
-              <FaCog />
-              <span className="hidden sm:inline">Settings</span>
-            </button>
+
             {/* Archived appointments toggle for all users */}
             <button
               onClick={() => {
@@ -13117,12 +13118,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       )}
 
       {/* Chat Settings Modal */}
-      <ChatSettingsModal
-        isOpen={showChatSettings}
-        onClose={() => setShowChatSettings(false)}
-        settings={settings}
-        updateSetting={updateSetting}
-      />
+
 
     </div>
   );
