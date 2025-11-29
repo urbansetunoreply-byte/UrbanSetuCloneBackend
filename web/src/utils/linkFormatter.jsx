@@ -335,8 +335,8 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
           <button
             onClick={(e) => { e.stopPropagation(); setIsExpanded(true); }}
             className={`text-xs font-medium transition-colors duration-200 ${isSentMessage
-                ? 'text-blue-200 hover:text-white'
-                : 'text-blue-600 hover:text-blue-800'
+              ? 'text-white hover:text-gray-200'
+              : 'text-blue-600 hover:text-blue-800'
               }`}
           >
             Read more
@@ -349,8 +349,8 @@ export const FormattedTextWithReadMore = ({ text, isSentMessage = false, classNa
           <button
             onClick={(e) => { e.stopPropagation(); setIsExpanded(false); }}
             className={`text-xs font-medium transition-colors duration-200 ${isSentMessage
-                ? 'text-blue-200 hover:text-white'
-                : 'text-blue-600 hover:text-blue-800'
+              ? 'text-white hover:text-gray-200'
+              : 'text-blue-600 hover:text-blue-800'
               }`}
           >
             Read less
