@@ -3936,8 +3936,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
       // Handle call deletion (calls are stored in DB, we just remove from local display)
       if (messageToDelete.isCall || (messageToDelete._id && messageToDelete._id.startsWith('call-'))) {
         const callToDelete = messageToDelete.call || messageToDelete;
+        const callId = callToDelete._id || callToDelete.callId;
+
+        // Add to locally removed IDs to persist deletion
+        addLocallyRemovedId(appt._id, callId);
+
         setCallHistory(prev => prev.filter(call =>
-          (call._id || call.callId) !== (callToDelete._id || callToDelete.callId)
+          (call._id || call.callId) !== callId
         ));
         toast.success('Call removed from chat');
         setShowDeleteModal(false);
@@ -8081,7 +8086,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                     // CRITICAL: Filter call history by clearTime to prevent old calls from loading after chat is cleared
                     const filteredCallHistory = callHistory.filter(call => {
                       const callTimestamp = new Date(call.startTime || call.createdAt).getTime();
-                      return callTimestamp > clearTime;
+                      const callId = call._id || call.callId;
+                      return callTimestamp > clearTime && !locallyRemovedIds.includes(callId);
                     });
 
                     const mergedTimeline = [
