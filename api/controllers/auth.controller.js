@@ -201,11 +201,20 @@ export const SignIn = async (req, res, next) => {
             try {
                 const del = await DeletedAccount.findOne({ email: emailLower });
                 if (del) {
-                    const policy = del.policy || {};
-                    if (policy.banType === 'ban') {
-                        return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
+                    // Case 1: Purged Account
+                    if (del.purgedAt) {
+                        return next(errorHandler(403, "This account was permanently removed and cannot be recovered."));
                     }
-                    if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+
+                    const policy = del.policy || {};
+
+                    // Case 2: Softbanned (Permanently Banned Policy)
+                    if (policy.banType === 'ban') {
+                        return next(errorHandler(403, "This account has been permanently banned due to policy violations."));
+                    }
+
+                    // Case 3: Softbanned (Cooling-off period)
+                    if (typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
                         const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
                         if (new Date() < allowAfter) {
                             const msLeft = allowAfter.getTime() - Date.now();
@@ -213,9 +222,13 @@ export const SignIn = async (req, res, next) => {
                             const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
                             const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
                             const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
-                            return next(errorHandler(403, `This account is temporarily suspended. Please reach out to support for help.`));
+                            return next(errorHandler(403, `This account is temporarily suspended. Please try again after ${waitMsg}.`));
                         }
                     }
+
+                    // Case 4: Softbanned (General/User Requested) - Account is deleted but not purged
+                    // They should probably sign up, but since they are trying to sign in, we tell them it's deleted.
+                    return next(errorHandler(403, "This account has been deactivated/deleted. Please sign up to create a new account."));
                 }
             } catch (_) { }
             // Track failed attempt
@@ -236,28 +249,6 @@ export const SignIn = async (req, res, next) => {
             logSecurityEvent('suspended_account_attempt', { email: emailLower, userId: validUser._id });
             return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
         }
-
-        // Also check for softbanned/purged policies (edge case: if account still exists but also recorded)
-        try {
-            const del = await DeletedAccount.findOne({ email: emailLower });
-            if (del) {
-                const policy = del.policy || {};
-                if (policy.banType === 'ban') {
-                    return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
-                }
-                if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
-                    const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
-                    if (new Date() < allowAfter) {
-                        const msLeft = allowAfter.getTime() - Date.now();
-                        const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
-                        const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-                        const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
-                        const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
-                        return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
-                    }
-                }
-            }
-        } catch (_) { }
 
         const validPassword = await bcryptjs.compareSync(password, validUser.password)
         if (!validPassword) {
@@ -528,6 +519,31 @@ export const Google = async (req, res, next) => {
             });
         }
         else {
+            // Check softban/purge policy before allowing signup via Google
+            try {
+                const del = await DeletedAccount.findOne({ email: email.toLowerCase() });
+                if (del) {
+                    if (del.purgedAt) {
+                        return next(errorHandler(403, "This account was permanently removed and cannot be recovered."));
+                    }
+                    const policy = del.policy || {};
+                    if (policy.banType === 'ban') {
+                        return next(errorHandler(403, "This account has been permanently banned due to policy violations."));
+                    }
+                    if (typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+                        const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
+                        if (new Date() < allowAfter) {
+                            const msLeft = allowAfter.getTime() - Date.now();
+                            const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+                            const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                            const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
+                            const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
+                            return next(errorHandler(403, `This account is temporarily suspended. Please try again after ${waitMsg}.`));
+                        }
+                    }
+                }
+            } catch (_) { }
+
             const generatedPassword = Math.random().toString(36).slice(-8);
             const hashedPassword = await bcryptjs.hashSync(generatedPassword, 10);
 
@@ -974,14 +990,26 @@ export const sendLoginOTP = async (req, res, next) => {
             try {
                 const del = await DeletedAccount.findOne({ email: emailLower });
                 if (del) {
+                    // Case 1: Purged Account
+                    if (del.purgedAt) {
+                        return res.status(403).json({
+                            success: false,
+                            message: 'This account was permanently removed and cannot be recovered.'
+                        });
+                    }
+
                     const policy = del.policy || {};
+
+                    // Case 2: Softbanned (Permanently Banned Policy)
                     if (policy.banType === 'ban') {
                         return res.status(403).json({
                             success: false,
-                            message: 'This account was permanently removed and cannot sign in.'
+                            message: 'This account has been permanently banned due to policy violations.'
                         });
                     }
-                    if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
+
+                    // Case 3: Softbanned (Cooling-off period)
+                    if (typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
                         const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
                         if (new Date() < allowAfter) {
                             const msLeft = allowAfter.getTime() - Date.now();
@@ -991,10 +1019,16 @@ export const sendLoginOTP = async (req, res, next) => {
                             const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
                             return res.status(403).json({
                                 success: false,
-                                message: `Your account is softbanned. Please try again after ${waitMsg}.`
+                                message: `Your account is temporarily suspended. Please try again after ${waitMsg}.`
                             });
                         }
                     }
+
+                    // Case 4: Softbanned (General/User Requested)
+                    return res.status(403).json({
+                        success: false,
+                        message: "This account has been deactivated/deleted. Please sign up to create a new account."
+                    });
                 }
             } catch (_) { }
             return res.status(400).json({
@@ -1010,28 +1044,6 @@ export const sendLoginOTP = async (req, res, next) => {
                 message: "Your account has been suspended. Please contact support."
             });
         }
-
-        // Also block OTP for softbanned/purged policies (edge case: if account still exists but also recorded)
-        try {
-            const del = await DeletedAccount.findOne({ email: emailLower });
-            if (del) {
-                const policy = del.policy || {};
-                if (policy.banType === 'ban') {
-                    return res.status(403).json({ success: false, message: 'This account is permanently banned.' });
-                }
-                if (!del.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0 && del.deletedAt) {
-                    const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
-                    if (new Date() < allowAfter) {
-                        const msLeft = allowAfter.getTime() - Date.now();
-                        const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
-                        const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
-                        const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
-                        const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
-                        return res.status(403).json({ success: false, message: `Your account is softbanned. Please try again after ${waitMsg}.` });
-                    }
-                }
-            }
-        } catch (_) { }
 
         // Block OTP sending if account is password-locked due to failed attempts
         try {
