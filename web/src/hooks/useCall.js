@@ -16,7 +16,7 @@ const STUN_SERVERS = [
 export const useCall = () => {
   // Sound effects for call tones
   const { playCalling, playRingtone, playEndCall, stopCalling, stopRingtone } = useSoundEffects();
-  
+
   const [callState, setCallState] = useState(null); // null, 'initiating', 'ringing', 'active', 'ended'
   const [incomingCall, setIncomingCall] = useState(null);
   const [localStream, setLocalStream] = useState(null);
@@ -38,7 +38,7 @@ export const useCall = () => {
   const [availableSpeakers, setAvailableSpeakers] = useState([]);
   const [currentMicrophoneId, setCurrentMicrophoneId] = useState(null);
   const [currentSpeakerId, setCurrentSpeakerId] = useState(null);
-  
+
   const peerRef = useRef(null);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
@@ -54,16 +54,16 @@ export const useCall = () => {
   const callingSoundRef = useRef(null); // Reference to calling sound audio element
   const ringtoneSoundRef = useRef(null); // Reference to ringtone sound audio element
   const isEndingCallRef = useRef(false); // Flag to prevent double end call sound
-  
+
   // Refs to store current state for event handlers (to avoid stale closures)
   const incomingCallRef = useRef(null);
   const activeCallRef = useRef(null);
   const callStateRef = useRef(null);
   const localStreamRef = useRef(null); // Ref for localStream to access in monitor peer handlers
-  
+
   // Admin monitor peers: Map of adminSocketId -> SimplePeer instance
   const monitorPeersRef = useRef(new Map());
-  
+
   // Update refs when state changes (so handlers can access current values)
   useEffect(() => {
     incomingCallRef.current = incomingCall;
@@ -82,11 +82,11 @@ export const useCall = () => {
       }
       return;
     }
-    
+
     if (activeCallRef.current?.callId !== callId) {
       return;
     }
-    
+
     try {
       peerRef.current.signal(offer);
     } catch (error) {
@@ -99,11 +99,11 @@ export const useCall = () => {
     if (!peerRef.current) {
       return;
     }
-    
+
     if (activeCallRef.current?.callId !== callId) {
       return;
     }
-    
+
     try {
       peerRef.current.signal(answer);
     } catch (error) {
@@ -116,11 +116,11 @@ export const useCall = () => {
     if (!peerRef.current) {
       return;
     }
-    
+
     if (activeCallRef.current?.callId !== callId) {
       return;
     }
-    
+
     try {
       if (candidate) {
         peerRef.current.signal(candidate);
@@ -148,12 +148,12 @@ export const useCall = () => {
       }
       setIsScreenSharing(false);
       setCameraStreamDuringScreenShare(null);
-      
+
       // Restore camera video in peer connection
       if (localStream && peerRef.current && originalCameraStreamRef.current) {
         const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
         if (originalVideoTrack) {
-          const sender = peerRef.current._pc.getSenders().find(s => 
+          const sender = peerRef.current._pc.getSenders().find(s =>
             s.track && s.track.kind === 'video'
           );
           if (sender && peerRef.current) {
@@ -170,12 +170,12 @@ export const useCall = () => {
   // Maintain local stream on localVideoRef whenever it changes
   useEffect(() => {
     if (!localStream || !localVideoRef.current) return;
-    
+
     // Only update if stream is different (avoid unnecessary updates)
     if (localVideoRef.current.srcObject !== localStream) {
       localVideoRef.current.srcObject = localStream;
       localVideoRef.current.muted = true; // Local video should always be muted
-      
+
       // Ensure video plays
       const playVideo = async () => {
         try {
@@ -211,13 +211,13 @@ export const useCall = () => {
     // Detect if remote is screen sharing by checking video track label
     // Check for enabled tracks with screen share labels (enabled = true means track is actively streaming)
     const videoTracks = remoteStream.getVideoTracks();
-    const isRemoteScreenSharing = videoTracks.some(track => 
+    const isRemoteScreenSharing = videoTracks.some(track =>
       track.enabled && track.label && (track.label.includes('screen') || track.label.includes('Screen') || track.label.includes('display'))
     );
-    
+
     // Update remote screen sharing state
     setRemoteIsScreenSharing(isRemoteScreenSharing);
-    
+
     // When remote switches from screen share to camera, force UI update
     // This helps with the rendering issue when screen share stops on remote side
     if (!isRemoteScreenSharing && remoteVideoRef.current) {
@@ -305,6 +305,8 @@ export const useCall = () => {
 
   // Start call timer with server-synchronized start time
   // CRITICAL: This function MUST be called with server's startTime to ensure both sides are synchronized
+  // Start call timer with server-synchronized start time
+  // CRITICAL: This function MUST be called with server's startTime to ensure both sides are synchronized
   const startCallTimer = useCallback((synchronizedStartTime) => {
     if (!synchronizedStartTime) {
       console.error('[Call Timer] ERROR: Cannot start timer without server startTime!');
@@ -320,53 +322,59 @@ export const useCall = () => {
       cancelAnimationFrame(animationFrameRef.current);
       animationFrameRef.current = null;
     }
-    
+
     // Use the exact server start time as the reference point
     // Both sides will use this same timestamp, ensuring perfect synchronization
     const serverStartTimestamp = synchronizedStartTime.getTime();
-    callStartTimeRef.current = serverStartTimestamp;
-    lastSecondRef.current = null;
-    
+
     // Calculate initial elapsed time to display immediately (accounts for network latency)
-    // This ensures the timer shows the correct duration even if there was a delay
-    // between server accepting the call and frontend receiving the event
     const currentTimestamp = Date.now();
     const elapsedMilliseconds = currentTimestamp - serverStartTimestamp;
-    const initialDuration = Math.max(0, Math.floor(elapsedMilliseconds / 1000));
-    
-    // Set initial duration immediately to account for network latency
-    // This ensures both sides show the same time even if they received the event at different times
+
+    // UX IMPROVEMENT: If elapsed time is small (e.g. < 3000ms), assume it's a fresh call 
+    // and sync to local time for better UX. This prevents the timer from jumping to 00:02 
+    // immediately due to network latency, ensuring both sides see "00:00" start.
+    if (elapsedMilliseconds < 3000 && elapsedMilliseconds >= 0) {
+      callStartTimeRef.current = currentTimestamp;
+    } else {
+      callStartTimeRef.current = serverStartTimestamp;
+    }
+
+    lastSecondRef.current = null;
+
+    // Set initial duration immediately
+    const initialDuration = Math.max(0, Math.floor((Date.now() - callStartTimeRef.current) / 1000));
     setCallDuration(initialDuration);
     lastSecondRef.current = initialDuration;
-    
+
     // Use requestAnimationFrame for smooth, precise updates
     // Calculate duration from server timestamp each frame, ensuring no drift
     const updateTimer = () => {
       if (!callStartTimeRef.current) {
         return;
       }
-      
+
       // Always calculate from server's startTime - this ensures perfect synchronization
       // Even if intervals drift, both sides calculate from the same reference point
       const now = Date.now();
       // Use Math.max(0, ...) to prevent negative durations due to clock skew
       // If server time is slightly ahead of client time, ensure duration starts at 0
       const duration = Math.max(0, Math.floor((now - callStartTimeRef.current) / 1000));
-      
+
       // Only update state when the second changes to avoid unnecessary re-renders
       if (duration !== lastSecondRef.current) {
         lastSecondRef.current = duration;
         setCallDuration(duration);
       }
-      
+
       // Continue animation loop
       animationFrameRef.current = requestAnimationFrame(updateTimer);
     };
-    
+
     // Start the animation frame loop immediately for instant updates
     // This ensures the timer starts ticking right away, not waiting for the first frame
     animationFrameRef.current = requestAnimationFrame(updateTimer);
-    
+
     // Also use interval as backup for reliability, but start immediately with a small delay
     // This ensures the timer ticks immediately rather than waiting up to 1000ms
     const immediateUpdate = () => {
@@ -379,10 +387,10 @@ export const useCall = () => {
         }
       }
     };
-    
+
     // Trigger immediate update to ensure timer starts ticking right away
     immediateUpdate();
-    
+
     // Then set up interval for regular updates (every 1000ms)
     durationIntervalRef.current = setInterval(() => {
       if (callStartTimeRef.current) {
@@ -406,44 +414,47 @@ export const useCall = () => {
       stopCalling(); // Stop any calling sound that might be playing
       ringtoneSoundRef.current = playRingtone();
     };
-    
+
     const handleCallAccepted = (data) => {
       // Server provides the exact timestamp when call was accepted on the server
       // Both caller and receiver receive this same timestamp, ensuring perfect synchronization
       // startTime is sent as milliseconds (number) from server, convert to Date object
       const synchronizedStartTime = data.startTime ? new Date(data.startTime) : null;
-      
+
       if (!synchronizedStartTime || !data.startTime) {
         console.error('[Call] CRITICAL: No synchronized startTime received from server! Cannot start timer.');
         toast.error('Call timer synchronization error. Please refresh.');
         return;
       }
-      
+
       // For receiver (incoming call) - state already set in acceptCall, but timer MUST start with server time
       // Use refs to get current values without causing dependency issues
       if (incomingCallRef.current && incomingCallRef.current.callId === data.callId) {
         // Stop ringtone when call is accepted
         stopRingtone();
         ringtoneSoundRef.current = null;
+
+        // Force immediate state update
+        setCallState('active');
+
         // Always start/restart timer with server's synchronized time
         // This ensures timer starts at the exact same moment as on server, accounting for network latency
-        if (callStateRef.current !== 'active') {
-          setCallState('active');
-        }
-        // CRITICAL: Only start timer with server's startTime - never use local time
         startCallTimer(synchronizedStartTime);
-      } 
+      }
       // For caller (outgoing call)
       else if (activeCallRef.current && activeCallRef.current.callId === data.callId) {
         // Stop calling sound when call is accepted
         stopCalling();
         callingSoundRef.current = null;
+
+        // Force immediate state update
         setCallState('active');
+
         // CRITICAL: Only start timer with server's startTime - never use local time
         startCallTimer(synchronizedStartTime);
       }
     };
-    
+
     const handleCallRejected = (data) => {
       // Use ref to get current value without dependency
       if (activeCallRef.current && activeCallRef.current.callId === data.callId) {
@@ -462,8 +473,8 @@ export const useCall = () => {
 
     const handleCallEnded = (data) => {
       // Use refs to get current values without dependency
-      if ((activeCallRef.current && activeCallRef.current.callId === data.callId) || 
-          (incomingCallRef.current && incomingCallRef.current.callId === data.callId)) {
+      if ((activeCallRef.current && activeCallRef.current.callId === data.callId) ||
+        (incomingCallRef.current && incomingCallRef.current.callId === data.callId)) {
         // Stop any playing sounds
         stopCalling();
         stopRingtone();
@@ -510,8 +521,8 @@ export const useCall = () => {
         toast.info('Call was cancelled');
       }
       // When caller cancels, caller should close ringing screen
-      if (activeCallRef.current && activeCallRef.current.callId === data.callId && 
-          (callStateRef.current === 'ringing' || callStateRef.current === 'initiating')) {
+      if (activeCallRef.current && activeCallRef.current.callId === data.callId &&
+        (callStateRef.current === 'ringing' || callStateRef.current === 'initiating')) {
         // Stop calling sound when call is cancelled
         stopCalling();
         callingSoundRef.current = null;
@@ -678,7 +689,7 @@ export const useCall = () => {
 
       // Replace video track in peer connection
       const videoTrack = newStream.getVideoTracks()[0];
-      const sender = peerRef.current?._pc?.getSenders()?.find(s => 
+      const sender = peerRef.current?._pc?.getSenders()?.find(s =>
         s.track && s.track.kind === 'video'
       );
 
@@ -717,7 +728,7 @@ export const useCall = () => {
           toast.error('Please sign in to make calls.');
           return;
         }
-        
+
         try {
           const parts = token.split('.');
           if (parts.length === 3) {
@@ -734,7 +745,7 @@ export const useCall = () => {
         } catch (e) {
           console.warn('Token validation failed:', e);
         }
-        
+
         reconnectSocket();
         toast.info('Reconnecting to server...');
         await new Promise(resolve => setTimeout(resolve, 1000));
@@ -745,25 +756,25 @@ export const useCall = () => {
       }
 
       setCallState('initiating');
-      
+
       // Enumerate cameras for video calls
       if (callType === 'video') {
         await enumerateCameras();
       }
-      
+
       // Get user media
       const constraints = {
         audio: true,
         video: callType === 'video' ? (currentCameraId ? { deviceId: { exact: currentCameraId } } : true) : false
       };
-      
+
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
+
       setLocalStream(stream);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
-      
+
       // Wait for call ID from server before creating peer connection
       const handleCallInitiated = ({ callId, status }) => {
         if (status === 'ringing') {
@@ -771,7 +782,7 @@ export const useCall = () => {
           setCallState('ringing');
           // Play calling sound when call is ringing
           callingSoundRef.current = playCalling();
-          
+
           // Create peer connection AFTER we have the callId
           const peer = new SimplePeer({
             initiator: true,
@@ -781,7 +792,7 @@ export const useCall = () => {
               iceServers: STUN_SERVERS
             }
           });
-          
+
           // Track peer connection state changes
           if (peer._pc) {
             peer._pc.addEventListener('track', (event) => {
@@ -790,7 +801,7 @@ export const useCall = () => {
               }
             });
           }
-          
+
           peer.on('signal', (data) => {
             if (data.type === 'offer') {
               socket.emit('webrtc-offer', {
@@ -804,7 +815,7 @@ export const useCall = () => {
               });
             }
           });
-          
+
           peer.on('stream', (remoteStream) => {
             setRemoteStream(remoteStream);
             // Stream attachment will be handled by useEffect when remoteStream state updates
@@ -819,21 +830,21 @@ export const useCall = () => {
             toast.error('Connection error occurred');
             endCall();
           });
-          
+
           peerRef.current = peer;
           socket.off('call-initiated', handleCallInitiated);
         }
       };
 
       socket.once('call-initiated', handleCallInitiated);
-      
+
       // Emit call initiation
       socket.emit('call-initiate', {
         appointmentId,
         receiverId,
         callType
       });
-      
+
     } catch (error) {
       console.error('Error initiating call:', error);
       setCallState(null);
@@ -851,25 +862,25 @@ export const useCall = () => {
   // Accept incoming call
   const acceptCall = async () => {
     if (!incomingCall) return;
-    
+
     try {
       // Enumerate cameras for video calls
       if (incomingCall.callType === 'video') {
         await enumerateCameras();
       }
-      
+
       const constraints = {
         audio: true,
         video: incomingCall.callType === 'video' ? (currentCameraId ? { deviceId: { exact: currentCameraId } } : true) : false
       };
-      
+
       const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      
+
       setLocalStream(stream);
       if (localVideoRef.current) {
         localVideoRef.current.srcObject = stream;
       }
-      
+
       // Create peer connection as receiver (non-initiator)
       const peer = new SimplePeer({
         initiator: false,
@@ -879,7 +890,7 @@ export const useCall = () => {
           iceServers: STUN_SERVERS
         }
       });
-      
+
       // Track peer connection state changes
       if (peer._pc) {
         peer._pc.addEventListener('track', (event) => {
@@ -888,7 +899,7 @@ export const useCall = () => {
           }
         });
       }
-      
+
       peer.on('signal', (data) => {
         if (data.type === 'answer') {
           socket.emit('webrtc-answer', {
@@ -902,7 +913,7 @@ export const useCall = () => {
           });
         }
       });
-      
+
       peer.on('stream', (remoteStream) => {
         setRemoteStream(remoteStream);
         // Stream attachment will be handled by useEffect when remoteStream state updates
@@ -917,29 +928,29 @@ export const useCall = () => {
         toast.error('Connection error occurred');
         endCall();
       });
-      
+
       peerRef.current = peer;
-      
+
       // If we have a pending offer, signal it now
       if (pendingOfferRef.current && pendingOfferRef.current.callId === incomingCall.callId) {
         peer.signal(pendingOfferRef.current.offer);
         pendingOfferRef.current = null;
       }
-      
+
       setActiveCall({
         callId: incomingCall.callId,
         appointmentId: incomingCall.appointmentId,
         receiverId: incomingCall.callerId,
         callType: incomingCall.callType
       });
-      
+
       // Stop ringtone immediately when call is accepted (don't wait for server response)
       stopRingtone();
       ringtoneSoundRef.current = null;
-      
+
       // Emit call accept AFTER peer is created
       socket.emit('call-accept', { callId: incomingCall.callId });
-      
+
       setCallState('active');
       setIncomingCall(null);
       // Timer will be started by handleCallAccepted with synchronized time from server
@@ -969,13 +980,13 @@ export const useCall = () => {
     // Set flag to prevent double end call sound
     const wasEndingCall = isEndingCallRef.current;
     isEndingCallRef.current = true;
-    
+
     // Stop all sounds first
     stopCalling();
     stopRingtone();
     callingSoundRef.current = null;
     ringtoneSoundRef.current = null;
-    
+
     // Cancel call first if still initiating/ringing (before clearing state)
     if (activeCall?.callId && (callState === 'initiating' || callState === 'ringing')) {
       socket.emit('call-cancel', { callId: activeCall.callId });
@@ -986,13 +997,13 @@ export const useCall = () => {
       localStream.getTracks().forEach(track => track.stop());
       setLocalStream(null);
     }
-    
+
     // Stop remote stream
     if (remoteStream) {
       remoteStream.getTracks().forEach(track => track.stop());
       setRemoteStream(null);
     }
-    
+
     // Clear remote audio/video refs
     if (remoteVideoRef.current) {
       remoteVideoRef.current.srcObject = null;
@@ -1000,13 +1011,13 @@ export const useCall = () => {
     if (remoteAudioRef.current) {
       remoteAudioRef.current.srcObject = null;
     }
-    
+
     // Destroy peer connection
     if (peerRef.current) {
       peerRef.current.destroy();
       peerRef.current = null;
     }
-    
+
     // Destroy all monitor peers
     if (monitorPeersRef.current.size > 0) {
       monitorPeersRef.current.forEach((peer) => {
@@ -1018,7 +1029,7 @@ export const useCall = () => {
       });
       monitorPeersRef.current.clear();
     }
-    
+
     // Stop all timers
     if (durationIntervalRef.current) {
       clearInterval(durationIntervalRef.current);
@@ -1030,7 +1041,7 @@ export const useCall = () => {
     }
     callStartTimeRef.current = null;
     lastSecondRef.current = null;
-    
+
     // Notify backend if call was active (not just ringing)
     if (activeCall?.callId && callState === 'active') {
       try {
@@ -1065,7 +1076,7 @@ export const useCall = () => {
       // Show message even if call wasn't active yet (ringing state)
       toast.info('Call ended.');
     }
-    
+
     // Clear all call state
     setCallState(null);
     setCallDuration(0);
@@ -1075,7 +1086,7 @@ export const useCall = () => {
     pendingOfferRef.current = null;
     setRemoteIsMuted(false);
     setRemoteVideoEnabled(true);
-    
+
     // Reset flag after a short delay to allow for cleanup
     setTimeout(() => {
       isEndingCallRef.current = false;
@@ -1092,7 +1103,7 @@ export const useCall = () => {
         track.enabled = !newMutedState; // Opposite: muted = disabled, unmuted = enabled
       });
       setIsMuted(newMutedState);
-      
+
       // Notify remote peer
       if (activeCall?.callId) {
         socket.emit('call-status-update', {
@@ -1112,7 +1123,7 @@ export const useCall = () => {
         track.enabled = newVideoState;
       });
       setIsVideoEnabled(newVideoState);
-      
+
       // Notify remote peer
       if (activeCall?.callId) {
         socket.emit('call-status-update', {
@@ -1134,11 +1145,11 @@ export const useCall = () => {
           const confirmed = window.confirm(
             'Other person is also sharing. Are you sure you want to share yours? (This will stop their screen share)'
           );
-          
+
           if (!confirmed) {
             return; // User cancelled
           }
-          
+
           // Notify remote to stop screen sharing
           if (activeCall?.callId) {
             socket.emit('stop-remote-screen-share', {
@@ -1146,7 +1157,7 @@ export const useCall = () => {
             });
           }
         }
-        
+
         // Start screen sharing
         // First, store the original camera stream for the small "You" window
         if (localStream) {
@@ -1159,33 +1170,33 @@ export const useCall = () => {
             setCameraStreamDuringScreenShare(originalCameraStream);
           }
         }
-        
+
         const screenStream = await navigator.mediaDevices.getDisplayMedia({
           video: { cursor: 'always' },
           audio: true
         });
-        
+
         screenShareStreamRef.current = screenStream;
         setIsScreenSharing(true);
-        
+
         // Replace video track in peer connection (send screen share to remote)
         if (localStream && peerRef.current) {
           const videoTracks = screenStream.getVideoTracks();
           const audioTracks = screenStream.getAudioTracks();
-          
+
           // Replace video track in peer connection
           if (videoTracks.length > 0) {
-            const sender = peerRef.current._pc.getSenders().find(s => 
+            const sender = peerRef.current._pc.getSenders().find(s =>
               s.track && s.track.kind === 'video'
             );
             if (sender) {
               await sender.replaceTrack(videoTracks[0]);
             }
           }
-          
+
           // Replace audio track if available (screen share audio)
           if (audioTracks.length > 0) {
-            const sender = peerRef.current._pc.getSenders().find(s => 
+            const sender = peerRef.current._pc.getSenders().find(s =>
               s.track && s.track.kind === 'audio'
             );
             if (sender && !isMuted) {
@@ -1193,7 +1204,7 @@ export const useCall = () => {
             }
           }
         }
-        
+
         // Stop screen sharing when user stops sharing from browser UI
         screenStream.getVideoTracks()[0].onended = () => {
           // Don't call toggleScreenShare to avoid showing dialog again
@@ -1203,12 +1214,12 @@ export const useCall = () => {
             screenShareStreamRef.current = null;
           }
           setIsScreenSharing(false);
-          
+
           // Restore camera video in peer connection
           if (localStream && peerRef.current && originalCameraStreamRef.current) {
             const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
             if (originalVideoTrack) {
-              const sender = peerRef.current._pc.getSenders().find(s => 
+              const sender = peerRef.current._pc.getSenders().find(s =>
                 s.track && s.track.kind === 'video'
               );
               if (sender && peerRef.current) {
@@ -1221,7 +1232,7 @@ export const useCall = () => {
           setCameraStreamDuringScreenShare(null);
           toast.info('Screen sharing stopped');
         };
-        
+
         toast.success('Screen sharing started');
       } else {
         // Stop screen sharing
@@ -1229,34 +1240,34 @@ export const useCall = () => {
           screenShareStreamRef.current.getTracks().forEach(track => track.stop());
           screenShareStreamRef.current = null;
         }
-        
+
         setIsScreenSharing(false);
-        
+
         // Restore camera video in peer connection
         if (localStream && peerRef.current && originalCameraStreamRef.current) {
           const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
           const originalAudioTrack = localStream.getAudioTracks()[0]; // Use original audio from localStream
-          
+
           if (originalVideoTrack) {
-            const sender = peerRef.current._pc.getSenders().find(s => 
+            const sender = peerRef.current._pc.getSenders().find(s =>
               s.track && s.track.kind === 'video'
             );
-            
+
             if (sender && peerRef.current) {
               await sender.replaceTrack(originalVideoTrack);
             }
           }
-          
+
           // Restore original audio track
           if (originalAudioTrack) {
-            const sender = peerRef.current._pc.getSenders().find(s => 
+            const sender = peerRef.current._pc.getSenders().find(s =>
               s.track && s.track.kind === 'audio'
             );
             if (sender && !isMuted) {
               await sender.replaceTrack(originalAudioTrack);
             }
           }
-          
+
           // Clean up original camera stream ref
           if (originalCameraStreamRef.current) {
             originalCameraStreamRef.current.getTracks().forEach(track => {
@@ -1267,7 +1278,7 @@ export const useCall = () => {
             originalCameraStreamRef.current = null;
           }
           setCameraStreamDuringScreenShare(null);
-          
+
           // Force update local video element to show camera again
           if (localVideoRef.current && localStream) {
             // Re-attach the local stream to ensure video shows
@@ -1287,7 +1298,7 @@ export const useCall = () => {
               console.error('Error playing local video after screen share:', err);
             });
           }
-          
+
           // Also force refresh the remote stream display when local stops sharing
           // This ensures the other party's video shows up again in the large view
           if (remoteVideoRef.current && remoteStream) {
@@ -1313,29 +1324,29 @@ export const useCall = () => {
             video: { deviceId: { exact: currentCameraId } },
             audio: true
           });
-          
+
           const videoTrack = cameraStream.getVideoTracks()[0];
           const audioTrack = cameraStream.getAudioTracks()[0];
-          const sender = peerRef.current?._pc.getSenders().find(s => 
+          const sender = peerRef.current?._pc.getSenders().find(s =>
             s.track && s.track.kind === 'video'
           );
-          
+
           if (sender && peerRef.current) {
             await sender.replaceTrack(videoTrack);
           }
-          
+
           // Restore audio
-          const audioSender = peerRef.current?._pc.getSenders().find(s => 
+          const audioSender = peerRef.current?._pc.getSenders().find(s =>
             s.track && s.track.kind === 'audio'
           );
           if (audioSender && audioTrack && !isMuted) {
             await audioSender.replaceTrack(audioTrack);
           }
-          
+
           // Update local stream
           localStream.getVideoTracks().forEach(track => track.stop());
           localStream.addTrack(videoTrack);
-          
+
           // Update local video element
           if (localVideoRef.current) {
             localVideoRef.current.srcObject = localStream;
@@ -1344,11 +1355,11 @@ export const useCall = () => {
               console.error('Error playing local video after screen share:', err);
             });
           }
-          
+
           // Stop the temporary camera stream audio (we use the original)
           cameraStream.getAudioTracks().forEach(track => track.stop());
         }
-        
+
         toast.info('Screen sharing stopped');
       }
     } catch (error) {
@@ -1367,7 +1378,7 @@ export const useCall = () => {
   // Toggle fullscreen
   const toggleFullscreen = () => {
     if (!containerRef.current) return;
-    
+
     if (!isFullscreen) {
       if (containerRef.current.requestFullscreen) {
         containerRef.current.requestFullscreen();
@@ -1393,10 +1404,10 @@ export const useCall = () => {
       const devices = await navigator.mediaDevices.enumerateDevices();
       const microphones = devices.filter(d => d.kind === 'audioinput');
       const speakers = devices.filter(d => d.kind === 'audiooutput');
-      
+
       setAvailableMicrophones(microphones);
       setAvailableSpeakers(speakers);
-      
+
       // Set current devices
       if (localStream) {
         const audioTracks = localStream.getAudioTracks();
@@ -1407,13 +1418,13 @@ export const useCall = () => {
           }
         }
       }
-      
+
       // For speakers, use default if available
       if (speakers.length > 0 && !currentSpeakerId) {
         // Try to get default speaker from audio element if available
         setCurrentSpeakerId(speakers[0].deviceId || 'default');
       }
-      
+
       return { microphones, speakers };
     } catch (error) {
       console.error('Error enumerating audio devices:', error);
@@ -1425,31 +1436,31 @@ export const useCall = () => {
   const switchMicrophone = async (deviceId) => {
     try {
       if (!localStream) return;
-      
+
       const newStream = await navigator.mediaDevices.getUserMedia({
         audio: { deviceId: { exact: deviceId } },
         video: callType === 'video' ? (currentCameraId ? { deviceId: { exact: currentCameraId } } : true) : false
       });
-      
+
       // Replace audio tracks
       const audioTrack = newStream.getAudioTracks()[0];
-      const sender = peerRef.current?._pc.getSenders().find(s => 
+      const sender = peerRef.current?._pc.getSenders().find(s =>
         s.track && s.track.kind === 'audio'
       );
-      
+
       if (sender && peerRef.current) {
         await sender.replaceTrack(audioTrack);
       }
-      
+
       // Update local stream
       localStream.getAudioTracks().forEach(track => track.stop());
       localStream.addTrack(audioTrack);
-      
+
       // Stop video track from new stream (we only needed audio)
       if (callType === 'video') {
         newStream.getVideoTracks().forEach(track => track.stop());
       }
-      
+
       setCurrentMicrophoneId(deviceId);
       toast.success('Microphone switched');
     } catch (error) {
@@ -1482,7 +1493,7 @@ export const useCall = () => {
   // Monitor connection quality
   useEffect(() => {
     if (!peerRef.current || !peerRef.current._pc || callState !== 'active') return;
-    
+
     const checkConnectionQuality = async () => {
       try {
         const stats = await peerRef.current._pc.getStats();
@@ -1490,7 +1501,7 @@ export const useCall = () => {
         let packetsReceived = 0;
         let rtt = 0;
         let jitter = 0;
-        
+
         stats.forEach(report => {
           if (report.type === 'inbound-rtp' || report.type === 'outbound-rtp') {
             if (report.packetsLost !== undefined) {
@@ -1509,7 +1520,7 @@ export const useCall = () => {
             }
           }
         });
-        
+
         // Determine quality based on metrics
         let quality = 'good';
         if (rtt < 100 && packetsLost === 0 && jitter < 30) {
@@ -1521,15 +1532,15 @@ export const useCall = () => {
         } else {
           quality = 'poor';
         }
-        
+
         setConnectionQuality(quality);
       } catch (error) {
         console.error('Error checking connection quality:', error);
       }
     };
-    
+
     const qualityInterval = setInterval(checkConnectionQuality, 5000); // Check every 5 seconds
-    
+
     return () => clearInterval(qualityInterval);
   }, [callState, peerRef.current]);
 
@@ -1542,11 +1553,11 @@ export const useCall = () => {
         document.msFullscreenElement
       ));
     };
-    
+
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     document.addEventListener('webkitfullscreenchange', handleFullscreenChange);
     document.addEventListener('msfullscreenchange', handleFullscreenChange);
-    
+
     return () => {
       document.removeEventListener('fullscreenchange', handleFullscreenChange);
       document.removeEventListener('webkitfullscreenchange', handleFullscreenChange);
