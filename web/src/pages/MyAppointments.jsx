@@ -13117,32 +13117,6 @@ function PaymentStatusCell({ appointment, isBuyer }) {
         </div>
       )}
 
-      {/* Appointment Not Found Modal */}
-      {missingChatbookError && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[10000] p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-slideUp overflow-hidden">
-            <div className="p-6 text-center">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaExclamationTriangle className="text-3xl text-red-500" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Appointment Not Found</h3>
-              <p className="text-gray-600 mb-6">
-                The appointment you are trying to access does not exist or you do not have permission to view it.
-              </p>
-              <button
-                onClick={() => {
-                  setMissingChatbookError(null);
-                  navigate('/user/my-appointments', { replace: true });
-                }}
-                className="w-full px-4 py-3 bg-blue-600 text-white rounded-xl hover:bg-blue-700 transition-colors font-semibold shadow-lg hover:shadow-xl transform hover:scale-[1.02] duration-200"
-              >
-                Go Back to Appointments
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
       {/* Chat Settings Modal */}
 
 
