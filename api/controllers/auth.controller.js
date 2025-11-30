@@ -3,18 +3,18 @@ import PasswordLockout from "../models/passwordLockout.model.js";
 import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
-import { generateOTP, sendSignupOTPEmail,sendLoginOTPEmail, sendPasswordResetSuccessEmail, sendPasswordChangeSuccessEmail, sendWelcomeEmail } from "../utils/emailService.js";
+import { generateOTP, sendSignupOTPEmail, sendLoginOTPEmail, sendPasswordResetSuccessEmail, sendPasswordChangeSuccessEmail, sendWelcomeEmail } from "../utils/emailService.js";
 import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/jwtUtils.js";
 import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
-import { 
-  createEnhancedSession, 
-  updateSessionActivity, 
-  detectConcurrentLogins, 
-  cleanupOldSessions,
-  checkSuspiciousLogin,
-  enforceSessionLimits,
-  logSessionAction,
-  revokeSessionFromDB
+import {
+    createEnhancedSession,
+    updateSessionActivity,
+    detectConcurrentLogins,
+    cleanupOldSessions,
+    checkSuspiciousLogin,
+    enforceSessionLimits,
+    logSessionAction,
+    revokeSessionFromDB
 } from "../utils/sessionManager.js";
 import { sendNewLoginEmail, sendSuspiciousLoginEmail } from "../utils/emailService.js";
 import OtpTracking from "../models/otpTracking.model.js";
@@ -22,20 +22,20 @@ import DeletedAccount from "../models/deletedAccount.model.js";
 import { validateEmail } from "../utils/emailValidation.js";
 import { getDeviceInfo, getLocationFromIP } from "../utils/sessionManager.js";
 
-export const SignUp=async (req,res,next)=>{
-    const {username,email,password,role,mobileNumber,address,emailVerified}=req.body;
+export const SignUp = async (req, res, next) => {
+    const { username, email, password, role, mobileNumber, address, emailVerified } = req.body;
     const emailLower = email.toLowerCase();
-    
+
     // Validate mobile number
     if (!mobileNumber || !/^[0-9]{10}$/.test(mobileNumber)) {
         return next(errorHandler(400, "Please provide a valid 10-digit mobile number"));
     }
-    
+
     // Validate address (optional but if provided, should not be empty)
     if (address && address.trim().length === 0) {
         return next(errorHandler(400, "Please provide a valid address"));
     }
-    
+
     // Check if email is verified
     if (!emailVerified) {
         return next(errorHandler(400, "Please verify your email address before creating an account"));
@@ -81,7 +81,7 @@ export const SignUp=async (req,res,next)=>{
             context: 'signup'
         });
     }
-    
+
     try {
         // Check softban/purge policy before allowing signup
         const existingSoftban = await DeletedAccount.findOne({ email: emailLower });
@@ -99,7 +99,7 @@ export const SignUp=async (req,res,next)=>{
             if (!existingSoftban.purgedAt && typeof policy.allowResignupAfterDays === 'number' && policy.allowResignupAfterDays > 0) {
                 const allowAfter = new Date(existingSoftban.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
                 if (new Date() < allowAfter) {
-                    const daysLeft = Math.ceil((allowAfter.getTime() - Date.now()) / (24*60*60*1000));
+                    const daysLeft = Math.ceil((allowAfter.getTime() - Date.now()) / (24 * 60 * 60 * 1000));
                     return next(errorHandler(403, `Please wait ${daysLeft} more day(s) before signing up again.`));
                 }
             }
@@ -118,44 +118,44 @@ export const SignUp=async (req,res,next)=>{
             logSecurityEvent('duplicate_signup_attempt', { email: emailLower, reason: 'email_exists' });
             return next(errorHandler(400, "An account with this email already exists. Please sign in instead!"));
         }
-        
+
         // Check if mobile number already exists
         const existingMobile = await User.findOne({ mobileNumber });
         if (existingMobile) {
             logSecurityEvent('duplicate_signup_attempt', { email: emailLower, mobileNumber, reason: 'mobile_exists' });
             return next(errorHandler(400, "An account with this mobile number already exists. Try signing in or use a different number."));
         }
-        
-        const hashedPassword=bcryptjs.hashSync(password,10)
-        
+
+        const hashedPassword = bcryptjs.hashSync(password, 10)
+
         // Set admin approval status based on role
         const adminApprovalStatus = role === "admin" ? "pending" : "approved";
-        
-        const newUser=new User({
+
+        const newUser = new User({
             username,
             email: emailLower,
-            password:hashedPassword,
+            password: hashedPassword,
             mobileNumber,
             address: address ? address.trim() : undefined,
             role,
             adminApprovalStatus
         })
-        
+
         await newUser.save();
-        
+
         // Check for suspicious signup patterns
         const ip = req.ip || req.connection.remoteAddress;
         const userAgent = req.get('User-Agent');
         checkSuspiciousSignup(emailLower, ip, userAgent);
-        
+
         // Log successful signup
-        logSecurityEvent('successful_signup', { 
-            email: emailLower, 
+        logSecurityEvent('successful_signup', {
+            email: emailLower,
             userId: newUser._id,
             role: newUser.role,
             ip
         });
-        
+
         // Send welcome email
         try {
             await sendWelcomeEmail(emailLower, {
@@ -170,7 +170,7 @@ export const SignUp=async (req,res,next)=>{
             console.error(`❌ Failed to send welcome email to ${emailLower}:`, emailError);
             // Don't fail the signup if email fails, just log the error
         }
-        
+
         if (role === "admin") {
             res.status(201).json({
                 message: "Admin account created successfully. Please wait for approval from an existing admin.",
@@ -183,20 +183,20 @@ export const SignUp=async (req,res,next)=>{
             });
         }
     }
-    catch(error){ 
-       console.error(error);
-       next(error)
+    catch (error) {
+        console.error(error);
+        next(error)
     }
 }
 
-export const SignIn=async(req,res,next)=>{
-    const {email,password}=req.body 
+export const SignIn = async (req, res, next) => {
+    const { email, password } = req.body
     const emailLower = email.toLowerCase();
     const identifier = req.ip || req.connection.remoteAddress;
-    
-    try{
-        const validUser=await User.findOne({email: emailLower})
-        if (!validUser){
+
+    try {
+        const validUser = await User.findOne({ email: emailLower })
+        if (!validUser) {
             // Check if this email is softbanned/purged and communicate appropriately
             try {
                 const del = await DeletedAccount.findOne({ email: emailLower });
@@ -209,34 +209,34 @@ export const SignIn=async(req,res,next)=>{
                         const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
                         if (new Date() < allowAfter) {
                             const msLeft = allowAfter.getTime() - Date.now();
-                            const days = Math.floor(msLeft / (24*60*60*1000));
-                            const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
-                            const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+                            const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+                            const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                            const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
                             const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
                             return next(errorHandler(403, `This account is temporarily suspended. Please reach out to support for help.`));
                         }
                     }
                 }
-            } catch (_) {}
+            } catch (_) { }
             // Track failed attempt
             trackFailedAttempt(identifier);
             logSecurityEvent('failed_login', { email: emailLower, reason: 'user_not_found' });
-            return next(errorHandler(401,"Invalid email address or password"))
+            return next(errorHandler(401, "Invalid email address or password"))
         }
-        
+
         // Check if account is locked
         if (await isAccountLocked(validUser._id)) {
             logSecurityEvent('account_locked_attempt', { email: emailLower, userId: validUser._id });
             const remainingMs = await getAccountLockRemainingMs(validUser._id, emailLower);
             const remainingMinutes = Math.max(1, Math.ceil(remainingMs / (60 * 1000)));
-            return next(errorHandler(423, `Account is temporarily locked due to too many failed attempts. Try again in about ${remainingMinutes} minute${remainingMinutes>1?'s, or reset your password':''}.`));
+            return next(errorHandler(423, `Account is temporarily locked due to too many failed attempts. Try again in about ${remainingMinutes} minute${remainingMinutes > 1 ? 's, or reset your password' : ''}.`));
         }
-        
+
         if (validUser.status === 'suspended') {
             logSecurityEvent('suspended_account_attempt', { email: emailLower, userId: validUser._id });
             return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
         }
-        
+
         // Also check for softbanned/purged policies (edge case: if account still exists but also recorded)
         try {
             const del = await DeletedAccount.findOne({ email: emailLower });
@@ -249,54 +249,54 @@ export const SignIn=async(req,res,next)=>{
                     const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
                     if (new Date() < allowAfter) {
                         const msLeft = allowAfter.getTime() - Date.now();
-                        const days = Math.floor(msLeft / (24*60*60*1000));
-                        const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
-                        const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+                        const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+                        const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                        const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
                         const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
                         return next(errorHandler(403, "This account is temporarily suspended. Please reach out to support for help."));
                     }
                 }
             }
-        } catch(_) {}
-        
-        const validPassword=await bcryptjs.compareSync(password,validUser.password)
-        if (!validPassword){
+        } catch (_) { }
+
+        const validPassword = await bcryptjs.compareSync(password, validUser.password)
+        if (!validPassword) {
             // Track failed attempt
             trackFailedAttempt(identifier, validUser._id);
             logSecurityEvent('failed_login', { email: emailLower, userId: validUser._id, reason: 'invalid_password' });
-            return next(errorHandler(401,"Invalid email address or password"))
+            return next(errorHandler(401, "Invalid email address or password"))
         }
-        
+
         // Check if admin account is pending approval
         if (validUser.role === "admin" && validUser.adminApprovalStatus === "pending") {
             return next(errorHandler(403, "Your admin account is pending approval. Please wait for an existing admin to approve your request."));
         }
-        
+
         // Check if admin account was rejected
         if (validUser.role === "admin" && validUser.adminApprovalStatus === "rejected") {
             return next(errorHandler(403, "Your admin account request has been rejected. Please contact support for more information."));
         }
-        
+
         // Clear failed attempts on successful login
         clearFailedAttempts(identifier);
-        
+
         // Get device info and check for suspicious login
         const userAgent = req.get('User-Agent');
         const device = getDeviceInfo(userAgent);
         const location = getLocationFromIP(identifier);
-        
+
         // Check for suspicious login patterns
         const suspiciousCheck = await checkSuspiciousLogin(validUser._id, identifier, device);
-        
+
         // Create enhanced session
         const session = await createEnhancedSession(validUser._id, req);
-        
+
         // Enforce role-based session limits
         await enforceSessionLimits(validUser._id, validUser.role);
-        
+
         // Check for concurrent logins
         const concurrentInfo = detectConcurrentLogins(validUser._id, session.sessionId);
-        
+
         // Log session action
         await logSessionAction(
             validUser._id,
@@ -309,20 +309,20 @@ export const SignIn=async(req,res,next)=>{
             suspiciousCheck.isSuspicious,
             suspiciousCheck.reason
         );
-        
+
         // Log successful login
-        logSecurityEvent('successful_login', { 
-            email: emailLower, 
+        logSecurityEvent('successful_login', {
+            email: emailLower,
             userId: validUser._id,
             ip: identifier,
             userAgent,
             sessionId: session.sessionId,
             concurrentLogins: concurrentInfo.activeSessions
         });
-        
+
         // Generate token pair
         const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id });
-        
+
         // Set secure cookies
         setSecureCookies(res, accessToken, refreshToken);
         // Expose session id for client (non-httpOnly so client can identify current session)
@@ -333,7 +333,7 @@ export const SignIn=async(req,res,next)=>{
             sameSite: 'none',
             path: '/'
         });
-        
+
         // LOGIN SUCCESSFUL - Send email notifications AFTER login succeeds with retry logic
         // This is intentionally async and non-blocking
         (async () => {
@@ -358,9 +358,9 @@ export const SignIn=async(req,res,next)=>{
                     console.error(`❌ Failed to send email after ${maxAttempts} attempts`);
                     return false;
                 };
-                
+
                 // Send new login notification with retry
-                await sendEmailWithFallback(() => 
+                await sendEmailWithFallback(() =>
                     sendNewLoginEmail(
                         validUser.email,
                         device,
@@ -369,7 +369,7 @@ export const SignIn=async(req,res,next)=>{
                         new Date()
                     )
                 );
-                
+
                 // Send suspicious login alert if detected, with retry
                 if (suspiciousCheck.isSuspicious) {
                     await sendEmailWithFallback(() =>
@@ -391,7 +391,7 @@ export const SignIn=async(req,res,next)=>{
         })().catch(error => {
             console.error('Unhandled error in post-login email notification:', error);
         });
-        
+
         res.status(200).json({
             _id: validUser._id,
             username: validUser.username,
@@ -409,34 +409,37 @@ export const SignIn=async(req,res,next)=>{
             emailNotificationStatus: 'pending' // Inform client that email is being sent
         });
     }
-    catch(error){
+    catch (error) {
         console.error(error);
         next(error)
     }
 }
 
-export const Google=async (req,res,next)=>{
-    try{
+export const Google = async (req, res, next) => {
+    try {
         console.log('🔍 Google auth request received:', {
             body: req.body,
             userAgent: req.get('User-Agent'),
             ip: req.ip,
             headers: req.headers
         });
-        
-        const {name,email,photo}=req.body 
-        const validUser=await User.findOne({email})
-        if (validUser){
+
+        const { name, email, photo } = req.body
+        const validUser = await User.findOne({ email })
+        if (validUser) {
             // Suspension check
             if (validUser.status === 'suspended') {
                 return next(errorHandler(403, "Your account is suspended. Please contact support."));
             }
             // Generate token pair
             const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id });
-            
+
             // Create enhanced session for Google login as well
             const session = await createEnhancedSession(validUser._id, req);
-            
+
+            // Enforce role-based session limits
+            await enforceSessionLimits(validUser._id, validUser.role);
+
             // Set secure cookies
             setSecureCookies(res, accessToken, refreshToken);
             // Expose session id
@@ -452,7 +455,7 @@ export const Google=async (req,res,next)=>{
             const device = getDeviceInfo(userAgent);
             const location = getLocationFromIP(req.ip || req.connection.remoteAddress);
             const suspiciousCheck = await checkSuspiciousLogin(validUser._id, req.ip, device);
-            
+
             // Send emails AFTER login response (async, non-blocking)
             (async () => {
                 try {
@@ -475,7 +478,7 @@ export const Google=async (req,res,next)=>{
                         console.error(`❌ Failed to send Google login email after ${maxAttempts} attempts`);
                         return false;
                     };
-                    
+
                     // Send new login notification with retry
                     await sendEmailWithFallback(() =>
                         sendNewLoginEmail(
@@ -486,7 +489,7 @@ export const Google=async (req,res,next)=>{
                             new Date()
                         )
                     );
-                    
+
                     // Send suspicious login alert if detected
                     if (suspiciousCheck.isSuspicious) {
                         await sendEmailWithFallback(() =>
@@ -507,7 +510,7 @@ export const Google=async (req,res,next)=>{
             })().catch(error => {
                 console.error('Unhandled error in Google login email notification:', error);
             });
-            
+
             res.status(200).json({
                 _id: validUser._id,
                 username: validUser.username,
@@ -524,35 +527,38 @@ export const Google=async (req,res,next)=>{
                 sessionId: session.sessionId,
             });
         }
-        else{
+        else {
             const generatedPassword = Math.random().toString(36).slice(-8);
-            const hashedPassword = await bcryptjs.hashSync(generatedPassword,10);
-            
-            const newUser=new User({
-                username:name.split(" ").join("").toLowerCase()+Math.random().toString(36).slice(-8),
+            const hashedPassword = await bcryptjs.hashSync(generatedPassword, 10);
+
+            const newUser = new User({
+                username: name.split(" ").join("").toLowerCase() + Math.random().toString(36).slice(-8),
                 email,
-                password:hashedPassword,
-                avatar:photo,
+                password: hashedPassword,
+                avatar: photo,
                 isGeneratedMobile: true
             })
             await newUser.save()
-            
+
             // Generate token pair
             const { accessToken, refreshToken } = generateTokenPair({ id: newUser._id });
-            
+
             // Create enhanced session for Google signup/login
             const session = await createEnhancedSession(newUser._id, req);
-            
+
+            // Enforce role-based session limits
+            await enforceSessionLimits(newUser._id, newUser.role);
+
             // Set secure cookies
             setSecureCookies(res, accessToken, refreshToken);
-        // Expose session id for cross-origin
-        res.cookie('session_id', session.sessionId, {
-            httpOnly: false,
-            secure: true,
-            sameSite: 'none',
-            path: '/'
-        });
-            
+            // Expose session id for cross-origin
+            res.cookie('session_id', session.sessionId, {
+                httpOnly: false,
+                secure: true,
+                sameSite: 'none',
+                path: '/'
+            });
+
             // Send welcome email for new Google sign-in users
             try {
                 await sendWelcomeEmail(newUser.email, {
@@ -567,7 +573,7 @@ export const Google=async (req,res,next)=>{
                 console.error(`❌ Failed to send welcome email to new Google user ${newUser.email}:`, emailError);
                 // Don't fail the signup if email fails, just log the error
             }
-            
+
             // Send new login email (first login) for Google sign-in users
             try {
                 const userAgent = req.get('User-Agent');
@@ -585,7 +591,7 @@ export const Google=async (req,res,next)=>{
                 console.error(`❌ Failed to send new login email to Google user ${newUser.email}:`, emailError);
                 // Don't fail the signup if email fails, just log the error
             }
-            
+
             res.status(200).json({
                 _id: newUser._id,
                 username: newUser.username,
@@ -604,7 +610,7 @@ export const Google=async (req,res,next)=>{
             });
         }
     }
-    catch(error){
+    catch (error) {
         console.error(error);
         next(error)
     }
@@ -613,59 +619,59 @@ export const Google=async (req,res,next)=>{
 
 export const Signout = async (req, res, next) => {
     try {
-      // Best-effort: identify user and current session to remove from activeSessions
-      const sessionId = req.cookies.session_id;
-      let userId = null;
-      try {
-        if (req.cookies.access_token) {
-          const decoded = jwt.verify(req.cookies.access_token, process.env.JWT_TOKEN);
-          userId = decoded.id;
-        } else if (req.cookies.refresh_token) {
-          const decoded = jwt.verify(req.cookies.refresh_token, process.env.JWT_TOKEN);
-          userId = decoded.id;
-        }
-      } catch (_) {}
-
-      if (userId && sessionId) {
+        // Best-effort: identify user and current session to remove from activeSessions
+        const sessionId = req.cookies.session_id;
+        let userId = null;
         try {
-          await revokeSessionFromDB(userId, sessionId);
-          // Broadcast updates so UIs refresh immediately
-          const io = req.app.get('io');
-          if (io) {
-            io.to(userId.toString()).emit('sessionsUpdated');
-            io.emit('adminSessionsUpdated');
-          }
-          // Log action
-          await logSessionAction(
-            userId,
-            'logout',
-            sessionId,
-            req.ip,
-            getDeviceInfo(req.get('User-Agent')),
-            getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
-            'User signed out'
-          );
-        } catch (_) {}
-      }
+            if (req.cookies.access_token) {
+                const decoded = jwt.verify(req.cookies.access_token, process.env.JWT_TOKEN);
+                userId = decoded.id;
+            } else if (req.cookies.refresh_token) {
+                const decoded = jwt.verify(req.cookies.refresh_token, process.env.JWT_TOKEN);
+                userId = decoded.id;
+            }
+        } catch (_) { }
 
-      clearAuthCookies(res);
-      res.status(200).json('User has been logged out!');
+        if (userId && sessionId) {
+            try {
+                await revokeSessionFromDB(userId, sessionId);
+                // Broadcast updates so UIs refresh immediately
+                const io = req.app.get('io');
+                if (io) {
+                    io.to(userId.toString()).emit('sessionsUpdated');
+                    io.emit('adminSessionsUpdated');
+                }
+                // Log action
+                await logSessionAction(
+                    userId,
+                    'logout',
+                    sessionId,
+                    req.ip,
+                    getDeviceInfo(req.get('User-Agent')),
+                    getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
+                    'User signed out'
+                );
+            } catch (_) { }
+        }
+
+        clearAuthCookies(res);
+        res.status(200).json('User has been logged out!');
     } catch (error) {
-      next(error);
+        next(error);
     }
-  };
+};
 
 export const verifyAuth = async (req, res, next) => {
     try {
         const accessToken = req.cookies.access_token;
         const refreshToken = req.cookies.refresh_token;
-        
+
         if (!accessToken && !refreshToken) {
             return next(errorHandler(401, "No authentication tokens found"));
         }
-        
+
         let decoded;
-        
+
         try {
             // Try to verify access token first
             decoded = jwt.verify(accessToken, process.env.JWT_TOKEN, {
@@ -680,13 +686,13 @@ export const verifyAuth = async (req, res, next) => {
                         issuer: 'urbansetu',
                         audience: 'urbansetu-refresh'
                     });
-                    
+
                     // Generate new token pair
                     const { accessToken: newAccessToken, refreshToken: newRefreshToken } = generateTokenPair({ id: refreshDecoded.id });
-                    
+
                     // Set new cookies
                     setSecureCookies(res, newAccessToken, newRefreshToken);
-                    
+
                     decoded = refreshDecoded;
                 } catch (refreshError) {
                     return next(errorHandler(401, "Session expired. Please sign in again."));
@@ -695,13 +701,13 @@ export const verifyAuth = async (req, res, next) => {
                 return next(errorHandler(401, "Invalid token"));
             }
         }
-        
+
         const user = await User.findById(decoded.id).select('-password');
-        
+
         if (!user) {
             return next(errorHandler(404, "User not found"));
         }
-        
+
         res.status(200).json(user);
     } catch (error) {
         if (error.name === 'JsonWebTokenError') {
@@ -731,27 +737,27 @@ setInterval(() => {
 export const forgotPassword = async (req, res, next) => {
     try {
         const { email } = req.body;
-        
+
         if (!email) {
             return next(errorHandler(400, "Email is required"));
         }
-        
+
         const emailLower = email.toLowerCase();
         // Find user with matching email
         const user = await User.findOne({ email: emailLower });
-        
+
         if (user) {
             // Generate reset token (30 minutes expiry)
             const resetToken = jwt.sign(
-                { 
-                    id: user._id, 
+                {
+                    id: user._id,
                     email: emailLower,
                     type: 'password_reset'
-                }, 
-                process.env.JWT_TOKEN, 
+                },
+                process.env.JWT_TOKEN,
                 { expiresIn: '30m' }
             );
-            
+
             // Store reset token with expiration
             resetTokenStore.set(resetToken, {
                 userId: user._id,
@@ -759,13 +765,13 @@ export const forgotPassword = async (req, res, next) => {
                 expiresAt: Date.now() + 30 * 60 * 1000, // 30 minutes
                 used: false
             });
-            
+
             // TODO: Send reset email with token
             // For now, we'll just return success
         }
-        
+
         // Always return success message to prevent email enumeration
-        res.status(200).json({ 
+        res.status(200).json({
             message: "If this email exists, we sent instructions.",
             success: true
         });
@@ -779,30 +785,30 @@ export const resetPassword = async (req, res, next) => {
     try {
         const { userId, newPassword, confirmPassword, recaptchaToken } = req.body;
         const ipAddress = req.ip || req.connection.remoteAddress;
-        
+
         if (!userId || !newPassword || !confirmPassword) {
             return next(errorHandler(400, "All fields are required"));
         }
-        
+
         if (newPassword !== confirmPassword) {
             return next(errorHandler(400, "Passwords do not match"));
         }
-        
+
         // Validate password strength
         const passwordRegex = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
         if (!passwordRegex.test(newPassword)) {
             return next(errorHandler(400, "Password must be at least 8 characters and include uppercase, lowercase, number, and special character"));
         }
-        
+
         // Find user by ID
         const user = await User.findById(userId);
-        
+
         if (!user) {
             return next(errorHandler(404, "User not found"));
         }
-        
+
         // No lockout check - removed as requested
-        
+
         // Count recent failed RESET PASSWORD attempts for this user (not login attempts)
         const recentResetAttempts = await PasswordLockout.aggregate([
             {
@@ -819,22 +825,22 @@ export const resetPassword = async (req, res, next) => {
                 }
             }
         ]);
-        
+
         const totalAttempts = recentResetAttempts.length > 0 ? recentResetAttempts[0].totalAttempts : 0;
-        
+
         console.log(`Reset password attempts for user ${user.email}: totalAttempts=${totalAttempts}, hasRecaptchaToken=${!!recaptchaToken}, recentResetAttempts=${JSON.stringify(recentResetAttempts)}`);
-        
+
         // Require reCAPTCHA after 3 failed reset password attempts (so on 4th attempt)
         if (totalAttempts >= 3 && !recaptchaToken) {
             console.log(`Requiring reCAPTCHA for reset password - totalAttempts: ${totalAttempts}`);
             return next(errorHandler(400, "reCAPTCHA verification is required due to multiple failed attempts."));
         }
-        
+
         // Debug: Log when reCAPTCHA is NOT required
         if (totalAttempts < 3) {
             console.log(`No reCAPTCHA required - totalAttempts: ${totalAttempts} < 3`);
         }
-        
+
         // Verify reCAPTCHA if provided
         if (recaptchaToken) {
             try {
@@ -844,7 +850,7 @@ export const resetPassword = async (req, res, next) => {
                     body: `secret=${process.env.RECAPTCHA_SECRET_KEY}&response=${recaptchaToken}&remoteip=${ipAddress}`
                 });
                 const recaptchaData = await recaptchaResponse.json();
-                
+
                 if (!recaptchaData.success) {
                     return next(errorHandler(400, "reCAPTCHA verification failed. Please try again."));
                 }
@@ -852,13 +858,13 @@ export const resetPassword = async (req, res, next) => {
                 return next(errorHandler(400, "reCAPTCHA verification failed. Please try again."));
             }
         }
-        
+
         // Check if new password is different from current password
         const isSamePassword = await bcryptjs.compare(newPassword, user.password);
         if (isSamePassword) {
             // Track failed attempt - no lockout, just tracking for reCAPTCHA
             await PasswordLockout.findOneAndUpdate(
-                { 
+                {
                     $or: [{ userId: user._id }, { email: user.email }],
                     identifier: `reset_password_tracking_${user._id}`
                 },
@@ -873,10 +879,10 @@ export const resetPassword = async (req, res, next) => {
                 },
                 { upsert: true, new: true, setDefaultsOnInsert: true }
             );
-            
+
             return next(errorHandler(400, "Your new password cannot be the same as your previous password."));
         }
-        
+
         // Update password
         user.password = bcryptjs.hashSync(newPassword, 10);
         // If user status was incorrectly set to a non-enum value like 'locked', normalize to 'active'
@@ -892,8 +898,8 @@ export const resetPassword = async (req, res, next) => {
                 $or: [{ userId: user._id }, { email: user.email }],
                 identifier: { $regex: /reset_password/ }
             });
-        } catch (_) {}
-        
+        } catch (_) { }
+
         // Send password reset success email
         try {
             await sendPasswordResetSuccessEmail(user.email, user.username, 'forgot_password');
@@ -901,8 +907,8 @@ export const resetPassword = async (req, res, next) => {
             console.error('Failed to send password reset success email:', emailError);
             // Don't fail the request if email fails
         }
-        
-        res.status(200).json({ 
+
+        res.status(200).json({
             message: "Password reset successful. You can now log in.",
             success: true
         });
@@ -919,7 +925,7 @@ export const sendLoginOTP = async (req, res, next) => {
     const { email } = req.body;
     const { otpTracking, requiresCaptcha } = req;
     const ipAddress = req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip || req.connection.remoteAddress;
-    
+
     if (!email) {
         return next(errorHandler(400, "Email is required"));
     }
@@ -979,9 +985,9 @@ export const sendLoginOTP = async (req, res, next) => {
                         const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
                         if (new Date() < allowAfter) {
                             const msLeft = allowAfter.getTime() - Date.now();
-                            const days = Math.floor(msLeft / (24*60*60*1000));
-                            const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
-                            const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+                            const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+                            const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                            const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
                             const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
                             return res.status(403).json({
                                 success: false,
@@ -990,7 +996,7 @@ export const sendLoginOTP = async (req, res, next) => {
                         }
                     }
                 }
-            } catch (_) {}
+            } catch (_) { }
             return res.status(400).json({
                 success: false,
                 message: "We couldn't find an account with this email. Sign up to create one."
@@ -1017,15 +1023,15 @@ export const sendLoginOTP = async (req, res, next) => {
                     const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
                     if (new Date() < allowAfter) {
                         const msLeft = allowAfter.getTime() - Date.now();
-                        const days = Math.floor(msLeft / (24*60*60*1000));
-                        const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
-                        const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+                        const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+                        const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+                        const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
                         const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
                         return res.status(403).json({ success: false, message: `Your account is softbanned. Please try again after ${waitMsg}.` });
                     }
                 }
             }
-        } catch(_) {}
+        } catch (_) { }
 
         // Block OTP sending if account is password-locked due to failed attempts
         try {
@@ -1034,14 +1040,14 @@ export const sendLoginOTP = async (req, res, next) => {
                 const remainingMinutes = Math.max(1, Math.ceil(remainingMs / (60 * 1000)));
                 return res.status(423).json({
                     success: false,
-                    message: `Account is temporarily locked due to too many failed attempts. Try again in about ${remainingMinutes} minute${remainingMinutes>1?'s, or reset your password':''}.`
+                    message: `Account is temporarily locked due to too many failed attempts. Try again in about ${remainingMinutes} minute${remainingMinutes > 1 ? 's, or reset your password' : ''}.`
                 });
             }
-        } catch (_) {}
+        } catch (_) { }
 
         // Increment OTP request count and attach ip/userAgent for auditing
         await otpTracking.incrementOtpRequest();
-        
+
         // If 5 requests within 15 minutes -> 15 min lockout
         const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
         if (otpTracking.otpRequestCount >= 5 && otpTracking.lastOtpTimestamp >= fifteenMinutesAgo) {
@@ -1055,7 +1061,7 @@ export const sendLoginOTP = async (req, res, next) => {
 
         // Generate OTP
         const otp = generateOTP();
-        
+
         // Store OTP with expiration (5 minutes for better security)
         const expirationTime = Date.now() + 5 * 60 * 1000; // 5 minutes
         loginOtpStore.set(emailLower, {
@@ -1068,7 +1074,7 @@ export const sendLoginOTP = async (req, res, next) => {
 
         // Send OTP email for login
         const emailResult = await sendLoginOTPEmail(emailLower, otp);
-        
+
         if (!emailResult.success) {
             return res.status(500).json({
                 success: false,
@@ -1107,7 +1113,7 @@ export const sendLoginOTP = async (req, res, next) => {
 export const verifyLoginOTP = async (req, res, next) => {
     const { email, otp } = req.body;
     const { otpTracking } = req;
-    
+
     if (!email || !otp) {
         return next(errorHandler(400, "Email and OTP are required"));
     }
@@ -1125,7 +1131,7 @@ export const verifyLoginOTP = async (req, res, next) => {
         }
         // Get stored OTP data
         const storedData = loginOtpStore.get(emailLower);
-        
+
         if (!storedData) {
             return res.status(400).json({
                 success: false,
@@ -1165,7 +1171,7 @@ export const verifyLoginOTP = async (req, res, next) => {
         if (storedData.otp !== otp) {
             storedData.attempts += 1;
             loginOtpStore.set(emailLower, storedData);
-            
+
             // Increment failed attempts in tracking
             if (otpTracking) {
                 await otpTracking.incrementFailedAttempt();
@@ -1179,7 +1185,7 @@ export const verifyLoginOTP = async (req, res, next) => {
                     await otpTracking.registerLockout(15 * 60 * 1000);
                 }
             }
-            
+
             // Log failed OTP attempt
             logSecurityEvent('otp_verification_failed', {
                 email: emailLower,
@@ -1187,7 +1193,7 @@ export const verifyLoginOTP = async (req, res, next) => {
                 ip: req.ip,
                 attempts: storedData.attempts
             });
-            
+
             return res.status(400).json({
                 success: false,
                 message: storedData.attempts >= 3 ? "Too many incorrect attempts. Please try again in 15 minutes." : "Invalid OTP. Please try again.",
@@ -1224,28 +1230,28 @@ export const verifyLoginOTP = async (req, res, next) => {
         const userAgent = req.get('User-Agent');
         const device = getDeviceInfo(userAgent);
         const location = getLocationFromIP(req.ip);
-        
+
         // Check for suspicious login patterns
         const suspiciousCheck = await checkSuspiciousLogin(user._id, req.ip, device);
-        
+
         // Create enhanced session
         const session = await createEnhancedSession(user._id, req);
-        
+
         // Enforce role-based session limits
         await enforceSessionLimits(user._id, user.role);
-        
+
         // Generate token pair
         const { accessToken, refreshToken } = generateTokenPair({ id: user._id });
-        
+
         // Clear OTP from store
         loginOtpStore.delete(emailLower);
-        
+
         // Reset tracking on successful login
         if (otpTracking) {
             await otpTracking.resetTracking();
             await otpTracking.clearLockout?.();
         }
-        
+
         // Send email notifications
         try {
             // Always send new login notification
@@ -1256,7 +1262,7 @@ export const verifyLoginOTP = async (req, res, next) => {
                 location,
                 new Date()
             );
-            
+
             // Send suspicious login alert if detected
             if (suspiciousCheck.isSuspicious) {
                 await sendSuspiciousLoginEmail(
@@ -1273,7 +1279,7 @@ export const verifyLoginOTP = async (req, res, next) => {
             console.error('Email notification error:', emailError);
             // Don't fail login if email fails
         }
-        
+
         // Log session action
         await logSessionAction(
             user._id,
@@ -1286,7 +1292,7 @@ export const verifyLoginOTP = async (req, res, next) => {
             suspiciousCheck.isSuspicious,
             suspiciousCheck.reason
         );
-        
+
         // Log successful OTP login
         logSecurityEvent('otp_login_successful', {
             email: emailLower,
