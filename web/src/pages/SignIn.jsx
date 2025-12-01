@@ -21,7 +21,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function SignIn({ bootstrapped, sessionChecked }) {
     // Set page title
     usePageTitle("Sign In - Welcome Back");
-    
+
     const emailInputRef = useRef(null);
     const otpEmailInputRef = useRef(null);
     const passwordInputRef = useRef(null);
@@ -41,11 +41,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const [otpSent, setOtpSent] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
     const [otpSuccessMessage, setOtpSuccessMessage] = useState("");
-    
+
     // Timer states for resend OTP
     const [resendTimer, setResendTimer] = useState(0);
     const [canResend, setCanResend] = useState(true);
-    
+
     // reCAPTCHA states
     const [recaptchaToken, setRecaptchaToken] = useState(null);
     const [recaptchaError, setRecaptchaError] = useState("");
@@ -58,10 +58,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const [otpRecaptchaKey, setOtpRecaptchaKey] = useState(0); // force remount for OTP
     const recaptchaRef = useRef(null);
     const otpRecaptchaRef = useRef(null);
-    
+
     // State to track which authentication method is in progress
     const [authInProgress, setAuthInProgress] = useState(null); // null, 'password', 'otp', 'google'
-    
+
     // State to track OTP verification loading
     const [otpVerifyingLoading, setOtpVerifyingLoading] = useState(false);
 
@@ -74,7 +74,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const errorParam = searchParams.get('error');
-        
+
         if (errorParam === 'password_change_unsuccessful') {
             setUrlError("Password change unsuccessful! Please try again.");
             // Clear the error parameter from URL
@@ -257,7 +257,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         if ((otpSent || otpLoading) && e.target.id === 'email') {
             return;
         }
-        
+
         setOtpData({
             ...otpData,
             [e.target.id]: e.target.value
@@ -298,9 +298,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         setOtpLoading(true);
         setOtpRecaptchaError("");
         setAuthInProgress('otp');
-        
+
         try {
-            const requestBody = { 
+            const requestBody = {
                 email: otpData.email,
                 ...(otpRecaptchaToken && { recaptchaToken: otpRecaptchaToken })
             };
@@ -321,13 +321,18 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         } else if (message.includes('rejected')) {
                             friendlyMessage = "Your admin account request has been rejected. Please contact support for more information.";
                         } else if (message.includes('suspended')) {
-                            friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                            // If it's a cooling-off suspension with a time limit, show the backend message
+                            if (message.includes('try again after')) {
+                                friendlyMessage = errData.message;
+                            } else {
+                                friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                            }
                         } else {
                             // Use the original message if it's a specific 403 error
                             friendlyMessage = errData.message;
                         }
                     }
-                } catch (_) {}
+                } catch (_) { }
                 dispatch(signInFailure(friendlyMessage));
                 setOtpLoading(false);
                 return;
@@ -341,7 +346,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     if (errData && errData.message) {
                         friendlyMessage = errData.message;
                     }
-                } catch (_) {}
+                } catch (_) { }
                 dispatch(signInFailure(friendlyMessage));
                 setOtpLoading(false);
                 return;
@@ -375,7 +380,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             setOtpRequiresCaptcha(false);
             setShowOtpRecaptcha(false);
             resetOtpRecaptcha();
-            
+
             // Start timer for resend
             setResendTimer(30); // 30 seconds
             setCanResend(false);
@@ -397,10 +402,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         setOtpVerifyingLoading(true);
         dispatch(signInStart());
         setAuthInProgress('otp');
-        
+
         // Check if cookies are enabled for better UX
         const cookiesEnabled = areCookiesEnabled();
-        
+
         try {
             const apiUrl = `${API_BASE_URL}/api/auth/verify-login-otp`;
             const res = await authenticatedFetch(apiUrl, {
@@ -408,19 +413,6 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 body: JSON.stringify(otpData)
             });
             // Handle suspended account (403) with friendly message
-            if (res.status === 403) {
-                let friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
-                try {
-                    const errData = await res.clone().json();
-                    if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
-                        friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
-                    }
-                } catch (_) {}
-                dispatch(signInFailure(friendlyMessage));
-                return;
-            }
-            const data = await res.json();
-
             if (data.success === false) {
                 // Handle reCAPTCHA requirements
                 if (data.message && data.message.toLowerCase().includes("too many otp requests")) {
@@ -435,20 +427,20 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 dispatch(signInFailure(data.message));
                 return;
             }
-            
+
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
-                
+
             }
             // Dispatch success and wait for state update
             dispatch(signInSuccess(data));
-            
+
             // Use a small delay to ensure state is updated
             await new Promise(resolve => setTimeout(resolve, 50));
-            
+
             // Reconnect socket with new token
             reconnectSocket();
-            
+
             if (data.role === "admin" || data.role === "rootadmin") {
                 // Special handling for root admin
                 if (data.isDefaultAdmin) {
@@ -470,7 +462,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-        
+
         // Check if reCAPTCHA is required and not provided
         const requiresRecaptcha = checkRecaptchaRequirement();
         if (requiresRecaptcha && !recaptchaToken) {
@@ -479,13 +471,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             setShowRecaptcha(true);
             return;
         }
-        
+
         dispatch(signInStart());
         setAuthInProgress('password');
-        
+
         // Check if cookies are enabled for better UX
         const cookiesEnabled = areCookiesEnabled();
-        
+
         try {
             const apiUrl = `${API_BASE_URL}/api/auth/signin`;
             const res = await authenticatedFetch(apiUrl, {
@@ -507,13 +499,18 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         } else if (message.includes('rejected')) {
                             friendlyMessage = "Your admin account request has been rejected. Please contact support for more information.";
                         } else if (message.includes('suspended')) {
-                            friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                            // If it's a cooling-off suspension with a time limit, show the backend message
+                            if (message.includes('try again after')) {
+                                friendlyMessage = errData.message;
+                            } else {
+                                friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
+                            }
                         } else {
                             // Use the original message if it's a specific 403 error
                             friendlyMessage = errData.message;
                         }
                     }
-                } catch (_) {}
+                } catch (_) { }
                 // Increment failed attempts to keep captcha logic consistent with other errors
                 const currentAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
                 const newAttempts = currentAttempts + 1;
@@ -522,7 +519,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 return;
             }
             const data = await res.json();
-            
+
             //
 
             if (data.success === false) {
@@ -538,7 +535,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     const currentAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
                     const newAttempts = currentAttempts + 1;
                     localStorage.setItem('failedLoginAttempts', newAttempts.toString());
-                    
+
                     // Show reCAPTCHA only if this is exactly the 3rd failed attempt
                     if (newAttempts === 3) {
                         setShowRecaptcha(true);
@@ -548,26 +545,26 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 dispatch(signInFailure(data.message));
                 return;
             }
-            
+
             // Clear failed attempts on successful login
             localStorage.removeItem('failedLoginAttempts');
             setShowRecaptcha(false);
             setRecaptchaToken(null);
             setRecaptchaError("");
-            
+
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
-                
+
             }
             // Dispatch success and wait for state update
             dispatch(signInSuccess(data));
-            
+
             // Use a small delay to ensure state is updated
             await new Promise(resolve => setTimeout(resolve, 50));
-            
+
             // Reconnect socket with new token
             reconnectSocket();
-            
+
             if (data.role === "admin" || data.role === "rootadmin") {
                 // Special handling for root admin
                 if (data.isDefaultAdmin) {
@@ -590,54 +587,54 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         <AuthFormLayout
             leftSlot={(
                 <>
-            
-            {/* Left Side - Image and Quote */}
-            
-            {/* Left Side - Image and Quote */}
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
-                <div className="absolute inset-0 bg-black opacity-20"></div>
-                <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
-                    <div className="text-center max-w-md">
-                        <h1 className="text-4xl font-bold mb-6 animate-fade-in">
-                            Welcome Back
-                        </h1>
-                        <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
-                            "Home is not a place, it's a feeling. Find your perfect sanctuary with us."
-                        </p>
-                        <div className="space-y-4 text-lg animate-fade-in-delay-2">
-                            <div className="flex items-center justify-center space-x-3">
-                                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                                <span>Discover Your Dream Home</span>
-                            </div>
-                            <div className="flex items-center justify-center space-x-3">
-                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                                <span>Connect with Trusted Agents</span>
-                            </div>
-                            <div className="flex items-center justify-center space-x-3">
-                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                                <span>Secure & Reliable Platform</span>
+
+                    {/* Left Side - Image and Quote */}
+
+                    {/* Left Side - Image and Quote */}
+                    <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-black opacity-20"></div>
+                        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
+                            <div className="text-center max-w-md">
+                                <h1 className="text-4xl font-bold mb-6 animate-fade-in">
+                                    Welcome Back
+                                </h1>
+                                <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
+                                    "Home is not a place, it's a feeling. Find your perfect sanctuary with us."
+                                </p>
+                                <div className="space-y-4 text-lg animate-fade-in-delay-2">
+                                    <div className="flex items-center justify-center space-x-3">
+                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                        <span>Discover Your Dream Home</span>
+                                    </div>
+                                    <div className="flex items-center justify-center space-x-3">
+                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                                        <span>Connect with Trusted Agents</span>
+                                    </div>
+                                    <div className="flex items-center justify-center space-x-3">
+                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                                        <span>Secure & Reliable Platform</span>
+                                    </div>
+                                </div>
                             </div>
                         </div>
+
+                        {/* Floating Elements */}
+                        <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
+                        <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+                        <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+
+                        {/* House Silhouette */}
+                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
+                            <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1" />
+                                <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2" />
+                                <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3" />
+                            </svg>
+                        </div>
                     </div>
-                </div>
-                
-                {/* Floating Elements */}
-                <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
-                <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '2s'}}></div>
-                <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '1s'}}></div>
-                
-                {/* House Silhouette */}
-                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
-                    <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1"/>
-                        <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2"/>
-                        <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3"/>
-                    </svg>
-                </div>
-            </div>
                 </>
             )}
-            >
+        >
 
             {/* Right Side - Sign In Form */}
             <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
@@ -665,11 +662,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 setEmailStep(false);
                                 setFormData({ email: "", password: "" });
                             }}
-                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                                loginMethod === "password"
-                                    ? "bg-white text-blue-600 shadow-sm"
-                                    : "text-gray-600 hover:text-gray-800"
-                            } ${(authInProgress !== null || otpSent) ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${loginMethod === "password"
+                                ? "bg-white text-blue-600 shadow-sm"
+                                : "text-gray-600 hover:text-gray-800"
+                                } ${(authInProgress !== null || otpSent) ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             Password Sign In
                         </button>
@@ -684,25 +680,24 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 setCanResend(true);
                                 setEmailStep(false);
                             }}
-                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
-                                loginMethod === "otp"
-                                    ? "bg-white text-blue-600 shadow-sm"
-                                    : "text-gray-600 hover:text-gray-800"
-                            } ${authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${loginMethod === "otp"
+                                ? "bg-white text-blue-600 shadow-sm"
+                                : "text-gray-600 hover:text-gray-800"
+                                } ${authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
                             OTP Sign In
                         </button>
                     </div>
-                    
-<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
+
+                    <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
                         {loginMethod === "password" ? (
                             // Password Sign In Form
                             <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-6">
                                 <div>
                                     {!emailStep && (
-                                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
-                                          Email Address
-                                      </label>
+                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Email Address
+                                        </label>
                                     )}
                                     <FormField
                                         label={undefined}
@@ -732,19 +727,19 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         required
                                     />
 
-                                {/* Forgot Password Link under email (only before password step) */}
-                                {!emailStep && (
-                                    <div className="text-right mt-2">
-                                        <Link 
-                                            to={`/forgot-password?email=${encodeURIComponent(formData.email || '')}`}
-                                            className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${(authInProgress === 'google' || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
-                                        >
-                                            Forgot Password?
-                                        </Link>
-                                    </div>
-                                )}
+                                    {/* Forgot Password Link under email (only before password step) */}
+                                    {!emailStep && (
+                                        <div className="text-right mt-2">
+                                            <Link
+                                                to={`/forgot-password?email=${encodeURIComponent(formData.email || '')}`}
+                                                className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${(authInProgress === 'google' || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                            >
+                                                Forgot Password?
+                                            </Link>
+                                        </div>
+                                    )}
                                 </div>
-                                
+
                                 {emailStep && (
                                     <div>
                                         <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
@@ -775,10 +770,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             inputClassName={`pr-12 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                             required
                                         />
-                                        
+
                                         {/* Forgot Password Link */}
                                         <div className="text-right mt-2">
-                                            <Link 
+                                            <Link
                                                 to={`/forgot-password?email=${encodeURIComponent(formData.email)}`}
                                                 className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                                             >
@@ -787,7 +782,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         </div>
                                     </div>
                                 )}
-                                
+
                                 {/* reCAPTCHA Widget - Show only when required (3+ failed attempts) */}
                                 {showRecaptcha && checkRecaptchaRequirement() && (
                                     <div className="flex justify-center">
@@ -809,7 +804,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         <p className="text-red-600 text-sm">{recaptchaError}</p>
                                     </div>
                                 )}
-                                
+
                                 <PrimaryButton
                                     variant="blue"
                                     loading={loading}
@@ -824,9 +819,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             <form onSubmit={otpSent ? handleOtpLogin : handleSendOTP} className="space-y-6">
                                 <div>
                                     {!otpSent && (
-                                      <label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-2">
-                                          Email Address
-                                      </label>
+                                        <label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-2">
+                                            Email Address
+                                        </label>
                                     )}
                                     <FormField
                                         label={undefined}
@@ -860,7 +855,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         required
                                     />
                                 </div>
-                                
+
                                 {/* OTP reCAPTCHA Widget - show below email only when OTP field is NOT open */}
                                 {showOtpRecaptcha && !otpSent && (
                                     <div className="flex justify-center mb-4">
@@ -882,7 +877,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         <p className="text-red-600 text-sm">{otpRecaptchaError}</p>
                                     </div>
                                 )}
-                                
+
                                 {otpSent && (
                                     <div>
                                         {otpSuccessMessage && (
@@ -893,10 +888,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
                                             OTP Code
                                         </label>
-                                        <input 
-                                            type="text" 
-                                            placeholder="Enter 6-digit OTP" 
-                                            id="otp" 
+                                        <input
+                                            type="text"
+                                            placeholder="Enter 6-digit OTP"
+                                            id="otp"
                                             value={otpData.otp}
                                             ref={otpInputRef}
                                             disabled={otpVerifyingLoading}
@@ -911,7 +906,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     }
                                                 };
                                                 handleOtpChange(syntheticEvent);
-                                            }} 
+                                            }}
                                             onKeyDown={(e) => {
                                                 if (e.key === 'Enter' && otpSent && !otpVerifyingLoading) {
                                                     e.preventDefault();
@@ -929,7 +924,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         </p>
                                     </div>
                                 )}
-                                
+
                                 {otpSent && (
                                     <div className="text-center">
                                         {resendTimer > 0 ? (
@@ -967,7 +962,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         )}
                                     </div>
                                 )}
-                                
+
                                 <PrimaryButton
                                     variant="blue"
                                     loading={loading || (!otpSent && otpLoading) || otpVerifyingLoading}
@@ -978,7 +973,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 </PrimaryButton>
                             </form>
                         )}
-                        
+
                         <div className="relative my-6">
                             <div className="absolute inset-0 flex items-center">
                                 <div className="w-full border-t border-gray-300"></div>
@@ -987,20 +982,20 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 <span className="px-2 bg-white text-gray-500">OR</span>
                             </div>
                         </div>
-                        
+
                         <Oauth pageType="signIn" disabled={authInProgress !== null || otpSent} onAuthStart={setAuthInProgress} />
-                        
+
                         {(error || urlError) && (
                             <div className="bg-red-50 border border-red-200 rounded-lg p-4">
                                 <p className="text-red-600 text-sm">{urlError || error}</p>
                             </div>
                         )}
-                        
+
                         <div className="mt-6 text-center">
                             <p className="text-gray-600">
                                 Don't have an account?{" "}
-                                <Link 
-                                    to="/sign-up" 
+                                <Link
+                                    to="/sign-up"
                                     className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpVerifyingLoading || otpSent) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                                 >
                                     Sign Up
