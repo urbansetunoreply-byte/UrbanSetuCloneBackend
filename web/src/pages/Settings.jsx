@@ -537,6 +537,11 @@ export default function Settings() {
       setTransferError('Enter 6-digit OTP');
       return;
     }
+    if (!selectedTransferAdmin) {
+      setTransferError('No admin selected for transfer.');
+      return;
+    }
+
     try {
       setTransferTransferring(true);
       const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
@@ -553,10 +558,9 @@ export default function Settings() {
         setTransferTransferring(false);
         return;
       }
-      const res = await fetch(`${API_BASE_URL}/api/admin/transfer-rights`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/admin/transfer-rights`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ targetAdminId: selectedTransferAdmin, password: transferPassword })
       });
       const data = await res.json();
