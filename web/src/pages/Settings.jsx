@@ -208,7 +208,7 @@ export default function Settings() {
         credentials: 'include'
       });
       const data = await res.json();
-      
+
       if (res.ok) {
         setAdmins(data);
       } else {
@@ -251,12 +251,12 @@ export default function Settings() {
     setDeleteError("");
     if (!deletePassword) { setDeleteError('Password is required'); return; }
     setDeleteVerifying(true);
-    const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, { method:'POST', body: JSON.stringify({ password: deletePassword }) });
+    const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, { method: 'POST', body: JSON.stringify({ password: deletePassword }) });
     if (!res.ok) {
       setShowPasswordModal(false);
       toast.error("For security reasons, you've been signed out automatically.");
       dispatch(signoutUserStart());
-      const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+      const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
       const signoutData = await signoutRes.json();
       if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
       navigate('/sign-in', { replace: true });
@@ -274,7 +274,7 @@ export default function Settings() {
     setDeleteOtpSent(false);
     try {
       setDeleteProcessing(true);
-      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email }) });
       const sendData = await sendRes.json();
       if (!sendRes.ok || sendData.success === false) {
         setDeleteError(sendData.message || 'Failed to send OTP');
@@ -291,7 +291,7 @@ export default function Settings() {
   const resendDeleteOtp = async () => {
     try {
       setDeleteResending(true);
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-account-deletion-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email }) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -305,7 +305,7 @@ export default function Settings() {
     if (!deleteOtp || deleteOtp.length !== 6) { setDeleteOtpError('Enter 6-digit OTP'); return; }
     try {
       setDeleteDeleting(true);
-      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: deleteOtp }) });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'account_deletion') {
         const att = deleteOtpAttempts + 1; setDeleteOtpAttempts(att);
@@ -314,7 +314,7 @@ export default function Settings() {
           setShowPasswordModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
           dispatch(signoutUserStart());
-          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+          const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
           const signoutData = await signoutRes.json();
           if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
           navigate('/sign-in', { replace: true });
@@ -325,7 +325,7 @@ export default function Settings() {
       }
       const apiUrl = `${API_BASE_URL}/api/user/delete/${currentUser._id}`;
       const payload = { password: deletePassword, reason: deleteReason === 'other' ? 'other' : deleteReason, otherReason: deleteReason === 'other' ? deleteOtherReason : undefined };
-      const options = { method:'DELETE', headers:{'Content-Type':'application/json'}, body: JSON.stringify(payload), credentials:'include' };
+      const options = { method: 'DELETE', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(payload), credentials: 'include' };
       const res = await authenticatedFetch(apiUrl, options);
       const data = await res.json();
       if (!res.ok) { setDeleteError(data.message || 'Account deletion failed'); setDeleteDeleting(false); return; }
@@ -403,7 +403,7 @@ export default function Settings() {
     try {
       setTransferResending(true);
       setTransferDeleteResending(true);
-      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email }) });
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email }) });
       const data = await res.json();
       return res.ok && data.success !== false;
     } catch (_) { return false; }
@@ -418,7 +418,7 @@ export default function Settings() {
     if (!transferOtp || transferOtp.length !== 6) { setTransferOtpError('Enter 6-digit OTP'); return; }
     try {
       setTransferDeleteDeleting(true);
-      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
       const vData = await vRes.json();
       if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
         const att = transferOtpAttempts + 1; setTransferOtpAttempts(att);
@@ -426,7 +426,7 @@ export default function Settings() {
         if (att >= 5) {
           setShowTransferPasswordModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
-          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
           navigate('/sign-in', { replace: true });
         }
         setTransferDeleteDeleting(false);
@@ -539,15 +539,15 @@ export default function Settings() {
     }
     try {
       setTransferTransferring(true);
-      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method:'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
+      const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
       const vData = await vRes.json();
-      if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
+      if (!vRes.ok || vData.success === false || vData.type !== 'transfer_rights') {
         const att = transferOtpAttempts + 1; setTransferOtpAttempts(att);
         setTransferError(vData.message || 'Invalid OTP');
         if (att >= 5) {
           setShowTransferModal(false);
           toast.error("For security reasons, you've been signed out automatically.");
-          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials:'include' });
+          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
           navigate('/sign-in', { replace: true });
         }
         setTransferTransferring(false);
@@ -587,7 +587,7 @@ export default function Settings() {
   const showToast = (message, type = 'success') => {
     const scrollY = scrollPositionRef.current || window.scrollY;
     scrollPositionRef.current = scrollY;
-    
+
     const restoreScroll = () => {
       requestAnimationFrame(() => {
         window.scrollTo(0, scrollY);
@@ -612,7 +612,7 @@ export default function Settings() {
         onClose: restoreScroll
       });
     }
-    
+
     // Restore scroll immediately and after delays
     restoreScroll();
     setTimeout(restoreScroll, 10);
@@ -919,7 +919,7 @@ export default function Settings() {
               <FaKey className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-wiggle`} />
               Change Password
             </button>
-            
+
             <button
               onClick={() => navigate((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/device-management' : '/user/device-management')}
               className={`w-full bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
@@ -1132,7 +1132,7 @@ export default function Settings() {
                 <p className="text-sm text-gray-500">View your audio and video call history with buyers and sellers</p>
               </>
             )}
-            
+
             {/* Show Admin Call History for admins only */}
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
               <>
@@ -1249,7 +1249,7 @@ export default function Settings() {
               <FaSignOutAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:-translate-x-1`} />
               Sign Out
             </button>
-            
+
             <button
               onClick={onHandleDelete}
               className={`bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
@@ -1278,12 +1278,12 @@ export default function Settings() {
                   <FaTimes className="w-5 h-5" />
                 </button>
               </div>
-              
+
               <div className="mb-4">
                 <p className="text-gray-600 mb-4">
                   As the default admin, you must select another approved admin to transfer your default admin rights before deleting your account.
                 </p>
-                
+
                 {loadingAdmins ? (
                   <div className="flex justify-center py-4">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
@@ -1313,7 +1313,7 @@ export default function Settings() {
                   </div>
                 )}
               </div>
-              
+
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => {
@@ -1405,12 +1405,12 @@ export default function Settings() {
                         type="text"
                         maxLength="6"
                         value={deleteOtp}
-                        onChange={e=> setDeleteOtp(e.target.value.replace(/[^0-9]/g,''))}
+                        onChange={e => setDeleteOtp(e.target.value.replace(/[^0-9]/g, ''))}
                         className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${deleteResending || deleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                         placeholder="6-digit OTP"
                         disabled={deleteResending || deleteDeleting}
                       />
-                      <button type="button" disabled={!deleteCanResend || deleteResendTimer>0 || deleteResending || deleteDeleting} onClick={async()=>{ if(deleteResendTimer>0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if(ok){ setDeleteCanResend(false); setDeleteResendTimer(30);} }} className="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start">{deleteResending ? 'Sending...' : (deleteResendTimer>0?`Resend in ${deleteResendTimer}s`:'Resend OTP')}</button>
+                      <button type="button" disabled={!deleteCanResend || deleteResendTimer > 0 || deleteResending || deleteDeleting} onClick={async () => { if (deleteResendTimer > 0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if (ok) { setDeleteCanResend(false); setDeleteResendTimer(30); } }} className="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start">{deleteResending ? 'Sending...' : (deleteResendTimer > 0 ? `Resend in ${deleteResendTimer}s` : 'Resend OTP')}</button>
                     </div>
                     {deleteOtpError && <div className="text-red-600 text-sm mt-1">{deleteOtpError}</div>}
                     <div className="text-green-600 text-sm mt-2 flex items-center">
@@ -1424,13 +1424,13 @@ export default function Settings() {
                 <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                   <button
                     type="button"
-                    onClick={() => { 
-                      setShowPasswordModal(false); 
-                      setDeletePassword(""); 
-                      setDeleteError(""); 
-                      setDeleteReasonOpen(false); 
-                      setDeleteReason(""); 
-                      setDeleteOtherReason(""); 
+                    onClick={() => {
+                      setShowPasswordModal(false);
+                      setDeletePassword("");
+                      setDeleteError("");
+                      setDeleteReasonOpen(false);
+                      setDeleteReason("");
+                      setDeleteOtherReason("");
                       setDeleteOtpSent(false);
                       setDeleteOtp("");
                       setDeleteOtpError("");
@@ -1476,8 +1476,8 @@ export default function Settings() {
                   <div className="mt-2">
                     <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
                     <div className="flex gap-2">
-                      <input ref={transferDeleteOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeleteResending || transferDeleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferDeleteResending || transferDeleteDeleting} />
-                      <button type="button" disabled={!transferCanResend || transferResendTimer>0 || transferDeleteResending || transferDeleteDeleting} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferDeleteResending ? 'Sending...' : (transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP')}</button>
+                      <input ref={transferDeleteOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e => setTransferOtp(e.target.value.replace(/[^0-9]/g, ''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeleteResending || transferDeleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferDeleteResending || transferDeleteDeleting} />
+                      <button type="button" disabled={!transferCanResend || transferResendTimer > 0 || transferDeleteResending || transferDeleteDeleting} onClick={async () => { if (transferResendTimer > 0) return; const ok = await resendTransferOtp(); if (ok) { setTransferCanResend(false); setTransferResendTimer(30); } }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferDeleteResending ? 'Sending...' : (transferResendTimer > 0 ? `Resend in ${transferResendTimer}s` : 'Resend OTP')}</button>
                     </div>
                     {transferOtpError && <div className="text-red-600 text-sm mt-1">{transferOtpError}</div>}
                     <div className="text-green-600 text-sm mt-2 flex items-center">
@@ -1491,10 +1491,10 @@ export default function Settings() {
                 <div className="flex justify-end space-x-3">
                   <button
                     type="button"
-                    onClick={() => { 
-                      setShowTransferPasswordModal(false); 
-                      setTransferDeletePassword(""); 
-                      setTransferDeleteError(""); 
+                    onClick={() => {
+                      setShowTransferPasswordModal(false);
+                      setTransferDeletePassword("");
+                      setTransferDeleteError("");
                       setTransferOtpSent(false);
                       setTransferOtp("");
                       setTransferOtpError("");
@@ -1590,8 +1590,8 @@ export default function Settings() {
                     <div className="mt-4">
                       <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
                       <div className="flex gap-2">
-                        <input ref={transferRightsOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e=> setTransferOtp(e.target.value.replace(/[^0-9]/g,''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${transferResending || transferTransferring ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferResending || transferTransferring} />
-                        <button type="button" disabled={!transferCanResend || transferResendTimer>0 || transferResending || transferTransferring} onClick={async()=>{ if(transferResendTimer>0) return; const ok = await resendTransferOtp(); if(ok){ setTransferCanResend(false); setTransferResendTimer(30);} }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResending ? 'Sending...' : (transferResendTimer>0?`Resend in ${transferResendTimer}s`:'Resend OTP')}</button>
+                        <input ref={transferRightsOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e => setTransferOtp(e.target.value.replace(/[^0-9]/g, ''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${transferResending || transferTransferring ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferResending || transferTransferring} />
+                        <button type="button" disabled={!transferCanResend || transferResendTimer > 0 || transferResending || transferTransferring} onClick={async () => { if (transferResendTimer > 0) return; const ok = await resendTransferOtp(); if (ok) { setTransferCanResend(false); setTransferResendTimer(30); } }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResending ? 'Sending...' : (transferResendTimer > 0 ? `Resend in ${transferResendTimer}s` : 'Resend OTP')}</button>
                       </div>
                       {transferError && <div className="text-red-600 text-sm mt-2">{transferError}</div>}
                       <div className="text-green-600 text-sm mt-2 flex items-center">
@@ -1675,9 +1675,8 @@ export default function Settings() {
                     type="button"
                     onClick={() => setShowExportSignoutModal(true)}
                     disabled={exportPasswordVerifying}
-                    className={`text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200 ${
-                      exportPasswordVerifying ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
-                    }`}
+                    className={`text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200 ${exportPasswordVerifying ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                      }`}
                   >
                     Forgot Password?
                   </button>

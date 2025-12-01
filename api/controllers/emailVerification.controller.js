@@ -13,7 +13,7 @@ const otpStore = new Map();
 export const sendOTP = async (req, res, next) => {
   const { email } = req.body;
   const { otpTracking, requiresCaptcha } = req;
-  
+
   if (!email) {
     return next(errorHandler(400, "Email is required"));
   }
@@ -81,9 +81,9 @@ export const sendOTP = async (req, res, next) => {
           const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
           if (new Date() < allowAfter) {
             const msLeft = allowAfter.getTime() - Date.now();
-            const days = Math.floor(msLeft / (24*60*60*1000));
-            const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
-            const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+            const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
             const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
             return res.status(403).json({
               success: false,
@@ -93,7 +93,7 @@ export const sendOTP = async (req, res, next) => {
         }
         // If purged but not ban: still keep as historical; allow signup (unless policy says ban)
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // Increment OTP request count
     if (otpTracking) {
@@ -119,7 +119,7 @@ export const sendOTP = async (req, res, next) => {
 
     // Generate OTP
     const otp = generateOTP();
-    
+
     // Store OTP with expiration (10 minutes)
     const expirationTime = Date.now() + 10 * 60 * 1000; // 10 minutes
     otpStore.set(emailLower, {
@@ -131,7 +131,7 @@ export const sendOTP = async (req, res, next) => {
 
     // Send OTP email for signup
     const emailResult = await sendSignupOTPEmail(emailLower, otp);
-    
+
     if (!emailResult.success) {
       return res.status(500).json({
         success: false,
@@ -169,7 +169,7 @@ export const sendOTP = async (req, res, next) => {
 export const sendForgotPasswordOTP = async (req, res, next) => {
   const { email } = req.body;
   const { otpTracking, requiresCaptcha } = req;
-  
+
   if (!email) {
     return next(errorHandler(400, "Email is required"));
   }
@@ -226,15 +226,15 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
             const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
             if (new Date() < allowAfter) {
               const msLeft = allowAfter.getTime() - Date.now();
-              const days = Math.floor(msLeft / (24*60*60*1000));
-              const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
-              const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+              const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+              const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+              const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
               const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
               return res.status(403).json({ success: false, message: `Your account is softbanned. Please try again after ${waitMsg}.` });
             }
           }
         }
-      } catch (_) {}
+      } catch (_) { }
       return res.status(404).json({ success: false, message: "No account found with that email address." });
     }
 
@@ -267,7 +267,7 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
 
     // Generate OTP
     const otp = generateOTP();
-    
+
     // Store OTP with expiration (10 minutes)
     const expirationTime = Date.now() + 10 * 60 * 1000; // 10 minutes
     otpStore.set(emailLower, {
@@ -280,7 +280,7 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
 
     // Send OTP email for forgot password
     const emailResult = await sendForgotPasswordOTPEmail(emailLower, otp);
-    
+
     if (!emailResult.success) {
       return res.status(500).json({
         success: false,
@@ -311,7 +311,7 @@ export const sendForgotPasswordOTP = async (req, res, next) => {
 export const sendProfileEmailOTP = async (req, res, next) => {
   const { email } = req.body;
   const { otpTracking, requiresCaptcha } = req;
-  
+
   if (!email) {
     return next(errorHandler(400, "Email is required"));
   }
@@ -366,22 +366,22 @@ export const sendProfileEmailOTP = async (req, res, next) => {
           const allowAfter = new Date(del.deletedAt.getTime() + policy.allowResignupAfterDays * 24 * 60 * 60 * 1000);
           if (new Date() < allowAfter) {
             const msLeft = allowAfter.getTime() - Date.now();
-            const days = Math.floor(msLeft / (24*60*60*1000));
-            const hours = Math.floor((msLeft % (24*60*60*1000)) / (60*60*1000));
-            const minutes = Math.floor((msLeft % (60*60*1000)) / (60*1000));
+            const days = Math.floor(msLeft / (24 * 60 * 60 * 1000));
+            const hours = Math.floor((msLeft % (24 * 60 * 60 * 1000)) / (60 * 60 * 1000));
+            const minutes = Math.floor((msLeft % (60 * 60 * 1000)) / (60 * 1000));
             const waitMsg = days > 0 ? `${days} day(s)` : (hours > 0 ? `${hours} hour(s)` : `${minutes} minute(s)`);
             return res.status(403).json({ success: false, message: `This email is under a softban. Try again after ${waitMsg}.` });
           }
         }
       }
-    } catch (_) {}
+    } catch (_) { }
 
     // Increment OTP request count
     await otpTracking.incrementOtpRequest();
 
     // Generate OTP
     const otp = generateOTP();
-    
+
     // Store OTP with expiration (5 minutes for better security)
     const expirationTime = Date.now() + 5 * 60 * 1000; // 5 minutes
     otpStore.set(emailLower, {
@@ -394,7 +394,7 @@ export const sendProfileEmailOTP = async (req, res, next) => {
 
     // Send OTP email for profile email verification
     const emailResult = await sendProfileEmailOTPEmail(emailLower, otp);
-    
+
     if (!emailResult.success) {
       return res.status(500).json({
         success: false,
@@ -425,7 +425,7 @@ export const sendProfileEmailOTP = async (req, res, next) => {
 export const verifyOTP = async (req, res, next) => {
   const { email, otp } = req.body;
   const { otpTracking } = req;
-  
+
   if (!email || !otp) {
     return next(errorHandler(400, "Email and OTP are required"));
   }
@@ -435,7 +435,7 @@ export const verifyOTP = async (req, res, next) => {
   try {
     // Get stored OTP data
     const storedData = otpStore.get(emailLower);
-    
+
     if (!storedData) {
       return res.status(400).json({
         success: false,
@@ -465,12 +465,12 @@ export const verifyOTP = async (req, res, next) => {
     if (storedData.otp !== otp) {
       storedData.attempts += 1;
       otpStore.set(emailLower, storedData);
-      
+
       // Increment failed attempts in tracking for profile email OTP
       if (storedData.type === 'profile_email' && otpTracking) {
         await otpTracking.incrementFailedAttempt();
       }
-      
+
       // Log failed OTP attempt
       logSecurityEvent('profile_otp_verification_failed', {
         email: emailLower,
@@ -478,7 +478,7 @@ export const verifyOTP = async (req, res, next) => {
         attempts: storedData.attempts,
         type: storedData.type
       });
-      
+
       return res.status(400).json({
         success: false,
         message: "Invalid OTP. Please try again.",
@@ -491,7 +491,7 @@ export const verifyOTP = async (req, res, next) => {
       // For forgot password, return success with user ID for password reset
       const { userId } = storedData;
       otpStore.delete(emailLower);
-      
+
       res.status(200).json({
         success: true,
         message: "Email verified successfully",
@@ -503,15 +503,15 @@ export const verifyOTP = async (req, res, next) => {
       if (otpTracking) {
         await otpTracking.resetTracking();
       }
-      
+
       // Log successful profile email verification
       logSecurityEvent('profile_otp_verification_successful', {
         email: emailLower,
         ip: req.ip
       });
-      
+
       otpStore.delete(emailLower);
-      
+
       res.status(200).json({
         success: true,
         message: "Email verified successfully",
@@ -521,25 +521,9 @@ export const verifyOTP = async (req, res, next) => {
       // For account deletion, return success with user ID
       const { userId } = storedData;
       otpStore.delete(emailLower);
-      
+
       // Log successful account deletion OTP verification
       logSecurityEvent('account_deletion_otp_verification_successful', {
-        email: emailLower,
-        userId: userId,
-        ip: req.ip
-      });
-      
-      res.status(200).json({
-        success: true,
-        message: "Email verified successfully",
-        userId: userId,
-        type: 'account_deletion'
-      });
-    } else {
-      // For signup, just return success
-      otpStore.delete(emailLower);
-      
-      res.status(200).json({
         success: true,
         message: "Email verified successfully"
       });
