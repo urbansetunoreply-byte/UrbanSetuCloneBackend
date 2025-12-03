@@ -3164,7 +3164,10 @@ function AdminAppointmentRow({
 
     const handleMonitorError = ({ message }) => {
       console.error('[Admin Monitor] Error:', message);
-      toast.error(message || 'Unable to start live monitor for this call.');
+      // Wrap in setTimeout to avoid potential race conditions with toast removal/updates
+      setTimeout(() => {
+        toast.error(message || 'Unable to start live monitor for this call.');
+      }, 0);
       cleanupMonitorPeers();
       setShowLiveMonitorModal(false);
     };
@@ -3211,7 +3214,9 @@ function AdminAppointmentRow({
 
     const handleForceEndError = ({ message }) => {
       setForceTerminateLoading(false);
-      toast.error(message || 'Failed to terminate live call.');
+      setTimeout(() => {
+        toast.error(message || 'Failed to terminate live call.');
+      }, 0);
     };
 
     socket.on('call-force-end-success', handleForceEndSuccess);
