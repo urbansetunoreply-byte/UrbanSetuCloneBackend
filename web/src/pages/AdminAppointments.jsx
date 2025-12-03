@@ -1871,6 +1871,8 @@ export default function AdminAppointments() {
                       setShowCancelModal={setShowCancelModal}
                       showReinitiateModal={showReinitiateModal}
                       setShowReinitiateModal={setShowReinitiateModal}
+                      reinitiatePaymentStatus={reinitiatePaymentStatus}
+                      setReinitiatePaymentStatus={setReinitiatePaymentStatus}
                       showArchiveModal={showArchiveModal}
                       setShowArchiveModal={setShowArchiveModal}
                       showUnarchiveModal={showUnarchiveModal}
@@ -1956,6 +1958,8 @@ export default function AdminAppointments() {
                       setShowCancelModal={setShowCancelModal}
                       showReinitiateModal={showReinitiateModal}
                       setShowReinitiateModal={setShowReinitiateModal}
+                      reinitiatePaymentStatus={reinitiatePaymentStatus}
+                      setReinitiatePaymentStatus={setReinitiatePaymentStatus}
                       showArchiveModal={showArchiveModal}
                       setShowArchiveModal={setShowArchiveModal}
                       showUnarchiveModal={showUnarchiveModal}
@@ -2663,6 +2667,8 @@ function AdminAppointmentRow({
   setShowCancelModal,
   showReinitiateModal,
   setShowReinitiateModal,
+  reinitiatePaymentStatus,
+  setReinitiatePaymentStatus,
   showArchiveModal,
   setShowArchiveModal,
   showUnarchiveModal,
