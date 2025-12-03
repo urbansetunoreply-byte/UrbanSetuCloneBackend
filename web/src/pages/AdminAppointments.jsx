@@ -3119,6 +3119,10 @@ function AdminAppointmentRow({
         });
 
         peer.on('error', (err) => {
+          // Ignore errors that happen during cleanup/destroy
+          if (err?.message && (err.message.includes('User-Initiated Abort') || err.message.includes('Close called'))) {
+            return;
+          }
           console.error('[Admin Monitor] Peer error for role', role, err);
         });
 
@@ -7078,11 +7082,10 @@ function AdminAppointmentRow({
 
                           if (latestActive && latestActive.callId) {
                             socket.emit('admin-monitor-join', { callId: latestActive.callId });
+                            setShowLiveMonitorModal(true);
                           } else {
                             toast.info('No active audio/video call found for this appointment.');
                           }
-
-                          setShowLiveMonitorModal(true);
                         }}
                         title={activeLiveCall ? 'Live audio/video monitor' : 'Not live - no active call'}
                         aria-label="Live audio/video monitor"
