@@ -1,7 +1,10 @@
 import React from 'react';
 import { FaTools, FaHome } from 'react-icons/fa';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const MaintenancePage = () => {
+    usePageTitle("Server Under Maintenance");
+
     return (
         <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-50 flex flex-col items-center justify-center p-4 text-center">
             <div className="max-w-2xl w-full bg-white rounded-2xl shadow-2xl p-8 md:p-12 transform transition-all hover:scale-[1.01] duration-300 border border-gray-100">
