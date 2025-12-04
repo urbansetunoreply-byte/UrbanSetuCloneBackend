@@ -247,7 +247,7 @@ function useSuspensionFetch() {
             }, 1800); // Delay navigation so toast is visible
             return response;
           }
-        } catch (e) {}
+        } catch (e) { }
       }
       return response;
     };
@@ -287,7 +287,7 @@ function AppRoutes({ bootstrapped }) {
   // Persistent session check on app load
   useEffect(() => {
     const checkSession = async () => {
-        dispatch(verifyAuthStart());
+      dispatch(verifyAuthStart());
       try {
         const res = await fetch(`${API_BASE_URL}/api/auth/verify`, {
           method: 'GET',
@@ -326,11 +326,11 @@ function AppRoutes({ bootstrapped }) {
             socket.emit('registerSession', { sessionId: sid });
           }
         }
-      } catch (_) {}
+      } catch (_) { }
     };
     registerRealtimeRooms();
     const regInterval = setInterval(registerRealtimeRooms, 15000);
-    
+
     const handleAccountSuspended = (data) => {
       // Check if the suspended account is the current user
       if (data.userId === currentUser._id) {
@@ -343,7 +343,7 @@ function AppRoutes({ bootstrapped }) {
     };
 
     socket.on('account_suspended', handleAccountSuspended);
-    
+
     // Global socket event listener for force signout
     const handleForceSignout = (data) => {
       if (data.userId === currentUser._id) {
@@ -354,9 +354,9 @@ function AppRoutes({ bootstrapped }) {
         }, 1800); // Delay navigation so toast is visible
       }
     };
-    
+
     socket.on('force_signout', handleForceSignout);
-    
+
     // Global socket event listeners for user and admin updates
     const handleUserUpdate = (data) => {
       if (data.userId === currentUser._id || data.user?._id === currentUser._id) {
@@ -377,7 +377,7 @@ function AppRoutes({ bootstrapped }) {
         }
       }
     };
-    
+
     const handleAdminUpdate = (data) => {
       if (data.adminId === currentUser._id || data.admin?._id === currentUser._id) {
         // Update current user data based on the update type
@@ -397,10 +397,10 @@ function AppRoutes({ bootstrapped }) {
         }
       }
     };
-    
+
     socket.on('user_update', handleUserUpdate);
     socket.on('admin_update', handleAdminUpdate);
-    
+
     return () => {
       clearInterval(regInterval);
       socket.off('account_suspended', handleAccountSuspended);
@@ -418,14 +418,14 @@ function AppRoutes({ bootstrapped }) {
     const handleChatOpen = (e) => {
       setCurrentlyOpenChat(e.detail.appointmentId);
     };
-    
+
     const handleChatClose = () => {
       setCurrentlyOpenChat(null);
     };
-    
+
     window.addEventListener('chatOpened', handleChatOpen);
     window.addEventListener('chatClosed', handleChatClose);
-    
+
     return () => {
       window.removeEventListener('chatOpened', handleChatOpen);
       window.removeEventListener('chatClosed', handleChatClose);
@@ -435,61 +435,61 @@ function AppRoutes({ bootstrapped }) {
   // Socket event listener for new message notifications
   useEffect(() => {
     if (!currentUser) return; // Only run if user is logged in
-    
+
     // Don't show toast notifications for admin users
     if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
       return;
     }
-    
+
     const handleNewMessage = async (data) => {
       // Since backend now only sends to intended recipients, we can trust this message is for us
       // Just check if it's not from the current user
       if (data.comment && data.comment.senderEmail !== currentUser.email) {
-        
+
 
         // Check if we're on the MyAppointments page
         const currentPath = window.location.pathname;
         const isOnMyAppointments = currentPath.includes('/my-appointments') || currentPath.includes('/user/my-appointments');
-        
+
         // Check if the user is currently viewing this specific chat
         const isCurrentlyViewingThisChat = currentlyOpenChat === data.appointmentId;
-        
+
         // Don't show notification if user is already viewing this chat
         if (isCurrentlyViewingThisChat) {
           return;
         }
-        
+
         // IMPORTANT: Check if this is a reaction update, not a new message
         // We need to distinguish between new messages and updates to existing messages
-        
+
         // The key insight: reaction updates are updates to existing messages, not new messages
         // Even though they contain the original message content, they're triggered by reactions
-        
+
         // Check if this is likely a reaction update by looking for key indicators:
         // 1. If there's no message content, it's not a new message
         // 2. If there's a messageId field, it might be an update to an existing message
         // 3. If there are reactions, it's likely a reaction update
         // 4. If the comment has an _id that suggests it's an existing message update
-        
+
         // Don't show notification if:
         // - No message content (reactions, status updates, etc.)
         // - This appears to be an update to an existing message rather than a new message
         // - The comment object structure suggests it's an update, not a new message
-        
+
         // CRITICAL: Only skip if this is clearly a reaction update
         const hasReactions = Array.isArray(data.comment.reactions) && data.comment.reactions.length > 0;
         const isUpdateToExisting = Boolean(data.messageId); // server uses messageId for updates
         if (hasReactions || isUpdateToExisting) {
           return;
         }
-        
+
         // Use same logic as MyAppointments page to check if sender is admin
         let senderName = data.comment.senderEmail || 'User';
-        
+
         // Check if sender is admin by comparing with buyer and seller emails from the appointment data
         // This is the same logic used in MyAppointments.jsx
         const isSenderAdmin = data.comment.senderEmail !== data.buyerEmail && data.comment.senderEmail !== data.sellerEmail;
-        
+
         if (isSenderAdmin) {
           senderName = "UrbanSetu";
         } else {
@@ -498,7 +498,7 @@ function AppRoutes({ bootstrapped }) {
             const res = await fetch(`${API_BASE_URL}/api/user/check-email/${encodeURIComponent(data.comment.senderEmail)}`, {
               credentials: 'include'
             });
-            
+
             if (res.ok) {
               const userData = await res.json();
               senderName = userData.username || data.comment.senderEmail;
@@ -508,10 +508,10 @@ function AppRoutes({ bootstrapped }) {
             senderName = data.comment.senderEmail;
           }
         }
-        
+
         // Show notification for new message
-        try { playNotification(); } catch (_) {}
-        
+        try { playNotification(); } catch (_) { }
+
         toast.info(`New message from ${senderName}`, {
           onClick: () => {
             navigate(`/user/my-appointments/chat/${data.appointmentId}`, { replace: false });
@@ -524,11 +524,11 @@ function AppRoutes({ bootstrapped }) {
     };
 
     socket.on('commentUpdate', handleNewMessage);
-    
+
     // Handle new notifications with sound and toast
     const handleNewNotification = (notification) => {
       if (!currentUser || notification.userId !== currentUser._id) return;
-      
+
       // Play notification sound
       try {
         const audio = new Audio('/sounds/notification.mp3');
@@ -539,7 +539,7 @@ function AppRoutes({ bootstrapped }) {
       } catch (err) {
         console.log('Could not play notification sound:', err);
       }
-      
+
       // Show toast notification
       toast.info(notification.message || notification.title || 'New notification', {
         autoClose: 5000,
@@ -547,10 +547,10 @@ function AppRoutes({ bootstrapped }) {
         pauseOnHover: false,
       });
     };
-    
+
     socket.on('notificationCreated', handleNewNotification);
     socket.on('watchlistNotification', handleNewNotification);
-    
+
     return () => {
       socket.off('commentUpdate', handleNewMessage);
       socket.off('notificationCreated', handleNewNotification);
@@ -576,7 +576,7 @@ function AppRoutes({ bootstrapped }) {
               toast.error(data.message || "Your account has been suspended. You have been signed out.");
               navigate("/sign-in");
             }
-          } catch (e) {}
+          } catch (e) { }
         }
       } catch (e) {
         // Network errors or other issues - ignore silently
@@ -602,137 +602,137 @@ function AppRoutes({ bootstrapped }) {
 
       <Suspense fallback={<LoadingSpinner />}>
         <NormalizeRoute>
-        <Routes>
-          {/* Public Routes */}
-          <Route path="/" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/home" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/about" element={currentUser ? <Navigate to="/user/about" /> : <PublicAbout bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/blogs" element={currentUser ? <Navigate to="/user/blogs" /> : <PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/blog/:slug" element={currentUser ? <BlogRedirect /> : <PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/faqs" element={currentUser ? <Navigate to="/user/faqs" /> : <PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/search" element={currentUser ? <Navigate to="/user/search" /> : <PublicSearch bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/listing/:listingId" element={currentUser ? <NotFound /> : <Listing />} />
-          <Route path="/sign-in" element={<SignIn bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/sign-up" element={<SignUp bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/forgot-password" element={<ForgotPassword bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/oauth" element={<Oauth bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/terms" element={currentUser ? <NotFound /> : <Terms bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/privacy" element={currentUser ? <NotFound /> : <Privacy bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-          <Route path="/cookie-policy" element={currentUser ? <NotFound /> : <CookiePolicy />} />
-          <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
-          <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
-          <Route path="/restore-account/:token" element={<AccountRevocation />} />
-          <Route path="/restore-property" element={<RestoreProperty />} />
-          <Route path="/offers" element={<Offers />} />
+          <Routes>
+            {/* Public Routes */}
+            <Route path="/" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/home" element={currentUser ? <NotFound /> : <PublicHome bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/about" element={currentUser ? <Navigate to="/user/about" /> : <PublicAbout bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/blogs" element={currentUser ? <Navigate to="/user/blogs" /> : <PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/blog/:slug" element={currentUser ? <BlogRedirect /> : <PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/faqs" element={currentUser ? <Navigate to="/user/faqs" /> : <PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/search" element={currentUser ? <Navigate to="/user/search" /> : <PublicSearch bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/listing/:listingId" element={currentUser ? <NotFound /> : <Listing />} />
+            <Route path="/sign-in" element={<SignIn bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/sign-up" element={<SignUp bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/forgot-password" element={<ForgotPassword bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/oauth" element={<Oauth bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/terms" element={currentUser ? <NotFound /> : <Terms bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/privacy" element={currentUser ? <NotFound /> : <Privacy bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+            <Route path="/cookie-policy" element={currentUser ? <NotFound /> : <CookiePolicy />} />
+            <Route path="/contact" element={currentUser ? <Navigate to="/user/contact" /> : <Contact />} />
+            <Route path="/ai" element={currentUser ? <Navigate to="/user/ai" /> : <PublicAI />} />
+            <Route path="/restore-account/:token" element={<AccountRevocation />} />
+            <Route path="/restore-property" element={<RestoreProperty />} />
+            <Route path="/offers" element={<Offers />} />
 
-          {/* User Routes (Protected) */}
-          <Route element={<Private bootstrapped={bootstrapped} />}>
-            <Route path="/user" element={<Home />} />
-            <Route path="/user/home" element={<Home />} />
-            <Route path="/user/about" element={<About />} />
-            <Route path="/user/blogs" element={<PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-            <Route path="/user/blog/:slug" element={<PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-            <Route path="/user/faqs" element={<PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
-            <Route path="/user/search" element={<Search />} />
-            <Route path="/user/profile" element={<Profile />} />
-            <Route path="/user/create-listing" element={<CreateListing />} />
-            <Route path='/user/update-listing/:listingId' element={<EditListing />} />
-            <Route path="/user/listing/:listingId" element={<Listing key={location.pathname} />} />
-            <Route path="/user/rent-property" element={<RentProperty />} />
-            <Route path="/user/rent-wallet" element={<RentWallet />} />
-            <Route path="/user/rental-contracts" element={<RentalContracts />} />
-            <Route path="/user/pay-monthly-rent" element={<PayMonthlyRent />} />
-            <Route path="/user/disputes" element={<DisputeResolution />} />
-            <Route path="/user/property-verification" element={<PropertyVerification />} />
-            <Route path="/user/rental-ratings" element={<RentalRatings />} />
-            <Route path="/user/rental-loans" element={<RentalLoans />} />
-            <Route path="/user/wishlist" element={<WishList />} />
-            <Route path="/user/watchlist" element={<Watchlist />} />
-            <Route path="/user/appointment" element={<Appointment />} />
-            <Route path="/user/my-appointments" element={<MyAppointments />} />
-            <Route path="/user/my-appointments/chat/:chatId" element={<MyAppointments />} />
-            <Route path="/user/call-history" element={<CallHistory />} />
-            <Route path="/user/my-payments" element={<MyPayments />} />
-            <Route path="/user/my-listings" element={<MyListings />} />
-            <Route path="/user/services" element={<OnDemandServices />} />
-            <Route path="/user/route-planner" element={<RoutePlanner />} />
-            <Route path="/user/change-password" element={<UserChangePassword />} />
-            <Route path="/user/terms" element={<UserTerms />} />
-            <Route path="/user/privacy" element={<UserPrivacy />} />
-            <Route path="/user/cookie-policy" element={<UserCookiePolicy />} />
-            <Route path="/user/reviews" element={<UserReviews />} />
-            <Route path="/user/device-management" element={<DeviceManagement />} />
-            <Route path="/user/contact" element={<UserContact />} />
-            <Route path="/user/ai" element={<UserAI />} />
-            <Route path="/user/investment-tools" element={<InvestmentTools />} />
-            <Route path="/user/settings" element={<Settings />} />
-            <Route path="/contact" element={<Navigate to="/user/contact" />} />
-            <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
-            <Route path="/ai" element={<Navigate to="/user/ai" />} />
-          </Route>
+            {/* User Routes (Protected) */}
+            <Route element={<Private bootstrapped={bootstrapped} />}>
+              <Route path="/user" element={<Home />} />
+              <Route path="/user/home" element={<Home />} />
+              <Route path="/user/about" element={<About />} />
+              <Route path="/user/blogs" element={<PublicBlogs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+              <Route path="/user/blog/:slug" element={<PublicBlogDetail bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+              <Route path="/user/faqs" element={<PublicFAQs bootstrapped={bootstrapped} sessionChecked={sessionChecked} />} />
+              <Route path="/user/search" element={<Search />} />
+              <Route path="/user/profile" element={<Profile />} />
+              <Route path="/user/create-listing" element={<CreateListing />} />
+              <Route path='/user/update-listing/:listingId' element={<EditListing />} />
+              <Route path="/user/listing/:listingId" element={<Listing key={location.pathname} />} />
+              <Route path="/user/rent-property" element={<RentProperty />} />
+              <Route path="/user/rent-wallet" element={<RentWallet />} />
+              <Route path="/user/rental-contracts" element={<RentalContracts />} />
+              <Route path="/user/pay-monthly-rent" element={<PayMonthlyRent />} />
+              <Route path="/user/disputes" element={<DisputeResolution />} />
+              <Route path="/user/property-verification" element={<PropertyVerification />} />
+              <Route path="/user/rental-ratings" element={<RentalRatings />} />
+              <Route path="/user/rental-loans" element={<RentalLoans />} />
+              <Route path="/user/wishlist" element={<WishList />} />
+              <Route path="/user/watchlist" element={<Watchlist />} />
+              <Route path="/user/appointment" element={<Appointment />} />
+              <Route path="/user/my-appointments" element={<MyAppointments />} />
+              <Route path="/user/my-appointments/chat/:chatId" element={<MyAppointments />} />
+              <Route path="/user/call-history" element={<CallHistory />} />
+              <Route path="/user/my-payments" element={<MyPayments />} />
+              <Route path="/user/my-listings" element={<MyListings />} />
+              <Route path="/user/services" element={<OnDemandServices />} />
+              <Route path="/user/route-planner" element={<RoutePlanner />} />
+              <Route path="/user/change-password" element={<UserChangePassword />} />
+              <Route path="/user/terms" element={<UserTerms />} />
+              <Route path="/user/privacy" element={<UserPrivacy />} />
+              <Route path="/user/cookie-policy" element={<UserCookiePolicy />} />
+              <Route path="/user/reviews" element={<UserReviews />} />
+              <Route path="/user/device-management" element={<DeviceManagement />} />
+              <Route path="/user/contact" element={<UserContact />} />
+              <Route path="/user/ai" element={<UserAI />} />
+              <Route path="/user/investment-tools" element={<InvestmentTools />} />
+              <Route path="/user/settings" element={<Settings />} />
+              <Route path="/contact" element={<Navigate to="/user/contact" />} />
+              <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
+              <Route path="/ai" element={<Navigate to="/user/ai" />} />
+            </Route>
 
-          {/* Admin Routes */}
-          <Route element={<AdminRoute bootstrapped={bootstrapped} />}>
-            <Route path="/admin" element={<AdminDashboard />} />
-            <Route path="/admin/appointments" element={<AdminAppointments />} />
-            <Route path="/admin/appointments/chat/:chatId" element={<AdminAppointments />} />
-            <Route path="/admin/call-history" element={<AdminCallHistory />} />
-            <Route path="/admin/about" element={<AdminAbout />} />
-            <Route path="/admin/blogs" element={<AdminBlogs />} />
-            <Route path="/admin/blog/:slug" element={<AdminBlogDetail />} />
-            <Route path="/admin/faqs" element={<AdminFAQs />} />
-            <Route path="/admin/explore" element={<AdminExplore />} />
-            <Route path="/admin/create-listing" element={<AdminCreateListing />} />
-            <Route path="/admin/listings" element={<AdminListings />} />
-            <Route path="/admin/my-listings" element={<AdminMyListings />} />
-            <Route path="/admin/update-listing/:listingId" element={<AdminEditListing />} />
-            {/* Admin wishlist removed */}
-            <Route path="/admin/profile" element={<AdminProfile />} />
-            <Route path="/admin/deployment-management" element={<AdminDeploymentManagement />} />
-            <Route path="/admin/change-password" element={<AdminChangePassword />} />
-            <Route path="/admin/requests" element={<AdminRequests />} />
-            <Route path="/admin/listing/:listingId" element={<Listing key={location.pathname} />} />
-            <Route path="/admin/appointmentlisting" element={<AdminAppointmentListing />} />
-            <Route path="/admin/terms" element={<AdminTerms />} />
-            <Route path="/admin/privacy" element={<AdminPrivacy />} />
-            <Route path="/admin/cookie-policy" element={<AdminCookiePolicy />} />
-            <Route path="/admin/management" element={<AdminManagement />} />
-            <Route path="/admin/reviews" element={<AdminReviews />} />
-            <Route path="/admin/services" element={<AdminServices />} />
-            <Route path="/admin/route-planner" element={<RoutePlannerAdmin />} />
-            <Route path="/admin/fraudmanagement" element={<AdminFraudManagement />} />
-            <Route path="/admin/payments" element={<PaymentDashboard />} />
-            <Route path="/admin/security-moderation" element={<AdminSecurityModeration />} />
-            <Route path="/admin/device-management" element={<DeviceManagement />} />
-            <Route path="/admin/session-management" element={<SessionManagement />} />
-            <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
-            <Route path="/admin/support" element={<AdminSupport />} />
-            <Route path="/admin/ai" element={<AdminAI />} />
-            <Route path="/admin/investment-tools" element={<InvestmentTools />} />
-            <Route path="/admin/property-verification" element={<AdminPropertyVerification />} />
-            <Route path="/admin/rental-ratings" element={<AdminRentalRatings />} />
-            <Route path="/admin/rental-contracts" element={<AdminRentalContracts />} />
-            <Route path="/admin/rental-loans" element={<AdminRentalLoans />} />
-            <Route path="/admin/disputes" element={<AdminDisputeResolution />} />
-            <Route path="/admin/settings" element={<Settings />} />
-            <Route path="/contact" element={<Navigate to="/admin/support" />} />
-            <Route path="/support" element={<Navigate to="/admin/support" />} />
-            <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
-            <Route path="/user/support" element={<Navigate to="/admin/support" />} />
-            <Route path="/ai" element={<Navigate to="/admin/ai" />} />
-            <Route path="/user/ai" element={<Navigate to="/admin/ai" />} />
-          </Route>
+            {/* Admin Routes */}
+            <Route element={<AdminRoute bootstrapped={bootstrapped} />}>
+              <Route path="/admin" element={<AdminDashboard />} />
+              <Route path="/admin/appointments" element={<AdminAppointments />} />
+              <Route path="/admin/appointments/chat/:chatId" element={<AdminAppointments />} />
+              <Route path="/admin/call-history" element={<AdminCallHistory />} />
+              <Route path="/admin/about" element={<AdminAbout />} />
+              <Route path="/admin/blogs" element={<AdminBlogs />} />
+              <Route path="/admin/blog/:slug" element={<AdminBlogDetail />} />
+              <Route path="/admin/faqs" element={<AdminFAQs />} />
+              <Route path="/admin/explore" element={<AdminExplore />} />
+              <Route path="/admin/create-listing" element={<AdminCreateListing />} />
+              <Route path="/admin/listings" element={<AdminListings />} />
+              <Route path="/admin/my-listings" element={<AdminMyListings />} />
+              <Route path="/admin/update-listing/:listingId" element={<AdminEditListing />} />
+              {/* Admin wishlist removed */}
+              <Route path="/admin/profile" element={<AdminProfile />} />
+              <Route path="/admin/deployment-management" element={<AdminDeploymentManagement />} />
+              <Route path="/admin/change-password" element={<AdminChangePassword />} />
+              <Route path="/admin/requests" element={<AdminRequests />} />
+              <Route path="/admin/listing/:listingId" element={<Listing key={location.pathname} />} />
+              <Route path="/admin/appointmentlisting" element={<AdminAppointmentListing />} />
+              <Route path="/admin/terms" element={<AdminTerms />} />
+              <Route path="/admin/privacy" element={<AdminPrivacy />} />
+              <Route path="/admin/cookie-policy" element={<AdminCookiePolicy />} />
+              <Route path="/admin/management" element={<AdminManagement />} />
+              <Route path="/admin/reviews" element={<AdminReviews />} />
+              <Route path="/admin/services" element={<AdminServices />} />
+              <Route path="/admin/route-planner" element={<RoutePlannerAdmin />} />
+              <Route path="/admin/fraudmanagement" element={<AdminFraudManagement />} />
+              <Route path="/admin/payments" element={<PaymentDashboard />} />
+              <Route path="/admin/security-moderation" element={<AdminSecurityModeration />} />
+              <Route path="/admin/device-management" element={<DeviceManagement />} />
+              <Route path="/admin/session-management" element={<SessionManagement />} />
+              <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
+              <Route path="/admin/support" element={<AdminSupport />} />
+              <Route path="/admin/ai" element={<AdminAI />} />
+              <Route path="/admin/investment-tools" element={<InvestmentTools />} />
+              <Route path="/admin/property-verification" element={<AdminPropertyVerification />} />
+              <Route path="/admin/rental-ratings" element={<AdminRentalRatings />} />
+              <Route path="/admin/rental-contracts" element={<AdminRentalContracts />} />
+              <Route path="/admin/rental-loans" element={<AdminRentalLoans />} />
+              <Route path="/admin/disputes" element={<AdminDisputeResolution />} />
+              <Route path="/admin/settings" element={<Settings />} />
+              <Route path="/contact" element={<Navigate to="/admin/support" />} />
+              <Route path="/support" element={<Navigate to="/admin/support" />} />
+              <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
+              <Route path="/user/support" element={<Navigate to="/admin/support" />} />
+              <Route path="/ai" element={<Navigate to="/admin/ai" />} />
+              <Route path="/user/ai" element={<Navigate to="/admin/ai" />} />
+            </Route>
 
-          <Route path="*" element={<NotFound />} />
-        </Routes>
+            <Route path="*" element={<NotFound />} />
+          </Routes>
         </NormalizeRoute>
       </Suspense>
       <Footer />
-      <ToastContainer 
-        position="top-center" 
-        autoClose={2000} 
+      <ToastContainer
+        position="top-center"
+        autoClose={2000}
         hideProgressBar={false}
-        newestOnTop 
+        newestOnTop
         closeOnClick={true}
         pauseOnFocusLoss={false}
         draggable={false}
@@ -747,9 +747,15 @@ function AppRoutes({ bootstrapped }) {
   );
 }
 
+import MaintenancePage from "./pages/MaintenancePage";
+
 export default function App() {
   const dispatch = useDispatch();
   const [bootstrapped, setBootstrapped] = useState(false);
+
+  // MAINTENANCE MODE TOGGLE
+  // Set this to true to halt all services and show the maintenance page
+  const MAINTENANCE_MODE = true;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -769,6 +775,10 @@ export default function App() {
 
     checkAuth();
   }, [dispatch]);
+
+  if (MAINTENANCE_MODE) {
+    return <MaintenancePage />;
+  }
 
   return (
     <WishlistProvider>
