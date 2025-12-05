@@ -4,17 +4,17 @@ import MessageRating from '../models/messageRating.model.js';
 import { getRelevantWebsiteData } from '../services/websiteDataService.js';
 import { getRelevantCachedData, needsReindexing, indexAllWebsiteData } from '../services/dataSyncService.js';
 
-const STACK_AI_API_KEY = process.env.STACK_AI_API_KEY;
-const STACK_AI_API_URL = process.env.STACK_AI_API_URL || 'https://api.stack-ai.com/v1/chat/completions';
+const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
+const OPENAI_API_URL = process.env.OPENAI_API_URL || 'https://api.openai.com/v1/chat/completions';
 
 export const chatWithGemini = async (req, res) => {
     try {
-        const { 
-            message, 
-            history = [], 
-            sessionId, 
-            tone = 'neutral', 
-            responseLength = 'medium', 
+        const {
+            message,
+            history = [],
+            sessionId,
+            tone = 'neutral',
+            responseLength = 'medium',
             creativity = 'balanced',
             temperature = '0.7',
             topP = '0.8',
@@ -24,24 +24,24 @@ export const chatWithGemini = async (req, res) => {
             enableContextMemory = true,
             contextWindow = '10',
             enableSystemPrompts = true,
-            audioUrl, 
-            imageUrl, 
-            videoUrl, 
-            documentUrl 
+            audioUrl,
+            imageUrl,
+            videoUrl,
+            documentUrl
         } = req.body;
         const userId = req.user?.id;
 
         if (!message) {
-            return res.status(400).json({ 
-                success: false, 
-                message: 'Message is required' 
+            return res.status(400).json({
+                success: false,
+                message: 'Message is required'
             });
         }
 
         // Security: Rate limiting check
         const userAgent = req.get('User-Agent') || '';
         const ip = req.ip || req.connection.remoteAddress;
-        
+
         // Basic input sanitization
         const sanitizedMessage = message.trim().substring(0, 2000); // Limit message length
         if (sanitizedMessage !== message.trim()) {
@@ -89,17 +89,17 @@ export const chatWithGemini = async (req, res) => {
             - Property improvement tips
 
             Always provide accurate, helpful, and professional responses. When uncertain, recommend consulting with licensed real estate professionals, attorneys, or financial advisors. Include relevant examples and actionable advice when possible.`;
-            
+
             const toneInstructions = {
                 'friendly': 'Respond in a warm, approachable, and encouraging tone. Use casual language while maintaining professionalism. Be supportive and encouraging, especially for first-time buyers.',
                 'formal': 'Respond in a formal, business-like tone. Use professional language and structure your responses clearly with bullet points and sections. Focus on facts and data.',
                 'concise': 'Keep responses brief and to the point. Focus on essential information without unnecessary elaboration. Use bullet points and short paragraphs.',
                 'neutral': 'Maintain a balanced, professional tone that is neither too casual nor too formal. Provide comprehensive information in a clear, organized manner.'
             };
-            
+
             // Get selected properties from request body
             const selectedProperties = req.body.selectedProperties || [];
-            
+
             // Check if data needs re-indexing and do it if necessary
             if (needsReindexing()) {
                 console.log('🔄 Data needs re-indexing, updating cache...');
@@ -110,10 +110,10 @@ export const chatWithGemini = async (req, res) => {
                     console.error('❌ Error updating data cache:', error);
                 }
             }
-            
+
             // Get relevant website data from cache (faster)
             const websiteData = getRelevantCachedData(userMessage, selectedProperties);
-            
+
             return `${basePrompt}
 
 CURRENT WEBSITE DATA (UrbanSetu):
@@ -138,13 +138,15 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
 
         const conversationContext = filteredHistory.map(msg => `${msg.role}: ${msg.content}`).join('\n');
         const systemPrompt = await getSystemPrompt(tone, sanitizedMessage);
+        // OpenAI handles system prompts separately, so we don't need to append it to the user message manually like before
+        // but keeping the fullPrompt variable for logging/debugging if needed
         const fullPrompt = `${systemPrompt}\n\nPrevious conversation:\n${conversationContext}\n\nCurrent user message: ${sanitizedMessage}`;
 
-        console.log('Calling Stack AI API, tone:', tone, 'responseLength:', responseLength, 'creativity:', creativity);
-        
+        console.log('Calling OpenAI API, tone:', tone, 'responseLength:', responseLength, 'creativity:', creativity);
+
         // Dynamic model selection based on complexity
         const messageComplexity = sanitizedMessage.length > 500 ? 'complex' : 'simple';
-        
+
         // Helper functions for AI settings
         const getMaxTokens = (responseLength, complexity) => {
             const baseTokens = complexity === 'complex' ? 4096 : 2048;
@@ -160,7 +162,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             if (customTemp && !isNaN(parseFloat(customTemp))) {
                 return Math.max(0.1, Math.min(1.0, parseFloat(customTemp)));
             }
-            
+
             const baseTemp = tone === 'concise' ? 0.3 : (tone === 'formal' ? 0.5 : 0.7);
             switch (creativity) {
                 case 'conservative': return Math.max(baseTemp - 0.2, 0.1);
@@ -177,6 +179,8 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         };
 
         const getTopK = (customTopK) => {
+            // OpenAI doesn't typically expose top_k in the chat completions API, but we'll keep the logic
+            // in case we want to use it for other purposes or if it becomes supported.
             if (customTopK && !isNaN(parseInt(customTopK))) {
                 return Math.max(1, Math.min(100, parseInt(customTopK)));
             }
@@ -189,24 +193,24 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             }
             return getMaxTokens(responseLength, complexity);
         };
-        
-        // Check if Stack AI API key is configured
-        if (!STACK_AI_API_KEY) {
+
+        // Check if OpenAI API key is configured
+        if (!OPENAI_API_KEY) {
             return res.status(500).json({
                 success: false,
-                message: 'Stack AI API key is not configured. Please set STACK_AI_API_KEY in environment variables.'
+                message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in environment variables.'
             });
         }
 
-        // Build messages array for Stack AI (OpenAI-compatible format)
+        // Build messages array for OpenAI
         const messages = [];
-        
+
         // Add system prompt as first message
         messages.push({
             role: 'system',
             content: systemPrompt
         });
-        
+
         // Add conversation history
         filteredHistory.forEach(msg => {
             messages.push({
@@ -214,27 +218,27 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                 content: msg.content
             });
         });
-        
+
         // Add current user message
         messages.push({
             role: 'user',
             content: sanitizedMessage
         });
-        
-        // Build request payload for Stack AI
+
+        // Build request payload for OpenAI
         const requestPayload = {
-            model: process.env.STACK_AI_MODEL || 'gpt-4o-mini',
+            model: process.env.OPENAI_MODEL || 'gpt-4o',
             messages: messages,
             max_tokens: getMaxTokensFromSettings(responseLength, messageComplexity, maxTokens),
             temperature: getTemperature(creativity, tone, temperature),
             top_p: getTopP(topP),
             stream: enableStreaming === true || enableStreaming === 'true'
         };
-        
+
         // Handle streaming vs non-streaming responses
         if (enableStreaming === true || enableStreaming === 'true') {
             console.log('Streaming enabled - setting up streaming response');
-            
+
             // Set up streaming response
             const origin = req.headers.origin || 'https://urbansetu.vercel.app';
             res.writeHead(200, {
@@ -248,44 +252,44 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             });
 
             try {
-                // Call Stack AI API with streaming
-                const streamResponse = await axios.post(STACK_AI_API_URL, requestPayload, {
+                // Call OpenAI API with streaming
+                const streamResponse = await axios.post(OPENAI_API_URL, requestPayload, {
                     headers: {
-                        'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                        'Authorization': `Bearer ${OPENAI_API_KEY}`,
                         'Content-Type': 'application/json'
                     },
                     responseType: 'stream'
                 });
-                
+
                 let fullResponse = '';
                 let buffer = '';
-                
+
                 streamResponse.data.on('data', (chunk) => {
                     buffer += chunk.toString();
                     const lines = buffer.split('\n');
                     buffer = lines.pop() || '';
-                    
+
                     for (const line of lines) {
                         if (line.startsWith('data: ')) {
                             const data = line.slice(6);
                             if (data === '[DONE]') {
-                                res.write(`data: ${JSON.stringify({ 
-                                    type: 'done', 
+                                res.write(`data: ${JSON.stringify({
+                                    type: 'done',
                                     content: fullResponse,
-                                    done: true 
+                                    done: true
                                 })}\n\n`);
                                 return;
                             }
-                            
+
                             try {
                                 const parsed = JSON.parse(data);
                                 const content = parsed.choices?.[0]?.delta?.content || '';
                                 if (content) {
                                     fullResponse += content;
-                                    res.write(`data: ${JSON.stringify({ 
-                                        type: 'chunk', 
+                                    res.write(`data: ${JSON.stringify({
+                                        type: 'chunk',
                                         content: content,
-                                        done: false 
+                                        done: false
                                     })}\n\n`);
                                 }
                             } catch (e) {
@@ -294,7 +298,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                         }
                     }
                 });
-                
+
                 streamResponse.data.on('end', () => {
                     // Handle any remaining buffer
                     if (buffer.trim()) {
@@ -310,10 +314,10 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                                     const content = parsed.choices?.[0]?.delta?.content || '';
                                     if (content) {
                                         fullResponse += content;
-                                        res.write(`data: ${JSON.stringify({ 
-                                            type: 'chunk', 
+                                        res.write(`data: ${JSON.stringify({
+                                            type: 'chunk',
                                             content: content,
-                                            done: false 
+                                            done: false
                                         })}\n\n`);
                                     }
                                 } catch (e) {
@@ -322,14 +326,14 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                             }
                         }
                     }
-                    
+
                     // Send completion signal
-                    res.write(`data: ${JSON.stringify({ 
-                        type: 'done', 
+                    res.write(`data: ${JSON.stringify({
+                        type: 'done',
                         content: fullResponse,
-                        done: true 
+                        done: true
                     })}\n\n`);
-                    
+
                     // Save chat history with full response
                     if (userId) {
                         (async () => {
@@ -339,22 +343,22 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                                 await chatHistory.addMessage('assistant', fullResponse);
                                 await chatHistory.save();
                                 const updatedChatHistory = await ChatHistory.findById(chatHistory._id);
-                                
+
                                 console.log('Chat history check - Name:', updatedChatHistory.name, 'Message count:', updatedChatHistory.messages?.length);
-                                
+
                                 const isFallbackTitle = updatedChatHistory.name && (
-                                    updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) || 
+                                    updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) ||
                                     updatedChatHistory.name.match(/^New chat \d+$/)
                                 );
-                                
+
                                 if ((!updatedChatHistory.name || isFallbackTitle) && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
                                     try {
                                         console.log('Generating auto-title for session:', currentSessionId);
                                         const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
                                         const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
-                                        
-                                        const titleResponse = await axios.post(STACK_AI_API_URL, {
-                                            model: process.env.STACK_AI_MODEL || 'gpt-4o-mini',
+
+                                        const titleResponse = await axios.post(OPENAI_API_URL, {
+                                            model: process.env.OPENAI_MODEL || 'gpt-4o',
                                             messages: [
                                                 { role: 'system', content: 'You are a helpful assistant that creates short, descriptive titles.' },
                                                 { role: 'user', content: titlePrompt }
@@ -363,14 +367,14 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                                             temperature: 0.7
                                         }, {
                                             headers: {
-                                                'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                                                'Authorization': `Bearer ${OPENAI_API_KEY}`,
                                                 'Content-Type': 'application/json'
                                             }
                                         });
-                                        
+
                                         const titleRaw = titleResponse.data.choices?.[0]?.message?.content || '';
                                         const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
-                                        
+
                                         if (title && title.length > 0) {
                                             updatedChatHistory.name = title;
                                             await updatedChatHistory.save();
@@ -400,51 +404,51 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                                         }
                                     }
                                 }
-                                
+
                                 console.log('Chat history saved successfully');
                             } catch (historyError) {
                                 console.error('Error saving chat history:', historyError);
                             }
                         })();
                     }
-                    
+
                     res.end();
                 });
-                
+
                 streamResponse.data.on('error', (error) => {
                     console.error('Stream error:', error);
-                    res.write(`data: ${JSON.stringify({ 
-                        type: 'error', 
+                    res.write(`data: ${JSON.stringify({
+                        type: 'error',
                         content: 'Stream error occurred',
-                        done: true 
+                        done: true
                     })}\n\n`);
                     res.end();
                 });
-                
+
                 // Note: Chat history saving is now handled in the 'end' event handler above
                 return;
-                
+
             } catch (streamError) {
                 console.error('Streaming error:', streamError);
-                
+
                 // Fallback to non-streaming response
                 try {
                     console.log('Falling back to non-streaming response');
                     const fallbackPayload = { ...requestPayload, stream: false };
-                    const fallbackResponse = await axios.post(STACK_AI_API_URL, fallbackPayload, {
+                    const fallbackResponse = await axios.post(OPENAI_API_URL, fallbackPayload, {
                         headers: {
-                            'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                            'Authorization': `Bearer ${OPENAI_API_KEY}`,
                             'Content-Type': 'application/json'
                         }
                     });
                     const fallbackText = fallbackResponse.data.choices?.[0]?.message?.content || '';
-                    
-                    res.write(`data: ${JSON.stringify({ 
-                        type: 'done', 
+
+                    res.write(`data: ${JSON.stringify({
+                        type: 'done',
                         content: fallbackText,
-                        done: true 
+                        done: true
                     })}\n\n`);
-                    
+
                     // Save chat history with fallback response
                     if (userId) {
                         try {
@@ -457,16 +461,16 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                             console.error('Error saving fallback chat history:', historyError);
                         }
                     }
-                    
+
                 } catch (fallbackError) {
                     console.error('Fallback also failed:', fallbackError);
-                    res.write(`data: ${JSON.stringify({ 
-                        type: 'error', 
+                    res.write(`data: ${JSON.stringify({
+                        type: 'error',
                         content: 'AI service temporarily unavailable. Please try again.',
-                        done: true 
+                        done: true
                     })}\n\n`);
                 }
-                
+
                 res.end();
                 return;
             }
@@ -476,19 +480,19 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         const timeoutPromise = new Promise((_, reject) => {
             setTimeout(() => reject(new Error('Request timeout - response taking too long')), 90000);
         });
-        
+
         const nonStreamPayload = { ...requestPayload, stream: false };
-        const apiCallPromise = axios.post(STACK_AI_API_URL, nonStreamPayload, {
+        const apiCallPromise = axios.post(OPENAI_API_URL, nonStreamPayload, {
             headers: {
-                'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                'Authorization': `Bearer ${OPENAI_API_KEY}`,
                 'Content-Type': 'application/json'
             }
         });
-        
+
         const result = await Promise.race([apiCallPromise, timeoutPromise]);
 
         const responseText = result.data.choices?.[0]?.message?.content || '';
-        console.log('Stack AI API response received, length:', responseText ? responseText.length : 0);
+        console.log('OpenAI API response received, length:', responseText ? responseText.length : 0);
         console.log('Response preview:', responseText ? responseText.substring(0, 100) + '...' : 'No response');
 
         // Save chat history if user is authenticated
@@ -503,9 +507,9 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                 // Refresh the chatHistory to get the latest message count
                 await chatHistory.save();
                 const updatedChatHistory = await ChatHistory.findById(chatHistory._id);
-                
+
                 console.log('Chat history check - Name:', updatedChatHistory.name, 'Message count:', updatedChatHistory.messages?.length);
-                
+
                 // Check if we should generate auto-title:
                 // 1. No name yet, OR
                 // 2. Name is a fallback pattern (Chat MM/DD/YYYY or New chat X)
@@ -513,19 +517,19 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                     updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) || // Chat MM/DD/YYYY pattern
                     updatedChatHistory.name.match(/^New chat \d+$/) // New chat X pattern
                 );
-                
+
                 if ((!updatedChatHistory.name || isFallbackTitle) && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
                     try {
                         console.log('Generating auto-title for session:', currentSessionId);
                         console.log('Current name:', updatedChatHistory.name, 'Is fallback:', isFallbackTitle);
                         const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
                         const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
-                        
+
                         console.log('Title prompt:', titlePrompt);
                         console.log('AI model call starting...');
-                        
-                        const titleResponse = await axios.post(STACK_AI_API_URL, {
-                            model: process.env.STACK_AI_MODEL || 'gpt-4o-mini',
+
+                        const titleResponse = await axios.post(OPENAI_API_URL, {
+                            model: process.env.OPENAI_MODEL || 'gpt-4o',
                             messages: [
                                 { role: 'system', content: 'You are a helpful assistant that creates short, descriptive titles.' },
                                 { role: 'user', content: titlePrompt }
@@ -534,15 +538,15 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                             temperature: 0.7
                         }, {
                             headers: {
-                                'Authorization': `Bearer ${STACK_AI_API_KEY}`,
+                                'Authorization': `Bearer ${OPENAI_API_KEY}`,
                                 'Content-Type': 'application/json'
                             }
                         });
                         console.log('AI model call completed');
-                        
+
                         const titleRaw = titleResponse.data.choices?.[0]?.message?.content || '';
                         console.log('Raw title response:', titleRaw);
-                        
+
                         const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
                         console.log('Processed title:', title);
                         if (title && title.length > 0) {
@@ -591,8 +595,8 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         });
 
     } catch (error) {
-        console.error('Stack AI API Error:', error);
-        
+        console.error('OpenAI API Error:', error);
+
         // Handle timeout errors first
         if (error.message && error.message.includes('timeout')) {
             return res.status(408).json({
@@ -601,11 +605,11 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             });
         }
 
-        // Handle specific Stack AI errors
+        // Handle specific OpenAI errors
         if (error.response) {
             const status = error.response.status;
-            const errorMessage = error.response.data?.error?.message || error.response.data?.message || 'Stack AI API error';
-            
+            const errorMessage = error.response.data?.error?.message || error.response.data?.message || 'OpenAI API error';
+
             if (status === 401) {
                 return res.status(500).json({
                     success: false,
@@ -635,7 +639,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
 export const getUserChatSessions = async (req, res) => {
     try {
         const userId = req.user?.id;
-        
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -644,7 +648,7 @@ export const getUserChatSessions = async (req, res) => {
         }
 
         const sessions = await ChatHistory.getUserSessions(userId);
-        
+
         res.status(200).json({
             success: true,
             sessions: sessions
@@ -663,7 +667,7 @@ export const rateMessage = async (req, res) => {
     try {
         const userId = req.user?.id;
         const { sessionId, messageIndex, messageTimestamp, rating, messageContent, messageRole, feedback } = req.body;
-        
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -725,7 +729,7 @@ export const getMessageRatings = async (req, res) => {
     try {
         const userId = req.user?.id;
         const { sessionId } = req.params;
-        
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -808,7 +812,7 @@ export const getAllMessageRatings = async (req, res) => {
 export const createNewSession = async (req, res) => {
     try {
         const userId = req.user?.id;
-        
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -818,7 +822,7 @@ export const createNewSession = async (req, res) => {
 
         // Generate new session ID
         const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
-        
+
         // Create new chat history with default welcome message
         const defaultMessage = {
             role: 'assistant',
@@ -854,7 +858,7 @@ export const deleteSession = async (req, res) => {
     try {
         const userId = req.user?.id;
         const { sessionId } = req.params;
-        
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -898,7 +902,7 @@ export const deleteSession = async (req, res) => {
 export const deleteAllSessions = async (req, res) => {
     try {
         const userId = req.user?.id;
-        
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -934,7 +938,7 @@ export const bookmarkMessage = async (req, res) => {
     try {
         const userId = req.user?.id;
         const { sessionId, messageIndex, messageTimestamp, messageContent, messageRole } = req.body;
-        
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -992,7 +996,7 @@ export const removeBookmark = async (req, res) => {
     try {
         const userId = req.user?.id;
         const { sessionId, messageIndex, messageTimestamp } = req.body;
-        
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
@@ -1041,7 +1045,7 @@ export const getBookmarkedMessages = async (req, res) => {
     try {
         const userId = req.user?.id;
         const { sessionId } = req.params;
-        
+
         if (!userId) {
             return res.status(401).json({
                 success: false,
