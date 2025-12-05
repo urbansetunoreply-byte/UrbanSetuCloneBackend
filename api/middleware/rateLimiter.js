@@ -19,9 +19,9 @@ export const createRateLimiter = (windowMs, maxAttempts, message) => {
         const identifier = req.ip || req.connection.remoteAddress;
         const key = `${identifier}:${req.path}`;
         const now = Date.now();
-        
+
         const existing = rateLimitStore.get(key);
-        
+
         if (!existing) {
             // First attempt
             rateLimitStore.set(key, {
@@ -31,7 +31,7 @@ export const createRateLimiter = (windowMs, maxAttempts, message) => {
             });
             return next();
         }
-        
+
         // Check if window has expired
         if (now > existing.expiresAt) {
             // Reset the window
@@ -42,19 +42,26 @@ export const createRateLimiter = (windowMs, maxAttempts, message) => {
             });
             return next();
         }
-        
+
         // Check if max attempts exceeded
         if (existing.attempts >= maxAttempts) {
             return next(errorHandler(429, message || 'Too many attempts. Please try again later.'));
         }
-        
+
         // Increment attempts
         existing.attempts += 1;
         rateLimitStore.set(key, existing);
-        
+
         next();
     };
 };
+
+// Global rate limiter for all requests
+export const globalRateLimiter = createRateLimiter(
+    15 * 60 * 1000, // 15 minutes window
+    300, // max 300 requests per 15 minutes
+    'Too many requests from this IP, please try again after 15 minutes'
+);
 
 // Specific rate limiters for different endpoints
 export const signInRateLimit = createRateLimiter(
@@ -135,7 +142,7 @@ export const dataExportRateLimit = (req, res, next) => {
                 lastRequest: now,
                 expiresAt: now + windowMs
             });
-            
+
             // Add rate limit headers
             res.set({
                 'X-RateLimit-Limit': maxExports,
@@ -143,7 +150,7 @@ export const dataExportRateLimit = (req, res, next) => {
                 'X-RateLimit-Reset': new Date(now + windowMs).toISOString(),
                 'X-RateLimit-Window': '24 hours'
             });
-            
+
             return next();
         }
 
@@ -156,7 +163,7 @@ export const dataExportRateLimit = (req, res, next) => {
                 lastRequest: now,
                 expiresAt: now + windowMs
             });
-            
+
             // Add rate limit headers
             res.set({
                 'X-RateLimit-Limit': maxExports,
@@ -164,7 +171,7 @@ export const dataExportRateLimit = (req, res, next) => {
                 'X-RateLimit-Reset': new Date(now + windowMs).toISOString(),
                 'X-RateLimit-Window': '24 hours'
             });
-            
+
             return next();
         }
 
@@ -173,14 +180,14 @@ export const dataExportRateLimit = (req, res, next) => {
             const resetTime = new Date(existing.expiresAt);
             const timeRemaining = Math.ceil((existing.expiresAt - now) / (60 * 60 * 1000)); // hours
             const timeRemainingMinutes = Math.ceil((existing.expiresAt - now) / (60 * 1000)); // minutes
-            
+
             let timeMessage;
             if (timeRemaining >= 1) {
                 timeMessage = timeRemaining === 1 ? '1 hour' : `${timeRemaining} hours`;
             } else {
                 timeMessage = timeRemainingMinutes === 1 ? '1 minute' : `${timeRemainingMinutes} minutes`;
             }
-            
+
             // Add rate limit headers
             res.set({
                 'X-RateLimit-Limit': maxExports,
@@ -188,7 +195,7 @@ export const dataExportRateLimit = (req, res, next) => {
                 'X-RateLimit-Reset': resetTime.toISOString(),
                 'X-RateLimit-Window': '24 hours'
             });
-            
+
             return next(errorHandler(429, `You can only export your data once per 24 hours. Please try again in ${timeMessage}.`, {
                 rateLimitInfo: {
                     limit: maxExports,
@@ -204,7 +211,7 @@ export const dataExportRateLimit = (req, res, next) => {
         existing.count += 1;
         existing.lastRequest = now;
         exportRateLimitStore.set(userId, existing);
-        
+
         // Add rate limit headers
         res.set({
             'X-RateLimit-Limit': maxExports,
@@ -212,9 +219,9 @@ export const dataExportRateLimit = (req, res, next) => {
             'X-RateLimit-Reset': new Date(existing.expiresAt).toISOString(),
             'X-RateLimit-Window': '24 hours'
         });
-        
+
         next();
-        
+
     } catch (error) {
         console.error('Data export rate limiter error:', error);
         // On error, allow the request to proceed (fail open)

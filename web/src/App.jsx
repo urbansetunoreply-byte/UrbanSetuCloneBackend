@@ -748,6 +748,7 @@ function AppRoutes({ bootstrapped }) {
 }
 
 import MaintenancePage from "./pages/MaintenancePage";
+import GeminiAIWrapper from "./components/GeminiAIWrapper";
 
 export default function App() {
   const dispatch = useDispatch();
@@ -755,7 +756,7 @@ export default function App() {
 
   // MAINTENANCE MODE TOGGLE
   // Set this to true to halt all services and show the maintenance page
-  const MAINTENANCE_MODE = true;
+  const MAINTENANCE_MODE = false;
 
   useEffect(() => {
     const checkAuth = async () => {
@@ -787,6 +788,7 @@ export default function App() {
           <CallProvider>
             <BrowserRouter>
               <AppRoutes bootstrapped={bootstrapped} />
+              <GeminiAIWrapper />
             </BrowserRouter>
           </CallProvider>
         </HeaderProvider>

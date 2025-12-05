@@ -71,6 +71,8 @@ import { setupAllHooks } from "./middleware/dataSyncHooks.js";
 import { startScheduledSync } from "./services/scheduledSyncService.js";
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
+import helmet from 'helmet';
+import { globalRateLimiter } from './middleware/rateLimiter.js';
 import http from 'http';
 import { Server as SocketIOServer } from 'socket.io';
 import jwt from 'jsonwebtoken';
@@ -84,74 +86,74 @@ dotenv.config();
 console.log("MongoDB URI:", process.env.MONGO);
 
 if (!process.env.MONGO) {
-    console.error("Error: MONGO URI is not defined in .env file!");
-    process.exit(1);
+  console.error("Error: MONGO URI is not defined in .env file!");
+  process.exit(1);
 }
 
 // MongoDB connection options (cleaned)
 const mongoOptions = {
-    serverSelectionTimeoutMS: 30000,
-    socketTimeoutMS: 45000,
-    connectTimeoutMS: 30000,
-    maxPoolSize: 10,
-    retryWrites: true,
-    w: 'majority',
+  serverSelectionTimeoutMS: 30000,
+  socketTimeoutMS: 45000,
+  connectTimeoutMS: 30000,
+  maxPoolSize: 10,
+  retryWrites: true,
+  w: 'majority',
 };
 
 // Function to connect to MongoDB with retry logic (minimal logs)
 const connectToMongoDB = async (retries = 3) => {
-    for (let i = 0; i < retries; i++) {
-        try {
-            await mongoose.connect(process.env.MONGO, mongoOptions);
-            console.log("Connected to MongoDB!");
-            
-            // Run migration to fix refundId index
-            await fixRefundIdIndex();
-            
-            return;
-        } catch (error) {
-            if (i === retries - 1) {
-                console.error("Failed to connect to MongoDB:", error.message);
-                process.exit(1);
-            }
-            await new Promise(resolve => setTimeout(resolve, 5000));
-        }
+  for (let i = 0; i < retries; i++) {
+    try {
+      await mongoose.connect(process.env.MONGO, mongoOptions);
+      console.log("Connected to MongoDB!");
+
+      // Run migration to fix refundId index
+      await fixRefundIdIndex();
+
+      return;
+    } catch (error) {
+      if (i === retries - 1) {
+        console.error("Failed to connect to MongoDB:", error.message);
+        process.exit(1);
+      }
+      await new Promise(resolve => setTimeout(resolve, 5000));
     }
+  }
 };
 
 // Migration function to fix refundId index
 const fixRefundIdIndex = async () => {
-    try {
-        const db = mongoose.connection.db;
-        const collection = db.collection('refundrequests');
+  try {
+    const db = mongoose.connection.db;
+    const collection = db.collection('refundrequests');
 
-        // Check if the problematic index exists
-        const indexes = await collection.indexes();
-        const refundIdIndex = indexes.find(index => index.name === 'refundId_1' && index.unique && !index.sparse);
-        
-        if (refundIdIndex) {
-            console.log("Found problematic refundId index, fixing...");
-            
-            // Drop the existing unique index on refundId
-            await collection.dropIndex('refundId_1');
-            console.log("✅ Dropped existing refundId_1 index");
-            
-            // Create a new sparse unique index on refundId
-            await collection.createIndex({ refundId: 1 }, { unique: true, sparse: true });
-            console.log("✅ Created new sparse unique index on refundId");
-        } else {
-            console.log("RefundId index is already correct or doesn't exist");
-        }
-    } catch (error) {
-        console.error("Error during refundId index migration:", error.message);
-        // Don't exit the process, just log the error
+    // Check if the problematic index exists
+    const indexes = await collection.indexes();
+    const refundIdIndex = indexes.find(index => index.name === 'refundId_1' && index.unique && !index.sparse);
+
+    if (refundIdIndex) {
+      console.log("Found problematic refundId index, fixing...");
+
+      // Drop the existing unique index on refundId
+      await collection.dropIndex('refundId_1');
+      console.log("✅ Dropped existing refundId_1 index");
+
+      // Create a new sparse unique index on refundId
+      await collection.createIndex({ refundId: 1 }, { unique: true, sparse: true });
+      console.log("✅ Created new sparse unique index on refundId");
+    } else {
+      console.log("RefundId index is already correct or doesn't exist");
     }
+  } catch (error) {
+    console.error("Error during refundId index migration:", error.message);
+    // Don't exit the process, just log the error
+  }
 };
 
 // Connect to MongoDB
 connectToMongoDB();
 
-const __dirname=path.resolve();
+const __dirname = path.resolve();
 
 let PORT = process.env.PORT || 3000;
 
@@ -159,6 +161,10 @@ const app = express();
 
 // Trust proxy headers (needed to get real client IP behind proxies/load balancers)
 app.set('trust proxy', true);
+
+// Security middleware
+app.use(helmet());
+app.use(globalRateLimiter);
 
 // Increase payload size limit for large file uploads
 app.use((req, res, next) => {
@@ -176,32 +182,32 @@ app.use(cookieParser());
 
 
 const allowedOrigins = [
-    'https://urbansetu.vercel.app',
-    'http://localhost:5173', // for local development
+  'https://urbansetu.vercel.app',
+  'http://localhost:5173', // for local development
 ];
 
 app.use(cors({
-    origin: function(origin, callback) {
-        // allow requests with no origin (like mobile apps, curl, etc.)
-        if (!origin) return callback(null, true);
-        if (
-            allowedOrigins.indexOf(origin) !== -1 ||
-            /^https:\/\/urbansetu.*\.vercel\.app$/.test(origin)
-        ) {
-            return callback(null, true);
-        }
-        const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
-        return callback(new Error(msg), false);
-    },
-    credentials: true,
-    methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
-    allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-CSRF-Token', 'x-csrf-token', 'X-Csrf-Token']
+  origin: function (origin, callback) {
+    // allow requests with no origin (like mobile apps, curl, etc.)
+    if (!origin) return callback(null, true);
+    if (
+      allowedOrigins.indexOf(origin) !== -1 ||
+      /^https:\/\/urbansetu.*\.vercel\.app$/.test(origin)
+    ) {
+      return callback(null, true);
+    }
+    const msg = 'The CORS policy for this site does not allow access from the specified Origin.';
+    return callback(new Error(msg), false);
+  },
+  credentials: true,
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS', 'PATCH'],
+  allowedHeaders: ['Origin', 'X-Requested-With', 'Content-Type', 'Accept', 'Authorization', 'X-CSRF-Token', 'x-csrf-token', 'X-Csrf-Token']
 }));
 
 // Health check endpoint for Render
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     message: 'Server is running',
     timestamp: new Date().toISOString()
   });
@@ -209,7 +215,7 @@ app.get('/api/health', (req, res) => {
 
 // Root endpoint
 app.get('/', (req, res) => {
-  res.status(200).json({ 
+  res.status(200).json({
     message: 'UrbanSetu API is running',
     version: '1.0.0',
     endpoints: {
@@ -251,23 +257,23 @@ const activeCalls = new Map(); // callId -> { callerSocketId, receiverSocketId, 
 registerUserAppointmentsSocket(io);
 
 io.use(async (socket, next) => {
-    const token = socket.handshake.auth && socket.handshake.auth.token;
+  const token = socket.handshake.auth && socket.handshake.auth.token;
   if (token) {
     try {
       if (!process.env.JWT_TOKEN) {
         console.error('JWT_TOKEN is not set in environment variables');
         return next(new Error('Server configuration error'));
       }
-    const decoded = jwt.verify(token, process.env.JWT_TOKEN);
-    const user = await User.findById(decoded.id);
+      const decoded = jwt.verify(token, process.env.JWT_TOKEN);
+      const user = await User.findById(decoded.id);
       if (user) {
-    socket.user = user;
-    socket.join(user._id.toString());
-    socket.join(`user_${user._id.toString()}`);
+        socket.user = user;
+        socket.join(user._id.toString());
+        socket.join(`user_${user._id.toString()}`);
       } else {
         console.warn('User not found for token:', decoded.id);
       }
-  } catch (error) {
+    } catch (error) {
       console.error('Socket auth error:', error.message);
       // Invalid token, treat as public user (but log for debugging)
       if (error.name !== 'JsonWebTokenError' && error.name !== 'TokenExpiredError') {
@@ -296,7 +302,7 @@ io.on('connection', (socket) => {
         }
       }
     }
-  } catch (_) {}
+  } catch (_) { }
 
   // Allow clients to explicitly register their user room without JWT in socket auth
   socket.on('registerUser', ({ userId }) => {
@@ -329,23 +335,23 @@ io.on('connection', (socket) => {
     const wasOffline = !onlineUsers.has(userId);
     onlineUsers.add(userId);
     lastSeenTimes.delete(userId); // Remove last seen when user comes online
-    
+
     // IMPORTANT: Join user to their personal room for direct messaging
     const userIdStr = userId.toString();
     // Join both room formats for compatibility (userId and user_${userId})
     socket.join(userIdStr);
     socket.join(`user_${userIdStr}`);
-    
+
     io.emit('userOnlineUpdate', { userId, online: true });
-    
+
     // If user was offline and just came online, mark all pending messages as delivered
     if (wasOffline) {
       try {
         // Find all bookings where this user is buyer or seller
         const bookings = await Booking.find({
-          $or: [ { buyerId: userId }, { sellerId: userId } ]
+          $or: [{ buyerId: userId }, { sellerId: userId }]
         });
-        
+
         for (const appt of bookings) {
           let updated = false;
           for (const comment of appt.comments) {
@@ -353,9 +359,9 @@ io.on('connection', (socket) => {
             // 1. Comment is not from this user 
             // 2. Comment status is "sent" (meaning it was sent while recipient was offline)
             // 3. Comment is not already delivered or read
-            if (comment.sender.toString() !== userId && 
-                comment.status === 'sent' && 
-                !comment.readBy?.includes(userId)) {
+            if (comment.sender.toString() !== userId &&
+              comment.status === 'sent' &&
+              !comment.readBy?.includes(userId)) {
               comment.status = 'delivered';
               comment.deliveredAt = new Date();
               updated = true;
@@ -364,7 +370,7 @@ io.on('connection', (socket) => {
           }
           if (updated) await appt.save();
         }
-        
+
         // Check for pending calls (initiated or ringing) where user is the receiver
         try {
           const pendingCalls = await CallHistory.find({
@@ -373,14 +379,14 @@ io.on('connection', (socket) => {
             // Only show calls from last 5 minutes (to avoid showing very old calls)
             startTime: { $gte: new Date(Date.now() - 5 * 60 * 1000) }
           })
-          .populate('callerId', 'username')
-          .populate('appointmentId', 'propertyName')
-          .sort({ startTime: -1 })
-          .limit(1); // Only show the most recent pending call
-          
+            .populate('callerId', 'username')
+            .populate('appointmentId', 'propertyName')
+            .sort({ startTime: -1 })
+            .limit(1); // Only show the most recent pending call
+
           if (pendingCalls.length > 0) {
             const pendingCall = pendingCalls[0];
-            
+
             // Check if call is still active
             const activeCall = activeCalls.get(pendingCall.callId);
             if (activeCall || pendingCall.status === 'initiated' || pendingCall.status === 'ringing') {
@@ -401,7 +407,7 @@ io.on('connection', (socket) => {
         console.error('Error marking comments as delivered when user came online:', err);
       }
     }
-    
+
     if (socket.onlineTimeout) clearTimeout(socket.onlineTimeout);
     socket.onlineTimeout = setTimeout(() => {
       onlineUsers.delete(userId);
@@ -413,26 +419,26 @@ io.on('connection', (socket) => {
   // Listen for admin appointments active
   socket.on('adminAppointmentsActive', async ({ adminId, role }) => {
     thisUserId = adminId;
-    
+
     // IMPORTANT: Join admin to their personal room for direct messaging
     socket.join(adminId);
-    
+
     // Join admin to all appointment rooms to receive real-time updates
     try {
       const allBookings = await Booking.find({});
-      
+
       for (const appt of allBookings) {
         // Join admin to each appointment room
         socket.join(`appointment_${appt._id}`);
       }
-      
+
       // Also join admin to a general admin room
       socket.join(`admin_${adminId}`);
-      
+
       // Store admin socket reference for future use
       socket.adminId = adminId;
       socket.adminRole = role;
-      
+
     } catch (err) {
       console.error('Error joining admin to appointment rooms:', err);
     }
@@ -456,7 +462,7 @@ io.on('connection', (socket) => {
       lastSeenTimes.set(thisUserId, new Date().toISOString()); // Store last seen time
       io.emit('userOnlineUpdate', { userId: thisUserId, online: false, lastSeen: lastSeenTimes.get(thisUserId) });
     }
-    
+
     // Clean up admin room memberships
     if (socket.adminId) {
       // Leave all appointment rooms
@@ -467,15 +473,15 @@ io.on('connection', (socket) => {
       }).catch(err => {
         console.error('Error cleaning up admin appointment rooms:', err);
       });
-      
+
       // Leave admin room
       socket.leave(`admin_${socket.adminId}`);
     }
-    
+
     // Cleanup calls on disconnect - end any active calls for this socket
     for (const [callId, activeCall] of activeCalls.entries()) {
-      if (activeCall.callerSocketId === socket.id || 
-          activeCall.receiverSocketId === socket.id) {
+      if (activeCall.callerSocketId === socket.id ||
+        activeCall.receiverSocketId === socket.id) {
         // Mark call as ended
         CallHistory.findOne({ callId }).then(call => {
           if (call && call.status !== 'ended') {
@@ -490,19 +496,19 @@ io.on('connection', (socket) => {
         }).catch(err => {
           console.error('Error ending call on disconnect:', err);
         });
-        
+
         // Notify other party
-        const otherSocketId = activeCall.callerSocketId === socket.id 
-          ? activeCall.receiverSocketId 
+        const otherSocketId = activeCall.callerSocketId === socket.id
+          ? activeCall.receiverSocketId
           : activeCall.callerSocketId;
         if (otherSocketId) {
           io.to(otherSocketId).emit('call-ended', { callId });
         }
-        
+
         activeCalls.delete(callId);
       }
     }
-    
+
     if (socket.onlineTimeout) clearTimeout(socket.onlineTimeout);
   });
 
@@ -514,10 +520,10 @@ io.on('connection', (socket) => {
   // Listen for new appointments to join admin to new appointment rooms
   socket.on('appointmentCreated', (data) => {
     // Find all admin sockets and join them to the new appointment room
-    const adminSockets = Array.from(io.sockets.sockets.values()).filter(s => 
+    const adminSockets = Array.from(io.sockets.sockets.values()).filter(s =>
       s.user && (s.user.role === 'admin' || s.user.role === 'rootadmin')
     );
-    
+
     for (const adminSocket of adminSockets) {
       adminSocket.join(`appointment_${data.appointment._id}`);
     }
@@ -532,28 +538,28 @@ io.on('connection', (socket) => {
       if (!callerId) {
         return socket.emit('call-error', { message: 'Not authenticated' });
       }
-      
+
       // Validate appointment and authorization
       const appointment = await Booking.findById(appointmentId);
       if (!appointment) {
         return socket.emit('call-error', { message: 'Appointment not found' });
       }
-      
+
       // Check if caller is buyer or seller
-      if (appointment.buyerId.toString() !== callerId && 
-          appointment.sellerId.toString() !== callerId) {
+      if (appointment.buyerId.toString() !== callerId &&
+        appointment.sellerId.toString() !== callerId) {
         return socket.emit('call-error', { message: 'Unauthorized' });
       }
-      
+
       // Determine receiver
-      const actualReceiverId = appointment.buyerId.toString() === callerId 
-        ? appointment.sellerId.toString() 
+      const actualReceiverId = appointment.buyerId.toString() === callerId
+        ? appointment.sellerId.toString()
         : appointment.buyerId.toString();
-      
+
       if (actualReceiverId !== receiverId) {
         return socket.emit('call-error', { message: 'Invalid receiver' });
       }
-      
+
       // Create call record
       const callId = generateCallId();
       const callHistory = new CallHistory({
@@ -566,7 +572,7 @@ io.on('connection', (socket) => {
         callerIP: socket.handshake.address
       });
       await callHistory.save();
-      
+
       // Store active call
       activeCalls.set(callId, {
         callerSocketId: socket.id,
@@ -575,7 +581,7 @@ io.on('connection', (socket) => {
         callType,
         startTime: new Date()
       });
-      
+
       // Send call invitation to receiver
       io.to(`user_${actualReceiverId}`).emit('incoming-call', {
         callId,
@@ -584,21 +590,21 @@ io.on('connection', (socket) => {
         callType,
         callerName: socket.user?.username || 'Unknown'
       });
-      
+
       // Send confirmation to caller
       socket.emit('call-initiated', { callId, status: 'ringing' });
-      
+
       // Send call initiated email to receiver
       try {
         const receiver = await User.findById(actualReceiverId);
         const appointment = await Booking.findById(appointmentId)
           .populate('listingId', 'name');
         const caller = await User.findById(callerId);
-        
+
         if (receiver && appointment && caller) {
           // Check if receiver is admin
           const isReceiverAdmin = receiver.role === 'admin' || receiver.role === 'rootadmin';
-          
+
           await sendCallInitiatedEmail(receiver.email, {
             callType,
             callerName: caller.username,
@@ -610,7 +616,7 @@ io.on('connection', (socket) => {
       } catch (emailError) {
         console.error("Error sending call initiated email:", emailError);
       }
-      
+
       // Set timeout for missed call (30 seconds)
       setTimeout(async () => {
         const call = await CallHistory.findOne({ callId });
@@ -618,21 +624,21 @@ io.on('connection', (socket) => {
           call.status = 'missed';
           call.endTime = new Date();
           await call.save();
-          
+
           // Remove from active calls
           activeCalls.delete(callId);
-          
+
           // Emit missed call event
           io.to(`user_${callerId}`).emit('call-missed', { callId });
           io.to(`user_${actualReceiverId}`).emit('call-missed', { callId });
-          
+
           // Send missed call email
           try {
             const receiver = await User.findById(actualReceiverId);
             const appointment = await Booking.findById(appointmentId)
               .populate('listingId', 'name');
             const caller = await User.findById(callerId);
-            
+
             if (receiver && appointment && caller) {
               await sendCallMissedEmail(receiver.email, {
                 callType,
@@ -646,7 +652,7 @@ io.on('connection', (socket) => {
           }
         }
       }, 30000); // 30 seconds timeout
-      
+
     } catch (err) {
       console.error("Error initiating call:", err);
       socket.emit('call-error', { message: 'Failed to initiate call' });
@@ -660,16 +666,16 @@ io.on('connection', (socket) => {
       if (!receiverId) {
         return socket.emit('call-error', { message: 'Not authenticated' });
       }
-      
+
       const call = await CallHistory.findOne({ callId });
       if (!call) {
         return socket.emit('call-error', { message: 'Call not found' });
       }
-      
+
       if (call.receiverId.toString() !== receiverId) {
         return socket.emit('call-error', { message: 'Unauthorized' });
       }
-      
+
       // Update call status and set start time (synchronized)
       // CRITICAL: This timestamp is the authoritative start time for both caller and receiver
       // Both sides will use this exact timestamp to calculate call duration
@@ -678,40 +684,40 @@ io.on('connection', (socket) => {
       call.startTime = startTime; // Update start time when call is accepted
       call.receiverIP = socket.handshake.address;
       await call.save();
-      
+
       // Update active call
       const activeCall = activeCalls.get(callId);
       if (activeCall) {
         activeCall.receiverSocketId = socket.id;
         activeCall.startTime = startTime; // Store synchronized start time
         activeCalls.set(callId, activeCall);
-        
+
         // Forward any pending WebRTC offers and ICE candidates
         if (activeCall.pendingOffer) {
           socket.emit('webrtc-offer', activeCall.pendingOffer);
           delete activeCall.pendingOffer;
         }
-        
+
         if (activeCall.pendingCandidates && activeCall.pendingCandidates.length > 0) {
           activeCall.pendingCandidates.forEach(pendingCandidate => {
             socket.emit('ice-candidate', pendingCandidate);
           });
           activeCall.pendingCandidates = [];
         }
-        
+
         // Send the exact same timestamp to both caller and receiver
         // This ensures perfect synchronization - both sides calculate from the same reference point
         const startTimeTimestamp = startTime.getTime(); // Milliseconds since epoch
-        
+
         // Notify caller that call was accepted with synchronized start time
         io.to(activeCall.callerSocketId).emit('call-accepted', {
           callId,
           receiverSocketId: socket.id,
           startTime: startTimeTimestamp // Send exact timestamp for synchronization
         });
-        
+
         // Notify receiver with synchronized start time (same timestamp)
-        socket.emit('call-accepted', { 
+        socket.emit('call-accepted', {
           callId,
           startTime: startTimeTimestamp // Send exact timestamp for synchronization
         });
@@ -727,12 +733,12 @@ io.on('connection', (socket) => {
     try {
       const receiverId = socket.user?._id?.toString();
       const call = await CallHistory.findOne({ callId });
-      
+
       if (call && call.receiverId.toString() === receiverId) {
         call.status = 'rejected';
         call.endTime = new Date();
         await call.save();
-        
+
         const activeCall = activeCalls.get(callId);
         if (activeCall) {
           io.to(activeCall.callerSocketId).emit('call-rejected', { callId });
@@ -749,14 +755,14 @@ io.on('connection', (socket) => {
     try {
       const callerId = socket.user?._id?.toString();
       const call = await CallHistory.findOne({ callId });
-      
+
       // Allow cancellation if call is initiated or ringing (caller can cancel before answer)
-      if (call && call.callerId.toString() === callerId && 
-          (call.status === 'initiated' || call.status === 'ringing')) {
+      if (call && call.callerId.toString() === callerId &&
+        (call.status === 'initiated' || call.status === 'ringing')) {
         call.status = 'cancelled';
         call.endTime = new Date();
         await call.save();
-        
+
         const activeCall = activeCalls.get(callId);
         if (activeCall) {
           // Emit to receiver to close incoming call modal
@@ -775,7 +781,7 @@ io.on('connection', (socket) => {
     if (!activeCall) {
       return;
     }
-    
+
     // Forward offer from caller to receiver
     if (socket.id === activeCall.callerSocketId) {
       if (activeCall.receiverSocketId) {
@@ -794,7 +800,7 @@ io.on('connection', (socket) => {
     if (!activeCall) {
       return;
     }
-    
+
     // Forward answer from receiver to caller
     if (socket.id === activeCall.receiverSocketId && activeCall.callerSocketId) {
       io.to(activeCall.callerSocketId).emit('webrtc-answer', { callId, answer });
@@ -806,7 +812,7 @@ io.on('connection', (socket) => {
     if (!activeCall) {
       return;
     }
-    
+
     // Forward ICE candidate to the other party
     if (socket.id === activeCall.callerSocketId) {
       // From caller - forward to receiver if ready, otherwise store
@@ -833,14 +839,14 @@ io.on('connection', (socket) => {
     const activeCall = activeCalls.get(callId);
     if (activeCall) {
       // Forward status update to the other party
-      const targetSocketId = socket.id === activeCall.callerSocketId 
-        ? activeCall.receiverSocketId 
+      const targetSocketId = socket.id === activeCall.callerSocketId
+        ? activeCall.receiverSocketId
         : activeCall.callerSocketId;
       if (targetSocketId) {
-        io.to(targetSocketId).emit('remote-status-update', { 
-          callId, 
-          isMuted, 
-          isVideoEnabled 
+        io.to(targetSocketId).emit('remote-status-update', {
+          callId,
+          isMuted,
+          isVideoEnabled
         });
       }
     }
@@ -1058,8 +1064,8 @@ io.on('connection', (socket) => {
 
 // Health check endpoint for Render deployment
 app.get('/api/health', (req, res) => {
-  res.status(200).json({ 
-    status: 'OK', 
+  res.status(200).json({
+    status: 'OK',
     timestamp: new Date().toISOString(),
     routes: 'image-favorites-enabled',
     version: '2.0-with-image-favorites'
@@ -1098,7 +1104,7 @@ app.get('/api/debug/routes', (req, res) => {
       });
     }
   });
-  res.json({ 
+  res.json({
     message: 'Available routes',
     routes,
     imageFavoritesRegistered: true,
@@ -1108,9 +1114,9 @@ app.get('/api/debug/routes', (req, res) => {
 
 // Register all routes before starting the server
 console.log('Registering API routes...');
-app.use("/api/user",userRouter);
-app.use("/api/auth",authRouter);
-app.use("/api/listing",listingRouter)
+app.use("/api/user", userRouter);
+app.use("/api/auth", authRouter);
+app.use("/api/listing", listingRouter)
 app.use("/api/bookings", bookingRouter);
 app.use("/api/about", aboutRouter);
 app.use("/api/admin", adminRouter);
@@ -1158,8 +1164,8 @@ console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes
 app.use('*', (req, res) => {
-  res.status(404).json({ 
-    success: false, 
+  res.status(404).json({
+    success: false,
     message: 'API endpoint not found',
     path: req.originalUrl,
     method: req.method
@@ -1169,31 +1175,31 @@ app.use('*', (req, res) => {
 const startServer = () => {
   server.listen(PORT, async () => {
     console.log(`Server is running on port ${PORT}!!!`);
-    
+
     // Start the appointment reminder scheduler
     startScheduler(app);
-    
+
     // Initialize data synchronization
     console.log('🚀 Initializing data synchronization...');
-    
+
     try {
       // Setup database change hooks
       setupAllHooks();
-      
+
       // Initial data indexing
       console.log('📊 Performing initial data indexing...');
       const result = await indexAllWebsiteData();
-      
+
       if (result.success) {
         console.log(`✅ Initial indexing completed: ${result.totalIndexed} items indexed`);
         console.log(`📊 Breakdown: ${result.breakdown.properties} properties, ${result.breakdown.blogs} blogs, ${result.breakdown.faqs} FAQs`);
       } else {
         console.error('❌ Initial indexing failed:', result.error);
       }
-      
+
       // Start scheduled synchronization
       startScheduledSync();
-      
+
       console.log('🎉 Data synchronization system initialized successfully!');
     } catch (error) {
       console.error('❌ Error initializing data synchronization:', error);
