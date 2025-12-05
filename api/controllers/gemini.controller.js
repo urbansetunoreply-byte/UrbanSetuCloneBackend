@@ -222,7 +222,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         const requestPayload = {
             model: OPENAI_MODEL,
             messages: messages,
-            max_tokens: getMaxTokensFromSettings(responseLength, messageComplexity, maxTokens),
+            max_completion_tokens: getMaxTokensFromSettings(responseLength, messageComplexity, maxTokens),
             temperature: getTemperature(creativity, tone, temperature),
             top_p: getTopP(topP),
             stream: enableStreaming === true || enableStreaming === 'true',
@@ -297,7 +297,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                                             { role: 'system', content: 'You are a helpful assistant that creates short, descriptive titles.' },
                                             { role: 'user', content: titlePrompt }
                                         ],
-                                        max_tokens: 50,
+                                        max_completion_tokens: 50,
                                         temperature: 0.7
                                     });
 
