@@ -18,28 +18,28 @@ import 'prismjs/components/prism-markdown';
 
 const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const { currentUser } = useSelector((state) => state.user);
-    
+
     // Helper functions for user-specific localStorage
     const getUserKey = (key) => {
         if (!currentUser) return key; // For public users, use global keys
         return `user_${currentUser._id}_${key}`;
     };
-    
+
     const getUserSetting = (key, defaultValue) => {
         const userKey = getUserKey(key);
         return localStorage.getItem(userKey) || defaultValue;
     };
-    
+
     const setUserSetting = (key, value) => {
         const userKey = getUserKey(key);
         localStorage.setItem(userKey, value);
     };
-    
+
     // Helper function to get theme color as hex value for the ring
     const getThemeRingColor = () => {
         const theme = getThemeColors();
         const accentClass = theme.accent;
-        
+
         // Map Tailwind color classes to hex values
         const colorMap = {
             'text-blue-400': '#60a5fa',
@@ -73,7 +73,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             'text-teal-500': '#14b8a6',
             'text-teal-600': '#0d9488',
         };
-        
+
         return colorMap[accentClass] || '#60a5fa'; // Default to blue if not found
     };
     const navigate = useNavigate();
@@ -108,7 +108,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const suggestionsRef = useRef(null);
     const headerMenuRef = useRef(null);
     const [showFeatures, setShowFeatures] = useState(false);
-    
+
     // Property suggestion states
     const [showPropertySuggestions, setShowPropertySuggestions] = useState(false);
     const [propertySuggestions, setPropertySuggestions] = useState([]);
@@ -140,7 +140,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [highlightedMessage, setHighlightedMessage] = useState(null);
     const [selectedHistoryIds, setSelectedHistoryIds] = useState([]);
     const [openHistoryMenuSessionId, setOpenHistoryMenuSessionId] = useState(null);
-    
+
     // Rate limiting state
     const [rateLimitInfo, setRateLimitInfo] = useState({
         role: currentUser ? (currentUser.role || 'user') : 'public',
@@ -163,7 +163,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [floatingDateLabel, setFloatingDateLabel] = useState('');
     const [isScrolling, setIsScrolling] = useState(false);
     const scrollTimeoutRef = useRef(null);
-    
+
     // Enhanced UI and Feature States
     const [isRecording, setIsRecording] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState(null);
@@ -214,7 +214,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [typingSounds, setTypingSounds] = useState(() => getUserSetting('gemini_typing_sounds', 'true') !== 'false');
     const [dataRetention, setDataRetention] = useState(() => getUserSetting('gemini_data_retention', '30'));
     const [showCustomThemePicker, setShowCustomThemePicker] = useState(false);
-    
+
     // Advanced Settings
     const [autoSave, setAutoSave] = useState(() => getUserSetting('gemini_auto_save', 'true') !== 'false');
     const [messageLimit, setMessageLimit] = useState(() => getUserSetting('gemini_message_limit', '100'));
@@ -226,7 +226,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [enableQuickActions, setEnableQuickActions] = useState(() => getUserSetting('gemini_quick_actions', 'true') !== 'false');
     const [enableSmartSuggestions, setEnableSmartSuggestions] = useState(() => getUserSetting('gemini_smart_suggestions', 'true') !== 'false');
     const [enableTypingIndicator, setEnableTypingIndicator] = useState(() => getUserSetting('gemini_typing_indicator', 'true') !== 'false');
-    
+
     // Accessibility Settings
     const [highContrast, setHighContrast] = useState(() => {
         // For public users (no currentUser), default to false
@@ -237,21 +237,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [screenReaderSupport, setScreenReaderSupport] = useState(() => getUserSetting('gemini_screen_reader', 'false') === 'true');
     const [largeText, setLargeText] = useState(() => getUserSetting('gemini_large_text', 'false') === 'true');
     const [keyboardNavigation, setKeyboardNavigation] = useState(() => getUserSetting('gemini_keyboard_nav', 'true') !== 'false');
-    
+
     // Performance Settings
     const [messageCaching, setMessageCaching] = useState(() => getUserSetting('gemini_message_caching', 'true') !== 'false');
     const [lazyLoading, setLazyLoading] = useState(() => getUserSetting('gemini_lazy_loading', 'true') !== 'false');
     const [imageOptimization, setImageOptimization] = useState(() => getUserSetting('gemini_image_optimization', 'true') !== 'false');
     const [preloadMessages, setPreloadMessages] = useState(() => getUserSetting('gemini_preload_messages', 'true') !== 'false');
     const [batchOperations, setBatchOperations] = useState(() => getUserSetting('gemini_batch_operations', 'true') !== 'false');
-    
+
     // Privacy Settings
     const [enableAnalytics, setEnableAnalytics] = useState(() => getUserSetting('gemini_analytics', 'true') !== 'false');
     const [enableErrorReporting, setEnableErrorReporting] = useState(() => getUserSetting('gemini_error_reporting', 'true') !== 'false');
     const [enableUsageTracking, setEnableUsageTracking] = useState(() => getUserSetting('gemini_usage_tracking', 'true') !== 'false');
     const [enableCrashReports, setEnableCrashReports] = useState(() => getUserSetting('gemini_crash_reports', 'true') !== 'false');
     const [enablePerformanceMonitoring, setEnablePerformanceMonitoring] = useState(() => getUserSetting('gemini_performance_monitoring', 'true') !== 'false');
-    
+
     // Advanced AI Settings
     const [temperature, setTemperature] = useState(() => getUserSetting('gemini_temperature', '0.7'));
     const [topP, setTopP] = useState(() => getUserSetting('gemini_top_p', '0.8'));
@@ -265,14 +265,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [enableContextMemory, setEnableContextMemory] = useState(() => getUserSetting('gemini_context_memory', 'true') !== 'false');
     const [contextWindow, setContextWindow] = useState(() => getUserSetting('gemini_context_window', '10'));
     const [enableSystemPrompts, setEnableSystemPrompts] = useState(() => getUserSetting('gemini_system_prompts', 'true') !== 'false');
-    
+
     // Notification Settings
     const [enableDesktopNotifications, setEnableDesktopNotifications] = useState(() => getUserSetting('gemini_desktop_notifications', 'true') !== 'false');
     const [enableEmailNotifications, setEnableEmailNotifications] = useState(() => getUserSetting('gemini_email_notifications', 'true') !== 'false');
     const [enablePushNotifications, setEnablePushNotifications] = useState(() => getUserSetting('gemini_push_notifications', 'true') !== 'false');
     const [notificationSound, setNotificationSound] = useState(() => getUserSetting('gemini_notification_sound', 'default'));
     const [notificationFrequency, setNotificationFrequency] = useState(() => getUserSetting('gemini_notification_frequency', 'immediate'));
-    
+
     // UI/UX Settings
     const [enableAnimations, setEnableAnimations] = useState(() => getUserSetting('gemini_animations', 'true') !== 'false');
     const [enableHoverEffects, setEnableHoverEffects] = useState(() => getUserSetting('gemini_hover_effects', 'true') !== 'false');
@@ -311,11 +311,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     const scrollHeight = messagesContainer.scrollHeight;
                     const clientHeight = messagesContainer.clientHeight;
                     const isAtBottom = scrollTop + clientHeight >= scrollHeight - 30; // 30px tolerance
-                    
+
                     console.log('Scroll check:', { scrollTop, scrollHeight, clientHeight, isAtBottom });
-                    
+
                     if (!isAtBottom) {
-            messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+                        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
                     }
                 } else {
                     // Fallback if container not found
@@ -347,14 +347,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Generate or retrieve session ID
     const getOrCreateSessionId = () => {
         if (sessionId) return sessionId;
-        
+
         // Try to get existing session from localStorage
         const existingSessionId = localStorage.getItem('gemini_session_id');
         if (existingSessionId) {
             setSessionId(existingSessionId);
             return existingSessionId;
         }
-        
+
         // Create new session ID
         const newSessionId = `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
         localStorage.setItem('gemini_session_id', newSessionId);
@@ -366,7 +366,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const fetchRateLimitStatus = async () => {
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            
+
             const response = await fetch(`${API_BASE_URL}/api/gemini/rate-limit-status`, {
                 method: 'GET',
                 credentials: 'include', // Use cookies for authentication
@@ -374,14 +374,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     'Content-Type': 'application/json'
                 }
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 console.log('Frontend - Rate limit status response:', data);
                 if (data.success && data.rateLimit) {
                     console.log('Frontend - Setting rate limit info:', data.rateLimit);
                     setRateLimitInfo(data.rateLimit);
-                    
+
                     // Show appropriate modal if rate limit is exceeded
                     if (data.rateLimit.remaining <= 0 && data.rateLimit.role !== 'rootadmin') {
                         if (currentUser) {
@@ -410,7 +410,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 resetTime: null,
                 windowMs: currentUser ? (currentUser.role === 'admin' ? 24 * 60 * 60 * 1000 : 60 * 60 * 1000) : 15 * 60 * 1000
             });
-            
+
             // Hide modals in fallback case since we're setting full limit
             setShowSignInModal(false);
             setShowSignInOverlay(false);
@@ -516,7 +516,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Only update if there are new messages or changes
                     const serverMessages = data.data.messages;
                     const currentMessageCount = messages.length;
-                    
+
                     if (serverMessages.length !== currentMessageCount) {
                         setMessages(serverMessages);
                         toast.success(`Messages refreshed! ${serverMessages.length - currentMessageCount} new messages loaded.`);
@@ -524,13 +524,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         // Check if any messages have been updated
                         let hasUpdates = false;
                         for (let i = 0; i < serverMessages.length; i++) {
-                            if (serverMessages[i].content !== messages[i]?.content || 
+                            if (serverMessages[i].content !== messages[i]?.content ||
                                 serverMessages[i].timestamp !== messages[i]?.timestamp) {
                                 hasUpdates = true;
                                 break;
                             }
                         }
-                        
+
                         if (hasUpdates) {
                             setMessages(serverMessages);
                             toast.success('Messages refreshed! Updates loaded.');
@@ -538,7 +538,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             toast.info('Messages are already up to date.');
                         }
                     }
-                    
+
                     // Scroll to bottom after refresh
                     setTimeout(() => scrollToBottom(), 100);
                 } else {
@@ -564,7 +564,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const url = `${API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(searchQuery)}&limit=5`;
-            
+
             const response = await fetch(url, {
                 method: 'GET',
                 credentials: 'include',
@@ -572,7 +572,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     'Content-Type': 'application/json',
                 },
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 setPropertySuggestions(data.data || []);
@@ -627,18 +627,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const cursorPos = e.target.selectionStart;
         const textBeforeCursor = value.substring(0, cursorPos);
         const lastAtIndex = textBeforeCursor.lastIndexOf('@');
-        
+
         if (lastAtIndex !== -1) {
             const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
             const hasSpaceAfterAt = textAfterAt.includes(' ');
-            
+
             if (!hasSpaceAfterAt) {
                 // Show suggestions
                 setShowPropertySuggestions(true);
                 setSuggestionQuery(textAfterAt);
                 setSuggestionStartPos(lastAtIndex);
                 setSelectedSuggestionIndex(-1);
-                
+
                 // Search properties
                 searchProperties(textAfterAt);
             } else {
@@ -653,19 +653,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const handleSuggestionSelect = (property) => {
         const beforeAt = inputMessage.substring(0, suggestionStartPos);
         const afterAt = inputMessage.substring(suggestionStartPos + suggestionQuery.length + 1);
-        
+
         const newMessage = `${beforeAt}@${property.name}${afterAt}`;
         setInputMessage(newMessage);
-        
+
         // Add property to selected properties
         setSelectedProperties(prev => [...prev, property]);
-        
+
         // Hide suggestions
         setShowPropertySuggestions(false);
         setSuggestionQuery('');
         setSuggestionStartPos(-1);
         setSelectedSuggestionIndex(-1);
-        
+
         // Focus back to input
         setTimeout(() => {
             if (inputRef.current) {
@@ -681,13 +681,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         switch (e.key) {
             case 'ArrowDown':
                 e.preventDefault();
-                setSelectedSuggestionIndex(prev => 
+                setSelectedSuggestionIndex(prev =>
                     prev < propertySuggestions.length - 1 ? prev + 1 : 0
                 );
                 break;
             case 'ArrowUp':
                 e.preventDefault();
-                setSelectedSuggestionIndex(prev => 
+                setSelectedSuggestionIndex(prev =>
                     prev > 0 ? prev - 1 : propertySuggestions.length - 1
                 );
                 break;
@@ -770,10 +770,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (currentUser) {
             // Reload all user-specific settings
             setSelectedTheme(getUserSetting('gemini_theme', 'blue'));
-            
+
             const savedCustomTheme = getUserSetting('gemini_custom_theme', null);
             setCustomTheme(savedCustomTheme ? JSON.parse(savedCustomTheme) : null);
-            
+
             setFontSize(getUserSetting('gemini_font_size', 'medium'));
             setMessageDensity(getUserSetting('gemini_message_density', 'comfortable'));
             setAutoScroll(getUserSetting('gemini_auto_scroll', 'true') !== 'false');
@@ -783,7 +783,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setSoundEnabled(getUserSetting('gemini_sound_enabled', 'true') !== 'false');
             setTypingSounds(getUserSetting('gemini_typing_sounds', 'true') !== 'false');
             setDataRetention(getUserSetting('gemini_data_retention', '30'));
-            
+
             // Advanced Settings
             setAutoSave(getUserSetting('gemini_auto_save', 'true') !== 'false');
             setMessageLimit(getUserSetting('gemini_message_limit', '100'));
@@ -795,28 +795,28 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setEnableQuickActions(getUserSetting('gemini_quick_actions', 'true') !== 'false');
             setEnableSmartSuggestions(getUserSetting('gemini_smart_suggestions', 'true') !== 'false');
             setEnableTypingIndicator(getUserSetting('gemini_typing_indicator', 'true') !== 'false');
-            
+
             // Accessibility Settings
             setHighContrast(getUserSetting('gemini_high_contrast', 'false') === 'true');
             setReducedMotion(getUserSetting('gemini_reduced_motion', 'false') === 'true');
             setScreenReaderSupport(getUserSetting('gemini_screen_reader', 'false') === 'true');
             setLargeText(getUserSetting('gemini_large_text', 'false') === 'true');
             setKeyboardNavigation(getUserSetting('gemini_keyboard_nav', 'true') !== 'false');
-            
+
             // Performance Settings
             setMessageCaching(getUserSetting('gemini_message_caching', 'true') !== 'false');
             setLazyLoading(getUserSetting('gemini_lazy_loading', 'true') !== 'false');
             setImageOptimization(getUserSetting('gemini_image_optimization', 'true') !== 'false');
             setPreloadMessages(getUserSetting('gemini_preload_messages', 'true') !== 'false');
             setBatchOperations(getUserSetting('gemini_batch_operations', 'true') !== 'false');
-            
+
             // Privacy Settings
             setEnableAnalytics(getUserSetting('gemini_analytics', 'true') !== 'false');
             setEnableErrorReporting(getUserSetting('gemini_error_reporting', 'true') !== 'false');
             setEnableUsageTracking(getUserSetting('gemini_usage_tracking', 'true') !== 'false');
             setEnableCrashReports(getUserSetting('gemini_crash_reports', 'true') !== 'false');
             setEnablePerformanceMonitoring(getUserSetting('gemini_performance_monitoring', 'true') !== 'false');
-            
+
             // Advanced AI Settings
             setTemperature(getUserSetting('gemini_temperature', '0.7'));
             setTopP(getUserSetting('gemini_top_p', '0.9'));
@@ -826,14 +826,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setEnableContextMemory(getUserSetting('gemini_context_memory', 'true') !== 'false');
             setContextWindow(getUserSetting('gemini_context_window', '4'));
             setEnableSystemPrompts(getUserSetting('gemini_system_prompts', 'true') !== 'false');
-            
+
             // Notification Settings
             setEnableDesktopNotifications(getUserSetting('gemini_desktop_notifications', 'true') !== 'false');
             setEnableEmailNotifications(getUserSetting('gemini_email_notifications', 'false') !== 'false');
             setEnablePushNotifications(getUserSetting('gemini_push_notifications', 'true') !== 'false');
             setNotificationSound(getUserSetting('gemini_notification_sound', 'default'));
             setNotificationFrequency(getUserSetting('gemini_notification_frequency', 'immediate'));
-            
+
             // UI/UX Settings
             setEnableAnimations(getUserSetting('gemini_animations', 'true') !== 'false');
             setEnableHoverEffects(getUserSetting('gemini_hover_effects', 'true') !== 'false');
@@ -843,7 +843,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setEnableDragAndDrop(getUserSetting('gemini_drag_drop', 'true') !== 'false');
             setEnableRightClickMenu(getUserSetting('gemini_right_click', 'true') !== 'false');
             setEnableContextMenu(getUserSetting('gemini_context_menu', 'true') !== 'false');
-            
+
             // Dark mode
             setIsDarkMode(getUserSetting('gemini_dark_mode', 'false') === 'true');
         }
@@ -865,13 +865,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const draftKey = `gemini_draft_${currentSessionId}`;
         const savedDraft = localStorage.getItem(draftKey);
         if (savedDraft) setInputMessage(savedDraft);
-        
+
         // Initialize smart suggestions from localStorage
         const savedSmartSuggestions = localStorage.getItem('gemini_smart_suggestions');
         if (savedSmartSuggestions !== null) {
             setShowSmartSuggestions(savedSmartSuggestions === 'true');
         }
-        
+
         // Fetch rate limit status
         fetchRateLimitStatus();
     }, [currentUser, isHistoryLoaded]);
@@ -888,26 +888,26 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (screenReaderSupport && messages.length > 0) {
             const lastMessage = messages[messages.length - 1];
             const announcementElement = document.getElementById('screen-reader-announcements');
-            
+
             if (announcementElement && lastMessage) {
                 const messageType = lastMessage.role === 'user' ? 'You said' : 'AI responded';
-                const content = lastMessage.content.length > 100 
-                    ? lastMessage.content.substring(0, 100) + '...' 
+                const content = lastMessage.content.length > 100
+                    ? lastMessage.content.substring(0, 100) + '...'
                     : lastMessage.content;
-                
+
                 const announcementText = `${messageType}: ${content}`;
-                
+
                 // Debug logging
                 console.log('Screen Reader Announcement:', announcementText);
-                
+
                 // Clear first, then set new content to ensure announcement
                 announcementElement.textContent = '';
                 announcementElement.setAttribute('aria-live', 'off');
-                
+
                 setTimeout(() => {
                     announcementElement.setAttribute('aria-live', 'polite');
                     announcementElement.textContent = announcementText;
-                    
+
                     // Force a re-render by briefly changing and restoring the content
                     setTimeout(() => {
                         const currentText = announcementElement.textContent;
@@ -917,7 +917,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         }, 50);
                     }, 100);
                 }, 100);
-                
+
                 // Clear the announcement after a longer delay to allow screen readers to process
                 setTimeout(() => {
                     announcementElement.textContent = '';
@@ -931,7 +931,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (screenReaderSupport) {
             const announcementElement = document.getElementById('screen-reader-announcements');
             const statusElement = document.getElementById('screen-reader-status');
-            
+
             if (announcementElement && statusElement) {
                 if (isLoading) {
                     const loadingText = 'AI is typing a response...';
@@ -986,7 +986,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (dataRetention && (dataRetention === '0' || !isNaN(parseInt(dataRetention)))) {
             cleanupOldData();
         }
-        
+
         // Set up periodic cleanup (every hour) - only if data retention is enabled
         if (dataRetention && dataRetention !== '0') {
             const cleanupInterval = setInterval(() => {
@@ -994,7 +994,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     cleanupOldData();
                 }
             }, 60 * 60 * 1000);
-            
+
             return () => clearInterval(cleanupInterval);
         }
     }, [dataRetention, currentUser]);
@@ -1038,7 +1038,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         saveCurrentSession();
                     }
                 }, 30000);
-                
+
                 return () => clearInterval(autoSaveInterval);
             }
         }
@@ -1072,7 +1072,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Handle modal close with callback
     const handleClose = () => {
         setIsOpen(false);
-        
+
         if (onModalClose) {
             onModalClose();
         }
@@ -1129,7 +1129,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Keyboard shortcuts: Ctrl+F focus, Esc close
     useEffect(() => {
         if (!isOpen) return;
-        
+
         const handleKeyDown = (event) => {
             if (event.ctrlKey && event.key === 'f') {
                 event.preventDefault(); // Prevent browser find dialog
@@ -1138,7 +1138,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 setIsOpen(false);
             }
         };
-        
+
         document.addEventListener('keydown', handleKeyDown);
         return () => {
             document.removeEventListener('keydown', handleKeyDown);
@@ -1150,26 +1150,26 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (isOpen) {
             // Store current scroll position
             const scrollY = window.scrollY;
-            
+
             // Apply scroll lock styles
             document.body.style.overflow = 'hidden';
             document.body.style.position = 'fixed';
             document.body.style.top = `-${scrollY}px`;
             document.body.style.width = '100%';
             document.body.style.height = '100%';
-            
+
             // Additional mobile-specific fixes
             document.documentElement.style.overflow = 'hidden';
             document.documentElement.style.height = '100%';
-            
+
             // Prevent touch events on the body (iOS specific)
             const preventTouch = (e) => {
                 if (e.target.closest('.gemini-chatbox-modal')) return;
                 e.preventDefault();
             };
-            
+
             document.addEventListener('touchmove', preventTouch, { passive: false });
-            
+
             return () => {
                 // Restore scroll position and styles
                 document.body.style.overflow = '';
@@ -1179,10 +1179,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 document.body.style.height = '';
                 document.documentElement.style.overflow = '';
                 document.documentElement.style.height = '';
-                
+
                 // Remove touch event listener
                 document.removeEventListener('touchmove', preventTouch);
-                
+
                 // Restore scroll position
                 window.scrollTo(0, scrollY);
             };
@@ -1191,8 +1191,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // Dispatch custom event when Gemini chatbot opens/closes
     useEffect(() => {
-        const event = new CustomEvent('geminiChatboxToggle', { 
-            detail: { isOpen } 
+        const event = new CustomEvent('geminiChatboxToggle', {
+            detail: { isOpen }
         });
         window.dispatchEvent(event);
         if (isOpen) {
@@ -1251,15 +1251,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         compute();
         const onScroll = () => {
             compute();
-            
+
             // Show floating date when scrolling starts
             setIsScrolling(true);
-            
+
             // Clear existing timeout
             if (scrollTimeoutRef.current) {
                 clearTimeout(scrollTimeoutRef.current);
             }
-            
+
             // Hide floating date after scrolling stops (1 second of inactivity)
             scrollTimeoutRef.current = setTimeout(() => {
                 setIsScrolling(false);
@@ -1312,15 +1312,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             return [...currentMessages, { role: 'user', content: userMessage, timestamp: new Date().toISOString() }];
         });
         lastUserMessageRef.current = userMessage;
-        
+
         // Set loading state to show cancel button
         setIsLoading(true);
-        
+
         // Play sound when message is sent
         playSound('message-sent.mp3');
 
         // Track message sent event
-        trackEvent('message_sent', { 
+        trackEvent('message_sent', {
             messageLength: userMessage.length,
             sessionId: getOrCreateSessionId(),
             tone: currentUser ? tone : 'neutral'
@@ -1329,10 +1329,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
             console.log('Sending message to AI:', userMessage, 'Session:', currentSessionId);
-            
+
             // Note: Session name will be auto-generated by backend after second message
             // This allows the backend to create a more meaningful title based on the conversation
-            
+
             // Support cancelling with AbortController
             abortControllerRef.current?.abort();
             abortControllerRef.current = new AbortController();
@@ -1340,17 +1340,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             let data;
             if (enableStreaming === true || enableStreaming === 'true') {
                 console.log('Streaming enabled - setting up streaming request');
-                
-            const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
-                method: 'POST',
+
+                const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
+                    method: 'POST',
                     credentials: 'include',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({
-                    message: userMessage,
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({
+                        message: userMessage,
                         history: enableContextMemory ? messages.slice(-parseInt(contextWindow)) : messages.slice(-10),
-                    sessionId: currentSessionId,
+                        sessionId: currentSessionId,
                         tone: currentUser ? tone : 'neutral',
                         responseLength: aiResponseLength,
                         creativity: aiCreativity,
@@ -1363,9 +1363,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         contextWindow: contextWindow,
                         enableSystemPrompts: enableSystemPrompts,
                         selectedProperties: selectedProperties
-                }),
-                signal: abortControllerRef.current.signal
-            });
+                    }),
+                    signal: abortControllerRef.current.signal
+                });
 
                 if (!response.ok) {
                     const errorData = await response.json();
@@ -1381,9 +1381,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 // Add streaming message to UI
                 setMessages(prev => {
                     const currentMessages = Array.isArray(prev) ? prev : [];
-                    return [...currentMessages, { 
-                        role: 'assistant', 
-                        content: '', 
+                    return [...currentMessages, {
+                        role: 'assistant',
+                        content: '',
                         timestamp: new Date().toISOString(),
                         isStreaming: true
                     }];
@@ -1392,20 +1392,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 try {
                     while (!isStreamingComplete) {
                         const { done, value } = await reader.read();
-                        
+
                         if (done) break;
-                        
+
                         const chunk = decoder.decode(value);
                         const lines = chunk.split('\n');
-                        
+
                         for (const line of lines) {
                             if (line.startsWith('data: ')) {
                                 try {
                                     const streamData = JSON.parse(line.slice(6));
-                                    
+
                                     if (streamData.type === 'chunk') {
                                         streamingResponse += streamData.content;
-                                        
+
                                         // Update the streaming message in real-time
                                         setMessages(prev => {
                                             const currentMessages = Array.isArray(prev) ? prev : [];
@@ -1419,7 +1419,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     } else if (streamData.type === 'done') {
                                         isStreamingComplete = true;
                                         streamingResponse = streamData.content;
-                                        
+
                                         // Finalize the streaming message
                                         setMessages(prev => {
                                             const currentMessages = Array.isArray(prev) ? prev : [];
@@ -1431,7 +1431,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             }
                                             return updatedMessages;
                                         });
-                                        
+
                                         // Clear loading state for streaming
                                         setIsLoading(false);
                                     } else if (streamData.type === 'error') {
@@ -1477,48 +1477,48 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     signal: abortControllerRef.current.signal
                 });
 
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
-            }
+                if (!response.ok) {
+                    const errorData = await response.json();
+                    throw new Error(errorData.message || `HTTP error! status: ${response.status}`);
+                }
 
                 data = await response.json();
             }
             console.log('Response data received:', data);
             console.log('Response content length:', data.response ? data.response.length : 0);
-            
+
             // Only handle non-streaming responses here (streaming is handled above)
             if (!enableStreaming || enableStreaming === 'false') {
-            // Validate response structure
-            if (data && data.response && typeof data.response === 'string') {
-                const trimmedResponse = data.response.trim();
-                console.log('Setting message with response length:', trimmedResponse.length);
-                setMessages(prev => {
-                    const currentMessages = Array.isArray(prev) ? prev : [];
-                    return [...currentMessages, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }];
-                });
-                if (!isOpen) {
-                    setUnreadCount(count => count + 1);
-                }
-                
-                // Play sound when message is received
-                playSound('message-received.mp3');
+                // Validate response structure
+                if (data && data.response && typeof data.response === 'string') {
+                    const trimmedResponse = data.response.trim();
+                    console.log('Setting message with response length:', trimmedResponse.length);
+                    setMessages(prev => {
+                        const currentMessages = Array.isArray(prev) ? prev : [];
+                        return [...currentMessages, { role: 'assistant', content: trimmedResponse, timestamp: new Date().toISOString() }];
+                    });
+                    if (!isOpen) {
+                        setUnreadCount(count => count + 1);
+                    }
 
-                // Update session ID if provided in response
-                if (data.sessionId && data.sessionId !== sessionId) {
-                    setSessionId(data.sessionId);
-                    localStorage.setItem('gemini_session_id', data.sessionId);
-                }
+                    // Play sound when message is received
+                    playSound('message-received.mp3');
 
-                // Refresh rate limit status after successful request
-                fetchRateLimitStatus();
+                    // Update session ID if provided in response
+                    if (data.sessionId && data.sessionId !== sessionId) {
+                        setSessionId(data.sessionId);
+                        localStorage.setItem('gemini_session_id', data.sessionId);
+                    }
 
-                // Show sent success check briefly
-                setSendIconSent(true);
-                setTimeout(() => setSendIconSent(false), 600);
-            } else {
-                console.error('Invalid response structure:', data);
-                throw new Error('Invalid response structure from server');
+                    // Refresh rate limit status after successful request
+                    fetchRateLimitStatus();
+
+                    // Show sent success check briefly
+                    setSendIconSent(true);
+                    setTimeout(() => setSendIconSent(false), 600);
+                } else {
+                    console.error('Invalid response structure:', data);
+                    throw new Error('Invalid response structure from server');
                 }
             } else {
                 // For streaming responses, handle final processing
@@ -1526,7 +1526,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     if (!isOpen) {
                         setUnreadCount(count => count + 1);
                     }
-                    
+
                     // Play sound when streaming is complete
                     playSound('message-received.mp3');
 
@@ -1547,7 +1547,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         } catch (error) {
             console.error('Error in handleSubmit:', error);
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
-            
+
             if (error.name === 'AbortError') {
                 // Do not append error message on cancel
                 setIsLoading(false);
@@ -1563,11 +1563,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             } else if (error.message.includes('Failed to fetch')) {
                 errorMessage = 'Network error. Please check your connection and try again.';
             }
-            
+
             setMessages(prev => {
                 const currentMessages = Array.isArray(prev) ? prev : [];
-                return [...currentMessages, { 
-                    role: 'assistant', 
+                return [...currentMessages, {
+                    role: 'assistant',
                     content: errorMessage,
                     timestamp: new Date().toISOString(),
                     isError: true,
@@ -1619,20 +1619,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
             return;
         }
-        
+
         setIsLoading(true);
-        
+
         // Remove the error message
         setMessages(prev => prev.filter((_, index) => index !== messageIndex));
-        
+
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
-            
+
             // Support cancelling with AbortController
             abortControllerRef.current?.abort();
             abortControllerRef.current = new AbortController();
-            
+
             const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
                 method: 'POST',
                 credentials: 'include',
@@ -1650,7 +1650,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     topP: topP, // Send custom topP
                     topK: topK, // Send custom topK
                     maxTokens: maxTokens, // Send custom max tokens
-                    enableStreaming: enableStreaming, // Send streaming preference
+                    enableStreaming: false, // Force non-streaming for retries to ensure JSON response
                     enableContextMemory: enableContextMemory, // Send context memory preference
                     contextWindow: contextWindow, // Send context window size
                     enableSystemPrompts: enableSystemPrompts // Send system prompts preference
@@ -1664,15 +1664,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
 
             const data = await response.json();
-            
+
             if (data && data.response && typeof data.response === 'string') {
                 const trimmedResponse = data.response.trim();
-                setMessages(prev => [...prev, { 
-                    role: 'assistant', 
-                    content: trimmedResponse, 
-                    timestamp: new Date().toISOString() 
+                setMessages(prev => [...prev, {
+                    role: 'assistant',
+                    content: trimmedResponse,
+                    timestamp: new Date().toISOString()
                 }]);
-                
+
                 // Update session ID if provided in response
                 if (data.sessionId && data.sessionId !== sessionId) {
                     setSessionId(data.sessionId);
@@ -1687,7 +1687,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         } catch (error) {
             console.error('Error in retryMessage:', error);
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
-            
+
             if (error.name === 'AbortError') {
                 setIsLoading(false);
                 return;
@@ -1702,9 +1702,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             } else if (error.message.includes('Failed to fetch')) {
                 errorMessage = 'Network error. Please check your connection and try again.';
             }
-            
-            setMessages(prev => [...prev, { 
-                role: 'assistant', 
+
+            setMessages(prev => [...prev, {
+                role: 'assistant',
                 content: errorMessage,
                 timestamp: new Date().toISOString(),
                 isError: true,
@@ -1726,10 +1726,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const currentSessionId = getOrCreateSessionId();
         const bookmarkKey = `${currentSessionId}_${messageIndex}_${message.timestamp}`;
         const isBookmarked = bookmarkedMessages.some(bm => bm.key === bookmarkKey);
-        
+
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            
+
             if (isBookmarked) {
                 // Remove bookmark
                 const response = await fetch(`${API_BASE_URL}/api/gemini/bookmark`, {
@@ -1745,13 +1745,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     })
                 });
 
-                    if (response.ok) {
-                        // Reload bookmarks from backend
-                        loadBookmarkedMessages(currentSessionId);
-                        toast.success('Bookmark removed');
-                    } else {
-                        toast.error('Failed to remove bookmark');
-                    }
+                if (response.ok) {
+                    // Reload bookmarks from backend
+                    loadBookmarkedMessages(currentSessionId);
+                    toast.success('Bookmark removed');
+                } else {
+                    toast.error('Failed to remove bookmark');
+                }
             } else {
                 // Add bookmark
                 const response = await fetch(`${API_BASE_URL}/api/gemini/bookmark`, {
@@ -1769,13 +1769,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     })
                 });
 
-                    if (response.ok) {
-                        // Reload bookmarks from backend
-                        loadBookmarkedMessages(currentSessionId);
-                        toast.success('Message bookmarked');
-                    } else {
-                        toast.error('Failed to bookmark message');
-                    }
+                if (response.ok) {
+                    // Reload bookmarks from backend
+                    loadBookmarkedMessages(currentSessionId);
+                    toast.success('Message bookmarked');
+                } else {
+                    toast.error('Failed to bookmark message');
+                }
             }
         } catch (error) {
             console.error('Error toggling bookmark:', error);
@@ -1810,7 +1810,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
-            
+
             const response = await fetch(`${API_BASE_URL}/api/gemini/rate`, {
                 method: 'POST',
                 credentials: 'include',
@@ -1886,7 +1886,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             text: message.content,
             url: window.location.href
         };
-        
+
         if (navigator.share) {
             try {
                 await navigator.share(shareData);
@@ -1959,11 +1959,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
             console.log('Sending edited message to Gemini:', messageContent, 'Session:', currentSessionId);
-            
+
             // Support cancelling with AbortController
             abortControllerRef.current?.abort();
             abortControllerRef.current = new AbortController();
-            
+
             const response = await fetch(`${API_BASE_URL}/api/gemini/chat`, {
                 method: 'POST',
                 credentials: 'include', // Include cookies for authentication
@@ -1993,7 +1993,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const data = await response.json();
             console.log('Edited message response data received:', data);
             console.log('Edited message response content length:', data.response ? data.response.length : 0);
-            
+
             // Validate response structure
             if (data && data.response && typeof data.response === 'string') {
                 const trimmedResponse = data.response.trim();
@@ -2005,10 +2005,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     console.log('Last message:', newMessages[newMessages.length - 1]);
                     return newMessages;
                 });
-                
+
                 // Play sound when edited message response is received
                 playSound('message-received.mp3');
-                
+
                 // Update session ID if provided in response
                 if (data.sessionId && data.sessionId !== sessionId) {
                     setSessionId(data.sessionId);
@@ -2017,7 +2017,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                 // Refresh rate limit status after successful request
                 fetchRateLimitStatus();
-                
+
                 // Scroll to bottom to show the new response
                 setTimeout(() => {
                     scrollToBottom();
@@ -2032,9 +2032,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 return;
             }
             console.error('Error in sendEditedMessageToAPI:', error);
-            
+
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
-            
+
             if (error.message.includes('timeout')) {
                 errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
             } else if (error.message.includes('HTTP error')) {
@@ -2044,9 +2044,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             } else if (error.message.includes('Failed to fetch')) {
                 errorMessage = 'Network error. Please check your connection and try again.';
             }
-            
-            setMessages(prev => [...prev, { 
-                role: 'assistant', 
+
+            setMessages(prev => [...prev, {
+                role: 'assistant',
                 content: errorMessage,
                 timestamp: new Date().toISOString(),
                 isError: true
@@ -2072,25 +2072,25 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const generateSessionName = (message) => {
         // Remove tone prefix if present
         const cleanMessage = message.replace(/^\[Tone: \w+\]\s*/, '');
-        
+
         // Truncate to reasonable length (max 50 characters)
         let sessionName = cleanMessage.trim();
         if (sessionName.length > 50) {
             sessionName = sessionName.substring(0, 47) + '...';
         }
-        
+
         // If message is too short or empty, use a default name
         if (sessionName.length < 3) {
             sessionName = 'New Chat';
         }
-        
+
         return sessionName;
     };
 
     // Update session name via API
     const updateSessionName = async (sessionId, name) => {
         if (!currentUser || !sessionId || !name) return;
-        
+
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
@@ -2099,7 +2099,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ name })
             });
-            
+
             if (response.ok) {
                 console.log('Session name updated successfully:', name);
                 // Refresh chat sessions to show updated name
@@ -2114,13 +2114,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const loadChatSessions = async () => {
         if (!currentUser) return [];
-        
+
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await fetch(`${API_BASE_URL}/api/gemini/sessions`, {
                 credentials: 'include'
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 const sessions = data.sessions || [];
@@ -2142,7 +2142,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             const response = await fetch(`${API_BASE_URL}/api/chat-history/session/${sessionId}`, {
                 credentials: 'include'
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.data.messages && Array.isArray(data.data.messages)) {
@@ -2152,22 +2152,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
                         timestamp: new Date().toISOString()
                     };
-                    
+
                     let sessionMessages = data.data.messages;
                     if (sessionMessages.length === 0 || sessionMessages[0].content !== defaultMessage.content) {
                         sessionMessages = [defaultMessage, ...sessionMessages];
                     }
-                    
+
                     setMessages(sessionMessages);
                     setSessionId(sessionId);
                     localStorage.setItem('gemini_session_id', sessionId);
-                    
+
                     // Load ratings for this session
                     await loadMessageRatings(sessionId);
-                    
+
                     // Load bookmarks for this session
                     await loadBookmarkedMessages(sessionId);
-                    
+
                     toast.success('Session loaded');
                 }
             }
@@ -2179,13 +2179,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const loadMessageRatings = async (sessionId) => {
         if (!currentUser || !sessionId) return;
-        
+
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await fetch(`${API_BASE_URL}/api/gemini/ratings/${sessionId}`, {
                 credentials: 'include'
             });
-            
+
             if (response.ok) {
                 const data = await response.json();
                 if (data.success && data.ratings) {
@@ -2201,7 +2201,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Load bookmarked messages for current session
     const loadBookmarkedMessages = async (sessionId) => {
         if (!currentUser || !sessionId) return;
-        
+
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const response = await fetch(`${API_BASE_URL}/api/gemini/bookmarks/${sessionId}`, {
@@ -2239,7 +2239,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-            
+
             // Always save the current session to history before creating new one
             const currentSessionId = getOrCreateSessionId();
             if (messages.length > 0) {
@@ -2255,7 +2255,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         totalMessages: messages.length
                     })
                 });
-                
+
                 if (!saveResponse.ok) {
                     console.error('Failed to save current session');
                 }
@@ -2276,7 +2276,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Set the new session ID
                     setSessionId(data.sessionId);
                     localStorage.setItem('gemini_session_id', data.sessionId);
-                    
+
                     // Reset messages to default welcome message
                     const defaultMessage = {
                         role: 'assistant',
@@ -2284,17 +2284,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         timestamp: new Date().toISOString()
                     };
                     setMessages([defaultMessage]);
-                    
+
                     // Clear ratings for new session
                     setMessageRatings({});
                     localStorage.setItem('gemini_ratings', JSON.stringify({}));
-                    
+
                     // Clear bookmarks for new session
                     setBookmarkedMessages([]);
-                    
+
                     // Refresh chat sessions
                     await loadChatSessions();
-                    
+
                     toast.success('New chat session created');
                 }
             } else {
@@ -2338,7 +2338,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setIsTyping(true);
         setTypingText('');
         let index = 0;
-        
+
         const typeInterval = setInterval(() => {
             if (index < text.length) {
                 setTypingText(text.substring(0, index + 1));
@@ -2367,7 +2367,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
                 }
             }, 100);
-            
+
             // Remove highlight after 3 seconds
             setTimeout(() => {
                 setHighlightedMessage(null);
@@ -2399,7 +2399,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             console.log('Recording already in progress, ignoring start request');
             return;
         }
-        
+
         try {
             // Cleanup any existing recording state
             if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
@@ -2409,15 +2409,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setRecordedAudioFile(null);
             setAudioChunks([]);
             recordingChunksRef.current = [];
-            
-            const stream = await navigator.mediaDevices.getUserMedia({ 
+
+            const stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: true,
                     noiseSuppression: true,
                     sampleRate: 44100
                 }
             });
-            
+
             // Check supported MIME types (prioritize formats that work with backend)
             const supportedTypes = [
                 'audio/wav',
@@ -2426,7 +2426,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 'audio/webm',
                 'audio/webm;codecs=opus'
             ];
-            
+
             let selectedType = 'audio/wav';
             for (const type of supportedTypes) {
                 if (MediaRecorder.isTypeSupported(type)) {
@@ -2434,11 +2434,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     break;
                 }
             }
-            
+
             console.log('Selected audio type:', selectedType);
-            
+
             const recorder = new MediaRecorder(stream, { mimeType: selectedType });
-            
+
             // Reset chunks array for new recording
             recordingChunksRef.current = [];
             console.log('Starting new recording, chunks reset');
@@ -2460,47 +2460,47 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     console.log('Recording stopped, chunks:', chunks.length);
                     console.log('Chunks array:', chunks);
                     console.log('Ref current:', recordingChunksRef.current);
-                    
+
                     if (chunks.length === 0) {
                         console.error('No chunks found in recordingChunksRef.current');
                         throw new Error('No audio data recorded');
                     }
-                    
+
                     // Check if recording was too short
                     const totalSize = chunks.reduce((total, chunk) => total + chunk.size, 0);
                     if (totalSize < 1000) { // Less than 1KB
                         throw new Error('Recording too short, please record for at least 1 second');
                     }
-                    
+
                     const audioBlob = new Blob(chunks, { type: selectedType });
                     console.log('Audio blob created:', audioBlob.size, 'bytes, type:', audioBlob.type);
-                    
+
                     if (audioBlob.size === 0) {
                         throw new Error('Empty audio blob');
                     }
-                    
+
                     // Skip blob test to avoid playback issues
                     console.log('Audio blob created successfully, skipping test');
-                    
+
                     // Generate filename with proper extension
                     let extension = 'webm';
                     if (selectedType.includes('wav')) extension = 'wav';
                     else if (selectedType.includes('mp4')) extension = 'mp4';
                     else if (selectedType.includes('ogg')) extension = 'ogg';
                     else if (selectedType.includes('opus')) extension = 'webm';
-                    
+
                     const fileName = `recording-${Date.now()}.${extension}`;
                     const audioFile = new File([audioBlob], fileName, { type: audioBlob.type });
                     const audioUrl = URL.createObjectURL(audioBlob);
-                    
+
                     console.log('Audio URL created:', audioUrl);
-                    
+
                     // Store audio for preview and upload
                     setAudioChunks([audioBlob]);
                     setRecordedAudioFile(audioFile);
                     setRecordedAudioUrl(audioUrl);
                     setRecordedAudioType(selectedType);
-                    
+
                     // Show audio preview
                     setShowAudioPreview(true);
                 } catch (error) {
@@ -2522,7 +2522,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setMediaRecorder(recorder);
             setIsRecording(true);
             setAudioChunks([]);
-            
+
             // Start recording timer
             setRecordingStartTime(Date.now());
         } catch (error) {
@@ -2613,18 +2613,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                 if (!transcriptionResponse.ok) {
                     const errorData = await transcriptionResponse.json();
-                    
+
                     // Handle rate limiting with specific user feedback
                     if (transcriptionResponse.status === 429) {
                         const retryAfter = errorData.retryAfter || 60;
                         throw new Error(`Rate limit exceeded. Please wait ${retryAfter} seconds before trying again.`);
                     }
-                    
+
                     throw new Error(errorData.message || 'Transcription failed');
                 }
 
                 const transcriptionData = await transcriptionResponse.json();
-                
+
                 if (transcriptionData.success && transcriptionData.transcription) {
                     return {
                         audioUrl,
@@ -2638,7 +2638,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
             } catch (transcriptionError) {
                 console.error('Speech-to-text error:', transcriptionError);
-                
+
                 // Check if it's a rate limit error
                 if (transcriptionError.message.includes('Rate limit exceeded')) {
                     return {
@@ -2646,7 +2646,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         transcription: 'I\'ve uploaded your audio recording, but the transcription service is currently experiencing high demand. Please describe what you said in the audio or what you need help with, and I\'ll assist you accordingly.'
                     };
                 }
-                
+
                 // Fallback to asking user to describe their audio
                 return {
                     audioUrl,
@@ -2656,14 +2656,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         } catch (error) {
             console.error('Audio upload/transcription error:', error);
-            
+
             // Handle cancellation
             if (error.name === 'AbortError') {
                 console.log('Audio upload/transcription cancelled by user');
                 toast.info('Audio upload cancelled');
                 return null; // Return null to indicate cancellation
             }
-            
+
             toast.error('Failed to upload and transcribe audio with Whisper AI');
             throw error;
         } finally {
@@ -2689,32 +2689,32 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         try {
             const result = await uploadAudioAndTranscribe(recordedAudioFile);
-            
+
             // Check if upload was cancelled
             if (result === null) {
                 return; // Upload was cancelled, do nothing
             }
-            
+
             const { audioUrl, transcription } = result;
-            
+
             // Add the transcribed message to input
             setInputMessage(transcription);
-            
+
             // Close audio preview and voice input modals immediately
             setShowAudioPreview(false);
             setShowVoiceInput(false);
-            
+
             // Cleanup blob URL
             if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
                 URL.revokeObjectURL(recordedAudioUrl);
             }
-            
+
             // Clear all audio-related state
             setRecordedAudioUrl(null);
             setRecordedAudioFile(null);
             setAudioChunks([]);
             recordingChunksRef.current = [];
-            
+
             // Auto-submit the transcribed message
             setTimeout(() => {
                 handleSubmit(new Event('submit'));
@@ -2722,16 +2722,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         } catch (error) {
             console.error('Error sending recorded audio:', error);
-            
+
             // Show fallback option
             const shouldContinue = window.confirm(
                 'Audio upload failed. Would you like to send a message about the audio recording instead?'
             );
-            
+
             if (shouldContinue) {
                 // Send a message about the audio instead
                 setInputMessage('I recorded an audio message but had trouble uploading it. Please help me with my question.');
-                
+
                 // Close audio preview and voice input modals
                 setShowAudioPreview(false);
                 setShowVoiceInput(false);
@@ -2742,7 +2742,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 setRecordedAudioFile(null);
                 setAudioChunks([]);
                 recordingChunksRef.current = [];
-                
+
                 // Auto-submit the fallback message
                 setTimeout(() => {
                     handleSubmit(new Event('submit'));
@@ -2755,7 +2755,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const handleFileUpload = async (event) => {
         const files = Array.from(event.target.files);
-        
+
         if (files.length === 0) {
             return;
         }
@@ -2765,7 +2765,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const validAudioTypes = ['audio/mp3', 'audio/wav', 'audio/m4a', 'audio/aac', 'audio/ogg', 'audio/webm'];
         const validVideoTypes = ['video/mp4', 'video/webm', 'video/ogg', 'video/mov', 'video/mkv'];
         const validDocTypes = ['application/pdf', 'text/plain', 'text/csv', 'application/msword', 'application/vnd.openxmlformats-officedocument.wordprocessingml.document', 'application/vnd.ms-excel', 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet'];
-        
+
         const allValidTypes = [...validImageTypes, ...validAudioTypes, ...validVideoTypes, ...validDocTypes];
 
         const validFiles = [];
@@ -2835,20 +2835,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
 
                 const uploadData = await response.json();
-                
+
                 // Send to Gemini chat with file context
-                const fileType = file.type.startsWith('image/') ? 'image' : 
-                                file.type.startsWith('audio/') ? 'audio' : 
-                                file.type.startsWith('video/') ? 'video' : 'document';
-                
+                const fileType = file.type.startsWith('image/') ? 'image' :
+                    file.type.startsWith('audio/') ? 'audio' :
+                        file.type.startsWith('video/') ? 'video' : 'document';
+
                 const fileUrl = uploadData.imageUrl || uploadData.audioUrl || uploadData.videoUrl || uploadData.documentUrl;
-                
+
                 // Create a message with file context
                 const messageWithFile = `I've uploaded a ${fileType} file: ${file.name}. Please analyze it and help me with it. File URL: ${fileUrl}`;
-                
+
                 // Add to input and auto-send
                 setInputMessage(messageWithFile);
-                
+
                 // Auto-submit after a short delay
                 setTimeout(() => {
                     handleSubmit(new Event('submit'));
@@ -3204,10 +3204,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (typingTimeoutRef.current) {
             clearTimeout(typingTimeoutRef.current);
         }
-        
+
         // Play typing sound immediately
         playTypingSound();
-        
+
         // Set timeout to play sound again after 500ms of no typing
         typingTimeoutRef.current = setTimeout(() => {
             // This will be called if user stops typing for 500ms
@@ -3218,15 +3218,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const cleanupOldData = async () => {
         try {
             if (dataRetention === '0') return; // Forever - no cleanup
-            
+
             const retentionDays = parseInt(dataRetention);
             if (isNaN(retentionDays) || retentionDays <= 0) return; // Invalid retention days
-            
+
             const cutoffDate = new Date();
             cutoffDate.setDate(cutoffDate.getDate() - retentionDays);
-            
+
             console.log(`Data retention cleanup: removing data older than ${retentionDays} days (${cutoffDate.toISOString()})`);
-            
+
             // Clean up old chat sessions
             if (currentUser) {
                 loadChatSessions().then(async sessions => {
@@ -3241,16 +3241,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 return false;
                             }
                         });
-                        
+
                         console.log(`Found ${sessionsToDelete.length} old sessions to delete`);
-                        
+
                         // Delete sessions with a small delay between each to avoid overwhelming the server
                         for (let i = 0; i < sessionsToDelete.length; i++) {
                             const session = sessionsToDelete[i];
                             try {
                                 console.log(`Deleting session ${i + 1}/${sessionsToDelete.length}:`, session.sessionId);
                                 await deleteSession(session.sessionId);
-                                
+
                                 // Small delay between deletions
                                 if (i < sessionsToDelete.length - 1) {
                                     await new Promise(resolve => setTimeout(resolve, 100));
@@ -3264,7 +3264,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     console.error('Error loading chat sessions for cleanup:', error);
                 });
             }
-            
+
             // Clean up old messages from current session
             setMessages(prev => {
                 if (Array.isArray(prev) && prev.length > 0) {
@@ -3277,11 +3277,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             return true; // Keep message if date is invalid
                         }
                     });
-                    
+
                     if (filteredMessages.length !== prev.length) {
                         console.log(`Cleaned up ${prev.length - filteredMessages.length} old messages from current session`);
                     }
-                    
+
                     return filteredMessages;
                 }
                 return prev;
@@ -3305,7 +3305,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const filtered = messages.map((message, index) => ({
             ...message,
             originalIndex: index
-        })).filter(message => 
+        })).filter(message =>
             message.content.toLowerCase().includes(query.toLowerCase())
         );
         setFilteredMessages(filtered);
@@ -3316,13 +3316,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setShowSearchInChat(false);
         setSearchQuery('');
         setFilteredMessages([]);
-        
+
         // Find the original message index
         const originalIndex = message.originalIndex;
-        
+
         // Highlight the message
         setHighlightedMessage(originalIndex);
-        
+
         // Scroll to the message
         setTimeout(() => {
             const messageElement = document.querySelector(`[data-message-index="${originalIndex}"]`);
@@ -3330,7 +3330,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
             }
         }, 100);
-        
+
         // Remove highlight after 3 seconds
         setTimeout(() => {
             setHighlightedMessage(null);
@@ -3481,9 +3481,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         // Simple URL regex pattern
         const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-        
+
         const parts = text.split(urlRegex);
-        
+
         return parts.map((part, index) => {
             // Check if this part is a URL
             if (urlRegex.test(part)) {
@@ -3492,12 +3492,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 if (!url.startsWith('http://') && !url.startsWith('https://')) {
                     url = 'https://' + url;
                 }
-                
+
                 // Different styling for sent vs received messages
-                const linkClasses = isSentMessage 
-                    ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer" 
+                const linkClasses = isSentMessage
+                    ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer"
                     : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer";
-                
+
                 return (
                     <a
                         key={index}
@@ -3511,7 +3511,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     </a>
                 );
             }
-            
+
             return part;
         });
     };
@@ -3519,14 +3519,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Enhanced markdown rendering function with code highlighting
     const renderMarkdown = (text) => {
         if (!enableMarkdown) return text;
-        
+
         let processedText = text;
-        
+
         // Process code blocks first (before other markdown)
         processedText = processedText.replace(/```(\w+)?\n?([\s\S]*?)```/g, (match, language, code) => {
             let lang = language || 'text';
             const cleanCode = code.trim();
-            
+
             // Map common language aliases to Prism.js language names
             const languageMap = {
                 'html': 'markup',
@@ -3538,9 +3538,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 'shell': 'bash',
                 'md': 'markdown'
             };
-            
+
             lang = languageMap[lang] || lang;
-            
+
             if (enableCodeHighlighting) {
                 try {
                     // Highlight the code with Prism.js
@@ -3554,7 +3554,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 return `<div class="code-block"><pre class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 p-4 rounded-lg overflow-x-auto my-4 border border-gray-300 dark:border-gray-600"><code class="language-${lang}">${cleanCode}</code></pre></div>`;
             }
         });
-        
+
         // Process inline code
         processedText = processedText.replace(/`([^`]+)`/g, '<code class="bg-gray-100 dark:bg-gray-800 text-gray-900 dark:text-gray-200 px-2 py-1 rounded text-sm font-mono border border-gray-300 dark:border-gray-600">$1</code>');
         // Process markdown tables (before processing other markdown elements)
@@ -3562,18 +3562,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         processedText = processedText.replace(/(\|[^\n]+\|\n\|[-\s|:]+\|\n(?:\|[^\n]+\|\n?)+)/g, (match) => {
             const lines = match.trim().split('\n');
             if (lines.length < 2) return match; // Need at least header and separator
-            
+
             // Extract header row
             const headerRow = lines[0].split('|').map(cell => cell.trim()).filter(cell => cell);
-            
+
             // Extract data rows (skip separator line at index 1)
-            const dataRows = lines.slice(2).map(line => 
+            const dataRows = lines.slice(2).map(line =>
                 line.split('|').map(cell => cell.trim()).filter(cell => cell)
             );
-            
+
             // Build HTML table
             let tableHtml = '<div class="table-wrapper my-4 overflow-x-auto"><table class="markdown-table border-collapse w-full text-sm">';
-            
+
             // Header row
             tableHtml += '<thead><tr>';
             headerRow.forEach(cell => {
@@ -3581,7 +3581,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 tableHtml += `<th class="markdown-table-th border border-gray-300 dark:border-gray-600 px-3 py-2 text-left font-semibold bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-100">${cellContent}</th>`;
             });
             tableHtml += '</tr></thead>';
-            
+
             // Body rows
             tableHtml += '<tbody>';
             dataRows.forEach(row => {
@@ -3596,12 +3596,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 }
             });
             tableHtml += '</tbody></table></div>';
-            
+
             return tableHtml;
         });
-        
 
-        
+
+
         // Process other markdown elements
         processedText = processedText
             .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold text-black dark:text-white">$1</strong>') // Bold
@@ -3612,7 +3612,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             .replace(/^\* (.*$)/gim, '<li class="ml-4 list-disc text-black dark:text-white">$1</li>') // Bullet points
             .replace(/^\d+\. (.*$)/gim, '<li class="ml-4 list-decimal text-black dark:text-white">$1</li>') // Numbered lists
             .replace(/\n/g, '<br>'); // Line breaks
-        
+
         return processedText;
     };
 
@@ -3627,24 +3627,24 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         // First process markdown
         const markdownProcessed = renderMarkdown(text);
-        
+
         // Then process links in the markdown-processed text
         const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
-        
+
         // Split by URLs and process each part
         const parts = markdownProcessed.split(urlRegex);
-        
+
         return parts.map((part, index) => {
             if (urlRegex.test(part)) {
                 let url = part;
                 if (!url.startsWith('http://') && !url.startsWith('https://')) {
                     url = 'https://' + url;
                 }
-                
-                const linkClasses = isSentMessage 
-                    ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer" 
+
+                const linkClasses = isSentMessage
+                    ? "text-white hover:text-blue-200 underline transition-colors duration-200 cursor-pointer"
                     : "text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer";
-                
+
                 return (
                     <a
                         key={index}
@@ -3664,7 +3664,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Analytics tracking
     const trackEvent = (eventName, data = {}) => {
         if (!enableAnalytics) return;
-        
+
         // Simple analytics tracking
         const event = {
             event: eventName,
@@ -3673,7 +3673,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             sessionId: getOrCreateSessionId(),
             data: data
         };
-        
+
         // Store in localStorage for now (in production, send to analytics service)
         const analyticsData = localStorage.getItem('gemini_analytics');
         let analytics = [];
@@ -3691,7 +3691,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     // Error reporting
     const reportError = (error, context = {}) => {
         if (!enableErrorReporting) return;
-        
+
         const errorReport = {
             error: error.message || error,
             stack: error.stack,
@@ -3702,7 +3702,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             userAgent: navigator.userAgent,
             url: window.location.href
         };
-        
+
         // Store in localStorage for now (in production, send to error reporting service)
         const errorsData = localStorage.getItem('gemini_errors');
         let errors = [];
@@ -3715,7 +3715,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
         errors.push(errorReport);
         localStorage.setItem('gemini_errors', JSON.stringify(errors.slice(-50))); // Keep last 50 errors
-        
+
         console.error('Error reported:', errorReport);
     };
 
@@ -3725,18 +3725,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             console.log('Auto-save skipped: No user or no messages');
             return;
         }
-        
+
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
-            
+
             if (!currentSessionId) {
                 console.log('Auto-save skipped: No session ID');
                 return;
             }
-            
+
             console.log('Auto-saving session:', currentSessionId, 'Messages:', messages.length);
-            
+
             const saveResponse = await fetch(`${API_BASE_URL}/api/chat-history/session/${currentSessionId}`, {
                 method: 'PUT',
                 credentials: 'include',
@@ -3750,7 +3750,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     lastActivity: new Date().toISOString()
                 })
             });
-            
+
             if (saveResponse.ok) {
                 console.log('Session auto-saved successfully');
             } else {
@@ -3819,13 +3819,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </button>
                         </div>
                     )}
-                    
+
                     <button
                         onClick={isOpen ? handleClose : handleOpen}
-                        className={`relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center ${
-                            isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : `bg-gradient-to-br ${themeColors.primary}`
-                        }`}
-                        style={{ 
+                        className={`relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center ${isDarkMode ? 'bg-gradient-to-br from-gray-800 to-gray-900' : `bg-gradient-to-br ${themeColors.primary}`
+                            }`}
+                        style={{
                             boxShadow: isDarkMode ? '0 10px 25px rgba(0,0,0,0.3)' : `0 10px 25px ${getThemeRingColor()}40`
                         }}
                         aria-label="Open AI Chat"
@@ -3838,7 +3837,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 border: `3px solid ${isDarkMode ? '#4b5563' : getThemeRingColor()}`,
                             }}
                         ></div>
-                        
+
                         {/* Icon with sparkle effect */}
                         <div className="relative">
                             {isOpen ? (
@@ -3850,25 +3849,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                             )}
                         </div>
-                        
+
                         {!isOpen && unreadCount > 0 && (
                             <div className="absolute -top-2 -right-2 bg-red-500 text-white text-[10px] font-bold rounded-full min-w-[20px] h-[20px] px-1 flex items-center justify-center border-2 border-white shadow-lg animate-bounce">
                                 {unreadCount > 99 ? '99+' : unreadCount}
                             </div>
                         )}
-                        
+
                         {/* Enhanced Hover Tooltip */}
-                        <div className={`absolute bottom-full right-0 mb-3 ${
-                            isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-100'
-                        } text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border transform -translate-y-1 transition-all duration-200`}>
+                        <div className={`absolute bottom-full right-0 mb-3 ${isDarkMode ? 'bg-gray-800 text-white border-gray-600' : 'bg-white text-gray-800 border-gray-100'
+                            } text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border transform -translate-y-1 transition-all duration-200`}>
                             <div className="flex items-center gap-2">
                                 <span className="text-lg">🤖</span>
                                 <span className="font-medium">Chat with SetuAI Assistant!</span>
                             </div>
                             {/* Tooltip arrow */}
-                            <div className={`absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent ${
-                                isDarkMode ? 'border-t-gray-800' : 'border-t-white'
-                            }`}></div>
+                            <div className={`absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent ${isDarkMode ? 'border-t-gray-800' : 'border-t-white'
+                                }`}></div>
                         </div>
                     </button>
                 </div>
@@ -3876,18 +3873,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             {/* Chat Window */}
             {isOpen && (
-                <div 
+                <div
                     className={`fixed inset-0 ${isDarkMode ? 'bg-black bg-opacity-70' : 'bg-black bg-opacity-50'} flex items-center justify-center z-50 p-4 md:p-0 md:items-end md:justify-end gemini-chatbox-modal animate-fadeIn${getAccessibilityClasses()}`}
                     role="dialog"
                     aria-modal="true"
                     aria-labelledby="chat-title"
                     aria-describedby="chat-description"
                 >
-                    <div className={`${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-2xl border flex flex-col relative ${
-                        isFullscreen ? 'w-full h-full max-w-none max-h-none rounded-none' :
-                        isExpanded ? 'w-full max-w-4xl h-[85vh] md:mb-12 md:mr-12' : 
-                        'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'
-                    } animate-slideUp`}>
+                    <div className={`${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-2xl border flex flex-col relative ${isFullscreen ? 'w-full h-full max-w-none max-h-none rounded-none' :
+                            isExpanded ? 'w-full max-w-4xl h-[85vh] md:mb-12 md:mr-12' :
+                                'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'
+                        } animate-slideUp`}>
                         {/* Screen reader only elements */}
                         {screenReaderSupport && (
                             <>
@@ -3895,10 +3891,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <div id="chat-description" className="sr-only">
                                     Interactive chat interface with SetuAI assistant. You can send messages, receive responses, and access various features like voice input, file upload, and settings.
                                 </div>
-                                <div 
-                                    id="screen-reader-announcements" 
-                                    className="sr-only" 
-                                    aria-live="polite" 
+                                <div
+                                    id="screen-reader-announcements"
+                                    className="sr-only"
+                                    aria-live="polite"
                                     aria-atomic="true"
                                     role="status"
                                     aria-label="New message announcements"
@@ -3906,10 +3902,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 >
                                     {/* This will be updated to announce new messages */}
                                 </div>
-                                <div 
-                                    id="screen-reader-status" 
-                                    className="sr-only" 
-                                    aria-live="assertive" 
+                                <div
+                                    id="screen-reader-status"
+                                    className="sr-only"
+                                    aria-live="assertive"
                                     aria-atomic="true"
                                     role="status"
                                     aria-label="Status announcements"
@@ -3943,32 +3939,27 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                             {/* Enhanced Right controls */}
                             <div className="flex items-center gap-1 relative flex-shrink-0">
-                                
+
                                 <button
                                     ref={headerMenuButtonRef}
                                     onClick={() => setIsHeaderMenuOpen(open => !open)}
-                                    className={`group relative inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${
-                                        isHeaderMenuOpen 
-                                            ? 'bg-white/20 text-white shadow-lg scale-105' 
+                                    className={`group relative inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${isHeaderMenuOpen
+                                            ? 'bg-white/20 text-white shadow-lg scale-105'
                                             : 'text-white/80 hover:text-white hover:bg-white/10 hover:scale-105'
-                                    }`}
+                                        }`}
                                     title="More options"
                                     aria-label="More options"
                                 >
-                                    <div className={`flex flex-col items-center justify-center space-y-0.5 transition-all duration-200 ${
-                                        isHeaderMenuOpen ? 'rotate-90' : 'group-hover:scale-110'
-                                    }`}>
-                                        <div className={`w-1 h-1 rounded-full bg-current transition-all duration-200 ${
-                                            isHeaderMenuOpen ? 'w-1.5 h-1.5' : ''
-                                        }`}></div>
-                                        <div className={`w-1 h-1 rounded-full bg-current transition-all duration-200 ${
-                                            isHeaderMenuOpen ? 'w-1.5 h-1.5' : ''
-                                        }`}></div>
-                                        <div className={`w-1 h-1 rounded-full bg-current transition-all duration-200 ${
-                                            isHeaderMenuOpen ? 'w-1.5 h-1.5' : ''
-                                        }`}></div>
+                                    <div className={`flex flex-col items-center justify-center space-y-0.5 transition-all duration-200 ${isHeaderMenuOpen ? 'rotate-90' : 'group-hover:scale-110'
+                                        }`}>
+                                        <div className={`w-1 h-1 rounded-full bg-current transition-all duration-200 ${isHeaderMenuOpen ? 'w-1.5 h-1.5' : ''
+                                            }`}></div>
+                                        <div className={`w-1 h-1 rounded-full bg-current transition-all duration-200 ${isHeaderMenuOpen ? 'w-1.5 h-1.5' : ''
+                                            }`}></div>
+                                        <div className={`w-1 h-1 rounded-full bg-current transition-all duration-200 ${isHeaderMenuOpen ? 'w-1.5 h-1.5' : ''
+                                            }`}></div>
                                     </div>
-                                    
+
                                     {/* Subtle glow effect when open */}
                                     {isHeaderMenuOpen && (
                                         <div className="absolute inset-0 rounded-lg bg-gradient-to-r from-blue-400/20 to-purple-400/20 animate-pulse"></div>
@@ -3989,8 +3980,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) && (
                                                 <li>
                                                     <button
-                                                        onClick={async () => { 
-                                                            loadRatingMeta(); 
+                                                        onClick={async () => {
+                                                            loadRatingMeta();
                                                             if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
                                                                 try {
                                                                     setAllRatingsLoading(true);
@@ -4008,8 +3999,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     setAllRatingsLoading(false);
                                                                 }
                                                             }
-                                                            setShowRatingsModal(true); 
-                                                            setIsHeaderMenuOpen(false); 
+                                                            setShowRatingsModal(true);
+                                                            setIsHeaderMenuOpen(false);
                                                         }}
                                                         className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
                                                     >
@@ -4032,9 +4023,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     <span className="font-medium">New Chat</span>
                                                 </button>
                                             </li>
-                                            
+
                                             <li className={`border-t ${isDarkMode ? 'border-gray-600/50' : 'border-gray-200/50'} my-2`}></li>
-                                            
+
                                             {/* Theme & Settings */}
                                             <li>
                                                 <button
@@ -4069,7 +4060,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 >
                                                     <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-green-500/20' : 'bg-green-100'} group-hover:scale-110 transition-transform duration-200`}>
                                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-green-500">
-                                                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z"/>
+                                                            <path d="M17.65 6.35C16.2 4.9 14.21 4 12 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08c-.82 2.33-3.04 4-5.65 4-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z" />
                                                         </svg>
                                                     </div>
                                                     <span className="font-medium">Refresh Messages</span>
@@ -4090,7 +4081,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             </li>
 
                                             <li className={`border-t ${isDarkMode ? 'border-gray-600/50' : 'border-gray-200/50'} my-2`}></li>
-                                            
+
                                             {/* Quick Actions */}
                                             <li>
                                                 <button
@@ -4103,7 +4094,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     <span className="font-medium">Quick Actions</span>
                                                 </button>
                                             </li>
-                                            
+
                                             {/* Bookmarks - Only for logged-in users */}
                                             {currentUser && (
                                                 <li>
@@ -4118,7 +4109,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </button>
                                                 </li>
                                             )}
-                                            
+
                                             {/* Chat History */}
                                             <li>
                                                 <button
@@ -4131,9 +4122,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     <span className="font-medium">Chat History</span>
                                                 </button>
                                             </li>
-                                            
+
                                             <li className={`border-t ${isDarkMode ? 'border-gray-600/50' : 'border-gray-200/50'} my-2`}></li>
-                                            
+
                                             {/* Expand/Collapse only on desktop */}
                                             <li className="hidden md:block">
                                                 <button
@@ -4142,13 +4133,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 >
                                                     <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-gray-500/20' : 'bg-gray-100'} group-hover:scale-110 transition-transform duration-200`}>
                                                         <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor" className="text-gray-600">
-                                                            <path d="M4 4h7v2H6v5H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z"/>
+                                                            <path d="M4 4h7v2H6v5H4V4zm10 0h6v6h-2V6h-4V4zM4 14h2v4h4v2H4v-6zm14 0h2v6h-6v-2h4v-4z" />
                                                         </svg>
                                                     </div>
                                                     <span className="font-medium">{isExpanded ? 'Collapse' : 'Expand'}</span>
                                                 </button>
                                             </li>
-                                            
+
                                             {/* Save current chat */}
                                             <li>
                                                 <button
@@ -4177,7 +4168,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     <span className="font-medium">Save Chat</span>
                                                 </button>
                                             </li>
-                                            
+
                                             {/* Clear */}
                                             {(messages && (messages.length > 1 || messages.some(m => m.role === 'user'))) && (
                                                 <li>
@@ -4187,7 +4178,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     >
                                                         <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-red-500/20' : 'bg-red-100'} group-hover:scale-110 transition-transform duration-200`}>
                                                             <svg width="14" height="14" viewBox="0 0 24 24" fill="currentColor">
-                                                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z"/>
+                                                                <path d="M6 19c0 1.1.9 2 2 2h8c1.1 0 2-.9 2-2V7H6v12zM19 4h-3.5l-1-1h-5l-1 1H5v2h14V4z" />
                                                             </svg>
                                                         </div>
                                                         <span className="font-medium">Clear Chat</span>
@@ -4201,8 +4192,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         </div>
 
                         {/* Messages with date dividers */}
-                        <div 
-                            ref={messagesContainerRef} 
+                        <div
+                            ref={messagesContainerRef}
                             className="flex-1 overflow-y-auto p-4 space-y-4 min-h-0 relative"
                             role="log"
                             aria-live={screenReaderSupport ? "polite" : "off"}
@@ -4210,13 +4201,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         >
                             {/* Floating Date Indicator (sticky below header) */}
                             {floatingDateLabel && (
-                                <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-500 ease-out ${
-                                    isScrolling ? 'opacity-100 scale-100 translate-y-0 animate-floatingDateFadeIn' : 'opacity-0 scale-95 translate-y-2 animate-floatingDateFadeOut'
-                                }`}>
+                                <div className={`sticky top-0 left-0 right-0 z-30 pointer-events-none transition-all duration-500 ease-out ${isScrolling ? 'opacity-100 scale-100 translate-y-0 animate-floatingDateFadeIn' : 'opacity-0 scale-95 translate-y-2 animate-floatingDateFadeOut'
+                                    }`}>
                                     <div className="w-full flex justify-center py-2">
-                                        <div className={`bg-gradient-to-r ${themeColors.primary} text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white transform transition-all duration-300 ${
-                                            isScrolling ? 'shadow-xl' : 'shadow-lg'
-                                        }`}>
+                                        <div className={`bg-gradient-to-r ${themeColors.primary} text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white transform transition-all duration-300 ${isScrolling ? 'shadow-xl' : 'shadow-lg'
+                                            }`}>
                                             {floatingDateLabel}
                                         </div>
                                     </div>
@@ -4238,25 +4227,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         )}
                                         <div
                                             data-message-index={index}
-                                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} ${
-                                                highlightedMessage === index ? 'animate-pulse' : ''
-                                            }`}
+                                            className={`flex ${message.role === 'user' ? 'justify-end' : 'justify-start'} ${highlightedMessage === index ? 'animate-pulse' : ''
+                                                }`}
                                             role="article"
                                             aria-label={`${message.role === 'user' ? 'Your message' : 'AI response'}`}
                                             aria-describedby={screenReaderSupport ? `message-${index}-content` : undefined}
                                         >
                                             <div
-                                                className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${
-                                                    message.role === 'user'
+                                                className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${message.role === 'user'
                                                         ? `bg-gradient-to-r ${themeColors.primary} text-white`
-                                                        : message.isError 
+                                                        : message.isError
                                                             ? `${isDarkMode ? 'bg-red-900/20 text-red-300 border border-red-700' : 'bg-red-50 text-red-900 border border-red-300 shadow-sm'}`
                                                             : `${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-800'}`
-                                                } ${
-                                                    highlightedMessage === index 
-                                                        ? 'ring-4 ring-yellow-400 ring-opacity-50 shadow-lg transform scale-105' 
+                                                    } ${highlightedMessage === index
+                                                        ? 'ring-4 ring-yellow-400 ring-opacity-50 shadow-lg transform scale-105'
                                                         : ''
-                                                } transition-all duration-300`}
+                                                    } transition-all duration-300`}
                                             >
                                                 {/* Media Display */}
                                                 {message.imageUrl && (
@@ -4283,11 +4269,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     try {
                                                                         const response = await fetch(message.imageUrl, { mode: 'cors' });
                                                                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                                        
+
                                                                         const contentType = response.headers.get('content-type') || 'image/jpeg';
                                                                         const blob = await response.blob();
                                                                         const blobUrl = window.URL.createObjectURL(blob);
-                                                                        
+
                                                                         const getFileExtension = (contentType) => {
                                                                             const mimeToExt = {
                                                                                 'image/jpeg': 'jpg',
@@ -4301,10 +4287,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                             };
                                                                             return mimeToExt[contentType] || 'jpg';
                                                                         };
-                                                                        
+
                                                                         const extension = getFileExtension(contentType);
                                                                         const fileName = `image-${Date.now()}.${extension}`;
-                                                                        
+
                                                                         const a = document.createElement('a');
                                                                         a.href = blobUrl;
                                                                         a.download = fileName;
@@ -4312,7 +4298,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                         a.click();
                                                                         document.body.removeChild(a);
                                                                         window.URL.revokeObjectURL(blobUrl);
-                                                                        
+
                                                                         console.log('Downloaded image:', fileName, 'Type:', contentType);
                                                                     } catch (error) {
                                                                         console.error('Image download failed:', error);
@@ -4333,7 +4319,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 )}
-                                                
+
                                                 {message.audioUrl && (
                                                     <div className="mb-2">
                                                         <div className="relative">
@@ -4353,11 +4339,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     try {
                                                                         const response = await fetch(message.audioUrl, { mode: 'cors' });
                                                                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                                        
+
                                                                         const contentType = response.headers.get('content-type') || 'audio/mpeg';
                                                                         const blob = await response.blob();
                                                                         const blobUrl = window.URL.createObjectURL(blob);
-                                                                        
+
                                                                         const getFileExtension = (contentType) => {
                                                                             const mimeToExt = {
                                                                                 'audio/mpeg': 'mp3',
@@ -4369,10 +4355,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                             };
                                                                             return mimeToExt[contentType] || 'mp3';
                                                                         };
-                                                                        
+
                                                                         const extension = getFileExtension(contentType);
                                                                         const fileName = `audio-${Date.now()}.${extension}`;
-                                                                        
+
                                                                         const a = document.createElement('a');
                                                                         a.href = blobUrl;
                                                                         a.download = fileName;
@@ -4380,7 +4366,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                         a.click();
                                                                         document.body.removeChild(a);
                                                                         window.URL.revokeObjectURL(blobUrl);
-                                                                        
+
                                                                         console.log('Downloaded audio:', fileName, 'Type:', contentType);
                                                                     } catch (error) {
                                                                         console.error('Audio download failed:', error);
@@ -4401,7 +4387,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 )}
-                                                
+
                                                 {message.videoUrl && (
                                                     <div className="mb-2">
                                                         <div className="relative">
@@ -4424,11 +4410,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     try {
                                                                         const response = await fetch(message.videoUrl, { mode: 'cors' });
                                                                         if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                                        
+
                                                                         const contentType = response.headers.get('content-type') || 'video/mp4';
                                                                         const blob = await response.blob();
                                                                         const blobUrl = window.URL.createObjectURL(blob);
-                                                                        
+
                                                                         const getFileExtension = (contentType) => {
                                                                             const mimeToExt = {
                                                                                 'video/mp4': 'mp4',
@@ -4441,10 +4427,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                             };
                                                                             return mimeToExt[contentType] || 'mp4';
                                                                         };
-                                                                        
+
                                                                         const extension = getFileExtension(contentType);
                                                                         const fileName = `video-${Date.now()}.${extension}`;
-                                                                        
+
                                                                         const a = document.createElement('a');
                                                                         a.href = blobUrl;
                                                                         a.download = fileName;
@@ -4452,7 +4438,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                         a.click();
                                                                         document.body.removeChild(a);
                                                                         window.URL.revokeObjectURL(blobUrl);
-                                                                        
+
                                                                         console.log('Downloaded video:', fileName, 'Type:', contentType);
                                                                     } catch (error) {
                                                                         console.error('Video download failed:', error);
@@ -4473,7 +4459,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 )}
-                                                
+
                                                 {message.documentUrl && (
                                                     <div className="mb-2">
                                                         <button
@@ -4482,14 +4468,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 e.stopPropagation();
                                                                 try {
                                                                     console.log('Starting download for URL:', message.documentUrl);
-                                                                    
+
                                                                     const response = await fetch(message.documentUrl, { mode: 'cors' });
                                                                     if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                                    
+
                                                                     // Get the actual file type from response headers
                                                                     const contentType = response.headers.get('content-type') || 'application/octet-stream';
                                                                     console.log('Response content-type:', contentType);
-                                                                    
+
                                                                     // Detect file type from URL if content-type is generic
                                                                     const detectFileTypeFromUrl = (url) => {
                                                                         const urlLower = url.toLowerCase();
@@ -4506,11 +4492,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                         if (urlLower.includes('.rar')) return { mime: 'application/x-rar-compressed', ext: 'rar' };
                                                                         return null;
                                                                     };
-                                                                    
+
                                                                     // Use URL detection if content-type is generic
                                                                     let finalContentType = contentType;
                                                                     let fileExtension = 'bin';
-                                                                    
+
                                                                     if (contentType === 'application/octet-stream' || contentType === 'binary/octet-stream') {
                                                                         const urlDetection = detectFileTypeFromUrl(message.documentUrl);
                                                                         if (urlDetection) {
@@ -4535,14 +4521,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                         };
                                                                         fileExtension = mimeToExt[contentType] || 'bin';
                                                                     }
-                                                                    
+
                                                                     const blob = await response.blob();
                                                                     console.log('Blob size:', blob.size, 'Blob type:', blob.type);
-                                                                    
+
                                                                     // Create blob with correct MIME type
                                                                     const correctedBlob = new Blob([blob], { type: finalContentType });
                                                                     const blobUrl = window.URL.createObjectURL(correctedBlob);
-                                                                    
+
                                                                     // Extract filename from URL or use document name
                                                                     let fileName = message.documentName;
                                                                     if (!fileName) {
@@ -4559,9 +4545,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                         // Add extension if filename doesn't have one
                                                                         fileName = `${fileName}.${fileExtension}`;
                                                                     }
-                                                                    
+
                                                                     console.log('Final filename:', fileName, 'Final MIME type:', finalContentType);
-                                                                    
+
                                                                     const a = document.createElement('a');
                                                                     a.href = blobUrl;
                                                                     a.download = fileName;
@@ -4569,7 +4555,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     a.click();
                                                                     document.body.removeChild(a);
                                                                     window.URL.revokeObjectURL(blobUrl);
-                                                                    
+
                                                                     console.log('Download completed successfully');
                                                                 } catch (error) {
                                                                     console.error('Download failed:', error);
@@ -4591,7 +4577,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </button>
                                                     </div>
                                                 )}
-                                                
+
                                                 {/* Message content - editable for user messages */}
                                                 {editingMessageIndex === index ? (
                                                     <div className="space-y-2">
@@ -4602,7 +4588,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             className={`w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} placeholder-gray-500`}
                                                             rows={3}
                                                             placeholder="Edit your message... (Ctrl+Enter to send, Esc to cancel)"
-                                                            // Removed autoFocus - don't auto-focus input
+                                                        // Removed autoFocus - don't auto-focus input
                                                         />
                                                         <div className="flex gap-2 justify-end">
                                                             <button
@@ -4623,7 +4609,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div 
+                                                    <div
                                                         className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed ${message.role === 'user' ? 'text-white' : 'text-gray-800 dark:text-gray-100'}`}
                                                         id={screenReaderSupport ? `message-${index}-content` : undefined}
                                                     >
@@ -4637,119 +4623,116 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             {new Date(message.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                                                         </div>
                                                     )}
-                                                    
+
                                                     {/* Action buttons - hidden when editing */}
                                                     {editingMessageIndex !== index && (
                                                         <div className="flex gap-1 opacity-0 group-hover:opacity-100 transition-all duration-200">
-                                                        {/* Copy icon for all messages */}
-                                                        <button
-                                                            onClick={() => copyToClipboard(message.content)}
-                                                            className={`p-1 rounded transition-all duration-200 ${
-                                                                message.role === 'user' 
-                                                                    ? 'text-white/80 hover:text-white hover:bg-white/20' 
-                                                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
-                                                            }`}
-                                                            title="Copy message"
-                                                            aria-label="Copy message"
-                                                        >
-                                                            <FaCopy size={10} />
-                                                        </button>
-                                                        
-                                                        {/* Edit button for user messages */}
-                                                        {message.role === 'user' && (
+                                                            {/* Copy icon for all messages */}
                                                             <button
-                                                                onClick={() => startEditingMessage(index, message.content)}
-                                                                className="p-1 text-white/80 hover:text-white hover:bg-white/20 rounded transition-all duration-200"
-                                                                title="Edit message"
-                                                                aria-label="Edit message"
-                                                            >
-                                                                <FaEdit size={10} />
-                                                            </button>
-                                                        )}
-                                                        
-                                                        {/* Bookmark button for assistant messages */}
-                                                        {message.role === 'assistant' && !message.isError && currentUser && (
-                                                            <button
-                                                                onClick={() => toggleBookmark(index, message)}
-                                                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
-                                                                title="Bookmark message"
-                                                                aria-label="Bookmark message"
-                                                            >
-                                                                {(() => {
-                                                                    const currentSessionId = getOrCreateSessionId();
-                                                                    const bookmarkKey = `${currentSessionId}_${index}_${message.timestamp}`;
-                                                                    return bookmarkedMessages.some(bm => bm.key === bookmarkKey) ? 
-                                                                        <FaBookmarkSolid size={10} className="text-yellow-500" /> : 
-                                                                        <FaRegBookmark size={10} className="text-gray-500" />
-                                                                })()}
-                                                            </button>
-                                                        )}
-                                                        
-                                                        {/* Share button for assistant messages */}
-                                                        {message.role === 'assistant' && !message.isError && (
-                                                            <button
-                                                                onClick={() => shareMessage(message)}
-                                                                className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
-                                                                title="Share message"
-                                                                aria-label="Share message"
-                                                            >
-                                                                <FaShare size={10} />
-                                                            </button>
-                                                        )}
-                                                        
-                                                        {/* Rating buttons for assistant messages */}
-                                                        {message.role === 'assistant' && !message.isError && (
-                                                            <div className="flex gap-1">
-                                                                <button
-                                                                    onClick={() => rateMessage(index, 'up')}
-                                                                    className={`p-1 rounded transition-all duration-200 ${
-                                                                        messageRatings[`${index}_${message.timestamp}`] === 'up' 
-                                                                            ? 'text-green-600 hover:text-green-700' 
-                                                                            : 'text-gray-500 hover:text-green-600'
+                                                                onClick={() => copyToClipboard(message.content)}
+                                                                className={`p-1 rounded transition-all duration-200 ${message.role === 'user'
+                                                                        ? 'text-white/80 hover:text-white hover:bg-white/20'
+                                                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
                                                                     }`}
-                                                                    title="Good response"
-                                                                    aria-label="Good response"
-                                                                >
-                                                                    <FaThumbsUp size={10} />
-                                                                </button>
-                                                                <button
-                                                                    onClick={() => openDislikeModal(index)}
-                                                                    className={`p-1 rounded transition-all duration-200 ${
-                                                                        messageRatings[`${index}_${message.timestamp}`] === 'down' 
-                                                                            ? 'text-red-600 hover:text-red-700' 
-                                                                            : 'text-gray-500 hover:text-red-600'
-                                                                    }`}
-                                                                    title="Poor response"
-                                                                    aria-label="Poor response"
-                                                                >
-                                                                    <FaThumbsDown size={10} />
-                                                                </button>
-                                                            </div>
-                                                        )}
-                                                        
-                                                        {/* Retry buttons */}
-                                                        {message.role === 'assistant' && (
-                                                            <button
-                                                                onClick={() => {
-                                                                    const previousUserMessage = (() => {
-                                                                        for (let i = index - 1; i >= 0; i--) {
-                                                                            if (messages[i]?.role === 'user') return messages[i].content;
-                                                                        }
-                                                                        return lastUserMessageRef.current;
-                                                                    })();
-                                                                    if (previousUserMessage) retryMessage(previousUserMessage, index);
-                                                                }}
-                                                                disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
-                                                                className={`p-1 ${themeColors.accent} hover:opacity-80 hover:${themeColors.secondary} rounded transition-all duration-200 disabled:opacity-50`}
-                                                                title="Try Again"
-                                                                aria-label="Try Again"
+                                                                title="Copy message"
+                                                                aria-label="Copy message"
                                                             >
-                                                                <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
-                                                                    <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46C6.26 13.86 6 12.97 6 12c0-3.31 2.69-6 6-6zm5.76 1.74L16.3 9.2C17.74 10.14 18.5 11.49 18.5 13c0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z"/>
-                                                                </svg>
+                                                                <FaCopy size={10} />
                                                             </button>
-                                                        )}
-                                                    </div>
+
+                                                            {/* Edit button for user messages */}
+                                                            {message.role === 'user' && (
+                                                                <button
+                                                                    onClick={() => startEditingMessage(index, message.content)}
+                                                                    className="p-1 text-white/80 hover:text-white hover:bg-white/20 rounded transition-all duration-200"
+                                                                    title="Edit message"
+                                                                    aria-label="Edit message"
+                                                                >
+                                                                    <FaEdit size={10} />
+                                                                </button>
+                                                            )}
+
+                                                            {/* Bookmark button for assistant messages */}
+                                                            {message.role === 'assistant' && !message.isError && currentUser && (
+                                                                <button
+                                                                    onClick={() => toggleBookmark(index, message)}
+                                                                    className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                                    title="Bookmark message"
+                                                                    aria-label="Bookmark message"
+                                                                >
+                                                                    {(() => {
+                                                                        const currentSessionId = getOrCreateSessionId();
+                                                                        const bookmarkKey = `${currentSessionId}_${index}_${message.timestamp}`;
+                                                                        return bookmarkedMessages.some(bm => bm.key === bookmarkKey) ?
+                                                                            <FaBookmarkSolid size={10} className="text-yellow-500" /> :
+                                                                            <FaRegBookmark size={10} className="text-gray-500" />
+                                                                    })()}
+                                                                </button>
+                                                            )}
+
+                                                            {/* Share button for assistant messages */}
+                                                            {message.role === 'assistant' && !message.isError && (
+                                                                <button
+                                                                    onClick={() => shareMessage(message)}
+                                                                    className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                                    title="Share message"
+                                                                    aria-label="Share message"
+                                                                >
+                                                                    <FaShare size={10} />
+                                                                </button>
+                                                            )}
+
+                                                            {/* Rating buttons for assistant messages */}
+                                                            {message.role === 'assistant' && !message.isError && (
+                                                                <div className="flex gap-1">
+                                                                    <button
+                                                                        onClick={() => rateMessage(index, 'up')}
+                                                                        className={`p-1 rounded transition-all duration-200 ${messageRatings[`${index}_${message.timestamp}`] === 'up'
+                                                                                ? 'text-green-600 hover:text-green-700'
+                                                                                : 'text-gray-500 hover:text-green-600'
+                                                                            }`}
+                                                                        title="Good response"
+                                                                        aria-label="Good response"
+                                                                    >
+                                                                        <FaThumbsUp size={10} />
+                                                                    </button>
+                                                                    <button
+                                                                        onClick={() => openDislikeModal(index)}
+                                                                        className={`p-1 rounded transition-all duration-200 ${messageRatings[`${index}_${message.timestamp}`] === 'down'
+                                                                                ? 'text-red-600 hover:text-red-700'
+                                                                                : 'text-gray-500 hover:text-red-600'
+                                                                            }`}
+                                                                        title="Poor response"
+                                                                        aria-label="Poor response"
+                                                                    >
+                                                                        <FaThumbsDown size={10} />
+                                                                    </button>
+                                                                </div>
+                                                            )}
+
+                                                            {/* Retry buttons */}
+                                                            {message.role === 'assistant' && (
+                                                                <button
+                                                                    onClick={() => {
+                                                                        const previousUserMessage = (() => {
+                                                                            for (let i = index - 1; i >= 0; i--) {
+                                                                                if (messages[i]?.role === 'user') return messages[i].content;
+                                                                            }
+                                                                            return lastUserMessageRef.current;
+                                                                        })();
+                                                                        if (previousUserMessage) retryMessage(previousUserMessage, index);
+                                                                    }}
+                                                                    disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
+                                                                    className={`p-1 ${themeColors.accent} hover:opacity-80 hover:${themeColors.secondary} rounded transition-all duration-200 disabled:opacity-50`}
+                                                                    title="Try Again"
+                                                                    aria-label="Try Again"
+                                                                >
+                                                                    <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
+                                                                        <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46C6.26 13.86 6 12.97 6 12c0-3.31 2.69-6 6-6zm5.76 1.74L16.3 9.2C17.74 10.14 18.5 11.49 18.5 13c0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
+                                                                    </svg>
+                                                                </button>
+                                                            )}
+                                                        </div>
                                                     )}
                                                 </div>
                                             </div>
@@ -4763,15 +4746,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <div className="flex items-center space-x-3">
                                             <div className="flex space-x-1">
                                                 <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-300' : 'bg-gray-400'} rounded-full animate-bounce`}></div>
-                                                <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-300' : 'bg-gray-400'} rounded-full animate-bounce`} style={{animationDelay: '0.1s'}}></div>
-                                                <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-300' : 'bg-gray-400'} rounded-full animate-bounce`} style={{animationDelay: '0.2s'}}></div>
+                                                <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-300' : 'bg-gray-400'} rounded-full animate-bounce`} style={{ animationDelay: '0.1s' }}></div>
+                                                <div className={`w-2 h-2 ${isDarkMode ? 'bg-gray-300' : 'bg-gray-400'} rounded-full animate-bounce`} style={{ animationDelay: '0.2s' }}></div>
                                             </div>
                                             <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} font-medium`}>SetuAI is thinking...</span>
                                         </div>
                                     </div>
                                 </div>
                             )}
-                            
+
                             <div ref={messagesEndRef} />
                             {/* scroll button moved to container-level absolute positioning */}
                         </div>
@@ -4815,7 +4798,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 <li>Retry failed responses</li>
                                             </ul>
                                         </div>
-                                        
+
                                         <div>
                                             <h5 className="font-medium text-gray-800 mb-2">🔖 Message Management</h5>
                                             <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
@@ -4825,7 +4808,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 <li>Copy any message to clipboard</li>
                                             </ul>
                                         </div>
-                                        
+
                                         <div>
                                             <h5 className="font-medium text-gray-800 mb-2">⚡ Quick Actions</h5>
                                             <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
@@ -4837,7 +4820,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 <li>Property management tips</li>
                                             </ul>
                                         </div>
-                                        
+
                                         <div>
                                             <h5 className="font-medium text-gray-800 mb-2">📱 User Experience</h5>
                                             <ul className="text-sm text-gray-700 list-disc pl-5 space-y-1">
@@ -4864,15 +4847,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     <div className={`inline-flex items-center px-3 py-1.5 rounded-full text-xs font-medium ${themeColors.secondary} ${themeColors.accent} border ${themeColors.border}`}>
                                         <span className="mr-1">💬</span>
                                         <span>
-                                            {rateLimitInfo.remaining > 0 
-                                                ? `${rateLimitInfo.remaining} free prompts remaining` 
+                                            {rateLimitInfo.remaining > 0
+                                                ? `${rateLimitInfo.remaining} free prompts remaining`
                                                 : 'No free prompts left'
                                             }
                                         </span>
                                     </div>
                                 </div>
                             )}
-                            
+
                             {/* Root Admin Indicator */}
                             {rateLimitInfo.role === 'rootadmin' && (
                                 <div className="mb-3 text-center">
@@ -4890,9 +4873,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     <div className="text-xs text-gray-500 mb-2">Attached files:</div>
                                     <div className="flex flex-wrap gap-2">
                                         {uploadedFiles.map((file, index) => (
-                                            <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${
-                                                isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-200'
-                                            }`}>
+                                            <div key={index} className={`flex items-center gap-2 px-3 py-2 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-200'
+                                                }`}>
                                                 <FaFileAlt size={12} className="text-blue-500" />
                                                 <span className="text-xs truncate max-w-[120px]">{file.name}</span>
                                                 <button
@@ -4919,11 +4901,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             <button
                                                 key={index}
                                                 onClick={() => handleSmartSuggestion(suggestion)}
-                                                className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200 hover:scale-105 ${
-                                                    isDarkMode 
-                                                        ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700' 
+                                                className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200 hover:scale-105 ${isDarkMode
+                                                        ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'
                                                         : `${themeColors.secondary} ${themeColors.border} ${themeColors.accent} hover:opacity-80`
-                                                }`}
+                                                    }`}
                                             >
                                                 {suggestion}
                                             </button>
@@ -4945,11 +4926,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         aria-label="Type your message"
                                         aria-describedby="input-help"
                                         role="textbox"
-                                        className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${
-                                            isDarkMode 
-                                                ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400' 
+                                        className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
+                                                ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
                                                 : 'bg-white border-gray-300 text-gray-900'
-                                        }`}
+                                            }`}
                                         disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                     />
                                     {inputMessage.length > 1800 && (
@@ -4962,14 +4942,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             Press Enter to send your message, or use the voice input and file upload buttons for additional options.
                                         </div>
                                     )}
-                                    
+
                                     {/* Property Suggestions Dropdown */}
                                     {showPropertySuggestions && (
                                         <div ref={suggestionsRef} className={`absolute bottom-full left-0 right-0 mb-2 ${isDarkMode ? 'bg-gray-800 border-blue-600' : 'bg-white border-blue-300'} border-2 rounded-lg shadow-2xl z-50 max-h-60 overflow-y-auto animate-fadeIn`}
-                                        style={{
-                                            boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
-                                            minWidth: '300px'
-                                        }}>
+                                            style={{
+                                                boxShadow: '0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04)',
+                                                minWidth: '300px'
+                                            }}>
                                             <div className={`p-3 text-sm font-medium ${isDarkMode ? 'text-blue-400 border-gray-600 bg-blue-900/20' : 'text-blue-600 border-gray-200 bg-blue-50'} border-b`}>
                                                 <div className="flex items-center gap-2">
                                                     {isLoadingSuggestions ? (
@@ -4977,8 +4957,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     ) : (
                                                         <div className="w-2 h-2 bg-blue-500 rounded-full animate-pulse"></div>
                                                     )}
-                                                    {isLoadingSuggestions ? 'Loading properties...' : 
-                                                     propertySuggestions.length > 0 ? 'Select a property to reference:' : 'No properties found'}
+                                                    {isLoadingSuggestions ? 'Loading properties...' :
+                                                        propertySuggestions.length > 0 ? 'Select a property to reference:' : 'No properties found'}
                                                 </div>
                                             </div>
                                             {propertySuggestions.length > 0 ? propertySuggestions.map((property, index) => (
@@ -4986,9 +4966,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     type="button"
                                                     key={property.id}
                                                     onMouseDown={(e) => { e.preventDefault(); handleSuggestionSelect(property); }}
-                                                    className={`w-full text-left p-3 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors ${
-                                                        index === selectedSuggestionIndex ? (isDarkMode ? 'bg-gray-700' : 'bg-gray-100') : ''
-                                                    }`}
+                                                    className={`w-full text-left p-3 ${isDarkMode ? 'hover:bg-gray-700' : 'hover:bg-gray-100'} transition-colors ${index === selectedSuggestionIndex ? (isDarkMode ? 'bg-gray-700' : 'bg-gray-100') : ''
+                                                        }`}
                                                 >
                                                     <div className="flex items-center space-x-3">
                                                         {property.image && (
@@ -5022,7 +5001,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         </div>
                                     )}
                                 </div>
-                                
+
                                 {/* Voice Input Button */}
                                 <button
                                     type="button"
@@ -5058,10 +5037,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {isLoading ? (
                                     <button
                                         type="button"
-                                        onClick={() => { 
-                                            abortControllerRef.current?.abort(); 
+                                        onClick={() => {
+                                            abortControllerRef.current?.abort();
                                             setIsLoading(false);
-                                            toast.info('Generating stopped.'); 
+                                            toast.info('Generating stopped.');
                                         }}
                                         className="bg-red-600 hover:bg-red-700 text-white p-2 rounded-full hover:opacity-90 transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95"
                                         title="Stop generating"
@@ -5133,9 +5112,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full max-h-[80vh] overflow-y-auto`}>
                                     <div className="flex items-center justify-between mb-3">
                                         <h4 className={`font-semibold flex items-center gap-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                        <FaBookmark className="text-yellow-500" />
-                                        Bookmarked Messages
-                                    </h4>
+                                            <FaBookmark className="text-yellow-500" />
+                                            Bookmarked Messages
+                                        </h4>
                                         <button
                                             onClick={async () => {
                                                 if (refreshingBookmarks) return; // Prevent multiple clicks
@@ -5151,13 +5130,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 }
                                             }}
                                             disabled={refreshingBookmarks}
-                                            className={`p-2 rounded-lg transition-all duration-200 ${
-                                                refreshingBookmarks
+                                            className={`p-2 rounded-lg transition-all duration-200 ${refreshingBookmarks
                                                     ? 'opacity-50 cursor-not-allowed'
-                                                    : isDarkMode 
-                                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white' 
+                                                    : isDarkMode
+                                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
                                                         : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800'
-                                            }`}
+                                                }`}
                                             title={refreshingBookmarks ? "Refreshing..." : "Refresh bookmarks"}
                                             aria-label={refreshingBookmarks ? "Refreshing bookmarks" : "Refresh bookmarks"}
                                         >
@@ -5245,158 +5223,157 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             </button>
                                         </div>
                                     </div>
-                                    
+
                                     {/* Scrollable Content */}
                                     <div className="flex-1 overflow-y-auto p-4">
-                                    {chatSessions.length === 0 ? (
-                                        <div className="text-center py-8 space-y-3">
-                                            <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No chats yet</p>
-                                            <button
-                                                onClick={async () => { await createNewSession(); await loadChatSessions(); setShowHistory(false); }}
-                                                className="px-3 py-1.5 text-xs rounded bg-green-600 text-white hover:bg-green-700"
-                                            >
-                                                Create First Chat
-                                            </button>
-                                        </div>
-                                    ) : (
-                                        <div className="space-y-2">
-                                            {chatSessions.map((session, idx) => {
-                                                const isActiveSession = session.sessionId === getOrCreateSessionId();
-                                                return (
-                                                <div
-                                                    key={session.sessionId || idx}
-                                                    className={`p-3 border rounded-lg transition-all duration-300 ${
-                                                        isActiveSession 
-                                                            ? `${isDarkMode ? 'bg-blue-900/30 border-blue-500' : 'bg-blue-50 border-blue-400'}` 
-                                                            : `${isDarkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`
-                                                    }`}
+                                        {chatSessions.length === 0 ? (
+                                            <div className="text-center py-8 space-y-3">
+                                                <p className={`${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>No chats yet</p>
+                                                <button
+                                                    onClick={async () => { await createNewSession(); await loadChatSessions(); setShowHistory(false); }}
+                                                    className="px-3 py-1.5 text-xs rounded bg-green-600 text-white hover:bg-green-700"
                                                 >
-                                                    <div className="flex items-center justify-between gap-2">
-                                                        <input
-                                                            type="checkbox"
-                                                            className="mt-1 w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:border-gray-600 dark:ring-offset-gray-800"
-                                                            style={{
-                                                                accentColor: '#2563eb', // Blue color for the checkmark
-                                                                backgroundColor: 'transparent' // Remove background highlighting
-                                                            }}
-                                                            checked={selectedHistoryIds.includes(session.sessionId)}
-                                                            onChange={(e) => {
-                                                                const id = session.sessionId;
-                                                                setSelectedHistoryIds(prev => e.target.checked ? [...prev, id] : prev.filter(x => x !== id));
-                                                            }}
-                                                            aria-label="Select chat"
-                                                        />
-                                                        <button
-                                                            onClick={() => {
-                                                                loadSessionHistory(session.sessionId);
-                                                                setShowHistory(false);
-                                                            }}
-                                                            className="flex-1 text-left"
+                                                    Create First Chat
+                                                </button>
+                                            </div>
+                                        ) : (
+                                            <div className="space-y-2">
+                                                {chatSessions.map((session, idx) => {
+                                                    const isActiveSession = session.sessionId === getOrCreateSessionId();
+                                                    return (
+                                                        <div
+                                                            key={session.sessionId || idx}
+                                                            className={`p-3 border rounded-lg transition-all duration-300 ${isActiveSession
+                                                                    ? `${isDarkMode ? 'bg-blue-900/30 border-blue-500' : 'bg-blue-50 border-blue-400'}`
+                                                                    : `${isDarkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`
+                                                                }`}
                                                         >
-                                                            <div className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
-                                                                {session.name?.trim() ? session.name : `New chat ${idx + 1}`}
-                                                                {isActiveSession && (
-                                                                    <span className={`px-2 py-0.5 text-xs rounded-full ${isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'} font-medium`}>
-                                                                        Active
-                                                                    </span>
-                                                                )}
-                                                            </div>
-                                                            <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                                {new Date(session.lastMessageAt).toLocaleString()}
-                                                            </div>
-                                                            <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                                                                {session.messageCount} messages
-                                                            </div>
-                                                        </button>
-                                                        <div className="relative">
-                                                            <button
-                                                                onClick={(e) => {
-                                                                    e.stopPropagation();
-                                                                    setOpenHistoryMenuSessionId(prev => prev === session.sessionId ? null : session.sessionId);
-                                                                }}
-                                                                className="ml-2 p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all duration-200"
-                                                                title="Chat options"
-                                                                data-chat-options-dropdown
-                                                            >
-                                                                ⋯
-                                                            </button>
-                                                            {openHistoryMenuSessionId === session.sessionId && (
-                                                            <div className={`absolute right-0 top-6 ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'} border rounded shadow-lg z-10 w-36`} data-chat-options-dropdown>
-                                                                <button
-                                                                    onClick={(e) => {
-                                                                        e.stopPropagation();
-                                                                        setDeleteTargetSessionId(session.sessionId);
-                                                                        setShowDeleteSingleModal(true);
+                                                            <div className="flex items-center justify-between gap-2">
+                                                                <input
+                                                                    type="checkbox"
+                                                                    className="mt-1 w-3.5 h-3.5 text-blue-600 border-gray-300 rounded focus:ring-blue-500 focus:ring-1 dark:border-gray-600 dark:ring-offset-gray-800"
+                                                                    style={{
+                                                                        accentColor: '#2563eb', // Blue color for the checkmark
+                                                                        backgroundColor: 'transparent' // Remove background highlighting
                                                                     }}
-                                                                    className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
-                                                                >
-                                                                    Delete chat
-                                                                </button>
-                                                                <button
-                                                                    onClick={async (e) => {
-                                                                        e.stopPropagation();
-                                                                        try {
-                                                                            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                                                            const resp = await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, { credentials: 'include' });
-                                                                            const data = await resp.json();
-                                                                            if (!resp.ok || !data?.data?.messages) throw new Error('load');
-                                                                            const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
-                                                                            const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
-                                                                            const url = URL.createObjectURL(blob);
-                                                                            const a = document.createElement('a');
-                                                                            a.href = url;
-                                                                            a.download = `gemini_chat_${new Date().toISOString().split('T')[0]}.txt`;
-                                                                            document.body.appendChild(a);
-                                                                            a.click();
-                                                                            document.body.removeChild(a);
-                                                                            URL.revokeObjectURL(url);
-                                                                            setOpenHistoryMenuSessionId(null);
-                                                                        } catch {
-                                                                            toast.error('Failed to save chat');
-                                                                        }
+                                                                    checked={selectedHistoryIds.includes(session.sessionId)}
+                                                                    onChange={(e) => {
+                                                                        const id = session.sessionId;
+                                                                        setSelectedHistoryIds(prev => e.target.checked ? [...prev, id] : prev.filter(x => x !== id));
                                                                     }}
-                                                                    className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
-                                                                >
-                                                                    Save chat
-                                                                </button>
+                                                                    aria-label="Select chat"
+                                                                />
                                                                 <button
-                                                                    onClick={async (e) => {
-                                                                        e.stopPropagation();
-                                                                        setRenameTargetSessionId(session.sessionId);
-                                                                        // Fetch current name from backend to ensure it's up-to-date
-                                                                        const currentName = await fetchSessionName(session.sessionId);
-                                                                        setRenameInput(currentName || '');
-                                                                        setShowRenameModal(true);
+                                                                    onClick={() => {
+                                                                        loadSessionHistory(session.sessionId);
+                                                                        setShowHistory(false);
                                                                     }}
-                                                                    className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
+                                                                    className="flex-1 text-left"
                                                                 >
-                                                                    Rename
+                                                                    <div className={`text-sm font-medium flex items-center gap-2 ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                                                        {session.name?.trim() ? session.name : `New chat ${idx + 1}`}
+                                                                        {isActiveSession && (
+                                                                            <span className={`px-2 py-0.5 text-xs rounded-full ${isDarkMode ? 'bg-blue-600 text-white' : 'bg-blue-500 text-white'} font-medium`}>
+                                                                                Active
+                                                                            </span>
+                                                                        )}
+                                                                    </div>
+                                                                    <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                        {new Date(session.lastMessageAt).toLocaleString()}
+                                                                    </div>
+                                                                    <div className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                                                        {session.messageCount} messages
+                                                                    </div>
                                                                 </button>
+                                                                <div className="relative">
+                                                                    <button
+                                                                        onClick={(e) => {
+                                                                            e.stopPropagation();
+                                                                            setOpenHistoryMenuSessionId(prev => prev === session.sessionId ? null : session.sessionId);
+                                                                        }}
+                                                                        className="ml-2 p-1 text-gray-600 hover:text-gray-800 hover:bg-gray-100 rounded transition-all duration-200"
+                                                                        title="Chat options"
+                                                                        data-chat-options-dropdown
+                                                                    >
+                                                                        ⋯
+                                                                    </button>
+                                                                    {openHistoryMenuSessionId === session.sessionId && (
+                                                                        <div className={`absolute right-0 top-6 ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'} border rounded shadow-lg z-10 w-36`} data-chat-options-dropdown>
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setDeleteTargetSessionId(session.sessionId);
+                                                                                    setShowDeleteSingleModal(true);
+                                                                                }}
+                                                                                className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
+                                                                            >
+                                                                                Delete chat
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={async (e) => {
+                                                                                    e.stopPropagation();
+                                                                                    try {
+                                                                                        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                                                                        const resp = await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, { credentials: 'include' });
+                                                                                        const data = await resp.json();
+                                                                                        if (!resp.ok || !data?.data?.messages) throw new Error('load');
+                                                                                        const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
+                                                                                        const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+                                                                                        const url = URL.createObjectURL(blob);
+                                                                                        const a = document.createElement('a');
+                                                                                        a.href = url;
+                                                                                        a.download = `gemini_chat_${new Date().toISOString().split('T')[0]}.txt`;
+                                                                                        document.body.appendChild(a);
+                                                                                        a.click();
+                                                                                        document.body.removeChild(a);
+                                                                                        URL.revokeObjectURL(url);
+                                                                                        setOpenHistoryMenuSessionId(null);
+                                                                                    } catch {
+                                                                                        toast.error('Failed to save chat');
+                                                                                    }
+                                                                                }}
+                                                                                className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
+                                                                            >
+                                                                                Save chat
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={async (e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setRenameTargetSessionId(session.sessionId);
+                                                                                    // Fetch current name from backend to ensure it's up-to-date
+                                                                                    const currentName = await fetchSessionName(session.sessionId);
+                                                                                    setRenameInput(currentName || '');
+                                                                                    setShowRenameModal(true);
+                                                                                }}
+                                                                                className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
+                                                                            >
+                                                                                Rename
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             </div>
-                                                            )}
                                                         </div>
-                                                    </div>
-                                                </div>
-                                                );
-                                            })}
-                                        </div>
-                                    )}
+                                                    );
+                                                })}
+                                            </div>
+                                        )}
                                     </div>
-                                    
+
                                     {/* Fixed Footer */}
                                     <div className="flex justify-between items-center p-4 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
                                         <div>
                                             {selectedHistoryIds.length > 0 && (
-                                                    <button
-                                                        onClick={() => setShowDeleteSelectedModal(true)}
+                                                <button
+                                                    onClick={() => setShowDeleteSelectedModal(true)}
                                                     className="px-3 py-1.5 text-xs rounded bg-red-600 text-white hover:bg-red-700 transition-all duration-200"
-                                                    >
+                                                >
                                                     Delete Selected ({selectedHistoryIds.length})
-                                                    </button>
+                                                </button>
                                             )}
                                         </div>
-                                        <button 
-                                            onClick={() => { setShowHistory(false); setOpenHistoryMenuSessionId(null); }} 
+                                        <button
+                                            onClick={() => { setShowHistory(false); setOpenHistoryMenuSessionId(null); }}
                                             className={`px-4 py-2 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90 transition-all duration-200`}
                                         >
                                             Close
@@ -5420,1167 +5397,1136 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </div>
                         )}
 
-        {/* Delete All Chats Modal */}
-        {showDeleteAllModal && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
-                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Delete all chats?</h4>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This cannot be undone.</p>
-                    <div className="flex justify-end gap-2">
-                        <button onClick={() => setShowDeleteAllModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
-                        <button onClick={async () => {
-                            try {
-                                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                await fetch(`${API_BASE_URL}/api/gemini/sessions`, { method: 'DELETE', credentials: 'include' });
-                                await createNewSession();
-                                await loadChatSessions();
-                                toast.success('All chats deleted');
-                                setShowHistory(false);
-                            } catch (e) {
-                                toast.error('Failed to delete all chats');
-                            } finally {
-                                setShowDeleteAllModal(false);
-                            }
-                        }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Delete Selected Chats Modal */}
-        {showDeleteSelectedModal && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
-                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Delete selected chats?</h4>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This cannot be undone.</p>
-                    <div className="flex justify-end gap-2">
-                        <button onClick={() => setShowDeleteSelectedModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
-                        <button onClick={async () => {
-                            try {
-                                for (const id of selectedHistoryIds) { await deleteSession(id); }
-                                setSelectedHistoryIds([]);
-                                await loadChatSessions();
-                                toast.success('Selected chats deleted');
-                            } catch (e) {
-                                toast.error('Failed to delete selected chats');
-                            } finally {
-                                setShowDeleteSelectedModal(false);
-                            }
-                        }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Delete Single Chat Modal */}
-        {showDeleteSingleModal && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
-                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Delete this chat?</h4>
-                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This cannot be undone.</p>
-                    <div className="flex justify-end gap-2">
-                        <button onClick={() => setShowDeleteSingleModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
-                        <button onClick={async () => {
-                            try {
-                                if (deleteTargetSessionId) { await deleteSession(deleteTargetSessionId); }
-                                await loadChatSessions();
-                                toast.success('Chat deleted');
-                            } catch (e) {
-                                toast.error('Failed to delete chat');
-                            } finally {
-                                setDeleteTargetSessionId(null);
-                                setShowDeleteSingleModal(false);
-                                setOpenHistoryMenuSessionId(null);
-                            }
-                        }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Rename Chat Modal */}
-        {showRenameModal && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full`}>
-                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Rename chat</h4>
-                    <input
-                        type="text"
-                        value={renameInput}
-                        onChange={(e) => setRenameInput(e.target.value)}
-                        className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded mb-4`}
-                        placeholder="Enter chat name"
-                        maxLength={80}
-                        // Removed autoFocus - don't auto-focus input
-                    />
-                    <div className="flex justify-end gap-2">
-                        <button onClick={() => { setShowRenameModal(false); setRenameTargetSessionId(null); }} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
-                        <button onClick={async () => {
-                            try {
-                                const name = renameInput.trim();
-                                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
-                                await fetch(`${API_BASE_URL}/api/chat-history/session/${renameTargetSessionId}`, {
-                                    method: 'PUT',
-                                    credentials: 'include',
-                                    headers: { 'Content-Type': 'application/json' },
-                                    body: JSON.stringify({ name })
-                                });
-                                await loadChatSessions();
-                                toast.success('Chat renamed');
-                            } catch {
-                                toast.error('Failed to rename chat');
-                            } finally {
-                                setShowRenameModal(false);
-                                setRenameTargetSessionId(null);
-                                setOpenHistoryMenuSessionId(null);
-                            }
-                        }} className={`px-3 py-1.5 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90`}>Save</button>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Sign In Modal for Prompt Limit */}
-        {showSignInModal && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className="bg-white rounded-xl shadow-xl p-6 w-96 max-w-sm mx-4">
-                    <div className="text-center">
-                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                            <FaRobot className="h-6 w-6 text-blue-600" />
-                        </div>
-                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                            Prompt Limit Reached
-                        </h3>
-                        <p className="text-sm text-gray-600 mb-6">
-                            {rateLimitInfo.role === 'public' 
-                                ? "You've used all 5 free prompts! Sign in to enjoy unlimited access to our AI assistant and unlock premium features like chat history, message ratings, and more."
-                                : `You've reached your rate limit! Sign in to enjoy higher limits and premium features like chat history, message ratings, and more.`
-                            }
-                        </p>
-                        <div className="flex flex-col gap-3">
-                            <button
-                                onClick={() => {
-                                    setShowSignInModal(false);
-                                    window.location.href = '/signin';
-                                }}
-                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200"
-                            >
-                                Sign In to Continue
-                            </button>
-                            <button
-                                onClick={() => {
-                                    setShowSignInModal(false);
-                                    window.location.href = '/signup';
-                                }}
-                                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200"
-                            >
-                                Create Free Account
-                            </button>
-                            <button
-                                onClick={() => setShowSignInModal(false)}
-                                className="w-full text-gray-500 hover:text-gray-700 text-sm py-2"
-                            >
-                                Maybe Later
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-        {/* Sign-in Overlay for Public Users when Prompts Reach Zero */}
-        {!currentUser && rateLimitInfo.remaining <= 0 && showSignInOverlay && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`max-w-md mx-4 p-6 rounded-2xl shadow-2xl border-2 border-dashed ${isDarkMode ? 'bg-gray-800/95 border-gray-600' : 'bg-white/95 border-blue-200'} transition-all duration-300`}>
-                    <div className="text-center">
-                        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
-                            <svg className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                            </svg>
-                        </div>
-                        <h3 className={`text-xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                            Sign in to unlock full chatbot features
-                        </h3>
-                        <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                            Get access to advanced AI settings, voice input, file uploads, chat history, and much more!
-                        </p>
-                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                            <button
-                                onClick={() => {
-                                    // Close chatbot and redirect to sign-in
-                                    setIsOpen(false);
-                                    navigate('/sign-in');
-                                }}
-                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${isDarkMode 
-                                    ? 'bg-blue-600 hover:bg-blue-700 text-white' 
-                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                                } hover:shadow-lg hover:scale-105`}
-                            >
-                                Sign In
-                            </button>
-                            <button
-                                onClick={() => {
-                                    // Close chatbot and redirect to sign-up
-                                    setIsOpen(false);
-                                    navigate('/sign-up');
-                                }}
-                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${isDarkMode 
-                                    ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600' 
-                                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
-                                } hover:shadow-lg hover:scale-105`}
-                            >
-                                Create Account
-                            </button>
-                        </div>
-                        <div className="mt-4">
-                            <button
-                                onClick={() => setShowSignInOverlay(false)}
-                                className={`text-xs ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} transition-colors`}
-                            >
-                                Maybe Later
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Enhanced Settings Modal */}
-        {showSettings && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl w-[500px] max-w-full max-h-[80vh] flex flex-col`}>
-                    {/* Fixed Header */}
-                    <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
-                        <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            Settings & Themes
-                        </h3>
-                        <button
-                            onClick={() => setShowSettings(false)}
-                            className={`text-gray-500 hover:text-gray-700 ${isDarkMode ? 'hover:text-gray-300' : ''}`}
-                        >
-                            <FaTimes size={20} />
-                        </button>
-                    </div>
-                    
-                    {/* Scrollable Content */}
-                    <div className="flex-1 overflow-y-auto p-6">
-                    
-                    <div className="space-y-6">
-                        {/* Theme Selection */}
-                        <div>
-                            <label className={`block text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                Theme Color
-                            </label>
-                            <div className="grid grid-cols-5 gap-3">
-                                {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map((theme) => (
-                                    <button
-                                        key={theme}
-                                        onClick={() => {
-                                            setSelectedTheme(theme);
-                                            setUserSetting('gemini_theme', theme);
-                                        }}
-                                        className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
-                                            selectedTheme === theme ? 'border-gray-400 scale-110' : 'border-gray-200 hover:scale-105'
-                                        } ${
-                                            theme === 'blue' ? 'bg-gradient-to-br from-blue-500 to-purple-500' :
-                                            theme === 'green' ? 'bg-gradient-to-br from-green-500 to-emerald-500' :
-                                            theme === 'purple' ? 'bg-gradient-to-br from-purple-500 to-pink-500' :
-                                            theme === 'orange' ? 'bg-gradient-to-br from-orange-500 to-red-500' :
-                                            theme === 'red' ? 'bg-gradient-to-br from-red-500 to-pink-500' :
-                                            theme === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-blue-500' :
-                                            theme === 'teal' ? 'bg-gradient-to-br from-teal-500 to-cyan-500' :
-                                            theme === 'pink' ? 'bg-gradient-to-br from-pink-500 to-rose-500' :
-                                            theme === 'yellow' ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
-                                            'bg-gradient-to-br from-cyan-500 to-blue-500'
-                                        }`}
-                                        title={theme.charAt(0).toUpperCase() + theme.slice(1)}
-                                    />
-                                ))}
-                                {/* Custom Theme Button */}
-                                <button
-                                    onClick={() => setShowCustomThemePicker(!showCustomThemePicker)}
-                                    className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${
-                                        selectedTheme === 'custom' ? 'border-gray-400 scale-110' : 'border-gray-200 hover:scale-105'
-                                    } ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} flex items-center justify-center`}
-                                    title="Custom Theme"
-                                >
-                                    <FaPalette size={16} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
-                                </button>
+                        {/* Delete All Chats Modal */}
+                        {showDeleteAllModal && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
+                                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Delete all chats?</h4>
+                                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This cannot be undone.</p>
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={() => setShowDeleteAllModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
+                                        <button onClick={async () => {
+                                            try {
+                                                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                                await fetch(`${API_BASE_URL}/api/gemini/sessions`, { method: 'DELETE', credentials: 'include' });
+                                                await createNewSession();
+                                                await loadChatSessions();
+                                                toast.success('All chats deleted');
+                                                setShowHistory(false);
+                                            } catch (e) {
+                                                toast.error('Failed to delete all chats');
+                                            } finally {
+                                                setShowDeleteAllModal(false);
+                                            }
+                                        }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
+                                    </div>
+                                </div>
                             </div>
-                            
-                            {/* Custom Theme Picker */}
-                            {showCustomThemePicker && (
-                                <div className={`mt-4 p-4 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
-                                    <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Create Custom Theme
-                                    </h4>
-                                    <div className="grid grid-cols-2 gap-4">
-                                        <div>
-                                            <label className={`block text-xs mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                Primary Color
-                                            </label>
-                                            <select 
-                                                className={`w-full p-2 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                                onChange={(e) => {
-                                                    const primary = e.target.value;
-                                                    const secondary = customTheme?.secondaryColor || 'purple';
-                                                    createCustomTheme(primary, secondary);
-                                                }}
-                                            >
-                                                {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map(color => (
-                                                    <option key={color} value={color}>{color.charAt(0).toUpperCase() + color.slice(1)}</option>
-                                                ))}
-                                            </select>
+                        )}
+
+                        {/* Delete Selected Chats Modal */}
+                        {showDeleteSelectedModal && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
+                                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Delete selected chats?</h4>
+                                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This cannot be undone.</p>
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={() => setShowDeleteSelectedModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
+                                        <button onClick={async () => {
+                                            try {
+                                                for (const id of selectedHistoryIds) { await deleteSession(id); }
+                                                setSelectedHistoryIds([]);
+                                                await loadChatSessions();
+                                                toast.success('Selected chats deleted');
+                                            } catch (e) {
+                                                toast.error('Failed to delete selected chats');
+                                            } finally {
+                                                setShowDeleteSelectedModal(false);
+                                            }
+                                        }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Delete Single Chat Modal */}
+                        {showDeleteSingleModal && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-80`}>
+                                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Delete this chat?</h4>
+                                    <p className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-600'} mb-4`}>This cannot be undone.</p>
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={() => setShowDeleteSingleModal(false)} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
+                                        <button onClick={async () => {
+                                            try {
+                                                if (deleteTargetSessionId) { await deleteSession(deleteTargetSessionId); }
+                                                await loadChatSessions();
+                                                toast.success('Chat deleted');
+                                            } catch (e) {
+                                                toast.error('Failed to delete chat');
+                                            } finally {
+                                                setDeleteTargetSessionId(null);
+                                                setShowDeleteSingleModal(false);
+                                                setOpenHistoryMenuSessionId(null);
+                                            }
+                                        }} className="px-3 py-1.5 text-sm rounded bg-red-600 text-white hover:bg-red-700">Delete</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Rename Chat Modal */}
+                        {showRenameModal && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`${isDarkMode ? 'bg-gray-800' : 'bg-white'} rounded-xl shadow-xl p-5 w-96 max-w-full`}>
+                                    <h4 className={`font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>Rename chat</h4>
+                                    <input
+                                        type="text"
+                                        value={renameInput}
+                                        onChange={(e) => setRenameInput(e.target.value)}
+                                        className={`w-full px-3 py-2 border ${isDarkMode ? 'border-gray-600 bg-gray-700 text-white' : 'border-gray-300 bg-white text-gray-900'} rounded mb-4`}
+                                        placeholder="Enter chat name"
+                                        maxLength={80}
+                                    // Removed autoFocus - don't auto-focus input
+                                    />
+                                    <div className="flex justify-end gap-2">
+                                        <button onClick={() => { setShowRenameModal(false); setRenameTargetSessionId(null); }} className={`px-3 py-1.5 text-sm rounded border ${isDarkMode ? 'border-gray-600 text-gray-300' : 'border-gray-300 text-gray-700'}`}>Cancel</button>
+                                        <button onClick={async () => {
+                                            try {
+                                                const name = renameInput.trim();
+                                                const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                                await fetch(`${API_BASE_URL}/api/chat-history/session/${renameTargetSessionId}`, {
+                                                    method: 'PUT',
+                                                    credentials: 'include',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    body: JSON.stringify({ name })
+                                                });
+                                                await loadChatSessions();
+                                                toast.success('Chat renamed');
+                                            } catch {
+                                                toast.error('Failed to rename chat');
+                                            } finally {
+                                                setShowRenameModal(false);
+                                                setRenameTargetSessionId(null);
+                                                setOpenHistoryMenuSessionId(null);
+                                            }
+                                        }} className={`px-3 py-1.5 text-sm rounded bg-gradient-to-r ${themeColors.primary} text-white hover:opacity-90`}>Save</button>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Sign In Modal for Prompt Limit */}
+                        {showSignInModal && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className="bg-white rounded-xl shadow-xl p-6 w-96 max-w-sm mx-4">
+                                    <div className="text-center">
+                                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
+                                            <FaRobot className="h-6 w-6 text-blue-600" />
                                         </div>
-                                        <div>
-                                            <label className={`block text-xs mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                Secondary Color
-                                            </label>
-                                            <select 
-                                                className={`w-full p-2 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                                onChange={(e) => {
-                                                    const secondary = e.target.value;
-                                                    const primary = customTheme?.primaryColor || 'blue';
-                                                    createCustomTheme(primary, secondary);
+                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
+                                            Prompt Limit Reached
+                                        </h3>
+                                        <p className="text-sm text-gray-600 mb-6">
+                                            {rateLimitInfo.role === 'public'
+                                                ? "You've used all 5 free prompts! Sign in to enjoy unlimited access to our AI assistant and unlock premium features like chat history, message ratings, and more."
+                                                : `You've reached your rate limit! Sign in to enjoy higher limits and premium features like chat history, message ratings, and more.`
+                                            }
+                                        </p>
+                                        <div className="flex flex-col gap-3">
+                                            <button
+                                                onClick={() => {
+                                                    setShowSignInModal(false);
+                                                    window.location.href = '/signin';
                                                 }}
+                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200"
                                             >
-                                                {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map(color => (
-                                                    <option key={color} value={color}>{color.charAt(0).toUpperCase() + color.slice(1)}</option>
-                                                ))}
-                                            </select>
+                                                Sign In to Continue
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    setShowSignInModal(false);
+                                                    window.location.href = '/signup';
+                                                }}
+                                                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200"
+                                            >
+                                                Create Free Account
+                                            </button>
+                                            <button
+                                                onClick={() => setShowSignInModal(false)}
+                                                className="w-full text-gray-500 hover:text-gray-700 text-sm py-2"
+                                            >
+                                                Maybe Later
+                                            </button>
                                         </div>
                                     </div>
                                 </div>
-                            )}
-                        </div>
-
-                        {/* Display Settings */}
-                        <div>
-                            <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                Display Settings
-                            </h4>
-                            <div className="space-y-4">
-                                {/* Dark Mode Toggle */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Dark Mode
-                                    </span>
-                                    <button
-                                        onClick={toggleDarkMode}
-                                        className={getToggleSwitchClasses(isDarkMode)}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-
-                                {/* Font Size */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Font Size
-                                    </span>
-                                    <select
-                                        value={fontSize}
-                                        onChange={(e) => updateFontSize(e.target.value)}
-                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                    >
-                                        <option value="small">Small</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="large">Large</option>
-                                    </select>
-                                </div>
-
-                                {/* Message Density */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Message Density
-                                    </span>
-                                    <select
-                                        value={messageDensity}
-                                        onChange={(e) => updateMessageDensity(e.target.value)}
-                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                    >
-                                        <option value="compact">Compact</option>
-                                        <option value="comfortable">Comfortable</option>
-                                        <option value="spacious">Spacious</option>
-                                    </select>
-                                </div>
-
-                                {/* Auto Scroll */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Auto Scroll to New Messages
-                                    </span>
-                                    <button
-                                        onClick={() => updateAutoScroll(!autoScroll)}
-                                        className={getToggleSwitchClasses(autoScroll)}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            autoScroll ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-
-                                {/* Show Timestamps */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Show Message Timestamps
-                                    </span>
-                                    <button
-                                        onClick={() => updateShowTimestamps(!showTimestamps)}
-                                        className={getToggleSwitchClasses(showTimestamps)}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            showTimestamps ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
                             </div>
-                        </div>
-
-                        {/* AI Settings - Only for logged-in users */}
-                        {currentUser && (
-                            <div>
-                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    AI Response Settings
-                                </h4>
-                            <div className="space-y-4">
-                                {/* Response Length */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Response Length
-                                    </span>
-                                    <select
-                                        value={aiResponseLength}
-                                        onChange={(e) => updateAiResponseLength(e.target.value)}
-                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                    >
-                                        <option value="short">Short</option>
-                                        <option value="medium">Medium</option>
-                                        <option value="long">Long</option>
-                                    </select>
-                                </div>
-
-                                {/* Creativity Level */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Creativity Level
-                                    </span>
-                                    <select
-                                        value={aiCreativity}
-                                        onChange={(e) => updateAiCreativity(e.target.value)}
-                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                    >
-                                        <option value="conservative">Conservative</option>
-                                        <option value="balanced">Balanced</option>
-                                        <option value="creative">Creative</option>
-                                    </select>
-                                </div>
-
-                                {/* Response Tone */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Response Tone
-                                    </span>
-                                    <select
-                                        value={tone}
-                                        onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
-                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                    >
-                                        <option value="neutral">Neutral</option>
-                                        <option value="friendly">Friendly</option>
-                                        <option value="formal">Formal</option>
-                                        <option value="concise">Concise</option>
-                                    </select>
-                                </div>
-                            </div>
-                        </div>
                         )}
-
-                        {/* Notification Settings - Only for logged-in users */}
-                        {currentUser && (
-                            <div>
-                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    Notifications & Sounds
-                                </h4>
-                            <div className="space-y-4">
-                                {/* Sound Enabled */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Enable Sounds
-                                    </span>
-                                    <button
-                                        onClick={() => updateSoundEnabled(!soundEnabled)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            soundEnabled ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            soundEnabled ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-
-                                {/* Typing Sounds */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Typing Sounds
-                                    </span>
-                                    <button
-                                        onClick={() => updateTypingSounds(!typingSounds)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            typingSounds ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            typingSounds ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        )}
-
-                        {/* Privacy Settings - Only for logged-in users */}
-                        {currentUser && (
-                            <div>
-                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    Privacy & Data
-                                </h4>
-                            <div className="space-y-4">
-                                {/* Data Retention */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Data Retention (days)
-                                    </span>
-                                    <select
-                                        value={dataRetention}
-                                        onChange={(e) => updateDataRetention(e.target.value)}
-                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                    >
-                                        <option value="7">7 days</option>
-                                        <option value="30">30 days</option>
-                                        <option value="90">90 days</option>
-                                        <option value="365">1 year</option>
-                                        <option value="0">Forever</option>
-                                    </select>
-                                </div>
-
-                                {/* Analytics */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Analytics
-                                    </span>
-                                    <button
-                                        onClick={() => updateEnableAnalytics(!enableAnalytics)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            enableAnalytics ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            enableAnalytics ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-
-                                {/* Error Reporting */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Error Reporting
-                                    </span>
-                                    <button
-                                        onClick={() => updateEnableErrorReporting(!enableErrorReporting)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            enableErrorReporting ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            enableErrorReporting ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        )}
-
-                        {/* Advanced Settings - Only for logged-in users */}
-                        {currentUser && (
-                            <div>
-                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    Advanced Settings
-                                </h4>
-                            <div className="space-y-4">
-                                {/* Auto Save */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Auto Save
-                                    </span>
-                                    <button
-                                        onClick={() => updateAutoSave(!autoSave)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            autoSave ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            autoSave ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-
-                                {/* Message Limit */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Message Limit
-                                    </span>
-                                    <select
-                                        value={messageLimit}
-                                        onChange={(e) => updateMessageLimit(e.target.value)}
-                                        className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
-                                    >
-                                        <option value="50">50 messages</option>
-                                        <option value="100">100 messages</option>
-                                        <option value="200">200 messages</option>
-                                        <option value="500">500 messages</option>
-                                        <option value="unlimited">Unlimited</option>
-                                    </select>
-                                </div>
-
-                                {/* Enable Markdown */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Enable Markdown
-                                    </span>
-                                    <button
-                                        onClick={() => updateEnableMarkdown(!enableMarkdown)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            enableMarkdown ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            enableMarkdown ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-
-                                {/* Code Highlighting */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Code Highlighting
-                                    </span>
-                                    <button
-                                        onClick={() => updateEnableCodeHighlighting(!enableCodeHighlighting)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            enableCodeHighlighting ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            enableCodeHighlighting ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        )}
-                        {/* Accessibility Settings - Only for logged-in users */}
-                        {currentUser && (
-                            <div>
-                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    Accessibility
-                                </h4>
-                            <div className="space-y-4">
-                                {/* High Contrast */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        High Contrast
-                                    </span>
-                                    <button
-                                        onClick={() => updateHighContrast(!highContrast)}
-                                        className={getToggleSwitchClasses(highContrast)}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            highContrast ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-
-                                {/* Reduced Motion */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Reduced Motion
-                                    </span>
-                                    <button
-                                        onClick={() => updateReducedMotion(!reducedMotion)}
-                                        className={getToggleSwitchClasses(reducedMotion)}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            reducedMotion ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-
-                                {/* Screen Reader Support */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Screen Reader Support
-                                    </span>
-                                    <button
-                                        onClick={() => updateScreenReaderSupport(!screenReaderSupport)}
-                                        className={getToggleSwitchClasses(screenReaderSupport)}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            screenReaderSupport ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-
-                                {/* Large Text */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Large Text
-                                    </span>
-                                    <button
-                                        onClick={() => updateLargeText(!largeText)}
-                                        className={getToggleSwitchClasses(largeText)}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            largeText ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
-                        )}
-
-                        {/* Advanced AI Settings - Only for logged-in users */}
-                        {currentUser && (
-                            <div>
-                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                    Advanced AI Settings
-                                </h4>
-                            <div className="space-y-4">
-                                {/* Temperature */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                            Temperature: {temperature}
-                                        </span>
+                        {/* Sign-in Overlay for Public Users when Prompts Reach Zero */}
+                        {!currentUser && rateLimitInfo.remaining <= 0 && showSignInOverlay && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`max-w-md mx-4 p-6 rounded-2xl shadow-2xl border-2 border-dashed ${isDarkMode ? 'bg-gray-800/95 border-gray-600' : 'bg-white/95 border-blue-200'} transition-all duration-300`}>
+                                    <div className="text-center">
+                                        <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
+                                            <svg className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                            </svg>
+                                        </div>
+                                        <h3 className={`text-xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                                            Sign in to unlock full chatbot features
+                                        </h3>
+                                        <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            Get access to advanced AI settings, voice input, file uploads, chat history, and much more!
+                                        </p>
+                                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                            <button
+                                                onClick={() => {
+                                                    // Close chatbot and redirect to sign-in
+                                                    setIsOpen(false);
+                                                    navigate('/sign-in');
+                                                }}
+                                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${isDarkMode
+                                                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
+                                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
+                                                    } hover:shadow-lg hover:scale-105`}
+                                            >
+                                                Sign In
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    // Close chatbot and redirect to sign-up
+                                                    setIsOpen(false);
+                                                    navigate('/sign-up');
+                                                }}
+                                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${isDarkMode
+                                                    ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600'
+                                                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                                                    } hover:shadow-lg hover:scale-105`}
+                                            >
+                                                Create Account
+                                            </button>
+                                        </div>
+                                        <div className="mt-4">
+                                            <button
+                                                onClick={() => setShowSignInOverlay(false)}
+                                                className={`text-xs ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} transition-colors`}
+                                            >
+                                                Maybe Later
+                                            </button>
+                                        </div>
                                     </div>
-                                    <input
-                                        type="range"
-                                        min="0.1"
-                                        max="1.0"
-                                        step="0.1"
-                                        value={temperature}
-                                        onChange={(e) => updateTemperature(e.target.value)}
-                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                        style={{
-                                            accentColor: '#2563eb' // Blue color for the range slider
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Top P */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                            Top P: {topP}
-                                        </span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="0.1"
-                                        max="1.0"
-                                        step="0.1"
-                                        value={topP}
-                                        onChange={(e) => updateTopP(e.target.value)}
-                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                        style={{
-                                            accentColor: '#2563eb' // Blue color for the range slider
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Context Window */}
-                                <div>
-                                    <div className="flex items-center justify-between mb-2">
-                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                            Context Window: {contextWindow} messages
-                                        </span>
-                                    </div>
-                                    <input
-                                        type="range"
-                                        min="5"
-                                        max="50"
-                                        step="5"
-                                        value={contextWindow}
-                                        onChange={(e) => updateContextWindow(e.target.value)}
-                                        className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
-                                        style={{
-                                            accentColor: '#2563eb' // Blue color for the range slider
-                                        }}
-                                    />
-                                </div>
-
-                                {/* Enable Streaming */}
-                                <div className="flex items-center justify-between">
-                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                        Enable Streaming
-                                    </span>
-                                    <button
-                                        onClick={() => updateEnableStreaming(!enableStreaming)}
-                                        className={`w-12 h-6 rounded-full transition-colors ${
-                                            enableStreaming ? 'bg-blue-600' : 'bg-gray-300'
-                                        }`}
-                                    >
-                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                            enableStreaming ? 'translate-x-6' : 'translate-x-0.5'
-                                        }`} />
-                                    </button>
                                 </div>
                             </div>
-                        </div>
                         )}
 
-                        {/* Smart Suggestions Toggle - Only for logged-in users */}
-                        {currentUser && (
-                        <div className="flex items-center justify-between">
-                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                Smart Suggestions
-                            </span>
-                            <button
-                                onClick={() => {
-                                    const newValue = !showSmartSuggestions;
-                                    setShowSmartSuggestions(newValue);
-                                    localStorage.setItem('gemini_smart_suggestions', newValue.toString());
-                                }}
-                                className={getToggleSwitchClasses(showSmartSuggestions)}
-                            >
-                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${
-                                    showSmartSuggestions ? 'translate-x-6' : 'translate-x-0.5'
-                                }`} />
-                            </button>
-                        </div>
-                        )}
-
-                        {/* Login Required Message for Public Users */}
-                        {!currentUser && (
-                            <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-blue-50 border-blue-200'}`}>
-                                <div className="flex items-center space-x-3">
-                                    <div className={`p-2 rounded-full ${isDarkMode ? 'bg-blue-900' : 'bg-blue-100'}`}>
-                                        <svg className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
-                                        </svg>
+                        {/* Enhanced Settings Modal */}
+                        {showSettings && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl w-[500px] max-w-full max-h-[80vh] flex flex-col`}>
+                                    {/* Fixed Header */}
+                                    <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
+                                        <h3 className={`text-xl font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            Settings & Themes
+                                        </h3>
+                                        <button
+                                            onClick={() => setShowSettings(false)}
+                                            className={`text-gray-500 hover:text-gray-700 ${isDarkMode ? 'hover:text-gray-300' : ''}`}
+                                        >
+                                            <FaTimes size={20} />
+                                        </button>
                                     </div>
-                                    <div>
-                                        <h4 className={`text-sm font-medium ${isDarkMode ? 'text-blue-300' : 'text-blue-800'}`}>
-                                            Advanced Settings Available
-                                        </h4>
-                                        <p className={`text-xs mt-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
-                                            Sign in to access AI settings, notifications, privacy controls, and more advanced features.
+
+                                    {/* Scrollable Content */}
+                                    <div className="flex-1 overflow-y-auto p-6">
+
+                                        <div className="space-y-6">
+                                            {/* Theme Selection */}
+                                            <div>
+                                                <label className={`block text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    Theme Color
+                                                </label>
+                                                <div className="grid grid-cols-5 gap-3">
+                                                    {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map((theme) => (
+                                                        <button
+                                                            key={theme}
+                                                            onClick={() => {
+                                                                setSelectedTheme(theme);
+                                                                setUserSetting('gemini_theme', theme);
+                                                            }}
+                                                            className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${selectedTheme === theme ? 'border-gray-400 scale-110' : 'border-gray-200 hover:scale-105'
+                                                                } ${theme === 'blue' ? 'bg-gradient-to-br from-blue-500 to-purple-500' :
+                                                                    theme === 'green' ? 'bg-gradient-to-br from-green-500 to-emerald-500' :
+                                                                        theme === 'purple' ? 'bg-gradient-to-br from-purple-500 to-pink-500' :
+                                                                            theme === 'orange' ? 'bg-gradient-to-br from-orange-500 to-red-500' :
+                                                                                theme === 'red' ? 'bg-gradient-to-br from-red-500 to-pink-500' :
+                                                                                    theme === 'indigo' ? 'bg-gradient-to-br from-indigo-500 to-blue-500' :
+                                                                                        theme === 'teal' ? 'bg-gradient-to-br from-teal-500 to-cyan-500' :
+                                                                                            theme === 'pink' ? 'bg-gradient-to-br from-pink-500 to-rose-500' :
+                                                                                                theme === 'yellow' ? 'bg-gradient-to-br from-yellow-400 to-orange-500' :
+                                                                                                    'bg-gradient-to-br from-cyan-500 to-blue-500'
+                                                                }`}
+                                                            title={theme.charAt(0).toUpperCase() + theme.slice(1)}
+                                                        />
+                                                    ))}
+                                                    {/* Custom Theme Button */}
+                                                    <button
+                                                        onClick={() => setShowCustomThemePicker(!showCustomThemePicker)}
+                                                        className={`w-10 h-10 rounded-full border-2 transition-all duration-200 ${selectedTheme === 'custom' ? 'border-gray-400 scale-110' : 'border-gray-200 hover:scale-105'
+                                                            } ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'} flex items-center justify-center`}
+                                                        title="Custom Theme"
+                                                    >
+                                                        <FaPalette size={16} className={isDarkMode ? 'text-gray-300' : 'text-gray-600'} />
+                                                    </button>
+                                                </div>
+
+                                                {/* Custom Theme Picker */}
+                                                {showCustomThemePicker && (
+                                                    <div className={`mt-4 p-4 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-gray-50 border-gray-200'}`}>
+                                                        <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                            Create Custom Theme
+                                                        </h4>
+                                                        <div className="grid grid-cols-2 gap-4">
+                                                            <div>
+                                                                <label className={`block text-xs mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                    Primary Color
+                                                                </label>
+                                                                <select
+                                                                    className={`w-full p-2 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                                    onChange={(e) => {
+                                                                        const primary = e.target.value;
+                                                                        const secondary = customTheme?.secondaryColor || 'purple';
+                                                                        createCustomTheme(primary, secondary);
+                                                                    }}
+                                                                >
+                                                                    {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map(color => (
+                                                                        <option key={color} value={color}>{color.charAt(0).toUpperCase() + color.slice(1)}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                            <div>
+                                                                <label className={`block text-xs mb-2 ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                                    Secondary Color
+                                                                </label>
+                                                                <select
+                                                                    className={`w-full p-2 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                                    onChange={(e) => {
+                                                                        const secondary = e.target.value;
+                                                                        const primary = customTheme?.primaryColor || 'blue';
+                                                                        createCustomTheme(primary, secondary);
+                                                                    }}
+                                                                >
+                                                                    {['blue', 'green', 'purple', 'orange', 'red', 'indigo', 'teal', 'pink', 'yellow', 'cyan'].map(color => (
+                                                                        <option key={color} value={color}>{color.charAt(0).toUpperCase() + color.slice(1)}</option>
+                                                                    ))}
+                                                                </select>
+                                                            </div>
+                                                        </div>
+                                                    </div>
+                                                )}
+                                            </div>
+
+                                            {/* Display Settings */}
+                                            <div>
+                                                <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                    Display Settings
+                                                </h4>
+                                                <div className="space-y-4">
+                                                    {/* Dark Mode Toggle */}
+                                                    <div className="flex items-center justify-between">
+                                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                            Dark Mode
+                                                        </span>
+                                                        <button
+                                                            onClick={toggleDarkMode}
+                                                            className={getToggleSwitchClasses(isDarkMode)}
+                                                        >
+                                                            <div className={`w-5 h-5 bg-white rounded-full transition-transform ${isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
+                                                                }`} />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Font Size */}
+                                                    <div className="flex items-center justify-between">
+                                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                            Font Size
+                                                        </span>
+                                                        <select
+                                                            value={fontSize}
+                                                            onChange={(e) => updateFontSize(e.target.value)}
+                                                            className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                        >
+                                                            <option value="small">Small</option>
+                                                            <option value="medium">Medium</option>
+                                                            <option value="large">Large</option>
+                                                        </select>
+                                                    </div>
+
+                                                    {/* Message Density */}
+                                                    <div className="flex items-center justify-between">
+                                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                            Message Density
+                                                        </span>
+                                                        <select
+                                                            value={messageDensity}
+                                                            onChange={(e) => updateMessageDensity(e.target.value)}
+                                                            className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                        >
+                                                            <option value="compact">Compact</option>
+                                                            <option value="comfortable">Comfortable</option>
+                                                            <option value="spacious">Spacious</option>
+                                                        </select>
+                                                    </div>
+
+                                                    {/* Auto Scroll */}
+                                                    <div className="flex items-center justify-between">
+                                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                            Auto Scroll to New Messages
+                                                        </span>
+                                                        <button
+                                                            onClick={() => updateAutoScroll(!autoScroll)}
+                                                            className={getToggleSwitchClasses(autoScroll)}
+                                                        >
+                                                            <div className={`w-5 h-5 bg-white rounded-full transition-transform ${autoScroll ? 'translate-x-6' : 'translate-x-0.5'
+                                                                }`} />
+                                                        </button>
+                                                    </div>
+
+                                                    {/* Show Timestamps */}
+                                                    <div className="flex items-center justify-between">
+                                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                            Show Message Timestamps
+                                                        </span>
+                                                        <button
+                                                            onClick={() => updateShowTimestamps(!showTimestamps)}
+                                                            className={getToggleSwitchClasses(showTimestamps)}
+                                                        >
+                                                            <div className={`w-5 h-5 bg-white rounded-full transition-transform ${showTimestamps ? 'translate-x-6' : 'translate-x-0.5'
+                                                                }`} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+                                            </div>
+
+                                            {/* AI Settings - Only for logged-in users */}
+                                            {currentUser && (
+                                                <div>
+                                                    <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                        AI Response Settings
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {/* Response Length */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Response Length
+                                                            </span>
+                                                            <select
+                                                                value={aiResponseLength}
+                                                                onChange={(e) => updateAiResponseLength(e.target.value)}
+                                                                className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                            >
+                                                                <option value="short">Short</option>
+                                                                <option value="medium">Medium</option>
+                                                                <option value="long">Long</option>
+                                                            </select>
+                                                        </div>
+
+                                                        {/* Creativity Level */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Creativity Level
+                                                            </span>
+                                                            <select
+                                                                value={aiCreativity}
+                                                                onChange={(e) => updateAiCreativity(e.target.value)}
+                                                                className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                            >
+                                                                <option value="conservative">Conservative</option>
+                                                                <option value="balanced">Balanced</option>
+                                                                <option value="creative">Creative</option>
+                                                            </select>
+                                                        </div>
+
+                                                        {/* Response Tone */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Response Tone
+                                                            </span>
+                                                            <select
+                                                                value={tone}
+                                                                onChange={(e) => { setTone(e.target.value); localStorage.setItem('gemini_tone', e.target.value); }}
+                                                                className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                            >
+                                                                <option value="neutral">Neutral</option>
+                                                                <option value="friendly">Friendly</option>
+                                                                <option value="formal">Formal</option>
+                                                                <option value="concise">Concise</option>
+                                                            </select>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Notification Settings - Only for logged-in users */}
+                                            {currentUser && (
+                                                <div>
+                                                    <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                        Notifications & Sounds
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {/* Sound Enabled */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Enable Sounds
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateSoundEnabled(!soundEnabled)}
+                                                                className={`w-12 h-6 rounded-full transition-colors ${soundEnabled ? 'bg-blue-600' : 'bg-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${soundEnabled ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Typing Sounds */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Typing Sounds
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateTypingSounds(!typingSounds)}
+                                                                className={`w-12 h-6 rounded-full transition-colors ${typingSounds ? 'bg-blue-600' : 'bg-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${typingSounds ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Privacy Settings - Only for logged-in users */}
+                                            {currentUser && (
+                                                <div>
+                                                    <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                        Privacy & Data
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {/* Data Retention */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Data Retention (days)
+                                                            </span>
+                                                            <select
+                                                                value={dataRetention}
+                                                                onChange={(e) => updateDataRetention(e.target.value)}
+                                                                className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                            >
+                                                                <option value="7">7 days</option>
+                                                                <option value="30">30 days</option>
+                                                                <option value="90">90 days</option>
+                                                                <option value="365">1 year</option>
+                                                                <option value="0">Forever</option>
+                                                            </select>
+                                                        </div>
+
+                                                        {/* Analytics */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Analytics
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateEnableAnalytics(!enableAnalytics)}
+                                                                className={`w-12 h-6 rounded-full transition-colors ${enableAnalytics ? 'bg-blue-600' : 'bg-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${enableAnalytics ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Error Reporting */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Error Reporting
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateEnableErrorReporting(!enableErrorReporting)}
+                                                                className={`w-12 h-6 rounded-full transition-colors ${enableErrorReporting ? 'bg-blue-600' : 'bg-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${enableErrorReporting ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Advanced Settings - Only for logged-in users */}
+                                            {currentUser && (
+                                                <div>
+                                                    <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                        Advanced Settings
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {/* Auto Save */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Auto Save
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateAutoSave(!autoSave)}
+                                                                className={`w-12 h-6 rounded-full transition-colors ${autoSave ? 'bg-blue-600' : 'bg-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${autoSave ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Message Limit */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Message Limit
+                                                            </span>
+                                                            <select
+                                                                value={messageLimit}
+                                                                onChange={(e) => updateMessageLimit(e.target.value)}
+                                                                className={`px-3 py-1 rounded border text-sm ${isDarkMode ? 'bg-gray-700 border-gray-600 text-white' : 'bg-white border-gray-300 text-gray-900'}`}
+                                                            >
+                                                                <option value="50">50 messages</option>
+                                                                <option value="100">100 messages</option>
+                                                                <option value="200">200 messages</option>
+                                                                <option value="500">500 messages</option>
+                                                                <option value="unlimited">Unlimited</option>
+                                                            </select>
+                                                        </div>
+
+                                                        {/* Enable Markdown */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Enable Markdown
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateEnableMarkdown(!enableMarkdown)}
+                                                                className={`w-12 h-6 rounded-full transition-colors ${enableMarkdown ? 'bg-blue-600' : 'bg-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${enableMarkdown ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Code Highlighting */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Code Highlighting
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateEnableCodeHighlighting(!enableCodeHighlighting)}
+                                                                className={`w-12 h-6 rounded-full transition-colors ${enableCodeHighlighting ? 'bg-blue-600' : 'bg-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${enableCodeHighlighting ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                            {/* Accessibility Settings - Only for logged-in users */}
+                                            {currentUser && (
+                                                <div>
+                                                    <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                        Accessibility
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {/* High Contrast */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                High Contrast
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateHighContrast(!highContrast)}
+                                                                className={getToggleSwitchClasses(highContrast)}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${highContrast ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Reduced Motion */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Reduced Motion
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateReducedMotion(!reducedMotion)}
+                                                                className={getToggleSwitchClasses(reducedMotion)}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${reducedMotion ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Screen Reader Support */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Screen Reader Support
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateScreenReaderSupport(!screenReaderSupport)}
+                                                                className={getToggleSwitchClasses(screenReaderSupport)}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${screenReaderSupport ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+
+                                                        {/* Large Text */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Large Text
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateLargeText(!largeText)}
+                                                                className={getToggleSwitchClasses(largeText)}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${largeText ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Advanced AI Settings - Only for logged-in users */}
+                                            {currentUser && (
+                                                <div>
+                                                    <h4 className={`text-sm font-medium mb-3 ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                        Advanced AI Settings
+                                                    </h4>
+                                                    <div className="space-y-4">
+                                                        {/* Temperature */}
+                                                        <div>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                    Temperature: {temperature}
+                                                                </span>
+                                                            </div>
+                                                            <input
+                                                                type="range"
+                                                                min="0.1"
+                                                                max="1.0"
+                                                                step="0.1"
+                                                                value={temperature}
+                                                                onChange={(e) => updateTemperature(e.target.value)}
+                                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                                                style={{
+                                                                    accentColor: '#2563eb' // Blue color for the range slider
+                                                                }}
+                                                            />
+                                                        </div>
+
+                                                        {/* Top P */}
+                                                        <div>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                    Top P: {topP}
+                                                                </span>
+                                                            </div>
+                                                            <input
+                                                                type="range"
+                                                                min="0.1"
+                                                                max="1.0"
+                                                                step="0.1"
+                                                                value={topP}
+                                                                onChange={(e) => updateTopP(e.target.value)}
+                                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                                                style={{
+                                                                    accentColor: '#2563eb' // Blue color for the range slider
+                                                                }}
+                                                            />
+                                                        </div>
+
+                                                        {/* Context Window */}
+                                                        <div>
+                                                            <div className="flex items-center justify-between mb-2">
+                                                                <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                    Context Window: {contextWindow} messages
+                                                                </span>
+                                                            </div>
+                                                            <input
+                                                                type="range"
+                                                                min="5"
+                                                                max="50"
+                                                                step="5"
+                                                                value={contextWindow}
+                                                                onChange={(e) => updateContextWindow(e.target.value)}
+                                                                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+                                                                style={{
+                                                                    accentColor: '#2563eb' // Blue color for the range slider
+                                                                }}
+                                                            />
+                                                        </div>
+
+                                                        {/* Enable Streaming */}
+                                                        <div className="flex items-center justify-between">
+                                                            <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                                Enable Streaming
+                                                            </span>
+                                                            <button
+                                                                onClick={() => updateEnableStreaming(!enableStreaming)}
+                                                                className={`w-12 h-6 rounded-full transition-colors ${enableStreaming ? 'bg-blue-600' : 'bg-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <div className={`w-5 h-5 bg-white rounded-full transition-transform ${enableStreaming ? 'translate-x-6' : 'translate-x-0.5'
+                                                                    }`} />
+                                                            </button>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+
+                                            {/* Smart Suggestions Toggle - Only for logged-in users */}
+                                            {currentUser && (
+                                                <div className="flex items-center justify-between">
+                                                    <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
+                                                        Smart Suggestions
+                                                    </span>
+                                                    <button
+                                                        onClick={() => {
+                                                            const newValue = !showSmartSuggestions;
+                                                            setShowSmartSuggestions(newValue);
+                                                            localStorage.setItem('gemini_smart_suggestions', newValue.toString());
+                                                        }}
+                                                        className={getToggleSwitchClasses(showSmartSuggestions)}
+                                                    >
+                                                        <div className={`w-5 h-5 bg-white rounded-full transition-transform ${showSmartSuggestions ? 'translate-x-6' : 'translate-x-0.5'
+                                                            }`} />
+                                                    </button>
+                                                </div>
+                                            )}
+
+                                            {/* Login Required Message for Public Users */}
+                                            {!currentUser && (
+                                                <div className={`p-4 rounded-lg border ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-blue-50 border-blue-200'}`}>
+                                                    <div className="flex items-center space-x-3">
+                                                        <div className={`p-2 rounded-full ${isDarkMode ? 'bg-blue-900' : 'bg-blue-100'}`}>
+                                                            <svg className={`w-5 h-5 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 16h-1v-4h-1m1-4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                                                            </svg>
+                                                        </div>
+                                                        <div>
+                                                            <h4 className={`text-sm font-medium ${isDarkMode ? 'text-blue-300' : 'text-blue-800'}`}>
+                                                                Advanced Settings Available
+                                                            </h4>
+                                                            <p className={`text-xs mt-1 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`}>
+                                                                Sign in to access AI settings, notifications, privacy controls, and more advanced features.
+                                                            </p>
+                                                        </div>
+                                                    </div>
+                                                </div>
+                                            )}
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Voice Input Modal */}
+                        {showVoiceInput && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center`}>
+                                    <div className="mb-4">
+                                        <FaMicrophone size={32} className={`mx-auto mb-2 ${isRecording ? 'text-red-500 animate-pulse' : themeColors.accent}`} />
+                                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            Voice Input
+                                        </h3>
+                                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            Click to start recording, click again to stop
+                                        </p>
+                                        <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
+                                            Powered by OpenAI Whisper AI
+                                        </p>
+                                        <p className={`text-xs ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
+                                            Note: Rate limits may apply for frequent use
                                         </p>
                                     </div>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                    </div>
-                </div>
-            </div>
-        )}
 
-        {/* Voice Input Modal */}
-        {showVoiceInput && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center`}>
-                    <div className="mb-4">
-                        <FaMicrophone size={32} className={`mx-auto mb-2 ${isRecording ? 'text-red-500 animate-pulse' : themeColors.accent}`} />
-                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            Voice Input
-                        </h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Click to start recording, click again to stop
-                        </p>
-                        <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                            Powered by OpenAI Whisper AI
-                        </p>
-                        <p className={`text-xs ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                            Note: Rate limits may apply for frequent use
-                        </p>
-                    </div>
-                    
-                    <div className="space-y-3">
-                        <button
-                            onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                            className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-200 ${
-                                isRecording 
-                                    ? 'bg-red-500 animate-pulse' 
-                                    : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
-                            }`}
-                        >
-                            {isRecording ? <FaStop size={24} className="text-white" /> : <FaMicrophone size={24} className="text-white" />}
-                        </button>
-                        
-                        <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            {isRecording ? `Recording... ${recordingDuration}s` : 'Click to start recording'}
-                        </p>
-                    </div>
-                    
-                    <button
-                        onClick={() => setShowVoiceInput(false)}
-                        className="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
-                    >
-                        Close
-                    </button>
-                </div>
-            </div>
-        )}
-
-        {/* Audio Preview Modal */}
-        {showAudioPreview && recordedAudioUrl && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center`}>
-                    <div className="mb-4">
-                        <FaMicrophone size={32} className="mx-auto text-green-500 mb-2" />
-                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            Audio Preview
-                        </h3>
-                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Review your recording
-                        </p>
-                    </div>
-                    
-                    <div className="space-y-3">
-                        <audio 
-                            controls 
-                            className="w-full"
-                            onError={(e) => {
-                                console.warn('Audio playback error, but continuing with upload');
-                                // Don't show error toast, just log it
-                            }}
-                            onLoadStart={() => console.log('Audio loading started')}
-                            onCanPlay={() => console.log('Audio can play')}
-                            onLoadedMetadata={() => console.log('Audio metadata loaded')}
-                        >
-                            <source src={recordedAudioUrl} type={recordedAudioType} />
-                            <source src={recordedAudioUrl} type="audio/webm" />
-                            <source src={recordedAudioUrl} type="audio/wav" />
-                            <source src={recordedAudioUrl} type="audio/mp4" />
-                            <source src={recordedAudioUrl} type="audio/ogg" />
-                            Your browser does not support the audio element.
-                        </audio>
-                        
-                        {uploadingAudio && (
-                            <div className="mb-3">
-                                <div className="flex items-center justify-center gap-2 text-sm text-blue-600">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                    Uploading and transcribing audio...
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                                    <div 
-                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                        style={{ width: `${uploadProgress}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        )}
-                        
-                        <div className="flex gap-2 justify-center flex-wrap">
-                            <button
-                                onClick={uploadingAudio ? cancelAudioUpload : handleSendRecordedAudio}
-                                className={`px-4 py-2 ${uploadingAudio ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white rounded-lg transition-colors flex items-center gap-2`}
-                            >
-                                {uploadingAudio ? (
-                                    <>
-                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                        </svg>
-                                        Cancel
-                                    </>
-                                ) : (
-                                    <>
-                                        <FaMicrophone size={14} />
-                                        Transcribe & Send
-                                    </>
-                                )}
-                            </button>
-                            <button
-                                onClick={() => {
-                                    // Send as text message about audio
-                                    setInputMessage('I recorded an audio message but had trouble uploading it. Please help me with my question.');
-                                    
-                                    // Close audio preview and cleanup
-                                    setShowAudioPreview(false);
-                                    if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
-                                        URL.revokeObjectURL(recordedAudioUrl);
-                                    }
-                                    setRecordedAudioUrl(null);
-                                    setRecordedAudioFile(null);
-                                    setAudioChunks([]);
-                                    recordingChunksRef.current = [];
-                                    
-                                    // Auto-submit the message
-                                    setTimeout(() => {
-                                        handleSubmit(new Event('submit'));
-                                    }, 100);
-                                }}
-                                disabled={uploadingAudio}
-                                className={`px-4 py-2 bg-gradient-to-r ${themeColors.primary} hover:opacity-90 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2`}
-                            >
-                                <FaFileAlt size={14} />
-                                Send as Text
-                            </button>
-                            <button
-                                onClick={() => {
-                                    // Cleanup blob URL before clearing state
-                                    if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
-                                        URL.revokeObjectURL(recordedAudioUrl);
-                                    }
-                                    setShowAudioPreview(false);
-                                    setRecordedAudioUrl(null);
-                                    setRecordedAudioFile(null);
-                                    setAudioChunks([]);
-                                    recordingChunksRef.current = [];
-                                }}
-                                disabled={uploadingAudio}
-                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 rounded-lg transition-colors"
-                            >
-                                Record Again
-                            </button>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* File Upload Modal */}
-        {showFileUpload && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            Upload Files
-                        </h3>
-                        <button
-                            onClick={() => setShowFileUpload(false)}
-                            className="text-gray-500 hover:text-gray-700"
-                        >
-                            <FaTimes size={16} />
-                        </button>
-                    </div>
-                    
-                    <div className="space-y-4">
-                        {uploadingFile && (
-                            <div className="mb-4">
-                                <div className="flex items-center justify-center gap-2 text-sm text-blue-600 mb-2">
-                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                    Uploading files...
-                                </div>
-                                <div className="w-full bg-gray-200 rounded-full h-2">
-                                    <div 
-                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                        style={{ width: `${uploadProgress}%` }}
-                                    ></div>
-                                </div>
-                            </div>
-                        )}
-                        
-                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
-                            <FaUpload size={32} className="mx-auto text-gray-400 mb-2" />
-                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                Drag & drop files here or click to browse
-                            </p>
-                            <input
-                                type="file"
-                                multiple
-                                accept="image/*,audio/*,video/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx"
-                                onChange={handleFileUpload}
-                                className="hidden"
-                                id="file-upload"
-                                disabled={uploadingFile}
-                            />
-                            <label
-                                htmlFor="file-upload"
-                                className={`mt-2 inline-block px-4 py-2 rounded-lg cursor-pointer transition-colors ${
-                                    uploadingFile 
-                                        ? 'bg-gray-400 cursor-not-allowed' 
-                                        : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
-                                } text-white`}
-                            >
-                                {uploadingFile ? 'Uploading...' : 'Choose Files'}
-                            </label>
-                        </div>
-                        
-                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                            <p>Supported: Images, Audio, Video, Documents (PDF, Word, Excel, Text). Max 10MB per file.</p>
-                        </div>
-                    </div>
-                </div>
-            </div>
-        )}
-
-        {/* Search in Chat Modal */}
-        {showSearchInChat && (
-            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-96 max-w-full`}>
-                    <div className="flex items-center justify-between mb-4">
-                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                            Search in Chat
-                        </h3>
-                        <button
-                            onClick={() => setShowSearchInChat(false)}
-                            className="text-gray-500 hover:text-gray-700"
-                        >
-                            <FaTimes size={16} />
-                        </button>
-                    </div>
-                    
-                    <div className="space-y-4">
-                        <input
-                            type="text"
-                            value={searchQuery}
-                            onChange={(e) => {
-                                setSearchQuery(e.target.value);
-                                searchInMessages(e.target.value);
-                            }}
-                            placeholder="Search messages..."
-                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} ${
-                                isDarkMode 
-                                    ? 'bg-gray-800 border-gray-600 text-white' 
-                                    : 'bg-white border-gray-300 text-gray-900'
-                            }`}
-                        />
-                        
-                        {searchQuery && (
-                            <div className="max-h-40 overflow-y-auto">
-                                {filteredMessages.length > 0 ? (
-                                    <div className="space-y-2">
-                                        {filteredMessages.map((message, index) => (
-                                            <div
-                                                key={index}
-                                                onClick={() => handleSearchResultClick(message)}
-                                                className={`p-2 rounded border cursor-pointer transition-all duration-200 ${
-                                                    isDarkMode 
-                                                        ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500' 
-                                                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                                    <div className="space-y-3">
+                                        <button
+                                            onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
+                                            className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-200 ${isRecording
+                                                    ? 'bg-red-500 animate-pulse'
+                                                    : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
                                                 }`}
-                                            >
-                                                <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
-                                                    {message.role === 'user' ? 'You' : 'Gemini'} • {new Date(message.timestamp).toLocaleString()}
-                                                </div>
-                                                <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{message.content.substring(0, 100)}...</div>
-                                            </div>
-                                        ))}
+                                        >
+                                            {isRecording ? <FaStop size={24} className="text-white" /> : <FaMicrophone size={24} className="text-white" />}
+                                        </button>
+
+                                        <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            {isRecording ? `Recording... ${recordingDuration}s` : 'Click to start recording'}
+                                        </p>
                                     </div>
-                                ) : (
-                                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                        No messages found
-                                    </p>
-                                )}
+
+                                    <button
+                                        onClick={() => setShowVoiceInput(false)}
+                                        className="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
                             </div>
                         )}
-                    </div>
-                </div>
-            </div>
-        )}
+
+                        {/* Audio Preview Modal */}
+                        {showAudioPreview && recordedAudioUrl && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center`}>
+                                    <div className="mb-4">
+                                        <FaMicrophone size={32} className="mx-auto text-green-500 mb-2" />
+                                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            Audio Preview
+                                        </h3>
+                                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                            Review your recording
+                                        </p>
+                                    </div>
+
+                                    <div className="space-y-3">
+                                        <audio
+                                            controls
+                                            className="w-full"
+                                            onError={(e) => {
+                                                console.warn('Audio playback error, but continuing with upload');
+                                                // Don't show error toast, just log it
+                                            }}
+                                            onLoadStart={() => console.log('Audio loading started')}
+                                            onCanPlay={() => console.log('Audio can play')}
+                                            onLoadedMetadata={() => console.log('Audio metadata loaded')}
+                                        >
+                                            <source src={recordedAudioUrl} type={recordedAudioType} />
+                                            <source src={recordedAudioUrl} type="audio/webm" />
+                                            <source src={recordedAudioUrl} type="audio/wav" />
+                                            <source src={recordedAudioUrl} type="audio/mp4" />
+                                            <source src={recordedAudioUrl} type="audio/ogg" />
+                                            Your browser does not support the audio element.
+                                        </audio>
+
+                                        {uploadingAudio && (
+                                            <div className="mb-3">
+                                                <div className="flex items-center justify-center gap-2 text-sm text-blue-600">
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                    Uploading and transcribing audio...
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
+                                                    <div
+                                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${uploadProgress}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="flex gap-2 justify-center flex-wrap">
+                                            <button
+                                                onClick={uploadingAudio ? cancelAudioUpload : handleSendRecordedAudio}
+                                                className={`px-4 py-2 ${uploadingAudio ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white rounded-lg transition-colors flex items-center gap-2`}
+                                            >
+                                                {uploadingAudio ? (
+                                                    <>
+                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                                                        </svg>
+                                                        Cancel
+                                                    </>
+                                                ) : (
+                                                    <>
+                                                        <FaMicrophone size={14} />
+                                                        Transcribe & Send
+                                                    </>
+                                                )}
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    // Send as text message about audio
+                                                    setInputMessage('I recorded an audio message but had trouble uploading it. Please help me with my question.');
+
+                                                    // Close audio preview and cleanup
+                                                    setShowAudioPreview(false);
+                                                    if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
+                                                        URL.revokeObjectURL(recordedAudioUrl);
+                                                    }
+                                                    setRecordedAudioUrl(null);
+                                                    setRecordedAudioFile(null);
+                                                    setAudioChunks([]);
+                                                    recordingChunksRef.current = [];
+
+                                                    // Auto-submit the message
+                                                    setTimeout(() => {
+                                                        handleSubmit(new Event('submit'));
+                                                    }, 100);
+                                                }}
+                                                disabled={uploadingAudio}
+                                                className={`px-4 py-2 bg-gradient-to-r ${themeColors.primary} hover:opacity-90 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2`}
+                                            >
+                                                <FaFileAlt size={14} />
+                                                Send as Text
+                                            </button>
+                                            <button
+                                                onClick={() => {
+                                                    // Cleanup blob URL before clearing state
+                                                    if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
+                                                        URL.revokeObjectURL(recordedAudioUrl);
+                                                    }
+                                                    setShowAudioPreview(false);
+                                                    setRecordedAudioUrl(null);
+                                                    setRecordedAudioFile(null);
+                                                    setAudioChunks([]);
+                                                    recordingChunksRef.current = [];
+                                                }}
+                                                disabled={uploadingAudio}
+                                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 rounded-lg transition-colors"
+                                            >
+                                                Record Again
+                                            </button>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* File Upload Modal */}
+                        {showFileUpload && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            Upload Files
+                                        </h3>
+                                        <button
+                                            onClick={() => setShowFileUpload(false)}
+                                            className="text-gray-500 hover:text-gray-700"
+                                        >
+                                            <FaTimes size={16} />
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        {uploadingFile && (
+                                            <div className="mb-4">
+                                                <div className="flex items-center justify-center gap-2 text-sm text-blue-600 mb-2">
+                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
+                                                    Uploading files...
+                                                </div>
+                                                <div className="w-full bg-gray-200 rounded-full h-2">
+                                                    <div
+                                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
+                                                        style={{ width: `${uploadProgress}%` }}
+                                                    ></div>
+                                                </div>
+                                            </div>
+                                        )}
+
+                                        <div className="border-2 border-dashed border-gray-300 rounded-lg p-6 text-center">
+                                            <FaUpload size={32} className="mx-auto text-gray-400 mb-2" />
+                                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                Drag & drop files here or click to browse
+                                            </p>
+                                            <input
+                                                type="file"
+                                                multiple
+                                                accept="image/*,audio/*,video/*,.pdf,.txt,.csv,.doc,.docx,.xls,.xlsx"
+                                                onChange={handleFileUpload}
+                                                className="hidden"
+                                                id="file-upload"
+                                                disabled={uploadingFile}
+                                            />
+                                            <label
+                                                htmlFor="file-upload"
+                                                className={`mt-2 inline-block px-4 py-2 rounded-lg cursor-pointer transition-colors ${uploadingFile
+                                                        ? 'bg-gray-400 cursor-not-allowed'
+                                                        : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
+                                                    } text-white`}
+                                            >
+                                                {uploadingFile ? 'Uploading...' : 'Choose Files'}
+                                            </label>
+                                        </div>
+
+                                        <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                            <p>Supported: Images, Audio, Video, Documents (PDF, Word, Excel, Text). Max 10MB per file.</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        )}
+
+                        {/* Search in Chat Modal */}
+                        {showSearchInChat && (
+                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
+                                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-96 max-w-full`}>
+                                    <div className="flex items-center justify-between mb-4">
+                                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                            Search in Chat
+                                        </h3>
+                                        <button
+                                            onClick={() => setShowSearchInChat(false)}
+                                            className="text-gray-500 hover:text-gray-700"
+                                        >
+                                            <FaTimes size={16} />
+                                        </button>
+                                    </div>
+
+                                    <div className="space-y-4">
+                                        <input
+                                            type="text"
+                                            value={searchQuery}
+                                            onChange={(e) => {
+                                                setSearchQuery(e.target.value);
+                                                searchInMessages(e.target.value);
+                                            }}
+                                            placeholder="Search messages..."
+                                            className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} ${isDarkMode
+                                                    ? 'bg-gray-800 border-gray-600 text-white'
+                                                    : 'bg-white border-gray-300 text-gray-900'
+                                                }`}
+                                        />
+
+                                        {searchQuery && (
+                                            <div className="max-h-40 overflow-y-auto">
+                                                {filteredMessages.length > 0 ? (
+                                                    <div className="space-y-2">
+                                                        {filteredMessages.map((message, index) => (
+                                                            <div
+                                                                key={index}
+                                                                onClick={() => handleSearchResultClick(message)}
+                                                                className={`p-2 rounded border cursor-pointer transition-all duration-200 ${isDarkMode
+                                                                        ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500'
+                                                                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                                                                    }`}
+                                                            >
+                                                                <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
+                                                                    {message.role === 'user' ? 'You' : 'Gemini'} • {new Date(message.timestamp).toLocaleString()}
+                                                                </div>
+                                                                <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{message.content.substring(0, 100)}...</div>
+                                                            </div>
+                                                        ))}
+                                                    </div>
+                                                ) : (
+                                                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                        No messages found
+                                                    </p>
+                                                )}
+                                            </div>
+                                        )}
+                                    </div>
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}
@@ -6633,7 +6579,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between`}>
                             <h3 className="text-lg font-semibold">Ratings & Feedback</h3>
                             <div className="flex items-center gap-2">
-                                <button onClick={() => { loadRatingMeta(); try { const rs = JSON.parse(localStorage.getItem('gemini_ratings')||'{}'); setMessageRatings(rs);} catch(_){} }} className={`px-2 py-1 rounded text-sm ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}>Refresh</button>
+                                <button onClick={() => { loadRatingMeta(); try { const rs = JSON.parse(localStorage.getItem('gemini_ratings') || '{}'); setMessageRatings(rs); } catch (_) { } }} className={`px-2 py-1 rounded text-sm ${isDarkMode ? 'bg-gray-700 hover:bg-gray-600' : 'bg-gray-100 hover:bg-gray-200'}`}>Refresh</button>
                                 <button onClick={() => setShowRatingsModal(false)} className="opacity-70 hover:opacity-100"><FaTimes size={16} /></button>
                             </div>
                         </div>
