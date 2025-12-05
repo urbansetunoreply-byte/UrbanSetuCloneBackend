@@ -82,7 +82,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: 'Hello! I\'m your AI assistant powered by StackAI. How can I help you with your real estate needs today?',
+            content: 'Hello! I\'m your AI assistant powered by OpenAI. How can I help you with your real estate needs today?',
             timestamp: new Date().toISOString()
         }
     ]);
@@ -480,7 +480,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setMessages([
             {
                 role: 'assistant',
-                content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+                content: 'Hello! I\'m your AI assistant powered by OpenAI. How can I help you with your real estate needs today?',
                 timestamp: new Date().toISOString()
             }
         ]);
@@ -1958,7 +1958,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
-            console.log('Sending edited message to Gemini:', messageContent, 'Session:', currentSessionId);
+            console.log('Sending edited message to OpenAI:', messageContent, 'Session:', currentSessionId);
 
             // Support cancelling with AbortController
             abortControllerRef.current?.abort();
@@ -2149,7 +2149,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Ensure the first message is always the default welcome message
                     const defaultMessage = {
                         role: 'assistant',
-                        content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+                        content: 'Hello! I\'m your AI assistant powered by OpenAI. How can I help you with your real estate needs today?',
                         timestamp: new Date().toISOString()
                     };
 
@@ -2280,7 +2280,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Reset messages to default welcome message
                     const defaultMessage = {
                         role: 'assistant',
-                        content: 'Hello! I\'m your AI assistant powered by Gemini. How can I help you with your real estate needs today?',
+                        content: 'Hello! I\'m your AI assistant powered by OpenAI. How can I help you with your real estate needs today?',
                         timestamp: new Date().toISOString()
                     };
                     setMessages([defaultMessage]);
@@ -3881,8 +3881,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     aria-describedby="chat-description"
                 >
                     <div className={`${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-200'} rounded-2xl shadow-2xl border flex flex-col relative ${isFullscreen ? 'w-full h-full max-w-none max-h-none rounded-none' :
-                            isExpanded ? 'w-full max-w-4xl h-[85vh] md:mb-12 md:mr-12' :
-                                'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'
+                        isExpanded ? 'w-full max-w-4xl h-[85vh] md:mb-12 md:mr-12' :
+                            'w-full max-w-md h-full max-h-[90vh] md:w-96 md:h-[500px] md:mb-32 md:mr-6 md:max-h-[500px]'
                         } animate-slideUp`}>
                         {/* Screen reader only elements */}
                         {screenReaderSupport && (
@@ -3944,8 +3944,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     ref={headerMenuButtonRef}
                                     onClick={() => setIsHeaderMenuOpen(open => !open)}
                                     className={`group relative inline-flex items-center justify-center w-8 h-8 rounded-lg transition-all duration-200 ${isHeaderMenuOpen
-                                            ? 'bg-white/20 text-white shadow-lg scale-105'
-                                            : 'text-white/80 hover:text-white hover:bg-white/10 hover:scale-105'
+                                        ? 'bg-white/20 text-white shadow-lg scale-105'
+                                        : 'text-white/80 hover:text-white hover:bg-white/10 hover:scale-105'
                                         }`}
                                     title="More options"
                                     aria-label="More options"
@@ -4145,7 +4145,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 <button
                                                     onClick={() => {
                                                         try {
-                                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
+                                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'OpenAI'}: ${m.content}`);
                                                             const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
                                                             const url = URL.createObjectURL(blob);
                                                             const a = document.createElement('a');
@@ -4235,10 +4235,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         >
                                             <div
                                                 className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${message.role === 'user'
-                                                        ? `bg-gradient-to-r ${themeColors.primary} text-white`
-                                                        : message.isError
-                                                            ? `${isDarkMode ? 'bg-red-900/20 text-red-300 border border-red-700' : 'bg-red-50 text-red-900 border border-red-300 shadow-sm'}`
-                                                            : `${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-800'}`
+                                                    ? `bg-gradient-to-r ${themeColors.primary} text-white`
+                                                    : message.isError
+                                                        ? `${isDarkMode ? 'bg-red-900/20 text-red-300 border border-red-700' : 'bg-red-50 text-red-900 border border-red-300 shadow-sm'}`
+                                                        : `${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-800'}`
                                                     } ${highlightedMessage === index
                                                         ? 'ring-4 ring-yellow-400 ring-opacity-50 shadow-lg transform scale-105'
                                                         : ''
@@ -4631,8 +4631,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             <button
                                                                 onClick={() => copyToClipboard(message.content)}
                                                                 className={`p-1 rounded transition-all duration-200 ${message.role === 'user'
-                                                                        ? 'text-white/80 hover:text-white hover:bg-white/20'
-                                                                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                                                                    ? 'text-white/80 hover:text-white hover:bg-white/20'
+                                                                    : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
                                                                     }`}
                                                                 title="Copy message"
                                                                 aria-label="Copy message"
@@ -4688,8 +4688,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     <button
                                                                         onClick={() => rateMessage(index, 'up')}
                                                                         className={`p-1 rounded transition-all duration-200 ${messageRatings[`${index}_${message.timestamp}`] === 'up'
-                                                                                ? 'text-green-600 hover:text-green-700'
-                                                                                : 'text-gray-500 hover:text-green-600'
+                                                                            ? 'text-green-600 hover:text-green-700'
+                                                                            : 'text-gray-500 hover:text-green-600'
                                                                             }`}
                                                                         title="Good response"
                                                                         aria-label="Good response"
@@ -4699,8 +4699,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     <button
                                                                         onClick={() => openDislikeModal(index)}
                                                                         className={`p-1 rounded transition-all duration-200 ${messageRatings[`${index}_${message.timestamp}`] === 'down'
-                                                                                ? 'text-red-600 hover:text-red-700'
-                                                                                : 'text-gray-500 hover:text-red-600'
+                                                                            ? 'text-red-600 hover:text-red-700'
+                                                                            : 'text-gray-500 hover:text-red-600'
                                                                             }`}
                                                                         title="Poor response"
                                                                         aria-label="Poor response"
@@ -4902,8 +4902,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 key={index}
                                                 onClick={() => handleSmartSuggestion(suggestion)}
                                                 className={`text-xs px-3 py-1.5 rounded-full border transition-all duration-200 hover:scale-105 ${isDarkMode
-                                                        ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'
-                                                        : `${themeColors.secondary} ${themeColors.border} ${themeColors.accent} hover:opacity-80`
+                                                    ? 'bg-gray-800 border-gray-600 text-gray-300 hover:bg-gray-700'
+                                                    : `${themeColors.secondary} ${themeColors.border} ${themeColors.accent} hover:opacity-80`
                                                     }`}
                                             >
                                                 {suggestion}
@@ -4927,8 +4927,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         aria-describedby="input-help"
                                         role="textbox"
                                         className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
-                                                ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
-                                                : 'bg-white border-gray-300 text-gray-900'
+                                            ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
+                                            : 'bg-white border-gray-300 text-gray-900'
                                             }`}
                                         disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                     />
@@ -5131,10 +5131,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             }}
                                             disabled={refreshingBookmarks}
                                             className={`p-2 rounded-lg transition-all duration-200 ${refreshingBookmarks
-                                                    ? 'opacity-50 cursor-not-allowed'
-                                                    : isDarkMode
-                                                        ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
-                                                        : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800'
+                                                ? 'opacity-50 cursor-not-allowed'
+                                                : isDarkMode
+                                                    ? 'bg-gray-700 hover:bg-gray-600 text-gray-300 hover:text-white'
+                                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600 hover:text-gray-800'
                                                 }`}
                                             title={refreshingBookmarks ? "Refreshing..." : "Refresh bookmarks"}
                                             aria-label={refreshingBookmarks ? "Refreshing bookmarks" : "Refresh bookmarks"}
@@ -5244,8 +5244,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         <div
                                                             key={session.sessionId || idx}
                                                             className={`p-3 border rounded-lg transition-all duration-300 ${isActiveSession
-                                                                    ? `${isDarkMode ? 'bg-blue-900/30 border-blue-500' : 'bg-blue-50 border-blue-400'}`
-                                                                    : `${isDarkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`
+                                                                ? `${isDarkMode ? 'bg-blue-900/30 border-blue-500' : 'bg-blue-50 border-blue-400'}`
+                                                                : `${isDarkMode ? 'border-gray-600 hover:bg-gray-700' : 'border-gray-200 hover:bg-gray-50'}`
                                                                 }`}
                                                         >
                                                             <div className="flex items-center justify-between gap-2">
@@ -5317,7 +5317,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                                         const resp = await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, { credentials: 'include' });
                                                                                         const data = await resp.json();
                                                                                         if (!resp.ok || !data?.data?.messages) throw new Error('load');
-                                                                                        const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'Gemini'}: ${m.content}`);
+                                                                                        const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'OpenAI'}: ${m.content}`);
                                                                                         const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
                                                                                         const url = URL.createObjectURL(blob);
                                                                                         const a = document.createElement('a');
@@ -6261,8 +6261,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <button
                                             onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
                                             className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-200 ${isRecording
-                                                    ? 'bg-red-500 animate-pulse'
-                                                    : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
+                                                ? 'bg-red-500 animate-pulse'
+                                                : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
                                                 }`}
                                         >
                                             {isRecording ? <FaStop size={24} className="text-white" /> : <FaMicrophone size={24} className="text-white" />}
@@ -6449,8 +6449,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             <label
                                                 htmlFor="file-upload"
                                                 className={`mt-2 inline-block px-4 py-2 rounded-lg cursor-pointer transition-colors ${uploadingFile
-                                                        ? 'bg-gray-400 cursor-not-allowed'
-                                                        : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
+                                                    ? 'bg-gray-400 cursor-not-allowed'
+                                                    : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
                                                     } text-white`}
                                             >
                                                 {uploadingFile ? 'Uploading...' : 'Choose Files'}
@@ -6491,8 +6491,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             }}
                                             placeholder="Search messages..."
                                             className={`w-full px-3 py-2 border rounded-lg focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} ${isDarkMode
-                                                    ? 'bg-gray-800 border-gray-600 text-white'
-                                                    : 'bg-white border-gray-300 text-gray-900'
+                                                ? 'bg-gray-800 border-gray-600 text-white'
+                                                : 'bg-white border-gray-300 text-gray-900'
                                                 }`}
                                         />
 
@@ -6505,12 +6505,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 key={index}
                                                                 onClick={() => handleSearchResultClick(message)}
                                                                 className={`p-2 rounded border cursor-pointer transition-all duration-200 ${isDarkMode
-                                                                        ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500'
-                                                                        : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
+                                                                    ? 'bg-gray-800 border-gray-600 hover:bg-gray-700 hover:border-gray-500'
+                                                                    : 'bg-gray-50 border-gray-200 hover:bg-gray-100 hover:border-gray-300'
                                                                     }`}
                                                             >
                                                                 <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
-                                                                    {message.role === 'user' ? 'You' : 'Gemini'} • {new Date(message.timestamp).toLocaleString()}
+                                                                    {message.role === 'user' ? 'You' : 'OpenAI'} • {new Date(message.timestamp).toLocaleString()}
                                                                 </div>
                                                                 <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{message.content.substring(0, 100)}...</div>
                                                             </div>
