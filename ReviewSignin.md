@@ -21,7 +21,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function SignIn({ bootstrapped, sessionChecked }) {
     // Set page title
     usePageTitle("Sign In - Welcome Back");
-
+    
     const emailInputRef = useRef(null);
     const otpEmailInputRef = useRef(null);
     const passwordInputRef = useRef(null);
@@ -41,11 +41,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const [otpSent, setOtpSent] = useState(false);
     const [otpLoading, setOtpLoading] = useState(false);
     const [otpSuccessMessage, setOtpSuccessMessage] = useState("");
-
+    
     // Timer states for resend OTP
     const [resendTimer, setResendTimer] = useState(0);
     const [canResend, setCanResend] = useState(true);
-
+    
     // reCAPTCHA states
     const [recaptchaToken, setRecaptchaToken] = useState(null);
     const [recaptchaError, setRecaptchaError] = useState("");
@@ -58,10 +58,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const [otpRecaptchaKey, setOtpRecaptchaKey] = useState(0); // force remount for OTP
     const recaptchaRef = useRef(null);
     const otpRecaptchaRef = useRef(null);
-
+    
     // State to track which authentication method is in progress
     const [authInProgress, setAuthInProgress] = useState(null); // null, 'password', 'otp', 'google'
-
+    
     // State to track OTP verification loading
     const [otpVerifyingLoading, setOtpVerifyingLoading] = useState(false);
 
@@ -74,7 +74,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     useEffect(() => {
         const searchParams = new URLSearchParams(location.search);
         const errorParam = searchParams.get('error');
-
+        
         if (errorParam === 'password_change_unsuccessful') {
             setUrlError("Password change unsuccessful! Please try again.");
             // Clear the error parameter from URL
@@ -257,7 +257,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         if ((otpSent || otpLoading) && e.target.id === 'email') {
             return;
         }
-
+        
         setOtpData({
             ...otpData,
             [e.target.id]: e.target.value
@@ -298,9 +298,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         setOtpLoading(true);
         setOtpRecaptchaError("");
         setAuthInProgress('otp');
-
+        
         try {
-            const requestBody = {
+            const requestBody = { 
                 email: otpData.email,
                 ...(otpRecaptchaToken && { recaptchaToken: otpRecaptchaToken })
             };
@@ -321,18 +321,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         } else if (message.includes('rejected')) {
                             friendlyMessage = "Your admin account request has been rejected. Please contact support for more information.";
                         } else if (message.includes('suspended')) {
-                            // If it's a cooling-off suspension with a time limit, show the backend message
-                            if (message.includes('try again after')) {
-                                friendlyMessage = errData.message;
-                            } else {
-                                friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
-                            }
+                            friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
                         } else {
                             // Use the original message if it's a specific 403 error
                             friendlyMessage = errData.message;
                         }
                     }
-                } catch (_) { }
+                } catch (_) {}
                 dispatch(signInFailure(friendlyMessage));
                 setOtpLoading(false);
                 return;
@@ -346,7 +341,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     if (errData && errData.message) {
                         friendlyMessage = errData.message;
                     }
-                } catch (_) { }
+                } catch (_) {}
                 dispatch(signInFailure(friendlyMessage));
                 setOtpLoading(false);
                 return;
@@ -380,7 +375,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             setOtpRequiresCaptcha(false);
             setShowOtpRecaptcha(false);
             resetOtpRecaptcha();
-
+            
             // Start timer for resend
             setResendTimer(30); // 30 seconds
             setCanResend(false);
@@ -402,10 +397,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         setOtpVerifyingLoading(true);
         dispatch(signInStart());
         setAuthInProgress('otp');
-
+        
         // Check if cookies are enabled for better UX
         const cookiesEnabled = areCookiesEnabled();
-
+        
         try {
             const apiUrl = `${API_BASE_URL}/api/auth/verify-login-otp`;
             const res = await authenticatedFetch(apiUrl, {
@@ -420,7 +415,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
                         friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
                     }
-                } catch (_) { }
+                } catch (_) {}
                 dispatch(signInFailure(friendlyMessage));
                 return;
             }
@@ -440,20 +435,20 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 dispatch(signInFailure(data.message));
                 return;
             }
-
+            
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
-
+                
             }
             // Dispatch success and wait for state update
             dispatch(signInSuccess(data));
-
+            
             // Use a small delay to ensure state is updated
             await new Promise(resolve => setTimeout(resolve, 50));
-
+            
             // Reconnect socket with new token
             reconnectSocket();
-
+            
             if (data.role === "admin" || data.role === "rootadmin") {
                 // Special handling for root admin
                 if (data.isDefaultAdmin) {
@@ -475,7 +470,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
     const handleSubmit = async (e) => {
         e.preventDefault();
-
+        
         // Check if reCAPTCHA is required and not provided
         const requiresRecaptcha = checkRecaptchaRequirement();
         if (requiresRecaptcha && !recaptchaToken) {
@@ -484,13 +479,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             setShowRecaptcha(true);
             return;
         }
-
+        
         dispatch(signInStart());
         setAuthInProgress('password');
-
+        
         // Check if cookies are enabled for better UX
         const cookiesEnabled = areCookiesEnabled();
-
+        
         try {
             const apiUrl = `${API_BASE_URL}/api/auth/signin`;
             const res = await authenticatedFetch(apiUrl, {
@@ -512,18 +507,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         } else if (message.includes('rejected')) {
                             friendlyMessage = "Your admin account request has been rejected. Please contact support for more information.";
                         } else if (message.includes('suspended')) {
-                            // If it's a cooling-off suspension with a time limit, show the backend message
-                            if (message.includes('try again after')) {
-                                friendlyMessage = errData.message;
-                            } else {
-                                friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
-                            }
+                            friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
                         } else {
                             // Use the original message if it's a specific 403 error
                             friendlyMessage = errData.message;
                         }
                     }
-                } catch (_) { }
+                } catch (_) {}
                 // Increment failed attempts to keep captcha logic consistent with other errors
                 const currentAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
                 const newAttempts = currentAttempts + 1;
@@ -532,7 +522,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 return;
             }
             const data = await res.json();
-
+            
             //
 
             if (data.success === false) {
@@ -548,7 +538,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     const currentAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
                     const newAttempts = currentAttempts + 1;
                     localStorage.setItem('failedLoginAttempts', newAttempts.toString());
-
+                    
                     // Show reCAPTCHA only if this is exactly the 3rd failed attempt
                     if (newAttempts === 3) {
                         setShowRecaptcha(true);
@@ -558,26 +548,26 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 dispatch(signInFailure(data.message));
                 return;
             }
-
+            
             // Clear failed attempts on successful login
             localStorage.removeItem('failedLoginAttempts');
             setShowRecaptcha(false);
             setRecaptchaToken(null);
             setRecaptchaError("");
-
+            
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
-
+                
             }
             // Dispatch success and wait for state update
             dispatch(signInSuccess(data));
-
+            
             // Use a small delay to ensure state is updated
             await new Promise(resolve => setTimeout(resolve, 50));
-
+            
             // Reconnect socket with new token
             reconnectSocket();
-
+            
             if (data.role === "admin" || data.role === "rootadmin") {
                 // Special handling for root admin
                 if (data.isDefaultAdmin) {
@@ -600,93 +590,68 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         <AuthFormLayout
             leftSlot={(
                 <>
-                    <style>
-                        {`
-                            @keyframes blob {
-                                0% { transform: translate(0px, 0px) scale(1); }
-                                33% { transform: translate(30px, -50px) scale(1.1); }
-                                66% { transform: translate(-20px, 20px) scale(0.9); }
-                                100% { transform: translate(0px, 0px) scale(1); }
-                            }
-                            @keyframes float {
-                                0%, 100% { transform: translateY(0); }
-                                50% { transform: translateY(-20px); }
-                            }
-                            @keyframes fadeIn {
-                                from { opacity: 0; transform: translateY(10px); }
-                                to { opacity: 1; transform: translateY(0); }
-                            }
-                            .animate-blob { animation: blob 7s infinite; }
-                            .animate-float { animation: float 6s ease-in-out infinite; }
-                            .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
-                            .delay-100 { animation-delay: 100ms; }
-                            .delay-200 { animation-delay: 200ms; }
-                            .delay-300 { animation-delay: 300ms; }
-                            .animation-delay-2000 { animation-delay: 2s; }
-                            .animation-delay-4000 { animation-delay: 4s; }
-                        `}
-                    </style>
-                    <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gray-900">
-                        {/* Dynamic Background with Gradients */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-700 to-blue-800 opacity-90"></div>
-
-                        {/* Animated Blobs */}
-                        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-                        <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-                        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
-
-                        {/* Content Overlay */}
-                        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 w-full h-full backdrop-blur-sm">
-                            <div className="text-center max-w-lg space-y-8">
-                                <h1 className="text-5xl font-extrabold tracking-tight mb-6 animate-fade-in drop-shadow-lg">
-                                    Welcome Back!
-                                </h1>
-                                <p className="text-xl text-blue-100 leading-relaxed animate-fade-in delay-100 font-light">
-                                    "Unlock the door to your perfect life. Your dream home is just a click away."
-                                </p>
-
-                                <div className="space-y-6 mt-12 animate-fade-in delay-200">
-                                    <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-xl backdrop-blur-md hover:bg-white/20 transition-all duration-300 transform hover:scale-105 border border-white/10">
-                                        <div className="p-2 bg-blue-500 rounded-lg shadow-lg">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                                        </div>
-                                        <span className="font-medium text-lg">Curated Listings</span>
-                                    </div>
-                                    <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-xl backdrop-blur-md hover:bg-white/20 transition-all duration-300 transform hover:scale-105 border border-white/10">
-                                        <div className="p-2 bg-purple-500 rounded-lg shadow-lg">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                                        </div>
-                                        <span className="font-medium text-lg">Expert Agents</span>
-                                    </div>
-                                    <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-xl backdrop-blur-md hover:bg-white/20 transition-all duration-300 transform hover:scale-105 border border-white/10">
-                                        <div className="p-2 bg-indigo-500 rounded-lg shadow-lg">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        </div>
-                                        <span className="font-medium text-lg">Trusted & Secure</span>
-                                    </div>
-                                </div>
+            
+            {/* Left Side - Image and Quote */}
+            
+            {/* Left Side - Image and Quote */}
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+                <div className="absolute inset-0 bg-black opacity-20"></div>
+                <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
+                    <div className="text-center max-w-md">
+                        <h1 className="text-4xl font-bold mb-6 animate-fade-in">
+                            Welcome Back
+                        </h1>
+                        <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
+                            "Home is not a place, it's a feeling. Find your perfect sanctuary with us."
+                        </p>
+                        <div className="space-y-4 text-lg animate-fade-in-delay-2">
+                            <div className="flex items-center justify-center space-x-3">
+                                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                <span>Discover Your Dream Home</span>
+                            </div>
+                            <div className="flex items-center justify-center space-x-3">
+                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
+                                <span>Connect with Trusted Agents</span>
+                            </div>
+                            <div className="flex items-center justify-center space-x-3">
+                                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
+                                <span>Secure & Reliable Platform</span>
                             </div>
                         </div>
                     </div>
+                </div>
+                
+                {/* Floating Elements */}
+                <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
+                <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '2s'}}></div>
+                <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '1s'}}></div>
+                
+                {/* House Silhouette */}
+                <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
+                    <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1"/>
+                        <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2"/>
+                        <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3"/>
+                    </svg>
+                </div>
+            </div>
                 </>
             )}
-        >
+            >
+
             {/* Right Side - Sign In Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 min-h-screen">
-                <div className="w-full max-w-[440px] animate-fade-in">
-                    <div className="text-center mb-10">
-                        <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-6 shadow-sm">
-                            <LogIn className="w-8 h-8" />
-                        </div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
+                <div className="w-full max-w-md">
+                    <div className="text-center mb-8">
+                        <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
+                            <LogIn className="w-7 h-7 text-indigo-600" />
                             Sign In
                         </h2>
-                        <p className="text-gray-500 text-lg">Welcome back! Please enter your details.</p>
+                        <p className="text-gray-600">Welcome back! Please sign in to your account.</p>
                     </div>
 
                     {/* Sign In Method Toggle Tabs */}
-                    <div className="flex p-1 bg-gray-100 rounded-xl mb-8 relative border border-gray-200">
-                        <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out transform ${loginMethod === "otp" ? "translate-x-full left-1" : "left-1"}`}></div>
+                    <div className="flex bg-gray-100 rounded-lg p-1 mb-6">
                         <button
                             type="button"
                             disabled={authInProgress !== null || otpSent}
@@ -700,9 +665,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 setEmailStep(false);
                                 setFormData({ email: "", password: "" });
                             }}
-                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "password" ? "text-gray-900" : "text-gray-500 hover:text-gray-700"} disabled:opacity-50`}
+                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                                loginMethod === "password"
+                                    ? "bg-white text-blue-600 shadow-sm"
+                                    : "text-gray-600 hover:text-gray-800"
+                            } ${(authInProgress !== null || otpSent) ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            Password
+                            Password Sign In
                         </button>
                         <button
                             type="button"
@@ -715,24 +684,25 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 setCanResend(true);
                                 setEmailStep(false);
                             }}
-                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "otp" ? "text-gray-900" : "text-gray-500 hover:text-gray-700"} disabled:opacity-50`}
+                            className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-all duration-200 ${
+                                loginMethod === "otp"
+                                    ? "bg-white text-blue-600 shadow-sm"
+                                    : "text-gray-600 hover:text-gray-800"
+                            } ${authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
                         >
-                            OTP
+                            OTP Sign In
                         </button>
                     </div>
-
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8 relative overflow-hidden">
-                        {/* Decorative background element for card */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
-
+                    
+<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
                         {loginMethod === "password" ? (
                             // Password Sign In Form
-                            <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-5 relative z-10">
-                                <div className="animate-fade-in delay-100">
+                            <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-6">
+                                <div>
                                     {!emailStep && (
-                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
-                                            Email Address
-                                        </label>
+                                      <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                                          Email Address
+                                      </label>
                                     )}
                                     <FormField
                                         label={undefined}
@@ -743,38 +713,41 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         ref={emailInputRef}
                                         readOnly={emailStep || authInProgress === 'google'}
                                         disabled={authInProgress === 'google' || (authInProgress === 'password' && emailStep) || loading}
-                                        placeholder="name@example.com"
-                                        startIcon={<Mail className="w-5 h-5 text-gray-400" />}
+                                        placeholder="Enter your email"
+                                        startIcon={<Mail className="w-5 h-5" />}
                                         endAdornment={emailStep ? (
                                             <button
                                                 type="button"
                                                 onClick={handleEmailEdit}
                                                 disabled={loading || authInProgress !== null}
-                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                title="Edit email"
                                             >
-                                                Change
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
                                             </button>
                                         ) : null}
-                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${emailStep ? 'bg-gray-50 text-gray-600' : ''}`}
+                                        inputClassName={`${emailStep ? 'pr-12 bg-gray-50' : ''}`}
                                         required
                                     />
 
-                                    {/* Forgot Password Link under email (only before password step) */}
-                                    {!emailStep && (
-                                        <div className="text-right mt-2">
-                                            <Link
-                                                to={`/forgot-password?email=${encodeURIComponent(formData.email || '')}`}
-                                                className={`text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors ${(authInProgress === 'google' || loading) ? 'opacity-50 pointer-events-none' : ''}`}
-                                            >
-                                                Forgot Password?
-                                            </Link>
-                                        </div>
-                                    )}
+                                {/* Forgot Password Link under email (only before password step) */}
+                                {!emailStep && (
+                                    <div className="text-right mt-2">
+                                        <Link 
+                                            to={`/forgot-password?email=${encodeURIComponent(formData.email || '')}`}
+                                            className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${(authInProgress === 'google' || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
+                                        >
+                                            Forgot Password?
+                                        </Link>
+                                    </div>
+                                )}
                                 </div>
-
+                                
                                 {emailStep && (
-                                    <div className="animate-fade-in">
-                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                                    <div>
+                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
                                             Password
                                         </label>
                                         <FormField
@@ -786,36 +759,38 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             ref={passwordInputRef}
                                             disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
                                             placeholder="Enter your password"
-                                            startIcon={<Lock className="w-5 h-5 text-gray-400" />}
+                                            startIcon={<Lock className="w-5 h-5" />}
                                             endAdornment={
                                                 <button
                                                     type="button"
                                                     disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                                                    className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-700 focus:outline-none ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                     tabIndex={-1}
                                                     onClick={() => setShowPassword((prev) => !prev)}
+                                                    aria-label={showPassword ? "Hide password" : "Show password"}
                                                 >
                                                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                                                 </button>
                                             }
-                                            inputClassName="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                                            inputClassName={`pr-12 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                                             required
                                         />
-
+                                        
+                                        {/* Forgot Password Link */}
                                         <div className="text-right mt-2">
-                                            <Link
+                                            <Link 
                                                 to={`/forgot-password?email=${encodeURIComponent(formData.email)}`}
-                                                className="text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors"
+                                                className={`text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 ${(authInProgress === 'google' || authInProgress === 'password' || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                                             >
                                                 Forgot Password?
                                             </Link>
                                         </div>
                                     </div>
                                 )}
-
-                                {/* reCAPTCHA Widget */}
+                                
+                                {/* reCAPTCHA Widget - Show only when required (3+ failed attempts) */}
                                 {showRecaptcha && checkRecaptchaRequirement() && (
-                                    <div className="flex justify-center animate-fade-in">
+                                    <div className="flex justify-center">
                                         <RecaptchaWidget
                                             key={recaptchaKey}
                                             ref={recaptchaRef}
@@ -823,39 +798,35 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             onExpire={handleRecaptchaExpire}
                                             onError={handleRecaptchaError}
                                             disabled={loading || authInProgress === 'google'}
-                                            className="transform scale-95 origin-center"
+                                            className="transform scale-90"
                                         />
                                     </div>
                                 )}
 
                                 {/* reCAPTCHA Error */}
                                 {recaptchaError && (
-                                    <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-red-600 text-sm flex items-center gap-2 animate-fade-in">
-                                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        {recaptchaError}
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3">
+                                        <p className="text-red-600 text-sm">{recaptchaError}</p>
                                     </div>
                                 )}
-
-                                <div className="pt-2">
-                                    <PrimaryButton
-                                        variant="blue"
-                                        loading={loading}
-                                        loadingText={emailStep ? "Signing In..." : "Continuing..."}
-                                        disabled={loading || (showRecaptcha && !recaptchaToken) || authInProgress !== null}
-                                        className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-                                    >
-                                        {emailStep ? "Sign In" : "Continue"}
-                                    </PrimaryButton>
-                                </div>
+                                
+                                <PrimaryButton
+                                    variant="blue"
+                                    loading={loading}
+                                    loadingText={emailStep ? "Signing In..." : "Continuing..."}
+                                    disabled={loading || (showRecaptcha && !recaptchaToken) || authInProgress !== null}
+                                >
+                                    {emailStep ? "Sign In" : "Continue"}
+                                </PrimaryButton>
                             </form>
                         ) : (
                             // OTP Sign In Form
-                            <form onSubmit={otpSent ? handleOtpLogin : handleSendOTP} className="space-y-5 relative z-10">
-                                <div className="animate-fade-in delay-100">
+                            <form onSubmit={otpSent ? handleOtpLogin : handleSendOTP} className="space-y-6">
+                                <div>
                                     {!otpSent && (
-                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
-                                            Email Address
-                                        </label>
+                                      <label htmlFor="otp-email" className="block text-sm font-medium text-gray-700 mb-2">
+                                          Email Address
+                                      </label>
                                     )}
                                     <FormField
                                         label={undefined}
@@ -866,8 +837,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         ref={otpEmailInputRef}
                                         readOnly={otpSent || otpLoading || authInProgress === 'google'}
                                         disabled={otpSent || otpLoading || authInProgress === 'google'}
-                                        placeholder="name@example.com"
-                                        startIcon={<Mail className="w-5 h-5 text-gray-400" />}
+                                        placeholder="Enter your email"
+                                        startIcon={<Mail className="w-5 h-5" />}
                                         endAdornment={otpSent ? (
                                             <button
                                                 type="button"
@@ -877,19 +848,22 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     setOtpSuccessMessage("");
                                                 }}
                                                 disabled={loading || authInProgress !== null}
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-800 focus:outline-none ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                title="Edit email"
                                             >
-                                                Change
+                                                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                                                </svg>
                                             </button>
                                         ) : null}
-                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${otpSent ? 'bg-gray-50 text-gray-600' : ''}`}
+                                        inputClassName={`${(otpSent || otpLoading || authInProgress === 'google') ? 'pr-12 bg-gray-50 cursor-not-allowed' : ''}`}
                                         required
                                     />
                                 </div>
-
-                                {/* OTP reCAPTCHA Widget */}
+                                
+                                {/* OTP reCAPTCHA Widget - show below email only when OTP field is NOT open */}
                                 {showOtpRecaptcha && !otpSent && (
-                                    <div className="flex justify-center mb-4 animate-fade-in">
+                                    <div className="flex justify-center mb-4">
                                         <RecaptchaWidget
                                             key={otpRecaptchaKey}
                                             ref={otpRecaptchaRef}
@@ -897,74 +871,84 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                             onExpire={handleOtpRecaptchaExpire}
                                             onError={handleOtpRecaptchaError}
                                             disabled={otpLoading}
-                                            className="transform scale-95 origin-center"
+                                            className="transform scale-90"
                                         />
                                     </div>
                                 )}
 
+                                {/* OTP reCAPTCHA Error - place with widget under email only when OTP not open */}
                                 {otpRecaptchaError && !otpSent && (
-                                    <div className="bg-red-50 border border-red-100 rounded-lg p-3 text-red-600 text-sm flex items-center gap-2 animate-fade-in">
-                                        <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                        {otpRecaptchaError}
+                                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                                        <p className="text-red-600 text-sm">{otpRecaptchaError}</p>
                                     </div>
                                 )}
-
+                                
                                 {otpSent && (
-                                    <div className="animate-fade-in">
+                                    <div>
                                         {otpSuccessMessage && (
-                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-green-700 text-sm flex items-center gap-2">
-                                                <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
-                                                {otpSuccessMessage}
+                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4">
+                                                <p className="text-green-600 text-sm">{otpSuccessMessage}</p>
                                             </div>
                                         )}
-                                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
                                             OTP Code
                                         </label>
-                                        <input
-                                            type="text"
-                                            placeholder="••••••"
-                                            id="otp"
+                                        <input 
+                                            type="text" 
+                                            placeholder="Enter 6-digit OTP" 
+                                            id="otp" 
                                             value={otpData.otp}
                                             ref={otpInputRef}
                                             disabled={otpVerifyingLoading}
                                             onChange={(e) => {
+                                                // Only allow numbers
                                                 const value = e.target.value.replace(/[^0-9]/g, '');
-                                                handleOtpChange({ target: { id: 'otp', value } });
-                                            }}
+                                                // Create a new event-like object with the filtered value
+                                                const syntheticEvent = {
+                                                    target: {
+                                                        id: 'otp',
+                                                        value: value
+                                                    }
+                                                };
+                                                handleOtpChange(syntheticEvent);
+                                            }} 
                                             onKeyDown={(e) => {
-                                                if (e.key === 'Enter' && otpSent && !otpVerifyingLoading && otpData.otp.length === 6) {
-                                                    handleOtpLogin(e);
+                                                if (e.key === 'Enter' && otpSent && !otpVerifyingLoading) {
+                                                    e.preventDefault();
+                                                    if (otpData.otp && otpData.otp.length === 6) {
+                                                        handleOtpLogin(e);
+                                                    }
                                                 }
                                             }}
-                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 text-center text-2xl tracking-[0.5em] font-medium text-gray-800 placeholder:text-gray-300 ${otpVerifyingLoading ? 'bg-gray-100 opacity-70' : ''}`}
+                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-center text-lg tracking-widest ${otpVerifyingLoading ? 'opacity-50 cursor-not-allowed bg-gray-100' : ''}`}
                                             maxLength="6"
                                             required
                                         />
-                                        <p className="text-center text-sm text-gray-500 mt-2">
+                                        <p className="text-sm text-gray-500 mt-2">
                                             Enter the 6-digit code sent to your email
                                         </p>
                                     </div>
                                 )}
-
+                                
                                 {otpSent && (
-                                    <div className="text-center animate-fade-in">
+                                    <div className="text-center">
                                         {resendTimer > 0 ? (
-                                            <span className="text-sm text-gray-400 font-medium">
-                                                Resend in <span className="text-gray-600">{Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}</span>
+                                            <span className="text-sm text-gray-500">
+                                                Resend in {Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}
                                             </span>
                                         ) : (
                                             <button
                                                 type="button"
                                                 onClick={handleSendOTP}
                                                 disabled={otpLoading || !canResend || otpVerifyingLoading}
-                                                className="text-sm font-medium text-blue-600 hover:text-blue-800 hover:underline transition-colors disabled:opacity-50"
+                                                className="text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors duration-200 disabled:opacity-50 disabled:cursor-not-allowed"
                                             >
                                                 {otpLoading ? "Sending..." : "Resend OTP"}
                                             </button>
                                         )}
-
+                                        {/* Show OTP reCAPTCHA under resend when OTP field open */}
                                         {showOtpRecaptcha && (
-                                            <div className="flex justify-center mt-3 animate-fade-in">
+                                            <div className="flex justify-center mt-2">
                                                 <RecaptchaWidget
                                                     key={otpRecaptchaKey}
                                                     ref={otpRecaptchaRef}
@@ -972,71 +956,60 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     onExpire={handleOtpRecaptchaExpire}
                                                     onError={handleOtpRecaptchaError}
                                                     disabled={otpLoading}
-                                                    className="transform scale-95 origin-center"
+                                                    className="transform scale-90"
                                                 />
                                             </div>
                                         )}
                                         {otpRecaptchaError && (
-                                            <div className="bg-red-50 border border-red-100 rounded-lg p-2 mt-2 text-red-600 text-xs">
-                                                {otpRecaptchaError}
+                                            <div className="bg-red-50 border border-red-200 rounded-lg p-3 mt-2">
+                                                <p className="text-red-600 text-sm">{otpRecaptchaError}</p>
                                             </div>
                                         )}
                                     </div>
                                 )}
-
-                                <div className="pt-2">
-                                    <PrimaryButton
-                                        variant="blue"
-                                        loading={loading || (!otpSent && otpLoading) || otpVerifyingLoading}
-                                        loadingText={otpVerifyingLoading ? "Verifying..." : (otpSent ? "Signing In..." : "Sending OTP...")}
-                                        disabled={loading || authInProgress === 'google' || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading}
-                                        className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-                                    >
-                                        {otpSent ? "Sign In" : "Send OTP"}
-                                    </PrimaryButton>
-                                </div>
+                                
+                                <PrimaryButton
+                                    variant="blue"
+                                    loading={loading || (!otpSent && otpLoading) || otpVerifyingLoading}
+                                    loadingText={otpVerifyingLoading ? "Verifying OTP..." : (otpSent ? "Signing In..." : "Sending OTP...")}
+                                    disabled={loading || authInProgress === 'google' || (!otpSent && (otpLoading || !canResend)) || (otpRequiresCaptcha && !otpRecaptchaToken) || (otpSent && otpData.otp.length !== 6) || otpVerifyingLoading}
+                                >
+                                    {otpSent ? "Sign In" : "Send OTP"}
+                                </PrimaryButton>
                             </form>
                         )}
-
-                        <div className="relative my-8">
+                        
+                        <div className="relative my-6">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-200"></div>
+                                <div className="w-full border-t border-gray-300"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-3 bg-white text-gray-400 font-medium">OR CONTINUE WITH</span>
+                                <span className="px-2 bg-white text-gray-500">OR</span>
                             </div>
                         </div>
-
+                        
                         <Oauth pageType="signIn" disabled={authInProgress !== null || otpSent} onAuthStart={setAuthInProgress} />
-
+                        
                         {(error || urlError) && (
-                            <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
-                                <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                                <p className="text-red-700 text-sm font-medium">{urlError || error}</p>
+                            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
+                                <p className="text-red-600 text-sm">{urlError || error}</p>
                             </div>
                         )}
-
-                        <div className="mt-8 text-center">
-                            <p className="text-gray-500 font-medium">
+                        
+                        <div className="mt-6 text-center">
+                            <p className="text-gray-600">
                                 Don't have an account?{" "}
-                                <Link
-                                    to="/sign-up"
-                                    className={`text-blue-600 hover:text-blue-700 font-bold hover:underline transition-colors ${(authInProgress !== null || loading || otpVerifyingLoading || otpSent) ? 'opacity-50 pointer-events-none' : ''}`}
+                                <Link 
+                                    to="/sign-up" 
+                                    className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpVerifyingLoading || otpSent) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''}`}
                                 >
                                     Sign Up
                                 </Link>
                             </p>
                         </div>
                     </div>
-
-                    <div className="mt-8 text-center">
-                        <p className="text-xs text-gray-400">
-                            By signing in, you agree to our <a href="/terms" className="hover:text-gray-600 transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-gray-600 transition-colors underline">Privacy Policy</a>.
-                        </p>
-                    </div>
                 </div>
             </div>
         </AuthFormLayout>
     );
 }
-
