@@ -515,7 +515,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 .delay-200 { animation-delay: 200ms; }
               `}
             </style>
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-600 to-red-700 relative overflow-hidden">
               <div className="absolute inset-0 bg-black opacity-20"></div>
               <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
                 <div className="text-center max-w-md">
@@ -567,7 +567,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
           <div className="w-full max-w-[440px] animate-fade-in">
             <div className="text-center mb-10">
               <StepIndicator steps={["Verify Email", "Reset Password"]} current={0} className="mb-8" />
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-6 shadow-sm">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-6 shadow-sm">
                 <HelpCircle className="w-8 h-8" />
               </div>
               <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
@@ -578,7 +578,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
             <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
               {/* Decorative background element for card */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
 
               <form onSubmit={handleVerification} className="space-y-5 relative z-10">
                 <div>
@@ -607,7 +607,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                           type="button"
                           onClick={handleSendOTP}
                           disabled={otpLoading || !formData.email || !canResend}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed z-10 transition-colors"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed z-10 transition-colors"
                         >
                           {otpLoading ? "Sending..." : "Send OTP"}
                         </button>
@@ -625,7 +625,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                                 setResendTimer(0);
                                 setEmailVerified(false);
                               }}
-                              className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                              className="text-red-600 hover:text-red-800 transition-colors duration-200 p-1 rounded hover:bg-red-50"
                               title="Edit email"
                             >
                               <FaEdit className="text-sm" />
@@ -637,7 +637,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         )
                       )
                     }
-                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (emailVerified ? 'border-green-500' : 'border-gray-300')} hover:border-blue-500`}
+                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-red-500/20 ${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (emailVerified ? 'border-green-500' : 'border-gray-300')} hover:border-red-500`}
                     required
                   />
                   {/* If captcha required before OTP field is open, show below email (outside input wrapper to avoid layout shift on button) */}
@@ -697,7 +697,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                             }
                           }
                         }}
-                        className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                        className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
                           }`}
                         maxLength="6"
                       />
@@ -705,7 +705,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         type="button"
                         onClick={handleVerifyOTP}
                         disabled={verifyLoading || otp.length !== 6}
-                        className="px-3 py-2 sm:px-4 sm:py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base whitespace-nowrap shadow-sm"
+                        className="px-3 py-2 sm:px-4 sm:py-3 bg-red-600 text-white rounded-lg font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base whitespace-nowrap shadow-sm"
                       >
                         {verifyLoading ? "Verifying..." : "Verify"}
                       </button>
@@ -724,7 +724,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                             type="button"
                             onClick={handleSendOTP}
                             disabled={otpLoading || verifyLoading}
-                            className="text-xs text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="text-xs text-red-600 hover:text-red-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {otpLoading ? "Sending..." : "Resend OTP"}
                           </button>
@@ -774,7 +774,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 )}
 
                 <PrimaryButton
-                  variant="blue"
+                  variant="orange"
                   loading={loading}
                   loadingText="Verifying..."
                   disabled={loading || !emailVerified || !recaptchaToken}
@@ -838,7 +838,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 .delay-200 { animation-delay: 200ms; }
               `}
           </style>
-          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-teal-700 relative overflow-hidden">
             <div className="absolute inset-0 bg-black opacity-20"></div>
             <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
               <div className="text-center max-w-md">
@@ -890,7 +890,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         <div className="w-full max-w-[440px] animate-fade-in">
           <div className="text-center mb-10">
             <StepIndicator steps={["Verify Email", "Reset Password"]} current={1} className="mb-8" />
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-6 shadow-sm">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-6 shadow-sm">
               <RotateCcw className="w-8 h-8" />
             </div>
             <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
@@ -901,7 +901,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
           <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
             {/* Decorative background element for card */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
 
             <form onSubmit={handleResetPassword} className="space-y-5 relative z-10">
               {/* Email Field - Disabled with Edit Option */}
@@ -925,7 +925,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         setStep(1);
                         navigate('/forgot-password?step=1', { replace: true });
                       }}
-                      className="absolute inset-y-0 right-3 flex items-center text-blue-600 hover:text-blue-800 transition-colors duration-200"
+                      className="absolute inset-y-0 right-3 flex items-center text-green-600 hover:text-green-800 transition-colors duration-200"
                       title="Edit email address"
                     >
                       <FaEdit className="text-lg" />
@@ -1029,7 +1029,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       {showCPassword ? (<FaEyeSlash className="text-gray-400" />) : (<FaEye className="text-gray-400" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 hover:border-blue-500`}
+                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 hover:border-green-500`}
                   required
                 />
               </div>
@@ -1065,7 +1065,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               )}
 
               <PrimaryButton
-                variant="blue"
+                variant="teal"
                 loading={loading}
                 loadingText="Resetting..."
                 disabled={
@@ -1105,7 +1105,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 Remembered your password?{" "}
                 <Link
                   to="/sign-in"
-                  className={`font-bold text-blue-600 hover:text-blue-700 transition-colors ${(verifyLoading || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                  className={`font-bold text-green-600 hover:text-green-700 transition-colors ${(verifyLoading || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                     }`}
                 >
                   Back to Sign In
