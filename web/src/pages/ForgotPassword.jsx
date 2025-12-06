@@ -54,11 +54,11 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const [emailVerified, setEmailVerified] = useState(false);
   const [emailEditMode, setEmailEditMode] = useState(false);
   const [emailLocked, setEmailLocked] = useState(false);
-  
+
   // Timer states for resend OTP
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
-  
+
   // reCAPTCHA states
   const [recaptchaToken, setRecaptchaToken] = useState(null);
   const [recaptchaError, setRecaptchaError] = useState("");
@@ -66,7 +66,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
   const [recaptchaKey, setRecaptchaKey] = useState(0);
   const [recaptchaJustVerified, setRecaptchaJustVerified] = useState(false);
   const recaptchaRef = useRef(null);
-  
+
   // Failed attempts tracking
   const [failedAttempts, setFailedAttempts] = useState(0);
   const [isLocked, setIsLocked] = useState(false);
@@ -130,7 +130,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     const handleBeforeUnload = (e) => {
       const searchParams = new URLSearchParams(location.search);
       const urlStep = searchParams.get('step');
-      
+
       if (urlStep === '2') {
         // Set a flag in sessionStorage to indicate user left the reset process
         sessionStorage.setItem('resetPasswordInterrupted', 'true');
@@ -167,7 +167,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     return () => {
       const searchParams = new URLSearchParams(location.search);
       const urlStep = searchParams.get('step');
-      
+
       // If component is unmounting while on step 2, set the interrupted flag
       if (urlStep === '2') {
         sessionStorage.setItem('resetPasswordInterrupted', 'true');
@@ -244,7 +244,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-forgot-password-otp`, {
         method: "POST",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: formData.email,
           ...(recaptchaToken ? { recaptchaToken } : {})
         }),
@@ -258,7 +258,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
           if (errData && errData.message && errData.message.toLowerCase().includes('suspended')) {
             friendlyMessage = "This account is temporarily suspended. Please reach out to support for help.";
           }
-        } catch (_) {}
+        } catch (_) { }
         setOtpError(friendlyMessage);
         setOtpLoading(false);
         return;
@@ -271,7 +271,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         setEmailLocked(true);
         setSuccess("OTP sent successfully to your email");
         setTimeout(() => setSuccess(""), 3000);
-        
+
         // Start timer for resend
         setResendTimer(30); // 30 seconds
         setCanResend(false);
@@ -321,9 +321,9 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: formData.email,
-          otp: otp 
+          otp: otp
         }),
       });
 
@@ -349,7 +349,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
   const handleVerification = async (e) => {
     e.preventDefault();
-    
+
     if (!emailVerified) {
       setError("Please verify your email with OTP before proceeding.");
       return;
@@ -426,13 +426,13 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
         confirmPassword: formData.confirmPassword,
         ...(showRecaptcha && recaptchaToken && { recaptchaToken })
       };
-      
-      console.log('Reset password request:', { 
-        hasRecaptchaToken: !!recaptchaToken, 
-        showRecaptcha, 
-        failedAttempts 
+
+      console.log('Reset password request:', {
+        hasRecaptchaToken: !!recaptchaToken,
+        showRecaptcha,
+        failedAttempts
       });
-      
+
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/reset-password`, {
         method: "POST",
         body: JSON.stringify(requestBody),
@@ -491,68 +491,98 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       <AuthFormLayout
         leftSlot={(
           <>
-      
-        
-        {/* Left Side - Image and Quote */}
-        <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-600 to-red-700 relative overflow-hidden">
-          <div className="absolute inset-0 bg-black opacity-20"></div>
-          <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
-            <div className="text-center max-w-md">
-              <h1 className="text-4xl font-bold mb-6 animate-fade-in">
-                Reset Your Password
-              </h1>
-              <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
-                "Don't worry, we've got you covered. Let's get you back to finding your dream home."
-              </p>
-              <div className="space-y-4 text-lg animate-fade-in-delay-2">
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                  <span>Secure Password Reset</span>
-                </div>
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                  <span>Quick & Easy Process</span>
-                </div>
-                <div className="flex items-center justify-center space-x-3">
-                  <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                  <span>Back to Your Account</span>
+            <style>
+              {`
+                @keyframes blob {
+                  0% { transform: translate(0px, 0px) scale(1); }
+                  33% { transform: translate(30px, -50px) scale(1.1); }
+                  66% { transform: translate(-20px, 20px) scale(0.9); }
+                  100% { transform: translate(0px, 0px) scale(1); }
+                }
+                @keyframes float {
+                  0% { transform: translateY(0px); }
+                  50% { transform: translateY(-20px); }
+                  100% { transform: translateY(0px); }
+                }
+                @keyframes fadeIn {
+                  from { opacity: 0; transform: translateY(20px); }
+                  to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-blob { animation: blob 7s infinite; }
+                .animate-float { animation: float 6s ease-in-out infinite; }
+                .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+                .delay-100 { animation-delay: 100ms; }
+                .delay-200 { animation-delay: 200ms; }
+              `}
+            </style>
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+              <div className="absolute inset-0 bg-black opacity-20"></div>
+              <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
+                <div className="text-center max-w-md">
+                  <h1 className="text-4xl font-bold mb-6 animate-fade-in">
+                    Reset Your Password
+                  </h1>
+                  <p className="text-xl mb-8 leading-relaxed animate-fade-in delay-100">
+                    "Don't worry, we've got you covered. Let's get you back to finding your dream home."
+                  </p>
+                  <div className="space-y-4 text-lg animate-fade-in delay-200">
+                    <div className="flex items-center justify-center space-x-3">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                      <span>Secure Password Reset</span>
+                    </div>
+                    <div className="flex items-center justify-center space-x-3">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                      <span>Quick & Easy Process</span>
+                    </div>
+                    <div className="flex items-center justify-center space-x-3">
+                      <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                      <span>Back to Your Account</span>
+                    </div>
+                  </div>
                 </div>
               </div>
+
+              {/* Floating Elements */}
+              <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
+              <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+              <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+
+              {/* House Silhouette */}
+              <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
+                <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1" />
+                  <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2" />
+                  <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3" />
+                  <path d="M15 6L18 8V18H22V8L15 6Z" fill="white" fillOpacity="0.1" />
+                  <path d="M17 12H20V18H17V12Z" fill="white" fillOpacity="0.2" />
+                </svg>
+              </div>
             </div>
-          </div>
-          
-          {/* Floating Elements */}
-          <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
-          <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '2s'}}></div>
-          <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '1s'}}></div>
-          
-          {/* Lock Icon */}
-          <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20 flex items-center justify-center">
-            <svg className="w-16 h-16 text-white opacity-30" fill="currentColor" viewBox="0 0 20 20">
-              <path fillRule="evenodd" d="M5 9V7a5 5 0 0110 0v2a2 2 0 012 2v5a2 2 0 01-2 2H5a2 2 0 01-2-2v-5a2 2 0 012-2zm8-2v2H7V7a3 3 0 016 0z" clipRule="evenodd" />
-            </svg>
-          </div>
-        </div>
           </>
         )}
       >
 
         {/* Right Side - Verification Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-gray-50">
-          <div className="w-full max-w-md">
-          <div className="text-center mb-6 md:mb-8">
-            <StepIndicator steps={["Verify Email", "Reset Password"]} current={0} className="mb-4" />
-              <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-              <HelpCircle className="w-7 h-7 text-red-600" />
-              Forgot Password
-            </h2>
-              <p className="text-gray-600 text-sm sm:text-base">Enter your registered email to reset your password.</p>
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 min-h-screen">
+          <div className="w-full max-w-[440px] animate-fade-in">
+            <div className="text-center mb-10">
+              <StepIndicator steps={["Verify Email", "Reset Password"]} current={0} className="mb-8" />
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-6 shadow-sm">
+                <HelpCircle className="w-8 h-8" />
+              </div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
+                Forgot Password
+              </h2>
+              <p className="text-gray-500 text-lg">Enter your registered email to reset your password.</p>
             </div>
-            
-<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-4 sm:p-8 border border-gray-100">
-              <form onSubmit={handleVerification} className="space-y-4 sm:space-y-6">
+
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
+              {/* Decorative background element for card */}
+              <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+
+              <form onSubmit={handleVerification} className="space-y-5 relative z-10">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
                     Registered Email
                     {emailVerified && (
                       <span className="ml-2 text-green-600">
@@ -570,14 +600,14 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     onChange={handleChange}
                     readOnly={((emailLocked || emailVerified || otpSent) && !emailEditMode) || otpLoading}
                     disabled={otpLoading}
-                    startIcon={<Mail className="w-5 h-5" />}
+                    startIcon={<Mail className="w-5 h-5 text-gray-400" />}
                     endAdornment={
                       !emailVerified && !otpSent ? (
                         <button
                           type="button"
                           onClick={handleSendOTP}
                           disabled={otpLoading || !formData.email || !canResend}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-orange-600 text-white rounded-md text-sm font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed z-10"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed z-10 transition-colors"
                         >
                           {otpLoading ? "Sending..." : "Send OTP"}
                         </button>
@@ -607,7 +637,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         )
                       )
                     }
-                    inputClassName={`${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (emailVerified ? 'border-green-500' : 'border-gray-300')} focus:ring-red-500 focus:border-red-500 hover:border-red-500`}
+                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (emailVerified ? 'border-green-500' : 'border-gray-300')} hover:border-blue-500`}
                     required
                   />
                   {/* If captcha required before OTP field is open, show below email (outside input wrapper to avoid layout shift on button) */}
@@ -643,7 +673,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 {/* OTP Verification Field - Moved here to appear right after email */}
                 {otpSent && !emailVerified && (
                   <div>
-                    <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                    <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
                       Enter OTP
                     </label>
                     <div className="flex flex-row gap-2">
@@ -667,16 +697,15 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                             }
                           }
                         }}
-                        className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base ${
-                          verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
-                        }`}
+                        className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                          }`}
                         maxLength="6"
                       />
                       <button
                         type="button"
                         onClick={handleVerifyOTP}
                         disabled={verifyLoading || otp.length !== 6}
-                        className="px-3 py-2 sm:px-4 sm:py-3 bg-orange-600 text-white rounded-lg font-medium hover:bg-orange-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base whitespace-nowrap"
+                        className="px-3 py-2 sm:px-4 sm:py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base whitespace-nowrap shadow-sm"
                       >
                         {verifyLoading ? "Verifying..." : "Verify"}
                       </button>
@@ -695,7 +724,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                             type="button"
                             onClick={handleSendOTP}
                             disabled={otpLoading || verifyLoading}
-                            className="text-xs text-orange-600 hover:text-orange-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="text-xs text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
                           >
                             {otpLoading ? "Sending..." : "Resend OTP"}
                           </button>
@@ -721,7 +750,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     )}
                   </div>
                 )}
-                
+
                 {/* reCAPTCHA Widget - show if not verified or briefly after verify */}
                 {(!recaptchaToken || recaptchaJustVerified) && (
                   <div className="flex justify-center mb-4">
@@ -743,12 +772,13 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     <p className="text-red-600 text-sm">{recaptchaError}</p>
                   </div>
                 )}
-                
+
                 <PrimaryButton
-                  variant="orange"
+                  variant="blue"
                   loading={loading}
                   loadingText="Verifying..."
                   disabled={loading || !emailVerified || !recaptchaToken}
+                  className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
                 >
                   Continue to Reset Password
                 </PrimaryButton>
@@ -763,11 +793,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               <div className="mt-6 text-center">
                 <p className="text-gray-600">
                   Remember your password?{" "}
-                  <Link 
-                    to="/sign-in" 
-                    className={`text-orange-600 hover:text-orange-800 font-semibold hover:underline transition-colors duration-200 ${
-                      verifyLoading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
-                    }`}
+                  <Link
+                    to="/sign-in"
+                    className={`text-orange-600 hover:text-orange-800 font-semibold hover:underline transition-colors duration-200 ${verifyLoading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                      }`}
                   >
                     Sign In
                   </Link>
@@ -777,74 +806,104 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
           </div>
         </div>
         <ContactSupportWrapper />
-    </AuthFormLayout>
-  );
-}
+      </AuthFormLayout>
+    );
+  }
 
   return (
     <AuthFormLayout
       leftSlot={(
         <>
-    
-      
-      {/* Left Side - Image and Quote */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-teal-700 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-20"></div>
-        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
-          <div className="text-center max-w-md">
-            <h1 className="text-4xl font-bold mb-6 animate-fade-in">
-              Create New Password
-            </h1>
-            <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
-              "A strong password is your first line of defense. Make it count!"
-            </p>
-            <div className="space-y-4 text-lg animate-fade-in-delay-2">
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                <span>Strong & Secure</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                <span>Easy to Remember</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                <span>Ready to Use</span>
+          <style>
+            {`
+                @keyframes blob {
+                  0% { transform: translate(0px, 0px) scale(1); }
+                  33% { transform: translate(30px, -50px) scale(1.1); }
+                  66% { transform: translate(-20px, 20px) scale(0.9); }
+                  100% { transform: translate(0px, 0px) scale(1); }
+                }
+                @keyframes float {
+                  0% { transform: translateY(0px); }
+                  50% { transform: translateY(-20px); }
+                  100% { transform: translateY(0px); }
+                }
+                @keyframes fadeIn {
+                  from { opacity: 0; transform: translateY(20px); }
+                  to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-blob { animation: blob 7s infinite; }
+                .animate-float { animation: float 6s ease-in-out infinite; }
+                .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+                .delay-100 { animation-delay: 100ms; }
+                .delay-200 { animation-delay: 200ms; }
+              `}
+          </style>
+          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+            <div className="absolute inset-0 bg-black opacity-20"></div>
+            <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
+              <div className="text-center max-w-md">
+                <h1 className="text-4xl font-bold mb-6 animate-fade-in">
+                  Create New Password
+                </h1>
+                <p className="text-xl mb-8 leading-relaxed animate-fade-in delay-100">
+                  "A strong password is your first line of defense. Make it count!"
+                </p>
+                <div className="space-y-4 text-lg animate-fade-in delay-200">
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    <span>Strong & Secure</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                    <span>Easy to Remember</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                    <span>Ready to Use</span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Floating Elements */}
+            <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
+            <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+
+            {/* House Silhouette */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
+              <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1" />
+                <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2" />
+                <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3" />
+                <path d="M15 6L18 8V18H22V8L15 6Z" fill="white" fillOpacity="0.1" />
+                <path d="M17 12H20V18H17V12Z" fill="white" fillOpacity="0.2" />
+              </svg>
+            </div>
           </div>
-        </div>
-        
-        {/* Floating Elements */}
-        <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
-        <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '2s'}}></div>
-        <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '1s'}}></div>
-        
-        {/* Shield Icon */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20 flex items-center justify-center">
-          <svg className="w-16 h-16 text-white opacity-30" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-        </div>
-      </div>
         </>
       )}
     >
 
       {/* Right Side - Reset Password Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-6 md:mb-8">
-            <StepIndicator steps={["Verify Email", "Reset Password"]} current={1} className="mb-4" />
-            <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-              <RotateCcw className="w-7 h-7 text-green-600" />
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 min-h-screen">
+        <div className="w-full max-w-[440px] animate-fade-in">
+          <div className="text-center mb-10">
+            <StepIndicator steps={["Verify Email", "Reset Password"]} current={1} className="mb-8" />
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-6 shadow-sm">
+              <RotateCcw className="w-8 h-8" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
               Reset Password
             </h2>
-            <p className="text-gray-600">Create a new strong password to secure your account.</p>
+            <p className="text-gray-500 text-lg">Create a new strong password to secure your account.</p>
           </div>
-          
-<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
-            <form onSubmit={handleResetPassword} className="space-y-6">
+
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
+            {/* Decorative background element for card */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+
+            <form onSubmit={handleResetPassword} className="space-y-5 relative z-10">
               {/* Email Field - Disabled with Edit Option */}
               <div>
                 <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
@@ -913,20 +972,19 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       {getPasswordStrengthText(passwordStrength.level)}
                     </span>
                   </div>
-                  
+
                   {/* Strength Bar */}
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
                         passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
-                        passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
-                        passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
-                        'bg-green-500 w-full'
-                      }`}
+                          passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
+                            passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
+                              'bg-green-500 w-full'
+                        }`}
                     ></div>
                   </div>
-                  
+
                   {/* Feedback */}
                   {passwordStrength.feedback.length > 0 && (
                     <div className={`p-3 rounded-lg ${getPasswordStrengthBgColor(passwordStrength.level)}`}>
@@ -941,7 +999,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       </ul>
                     </div>
                   )}
-                  
+
                   {/* Security Tips */}
                   <div className="text-xs text-gray-500 space-y-1">
                     <p>💡 <strong>Tip:</strong> Use a unique password for this account</p>
@@ -952,10 +1010,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
               {/* Confirm Password */}
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
                   Confirm New Password
                 </label>
-                <p className="text-xs text-gray-500 mb-2">(Re-enter your new password)</p>
+                <p className="text-xs text-gray-500 mb-2 ml-1">(Re-enter your new password)</p>
                 <FormField
                   label={undefined}
                   id="confirmPassword"
@@ -965,13 +1023,13 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   onChange={handleChange}
                   disabled={loading}
                   placeholder="Confirm your password"
-                  startIcon={<Lock className="w-5 h-5" />}
+                  startIcon={<Lock className="w-5 h-5 text-gray-400" />}
                   endAdornment={
-                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowCPassword(!showCPassword)}>
-                      {showCPassword ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer hover:text-gray-600 transition-colors" onClick={() => setShowCPassword(!showCPassword)}>
+                      {showCPassword ? (<FaEyeSlash className="text-gray-400" />) : (<FaEye className="text-gray-400" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12 focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
+                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12 transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 hover:border-blue-500`}
                   required
                 />
               </div>
@@ -1007,7 +1065,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               )}
 
               <PrimaryButton
-                variant="teal"
+                variant="blue"
                 loading={loading}
                 loadingText="Resetting..."
                 disabled={
@@ -1016,31 +1074,39 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   (showRecaptcha && !recaptchaToken) ||
                   isLocked
                 }
+                className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
               >
                 Reset Password
               </PrimaryButton>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-600 text-sm">{error}</p>
+                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 animate-fade-in">
+                  <div className="text-red-600 mt-0.5">
+                    <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
+                    </svg>
+                  </div>
+                  <p className="text-red-800 text-sm font-medium">{error}</p>
                 </div>
               )}
 
               {success && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                  <p className="text-green-600 text-sm">{success}</p>
+                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3 animate-fade-in">
+                  <div className="text-green-600 mt-0.5">
+                    <FaCheck className="text-lg" />
+                  </div>
+                  <p className="text-green-800 text-sm font-medium">{success}</p>
                 </div>
               )}
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-gray-600">
+            <div className="mt-8 text-center">
+              <p className="text-gray-500 font-medium">
                 Remembered your password?{" "}
-                <Link 
-                  to="/sign-in" 
-                  className={`text-green-600 hover:text-green-800 font-semibold hover:underline transition-colors duration-200 ${
-                    (verifyLoading || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
-                  }`}
+                <Link
+                  to="/sign-in"
+                  className={`font-bold text-blue-600 hover:text-blue-700 transition-colors ${(verifyLoading || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    }`}
                 >
                   Back to Sign In
                 </Link>
