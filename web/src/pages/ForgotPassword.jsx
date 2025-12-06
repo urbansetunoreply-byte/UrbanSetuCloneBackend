@@ -522,10 +522,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   <h1 className="text-4xl font-bold mb-6 animate-fade-in">
                     Reset Your Password
                   </h1>
-                  <p className="text-xl mb-8 leading-relaxed animate-fade-in delay-100">
+                  <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
                     "Don't worry, we've got you covered. Let's get you back to finding your dream home."
                   </p>
-                  <div className="space-y-4 text-lg animate-fade-in delay-200">
+                  <div className="space-y-4 text-lg animate-fade-in-delay-2">
                     <div className="flex items-center justify-center space-x-3">
                       <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                       <span>Secure Password Reset</span>
@@ -834,6 +834,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 .animate-blob { animation: blob 7s infinite; }
                 .animate-float { animation: float 6s ease-in-out infinite; }
                 .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+                .animate-fade-in-delay { animation: fadeIn 0.6s ease-out 0.3s forwards; opacity: 0; }
+                .animate-fade-in-delay-2 { animation: fadeIn 0.6s ease-out 0.6s forwards; opacity: 0; }
                 .delay-100 { animation-delay: 100ms; }
                 .delay-200 { animation-delay: 200ms; }
               `}
@@ -845,10 +847,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 <h1 className="text-4xl font-bold mb-6 animate-fade-in">
                   Create New Password
                 </h1>
-                <p className="text-xl mb-8 leading-relaxed animate-fade-in delay-100">
+                <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
                   "A strong password is your first line of defense. Make it count!"
                 </p>
-                <div className="space-y-4 text-lg animate-fade-in delay-200">
+                <div className="space-y-4 text-lg animate-fade-in-delay-2">
                   <div className="flex items-center justify-center space-x-3">
                     <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                     <span>Strong & Secure</span>
@@ -1105,7 +1107,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 Remembered your password?{" "}
                 <Link
                   to="/sign-in"
-                  className={`font-bold text-green-600 hover:text-green-700 transition-colors ${(verifyLoading || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                  className={`font-bold text-green-600 hover:text-green-700 hover:underline transition-colors ${(verifyLoading || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                     }`}
                 >
                   Back to Sign In

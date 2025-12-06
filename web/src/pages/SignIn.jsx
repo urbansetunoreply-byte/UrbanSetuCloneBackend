@@ -634,6 +634,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             .animate-blob { animation: blob 7s infinite; }
                             .animate-float { animation: float 6s ease-in-out infinite; }
                             .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+                            .animate-fade-in-delay { animation: fadeIn 0.6s ease-out 0.3s forwards; opacity: 0; }
+                            .animate-fade-in-delay-2 { animation: fadeIn 0.6s ease-out 0.6s forwards; opacity: 0; }
                             .delay-100 { animation-delay: 100ms; }
                             .delay-200 { animation-delay: 200ms; }
                             .delay-300 { animation-delay: 300ms; }
@@ -648,10 +650,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 <h1 className="text-4xl font-bold mb-6 animate-fade-in">
                                     Welcome Back
                                 </h1>
-                                <p className="text-xl mb-8 leading-relaxed animate-fade-in delay-100">
+                                <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
                                     "Home is not a place, it's a feeling. Find your perfect sanctuary with us."
                                 </p>
-                                <div className="space-y-4 text-lg animate-fade-in delay-200">
+                                <div className="space-y-4 text-lg animate-fade-in-delay-2">
                                     <div className="flex items-center justify-center space-x-3">
                                         <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
                                         <span>Discover Your Dream Home</span>
