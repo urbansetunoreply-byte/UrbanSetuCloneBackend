@@ -1,6 +1,11 @@
 import React, { useState, useEffect, useRef, useMemo } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import {
+  FaSync, FaSearch, FaFilter, FaHistory, FaGlobe, FaDesktop, FaUser,
+  FaShieldAlt, FaExclamationTriangle, FaCheckCircle, FaFileAlt,
+  FaChartLine, FaMapMarkerAlt, FaFileExport, FaTrash, FaFingerprint
+} from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const SessionAuditLogs = () => {
@@ -434,36 +439,52 @@ const SessionAuditLogs = () => {
       </div>
 
       <div className="max-w-7xl mx-auto space-y-6 relative z-10 animate-fade-in">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
-          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+        {/* Header Section */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8 mb-8 animate-fade-in relative overflow-hidden group hover:shadow-2xl transition-shadow duration-300">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-purple-50 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
             <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Session Monitoring</h1>
-              <p className="text-gray-600 mt-1 text-sm sm:text-base">
-                Monitor session activities and track public visitors
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
+                Session Audit & Analytics
+              </h1>
+              <p className="text-gray-600 text-lg">
+                Comprehensive security logs and visitor traffic analysis
               </p>
             </div>
-            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-              <div className="flex space-x-2">
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex rounded-lg shadow-sm bg-gray-50 p-1 border border-gray-200">
                 <button
                   onClick={() => {
                     if (activeTab === 'audit') {
                       setLoading(true);
+                      fetchLogs();
                     } else {
                       setVisitorsLoading(true);
+                      fetchVisitorStats();
+                      fetchVisitors({ manual: true });
                     }
-                    refreshCurrentTab();
                   }}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm transition-all focus:outline-none"
                   title={activeTab === 'audit' ? 'Refresh logs' : 'Refresh visitors'}
                 >
-                  <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 10-3.879 6.804" />
-                  </svg>
-                  <span className="hidden sm:inline">Refresh</span>
+                  <FaSync className={`mr-2 ${loading || visitorsLoading ? 'animate-spin text-blue-600' : 'text-gray-500'}`} />
+                  Refresh
                 </button>
-                {/* Export Button */}
-                {activeTab === 'audit' && (
+                <div className="w-px bg-gray-200 my-1 mx-1"></div>
+                <button
+                  onClick={toggleAutoRefresh}
+                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-all focus:outline-none ${autoRefresh ? 'bg-green-100 text-green-700 shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
+                  title="Auto refresh every 30s"
+                >
+                  <span className={`mr-2 h-2 w-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                  {autoRefresh ? 'Auto: On' : 'Auto: Off'}
+                </button>
+              </div>
+
+              {activeTab === 'audit' && (
+                <div className="flex gap-2">
                   <button
                     onClick={() => {
                       const rows = logs.map(l => ({
@@ -485,144 +506,83 @@ const SessionAuditLogs = () => {
                       a.href = url; a.download = `session-logs-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
                       URL.revokeObjectURL(url);
                     }}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-gray-700 shadow-sm text-sm font-medium rounded-lg bg-white hover:bg-gray-50 hover:text-blue-600 transition-colors"
                     title="Export logs as CSV"
                   >
-                    <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
-                    <span className="hidden sm:inline">Export</span>
+                    <FaFileExport className="mr-2" />
+                    Export
                   </button>
-                )}
-                {activeTab === 'visitors' && (
-                  <button
-                    onClick={() => {
-                      const rows = visitors.map(v => ({
-                        timestamp: new Date(v.timestamp).toISOString(),
-                        ip: v.ip,
-                        location: v.location || '',
-                        browser: v.browser || '',
-                        browserVersion: v.browserVersion || '',
-                        os: v.os || '',
-                        deviceType: v.deviceType || '',
-                        analytics: v.cookiePreferences?.analytics ? 'yes' : 'no',
-                        marketing: v.cookiePreferences?.marketing ? 'yes' : 'no',
-                        functional: v.cookiePreferences?.functional ? 'yes' : 'no'
-                      }));
-                      const header = ['timestamp', 'ip', 'location', 'browser', 'browserVersion', 'os', 'deviceType', 'analytics', 'marketing', 'functional'];
-                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
-                      const blob = new Blob([csv], { type: 'text/csv' });
-                      const url = URL.createObjectURL(blob);
-                      const a = document.createElement('a');
-                      a.href = url; a.download = `visitors-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
-                      URL.revokeObjectURL(url);
-                    }}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50"
-                    title="Export visitors as CSV"
-                  >
-                    <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
-                    <span className="hidden sm:inline">Export</span>
-                  </button>
-                )}
-                <button
-                  onClick={toggleAutoRefresh}
-                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border ${autoRefresh ? 'border-green-300 text-green-700' : 'border-gray-300 text-gray-700'} shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50`}
-                  title="Auto refresh every 30s"
-                >
-                  <svg className={`h-4 w-4 sm:mr-2 ${autoRefresh ? 'text-green-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="hidden sm:inline">{autoRefresh ? 'Auto: On' : 'Auto: Off'}</span>
-                </button>
-                {currentUser?.role === 'rootadmin' && (
-                  <button
-                    onClick={async () => {
-                      const confirmed = window.confirm('This will permanently delete all session audit logs. Continue?');
-                      if (!confirmed) return;
-                      try {
-                        setIsClearing(true);
-                        const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`, {
-                          method: 'DELETE',
-                          credentials: 'include',
-                          headers: { 'Content-Type': 'application/json' }
-                        });
-                        const data = await res.json();
-                        if (!res.ok || !data.success) {
-                          throw new Error(data.message || `Failed with status ${res.status}`);
+
+                  {currentUser?.role === 'rootadmin' && (
+                    <button
+                      onClick={async () => {
+                        const confirmed = window.confirm('This will permanently delete all session audit logs. Continue?');
+                        if (!confirmed) return;
+                        try {
+                          setIsClearing(true);
+                          const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/audit-logs`, {
+                            method: 'DELETE',
+                            credentials: 'include',
+                            headers: { 'Content-Type': 'application/json' }
+                          });
+                          const data = await res.json();
+                          if (!res.ok || !data.success) {
+                            throw new Error(data.message || `Failed with status ${res.status}`);
+                          }
+                          toast.success(data.message || 'Audit logs cleared');
+                          setLogs([]);
+                          setTotalLogs(0);
+                          setLastUpdated(new Date());
+                        } catch (err) {
+                          console.error('Failed to clear audit logs', err);
+                          toast.error(err.message || 'Failed to clear audit logs');
+                        } finally {
+                          setIsClearing(false);
                         }
-                        toast.success(data.message || 'Audit logs cleared');
-                        setLogs([]);
-                        setTotalLogs(0);
-                        setLastUpdated(new Date());
-                      } catch (err) {
-                        console.error('Failed to clear audit logs', err);
-                        toast.error(err.message || 'Failed to clear audit logs');
-                      } finally {
-                        setIsClearing(false);
-                      }
-                    }}
-                    className={`flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-red-300 text-red-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-red-50 ${isClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
-                    title="Clear all audit logs"
-                    disabled={isClearing}
-                  >
-                    <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6M9 7V5a2 2 0 012-2h2a2 2 0 012 2v2m-9 0h10" />
-                    </svg>
-                    <span className="hidden sm:inline">{isClearing ? 'Clearing...' : 'Clear All Logs'}</span>
-                  </button>
-                )}
-              </div>
-              <div className="text-center sm:text-right">
-                <p className="text-sm text-gray-500">Total Logs</p>
-                <p className="text-xl sm:text-2xl font-bold text-blue-600">{totalLogs}</p>
-                {lastUpdated && (
-                  <p className="text-xs text-gray-400 mt-1">Updated {lastUpdated.toLocaleTimeString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}</p>
-                )}
-              </div>
+                      }}
+                      className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-red-200 text-red-600 shadow-sm text-sm font-medium rounded-lg bg-white hover:bg-red-50 hover:border-red-300 transition-colors ${isClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      title="Clear all audit logs"
+                      disabled={isClearing}
+                    >
+                      <FaTrash className={`mr-2 ${isClearing ? 'animate-pulse' : ''}`} />
+                      {isClearing ? 'Clearing...' : 'Clear All'}
+                    </button>
+                  )}
+                </div>
+              )}
             </div>
           </div>
         </div>
 
         {/* Tab Switcher */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-2 mb-6">
-          <div className="flex gap-2">
-            <button
-              onClick={() => setActiveTab('audit')}
-              className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${activeTab === 'audit'
-                  ? 'bg-blue-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                </svg>
-                <span>Session Audit Logs</span>
-                {activeTab === 'audit' && (
-                  <span className="ml-2 bg-white bg-opacity-20 px-2 py-0.5 rounded-full text-xs">
-                    {totalLogs}
-                  </span>
-                )}
-              </div>
-            </button>
-            <button
-              onClick={() => setActiveTab('visitors')}
-              className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${activeTab === 'visitors'
-                  ? 'bg-purple-600 text-white shadow-md'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
-            >
-              <div className="flex items-center justify-center gap-2">
-                <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                </svg>
-                <span>Public Visitors</span>
-                {activeTab === 'visitors' && (
-                  <span className="ml-2 bg-white bg-opacity-20 px-2 py-0.5 rounded-full text-xs">
-                    {visitorStats.todayCount}
-                  </span>
-                )}
-              </div>
-            </button>
-          </div>
+        {/* Tab Switcher */}
+        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 mb-8 inline-flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+          <button
+            onClick={() => setActiveTab('audit')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'audit'
+              ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
+              : 'bg-transparent text-gray-500 hover:bg-gray-50'
+              }`}
+          >
+            <FaHistory className={activeTab === 'audit' ? 'text-blue-100' : 'text-gray-400'} />
+            <span>Audit Logs</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs ml-1 ${activeTab === 'audit' ? 'bg-white/20' : 'bg-gray-100 text-gray-600'}`}>
+              {totalLogs}
+            </span>
+          </button>
+          <button
+            onClick={() => setActiveTab('visitors')}
+            className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'visitors'
+              ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
+              : 'bg-transparent text-gray-500 hover:bg-gray-50'
+              }`}
+          >
+            <FaGlobe className={activeTab === 'visitors' ? 'text-purple-100' : 'text-gray-400'} />
+            <span>Public Visitors</span>
+            <span className={`px-2 py-0.5 rounded-full text-xs ml-1 ${activeTab === 'visitors' ? 'bg-white/20' : 'bg-gray-100 text-gray-600'}`}>
+              {visitorStats.todayCount}
+            </span>
+          </button>
         </div>
 
         {/* Audit Logs Tab Content */}
@@ -635,36 +595,47 @@ const SessionAuditLogs = () => {
               </button>
             </div>
             {showAuditStats && (
-              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                  <p className="text-sm text-gray-600">Logins</p>
-                  <p className="text-2xl font-bold text-green-600">{logs.filter(l => l.action === 'login').length}</p>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 flex items-center gap-4">
+                  <div className="bg-white p-3 rounded-full shadow-sm text-green-500">
+                    <FaCheckCircle className="text-2xl" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-green-800 uppercase tracking-wider">Successful Logins</p>
+                    <p className="text-3xl font-bold text-green-900">{logs.filter(l => l.action === 'login').length}</p>
+                  </div>
                 </div>
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                  <p className="text-sm text-gray-600">Suspicious</p>
-                  <p className="text-2xl font-bold text-red-600">{logs.filter(l => l.isSuspicious).length}</p>
+                <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-2xl p-6 border border-red-100 flex items-center gap-4">
+                  <div className="bg-white p-3 rounded-full shadow-sm text-red-500">
+                    <FaExclamationTriangle className="text-2xl" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-red-800 uppercase tracking-wider">Suspicious Events</p>
+                    <p className="text-3xl font-bold text-red-900">{logs.filter(l => l.isSuspicious).length}</p>
+                  </div>
                 </div>
-                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                  <p className="text-sm text-gray-600">Admins</p>
-                  <p className="text-2xl font-bold text-purple-600">{logs.filter(l => l.role === 'admin' || l.role === 'rootadmin').length}</p>
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-100 flex items-center gap-4">
+                  <div className="bg-white p-3 rounded-full shadow-sm text-purple-500">
+                    <FaShieldAlt className="text-2xl" />
+                  </div>
+                  <div>
+                    <p className="text-sm font-semibold text-purple-800 uppercase tracking-wider">Admin Actions</p>
+                    <p className="text-3xl font-bold text-purple-900">{logs.filter(l => l.role === 'admin' || l.role === 'rootadmin').length}</p>
+                  </div>
                 </div>
               </div>
             )}
             {/* Search and Filters */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+            {/* Search and Filters */}
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8 animate-fade-in-delay">
               {/* Search Bar */}
-              <div className="mb-4">
-                <div className="relative">
+              <div className="mb-6">
+                <div className="relative group">
                   <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                     {isSearching ? (
-                      <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
-                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                      </svg>
+                      <FaSync className="animate-spin text-blue-500" />
                     ) : (
-                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                      </svg>
+                      <FaSearch className="text-gray-400 group-hover:text-blue-500 transition-colors" />
                     )}
                   </div>
                   <input
@@ -672,36 +643,32 @@ const SessionAuditLogs = () => {
                     placeholder="Search by username, email, device, IP, location, or details..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
-                      <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                      </svg>
+                      <FaHistory className="text-gray-400 hover:text-gray-600 cursor-pointer" />
                     </button>
                   )}
                 </div>
               </div>
 
               {/* Filter Toggle */}
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between">
                 <button
                   onClick={() => setShowFilters(!showFilters)}
-                  className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${hasActiveFilters
-                      ? 'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100'
-                      : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                  className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-lg focus:outline-none transition-all ${hasActiveFilters
+                    ? 'border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 shadow-sm'
+                    : 'border-gray-200 text-gray-700 bg-white hover:bg-gray-50 shadow-sm'
                     }`}
                 >
-                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-                  </svg>
+                  <FaFilter className={`mr-2 ${hasActiveFilters ? 'text-blue-600' : 'text-gray-400'}`} />
                   {showFilters ? 'Hide Filters' : 'Show Filters'}
                   {hasActiveFilters && (
-                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                    <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-blue-600 text-white">
                       {getActiveFiltersCount()}
                     </span>
                   )}
@@ -710,31 +677,30 @@ const SessionAuditLogs = () => {
                   {hasActiveFilters && (
                     <button
                       onClick={resetFilters}
-                      className="text-sm text-red-600 hover:text-red-700 font-medium"
+                      className="text-sm text-red-600 hover:text-red-800 font-medium hover:underline transition-all"
                     >
                       Clear All Filters
                     </button>
                   )}
-                  <div className="text-sm text-gray-500">
-                    Page {currentPage} • {logs.length} logs shown
-                    {totalLogs > 0 && ` of ${totalLogs} total`}
+                  <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                    {logs.length} logs found
                   </div>
                 </div>
               </div>
 
               {/* Advanced Filters */}
               {showFilters && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-200">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-100">
                   {/* Action Filter */}
                   <div>
-                    <label htmlFor="action-filter" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="action-filter" className="block text-sm font-bold text-gray-700 mb-2">
                       Action
                     </label>
                     <select
                       id="action-filter"
                       value={filters.action}
                       onChange={(e) => setFilters({ ...filters, action: e.target.value })}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
                     >
                       <option value="">All Actions</option>
                       <option value="login">Login</option>
@@ -748,14 +714,14 @@ const SessionAuditLogs = () => {
 
                   {/* Role Filter */}
                   <div>
-                    <label htmlFor="role-filter" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="role-filter" className="block text-sm font-bold text-gray-700 mb-2">
                       Role
                     </label>
                     <select
                       id="role-filter"
                       value={filterRole}
                       onChange={(e) => setFilterRole(e.target.value)}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
                     >
                       <option value="all">All Roles</option>
                       <option value="user">Users</option>
@@ -766,14 +732,14 @@ const SessionAuditLogs = () => {
 
                   {/* Suspicious Activity Filter */}
                   <div>
-                    <label htmlFor="suspicious-filter" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="suspicious-filter" className="block text-sm font-bold text-gray-700 mb-2">
                       Suspicious Activity
                     </label>
                     <select
                       id="suspicious-filter"
                       value={filters.isSuspicious}
                       onChange={(e) => setFilters({ ...filters, isSuspicious: e.target.value })}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
                     >
                       <option value="">All</option>
                       <option value="true">Suspicious Only</option>
@@ -783,14 +749,14 @@ const SessionAuditLogs = () => {
 
                   {/* Date Range Filter */}
                   <div>
-                    <label htmlFor="date-filter" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="date-filter" className="block text-sm font-bold text-gray-700 mb-2">
                       Date Range
                     </label>
                     <select
                       id="date-filter"
                       value={filterDateRange}
                       onChange={(e) => setFilterDateRange(e.target.value)}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
                     >
                       <option value="all">All Time</option>
                       <option value="1h">Last Hour</option>
@@ -802,7 +768,7 @@ const SessionAuditLogs = () => {
 
                   {/* User ID Filter */}
                   <div>
-                    <label htmlFor="user-filter" className="block text-sm font-medium text-gray-700">
+                    <label htmlFor="user-filter" className="block text-sm font-bold text-gray-700 mb-2">
                       User ID
                     </label>
                     <input
@@ -810,7 +776,7 @@ const SessionAuditLogs = () => {
                       id="user-filter"
                       value={filters.userId}
                       onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="block w-full pl-3 pr-3 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
                       placeholder="Enter user ID"
                     />
                   </div>
@@ -819,58 +785,59 @@ const SessionAuditLogs = () => {
             </div>
 
             {/* Audit Logs Table */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Audit Logs</h2>
-              </div>
-
-              {logs.length === 0 ? (
-                <div className="px-6 py-12 text-center">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-                  </svg>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No audit logs found</h3>
-                  <p className="mt-1 text-sm text-gray-500">No logs found for the selected filters.</p>
+            {logs.length === 0 ? (
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center animate-fade-in-delay-2">
+                <div className="bg-gray-100 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-4">
+                  <FaHistory className="text-3xl text-gray-400" />
                 </div>
-              ) : (
+                <h3 className="text-lg font-bold text-gray-900">No audit logs found</h3>
+                <p className="mt-2 text-gray-500 max-w-sm mx-auto">
+                  We couldn't find any log data matching your current filters. Try adjusting your search criteria or date range.
+                </p>
+              </div>
+            ) : (
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8 animate-fade-in-delay-2">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-100">
+                    <thead className="bg-gray-50/50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Timestamp
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           User
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Action
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Browser & Device
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           IP & Location
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Details
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Status
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-100">
                       {logs.map((log) => (
-                        <tr key={log._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {formatDate(log.timestamp)}
+                        <tr key={log._id} className="hover:bg-blue-50/30 transition-colors duration-150">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <FaHistory className="text-gray-400" />
+                              {formatDate(log.timestamp)}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
-                              <div className="flex-shrink-0 h-8 w-8">
-                                <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-                                  <span className="text-xs font-medium text-gray-700">
+                              <div className="flex-shrink-0 h-9 w-9">
+                                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 border border-blue-200 flex items-center justify-center text-blue-700 shadow-sm">
+                                  <span className="text-sm font-bold">
                                     {log.userId?.username?.charAt(0).toUpperCase() || '?'}
                                   </span>
                                 </div>
@@ -882,58 +849,71 @@ const SessionAuditLogs = () => {
                                 <div className="text-sm text-gray-500">
                                   {log.userId?.email || 'N/A'}
                                 </div>
-                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(log.role)}`}>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${getRoleBadgeColor(log.role)}`}>
                                   {log.role}
                                 </span>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getActionBadgeColor(log.action)}`}>
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${log.action === 'login' ? 'bg-green-50 text-green-700 border-green-200' :
+                              log.action === 'logout' ? 'bg-gray-50 text-gray-700 border-gray-200' :
+                                log.action === 'suspicious_login' ? 'bg-red-50 text-red-700 border-red-200' :
+                                  'bg-blue-50 text-blue-700 border-blue-200'
+                              }`}>
+                              {log.action === 'login' && <FaCheckCircle />}
+                              {log.action === 'suspicious_login' && <FaExclamationTriangle />}
                               {log.action.replace('_', ' ').toUpperCase()}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <div className="max-w-xs">
-                              <div className="font-medium text-gray-900 break-words">
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            <div className="flex items-start gap-2">
+                              <FaDesktop className="mt-1 text-gray-400" />
+                              <div className="font-medium break-words max-w-[150px]">
                                 {log.device || 'Unknown Device'}
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            <div>
-                              <div className="font-medium">{log.ip}</div>
-                              <div className="text-gray-500 text-xs">{log.location || 'Unknown'}</div>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <div className="space-y-1">
+                              <div className="flex items-center gap-2 font-mono text-xs bg-gray-50 px-2 py-1 rounded border border-gray-200 w-fit">
+                                <FaGlobe className="text-gray-400" />
+                                {log.ip}
+                              </div>
+                              <div className="flex items-center gap-2 text-xs text-gray-500 pl-1">
+                                <FaMapMarkerAlt className="text-gray-400" />
+                                {log.location || 'Unknown'}
+                              </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-900">
-                            <div className="max-w-xs">
-                              <div className="truncate">{log.additionalInfo || 'N/A'}</div>
+                          <td className="px-6 py-4 text-sm text-gray-600">
+                            <div className="max-w-xs space-y-1">
+                              <div className="truncate text-gray-700 flex items-center gap-2">
+                                <FaFileAlt className="text-gray-400 flex-shrink-0" />
+                                {log.additionalInfo || 'N/A'}
+                              </div>
                               {log.suspiciousReason && (
-                                <div className="text-red-600 text-xs mt-1">
-                                  Reason: {log.suspiciousReason}
+                                <div className="text-red-600 text-xs mt-1 bg-red-50 p-1.5 rounded border border-red-100 flex items-start gap-1">
+                                  <FaExclamationTriangle className="mt-0.5 flex-shrink-0" />
+                                  <span>{log.suspiciousReason}</span>
                                 </div>
                               )}
                               {log.performedBy && (
-                                <div className="text-gray-500 text-xs mt-1">
-                                  Performed by: {log.performedBy.username}
+                                <div className="text-gray-500 text-xs mt-1 bg-gray-50 p-1 rounded inline-block">
+                                  By: {log.performedBy.username}
                                 </div>
                               )}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {log.isSuspicious ? (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                                <svg className="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
-                                  <circle cx="4" cy="4" r="3" />
-                                </svg>
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200 shadow-sm animate-pulse">
+                                <FaShieldAlt />
                                 Suspicious
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                                <svg className="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
-                                  <circle cx="4" cy="4" r="3" />
-                                </svg>
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200 shadow-sm">
+                                <FaCheckCircle />
                                 Normal
                               </span>
                             )}
@@ -943,49 +923,51 @@ const SessionAuditLogs = () => {
                     </tbody>
                   </table>
                 </div>
-              )}
-            </div>
+              </div>
+            )}
 
             {/* Pagination */}
             {totalLogs > 50 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow-sm">
+              <div className="bg-white px-6 py-4 flex items-center justify-between mt-4 rounded-xl shadow-md border border-gray-100 animate-fade-in-delay-3">
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-4 py-2 border border-blue-200 text-sm font-medium rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-50 transition-colors"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(currentPage + 1)}
                     disabled={logs.length < 50}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-blue-200 text-sm font-medium rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-50 transition-colors"
                   >
                     Next
                   </button>
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-700">
-                      Showing page <span className="font-medium">{currentPage}</span> of{' '}
-                      <span className="font-medium">{Math.ceil(totalLogs / 50)}</span>
+                    <p className="text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-md border border-gray-200">
+                      Showing page <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
+                      <span className="font-bold text-gray-900">{Math.ceil(totalLogs / 50)}</span>
                     </p>
                   </div>
                   <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                    <nav className="relative z-0 inline-flex rounded-lg shadow-sm -space-x-px" aria-label="Pagination">
                       <button
                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                        className="relative inline-flex items-center px-4 py-2 rounded-l-lg border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
                       >
+                        <span className="sr-only">Previous</span>
                         Previous
                       </button>
                       <button
                         onClick={() => setCurrentPage(currentPage + 1)}
                         disabled={logs.length < 50}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                        className="relative inline-flex items-center px-4 py-2 rounded-r-lg border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
                       >
+                        <span className="sr-only">Next</span>
                         Next
                       </button>
                     </nav>
@@ -995,49 +977,32 @@ const SessionAuditLogs = () => {
             )}
 
             {/* Security Summary */}
-            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                    </svg>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Normal Activities</p>
-                    <p className="text-2xl font-semibold text-gray-900">
-                      {logs.filter(log => !log.isSuspicious).length}
-                    </p>
-                  </div>
+            <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-delay-3 h-full">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300 h-full">
+                <div className="bg-green-100 p-4 rounded-full mb-3 text-green-600">
+                  <FaCheckCircle className="text-3xl" />
                 </div>
+                <p className="text-gray-500 font-medium">Normal Activities</p>
+                <p className="text-3xl font-bold text-gray-800 mt-1">{logs.filter(log => !log.isSuspicious).length}</p>
+                <div className="w-16 h-1 bg-green-500 rounded-full mt-3"></div>
               </div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                    </svg>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Suspicious Activities</p>
-                    <p className="text-2xl font-semibold text-gray-900">
-                      {logs.filter(log => log.isSuspicious).length}
-                    </p>
-                  </div>
+
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300 h-full">
+                <div className="bg-red-100 p-4 rounded-full mb-3 text-red-600 animate-pulse">
+                  <FaExclamationTriangle className="text-3xl" />
                 </div>
+                <p className="text-gray-500 font-medium">Suspicious Activities</p>
+                <p className="text-3xl font-bold text-gray-800 mt-1">{logs.filter(log => log.isSuspicious).length}</p>
+                <div className="w-16 h-1 bg-red-500 rounded-full mt-3"></div>
               </div>
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-8 w-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                    </svg>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Total Logs</p>
-                    <p className="text-2xl font-semibold text-gray-900">{totalLogs}</p>
-                  </div>
+
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300 h-full">
+                <div className="bg-blue-100 p-4 rounded-full mb-3 text-blue-600">
+                  <FaShieldAlt className="text-3xl" />
                 </div>
+                <p className="text-gray-500 font-medium">Total Log Events</p>
+                <p className="text-3xl font-bold text-gray-800 mt-1">{totalLogs}</p>
+                <div className="w-16 h-1 bg-blue-500 rounded-full mt-3"></div>
               </div>
             </div>
           </>
@@ -1047,225 +1012,201 @@ const SessionAuditLogs = () => {
         {activeTab === 'visitors' && (
           <>
             {/* Visitor Statistics Cards + Quick Range */}
-            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-8 w-8 text-purple-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z" />
-                    </svg>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-fade-in">
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 group hover:scale-[1.02] transition-transform duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-purple-100 text-purple-600 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                    <FaGlobe className="text-2xl" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Today's Visitors</p>
-                    <p className="text-2xl font-semibold text-gray-900">{visitorStats.todayCount}</p>
-                  </div>
+                  <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">Today</span>
                 </div>
-
+                <p className="text-gray-500 text-sm font-medium">Daily Visitors</p>
+                <h3 className="text-3xl font-bold text-gray-800 mt-1">{visitorStats.todayCount}</h3>
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-8 w-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z" />
-                    </svg>
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 group hover:scale-[1.02] transition-transform duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-blue-100 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                    <FaChartLine className="text-2xl" />
                   </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Total Visitors</p>
-                    <p className="text-2xl font-semibold text-gray-900">{visitorStats.totalVisitors}</p>
-                  </div>
+                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">All Time</span>
                 </div>
+                <p className="text-gray-500 text-sm font-medium">Total Visitors</p>
+                <h3 className="text-3xl font-bold text-gray-800 mt-1">{visitorStats.totalVisitors}</h3>
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 18h.01M8 21h8a2 2 0 002-2V5a2 2 0 00-2-2H8a2 2 0 00-2 2v14a2 2 0 002 2z" />
-                    </svg>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Device Types</p>
-                    <p className="text-2xl font-semibold text-gray-900">{visitorStats.deviceStats.length}</p>
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 group hover:scale-[1.02] transition-transform duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-green-100 text-green-600 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                    <FaDesktop className="text-2xl" />
                   </div>
                 </div>
+                <p className="text-gray-500 text-sm font-medium">Device Types</p>
+                <h3 className="text-3xl font-bold text-gray-800 mt-1">{visitorStats.deviceStats.length}</h3>
               </div>
 
-              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-                <div className="flex items-center">
-                  <div className="flex-shrink-0">
-                    <svg className="h-8 w-8 text-orange-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z" />
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 11a3 3 0 11-6 0 3 3 0 016 0z" />
-                    </svg>
-                  </div>
-                  <div className="ml-4">
-                    <p className="text-sm font-medium text-gray-500">Locations</p>
-                    <p className="text-2xl font-semibold text-gray-900">{visitorStats.locationStats.length}</p>
+              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 group hover:scale-[1.02] transition-transform duration-300">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="p-3 bg-orange-100 text-orange-600 rounded-xl group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+                    <FaMapMarkerAlt className="text-2xl" />
                   </div>
                 </div>
+                <p className="text-gray-500 text-sm font-medium">Locations</p>
+                <h3 className="text-3xl font-bold text-gray-800 mt-1">{visitorStats.locationStats.length}</h3>
               </div>
             </div>
 
             {/* Visitor Filters (toggle like audit section) - placed below cards */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-              <div className="mb-3">
-                <button onClick={() => setShowVisitorStatsToggle(!showVisitorStatsToggle)} className={`px-3 py-2 rounded-md text-sm ${showVisitorStatsToggle ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-                  Toggle Stats
+            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8 animate-fade-in-delay">
+              <div className="flex items-center justify-between mb-0">
+                <button onClick={() => setShowVisitorStatsToggle(!showVisitorStatsToggle)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${showVisitorStatsToggle ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                  {showVisitorStatsToggle ? 'Hide Stats' : 'Show Advanced Stats'}
                 </button>
-              </div>
-              {showVisitorStatsToggle && (
-                <div className="space-y-4 mb-4">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                      <p className="text-sm text-gray-600">Today</p>
-                      <p className="text-2xl font-bold text-purple-600">{visitorStats.todayCount}</p>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                      <p className="text-sm text-gray-600">Total Visitors</p>
-                      <p className="text-2xl font-bold text-blue-600">{visitorStats.totalVisitors}</p>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                      <p className="text-sm text-gray-600">Unique Devices (today)</p>
-                      <p className="text-2xl font-bold text-green-600">{visitorStats.deviceStats?.length || 0}</p>
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                      <p className="text-sm text-gray-600">7-Day Visitors</p>
-                      <p className="text-2xl font-bold text-indigo-600">{(visitorInsights.last7Total || 0).toLocaleString('en-IN')}</p>
-                      <p className="text-xs text-gray-500 mt-1">Compared to previous week</p>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                      <p className="text-sm text-gray-600">Avg Daily Traffic</p>
-                      <p className="text-2xl font-bold text-teal-600">{Math.round(visitorInsights.avgDaily || 0).toLocaleString('en-IN')}</p>
-                      <p className="text-xs text-gray-500 mt-1">Based on available stats</p>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                      <p className="text-sm text-gray-600">Traffic Trend</p>
-                      {visitorInsights.trendPercentage !== null ? (
-                        <div className="flex items-baseline gap-2">
-                          <p className={`text-2xl font-bold ${visitorInsights.trendPercentage >= 0 ? 'text-green-600' : 'text-red-600'}`}>
-                            {visitorInsights.trendPercentage >= 0 ? '▲' : '▼'} {Math.abs(visitorInsights.trendPercentage).toFixed(1)}%
-                          </p>
-                          <span className="text-xs text-gray-500">vs previous 7 days</span>
-                        </div>
-                      ) : (
-                        <p className="text-2xl font-bold text-gray-400">N/A</p>
-                      )}
-                      {visitorInsights.peakEntry && (
-                        <p className="text-xs text-gray-500 mt-1">
-                          Peak: {formatVisitorDate(visitorInsights.peakEntry.date || visitorInsights.peakEntry.day)} ({getVisitorEntryValue(visitorInsights.peakEntry)} visits)
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Top Devices</h4>
-                      <div className="space-y-3">
-                        {visitorInsights.topDevices.length === 0 ? (
-                          <p className="text-sm text-gray-500">Not enough data</p>
-                        ) : visitorInsights.topDevices.map((device) => {
-                          const topValue = visitorInsights.topDevices[0]?.count || 1;
-                          const percentage = topValue ? Math.round((device.count / topValue) * 100) : 0;
-                          return (
-                            <div key={device.device} className="space-y-1">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-600">{device.device}</span>
-                                <span className="text-gray-900 font-semibold">{device.count}</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-purple-500 h-2 rounded-full" style={{ width: `${percentage}%` }}></div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                    <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-                      <h4 className="text-sm font-semibold text-gray-700 mb-3">Top Locations</h4>
-                      <div className="space-y-3">
-                        {visitorInsights.topLocations.length === 0 ? (
-                          <p className="text-sm text-gray-500">Not enough data</p>
-                        ) : visitorInsights.topLocations.map((location) => {
-                          const topValue = visitorInsights.topLocations[0]?.count || 1;
-                          const percentage = topValue ? Math.round((location.count / topValue) * 100) : 0;
-                          return (
-                            <div key={location.location} className="space-y-1">
-                              <div className="flex items-center justify-between text-sm">
-                                <span className="text-gray-600">{location.location}</span>
-                                <span className="text-gray-900 font-semibold">{location.count}</span>
-                              </div>
-                              <div className="w-full bg-gray-200 rounded-full h-2">
-                                <div className="bg-pink-500 h-2 rounded-full" style={{ width: `${percentage}%` }}></div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
-                    </div>
-                  </div>
-
-                  {visitorInsights.summaryPoints.length > 0 && (
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                      <h4 className="text-sm font-semibold text-purple-800 mb-2">Visitor Highlights</h4>
-                      <ul className="text-sm text-purple-900 space-y-1 list-disc list-inside">
-                        {visitorInsights.summaryPoints.map((point, idx) => (
-                          <li key={idx}>{point}</li>
-                        ))}
-                      </ul>
-                    </div>
-                  )}
-                </div>
-              )}
-              <div className="flex items-center justify-between mb-4">
                 <button
                   onClick={() => setShowVisitorFilters(!showVisitorFilters)}
-                  className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${getVisitorActiveFiltersCount() > 0
-                      ? 'border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100'
-                      : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                  className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-lg focus:outline-none transition-all ${getVisitorActiveFiltersCount() > 0
+                    ? 'border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100 shadow-sm'
+                    : 'border-gray-200 text-gray-700 bg-white hover:bg-gray-50 shadow-sm'
                     }`}
                 >
-                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-                  </svg>
+                  <FaFilter className={`mr-2 ${getVisitorActiveFiltersCount() > 0 ? 'text-purple-600' : 'text-gray-400'}`} />
                   {showVisitorFilters ? 'Hide Filters' : 'Show Filters'}
                   {getVisitorActiveFiltersCount() > 0 && (
-                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-purple-100 text-purple-800">
+                    <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-purple-600 text-white">
                       {getVisitorActiveFiltersCount()}
                     </span>
                   )}
                 </button>
-                {getVisitorActiveFiltersCount() > 0 && (
-                  <button
-                    onClick={() => setVisitorFilters({ dateRange: 'today', device: 'all', location: 'all', search: '', analytics: 'any', marketing: 'any', functional: 'any' })}
-                    className="text-sm text-red-600 hover:text-red-700 font-medium"
-                  >
-                    Clear All Filters
-                  </button>
-                )}
               </div>
 
+              {showVisitorStatsToggle && (
+                <div className="mt-8 space-y-6 animate-fade-in">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-100">
+                      <p className="text-sm font-semibold text-purple-700 uppercase tracking-widest">Today</p>
+                      <p className="text-4xl font-extrabold text-purple-900 mt-2">{visitorStats.todayCount}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl p-6 border border-blue-100">
+                      <p className="text-sm font-semibold text-blue-700 uppercase tracking-widest">Visitors</p>
+                      <p className="text-4xl font-extrabold text-blue-900 mt-2">{visitorStats.totalVisitors}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
+                      <p className="text-sm font-semibold text-green-700 uppercase tracking-widest">Unique Devices</p>
+                      <p className="text-4xl font-extrabold text-green-900 mt-2">{visitorStats.deviceStats?.length || 0}</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                      <p className="text-sm text-gray-500 font-medium">7-Day Visitors</p>
+                      <p className="text-2xl font-bold text-gray-800 mt-1">{(visitorInsights.last7Total || 0).toLocaleString('en-IN')}</p>
+                      <div className="h-1 w-full bg-indigo-100 rounded-full mt-3 overflow-hidden">
+                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: '70%' }}></div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                      <p className="text-sm text-gray-500 font-medium">Avg Daily Traffic</p>
+                      <p className="text-2xl font-bold text-gray-800 mt-1">{Math.round(visitorInsights.avgDaily || 0).toLocaleString('en-IN')}</p>
+                      <div className="h-1 w-full bg-teal-100 rounded-full mt-3 overflow-hidden">
+                        <div className="h-full bg-teal-500 rounded-full" style={{ width: '50%' }}></div>
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
+                      <p className="text-sm text-gray-500 font-medium">Traffic Trend</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {visitorInsights.trendPercentage !== null ? (
+                          <span className={`text-2xl font-bold ${visitorInsights.trendPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {visitorInsights.trendPercentage >= 0 ? '▲' : '▼'} {Math.abs(visitorInsights.trendPercentage).toFixed(1)}%
+                          </span>
+                        ) : (
+                          <span className="text-2xl font-bold text-gray-400">N/A</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-2">vs previous 7 days</p>
+                    </div>
+                  </div>
+
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                      <h4 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <FaDesktop className="text-gray-400" /> Top Devices
+                      </h4>
+                      <div className="space-y-4">
+                        {visitorInsights.topDevices.length === 0 ? (
+                          <p className="text-sm text-gray-500 text-center py-4">No data available</p>
+                        ) : visitorInsights.topDevices.map((device) => {
+                          const topValue = visitorInsights.topDevices[0]?.count || 1;
+                          const percentage = topValue ? Math.round((device.count / topValue) * 100) : 0;
+                          return (
+                            <div key={device.device} className="group">
+                              <div className="flex items-center justify-between text-sm mb-1.5">
+                                <span className="text-gray-700 font-medium">{device.device}</span>
+                                <span className="text-gray-900 font-bold bg-gray-100 px-2 py-0.5 rounded-md">{device.count}</span>
+                              </div>
+                              <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                <div className="bg-purple-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-purple-600" style={{ width: `${percentage}%` }}></div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                      <h4 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+                        <FaMapMarkerAlt className="text-gray-400" /> Top Locations
+                      </h4>
+                      <div className="space-y-4">
+                        {visitorInsights.topLocations.length === 0 ? (
+                          <p className="text-sm text-gray-500 text-center py-4">No data available</p>
+                        ) : visitorInsights.topLocations.map((location) => {
+                          const topValue = visitorInsights.topLocations[0]?.count || 1;
+                          const percentage = topValue ? Math.round((location.count / topValue) * 100) : 0;
+                          return (
+                            <div key={location.location} className="group">
+                              <div className="flex items-center justify-between text-sm mb-1.5">
+                                <span className="text-gray-700 font-medium">{location.location}</span>
+                                <span className="text-gray-900 font-bold bg-gray-100 px-2 py-0.5 rounded-md">{location.count}</span>
+                              </div>
+                              <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                                <div className="bg-pink-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-pink-600" style={{ width: `${percentage}%` }}></div>
+                              </div>
+                            </div>
+                          );
+                        })}
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              {getVisitorActiveFiltersCount() > 0 && (
+                <div className="flex justify-end mt-4 animate-fade-in">
+                  <button
+                    onClick={() => setVisitorFilters({ dateRange: 'today', device: 'all', location: 'all', search: '', analytics: 'any', marketing: 'any', functional: 'any' })}
+                    className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1 hover:underline"
+                  >
+                    <FaSync className="text-xs" /> Clear All Filters
+                  </button>
+                </div>
+              )}
+
               {showVisitorFilters && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 animate-fade-in">
                   {/* Quick Date Range */}
                   <div className="col-span-1 lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Date Range</label>
                     <div className="flex flex-wrap gap-2">
                       {[
                         { key: 'today', label: 'Today' },
                         { key: 'yesterday', label: 'Yesterday' },
-                        { key: '7days', label: 'Last 7 days' },
-                        { key: '30days', label: 'Last 30 days' },
+                        { key: '7days', label: 'Last 7' },
+                        { key: '30days', label: 'Last 30' },
                         { key: 'all', label: 'All' }
                       ].map(opt => (
                         <button
                           key={opt.key}
                           onClick={() => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, dateRange: opt.key })); }}
-                          className={`px-3 py-1.5 rounded-md text-sm border ${visitorFilters.dateRange === opt.key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${visitorFilters.dateRange === opt.key ? 'bg-purple-600 text-white border-purple-600 shadow-md transform scale-105' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
                         >
                           {opt.label}
                         </button>
@@ -1280,11 +1221,11 @@ const SessionAuditLogs = () => {
                     { key: 'functional', label: 'Functional' }
                   ].map((c) => (
                     <div key={c.key}>
-                      <label className="block text-sm font-medium text-gray-700 mb-1">{c.label} Consent</label>
+                      <label className="block text-sm font-bold text-gray-700 mb-2">{c.label}</label>
                       <select
                         value={visitorFilters[c.key]}
                         onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, [c.key]: e.target.value })); }}
-                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                        className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-lg bg-gray-50 transition-all"
                       >
                         <option value="any">Any</option>
                         <option value="true">Allowed</option>
@@ -1295,13 +1236,13 @@ const SessionAuditLogs = () => {
 
                   {/* Device */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Device</label>
                     <select
                       value={visitorFilters.device}
                       onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, device: e.target.value })); }}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-lg bg-gray-50 transition-all"
                     >
-                      <option value="all">All</option>
+                      <option value="all">All Devices</option>
                       {(visitorStats.deviceStats || []).map(d => (
                         <option key={d.device} value={d.device}>{d.device} ({d.count})</option>
                       ))}
@@ -1310,13 +1251,13 @@ const SessionAuditLogs = () => {
 
                   {/* Location */}
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Location</label>
                     <select
                       value={visitorFilters.location}
                       onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, location: e.target.value })); }}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-lg bg-gray-50 transition-all"
                     >
-                      <option value="all">All</option>
+                      <option value="all">All Locations</option>
                       {(visitorStats.locationStats || []).map(l => (
                         <option key={l.location} value={l.location}>{l.location} ({l.count})</option>
                       ))}
@@ -1325,123 +1266,144 @@ const SessionAuditLogs = () => {
 
                   {/* Search */}
                   <div className="col-span-1 lg:col-span-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                    <input
-                      type="text"
-                      value={visitorFilters.search}
-                      onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, search: e.target.value })); }}
-                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                      placeholder="IP, device, location..."
-                    />
+                    <label className="block text-sm font-bold text-gray-700 mb-2">Search</label>
+                    <div className="relative">
+                      <FaSearch className="absolute left-3 top-3 text-gray-400" />
+                      <input
+                        type="text"
+                        value={visitorFilters.search}
+                        onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, search: e.target.value })); }}
+                        className="block w-full pl-10 pr-3 py-2.5 border-gray-200 rounded-lg bg-gray-50 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all shadow-sm"
+                        placeholder="Search IP, device, location..."
+                      />
+                    </div>
                   </div>
                 </div>
               )}
             </div>
 
             {/* Visitors Table */}
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-              <div className="px-6 py-4 border-b border-gray-200">
-                <h2 className="text-lg font-medium text-gray-900">Visitor Activity</h2>
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-delay-2">
+              <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-2">
+                <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
+                  <FaGlobe />
+                </div>
+                <h2 className="text-lg font-bold text-gray-800">Visitor Activity Log</h2>
               </div>
 
               {visitorsLoading ? (
-                <div className="px-6 py-12 text-center">
+                <div className="px-6 py-16 text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-                  <p className="mt-4 text-gray-600">Loading visitors...</p>
+                  <p className="mt-4 text-gray-600 font-medium">Loading visitors data...</p>
                 </div>
               ) : visitors.length === 0 ? (
-                <div className="px-6 py-12 text-center">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z" />
-                  </svg>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No visitors found</h3>
-                  <p className="mt-1 text-sm text-gray-500">No visitor data available for the selected period.</p>
+                <div className="px-6 py-16 text-center bg-gray-50/50">
+                  <div className="bg-gray-100 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-4">
+                    <FaGlobe className="text-3xl text-gray-400" />
+                  </div>
+                  <h3 className="text-lg font-bold text-gray-900">No visitors found</h3>
+                  <p className="mt-2 text-gray-500 max-w-sm mx-auto">
+                    We couldn't find any visitor data matching your current filters. Try adjusting your search criteria.
+                  </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-100">
+                    <thead className="bg-gray-50/50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Timestamp
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Browser
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Operating System
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Device Type
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           IP Address
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Location
                         </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
                           Cookie Consent
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white divide-y divide-gray-100">
                       {visitors.map((visitor) => (
-                        <tr key={visitor._id} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {new Date(visitor.timestamp).toLocaleString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' })}
+                        <tr key={visitor._id} className="hover:bg-purple-50/30 transition-colors duration-150">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                            <div className="flex items-center gap-2">
+                              <FaHistory className="text-gray-400" />
+                              {new Date(visitor.timestamp).toLocaleString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <div className="flex items-center">
-                              <span className="font-medium text-gray-900">
+                            <div className="flex items-center gap-2">
+                              <span className="font-bold text-gray-800">
                                 {visitor.browser || 'Unknown'}
                               </span>
                               {visitor.browserVersion && (
-                                <span className="ml-1 text-gray-500">
-                                  {visitor.browserVersion}
+                                <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 font-mono">
+                                  v{visitor.browserVersion}
                                 </span>
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {visitor.os || 'Unknown'}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <div className="flex items-center gap-2">
+                              {visitor.os?.includes('Windows') ? <span className="text-blue-500 font-bold">Win</span> :
+                                visitor.os?.includes('Mac') ? <span className="text-gray-800 font-bold">Mac</span> :
+                                  visitor.os?.includes('Android') ? <span className="text-green-500 font-bold">Android</span> :
+                                    visitor.os?.includes('iOS') ? <span className="text-gray-800 font-bold">iOS</span> : visitor.os || 'Unknown'}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${visitor.deviceType === 'Mobile' ? 'bg-blue-100 text-blue-800' :
-                                visitor.deviceType === 'Tablet' ? 'bg-purple-100 text-purple-800' :
-                                  'bg-gray-100 text-gray-800'
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${visitor.deviceType === 'Mobile' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
+                              visitor.deviceType === 'Tablet' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
+                                'bg-gray-100 text-gray-700 border border-gray-200'
                               }`}>
+                              {visitor.deviceType === 'Mobile' ? <FaGlobe className="text-xs" /> :
+                                visitor.deviceType === 'Tablet' ? <FaGlobe className="text-xs" /> : <FaDesktop className="text-xs" />}
                               {visitor.deviceType || 'Unknown'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600 bg-gray-50/50">
                             {visitor.ip}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {visitor.location || 'Unknown'}
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                            <div className="flex items-center gap-1">
+                              <FaMapMarkerAlt className="text-red-400" />
+                              {visitor.location || 'Unknown'}
+                            </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex gap-1 flex-wrap">
+                            <div className="flex gap-1.5 flex-wrap">
                               {visitor.cookiePreferences?.analytics && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
-                                  Analytics
+                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                                  ANA
                                 </span>
                               )}
                               {visitor.cookiePreferences?.marketing && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800">
-                                  Marketing
+                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-green-50 text-green-700 border border-green-100">
+                                  MKT
                                 </span>
                               )}
                               {visitor.cookiePreferences?.functional && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-purple-100 text-purple-800">
-                                  Functional
+                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-100">
+                                  FUN
                                 </span>
                               )}
                               {!visitor.cookiePreferences?.analytics &&
                                 !visitor.cookiePreferences?.marketing &&
                                 !visitor.cookiePreferences?.functional && (
-                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                    Necessary Only
+                                  <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                                    Required
                                   </span>
                                 )}
                             </div>
@@ -1456,9 +1418,9 @@ const SessionAuditLogs = () => {
 
             {/* Pagination for Visitors */}
             {allVisitors.length > 10 && visitorsTotalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-                <div className="text-sm text-gray-700">
-                  Page {visitorsPage} of {visitorsTotalPages}
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-8 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 animate-fade-in-delay-3">
+                <div className="text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
+                  Page <span className="font-bold text-gray-800">{visitorsPage}</span> of <span className="font-bold text-gray-800">{visitorsTotalPages}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <button
@@ -1467,7 +1429,7 @@ const SessionAuditLogs = () => {
                       toast.info(`Navigated to page ${Math.max(1, visitorsPage - 1)}`);
                     }}
                     disabled={visitorsPage === 1}
-                    className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                    className="px-5 py-2.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto flex items-center justify-center gap-2"
                   >
                     Previous
                   </button>
@@ -1477,7 +1439,7 @@ const SessionAuditLogs = () => {
                       toast.info(`Navigated to page ${Math.min(visitorsTotalPages, visitorsPage + 1)}`);
                     }}
                     disabled={visitorsPage === visitorsTotalPages}
-                    className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                    className="px-5 py-2.5 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md shadow-purple-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto flex items-center justify-center gap-2"
                   >
                     Next
                   </button>
