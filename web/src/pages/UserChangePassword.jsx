@@ -72,7 +72,7 @@ export default function UserChangePassword() {
     e.preventDefault();
     setError("");
     setSuccess("");
-    
+
     if (formData.newPassword !== formData.confirmNewPassword) {
       setError("New passwords do not match");
       return;
@@ -162,46 +162,71 @@ export default function UserChangePassword() {
     <AuthFormLayout
       leftSlot={(
         <>
-      {/* Left Side - Image and Quote */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-20"></div>
-        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
-          <div className="text-center max-w-md">
-            <h1 className="text-4xl font-bold mb-6 animate-fade-in">
-              Change Password
-            </h1>
-            <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
-              "Security is not a product, but a process. Keep your account safe with a strong password."
-            </p>
-            <div className="space-y-4 text-lg animate-fade-in-delay-2">
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                <span>Secure & Strong</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                <span>Easy to Remember</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                <span>Keep Your Account Safe</span>
+          {/* Left Side - Image and Quote */}
+          <style>
+            {`
+                @keyframes blob {
+                    0% { transform: translate(0px, 0px) scale(1); }
+                    33% { transform: translate(30px, -50px) scale(1.1); }
+                    66% { transform: translate(-20px, 20px) scale(0.9); }
+                    100% { transform: translate(0px, 0px) scale(1); }
+                }
+                @keyframes float {
+                    0%, 100% { transform: translateY(0); }
+                    50% { transform: translateY(-20px); }
+                }
+                @keyframes fadeIn {
+                    from { opacity: 0; transform: translateY(10px); }
+                    to { opacity: 1; transform: translateY(0); }
+                }
+                .animate-blob { animation: blob 7s infinite; }
+                .animate-float { animation: float 6s ease-in-out infinite; }
+                .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+                .animate-fade-in-delay { animation: fadeIn 0.6s ease-out 0.3s forwards; opacity: 0; }
+                .animate-fade-in-delay-2 { animation: fadeIn 0.6s ease-out 0.6s forwards; opacity: 0; }
+                .delay-100 { animation-delay: 100ms; }
+                .delay-200 { animation-delay: 200ms; }
+            `}
+          </style>
+          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+            <div className="absolute inset-0 bg-black opacity-20"></div>
+            <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
+              <div className="text-center max-w-md">
+                <h1 className="text-4xl font-bold mb-6 animate-fade-in">
+                  Change Password
+                </h1>
+                <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
+                  "Security is not a product, but a process. Keep your account safe with a strong password."
+                </p>
+                <div className="space-y-4 text-lg animate-fade-in-delay-2">
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    <span>Secure & Strong</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                    <span>Easy to Remember</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                    <span>Keep Your Account Safe</span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Floating Elements */}
+            <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
+            <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+
+            {/* Shield Icon */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20 flex items-center justify-center">
+              <svg className="w-16 h-16 text-white opacity-30" fill="currentColor" viewBox="0 0 20 20">
+                <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
+              </svg>
+            </div>
           </div>
-        </div>
-        
-        {/* Floating Elements */}
-        <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
-        <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '2s'}}></div>
-        <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '1s'}}></div>
-        
-        {/* Shield Icon */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20 flex items-center justify-center">
-          <svg className="w-16 h-16 text-white opacity-30" fill="currentColor" viewBox="0 0 20 20">
-            <path fillRule="evenodd" d="M2.166 4.999A11.954 11.954 0 0010 1.944 11.954 11.954 0 0017.834 5c.11.65.166 1.32.166 2.001 0 5.225-3.34 9.67-8 11.317C5.34 16.67 2 12.225 2 7c0-.682.057-1.35.166-2.001zm11.541 3.708a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
-          </svg>
-        </div>
-      </div>
         </>
       )}
     >
@@ -210,14 +235,14 @@ export default function UserChangePassword() {
       <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
         <div className="w-full max-w-md">
           <div className="text-center mb-6 md:mb-8">
-          <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-            <Lock className="w-7 h-7 text-blue-600" />
-            Change Password
-          </h2>
+            <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
+              <Lock className="w-7 h-7 text-blue-600" />
+              Change Password
+            </h2>
             <p className="text-gray-600">Keep your account secure by updating your password regularly.</p>
           </div>
-          
-<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
+
+          <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
             <form onSubmit={handleSubmit} className="space-y-6">
               {/* Current Password Field */}
               <div>
@@ -249,9 +274,8 @@ export default function UserChangePassword() {
                     type="button"
                     onClick={handleForgotPasswordClick}
                     disabled={loading}
-                    className={`text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200 ${
-                      loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
-                    }`}
+                    className={`text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200 ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                      }`}
                   >
                     Forgot Password?
                   </button>
@@ -293,20 +317,19 @@ export default function UserChangePassword() {
                       {getPasswordStrengthText(passwordStrength.level)}
                     </span>
                   </div>
-                  
+
                   {/* Strength Bar */}
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
-                        passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
-                        passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
-                        passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
-                        'bg-green-500 w-full'
-                      }`}
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
+                          passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
+                            passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
+                              passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
+                                'bg-green-500 w-full'
+                        }`}
                     ></div>
                   </div>
-                  
+
                   {/* Feedback */}
                   {passwordStrength.feedback.length > 0 && (
                     <div className={`p-3 rounded-lg ${getPasswordStrengthBgColor(passwordStrength.level)}`}>
@@ -321,7 +344,7 @@ export default function UserChangePassword() {
                       </ul>
                     </div>
                   )}
-                  
+
                   {/* Security Tips */}
                   <div className="text-xs text-gray-500 space-y-1">
                     <p>💡 <strong>Tip:</strong> Use a unique password for this account</p>
@@ -386,12 +409,11 @@ export default function UserChangePassword() {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Changed your mind?{" "}
-                <button 
-                  onClick={() => navigate("/user/profile")} 
+                <button
+                  onClick={() => navigate("/user/profile")}
                   disabled={loading}
-                  className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${
-                    loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
-                  }`}
+                  className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    }`}
                 >
                   Back to Profile
                 </button>
@@ -401,7 +423,7 @@ export default function UserChangePassword() {
         </div>
       </div>
       <ContactSupportWrapper />
-      
+
       {/* Signout Confirmation Modal */}
       <ConfirmationModal
         isOpen={showSignoutModal}
