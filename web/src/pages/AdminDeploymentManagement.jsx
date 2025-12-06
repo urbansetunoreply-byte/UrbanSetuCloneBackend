@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { Navigate } from 'react-router-dom';
-import { FaUpload, FaTrash, FaDownload, FaCheck, FaTimes, FaMobile, FaDesktop, FaApple, FaAndroid, FaWindows, FaSpinner, FaCloudUploadAlt, FaHistory, FaInfoCircle } from 'react-icons/fa';
+import { FaUpload, FaTrash, FaDownload, FaCheck, FaTimes, FaMobile, FaDesktop, FaApple, FaAndroid, FaWindows, FaSpinner, FaCloudUploadAlt, FaHistory, FaInfoCircle, FaRocket, FaFileCode } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -97,7 +97,7 @@ export default function AdminDeploymentManagement() {
       // Use XMLHttpRequest for progress tracking
       const xhr = new XMLHttpRequest();
       setUploadXhr(xhr);
-      
+
       // Track upload progress
       xhr.upload.addEventListener('progress', (event) => {
         if (event.lengthComputable) {
@@ -244,11 +244,21 @@ export default function AdminDeploymentManagement() {
 
   const getPlatformIcon = (platform) => {
     switch (platform) {
-      case 'android': return <FaAndroid className="text-green-500" />;
-      case 'ios': return <FaApple className="text-gray-600" />;
-      case 'windows': return <FaWindows className="text-blue-500" />;
-      case 'macos': return <FaApple className="text-gray-800" />;
-      default: return <FaMobile className="text-gray-500" />;
+      case 'android': return <FaAndroid className="text-green-500 text-xl" />;
+      case 'ios': return <FaApple className="text-gray-800 text-xl" />;
+      case 'windows': return <FaWindows className="text-blue-500 text-xl" />;
+      case 'macos': return <FaApple className="text-gray-800 text-xl" />;
+      default: return <FaMobile className="text-gray-500 text-xl" />;
+    }
+  };
+
+  const getPlatformName = (platform) => {
+    switch (platform) {
+      case 'android': return 'Android';
+      case 'ios': return 'iOS';
+      case 'windows': return 'Windows';
+      case 'macos': return 'macOS';
+      default: return 'Mobile';
     }
   };
 
@@ -277,274 +287,368 @@ export default function AdminDeploymentManagement() {
 
   if (loading) {
     return (
-      <div className="min-h-screen flex items-center justify-center">
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
         <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading deployment management...</p>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
+          <p className="mt-4 text-gray-600 font-medium">Loading deployment dashboard...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="mb-8">
-          <h1 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-            <FaCloudUploadAlt className="text-blue-600" />
-            Deployment Management (AWS S3)
-          </h1>
-          <p className="text-gray-600 mt-2">Manage mobile app deployments and updates - Supports files up to 200MB</p>
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Background Animations */}
+      <style>
+        {`
+            @keyframes blob {
+                0% { transform: translate(0px, 0px) scale(1); }
+                33% { transform: translate(30px, -50px) scale(1.1); }
+                66% { transform: translate(-20px, 20px) scale(0.9); }
+                100% { transform: translate(0px, 0px) scale(1); }
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-blob { animation: blob 7s infinite; }
+            .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+            .animate-fade-in-delay { animation: fadeIn 0.8s ease-out 0.2s forwards; opacity: 0; }
+            .animate-fade-in-delay-2 { animation: fadeIn 0.8s ease-out 0.4s forwards; opacity: 0; }
+        `}
+      </style>
+
+      {/* Abstract Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "2s" }}></div>
+        <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "4s" }}></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto space-y-8 relative z-10">
+
+        {/* Header Section */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 animate-fade-in relative overflow-hidden">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
+            <div>
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-3">
+                <FaCloudUploadAlt className="text-blue-500" />
+                Deployment Management
+              </h1>
+              <p className="text-gray-600 mt-2 text-lg">
+                Manage mobile app deployments, versions, and over-the-air updates via AWS S3.
+              </p>
+            </div>
+            <div className="flex gap-3">
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100 shadow-sm">
+                <FaInfoCircle className="mr-2" /> Max File Size: 200MB
+              </span>
+            </div>
+          </div>
         </div>
 
-        {/* Upload Section */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <FaUpload className="text-green-600" />
-            Upload New Deployment
-          </h2>
-          
-          <form onSubmit={handleFileUpload} className="space-y-4">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Platform
-                </label>
-                <select
-                  value={uploadData.platform}
-                  onChange={(e) => setUploadData({...uploadData, platform: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                >
-                  <option value="android">Android (APK)</option>
-                  <option value="ios">iOS (IPA)</option>
-                  <option value="windows">Windows (EXE/MSI)</option>
-                  <option value="macos">macOS (DMG/PKG)</option>
-                </select>
-              </div>
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
 
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Version
-                </label>
-                <input
-                  type="text"
-                  value={uploadData.version}
-                  onChange={(e) => setUploadData({...uploadData, version: e.target.value})}
-                  placeholder="e.g., 1.0.0"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  required
-                />
-              </div>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Description
-              </label>
-              <textarea
-                value={uploadData.description}
-                onChange={(e) => setUploadData({...uploadData, description: e.target.value})}
-                placeholder="Describe this deployment..."
-                rows={3}
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-
-            <div className="flex items-center gap-4">
-              <label className="flex items-center">
-                <input
-                  type="checkbox"
-                  checked={uploadData.isActive}
-                  onChange={(e) => setUploadData({...uploadData, isActive: e.target.checked})}
-                  className="mr-2"
-                />
-                <span className="text-sm text-gray-700">Set as active deployment</span>
-              </label>
-            </div>
-
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                File
-              </label>
-              <input
-                id="fileInput"
-                type="file"
-                accept=".apk,.ipa,.exe,.msi,.dmg,.pkg"
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
-                required
-              />
-            </div>
-
-            {/* Upload Progress Bar */}
-            {uploading && (
-              <div className="w-full">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-sm font-medium text-gray-700">Upload Progress</span>
-                  <span className="text-sm text-gray-500">{uploadProgress}%</span>
+          {/* Left Column: Upload Form */}
+          <div className="lg:col-span-1 animate-fade-in-delay">
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sticky top-8">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+                  <FaUpload />
                 </div>
-                <div className="w-full bg-gray-200 rounded-full h-2.5">
-                  <div 
-                    className="bg-blue-600 h-2.5 rounded-full transition-all duration-300 ease-out"
-                    style={{ width: `${uploadProgress}%` }}
-                  ></div>
-                </div>
-                <p className="text-xs text-gray-500 mt-1">
-                  {uploadProgress < 100 ? 'Uploading file...' : 'Processing upload...'}
-                </p>
+                <h2 className="text-xl font-bold text-gray-800">Upload New Build</h2>
               </div>
-            )}
 
-            <div className="flex gap-2">
-              <button
-                type="submit"
-                disabled={uploading}
-                className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-md hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-blue-500 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-              >
-                {uploading ? (
-                  <>
-                    <FaSpinner className="animate-spin" />
-                    {uploadProgress < 100 ? `Uploading... ${uploadProgress}%` : 'Processing...'}
-                  </>
-                ) : (
-                  <>
-                    <FaUpload />
-                    Upload File
-                  </>
+              <form onSubmit={handleFileUpload} className="space-y-5">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Platform</label>
+                  <div className="relative">
+                    <select
+                      value={uploadData.platform}
+                      onChange={(e) => setUploadData({ ...uploadData, platform: e.target.value })}
+                      className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none appearance-none font-medium text-gray-700"
+                    >
+                      <option value="android">Android (APK)</option>
+                      <option value="ios">iOS (IPA)</option>
+                      <option value="windows">Windows (EXE/MSI)</option>
+                      <option value="macos">macOS (DMG/PKG)</option>
+                    </select>
+                    <div className="absolute inset-y-0 right-0 flex items-center px-3 pointer-events-none text-gray-500">
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7"></path></svg>
+                    </div>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Version</label>
+                  <input
+                    type="text"
+                    value={uploadData.version}
+                    onChange={(e) => setUploadData({ ...uploadData, version: e.target.value })}
+                    placeholder="e.g., 1.0.0"
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none font-medium"
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Description / Changelog</label>
+                  <textarea
+                    value={uploadData.description}
+                    onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
+                    placeholder="Describe what's new in this version..."
+                    rows={3}
+                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none resize-none"
+                  />
+                </div>
+
+                <div className="flex items-center p-3 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
+                  <input
+                    id="isActiveCheckbox"
+                    type="checkbox"
+                    checked={uploadData.isActive}
+                    onChange={(e) => setUploadData({ ...uploadData, isActive: e.target.checked })}
+                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                  />
+                  <label htmlFor="isActiveCheckbox" className="ml-3 text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                    Set as Active Deployment
+                  </label>
+                </div>
+
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Build File</label>
+                  <div className="relative group">
+                    <input
+                      id="fileInput"
+                      type="file"
+                      accept=".apk,.ipa,.exe,.msi,.dmg,.pkg"
+                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer"
+                      required
+                    />
+                  </div>
+                </div>
+
+                {/* Upload Progress Bar */}
+                {uploading && (
+                  <div className="bg-blue-50 rounded-xl p-4 border border-blue-100">
+                    <div className="flex justify-between items-center mb-2">
+                      <span className="text-xs font-bold text-blue-800 uppercase tracking-wide">Uploading...</span>
+                      <span className="text-xs font-bold text-blue-800">{uploadProgress}%</span>
+                    </div>
+                    <div className="w-full bg-blue-200 rounded-full h-2 overflow-hidden">
+                      <div
+                        className="bg-blue-600 h-full rounded-full transition-all duration-300 ease-out relative"
+                        style={{ width: `${uploadProgress}%` }}
+                      >
+                        <div className="absolute inset-0 bg-white/30 animate-[shimmer_2s_infinite] w-full h-full" style={{ backgroundImage: 'linear-gradient(90deg, transparent, rgba(255,255,255,0.5), transparent)', transform: 'skewX(-20deg)' }}></div>
+                      </div>
+                    </div>
+                    <p className="text-xs text-blue-600 mt-2 text-center font-medium">
+                      {uploadProgress < 100 ? 'Please wait while we upload your file' : 'Processing on server...'}
+                    </p>
+                  </div>
                 )}
-              </button>
-              
-              {uploading && (
-                <button
-                  type="button"
-                  onClick={handleCancelUpload}
-                  className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center gap-2"
-                >
-                  <FaTimes />
-                  Cancel
-                </button>
+
+                <div className="flex gap-3 pt-2">
+                  <button
+                    type="submit"
+                    disabled={uploading}
+                    className="flex-1 px-6 py-3 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-blue-500 shadow-lg shadow-blue-500/30 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-bold transition-all transform hover:scale-[1.02] active:scale-[0.98]"
+                  >
+                    {uploading ? (
+                      <>
+                        <FaSpinner className="animate-spin" />
+                        Processing...
+                      </>
+                    ) : (
+                      <>
+                        <FaRocket />
+                        Deploy Build
+                      </>
+                    )}
+                  </button>
+
+                  {uploading && (
+                    <button
+                      type="button"
+                      onClick={handleCancelUpload}
+                      className="px-4 py-3 bg-red-100 text-red-600 rounded-xl hover:bg-red-200 focus:outline-none focus:ring-2 focus:ring-red-500 flex items-center justify-center font-medium transition-colors"
+                    >
+                      <FaTimes />
+                    </button>
+                  )}
+                </div>
+              </form>
+            </div>
+          </div>
+
+          {/* Right Column: Active & History */}
+          <div className="lg:col-span-2 space-y-8 animate-fade-in-delay-2">
+
+            {/* Active Deployments Cards */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
+                <div className="p-2 bg-green-100 rounded-lg text-green-600">
+                  <FaCheck />
+                </div>
+                <h2 className="text-xl font-bold text-gray-800">Currently Active Deployments</h2>
+              </div>
+
+              {activeFiles.length === 0 ? (
+                <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
+                  <FaCloudUploadAlt className="mx-auto text-4xl text-gray-300 mb-3" />
+                  <p className="text-gray-500 font-medium">No active deployments found.</p>
+                  <p className="text-sm text-gray-400">Upload a file and check "Set as Active" to see it here.</p>
+                </div>
+              ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  {activeFiles.map((file) => (
+                    <div key={file.id} className="relative group bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
+                      <div className="flex justify-between items-start mb-3">
+                        <div className="flex items-center gap-3">
+                          <div className="p-2 bg-white rounded-lg shadow-sm">
+                            {getPlatformIcon(file.platform)}
+                          </div>
+                          <div>
+                            <h3 className="font-bold text-gray-900">{getPlatformName(file.platform)}</h3>
+                            <span className="text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Production</span>
+                          </div>
+                        </div>
+                        <button
+                          onClick={() => handleDownloadFile(file.id)}
+                          className="text-green-600 hover:text-green-800 p-2 bg-white rounded-lg shadow-sm hover:shadow transition-all"
+                          title="Download"
+                        >
+                          <FaDownload />
+                        </button>
+                      </div>
+
+                      <div className="space-y-1 mb-4">
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Version:</span>
+                          <span className="font-mono font-medium text-gray-800">{file.version}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Size:</span>
+                          <span className="font-mono font-medium text-gray-800">{formatFileSize(file.size)}</span>
+                        </div>
+                        <div className="flex justify-between text-sm">
+                          <span className="text-gray-500">Released:</span>
+                          <span className="font-medium text-gray-800">{formatDate(file.createdAt)}</span>
+                        </div>
+                      </div>
+
+                      {file.description && (
+                        <div className="bg-white/60 p-3 rounded-lg text-xs text-gray-600 italic border border-green-100">
+                          {file.description}
+                        </div>
+                      )}
+                    </div>
+                  ))}
+                </div>
               )}
             </div>
-          </form>
-        </div>
 
-        {/* Active Deployments */}
-        <div className="bg-white rounded-lg shadow-md p-6 mb-8">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <FaCheck className="text-green-600" />
-            Active Deployments
-          </h2>
-          
-          {activeFiles.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No active deployments</p>
-          ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {activeFiles.map((file) => (
-                <div key={file.id} className="border border-green-200 rounded-lg p-4 bg-green-50">
-                  <div className="flex items-center justify-between mb-2">
-                    <div className="flex items-center gap-2">
-                      {getPlatformIcon(file.platform)}
-                      <span className="font-medium text-gray-900">{file.platform.toUpperCase()}</span>
-                    </div>
-                    <span className="text-xs bg-green-100 text-green-800 px-2 py-1 rounded">ACTIVE</span>
-                  </div>
-                  <p className="text-sm text-gray-600 mb-2">Version: {file.version}</p>
-                  <p className="text-xs text-gray-500 mb-3">{formatFileSize(file.size)}</p>
-                  <div className="flex gap-2">
-                    <button
-                      onClick={() => handleDownloadFile(file.id)}
-                      className="flex-1 px-3 py-1 bg-green-600 text-white text-xs rounded hover:bg-green-700 flex items-center justify-center gap-1"
-                    >
-                      <FaDownload />
-                      Download
-                    </button>
-                  </div>
+            {/* All Deployments List */}
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
+              <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+                <div className="flex items-center gap-3">
+                  <FaHistory className="text-blue-500" />
+                  <h2 className="text-lg font-bold text-gray-800">Deployment History</h2>
                 </div>
-              ))}
-            </div>
-          )}
-        </div>
+                <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
+                  {files.length} Total
+                </span>
+              </div>
 
-        {/* All Files */}
-        <div className="bg-white rounded-lg shadow-md p-6">
-          <h2 className="text-xl font-semibold text-gray-900 mb-4 flex items-center gap-2">
-            <FaHistory className="text-gray-600" />
-            All Deployments
-          </h2>
-          
-          {files.length === 0 ? (
-            <p className="text-gray-500 text-center py-8">No deployments found</p>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Platform</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Version</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Size</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Uploaded</th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {files.map((file) => (
-                    <tr key={file.id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center gap-2">
-                          {getPlatformIcon(file.platform)}
-                          <span className="text-sm font-medium text-gray-900">{file.platform.toUpperCase()}</span>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">{file.version}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatFileSize(file.size)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {file.isActive ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <FaCheck className="mr-1" />
-                            Active
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
-                            <FaTimes className="mr-1" />
-                            Inactive
-                          </span>
-                        )}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">{formatDate(file.createdAt)}</td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                        <div className="flex gap-2">
-                          <button
-                            onClick={() => handleDownloadFile(file.id)}
-                            className="text-blue-600 hover:text-blue-900 p-1"
-                            title="Download"
-                          >
-                            <FaDownload />
-                          </button>
-                          {!file.isActive && (
-                            <button
-                              onClick={() => handleSetActive(file.id)}
-                              className="text-green-600 hover:text-green-900 p-1"
-                              title="Set as Active"
-                            >
-                              <FaCheck />
-                            </button>
-                          )}
-                          <button
-                            onClick={() => handleDeleteFile(file.id)}
-                            className="text-red-600 hover:text-red-900 p-1"
-                            title="Delete"
-                          >
-                            <FaTrash />
-                          </button>
-                        </div>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+              {files.length === 0 ? (
+                <div className="p-12 text-center text-gray-500">
+                  No deployments history available.
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Platform & Version</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Details</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {files.map((file) => (
+                        <tr key={file.id} className="hover:bg-blue-50/30 transition-colors duration-150">
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center gap-3">
+                              <div className="p-2 bg-gray-100 rounded-lg">
+                                {getPlatformIcon(file.platform)}
+                              </div>
+                              <div>
+                                <div className="font-bold text-gray-900">{getPlatformName(file.platform)}</div>
+                                <div className="text-xs text-gray-500 font-mono">v{file.version}</div>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4">
+                            <div className="text-sm text-gray-900 font-medium">{formatFileSize(file.size)}</div>
+                            <div className="text-xs text-gray-500 truncate max-w-[150px]" title={file.description}>
+                              {file.description || 'No description'}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {file.isActive ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200 shadow-sm">
+                                <FaCheck className="mr-1.5" /> Active
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                                Inactive
+                              </span>
+                            )}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                            {formatDate(file.createdAt)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                            <div className="flex items-center justify-end gap-2">
+                              <button
+                                onClick={() => handleDownloadFile(file.id)}
+                                className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors"
+                                title="Download"
+                              >
+                                <FaDownload />
+                              </button>
+                              {!file.isActive && (
+                                <button
+                                  onClick={() => handleSetActive(file.id)}
+                                  className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors"
+                                  title="Promote to Active"
+                                >
+                                  <FaCheck />
+                                </button>
+                              )}
+                              <button
+                                onClick={() => handleDeleteFile(file.id)}
+                                className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors"
+                                title="Delete"
+                              >
+                                <FaTrash />
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
             </div>
-          )}
+
+          </div>
         </div>
       </div>
     </div>
