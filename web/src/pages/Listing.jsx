@@ -91,13 +91,13 @@ export default function Listing() {
   const [deassignLoading, setDeassignLoading] = useState(false);
   const [deassignError, setDeassignError] = useState('');
   const [neighborhood, setNeighborhood] = useState(null);
-  
+
   // Report property states
   const [showReportModal, setShowReportModal] = useState(false);
   const [reportCategory, setReportCategory] = useState('');
   const [reportDetails, setReportDetails] = useState('');
   const [reportLoading, setReportLoading] = useState(false);
-  
+
   // Enhanced features states
   const [showAmenities, setShowAmenities] = useState(false);
   const [showNearbyPlaces, setShowNearbyPlaces] = useState(false);
@@ -135,6 +135,7 @@ export default function Listing() {
   const [showEsgTooltip, setShowEsgTooltip] = useState(false);
   const [confirmModal, setConfirmModal] = useState({ open: false, type: null, propertyId: null, origin: null, message: '' });
   const [showSocialShare, setShowSocialShare] = useState(false);
+  const [showNearbyTooltip, setShowNearbyTooltip] = useState(false);
   const [showComparisonSocialShare, setShowComparisonSocialShare] = useState(false);
   const [selectedComparisonProperty, setSelectedComparisonProperty] = useState(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
@@ -160,9 +161,9 @@ export default function Listing() {
     : 'Temporarily Unavailable';
   const availabilityMessage = listing
     ? listing.availabilityMeta?.lockDescription ||
-      LOCK_REASON_MESSAGES[listing?.availabilityMeta?.lockReason] ||
-      LOCK_REASON_MESSAGES[listingAvailabilityStatus] ||
-      LOCK_REASON_MESSAGES.default
+    LOCK_REASON_MESSAGES[listing?.availabilityMeta?.lockReason] ||
+    LOCK_REASON_MESSAGES[listingAvailabilityStatus] ||
+    LOCK_REASON_MESSAGES.default
     : '';
   const availabilityLockedAt = listing?.availabilityMeta?.lockedAt;
   const refreshWatchlistCount = async () => {
@@ -172,7 +173,7 @@ export default function Listing() {
         const data = await res.json();
         setWatchlistCount(data.count || 0);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const renderReviewsToggleButton = () => (
@@ -252,7 +253,7 @@ export default function Listing() {
         const data = await res.json();
         setWishlistCount(data.count || 0);
       }
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const openConfirm = (type, { propertyId = null, origin = null, message = 'Are you sure?' } = {}) => {
@@ -264,7 +265,7 @@ export default function Listing() {
   // Check if property is in watchlist
   const checkWatchlistStatus = async () => {
     if (!currentUser || currentUser.role === 'admin' || currentUser.role === 'rootadmin') return;
-    
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/watchlist/check/${listing._id}`, {
         credentials: 'include'
@@ -327,11 +328,11 @@ export default function Listing() {
 
       if (response.ok) {
         const data = await response.json();
-        
+
         // Update FAQ in the list
-        setFaqs(prevFaqs => 
-          prevFaqs.map(faq => 
-            faq._id === faqId 
+        setFaqs(prevFaqs =>
+          prevFaqs.map(faq =>
+            faq._id === faqId
               ? { ...faq, helpful: data.data.helpful, notHelpful: data.data.notHelpful }
               : faq
           )
@@ -364,7 +365,7 @@ export default function Listing() {
   // Toggle watchlist status
   const toggleWatchlist = async () => {
     if (!currentUser || currentUser.role === 'admin' || currentUser.role === 'rootadmin') return;
-    
+
     setWatchlistLoading(true);
     try {
       if (isInWatchlist) {
@@ -428,22 +429,22 @@ export default function Listing() {
     closeConfirm();
   };
 
-   // Lock body scroll when deletion/assign/report/calculator/comparison/search/AI recommendation modals are open
-   useEffect(() => {
-     const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showDeassignModal || showReportModal || showCalculatorModal || showComparisonModal || showPropertySearch || showAIRecommendations;
-     if (shouldLock) {
-       document.body.classList.add('modal-open');
-     } else {
-       document.body.classList.remove('modal-open');
-     }
-     return () => {
-       document.body.classList.remove('modal-open');
-     };
-   }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showDeassignModal, showReportModal, showCalculatorModal, showComparisonModal, showPropertySearch, showAIRecommendations]);
- 
-   // Check if user is admin
+  // Lock body scroll when deletion/assign/report/calculator/comparison/search/AI recommendation modals are open
+  useEffect(() => {
+    const shouldLock = showReasonModal || showPasswordModal || showAssignOwnerModal || showDeassignModal || showReportModal || showCalculatorModal || showComparisonModal || showPropertySearch || showAIRecommendations;
+    if (shouldLock) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [showReasonModal, showPasswordModal, showAssignOwnerModal, showDeassignModal, showReportModal, showCalculatorModal, showComparisonModal, showPropertySearch, showAIRecommendations]);
+
+  // Check if user is admin
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
-  
+
   // Check if we're in admin context
   const isAdminContext = location.pathname.includes('/admin');
 
@@ -580,9 +581,9 @@ export default function Listing() {
         console.error('Failed to fetch available users');
       }
     } catch (error) {
-        console.error('Error fetching available users:', error);
-      }
-    };
+      console.error('Error fetching available users:', error);
+    }
+  };
 
   const openDeassignOwnerModal = () => {
     setDeassignReason('');
@@ -629,7 +630,7 @@ export default function Listing() {
       toast.error('Please select a report category');
       return;
     }
-    
+
     setReportLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/listing/report/${listing._id}`, {
@@ -641,7 +642,7 @@ export default function Listing() {
           details: reportDetails.trim()
         }),
       });
-      
+
       const data = await res.json();
       if (res.ok) {
         toast.info("Thank you for reporting. Our team will review this property.");
@@ -696,7 +697,7 @@ export default function Listing() {
   // Function to fetch similar properties
   const fetchSimilarProperties = async () => {
     if (!listing) return;
-    
+
     setLoadingSimilar(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/listing/get?type=${listing.type}&city=${listing.city}&limit=4&exclude=${listing._id}&visibility=public`);
@@ -720,7 +721,7 @@ export default function Listing() {
         method: 'POST',
         credentials: 'include',
         keepalive: true
-      }).catch(() => {});
+      }).catch(() => { });
     } finally {
       setViewTracked(true);
     }
@@ -730,8 +731,8 @@ export default function Listing() {
   const calculateEMI = (principal, rate = 8.5, tenure = 20) => {
     const monthlyRate = rate / 12 / 100;
     const months = tenure * 12;
-    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
-                (Math.pow(1 + monthlyRate, months) - 1);
+    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+      (Math.pow(1 + monthlyRate, months) - 1);
     return Math.round(emi);
   };
 
@@ -797,8 +798,8 @@ export default function Listing() {
       },
       size: {
         area: property.area || 'N/A',
-        floor: property.floor !== undefined && property.floor !== null && property.floor !== '' ? 
-               (property.floor == 0 ? 'Ground Floor' : `Floor ${property.floor}`) : 'Not specified',
+        floor: property.floor !== undefined && property.floor !== null && property.floor !== '' ?
+          (property.floor == 0 ? 'Ground Floor' : `Floor ${property.floor}`) : 'Not specified',
         age: property.propertyAge || 'N/A'
       },
       amenities: {
@@ -847,14 +848,14 @@ export default function Listing() {
       const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=50&visibility=public`);
       if (res.ok) {
         const data = await res.json();
-        
+
         // Filter properties based on search query (name, location, type)
         const filteredResults = data.filter(property => {
           // Skip current property and already selected properties
           if (property._id === listing._id || comparisonProperties.some(p => p._id === property._id)) {
             return false;
           }
-          
+
           // Search in property name, city, state, and type
           const searchTerm = query.toLowerCase();
           const propertyName = (property.name || '').toLowerCase();
@@ -862,14 +863,14 @@ export default function Listing() {
           const state = (property.state || '').toLowerCase();
           const type = (property.type || '').toLowerCase();
           const bhk = (property.bhk || '').toString();
-          
-          return propertyName.includes(searchTerm) || 
-                 city.includes(searchTerm) || 
-                 state.includes(searchTerm) || 
-                 type.includes(searchTerm) ||
-                 bhk.includes(searchTerm);
+
+          return propertyName.includes(searchTerm) ||
+            city.includes(searchTerm) ||
+            state.includes(searchTerm) ||
+            type.includes(searchTerm) ||
+            bhk.includes(searchTerm);
         });
-        
+
         // Limit to 10 results for better performance
         setSearchResults(filteredResults.slice(0, 10));
       }
@@ -905,7 +906,7 @@ export default function Listing() {
 
     setComparisonProperties(prev => [...prev, property]);
     toast.success('Property added to comparison');
-    
+
     // Remove from search results
     setSearchResults(prev => prev.filter(p => p._id !== property._id));
   };
@@ -925,10 +926,12 @@ export default function Listing() {
     setShowBookAppointmentTooltip(false);
     setShowLocationTooltip(false);
     setShowWishlistTooltip(false);
+    setShowWishlistTooltip(false);
     setShowEsgTooltip(false);
-    
+    setShowNearbyTooltip(false);
+
     // Show the specific tooltip
-    switch(tooltipType) {
+    switch (tooltipType) {
       case 'priceAnalysis':
         setShowPriceAnalysisTooltip(true);
         setTimeout(() => setShowPriceAnalysisTooltip(false), 3000);
@@ -981,6 +984,10 @@ export default function Listing() {
         setShowEsgTooltip(true);
         setTimeout(() => setShowEsgTooltip(false), 3000);
         break;
+      case 'nearby':
+        setShowNearbyTooltip(true);
+        setTimeout(() => setShowNearbyTooltip(false), 3000);
+        break;
       default:
         break;
     }
@@ -1025,68 +1032,68 @@ export default function Listing() {
         mk('Hospitals', <FaHospital />, amenities.hospital || amenities.hospitals || []),
         mk('Schools', <FaSchool />, amenities.school || amenities.schools || []),
         mk('Shopping Malls', <FaShoppingCart />, amenities.shopping_mall || amenities.mall || amenities.malls || []),
-        mk('Airport', <FaPlane />, amenities.airport || []) ,
+        mk('Airport', <FaPlane />, amenities.airport || []),
         mk('Transit Stations', <FaPlane />, transport.stations || [])
       ];
 
       // Always show items, including zero-count categories
       return items;
     }
-    
+
     // Use property ID hash to generate consistent values
     const propertyId = listing._id;
     const hash = propertyId.split('').reduce((a, b) => {
       a = ((a << 5) - a) + b.charCodeAt(0);
       return a & a;
     }, 0);
-    
+
     // Generate consistent distances based on property ID
     const baseDistance = (Math.abs(hash) % 200) / 100 + 0.3; // 0.3 to 2.3 km
     const hospitalDistance = (Math.abs(hash * 2) % 300) / 100 + 0.5; // 0.5 to 3.5 km
     const schoolDistance = (Math.abs(hash * 3) % 200) / 100 + 0.2; // 0.2 to 2.2 km
     const mallDistance = (Math.abs(hash * 4) % 500) / 100 + 1; // 1 to 6 km
     const airportDistance = (Math.abs(hash * 5) % 3000) / 100 + 15; // 15 to 45 km
-    
+
     // Generate consistent counts based on city and property ID
     const cityMultiplier = listing.city === 'Mumbai' || listing.city === 'Delhi' || listing.city === 'Bangalore' ? 1.5 : 1;
     const restaurantCount = Math.floor((Math.abs(hash * 6) % 200) / 10 * cityMultiplier) + 10;
     const hospitalCount = Math.floor((Math.abs(hash * 7) % 50) / 10 * cityMultiplier) + 3;
     const schoolCount = Math.floor((Math.abs(hash * 8) % 80) / 10 * cityMultiplier) + 5;
     const mallCount = Math.floor((Math.abs(hash * 9) % 30) / 10 * cityMultiplier) + 2;
-    
+
     return [
-      { 
-        name: 'Restaurants', 
-        icon: <FaUtensils />, 
-        distance: `${baseDistance.toFixed(1)} km`, 
+      {
+        name: 'Restaurants',
+        icon: <FaUtensils />,
+        distance: `${baseDistance.toFixed(1)} km`,
         count: `${restaurantCount}+`,
         category: 'food'
       },
-      { 
-        name: 'Hospitals', 
-        icon: <FaHospital />, 
-        distance: `${hospitalDistance.toFixed(1)} km`, 
+      {
+        name: 'Hospitals',
+        icon: <FaHospital />,
+        distance: `${hospitalDistance.toFixed(1)} km`,
         count: `${hospitalCount}`,
         category: 'healthcare'
       },
-      { 
-        name: 'Schools', 
-        icon: <FaSchool />, 
-        distance: `${schoolDistance.toFixed(1)} km`, 
+      {
+        name: 'Schools',
+        icon: <FaSchool />,
+        distance: `${schoolDistance.toFixed(1)} km`,
         count: `${schoolCount}`,
         category: 'education'
       },
-      { 
-        name: 'Shopping Malls', 
-        icon: <FaShoppingCart />, 
-        distance: `${mallDistance.toFixed(1)} km`, 
+      {
+        name: 'Shopping Malls',
+        icon: <FaShoppingCart />,
+        distance: `${mallDistance.toFixed(1)} km`,
         count: `${mallCount}`,
         category: 'shopping'
       },
-      { 
-        name: 'Airport', 
-        icon: <FaPlane />, 
-        distance: `${airportDistance.toFixed(0)} km`, 
+      {
+        name: 'Airport',
+        icon: <FaPlane />,
+        distance: `${airportDistance.toFixed(0)} km`,
         count: '1',
         category: 'transport'
       }
@@ -1182,7 +1189,7 @@ export default function Listing() {
   useEffect(() => {
     const fetchUserContract = async () => {
       if (!currentUser || !listing?._id || listing.type !== 'rent') return;
-      
+
       try {
         const res = await fetch(`${API_BASE_URL}/api/rental/contracts?status=active`, {
           credentials: 'include'
@@ -1192,8 +1199,8 @@ export default function Listing() {
           // Find contract for this listing where user is tenant or landlord
           const contract = data.contracts?.find(c => {
             const listingId = c.listingId?._id || c.listingId;
-            return listingId?.toString() === listing._id.toString() && 
-                   (c.status === 'active' || c.status === 'expired');
+            return listingId?.toString() === listing._id.toString() &&
+              (c.status === 'active' || c.status === 'expired');
           });
           setUserActiveContract(contract || null);
         }
@@ -1212,7 +1219,7 @@ export default function Listing() {
           const data = await res.json();
           setNeighborhood(data);
         }
-      } catch (_) {}
+      } catch (_) { }
     };
     fetchNeighborhood();
   }, [params.listingId]);
@@ -1313,7 +1320,7 @@ export default function Listing() {
           <div className="text-center">
             <h3 className="text-2xl font-bold text-red-600 mb-4">Property Not Found</h3>
             <p className="text-gray-600 mb-6">The property you're looking for doesn't exist or has been removed.</p>
-            <Link 
+            <Link
               to={backButtonInfo.path}
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold"
             >
@@ -1496,13 +1503,13 @@ export default function Listing() {
                   Clear All
                 </button>
               </div>
-              
+
               <div className="space-y-2 mb-3">
                 {comparisonProperties.map((property) => (
                   <div key={property._id} className="flex items-center justify-between bg-gray-50 rounded p-2">
                     <div className="flex items-center gap-2">
-                      <img 
-                        src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
+                      <img
+                        src={property.imageUrls?.[0] || '/placeholder-property.jpg'}
                         alt={property.name}
                         className="w-8 h-8 object-cover rounded"
                       />
@@ -1517,7 +1524,7 @@ export default function Listing() {
                   </div>
                 ))}
               </div>
-              
+
               <div className="space-y-2">
                 <button
                   onClick={openPropertySearch}
@@ -1541,9 +1548,9 @@ export default function Listing() {
 
           {/* Swiper Section */}
           <div className="relative mb-6">
-            <Swiper 
-              navigation 
-              modules={[Navigation]} 
+            <Swiper
+              navigation
+              modules={[Navigation]}
               className="rounded-lg overflow-hidden relative"
               onSlideChange={(swiper) => {
                 // Update selected image index when swiper changes
@@ -1625,15 +1632,15 @@ export default function Listing() {
                     </div>
                   </SwiperSlide>
                 )) : (
-                <SwiperSlide>
-                  <div className="w-full h-64 md:h-96 bg-gray-200 flex items-center justify-center">
-                    <div className="text-center text-gray-500">
-                      <div className="text-6xl mb-4">🏠</div>
-                      <p className="text-lg">No images available</p>
+                  <SwiperSlide>
+                    <div className="w-full h-64 md:h-96 bg-gray-200 flex items-center justify-center">
+                      <div className="text-center text-gray-500">
+                        <div className="text-6xl mb-4">🏠</div>
+                        <p className="text-lg">No images available</p>
+                      </div>
                     </div>
-                  </div>
-                </SwiperSlide>
-              )
+                  </SwiperSlide>
+                )
               })()}
             </Swiper>
           </div>
@@ -1721,17 +1728,16 @@ export default function Listing() {
                     )}
                   </div>
                 )}
-                
+
                 {/* Watchlist Eye Icon - for users only */}
                 {currentUser && !(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
                   <button
                     onClick={toggleWatchlist}
                     disabled={watchlistLoading}
-                    className={`ml-2 p-2 rounded-full transition z-20 focus:outline-none ${
-                      isInWatchlist 
-                        ? 'bg-blue-600 text-white hover:bg-blue-700' 
+                    className={`ml-2 p-2 rounded-full transition z-20 focus:outline-none ${isInWatchlist
+                        ? 'bg-blue-600 text-white hover:bg-blue-700'
                         : 'bg-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-100'
-                    } ${watchlistLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      } ${watchlistLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     title={isInWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
                     style={{ lineHeight: 0 }}
                   >
@@ -1754,7 +1760,7 @@ export default function Listing() {
                 </span>
               )}
             </div>
-            
+
             {/* Price Display */}
             <div className="mb-4">
               {listing.offer && getDiscountPercentage() > 0 ? (
@@ -1779,7 +1785,7 @@ export default function Listing() {
             </div>
 
             <p className="flex items-center text-gray-600 mb-4">
-              <FaMapMarkerAlt className="mr-2 text-red-500" /> 
+              <FaMapMarkerAlt className="mr-2 text-red-500" />
               {maskAddress(
                 // Create address object if structured fields exist, otherwise use legacy address
                 listing.propertyNumber || listing.city ? {
@@ -1889,8 +1895,8 @@ export default function Listing() {
                   <FaBuilding className="mx-auto text-purple-600 mb-1" />
                   <p className="text-xs text-gray-600">Floor</p>
                   <p className="font-semibold">
-                    {listing.floor !== undefined && listing.floor !== null && listing.floor !== '' ? 
-                      (listing.floor == 0 ? 'Ground Floor' : `Floor ${listing.floor}`) : 
+                    {listing.floor !== undefined && listing.floor !== null && listing.floor !== '' ?
+                      (listing.floor == 0 ? 'Ground Floor' : `Floor ${listing.floor}`) :
                       'Not specified'
                     }
                   </p>
@@ -1930,13 +1936,27 @@ export default function Listing() {
                   <FaHome />
                   <span className="text-sm font-medium">Amenities</span>
                 </button>
-                <button
-                  onClick={() => setShowNearbyPlaces(!showNearbyPlaces)}
-                  className="bg-gradient-to-r from-green-500 to-green-600 text-white p-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2"
-                >
-                  <FaMapMarkerAlt />
-                  <span className="text-sm font-medium">Nearby</span>
-                </button>
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        showSignInPrompt('nearby');
+                        return;
+                      }
+                      setShowNearbyPlaces(!showNearbyPlaces);
+                    }}
+                    className="bg-gradient-to-r from-green-500 to-green-600 text-white p-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all flex items-center justify-center gap-2 w-full"
+                  >
+                    <FaMapMarkerAlt />
+                    <span className="text-sm font-medium">Nearby</span>
+                  </button>
+                  {showNearbyTooltip && (
+                    <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                      Please sign in to view nearby places
+                      <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
+                </div>
                 <div className="relative">
                   <button
                     onClick={() => {
@@ -2028,7 +2048,7 @@ export default function Listing() {
           )}
 
           {/* Nearby Places Section */}
-          {showNearbyPlaces && (
+          {showNearbyPlaces && currentUser && (
             <div className="p-6 bg-white shadow-md rounded-lg mb-6">
               <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
                 <FaMapMarkerAlt className="text-green-600" />
@@ -2076,7 +2096,7 @@ export default function Listing() {
                       </p>
                     )}
                   </div>
-                  
+
                   {listing.type === "sale" && (
                     <div className="bg-green-50 p-4 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
@@ -2122,7 +2142,7 @@ export default function Listing() {
                     </div>
                   )}
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="bg-gray-50 p-4 rounded-lg">
                     <h5 className="font-semibold text-gray-800 mb-2">Price per sq ft</h5>
@@ -2130,7 +2150,7 @@ export default function Listing() {
                       ₹{listing.area ? Math.round((listing.offer ? listing.discountPrice : listing.regularPrice) / listing.area).toLocaleString('en-IN') : 'N/A'} / sq ft
                     </p>
                   </div>
-                  
+
                   {neighborhood && (
                     <div className="bg-yellow-50 p-4 rounded-lg">
                       <h5 className="font-semibold text-yellow-800 mb-2">Area Average</h5>
@@ -2189,7 +2209,7 @@ export default function Listing() {
                       )}
                     </div>
                   </div>
-                  
+
                   <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
                     <h5 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
                       <FaThumbsUp className="text-green-600" />
@@ -2199,8 +2219,8 @@ export default function Listing() {
                       <div className="flex justify-between">
                         <span className="text-sm text-gray-600">Price Competitiveness</span>
                         <span className="font-semibold text-green-600">
-                          {neighborhood && neighborhood.averagePriceNearby ? 
-                            (listing.regularPrice < neighborhood.averagePriceNearby ? 'Below Market' : 'Above Market') : 
+                          {neighborhood && neighborhood.averagePriceNearby ?
+                            (listing.regularPrice < neighborhood.averagePriceNearby ? 'Below Market' : 'Above Market') :
                             'Market Rate'
                           }
                         </span>
@@ -2218,7 +2238,7 @@ export default function Listing() {
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="space-y-4">
                   <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
                     <h5 className="font-semibold text-purple-800 mb-2 flex items-center gap-2">
@@ -2242,7 +2262,7 @@ export default function Listing() {
                       </div>
                     </div>
                   </div>
-                  
+
                   <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg">
                     <h5 className="font-semibold text-orange-800 mb-2 flex items-center gap-2">
                       <FaCalculator className="text-orange-600" />
@@ -2286,34 +2306,34 @@ export default function Listing() {
                         showSignInPrompt('rentPrediction');
                         return;
                       }
-                    if (!showRentPrediction && !rentPrediction) {
-                      setPredictionLoading(true);
-                      try {
-                        const res = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`);
-                        const data = await res.json();
-                        if (res.ok && data.success) {
-                          setRentPrediction(data.prediction);
-                        } else if (res.status === 404 || !data.prediction) {
-                          // Prediction doesn't exist, offer to generate
-                          if (currentUser) {
-                            const generateRes = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`, {
-                              method: 'POST',
-                              credentials: 'include'
-                            });
-                            const generateData = await generateRes.json();
-                            if (generateRes.ok && generateData.success) {
-                              setRentPrediction(generateData.prediction);
+                      if (!showRentPrediction && !rentPrediction) {
+                        setPredictionLoading(true);
+                        try {
+                          const res = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`);
+                          const data = await res.json();
+                          if (res.ok && data.success) {
+                            setRentPrediction(data.prediction);
+                          } else if (res.status === 404 || !data.prediction) {
+                            // Prediction doesn't exist, offer to generate
+                            if (currentUser) {
+                              const generateRes = await fetch(`${API_BASE_URL}/api/rental/predictions/${listing._id}`, {
+                                method: 'POST',
+                                credentials: 'include'
+                              });
+                              const generateData = await generateRes.json();
+                              if (generateRes.ok && generateData.success) {
+                                setRentPrediction(generateData.prediction);
+                              }
                             }
                           }
+                        } catch (error) {
+                          console.error('Error fetching prediction:', error);
+                        } finally {
+                          setPredictionLoading(false);
                         }
-                      } catch (error) {
-                        console.error('Error fetching prediction:', error);
-                      } finally {
-                        setPredictionLoading(false);
                       }
-                    }
-                    setShowRentPrediction((prev) => !prev);
-                  }}
+                      setShowRentPrediction((prev) => !prev);
+                    }}
                     className="bg-gradient-to-r from-blue-500 to-indigo-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-blue-600 hover:to-indigo-700 transition-all"
                   >
                     {predictionLoading ? 'Loading...' : showRentPrediction ? 'Hide Rent Prediction' : 'Show AI Rent Prediction'}
@@ -2332,22 +2352,22 @@ export default function Listing() {
                         showSignInPrompt('localityScore');
                         return;
                       }
-                    if (!showLocalityScore && !localityScore) {
-                      setLocalityLoading(true);
-                      try {
-                        const res = await fetch(`${API_BASE_URL}/api/rental/locality-score/${listing._id}`);
-                        const data = await res.json();
-                        if (res.ok && data.success) {
-                          setLocalityScore(data.localityScore);
+                      if (!showLocalityScore && !localityScore) {
+                        setLocalityLoading(true);
+                        try {
+                          const res = await fetch(`${API_BASE_URL}/api/rental/locality-score/${listing._id}`);
+                          const data = await res.json();
+                          if (res.ok && data.success) {
+                            setLocalityScore(data.localityScore);
+                          }
+                        } catch (error) {
+                          console.error('Error fetching locality score:', error);
+                        } finally {
+                          setLocalityLoading(false);
                         }
-                      } catch (error) {
-                        console.error('Error fetching locality score:', error);
-                      } finally {
-                        setLocalityLoading(false);
                       }
-                    }
-                    setShowLocalityScore((prev) => !prev);
-                  }}
+                      setShowLocalityScore((prev) => !prev);
+                    }}
                     className="bg-gradient-to-r from-green-500 to-emerald-600 text-white px-6 py-2 rounded-lg shadow font-semibold flex items-center gap-2 hover:from-green-600 hover:to-emerald-700 transition-all"
                   >
                     {localityLoading ? 'Loading...' : showLocalityScore ? 'Hide Locality Score' : 'Show Locality Score'}
@@ -2598,21 +2618,21 @@ export default function Listing() {
                           showSignInPrompt('rent');
                           return;
                         }
-                        
+
                         try {
                           const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, {
                             credentials: 'include'
                           });
-                          
+
                           if (res.ok) {
                             const data = await res.json();
                             if (data.contracts && data.contracts.length > 0) {
                               const pendingContract = data.contracts.find(
                                 c => (c.status === 'pending_signature' || c.status === 'draft') &&
-                                     (c.listingId?._id === listing._id || c.listingId === listing._id) &&
-                                     (c.tenantId?._id === currentUser._id || c.tenantId === currentUser._id)
+                                  (c.listingId?._id === listing._id || c.listingId === listing._id) &&
+                                  (c.tenantId?._id === currentUser._id || c.tenantId === currentUser._id)
                               );
-                              
+
                               if (pendingContract) {
                                 toast.info('You have a pending contract. Resuming from where you left off.');
                                 navigate(`/user/rent-property?listingId=${listing._id}&contractId=${pendingContract.contractId || pendingContract._id}`);
@@ -2623,7 +2643,7 @@ export default function Listing() {
                         } catch (error) {
                           console.error('Error checking pending contracts:', error);
                         }
-                        
+
                         navigate(`/user/rent-property?listingId=${listing._id}`);
                       }}
                       className="bg-gradient-to-r from-green-500 to-emerald-500 text-white px-8 py-3 rounded-lg hover:from-green-600 hover:to-emerald-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
@@ -2647,7 +2667,7 @@ export default function Listing() {
                           showSignInPrompt('appointment');
                           return;
                         }
-                        const appointmentUrl = isAdminContext 
+                        const appointmentUrl = isAdminContext
                           ? `/admin/appointmentlisting?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`
                           : `/user/appointment?listingId=${listing._id}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}&listingType=${listing.type}`;
                         navigate(appointmentUrl);
@@ -2679,7 +2699,7 @@ export default function Listing() {
                 </div>
                 <div>
                   <p className="text-gray-600">Average Price Nearby</p>
-                  <p className="font-semibold text-gray-800">₹{(neighborhood.averagePriceNearby||0).toLocaleString('en-IN')}</p>
+                  <p className="font-semibold text-gray-800">₹{(neighborhood.averagePriceNearby || 0).toLocaleString('en-IN')}</p>
                 </div>
                 <div>
                   <p className="text-gray-600">School Score</p>
@@ -2697,7 +2717,7 @@ export default function Listing() {
               <div className="mt-3">
                 <p className="text-gray-600">Nearby Amenities</p>
                 <div className="flex flex-wrap gap-2 mt-1">
-                  {(neighborhood.nearbyAmenities||[]).map((a,i)=>(
+                  {(neighborhood.nearbyAmenities || []).map((a, i) => (
                     <span key={i} className="px-2 py-1 bg-gray-100 rounded text-gray-700">{a}</span>
                   ))}
                 </div>
@@ -2742,7 +2762,7 @@ export default function Listing() {
                         <span>{property.bedrooms} bed • {property.bathrooms} bath</span>
                       </div>
                       <div className="flex gap-2">
-                        <Link 
+                        <Link
                           to={`/listing/${property._id}`}
                           className="flex-1 bg-blue-600 text-white text-center py-2 px-3 rounded text-sm hover:bg-blue-700 transition-colors"
                         >
@@ -2803,15 +2823,15 @@ export default function Listing() {
                   </h3>
                 </div>
                 {/* Review Form */}
-                <ReviewForm 
-                  listingId={listing._id} 
+                <ReviewForm
+                  listingId={listing._id}
                   onReviewSubmitted={() => {
                     // Refresh the listing data to update rating
                     window.location.reload();
                   }}
                 />
                 {/* Review List */}
-                <ReviewList 
+                <ReviewList
                   listingId={listing._id}
                   onReviewDeleted={() => {
                     // Refresh the listing data to update rating
@@ -2868,7 +2888,7 @@ export default function Listing() {
                   </div>
                 )}
               </div>
-              
+
               {propertyRatings.detailedRatings && (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                   <div className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm">
@@ -2949,7 +2969,7 @@ export default function Listing() {
                               <p className="text-gray-700 leading-relaxed mb-4">
                                 {faq.answer}
                               </p>
-                              
+
                               {/* FAQ Rating Section */}
                               <div className="flex items-center justify-between pt-4 border-t border-gray-100">
                                 <span className="text-sm text-gray-600">Was this helpful?</span>
@@ -2957,11 +2977,10 @@ export default function Listing() {
                                   <button
                                     onClick={() => handleFAQReaction(faq._id, 'like')}
                                     disabled={faqReactionLoading[faq._id]}
-                                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${
-                                      userFAQReactions[faq._id] === 'like'
+                                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'like'
                                         ? 'text-green-700 bg-green-100 border-green-300'
                                         : 'text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 border-green-200'
-                                    } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   >
                                     {userFAQReactions[faq._id] === 'like' ? <FaThumbsUp /> : <FaRegThumbsUp />}
                                     <span>
@@ -2971,11 +2990,10 @@ export default function Listing() {
                                   <button
                                     onClick={() => handleFAQReaction(faq._id, 'dislike')}
                                     disabled={faqReactionLoading[faq._id]}
-                                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${
-                                      userFAQReactions[faq._id] === 'dislike'
+                                    className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'dislike'
                                         ? 'text-red-700 bg-red-100 border-red-300'
                                         : 'text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200'
-                                    } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                      } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   >
                                     {userFAQReactions[faq._id] === 'dislike' ? <FaThumbsDown /> : <FaRegThumbsDown />}
                                     <span>
@@ -3181,7 +3199,7 @@ export default function Listing() {
           </form>
         </div>
       )}
-      
+
       {/* Image Preview Modal */}
       {listing && listing.imageUrls && listing.imageUrls.length > 0 && (
         <ImagePreview
@@ -3216,7 +3234,7 @@ export default function Listing() {
               <FaFlag /> Report Property
             </h3>
             <p className="text-sm text-gray-600">Help us maintain quality by reporting any issues with this property.</p>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Report Category *</label>
@@ -3233,7 +3251,7 @@ export default function Listing() {
                   <option value="other">Other</option>
                 </select>
               </div>
-              
+
               {(reportCategory === 'other' || reportCategory) && (
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -3249,7 +3267,7 @@ export default function Listing() {
                 </div>
               )}
             </div>
-            
+
             <div className="flex gap-2 justify-end">
               <button
                 onClick={() => {
@@ -3388,17 +3406,17 @@ export default function Listing() {
                 .filter((user) => {
                   const q = assignUserSearch.trim().toLowerCase();
                   if (!q) return true;
-                  
+
                   const name = (user.username || user.name || "").toLowerCase();
                   const email = (user.email || "").toLowerCase();
                   const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
                   const mobile = mobileRaw.replace(/\D/g, '');
-                  
+
                   // If query is exactly a 10-digit number, require exact mobile match
                   if (/^\d{10}$/.test(q)) {
                     return mobile === q;
                   }
-                  
+
                   // Otherwise broad matching across fields
                   return (
                     name.includes(q) ||
@@ -3420,11 +3438,11 @@ export default function Listing() {
                     }
                     return mobile;
                   };
-                  
+
                   const displayName = user.username || user.name || user.email;
                   const displayEmail = user.email;
                   const displayMobile = formatMobileNumber(user.mobileNumber || user.mobile);
-                  
+
                   return (
                     <option key={user._id} value={user._id}>
                       {displayName} ({displayEmail}{displayMobile ? `, ${displayMobile}` : ''})
@@ -3466,8 +3484,8 @@ export default function Listing() {
                 <FaTimes className="text-lg" />
               </button>
             </div>
-            
-            <EMICalculator 
+
+            <EMICalculator
               propertyPrice={listing.offer ? listing.discountPrice : listing.regularPrice}
               propertyName={listing.name}
             />
@@ -3526,7 +3544,7 @@ export default function Listing() {
                       <FaTable /> Detailed Comparison
                     </h3>
                   </div>
-                  
+
                   <div className="overflow-x-auto">
                     <table className="w-full text-sm sm:text-base min-w-[640px]">
                       <thead className="bg-gray-50">
@@ -3610,18 +3628,16 @@ export default function Listing() {
                             <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm">
                               <div className="space-y-2">
                                 <div><span className="font-medium text-gray-600">Location:</span> {property.city}, {property.state}</div>
-                                <div><span className="font-medium text-gray-600">Type:</span> 
-                                  <span className={`ml-2 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full ${
-                                    property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                                  }`}>
+                                <div><span className="font-medium text-gray-600">Type:</span>
+                                  <span className={`ml-2 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full ${property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                    }`}>
                                     {property.type}
                                   </span>
                                 </div>
                                 <div><span className="font-medium text-gray-600">BHK:</span> {property.bhk}</div>
-                                <div><span className="font-medium text-gray-600">Furnished:</span> 
-                                  <span className={`ml-2 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full ${
-                                    property.furnished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
-                                  }`}>
+                                <div><span className="font-medium text-gray-600">Furnished:</span>
+                                  <span className={`ml-2 px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full ${property.furnished ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-800'
+                                    }`}>
                                     {property.furnished ? 'Yes' : 'No'}
                                   </span>
                                 </div>
@@ -3655,34 +3671,28 @@ export default function Listing() {
                             return (
                               <td key={property._id} className="px-4 py-3 sm:px-6 sm:py-4 text-[13px] sm:text-sm">
                                 <div className="grid grid-cols-2 gap-2">
-                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
-                                    data.amenities.parking === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                                  }`}>
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${data.amenities.parking === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                    }`}>
                                     🅿️ Parking
                                   </div>
-                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
-                                    data.amenities.wifi === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                                  }`}>
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${data.amenities.wifi === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                    }`}>
                                     📶 Wi-Fi
                                   </div>
-                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
-                                    data.amenities.powerBackup === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                                  }`}>
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${data.amenities.powerBackup === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                    }`}>
                                     ⚡ Power Backup
                                   </div>
-                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
-                                    data.amenities.lift === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                                  }`}>
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${data.amenities.lift === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                    }`}>
                                     🛗 Lift
                                   </div>
-                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
-                                    data.amenities.gym === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                                  }`}>
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${data.amenities.gym === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                    }`}>
                                     💪 Gym
                                   </div>
-                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${
-                                    data.amenities.security === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
-                                  }`}>
+                                  <div className={`px-2 py-0.5 sm:py-1 text-[10px] sm:text-xs rounded-full text-center ${data.amenities.security === 'Yes' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'
+                                    }`}>
                                     🛡️ Security
                                   </div>
                                 </div>
@@ -3809,7 +3819,7 @@ export default function Listing() {
                       </div>
                     )}
                   </div>
-                  
+
                   {/* Search Suggestions */}
                   {searchQuery.trim() && (
                     <div className="mt-2 text-sm text-gray-500">
@@ -3836,18 +3846,18 @@ export default function Listing() {
                           Showing properties matching "{searchQuery}"
                         </div>
                       </div>
-                      
+
                       <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
                         {searchResults.map((property) => {
                           const isAlreadyAdded = comparisonProperties.some(p => p._id === property._id);
                           const canAdd = !isAlreadyAdded && comparisonProperties.length < 4;
-                          
+
                           return (
                             <div key={property._id} className="bg-white border border-gray-200 rounded-xl p-4 sm:p-6 hover:shadow-lg transition-all duration-300 hover:border-purple-300 relative overflow-hidden">
                               <div className="flex gap-4">
                                 <div className="relative">
-                                  <img 
-                                    src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
+                                  <img
+                                    src={property.imageUrls?.[0] || '/placeholder-property.jpg'}
                                     alt={property.name}
                                     className="w-20 h-20 object-cover rounded-lg shadow-md"
                                   />
@@ -3857,7 +3867,7 @@ export default function Listing() {
                                     </div>
                                   )}
                                 </div>
-                                
+
                                 <div className="flex-1">
                                   <div className="flex items-start justify-between mb-2">
                                     <div className="flex items-center gap-2 flex-1 min-w-0">
@@ -3877,13 +3887,12 @@ export default function Listing() {
                                       )}
                                     </div>
                                   </div>
-                                  
+
                                   <p className="text-gray-600 text-sm mb-3">{property.city}, {property.state}</p>
-                                  
+
                                   <div className="flex items-center gap-2 mb-3">
-                                    <span className={`px-3 py-1 text-xs rounded-full font-medium ${
-                                      property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                                    }`}>
+                                    <span className={`px-3 py-1 text-xs rounded-full font-medium ${property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                      }`}>
                                       {property.type === 'rent' ? 'Rent' : 'Sale'}
                                     </span>
                                     <span className="px-3 py-1 text-xs bg-gray-100 text-gray-700 rounded-full">
@@ -3900,7 +3909,7 @@ export default function Listing() {
                                       </span>
                                     )}
                                   </div>
-                                  
+
                                   <div className="flex items-center justify-between gap-2">
                                     <div>
                                       <div className="text-xl font-bold text-green-600">
@@ -3913,7 +3922,7 @@ export default function Listing() {
                                         </div>
                                       )}
                                     </div>
-                                    
+
                                     <div className="flex flex-wrap gap-2 min-w-0">
                                       <Link
                                         to={`/listing/${property._id}`}
@@ -3924,13 +3933,12 @@ export default function Listing() {
                                       <button
                                         onClick={() => addPropertyFromSearch(property)}
                                         disabled={!canAdd}
-                                        className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors w-full sm:w-auto ${
-                                          isAlreadyAdded 
-                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                            : canAdd 
-                                              ? 'bg-purple-600 text-white hover:bg-purple-700' 
+                                        className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors w-full sm:w-auto ${isAlreadyAdded
+                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            : canAdd
+                                              ? 'bg-purple-600 text-white hover:bg-purple-700'
                                               : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                        }`}
+                                          }`}
                                       >
                                         {isAlreadyAdded ? 'Added' : canAdd ? 'Add to Compare' : 'Max Reached'}
                                       </button>
@@ -3943,189 +3951,187 @@ export default function Listing() {
                         })}
                       </div>
                     </>
-                  
-                  ) : searchQuery.trim() ? (
-                  <div className="text-center py-12 text-gray-500">
-                    <div className="bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                      <FaChartLine className="text-3xl text-gray-400" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">No Properties Found</h3>
-                    <p className="text-gray-600 mb-4">No properties found matching "{searchQuery}"</p>
-                    <div className="bg-blue-50 rounded-lg p-4 max-w-md mx-auto">
-                      <p className="text-sm font-medium text-blue-800 mb-2">Try searching with:</p>
-                      <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
-                        <div>• Property names</div>
-                        <div>• Cities</div>
-                        <div>• Property types</div>
-                        <div>• BHK configurations</div>
-                      </div>
-                    </div>
-                  </div>
-                ) : (
-                  <div className="text-center py-12 text-gray-500">
-                    <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
-                      <FaChartLine className="text-3xl text-blue-500" />
-                    </div>
-                    <h3 className="text-lg font-semibold text-gray-700 mb-2">Start Your Search</h3>
-                    <p className="text-gray-600 mb-4">Search for properties to add to comparison</p>
-                    <div className="bg-gray-50 rounded-lg p-4 max-w-md mx-auto">
-                      <p className="text-sm font-medium text-gray-700 mb-2">Search by:</p>
-                      <div className="flex flex-wrap gap-2 justify-center">
-                        <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Property names</span>
-                        <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Locations</span>
-                        <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">Types</span>
-                        <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">BHK</span>
-                      </div>
-                    </div>
-                  </div>
-                )}
-              
 
-                {/* Enhanced Similar Properties Section */}
-                {similarProperties.length > 0 && (
-                  <div className="mt-8">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg">
-                        <FaChartLine />
+                  ) : searchQuery.trim() ? (
+                    <div className="text-center py-12 text-gray-500">
+                      <div className="bg-gray-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                        <FaChartLine className="text-3xl text-gray-400" />
                       </div>
-                      <h3 className="text-xl font-bold text-gray-800">Similar Properties</h3>
-                      <span className="text-sm text-gray-500">({similarProperties.length} found)</span>
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">No Properties Found</h3>
+                      <p className="text-gray-600 mb-4">No properties found matching "{searchQuery}"</p>
+                      <div className="bg-blue-50 rounded-lg p-4 max-w-md mx-auto">
+                        <p className="text-sm font-medium text-blue-800 mb-2">Try searching with:</p>
+                        <div className="grid grid-cols-2 gap-2 text-xs text-blue-700">
+                          <div>• Property names</div>
+                          <div>• Cities</div>
+                          <div>• Property types</div>
+                          <div>• BHK configurations</div>
+                        </div>
+                      </div>
                     </div>
-                    
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {similarProperties.map((property) => {
-                        const isAlreadyAdded = comparisonProperties.some(p => p._id === property._id);
-                        const canAdd = !isAlreadyAdded && comparisonProperties.length < 4;
-                        
-                        return (
-                          <div key={property._id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:border-blue-300">
-                            <div className="flex gap-3">
-                              <img 
-                                src={property.imageUrls?.[0] || '/placeholder-property.jpg'} 
-                                alt={property.name}
-                                className="w-16 h-16 object-cover rounded-lg shadow-sm"
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h4 className="font-bold text-gray-800 text-sm line-clamp-1">{property.name}</h4>
-                                  {property.isVerified && property.type === 'rent' && (
-                                    <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full text-[9px] font-semibold flex items-center gap-0.5 whitespace-nowrap">
-                                      <FaCheckCircle className="text-[9px]" /> Verified
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-gray-600 text-xs mb-2">{property.city}, {property.state}</p>
-                                
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className={`px-2 py-1 text-xs rounded-full font-medium ${
-                                    property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                                  }`}>
-                                    {property.type}
-                                  </span>
-                                  <span className="text-xs text-gray-500">{property.bhk} BHK</span>
-                                </div>
-                                
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="font-bold text-green-600 text-sm">
-                                      ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
-                                    </p>
-                                    {property.offer && (
-                                      <p className="text-xs text-gray-500 line-through">
-                                        ₹{property.regularPrice.toLocaleString('en-IN')}
-                                      </p>
+                  ) : (
+                    <div className="text-center py-12 text-gray-500">
+                      <div className="bg-gradient-to-br from-blue-100 to-purple-100 rounded-full w-20 h-20 flex items-center justify-center mx-auto mb-4">
+                        <FaChartLine className="text-3xl text-blue-500" />
+                      </div>
+                      <h3 className="text-lg font-semibold text-gray-700 mb-2">Start Your Search</h3>
+                      <p className="text-gray-600 mb-4">Search for properties to add to comparison</p>
+                      <div className="bg-gray-50 rounded-lg p-4 max-w-md mx-auto">
+                        <p className="text-sm font-medium text-gray-700 mb-2">Search by:</p>
+                        <div className="flex flex-wrap gap-2 justify-center">
+                          <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-xs">Property names</span>
+                          <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-xs">Locations</span>
+                          <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-xs">Types</span>
+                          <span className="px-3 py-1 bg-orange-100 text-orange-800 rounded-full text-xs">BHK</span>
+                        </div>
+                      </div>
+                    </div>
+                  )}
+
+
+                  {/* Enhanced Similar Properties Section */}
+                  {similarProperties.length > 0 && (
+                    <div className="mt-8">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg">
+                          <FaChartLine />
+                        </div>
+                        <h3 className="text-xl font-bold text-gray-800">Similar Properties</h3>
+                        <span className="text-sm text-gray-500">({similarProperties.length} found)</span>
+                      </div>
+
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {similarProperties.map((property) => {
+                          const isAlreadyAdded = comparisonProperties.some(p => p._id === property._id);
+                          const canAdd = !isAlreadyAdded && comparisonProperties.length < 4;
+
+                          return (
+                            <div key={property._id} className="bg-white border border-gray-200 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:border-blue-300">
+                              <div className="flex gap-3">
+                                <img
+                                  src={property.imageUrls?.[0] || '/placeholder-property.jpg'}
+                                  alt={property.name}
+                                  className="w-16 h-16 object-cover rounded-lg shadow-sm"
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-bold text-gray-800 text-sm line-clamp-1">{property.name}</h4>
+                                    {property.isVerified && property.type === 'rent' && (
+                                      <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full text-[9px] font-semibold flex items-center gap-0.5 whitespace-nowrap">
+                                        <FaCheckCircle className="text-[9px]" /> Verified
+                                      </span>
                                     )}
                                   </div>
-                                  
-                                  <div className="relative">
-                                    <button
-                                      onClick={() => {
-                                        if (!currentUser) {
-                                          showSignInPrompt('comparison');
-                                          return;
-                                        }
-                                        addPropertyFromSearch(property);
-                                      }}
-                                      disabled={!canAdd}
-                                      className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors ${
-                                        isAlreadyAdded 
-                                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed' 
-                                          : canAdd 
-                                            ? 'bg-blue-600 text-white hover:bg-blue-700' 
-                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                      }`}
-                                    >
-                                      {isAlreadyAdded ? 'Added' : canAdd ? 'Add' : 'Max'}
-                                    </button>
-                                    {showComparisonTooltip && (
-                                      <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                                        Please sign in to use comparison tool
-                                        <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
-                                      </div>
-                                    )}
+                                  <p className="text-gray-600 text-xs mb-2">{property.city}, {property.state}</p>
+
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className={`px-2 py-1 text-xs rounded-full font-medium ${property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                      }`}>
+                                      {property.type}
+                                    </span>
+                                    <span className="text-xs text-gray-500">{property.bhk} BHK</span>
+                                  </div>
+
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <p className="font-bold text-green-600 text-sm">
+                                        ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
+                                      </p>
+                                      {property.offer && (
+                                        <p className="text-xs text-gray-500 line-through">
+                                          ₹{property.regularPrice.toLocaleString('en-IN')}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    <div className="relative">
+                                      <button
+                                        onClick={() => {
+                                          if (!currentUser) {
+                                            showSignInPrompt('comparison');
+                                            return;
+                                          }
+                                          addPropertyFromSearch(property);
+                                        }}
+                                        disabled={!canAdd}
+                                        className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors ${isAlreadyAdded
+                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                            : canAdd
+                                              ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                          }`}
+                                      >
+                                        {isAlreadyAdded ? 'Added' : canAdd ? 'Add' : 'Max'}
+                                      </button>
+                                      {showComparisonTooltip && (
+                                        <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                                          Please sign in to use comparison tool
+                                          <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
-                    </div>
-                  </div>
-                )}
-
-                {/* Enhanced Footer Actions */}
-                <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 sm:p-6 mt-8 border border-gray-200">
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
-                        <div className="text-sm font-medium text-gray-700">
-                          {comparisonProperties.length} of 4 properties selected
-                        </div>
-                        <div className="text-xs text-gray-500">
-                          {comparisonProperties.length >= 2 ? 'Ready to compare!' : 'Add more properties to compare'}
-                        </div>
+                          );
+                        })}
                       </div>
-                      
-                      {comparisonProperties.length > 0 && (
-                        <div className="flex items-center gap-2">
-                          <div className="text-sm text-gray-600">Selected:</div>
-                          <div className="flex gap-1">
-                            {comparisonProperties.map((property, index) => (
-                              <div key={property._id} className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-xs font-bold text-purple-700">
-                                {index + 1}
-                              </div>
-                            ))}
+                    </div>
+                  )}
+
+                  {/* Enhanced Footer Actions */}
+                  <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 sm:p-6 mt-8 border border-gray-200">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
+                          <div className="text-sm font-medium text-gray-700">
+                            {comparisonProperties.length} of 4 properties selected
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {comparisonProperties.length >= 2 ? 'Ready to compare!' : 'Add more properties to compare'}
                           </div>
                         </div>
-                      )}
-                    </div>
-                    
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                      <button
-                        onClick={() => setShowPropertySearch(false)}
-                        className="w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
-                      >
-                        Close
-                      </button>
-                      {comparisonProperties.length >= 2 && (
+
+                        {comparisonProperties.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm text-gray-600">Selected:</div>
+                            <div className="flex gap-1">
+                              {comparisonProperties.map((property, index) => (
+                                <div key={property._id} className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-xs font-bold text-purple-700">
+                                  {index + 1}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
+                      </div>
+
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                         <button
-                          onClick={() => {
-                            setShowPropertySearch(false);
-                            setTimeout(() => setShowComparisonModal(true), 0);
-                          }}
-                          className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex items-center justify-center gap-2"
+                          onClick={() => setShowPropertySearch(false)}
+                          className="w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
                         >
-                          <FaChartLine />
-                          Compare Now
+                          Close
                         </button>
-                      )}
+                        {comparisonProperties.length >= 2 && (
+                          <button
+                            onClick={() => {
+                              setShowPropertySearch(false);
+                              setTimeout(() => setShowComparisonModal(true), 0);
+                            }}
+                            className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex items-center justify-center gap-2"
+                          >
+                            <FaChartLine />
+                            Compare Now
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
+              </div>
             </div>
-          </div>
-          </div>
           </div>
         </div>
       )}
@@ -4148,10 +4154,10 @@ export default function Listing() {
                 <FaTimes className="text-xl" />
               </button>
             </div>
-            
+
             {/* Modal Content */}
             <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
-              <AdvancedAIRecommendations 
+              <AdvancedAIRecommendations
                 userId={currentUser._id}
                 limit={8}
                 showTitle={false}
