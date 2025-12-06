@@ -230,8 +230,8 @@ export default function AdminChangePassword() {
     >
 
       {/* Right Side - Change Password Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50">
-        <div className="w-full max-w-md">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 min-h-screen">
+        <div className="w-full max-w-md animate-fade-in">
           <div className="text-center mb-8">
             <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
               <Lock className="w-7 h-7 text-blue-600" />
@@ -240,8 +240,11 @@ export default function AdminChangePassword() {
             <p className="text-gray-600">Keep your account secure by updating your password regularly.</p>
           </div>
 
-          <div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-6 md:p-8 border border-gray-100">
-            <form onSubmit={handleSubmit} className="space-y-6">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
+            {/* Decorative background element for card */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+
+            <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
               {/* Current Password Field */}
               <div>
                 <label htmlFor="previousPassword" className="block text-sm font-medium text-gray-700 mb-2">
@@ -264,7 +267,7 @@ export default function AdminChangePassword() {
                       {showPrev ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-blue-500`}
                   required
                 />
                 <div className="mt-2 flex justify-end">
@@ -301,7 +304,7 @@ export default function AdminChangePassword() {
                       {showNew ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-blue-500`}
                   required
                 />
               </div>
@@ -320,10 +323,10 @@ export default function AdminChangePassword() {
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
-                          passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
-                            passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
-                              passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
-                                'bg-green-500 w-full'
+                        passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
+                          passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
+                            passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
+                              'bg-green-500 w-full'
                         }`}
                     ></div>
                   </div>
@@ -372,7 +375,7 @@ export default function AdminChangePassword() {
                       {showConfirm ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-blue-500`}
                   required
                 />
               </div>
