@@ -1,14 +1,8 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import {
-  FaSync, FaSearch, FaFilter, FaDesktop, FaMobileAlt, FaTabletAlt,
-  FaShieldAlt, FaExclamationTriangle, FaTimes, FaSignOutAlt, FaUserSlash,
-  FaMapMarkerAlt, FaCalendarAlt, FaNetworkWired, FaUser
-} from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
-import { socket } from '../utils/socket';
 const SessionManagement = () => {
   // Set page title
   usePageTitle("Session Management - User Sessions");
@@ -64,14 +58,15 @@ const SessionManagement = () => {
   // Refresh immediately when backend broadcasts updates
   useEffect(() => {
     const handler = () => fetchSessions();
-    if (socket) {
+    try {
+      const { socket } = require('../utils/socket');
       socket.on('adminSessionsUpdated', handler);
       socket.on('sessionsUpdated', handler);
       return () => {
         socket.off('adminSessionsUpdated', handler);
         socket.off('sessionsUpdated', handler);
       };
-    }
+    } catch (_) { }
   }, [filterRole, currentPage]);
 
   const fetchSessions = async () => {
@@ -247,10 +242,19 @@ const SessionManagement = () => {
   };
 
   const getDeviceIcon = (device) => {
-    const d = (device || '').toLowerCase();
-    if (d.includes('mobile') || d.includes('android')) return <FaMobileAlt className="text-xl" />;
-    if (d.includes('tablet') || d.includes('ipad')) return <FaTabletAlt className="text-xl" />;
-    return <FaDesktop className="text-xl" />;
+    if (device.includes('Mobile') || device.includes('Android')) {
+      return '📱';
+    } else if (device.includes('iPhone') || device.includes('iPad')) {
+      return '📱';
+    } else if (device.includes('Windows')) {
+      return '💻';
+    } else if (device.includes('Mac')) {
+      return '💻';
+    } else if (device.includes('Linux')) {
+      return '🖥️';
+    } else {
+      return '💻';
+    }
   };
 
   const getRoleBadgeColor = (role) => {
@@ -278,388 +282,404 @@ const SessionManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
-      {/* Background Animations */}
-      <style>
-        {`
-            @keyframes blob {
-                0% { transform: translate(0px, 0px) scale(1); }
-                33% { transform: translate(30px, -50px) scale(1.1); }
-                66% { transform: translate(-20px, 20px) scale(0.9); }
-                100% { transform: translate(0px, 0px) scale(1); }
-            }
-            @keyframes fadeIn {
-                from { opacity: 0; transform: translateY(10px); }
-                to { opacity: 1; transform: translateY(0); }
-            }
-            .animate-blob { animation: blob 7s infinite; }
-            .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
-            .animate-fade-in-delay { animation: fadeIn 0.6s ease-out 0.2s forwards; opacity: 0; }
-        `}
-      </style>
-
-      {/* Abstract Background Elements */}
-      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
-        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
-        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "2s" }}></div>
-        <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "4s" }}></div>
-      </div>
-
-      <div className="max-w-7xl mx-auto space-y-6 relative z-10 animate-fade-in">
+    <div className="min-h-screen bg-gray-50 py-8">
+      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
         {/* Header */}
-        {/* Header Section */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8 mb-8 animate-fade-in relative overflow-hidden group hover:shadow-2xl transition-shadow duration-300">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-purple-50 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
-
-          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
+          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
             <div className="flex-1">
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
-                Session Management
-              </h1>
-              <p className="text-gray-600 text-lg">
+              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Session Management</h1>
+              <p className="text-gray-600 mt-1 text-sm sm:text-base">
                 Monitor and manage user sessions across the platform
               </p>
             </div>
-
-            <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex rounded-lg shadow-sm bg-gray-50 p-1 border border-gray-200">
+            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
+              <div className="flex space-x-2">
                 <button
                   onClick={() => { setLoading(true); fetchSessions(); }}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm transition-all focus:outline-none"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   title="Refresh sessions"
                 >
-                  <FaSync className={`mr-2 ${loading ? 'animate-spin text-blue-600' : 'text-gray-500'}`} />
-                  Refresh
+                  <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 10-3.879 6.804" />
+                  </svg>
+                  <span className="hidden sm:inline">Refresh</span>
                 </button>
-                <div className="w-px bg-gray-200 my-1 mx-1"></div>
                 <button
                   onClick={toggleAutoRefresh}
-                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-all focus:outline-none ${autoRefresh ? 'bg-green-100 text-green-700 shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
+                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border ${autoRefresh ? 'border-green-300 text-green-700' : 'border-gray-300 text-gray-700'} shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50`}
                   title="Auto refresh every 30s"
                 >
-                  <span className={`mr-2 h-2 w-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
-                  {autoRefresh ? 'Auto: On' : 'Auto: Off'}
+                  <svg className={`h-4 w-4 sm:mr-2 ${autoRefresh ? 'text-green-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
+                  </svg>
+                  <span className="hidden sm:inline">{autoRefresh ? 'Auto: On' : 'Auto: Off'}</span>
                 </button>
               </div>
-
-              <div className="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
-                <span className="text-sm font-medium text-blue-700">Total Active</span>
-                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
-                  {totalSessions}
-                </span>
+              <div className="text-center sm:text-right">
+                <p className="text-sm text-gray-500">Total Active Sessions</p>
+                <p className="text-xl sm:text-2xl font-bold text-blue-600">{totalSessions}</p>
                 {lastUpdated && (
-                  <span className="text-xs text-blue-400 hidden sm:inline border-l border-blue-200 pl-3">
-                    {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </span>
+                  <p className="text-xs text-gray-400 mt-1">Updated {lastUpdated.toLocaleTimeString()}</p>
                 )}
               </div>
-              {showFilters && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
-                  {/* Role Filter */}
-                  <div>
-                    <label htmlFor="role-filter" className="block text-sm font-medium text-gray-700">
-                      Role
-                    </label>
-                    <select
-                      id="role-filter"
-                      value={filterRole}
-                      onChange={(e) => setFilterRole(e.target.value)}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                      <option value="all">All Roles</option>
-                      <option value="user">Users</option>
-                      <option value="admin">Admins</option>
-                      <option value="rootadmin">Root Admins</option>
-                    </select>
-                  </div>
+            </div>
+          </div>
+        </div>
 
-                  {/* Device Filter */}
-                  <div>
-                    <label htmlFor="device-filter" className="block text-sm font-medium text-gray-700">
-                      Device Type
-                    </label>
-                    <select
-                      id="device-filter"
-                      value={filterDevice}
-                      onChange={(e) => setFilterDevice(e.target.value)}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                      <option value="all">All Devices</option>
-                      <option value="mobile">Mobile</option>
-                      <option value="desktop">Desktop</option>
-                      <option value="tablet">Tablet</option>
-                    </select>
-                  </div>
-
-                  {/* Location Filter */}
-                  <div>
-                    <label htmlFor="location-filter" className="block text-sm font-medium text-gray-700">
-                      Location
-                    </label>
-                    <input
-                      type="text"
-                      id="location-filter"
-                      value={filterLocation === 'all' ? '' : filterLocation}
-                      onChange={(e) => setFilterLocation(e.target.value || 'all')}
-                      placeholder="Enter location..."
-                      className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    />
-                  </div>
-
-                  {/* Date Range Filter */}
-                  <div>
-                    <label htmlFor="date-filter" className="block text-sm font-medium text-gray-700">
-                      Last Active
-                    </label>
-                    <select
-                      id="date-filter"
-                      value={filterDateRange}
-                      onChange={(e) => setFilterDateRange(e.target.value)}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                    >
-                      <option value="all">All Time</option>
-                      <option value="1h">Last Hour</option>
-                      <option value="24h">Last 24 Hours</option>
-                      <option value="7d">Last 7 Days</option>
-                      <option value="30d">Last 30 Days</option>
-                    </select>
-                  </div>
-                </div>
+        {/* Search and Filters */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+          {/* Search Bar */}
+          <div className="mb-4">
+            <div className="relative">
+              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                {isSearching ? (
+                  <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
+                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                  </svg>
+                ) : (
+                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                  </svg>
+                )}
+              </div>
+              <input
+                type="text"
+                placeholder="Search by username, email, device, IP, or location..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+              />
+              {searchQuery && (
+                <button
+                  onClick={() => setSearchQuery('')}
+                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                >
+                  <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  </svg>
+                </button>
               )}
             </div>
+          </div>
 
-            {/* Sessions Table */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-delay-2">
-              <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-                <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <FaNetworkWired className="text-blue-500" /> Active Sessions List
-                </h2>
+          {/* Filter Toggle */}
+          <div className="flex items-center justify-between mb-4">
+            <button
+              onClick={() => setShowFilters(!showFilters)}
+              className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${hasActiveFilters
+                  ? 'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100'
+                  : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                }`}
+            >
+              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
+              </svg>
+              {showFilters ? 'Hide Filters' : 'Show Filters'}
+              {hasActiveFilters && (
+                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                  {getActiveFiltersCount()}
+                </span>
+              )}
+            </button>
+            <div className="flex items-center space-x-4">
+              {hasActiveFilters && (
+                <button
+                  onClick={resetFilters}
+                  className="text-sm text-red-600 hover:text-red-700 font-medium"
+                >
+                  Clear All Filters
+                </button>
+              )}
+              <div className="text-sm text-gray-500">
+                Page {currentPage} • {sessions.length} sessions shown
+                {totalSessions > 0 && ` of ${totalSessions} total`}
+              </div>
+            </div>
+          </div>
+
+          {/* Advanced Filters */}
+          {showFilters && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 pt-4 border-t border-gray-200">
+              {/* Role Filter */}
+              <div>
+                <label htmlFor="role-filter" className="block text-sm font-medium text-gray-700">
+                  Role
+                </label>
+                <select
+                  id="role-filter"
+                  value={filterRole}
+                  onChange={(e) => setFilterRole(e.target.value)}
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                  <option value="all">All Roles</option>
+                  <option value="user">Users</option>
+                  <option value="admin">Admins</option>
+                  <option value="rootadmin">Root Admins</option>
+                </select>
               </div>
 
-              {sessions.length === 0 ? (
-                <div className="px-6 py-12 text-center">
-                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                  </svg>
-                  <h3 className="mt-2 text-sm font-medium text-gray-900">No active sessions</h3>
-                  <p className="mt-1 text-sm text-gray-500">No sessions found for the selected filters.</p>
-                </div>
-              ) : (
-                <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
-                      <tr>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          User
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Device
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          IP Address
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Location
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Last Active
-                        </th>
-                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                          Actions
-                        </th>
-                      </tr>
-                    </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
-                      {sessions.map((session) => (
-                        <tr key={session.sessionId} className="hover:bg-gray-50">
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <div className="flex-shrink-0 h-10 w-10">
-                                <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
-                                  <span className="text-sm font-medium text-gray-700">
-                                    {session.username.charAt(0).toUpperCase()}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="ml-4">
-                                <div className="text-sm font-medium text-gray-900">
-                                  {session.username}
-                                </div>
-                                <div className="text-sm text-gray-500">
-                                  {session.email}
-                                </div>
-                                <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(session.role)}`}>
-                                  {session.role}
-                                </span>
-                              </div>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap">
-                            <div className="flex items-center">
-                              <span className="text-lg mr-2">{getDeviceIcon(session.device)}</span>
-                              <span className="text-sm text-gray-900">{session.isCurrent ? `${session.device} (This Device)` : session.device}</span>
-                            </div>
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {session.ip}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                            {session.location}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
-                            {formatDate(session.lastActive)}
-                          </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
-                            <div className="flex space-x-2">
-                              <button
-                                onClick={() => openForceLogoutModal(session)}
-                                disabled={revokingSession === session.sessionId}
-                                className="text-red-600 hover:text-red-900 disabled:opacity-50"
-                              >
-                                {revokingSession === session.sessionId ? 'Logging out...' : 'Force Logout'}
-                              </button>
-                              <button
-                                onClick={() => forceLogoutAllUserSessions(session.userId, 'Admin action')}
-                                className="text-orange-600 hover:text-orange-900"
-                              >
-                                Logout All
-                              </button>
-                            </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
-              )}
-            </div>
+              {/* Device Filter */}
+              <div>
+                <label htmlFor="device-filter" className="block text-sm font-medium text-gray-700">
+                  Device Type
+                </label>
+                <select
+                  id="device-filter"
+                  value={filterDevice}
+                  onChange={(e) => setFilterDevice(e.target.value)}
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                  <option value="all">All Devices</option>
+                  <option value="mobile">Mobile</option>
+                  <option value="desktop">Desktop</option>
+                  <option value="tablet">Tablet</option>
+                </select>
+              </div>
 
-            {/* Pagination */}
-            {totalSessions > 20 && (
-              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow-sm">
-                <div className="flex-1 flex justify-between sm:hidden">
+              {/* Location Filter */}
+              <div>
+                <label htmlFor="location-filter" className="block text-sm font-medium text-gray-700">
+                  Location
+                </label>
+                <input
+                  type="text"
+                  id="location-filter"
+                  value={filterLocation === 'all' ? '' : filterLocation}
+                  onChange={(e) => setFilterLocation(e.target.value || 'all')}
+                  placeholder="Enter location..."
+                  className="mt-1 block w-full px-3 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                />
+              </div>
+
+              {/* Date Range Filter */}
+              <div>
+                <label htmlFor="date-filter" className="block text-sm font-medium text-gray-700">
+                  Last Active
+                </label>
+                <select
+                  id="date-filter"
+                  value={filterDateRange}
+                  onChange={(e) => setFilterDateRange(e.target.value)}
+                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                >
+                  <option value="all">All Time</option>
+                  <option value="1h">Last Hour</option>
+                  <option value="24h">Last 24 Hours</option>
+                  <option value="7d">Last 7 Days</option>
+                  <option value="30d">Last 30 Days</option>
+                </select>
+              </div>
+            </div>
+          )}
+        </div>
+
+        {/* Sessions Table */}
+        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+          <div className="px-6 py-4 border-b border-gray-200">
+            <h2 className="text-lg font-medium text-gray-900">Active Sessions</h2>
+          </div>
+
+          {sessions.length === 0 ? (
+            <div className="px-6 py-12 text-center">
+              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+              </svg>
+              <h3 className="mt-2 text-sm font-medium text-gray-900">No active sessions</h3>
+              <p className="mt-1 text-sm text-gray-500">No sessions found for the selected filters.</p>
+            </div>
+          ) : (
+            <div className="overflow-x-auto">
+              <table className="min-w-full divide-y divide-gray-200">
+                <thead className="bg-gray-50">
+                  <tr>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      User
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Device
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      IP Address
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Location
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Last Active
+                    </th>
+                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                      Actions
+                    </th>
+                  </tr>
+                </thead>
+                <tbody className="bg-white divide-y divide-gray-200">
+                  {sessions.map((session) => (
+                    <tr key={session.sessionId} className="hover:bg-gray-50">
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <div className="flex-shrink-0 h-10 w-10">
+                            <div className="h-10 w-10 rounded-full bg-gray-300 flex items-center justify-center">
+                              <span className="text-sm font-medium text-gray-700">
+                                {session.username.charAt(0).toUpperCase()}
+                              </span>
+                            </div>
+                          </div>
+                          <div className="ml-4">
+                            <div className="text-sm font-medium text-gray-900">
+                              {session.username}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {session.email}
+                            </div>
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(session.role)}`}>
+                              {session.role}
+                            </span>
+                          </div>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap">
+                        <div className="flex items-center">
+                          <span className="text-lg mr-2">{getDeviceIcon(session.device)}</span>
+                          <span className="text-sm text-gray-900">{session.isCurrent ? `${session.device} (This Device)` : session.device}</span>
+                        </div>
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {session.ip}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                        {session.location}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                        {formatDate(session.lastActive)}
+                      </td>
+                      <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
+                        <div className="flex space-x-2">
+                          <button
+                            onClick={() => openForceLogoutModal(session)}
+                            disabled={revokingSession === session.sessionId}
+                            className="text-red-600 hover:text-red-900 disabled:opacity-50"
+                          >
+                            {revokingSession === session.sessionId ? 'Logging out...' : 'Force Logout'}
+                          </button>
+                          <button
+                            onClick={() => forceLogoutAllUserSessions(session.userId, 'Admin action')}
+                            className="text-orange-600 hover:text-orange-900"
+                          >
+                            Logout All
+                          </button>
+                        </div>
+                      </td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </div>
+
+        {/* Pagination */}
+        {totalSessions > 20 && (
+          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow-sm">
+            <div className="flex-1 flex justify-between sm:hidden">
+              <button
+                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                disabled={currentPage === 1}
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              >
+                Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(currentPage + 1)}
+                disabled={sessions.length < 20}
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+              >
+                Next
+              </button>
+            </div>
+            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+              <div>
+                <p className="text-sm text-gray-700">
+                  Showing page <span className="font-medium">{currentPage}</span> of{' '}
+                  <span className="font-medium">{Math.ceil(totalSessions / 20)}</span>
+                </p>
+              </div>
+              <div>
+                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(currentPage + 1)}
                     disabled={sessions.length < 20}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
                   >
                     Next
                   </button>
-                </div>
-                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-sm text-gray-700">
-                      Showing page <span className="font-medium">{currentPage}</span> of{' '}
-                      <span className="font-medium">{Math.ceil(totalSessions / 20)}</span>
-                    </p>
-                  </div>
-                  <div>
-                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
-                      <button
-                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                        disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        Previous
-                      </button>
-                      <button
-                        onClick={() => setCurrentPage(currentPage + 1)}
-                        disabled={sessions.length < 20}
-                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
-                      >
-                        Next
-                      </button>
-                    </nav>
-                  </div>
-                </div>
-              </div>
-            )}
-          </div>
-
-          {/* Force Logout Modal */}
-          {showForceLogoutModal && selectedSession && (
-            <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-              <div className="relative mx-auto bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in">
-                <div className="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-4 border-b border-red-100 flex items-center gap-3">
-                  <div className="bg-white p-2 rounded-full shadow-sm text-red-500">
-                    <FaExclamationTriangle />
-                  </div>
-                  <h3 className="text-lg font-bold text-red-900">Force Logout Session</h3>
-                </div>
-
-                <div className="p-6">
-                  <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
-                    <div className="space-y-3">
-                      <div className="flex items-center gap-3">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
-                          {selectedSession.username.charAt(0).toUpperCase()}
-                        </div>
-                        <div>
-                          <p className="text-sm font-bold text-gray-900">{selectedSession.username}</p>
-                          <p className="text-xs text-gray-500">{selectedSession.email}</p>
-                        </div>
-                      </div>
-                      <div className="h-px bg-gray-200 mx-1"></div>
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-xs text-gray-400 block mb-1">Device</span>
-                          <span className="font-medium text-gray-700 flex items-center gap-1">
-                            {getDeviceIcon(selectedSession.device)} {selectedSession.device}
-                          </span>
-                        </div>
-                        <div>
-                          <span className="text-xs text-gray-400 block mb-1">IP Address</span>
-                          <span className="font-medium text-gray-700 font-mono">{selectedSession.ip}</span>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div className="mb-6">
-                    <label htmlFor="reason" className="block text-sm font-medium text-gray-700 mb-2">
-                      Logout Reason <span className="text-gray-400 font-normal">(optional)</span>
-                    </label>
-                    <input
-                      type="text"
-                      id="reason"
-                      value={forceLogoutReason}
-                      onChange={(e) => setForceLogoutReason(e.target.value)}
-                      className="block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-sm"
-                      placeholder="e.g. Suspicious activity detected"
-                    />
-                  </div>
-
-                  <div className="flex justify-end gap-3 pt-2">
-                    <button
-                      onClick={() => {
-                        setShowForceLogoutModal(false);
-                        setSelectedSession(null);
-                        setForceLogoutReason('');
-                      }}
-                      className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
-                    >
-                      Cancel
-                    </button>
-                    <button
-                      onClick={() => forceLogoutSession(selectedSession.sessionId, selectedSession.userId, forceLogoutReason)}
-                      className="px-5 py-2.5 text-sm font-bold text-white bg-red-600 border border-transparent rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all flex items-center gap-2"
-                    >
-                      <FaSignOutAlt /> Force Logout
-                    </button>
-                  </div>
-                </div>
+                </nav>
               </div>
             </div>
-          )}
-        </div>
+          </div>
+        )}
       </div>
+
+      {/* Force Logout Modal */}
+      {showForceLogoutModal && selectedSession && (
+        <div className="fixed inset-0 bg-gray-600 bg-opacity-50 overflow-y-auto h-full w-full z-50">
+          <div className="relative top-20 mx-auto p-5 border w-96 shadow-lg rounded-md bg-white">
+            <div className="mt-3">
+              <h3 className="text-lg font-medium text-gray-900 mb-4">Force Logout Session</h3>
+              <div className="mb-4">
+                <p className="text-sm text-gray-600 mb-2">
+                  User: <strong>{selectedSession.username}</strong> ({selectedSession.email})
+                </p>
+                <p className="text-sm text-gray-600 mb-2">
+                  Device: {selectedSession.device}
+                </p>
+                <p className="text-sm text-gray-600 mb-4">
+                  IP: {selectedSession.ip}
+                </p>
+              </div>
+              <div className="mb-4">
+                <label htmlFor="reason" className="block text-sm font-medium text-gray-700">
+                  Reason (optional)
+                </label>
+                <input
+                  type="text"
+                  id="reason"
+                  value={forceLogoutReason}
+                  onChange={(e) => setForceLogoutReason(e.target.value)}
+                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  placeholder="Enter reason for force logout"
+                />
+              </div>
+              <div className="flex justify-end space-x-3">
+                <button
+                  onClick={() => {
+                    setShowForceLogoutModal(false);
+                    setSelectedSession(null);
+                    setForceLogoutReason('');
+                  }}
+                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 border border-gray-300 rounded-md hover:bg-gray-200"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => forceLogoutSession(selectedSession.sessionId, selectedSession.userId, forceLogoutReason)}
+                  className="px-4 py-2 text-sm font-medium text-white bg-red-600 border border-transparent rounded-md hover:bg-red-700"
+                >
+                  Force Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };
