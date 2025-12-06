@@ -446,10 +446,13 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
             <p className="text-gray-500 text-lg">Join thousands of users finding their perfect homes</p>
           </div>
 
-          <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 border border-white/20">
-            <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
+            {/* Decorative background element for card */}
+            <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+
+            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
               <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
                   Full Name <span className="text-red-500">*</span>
                 </label>
                 <FormField
@@ -459,14 +462,14 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   placeholder="Enter your full name"
                   onChange={handleChange}
                   disabled={authInProgress === 'google'}
-                  startIcon={<User className="w-5 h-5" />}
-                  inputClassName={`${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
+                  startIcon={<User className="w-5 h-5 text-gray-400" />}
+                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
                   required
                 />
               </div>
 
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
                   Email Address <span className="text-red-500">*</span>
                   {emailVerified && (
                     <span className="ml-2 text-green-600">
@@ -483,14 +486,14 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   onChange={handleChange}
                   readOnly={((emailVerified || otpSent) && !emailEditMode) || otpLoading}
                   disabled={authInProgress === 'google' || ((emailVerified || otpSent) && !emailEditMode) || otpLoading}
-                  startIcon={<Mail className="w-5 h-5" />}
+                  startIcon={<Mail className="w-5 h-5 text-gray-400" />}
                   endAdornment={
                     !emailVerified && !otpSent ? (
                       <button
                         type="button"
                         onClick={handleSendOTP}
                         disabled={otpLoading || !canResend || !formData.email}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed"
+                        className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                       >
                         {otpLoading ? "Sending..." : "Send OTP"}
                       </button>
@@ -519,7 +522,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       )
                     )
                   }
-                  inputClassName={`${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
+                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
                   required
                 />
                 {fieldErrors.email && (
@@ -558,7 +561,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
               {/* OTP Verification Field */}
               {otpSent && !emailVerified && (
                 <div>
-                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
                     Enter OTP
                   </label>
                   <div className="flex flex-row gap-2">
@@ -581,7 +584,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                           }
                         }
                       }}
-                      className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                      className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
                         }`}
                       maxLength="6"
                     />
@@ -589,7 +592,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       type="button"
                       onClick={handleVerifyOTP}
                       disabled={verifyLoading || otp.length !== 6}
-                      className="px-3 py-2 sm:px-4 sm:py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base whitespace-nowrap"
+                      className="px-3 py-2 sm:px-4 sm:py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base whitespace-nowrap shadow-sm"
                     >
                       {verifyLoading ? "Verifying..." : "Verify"}
                     </button>
@@ -637,7 +640,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
               )}
 
               <div>
-                <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
                   Mobile Number <span className="text-red-500">*</span>
                 </label>
                 <FormField
@@ -653,8 +656,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   inputMode="numeric"
                   pattern="[0-9]{10}"
                   maxLength="10"
-                  startIcon={<Phone className="w-5 h-5" />}
-                  inputClassName={`${fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
+                  startIcon={<Phone className="w-5 h-5 text-gray-400" />}
+                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
                   disabled={authInProgress === 'google'}
                   required
                 />
@@ -669,13 +672,13 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
 
               <SelectField
-                label={<>I want to <span className="text-red-500">*</span></>}
+                label={<span className="ml-1">I want to <span className="text-red-500">*</span></span>}
                 id="role"
                 value={formData.role}
                 onChange={handleChange}
                 disabled={authInProgress === 'google'}
                 required
-                selectClassName="focus:ring-green-500 focus:border-green-500 hover:border-green-500"
+                selectClassName="transition-all duration-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 hover:border-green-500"
                 options={[
                   { value: "", label: "Select your role" },
                   { value: "user", label: "Buy/Sell Properties" },
@@ -685,7 +688,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
               {/* Password Field */}
               <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
                   Password <span className="text-red-500">*</span>
                 </label>
                 <FormField
@@ -695,17 +698,17 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   placeholder="Create a strong password"
                   onChange={handleChange}
                   disabled={authInProgress === 'google'}
-                  startIcon={<Lock className="w-5 h-5" />}
+                  startIcon={<Lock className="w-5 h-5 text-gray-400" />}
                   endAdornment={
                     <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
                       {showPassword ? (
-                        <FaEyeSlash className="text-gray-600" />
+                        <FaEyeSlash className="text-gray-400 hover:text-gray-600 transition-colors" />
                       ) : (
-                        <FaEye className="text-gray-600" />
+                        <FaEye className="text-gray-400 hover:text-gray-600 transition-colors" />
                       )}
                     </div>
                   }
-                  inputClassName={`pr-12 border border-gray-300 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
+                  inputClassName={`pr-12 border border-gray-300 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
                   required
                 />
               </div>
@@ -724,10 +727,10 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   <div className="w-full bg-gray-200 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
-                          passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
-                            passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
-                              passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
-                                'bg-green-500 w-full'
+                        passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
+                          passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
+                            passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
+                              'bg-green-500 w-full'
                         }`}
                     ></div>
                   </div>
@@ -757,7 +760,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
               {/* Confirm Password */}
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
                   Confirm Password <span className="text-red-500">*</span>
                 </label>
                 <FormField
@@ -767,17 +770,17 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   placeholder="Confirm your password"
                   onChange={handleChange}
                   disabled={authInProgress === 'google'}
-                  startIcon={<Lock className="w-5 h-5" />}
+                  startIcon={<Lock className="w-5 h-5 text-gray-400" />}
                   endAdornment={
                     <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowCPassword(!showCPassword)}>
                       {showCPassword ? (
-                        <FaEyeSlash className="text-gray-600" />
+                        <FaEyeSlash className="text-gray-400 hover:text-gray-600 transition-colors" />
                       ) : (
-                        <FaEye className="text-gray-600" />
+                        <FaEye className="text-gray-400 hover:text-gray-600 transition-colors" />
                       )}
                     </div>
                   }
-                  inputClassName={`pr-12 border border-gray-300 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
+                  inputClassName={`pr-12 border border-gray-300 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
                   required
                 />
               </div>
@@ -864,8 +867,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                 <Link
                   to="/sign-in"
                   className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpLoading || verifyLoading)
-                      ? 'opacity-50 cursor-not-allowed pointer-events-none'
-                      : ''
+                    ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                    : ''
                     }`}
                 >
                   Sign In
