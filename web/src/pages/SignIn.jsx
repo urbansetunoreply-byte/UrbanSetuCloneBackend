@@ -704,7 +704,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             }}
                             className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "otp" ? "text-gray-900" : "text-gray-500 hover:text-gray-700"} disabled:opacity-50`}
                         >
-                            OTP Login
+                            OTP
                         </button>
                     </div>
 
@@ -1018,7 +1018,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
                     <div className="mt-8 text-center">
                         <p className="text-xs text-gray-400">
-                            By signing in, you agree to our <a href="#" className="hover:text-gray-600 transition-colors underline">Terms of Service</a> and <a href="#" className="hover:text-gray-600 transition-colors underline">Privacy Policy</a>.
+                            By signing in, you agree to our <a href="/terms" className="hover:text-gray-600 transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-gray-600 transition-colors underline">Privacy Policy</a>.
                         </p>
                     </div>
                 </div>
