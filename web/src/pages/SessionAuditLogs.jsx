@@ -6,12 +6,12 @@ import { usePageTitle } from '../hooks/usePageTitle';
 const SessionAuditLogs = () => {
   // Set page title
   usePageTitle("Session Audit Logs - Security History");
-  
+
   const { currentUser } = useSelector((state) => state.user);
-  
+
   // Tab state
   const [activeTab, setActiveTab] = useState('audit'); // 'audit' or 'visitors'
-  
+
   // Audit logs state
   const [logs, setLogs] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -34,7 +34,7 @@ const SessionAuditLogs = () => {
   const [isSearching, setIsSearching] = useState(false);
   const [showAuditStats, setShowAuditStats] = useState(false);
   const [showVisitorStatsToggle, setShowVisitorStatsToggle] = useState(false);
-  
+
   // Visitors state
   const [visitors, setVisitors] = useState([]);
   const [allVisitors, setAllVisitors] = useState([]);
@@ -152,18 +152,18 @@ const SessionAuditLogs = () => {
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     if (searchQuery) {
       setIsSearching(true);
     }
-    
+
     const timeout = setTimeout(() => {
       setCurrentPage(1); // Reset to first page when searching
       fetchLogs().finally(() => setIsSearching(false));
     }, 300); // 300ms debounce
-    
+
     setSearchTimeout(timeout);
-    
+
     return () => {
       if (timeout) clearTimeout(timeout);
     };
@@ -199,9 +199,9 @@ const SessionAuditLogs = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         setLogs(data.logs);
         setTotalLogs(data.total);
@@ -226,13 +226,13 @@ const SessionAuditLogs = () => {
           'Content-Type': 'application/json',
         }
       });
-      
+
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         setVisitorStats(data.stats);
       }
@@ -262,13 +262,13 @@ const SessionAuditLogs = () => {
           'Content-Type': 'application/json',
         }
       });
-      
+
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         setAllVisitors(data.visitors || []);
         setTotalVisitors(data.total);
@@ -298,7 +298,7 @@ const SessionAuditLogs = () => {
     const itemsPerPage = 10;
     const totalPages = Math.ceil(allVisitors.length / itemsPerPage);
     setVisitorsTotalPages(totalPages);
-    
+
     const startIndex = (visitorsPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPageVisitors = allVisitors.slice(startIndex, endIndex);
@@ -406,8 +406,34 @@ const SessionAuditLogs = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Background Animations */}
+      <style>
+        {`
+            @keyframes blob {
+                0% { transform: translate(0px, 0px) scale(1); }
+                33% { transform: translate(30px, -50px) scale(1.1); }
+                66% { transform: translate(-20px, 20px) scale(0.9); }
+                100% { transform: translate(0px, 0px) scale(1); }
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-blob { animation: blob 7s infinite; }
+            .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+            .animate-fade-in-delay { animation: fadeIn 0.6s ease-out 0.2s forwards; opacity: 0; }
+        `}
+      </style>
+
+      {/* Abstract Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "2s" }}></div>
+        <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "4s" }}></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto space-y-6 relative z-10 animate-fade-in">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -420,13 +446,13 @@ const SessionAuditLogs = () => {
             <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
               <div className="flex space-x-2">
                 <button
-                  onClick={() => { 
+                  onClick={() => {
                     if (activeTab === 'audit') {
                       setLoading(true);
                     } else {
                       setVisitorsLoading(true);
                     }
-                    refreshCurrentTab(); 
+                    refreshCurrentTab();
                   }}
                   className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
                   title={activeTab === 'audit' ? 'Refresh logs' : 'Refresh visitors'}
@@ -451,18 +477,18 @@ const SessionAuditLogs = () => {
                         device: l.device || '',
                         suspicious: l.isSuspicious ? 'yes' : 'no'
                       }));
-                      const header = ['timestamp','user','email','role','action','ip','location','device','suspicious'];
-                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h]||'').replaceAll('"','""'))).map(s=>`"${s}"`).join(','))].join('\n');
+                      const header = ['timestamp', 'user', 'email', 'role', 'action', 'ip', 'location', 'device', 'suspicious'];
+                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
                       const blob = new Blob([csv], { type: 'text/csv' });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
-                      a.href = url; a.download = `session-logs-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+                      a.href = url; a.download = `session-logs-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
                       URL.revokeObjectURL(url);
                     }}
                     className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50"
                     title="Export logs as CSV"
                   >
-                    <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>
+                    <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
                     <span className="hidden sm:inline">Export</span>
                   </button>
                 )}
@@ -481,18 +507,18 @@ const SessionAuditLogs = () => {
                         marketing: v.cookiePreferences?.marketing ? 'yes' : 'no',
                         functional: v.cookiePreferences?.functional ? 'yes' : 'no'
                       }));
-                      const header = ['timestamp','ip','location','browser','browserVersion','os','deviceType','analytics','marketing','functional'];
-                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h]||'').replaceAll('"','""'))).map(s=>`"${s}"`).join(','))].join('\n');
+                      const header = ['timestamp', 'ip', 'location', 'browser', 'browserVersion', 'os', 'deviceType', 'analytics', 'marketing', 'functional'];
+                      const csv = [header.join(','), ...rows.map(r => header.map(h => (String(r[h] || '').replaceAll('"', '""'))).map(s => `"${s}"`).join(','))].join('\n');
                       const blob = new Blob([csv], { type: 'text/csv' });
                       const url = URL.createObjectURL(blob);
                       const a = document.createElement('a');
-                      a.href = url; a.download = `visitors-${new Date().toISOString().slice(0,10)}.csv`; a.click();
+                      a.href = url; a.download = `visitors-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
                       URL.revokeObjectURL(url);
                     }}
                     className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 text-gray-700 shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50"
                     title="Export visitors as CSV"
                   >
-                    <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4"/></svg>
+                    <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 16v2a2 2 0 002 2h12a2 2 0 002-2v-2M7 10l5 5m0 0l5-5m-5 5V4" /></svg>
                     <span className="hidden sm:inline">Export</span>
                   </button>
                 )}
@@ -560,11 +586,10 @@ const SessionAuditLogs = () => {
           <div className="flex gap-2">
             <button
               onClick={() => setActiveTab('audit')}
-              className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                activeTab === 'audit'
+              className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${activeTab === 'audit'
                   ? 'bg-blue-600 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               <div className="flex items-center justify-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -580,11 +605,10 @@ const SessionAuditLogs = () => {
             </button>
             <button
               onClick={() => setActiveTab('visitors')}
-              className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${
-                activeTab === 'visitors'
+              className={`flex-1 px-4 py-3 rounded-lg font-medium transition-all duration-200 ${activeTab === 'visitors'
                   ? 'bg-purple-600 text-white shadow-md'
                   : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+                }`}
             >
               <div className="flex items-center justify-center gap-2">
                 <svg className="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -604,426 +628,425 @@ const SessionAuditLogs = () => {
         {/* Audit Logs Tab Content */}
         {activeTab === 'audit' && (
           <>
-        {/* Stats Toggle and Search/Filters */}
-        <div className="mb-4">
-          <button onClick={() => setShowAuditStats(!showAuditStats)} className={`px-3 py-2 rounded-md text-sm ${showAuditStats ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
-            Toggle Stats
-          </button>
-        </div>
-        {showAuditStats && (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <p className="text-sm text-gray-600">Logins</p>
-              <p className="text-2xl font-bold text-green-600">{logs.filter(l => l.action === 'login').length}</p>
+            {/* Stats Toggle and Search/Filters */}
+            <div className="mb-4">
+              <button onClick={() => setShowAuditStats(!showAuditStats)} className={`px-3 py-2 rounded-md text-sm ${showAuditStats ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                Toggle Stats
+              </button>
             </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <p className="text-sm text-gray-600">Suspicious</p>
-              <p className="text-2xl font-bold text-red-600">{logs.filter(l => l.isSuspicious).length}</p>
-            </div>
-            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
-              <p className="text-sm text-gray-600">Admins</p>
-              <p className="text-2xl font-bold text-purple-600">{logs.filter(l => l.role === 'admin' || l.role === 'rootadmin').length}</p>
-            </div>
-          </div>
-        )}
-        {/* Search and Filters */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
-          {/* Search Bar */}
-          <div className="mb-4">
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                {isSearching ? (
-                  <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
-                    <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
-                    <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                  </svg>
-                ) : (
-                  <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-                  </svg>
-                )}
+            {showAuditStats && (
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                  <p className="text-sm text-gray-600">Logins</p>
+                  <p className="text-2xl font-bold text-green-600">{logs.filter(l => l.action === 'login').length}</p>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                  <p className="text-sm text-gray-600">Suspicious</p>
+                  <p className="text-2xl font-bold text-red-600">{logs.filter(l => l.isSuspicious).length}</p>
+                </div>
+                <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4">
+                  <p className="text-sm text-gray-600">Admins</p>
+                  <p className="text-2xl font-bold text-purple-600">{logs.filter(l => l.role === 'admin' || l.role === 'rootadmin').length}</p>
+                </div>
               </div>
-              <input
-                type="text"
-                placeholder="Search by username, email, device, IP, location, or details..."
-                value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              />
-              {searchQuery && (
+            )}
+            {/* Search and Filters */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 mb-6">
+              {/* Search Bar */}
+              <div className="mb-4">
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    {isSearching ? (
+                      <svg className="animate-spin h-5 w-5 text-blue-500" fill="none" viewBox="0 0 24 24">
+                        <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4"></circle>
+                        <path className="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
+                      </svg>
+                    ) : (
+                      <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                      </svg>
+                    )}
+                  </div>
+                  <input
+                    type="text"
+                    placeholder="Search by username, email, device, IP, location, or details..."
+                    value={searchQuery}
+                    onChange={(e) => setSearchQuery(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-2 border border-gray-300 rounded-md leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-1 focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                  />
+                  {searchQuery && (
+                    <button
+                      onClick={() => setSearchQuery('')}
+                      className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                    >
+                      <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              </div>
+
+              {/* Filter Toggle */}
+              <div className="flex items-center justify-between mb-4">
                 <button
-                  onClick={() => setSearchQuery('')}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center"
+                  onClick={() => setShowFilters(!showFilters)}
+                  className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${hasActiveFilters
+                      ? 'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100'
+                      : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
+                    }`}
                 >
-                  <svg className="h-4 w-4 text-gray-400 hover:text-gray-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
+                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
                   </svg>
+                  {showFilters ? 'Hide Filters' : 'Show Filters'}
+                  {hasActiveFilters && (
+                    <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                      {getActiveFiltersCount()}
+                    </span>
+                  )}
                 </button>
-              )}
-            </div>
-          </div>
-
-          {/* Filter Toggle */}
-          <div className="flex items-center justify-between mb-4">
-            <button
-              onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                hasActiveFilters 
-                  ? 'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100' 
-                  : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
-              }`}
-            >
-              <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
-              </svg>
-              {showFilters ? 'Hide Filters' : 'Show Filters'}
-              {hasActiveFilters && (
-                <span className="ml-2 inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
-                  {getActiveFiltersCount()}
-                </span>
-              )}
-            </button>
-            <div className="flex items-center space-x-4">
-              {hasActiveFilters && (
-                <button
-                  onClick={resetFilters}
-                  className="text-sm text-red-600 hover:text-red-700 font-medium"
-                >
-                  Clear All Filters
-                </button>
-              )}
-              <div className="text-sm text-gray-500">
-                Page {currentPage} • {logs.length} logs shown
-                {totalLogs > 0 && ` of ${totalLogs} total`}
-              </div>
-            </div>
-          </div>
-
-          {/* Advanced Filters */}
-          {showFilters && (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-200">
-              {/* Action Filter */}
-              <div>
-                <label htmlFor="action-filter" className="block text-sm font-medium text-gray-700">
-                  Action
-                </label>
-                <select
-                  id="action-filter"
-                  value={filters.action}
-                  onChange={(e) => setFilters({ ...filters, action: e.target.value })}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                >
-                  <option value="">All Actions</option>
-                  <option value="login">Login</option>
-                  <option value="logout">Logout</option>
-                  <option value="suspicious_login">Suspicious Login</option>
-                  <option value="forced_logout">Forced Logout</option>
-                  <option value="session_expired">Session Expired</option>
-                  <option value="session_cleaned">Session Cleaned</option>
-                </select>
+                <div className="flex items-center space-x-4">
+                  {hasActiveFilters && (
+                    <button
+                      onClick={resetFilters}
+                      className="text-sm text-red-600 hover:text-red-700 font-medium"
+                    >
+                      Clear All Filters
+                    </button>
+                  )}
+                  <div className="text-sm text-gray-500">
+                    Page {currentPage} • {logs.length} logs shown
+                    {totalLogs > 0 && ` of ${totalLogs} total`}
+                  </div>
+                </div>
               </div>
 
-              {/* Role Filter */}
-              <div>
-                <label htmlFor="role-filter" className="block text-sm font-medium text-gray-700">
-                  Role
-                </label>
-                <select
-                  id="role-filter"
-                  value={filterRole}
-                  onChange={(e) => setFilterRole(e.target.value)}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                >
-                  <option value="all">All Roles</option>
-                  <option value="user">Users</option>
-                  <option value="admin">Admins</option>
-                  <option value="rootadmin">Root Admins</option>
-                </select>
-              </div>
-
-              {/* Suspicious Activity Filter */}
-              <div>
-                <label htmlFor="suspicious-filter" className="block text-sm font-medium text-gray-700">
-                  Suspicious Activity
-                </label>
-                <select
-                  id="suspicious-filter"
-                  value={filters.isSuspicious}
-                  onChange={(e) => setFilters({ ...filters, isSuspicious: e.target.value })}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                >
-                  <option value="">All</option>
-                  <option value="true">Suspicious Only</option>
-                  <option value="false">Normal Only</option>
-                </select>
-              </div>
-
-              {/* Date Range Filter */}
-              <div>
-                <label htmlFor="date-filter" className="block text-sm font-medium text-gray-700">
-                  Date Range
-                </label>
-                <select
-                  id="date-filter"
-                  value={filterDateRange}
-                  onChange={(e) => setFilterDateRange(e.target.value)}
-                  className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
-                >
-                  <option value="all">All Time</option>
-                  <option value="1h">Last Hour</option>
-                  <option value="24h">Last 24 Hours</option>
-                  <option value="7d">Last 7 Days</option>
-                  <option value="30d">Last 30 Days</option>
-                </select>
-              </div>
-
-              {/* User ID Filter */}
-              <div>
-                <label htmlFor="user-filter" className="block text-sm font-medium text-gray-700">
-                  User ID
-                </label>
-                <input
-                  type="text"
-                  id="user-filter"
-                  value={filters.userId}
-                  onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
-                  className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                  placeholder="Enter user ID"
-                />
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Audit Logs Table */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <h2 className="text-lg font-medium text-gray-900">Audit Logs</h2>
-          </div>
-
-          {logs.length === 0 ? (
-            <div className="px-6 py-12 text-center">
-              <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
-              </svg>
-              <h3 className="mt-2 text-sm font-medium text-gray-900">No audit logs found</h3>
-              <p className="mt-1 text-sm text-gray-500">No logs found for the selected filters.</p>
-            </div>
-          ) : (
-            <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
-                  <tr>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Timestamp
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      User
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+              {/* Advanced Filters */}
+              {showFilters && (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-200">
+                  {/* Action Filter */}
+                  <div>
+                    <label htmlFor="action-filter" className="block text-sm font-medium text-gray-700">
                       Action
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Browser & Device
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      IP & Location
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Details
-                    </th>
-                    <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
-                      Status
-                    </th>
-                  </tr>
-                </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
-                  {logs.map((log) => (
-                    <tr key={log._id} className="hover:bg-gray-50">
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        {formatDate(log.timestamp)}
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center">
-                          <div className="flex-shrink-0 h-8 w-8">
-                            <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
-                              <span className="text-xs font-medium text-gray-700">
-                                {log.userId?.username?.charAt(0).toUpperCase() || '?'}
-                              </span>
-                            </div>
-                          </div>
-                          <div className="ml-3">
-                            <div className="text-sm font-medium text-gray-900">
-                              {log.userId?.username || 'Unknown User'}
-                            </div>
-                            <div className="text-sm text-gray-500">
-                              {log.userId?.email || 'N/A'}
-                            </div>
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(log.role)}`}>
-                              {log.role}
-                            </span>
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getActionBadgeColor(log.action)}`}>
-                          {log.action.replace('_', ' ').toUpperCase()}
-                        </span>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="max-w-xs">
-                          <div className="font-medium text-gray-900 break-words">
-                            {log.device || 'Unknown Device'}
-                          </div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
-                        <div>
-                          <div className="font-medium">{log.ip}</div>
-                          <div className="text-gray-500 text-xs">{log.location || 'Unknown'}</div>
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 text-sm text-gray-900">
-                        <div className="max-w-xs">
-                          <div className="truncate">{log.additionalInfo || 'N/A'}</div>
-                          {log.suspiciousReason && (
-                            <div className="text-red-600 text-xs mt-1">
-                              Reason: {log.suspiciousReason}
-                            </div>
-                          )}
-                          {log.performedBy && (
-                            <div className="text-gray-500 text-xs mt-1">
-                              Performed by: {log.performedBy.username}
-                            </div>
-                          )}
-                        </div>
-                      </td>
-                      <td className="px-6 py-4 whitespace-nowrap">
-                        {log.isSuspicious ? (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
-                            <svg className="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
-                              <circle cx="4" cy="4" r="3" />
-                            </svg>
-                            Suspicious
-                          </span>
-                        ) : (
-                          <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
-                            <svg className="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
-                              <circle cx="4" cy="4" r="3" />
-                            </svg>
-                            Normal
-                          </span>
-                        )}
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
-            </div>
-          )}
-        </div>
+                    </label>
+                    <select
+                      id="action-filter"
+                      value={filters.action}
+                      onChange={(e) => setFilters({ ...filters, action: e.target.value })}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                    >
+                      <option value="">All Actions</option>
+                      <option value="login">Login</option>
+                      <option value="logout">Logout</option>
+                      <option value="suspicious_login">Suspicious Login</option>
+                      <option value="forced_logout">Forced Logout</option>
+                      <option value="session_expired">Session Expired</option>
+                      <option value="session_cleaned">Session Cleaned</option>
+                    </select>
+                  </div>
 
-        {/* Pagination */}
-        {totalLogs > 50 && (
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow-sm">
-            <div className="flex-1 flex justify-between sm:hidden">
-              <button
-                onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
-                disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Previous
-              </button>
-              <button
-                onClick={() => setCurrentPage(currentPage + 1)}
-                disabled={logs.length < 50}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
-              >
-                Next
-              </button>
+                  {/* Role Filter */}
+                  <div>
+                    <label htmlFor="role-filter" className="block text-sm font-medium text-gray-700">
+                      Role
+                    </label>
+                    <select
+                      id="role-filter"
+                      value={filterRole}
+                      onChange={(e) => setFilterRole(e.target.value)}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                    >
+                      <option value="all">All Roles</option>
+                      <option value="user">Users</option>
+                      <option value="admin">Admins</option>
+                      <option value="rootadmin">Root Admins</option>
+                    </select>
+                  </div>
+
+                  {/* Suspicious Activity Filter */}
+                  <div>
+                    <label htmlFor="suspicious-filter" className="block text-sm font-medium text-gray-700">
+                      Suspicious Activity
+                    </label>
+                    <select
+                      id="suspicious-filter"
+                      value={filters.isSuspicious}
+                      onChange={(e) => setFilters({ ...filters, isSuspicious: e.target.value })}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                    >
+                      <option value="">All</option>
+                      <option value="true">Suspicious Only</option>
+                      <option value="false">Normal Only</option>
+                    </select>
+                  </div>
+
+                  {/* Date Range Filter */}
+                  <div>
+                    <label htmlFor="date-filter" className="block text-sm font-medium text-gray-700">
+                      Date Range
+                    </label>
+                    <select
+                      id="date-filter"
+                      value={filterDateRange}
+                      onChange={(e) => setFilterDateRange(e.target.value)}
+                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                    >
+                      <option value="all">All Time</option>
+                      <option value="1h">Last Hour</option>
+                      <option value="24h">Last 24 Hours</option>
+                      <option value="7d">Last 7 Days</option>
+                      <option value="30d">Last 30 Days</option>
+                    </select>
+                  </div>
+
+                  {/* User ID Filter */}
+                  <div>
+                    <label htmlFor="user-filter" className="block text-sm font-medium text-gray-700">
+                      User ID
+                    </label>
+                    <input
+                      type="text"
+                      id="user-filter"
+                      value={filters.userId}
+                      onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="Enter user ID"
+                    />
+                  </div>
+                </div>
+              )}
             </div>
-            <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
-              <div>
-                <p className="text-sm text-gray-700">
-                  Showing page <span className="font-medium">{currentPage}</span> of{' '}
-                  <span className="font-medium">{Math.ceil(totalLogs / 50)}</span>
-                </p>
+
+            {/* Audit Logs Table */}
+            <div className="bg-white rounded-lg shadow-sm border border-gray-200 overflow-hidden">
+              <div className="px-6 py-4 border-b border-gray-200">
+                <h2 className="text-lg font-medium text-gray-900">Audit Logs</h2>
               </div>
-              <div>
-                <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+
+              {logs.length === 0 ? (
+                <div className="px-6 py-12 text-center">
+                  <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                  </svg>
+                  <h3 className="mt-2 text-sm font-medium text-gray-900">No audit logs found</h3>
+                  <p className="mt-1 text-sm text-gray-500">No logs found for the selected filters.</p>
+                </div>
+              ) : (
+                <div className="overflow-x-auto">
+                  <table className="min-w-full divide-y divide-gray-200">
+                    <thead className="bg-gray-50">
+                      <tr>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Timestamp
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          User
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Action
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Browser & Device
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          IP & Location
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Details
+                        </th>
+                        <th className="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">
+                          Status
+                        </th>
+                      </tr>
+                    </thead>
+                    <tbody className="bg-white divide-y divide-gray-200">
+                      {logs.map((log) => (
+                        <tr key={log._id} className="hover:bg-gray-50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            {formatDate(log.timestamp)}
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <div className="flex items-center">
+                              <div className="flex-shrink-0 h-8 w-8">
+                                <div className="h-8 w-8 rounded-full bg-gray-300 flex items-center justify-center">
+                                  <span className="text-xs font-medium text-gray-700">
+                                    {log.userId?.username?.charAt(0).toUpperCase() || '?'}
+                                  </span>
+                                </div>
+                              </div>
+                              <div className="ml-3">
+                                <div className="text-sm font-medium text-gray-900">
+                                  {log.userId?.username || 'Unknown User'}
+                                </div>
+                                <div className="text-sm text-gray-500">
+                                  {log.userId?.email || 'N/A'}
+                                </div>
+                                <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-xs font-medium ${getRoleBadgeColor(log.role)}`}>
+                                  {log.role}
+                                </span>
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${getActionBadgeColor(log.action)}`}>
+                              {log.action.replace('_', ' ').toUpperCase()}
+                            </span>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            <div className="max-w-xs">
+                              <div className="font-medium text-gray-900 break-words">
+                                {log.device || 'Unknown Device'}
+                              </div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-900">
+                            <div>
+                              <div className="font-medium">{log.ip}</div>
+                              <div className="text-gray-500 text-xs">{log.location || 'Unknown'}</div>
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 text-sm text-gray-900">
+                            <div className="max-w-xs">
+                              <div className="truncate">{log.additionalInfo || 'N/A'}</div>
+                              {log.suspiciousReason && (
+                                <div className="text-red-600 text-xs mt-1">
+                                  Reason: {log.suspiciousReason}
+                                </div>
+                              )}
+                              {log.performedBy && (
+                                <div className="text-gray-500 text-xs mt-1">
+                                  Performed by: {log.performedBy.username}
+                                </div>
+                              )}
+                            </div>
+                          </td>
+                          <td className="px-6 py-4 whitespace-nowrap">
+                            {log.isSuspicious ? (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                                <svg className="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                  <circle cx="4" cy="4" r="3" />
+                                </svg>
+                                Suspicious
+                              </span>
+                            ) : (
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                                <svg className="w-2 h-2 mr-1" fill="currentColor" viewBox="0 0 8 8">
+                                  <circle cx="4" cy="4" r="3" />
+                                </svg>
+                                Normal
+                              </span>
+                            )}
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              )}
+            </div>
+
+            {/* Pagination */}
+            {totalLogs > 50 && (
+              <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow-sm">
+                <div className="flex-1 flex justify-between sm:hidden">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(currentPage + 1)}
                     disabled={logs.length < 50}
-                    className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
                   >
                     Next
                   </button>
-                </nav>
+                </div>
+                <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
+                  <div>
+                    <p className="text-sm text-gray-700">
+                      Showing page <span className="font-medium">{currentPage}</span> of{' '}
+                      <span className="font-medium">{Math.ceil(totalLogs / 50)}</span>
+                    </p>
+                  </div>
+                  <div>
+                    <nav className="relative z-0 inline-flex rounded-md shadow-sm -space-x-px">
+                      <button
+                        onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
+                        disabled={currentPage === 1}
+                        className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Previous
+                      </button>
+                      <button
+                        onClick={() => setCurrentPage(currentPage + 1)}
+                        disabled={logs.length < 50}
+                        className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                      >
+                        Next
+                      </button>
+                    </nav>
+                  </div>
+                </div>
               </div>
-            </div>
-          </div>
-        )}
+            )}
 
-        {/* Security Summary */}
-        <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
-                </svg>
+            {/* Security Summary */}
+            <div className="mt-6 grid grid-cols-1 md:grid-cols-3 gap-6">
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-8 w-8 text-green-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Normal Activities</p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {logs.filter(log => !log.isSuspicious).length}
+                    </p>
+                  </div>
+                </div>
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Normal Activities</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {logs.filter(log => !log.isSuspicious).length}
-                </p>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Suspicious Activities</p>
+                    <p className="text-2xl font-semibold text-gray-900">
+                      {logs.filter(log => log.isSuspicious).length}
+                    </p>
+                  </div>
+                </div>
+              </div>
+              <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+                <div className="flex items-center">
+                  <div className="flex-shrink-0">
+                    <svg className="h-8 w-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
+                    </svg>
+                  </div>
+                  <div className="ml-4">
+                    <p className="text-sm font-medium text-gray-500">Total Logs</p>
+                    <p className="text-2xl font-semibold text-gray-900">{totalLogs}</p>
+                  </div>
+                </div>
               </div>
             </div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-8 w-8 text-red-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4c-.77-.833-1.964-.833-2.732 0L3.732 16.5c-.77.833.192 2.5 1.732 2.5z" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Suspicious Activities</p>
-                <p className="text-2xl font-semibold text-gray-900">
-                  {logs.filter(log => log.isSuspicious).length}
-                </p>
-              </div>
-            </div>
-          </div>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="flex items-center">
-              <div className="flex-shrink-0">
-                <svg className="h-8 w-8 text-blue-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" />
-                </svg>
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-500">Total Logs</p>
-                <p className="text-2xl font-semibold text-gray-900">{totalLogs}</p>
-              </div>
-            </div>
-          </div>
-        </div>
-        </>
+          </>
         )}
 
         {/* Visitors Tab Content */}
         {activeTab === 'visitors' && (
           <>
-        {/* Visitor Statistics Cards + Quick Range */}
+            {/* Visitor Statistics Cards + Quick Range */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-6">
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
                 <div className="flex items-center">
@@ -1037,7 +1060,7 @@ const SessionAuditLogs = () => {
                     <p className="text-2xl font-semibold text-gray-900">{visitorStats.todayCount}</p>
                   </div>
                 </div>
-              
+
               </div>
 
               <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
@@ -1201,11 +1224,10 @@ const SessionAuditLogs = () => {
               <div className="flex items-center justify-between mb-4">
                 <button
                   onClick={() => setShowVisitorFilters(!showVisitorFilters)}
-                  className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${
-                    getVisitorActiveFiltersCount() > 0
+                  className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-purple-500 ${getVisitorActiveFiltersCount() > 0
                       ? 'border-purple-300 text-purple-700 bg-purple-50 hover:bg-purple-100'
                       : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
-                  }`}
+                    }`}
                 >
                   <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                     <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
@@ -1228,91 +1250,91 @@ const SessionAuditLogs = () => {
               </div>
 
               {showVisitorFilters && (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
-                {/* Quick Date Range */}
-                <div className="col-span-1 lg:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
-                  <div className="flex flex-wrap gap-2">
-                    {[
-                      { key: 'today', label: 'Today' },
-                      { key: 'yesterday', label: 'Yesterday' },
-                      { key: '7days', label: 'Last 7 days' },
-                      { key: '30days', label: 'Last 30 days' },
-                      { key: 'all', label: 'All' }
-                    ].map(opt => (
-                      <button
-                        key={opt.key}
-                        onClick={() => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, dateRange: opt.key })); }}
-                        className={`px-3 py-1.5 rounded-md text-sm border ${visitorFilters.dateRange === opt.key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
-                      >
-                        {opt.label}
-                      </button>
-                    ))}
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-4">
+                  {/* Quick Date Range */}
+                  <div className="col-span-1 lg:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Date Range</label>
+                    <div className="flex flex-wrap gap-2">
+                      {[
+                        { key: 'today', label: 'Today' },
+                        { key: 'yesterday', label: 'Yesterday' },
+                        { key: '7days', label: 'Last 7 days' },
+                        { key: '30days', label: 'Last 30 days' },
+                        { key: 'all', label: 'All' }
+                      ].map(opt => (
+                        <button
+                          key={opt.key}
+                          onClick={() => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, dateRange: opt.key })); }}
+                          className={`px-3 py-1.5 rounded-md text-sm border ${visitorFilters.dateRange === opt.key ? 'bg-blue-600 text-white border-blue-600' : 'bg-white text-gray-700 border-gray-300 hover:bg-gray-50'}`}
+                        >
+                          {opt.label}
+                        </button>
+                      ))}
+                    </div>
                   </div>
-                </div>
 
-                {/* Consent Filters */}
-                {[
-                  { key: 'analytics', label: 'Analytics' },
-                  { key: 'marketing', label: 'Marketing' },
-                  { key: 'functional', label: 'Functional' }
-                ].map((c) => (
-                  <div key={c.key}>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">{c.label} Consent</label>
+                  {/* Consent Filters */}
+                  {[
+                    { key: 'analytics', label: 'Analytics' },
+                    { key: 'marketing', label: 'Marketing' },
+                    { key: 'functional', label: 'Functional' }
+                  ].map((c) => (
+                    <div key={c.key}>
+                      <label className="block text-sm font-medium text-gray-700 mb-1">{c.label} Consent</label>
+                      <select
+                        value={visitorFilters[c.key]}
+                        onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, [c.key]: e.target.value })); }}
+                        className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      >
+                        <option value="any">Any</option>
+                        <option value="true">Allowed</option>
+                        <option value="false">Disallowed</option>
+                      </select>
+                    </div>
+                  ))}
+
+                  {/* Device */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
                     <select
-                      value={visitorFilters[c.key]}
-                      onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, [c.key]: e.target.value })); }}
-                      className="mt-1 block w-full pl-3 pr-10 py-2 text-base border-gray-300 focus:outline-none focus:ring-blue-500 focus:border-blue-500 sm:text-sm rounded-md"
+                      value={visitorFilters.device}
+                      onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, device: e.target.value })); }}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
                     >
-                      <option value="any">Any</option>
-                      <option value="true">Allowed</option>
-                      <option value="false">Disallowed</option>
+                      <option value="all">All</option>
+                      {(visitorStats.deviceStats || []).map(d => (
+                        <option key={d.device} value={d.device}>{d.device} ({d.count})</option>
+                      ))}
                     </select>
                   </div>
-                ))}
 
-            {/* Device */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Device</label>
-              <select
-                value={visitorFilters.device}
-                onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, device: e.target.value })); }}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="all">All</option>
-                {(visitorStats.deviceStats || []).map(d => (
-                  <option key={d.device} value={d.device}>{d.device} ({d.count})</option>
-                ))}
-              </select>
-            </div>
+                  {/* Location */}
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                    <select
+                      value={visitorFilters.location}
+                      onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, location: e.target.value })); }}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                    >
+                      <option value="all">All</option>
+                      {(visitorStats.locationStats || []).map(l => (
+                        <option key={l.location} value={l.location}>{l.location} ({l.count})</option>
+                      ))}
+                    </select>
+                  </div>
 
-            {/* Location */}
-            <div>
-              <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
-              <select
-                value={visitorFilters.location}
-                onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, location: e.target.value })); }}
-                className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-              >
-                <option value="all">All</option>
-                {(visitorStats.locationStats || []).map(l => (
-                  <option key={l.location} value={l.location}>{l.location} ({l.count})</option>
-                ))}
-              </select>
-            </div>
-
-                {/* Search */}
-                <div className="col-span-1 lg:col-span-2">
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
-                  <input
-                    type="text"
-                    value={visitorFilters.search}
-                    onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, search: e.target.value })); }}
-                    className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
-                    placeholder="IP, device, location..."
-                  />
+                  {/* Search */}
+                  <div className="col-span-1 lg:col-span-2">
+                    <label className="block text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <input
+                      type="text"
+                      value={visitorFilters.search}
+                      onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, search: e.target.value })); }}
+                      className="mt-1 block w-full border-gray-300 rounded-md shadow-sm focus:ring-blue-500 focus:border-blue-500 sm:text-sm"
+                      placeholder="IP, device, location..."
+                    />
+                  </div>
                 </div>
-              </div>
               )}
             </div>
 
@@ -1385,11 +1407,10 @@ const SessionAuditLogs = () => {
                             {visitor.os || 'Unknown'}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${
-                              visitor.deviceType === 'Mobile' ? 'bg-blue-100 text-blue-800' :
-                              visitor.deviceType === 'Tablet' ? 'bg-purple-100 text-purple-800' :
-                              'bg-gray-100 text-gray-800'
-                            }`}>
+                            <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium ${visitor.deviceType === 'Mobile' ? 'bg-blue-100 text-blue-800' :
+                                visitor.deviceType === 'Tablet' ? 'bg-purple-100 text-purple-800' :
+                                  'bg-gray-100 text-gray-800'
+                              }`}>
                               {visitor.deviceType || 'Unknown'}
                             </span>
                           </td>
@@ -1416,13 +1437,13 @@ const SessionAuditLogs = () => {
                                   Functional
                                 </span>
                               )}
-                              {!visitor.cookiePreferences?.analytics && 
-                               !visitor.cookiePreferences?.marketing && 
-                               !visitor.cookiePreferences?.functional && (
-                                <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
-                                  Necessary Only
-                                </span>
-                              )}
+                              {!visitor.cookiePreferences?.analytics &&
+                                !visitor.cookiePreferences?.marketing &&
+                                !visitor.cookiePreferences?.functional && (
+                                  <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-gray-100 text-gray-800">
+                                    Necessary Only
+                                  </span>
+                                )}
                             </div>
                           </td>
                         </tr>

@@ -6,7 +6,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 const SessionManagement = () => {
   // Set page title
   usePageTitle("Session Management - User Sessions");
-  
+
   const { currentUser } = useSelector((state) => state.user);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -33,18 +33,18 @@ const SessionManagement = () => {
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     if (searchQuery) {
       setIsSearching(true);
     }
-    
+
     const timeout = setTimeout(() => {
       setCurrentPage(1); // Reset to first page when searching
       fetchSessions().finally(() => setIsSearching(false));
     }, 300); // 300ms debounce
-    
+
     setSearchTimeout(timeout);
-    
+
     return () => {
       if (timeout) clearTimeout(timeout);
     };
@@ -66,7 +66,7 @@ const SessionManagement = () => {
         socket.off('adminSessionsUpdated', handler);
         socket.off('sessionsUpdated', handler);
       };
-    } catch (_) {}
+    } catch (_) { }
   }, [filterRole, currentPage]);
 
   const fetchSessions = async () => {
@@ -92,9 +92,9 @@ const SessionManagement = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         setSessions(data.sessions);
         setTotalSessions(data.total);
@@ -132,24 +132,24 @@ const SessionManagement = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          userId, 
-          sessionId, 
-          reason: reason || 'Admin action' 
+        body: JSON.stringify({
+          userId,
+          sessionId,
+          reason: reason || 'Admin action'
         }),
       });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         toast.success('Session force logged out successfully');
         // If the admin is forcing logout of their own current session, ensure local logout
         const currentSessionId = document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1];
         if (currentSessionId && currentSessionId === sessionId) {
-          try { localStorage.removeItem('accessToken'); } catch (_) {}
+          try { localStorage.removeItem('accessToken'); } catch (_) { }
           document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
           document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
           document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
@@ -183,17 +183,17 @@ const SessionManagement = () => {
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ 
-          userId, 
-          reason: reason || 'Admin action' 
+        body: JSON.stringify({
+          userId,
+          reason: reason || 'Admin action'
         }),
       });
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         toast.success(data.message);
         fetchSessions(); // Refresh the list
@@ -282,8 +282,34 @@ const SessionManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+      {/* Background Animations */}
+      <style>
+        {`
+            @keyframes blob {
+                0% { transform: translate(0px, 0px) scale(1); }
+                33% { transform: translate(30px, -50px) scale(1.1); }
+                66% { transform: translate(-20px, 20px) scale(0.9); }
+                100% { transform: translate(0px, 0px) scale(1); }
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-blob { animation: blob 7s infinite; }
+            .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+            .animate-fade-in-delay { animation: fadeIn 0.6s ease-out 0.2s forwards; opacity: 0; }
+        `}
+      </style>
+
+      {/* Abstract Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "2s" }}></div>
+        <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "4s" }}></div>
+      </div>
+
+      <div className="max-w-7xl mx-auto space-y-6 relative z-10 animate-fade-in">
         {/* Header */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
           <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
@@ -368,11 +394,10 @@ const SessionManagement = () => {
           <div className="flex items-center justify-between mb-4">
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${
-                hasActiveFilters 
-                  ? 'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100' 
+              className={`inline-flex items-center px-3 py-2 border shadow-sm text-sm leading-4 font-medium rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${hasActiveFilters
+                  ? 'border-blue-300 text-blue-700 bg-blue-50 hover:bg-blue-100'
                   : 'border-gray-300 text-gray-700 bg-white hover:bg-gray-50'
-              }`}
+                }`}
             >
               <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                 <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.207A1 1 0 013 6.5V4z" />
