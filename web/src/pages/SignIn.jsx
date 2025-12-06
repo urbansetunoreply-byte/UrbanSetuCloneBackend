@@ -780,7 +780,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                         <div className="text-right mt-2">
                                             <Link
                                                 to={`/forgot-password?email=${encodeURIComponent(formData.email || '')}`}
-                                                className={`text-sm font-medium text-blue-600 hover:text-blue-700 transition-colors ${(authInProgress === 'google' || loading) ? 'opacity-50 pointer-events-none' : ''}`}
+                                                className={`text-sm font-medium text-blue-600 hover:text-blue-700 hover:underline transition-colors ${(authInProgress === 'google' || loading) ? 'opacity-50 pointer-events-none' : ''}`}
                                             >
                                                 Forgot Password?
                                             </Link>
