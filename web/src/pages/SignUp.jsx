@@ -18,7 +18,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function SignUp({ bootstrapped, sessionChecked }) {
   // Set page title
   usePageTitle("Sign Up - Join Our Community");
-  
+
   const [formData, setFormData] = useState({
     username: "",
     email: "",
@@ -61,11 +61,11 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   const [otpError, setOtpError] = useState("");
   const [emailEditMode, setEmailEditMode] = useState(false);
   const [otpCaptchaRequired, setOtpCaptchaRequired] = useState(false);
-  
+
   // Timer states for resend OTP
   const [resendTimer, setResendTimer] = useState(0);
   const [canResend, setCanResend] = useState(true);
-  
+
   // State to track which authentication method is in progress
   const [authInProgress, setAuthInProgress] = useState(null); // null, 'form', 'google'
 
@@ -191,7 +191,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-otp`, {
         method: "POST",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: formData.email,
           ...(recaptchaToken ? { recaptchaToken } : {})
         }),
@@ -203,7 +203,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
         setOtpSent(true);
         setSuccess("OTP sent successfully to your email");
         setTimeout(() => setSuccess(""), 3000);
-        
+
         // Start timer for resend
         setResendTimer(30); // 30 seconds
         setCanResend(false);
@@ -234,9 +234,9 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     try {
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: "POST",
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           email: formData.email,
-          otp: otp 
+          otp: otp
         }),
       });
 
@@ -358,68 +358,95 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     <AuthFormLayout
       leftSlot={(
         <>
-    
-      
-      {/* Left Side - Image and Quote */}
-      <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-blue-700 relative overflow-hidden">
-        <div className="absolute inset-0 bg-black opacity-20"></div>
-        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
-          <div className="text-center max-w-md">
-            <h1 className="text-4xl font-bold mb-6 animate-fade-in">
-              Join Our Community
-            </h1>
-            <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
-              "Every house has a story. Let's write yours together."
-            </p>
-            <div className="space-y-4 text-lg animate-fade-in-delay-2">
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
-                <span>Find Your Perfect Home</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '0.5s'}}></div>
-                <span>List Your Properties</span>
-              </div>
-              <div className="flex items-center justify-center space-x-3">
-                <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{animationDelay: '1s'}}></div>
-                <span>Connect with Buyers & Sellers</span>
+          <style>
+            {`
+                    @keyframes blob {
+                        0% { transform: translate(0px, 0px) scale(1); }
+                        33% { transform: translate(30px, -50px) scale(1.1); }
+                        66% { transform: translate(-20px, 20px) scale(0.9); }
+                        100% { transform: translate(0px, 0px) scale(1); }
+                    }
+                    @keyframes float {
+                        0%, 100% { transform: translateY(0); }
+                        50% { transform: translateY(-20px); }
+                    }
+                    @keyframes fadeIn {
+                        from { opacity: 0; transform: translateY(10px); }
+                        to { opacity: 1; transform: translateY(0); }
+                    }
+                    .animate-blob { animation: blob 7s infinite; }
+                    .animate-float { animation: float 6s ease-in-out infinite; }
+                    .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+                    .animate-fade-in-delay { animation: fadeIn 0.6s ease-out 0.3s forwards; opacity: 0; }
+                    .animate-fade-in-delay-2 { animation: fadeIn 0.6s ease-out 0.6s forwards; opacity: 0; }
+                    .delay-100 { animation-delay: 100ms; }
+                    .delay-200 { animation-delay: 200ms; }
+                `}
+          </style>
+
+
+          {/* Left Side - Image and Quote */}
+          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-emerald-600 via-teal-600 to-cyan-700 relative overflow-hidden">
+            <div className="absolute inset-0 bg-black opacity-20"></div>
+            <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
+              <div className="text-center max-w-md">
+                <h1 className="text-4xl font-bold mb-6 animate-fade-in">
+                  Join Our Community
+                </h1>
+                <p className="text-xl mb-8 leading-relaxed animate-fade-in-delay">
+                  "Every house has a story. Let's write yours together."
+                </p>
+                <div className="space-y-4 text-lg animate-fade-in-delay-2">
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                    <span>Find Your Perfect Home</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                    <span>List Your Properties</span>
+                  </div>
+                  <div className="flex items-center justify-center space-x-3">
+                    <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                    <span>Connect with Buyers & Sellers</span>
+                  </div>
+                </div>
               </div>
             </div>
+
+            {/* Floating Elements */}
+            <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
+            <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+            <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+
+            {/* House Silhouette */}
+            <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
+              <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1" />
+                <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2" />
+                <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3" />
+                <path d="M15 6L18 8V18H22V8L15 6Z" fill="white" fillOpacity="0.1" />
+                <path d="M17 12H20V18H17V12Z" fill="white" fillOpacity="0.2" />
+              </svg>
+            </div>
           </div>
-        </div>
-        
-        {/* Floating Elements */}
-        <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
-        <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '2s'}}></div>
-        <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{animationDelay: '1s'}}></div>
-        
-        {/* House Silhouette */}
-        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
-          <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
-            <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1"/>
-            <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2"/>
-            <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3"/>
-            <path d="M15 6L18 8V18H22V8L15 6Z" fill="white" fillOpacity="0.1"/>
-            <path d="M17 12H20V18H17V12Z" fill="white" fillOpacity="0.2"/>
-          </svg>
-        </div>
-      </div>
         </>
       )}
     >
 
       {/* Right Side - Sign Up Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-4 sm:p-8 bg-gray-50">
-        <div className="w-full max-w-md">
-          <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-              <UserPlus className="w-7 h-7 text-green-600" />
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 min-h-screen">
+        <div className="w-full max-w-[480px] animate-fade-in">
+          <div className="text-center mb-10">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-6 shadow-sm">
+              <UserPlus className="w-8 h-8" />
+            </div>
+            <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
               Create Account
             </h2>
-            <p className="text-gray-600 text-sm sm:text-base">Join thousands of users finding their perfect homes</p>
+            <p className="text-gray-500 text-lg">Join thousands of users finding their perfect homes</p>
           </div>
-          
-<div className="bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-4 sm:p-8 border border-gray-100">
+
+          <div className="bg-white/80 backdrop-blur-xl rounded-2xl shadow-[0_8px_30px_rgb(0,0,0,0.04)] p-8 border border-white/20">
             <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
               <div>
                 <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-2">
@@ -554,9 +581,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                           }
                         }
                       }}
-                      className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base ${
-                        verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
-                      }`}
+                      className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                        }`}
                       maxLength="6"
                     />
                     <button
@@ -693,20 +719,19 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       {getPasswordStrengthText(passwordStrength.level)}
                     </span>
                   </div>
-                  
+
                   {/* Strength Bar */}
                   <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div 
-                      className={`h-2 rounded-full transition-all duration-300 ${
-                        passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
-                        passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
-                        passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
-                        passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
-                        'bg-green-500 w-full'
-                      }`}
+                    <div
+                      className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
+                          passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
+                            passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
+                              passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
+                                'bg-green-500 w-full'
+                        }`}
                     ></div>
                   </div>
-                  
+
                   {/* Feedback */}
                   {passwordStrength.feedback.length > 0 && (
                     <div className={`p-3 rounded-lg ${getPasswordStrengthBgColor(passwordStrength.level)}`}>
@@ -721,7 +746,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                       </ul>
                     </div>
                   )}
-                  
+
                   {/* Security Tips */}
                   <div className="text-xs text-gray-500 space-y-1">
                     <p>💡 <strong>Tip:</strong> Use a unique password for this account</p>
@@ -836,13 +861,12 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
             <div className="mt-6 text-center">
               <p className="text-gray-600">
                 Already have an account?{" "}
-                <Link 
-                  to="/sign-in" 
-                  className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${
-                    (authInProgress !== null || loading || otpLoading || verifyLoading) 
-                      ? 'opacity-50 cursor-not-allowed pointer-events-none' 
+                <Link
+                  to="/sign-in"
+                  className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpLoading || verifyLoading)
+                      ? 'opacity-50 cursor-not-allowed pointer-events-none'
                       : ''
-                  }`}
+                    }`}
                 >
                   Sign In
                 </Link>
