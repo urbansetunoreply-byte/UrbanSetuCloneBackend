@@ -18,7 +18,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function PublicHome() {
   // Set page title
   usePageTitle("Find Your Dream Home - Smart Real Estate Platform");
-  
+
   const [offerListings, setOfferListings] = useState([]);
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);
@@ -98,7 +98,7 @@ export default function PublicHome() {
 
     window.addEventListener('mousemove', handleMouseMove);
     window.addEventListener('scroll', handleScroll);
-    
+
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
       window.removeEventListener('scroll', handleScroll);
@@ -158,13 +158,13 @@ export default function PublicHome() {
           fetch(`${API_BASE_URL}/api/user/count`),
           fetch(`${API_BASE_URL}/api/bookings/count`)
         ]);
-        
+
         const [propertiesData, usersData, transactionsData] = await Promise.all([
           propertiesRes.json(),
           usersRes.json(),
           transactionsRes.json()
         ]);
-        
+
         setStats({
           properties: Number(propertiesData.count) || 1250,
           users: Number(usersData.count) || 5000,
@@ -254,7 +254,7 @@ export default function PublicHome() {
   return (
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen">
       {/* Hero Section */}
-      <div 
+      <div
         className="relative text-center py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white overflow-hidden"
         data-section="hero"
         style={{
@@ -264,7 +264,7 @@ export default function PublicHome() {
       >
         {/* Animated Background Elements */}
         <div className="absolute inset-0 overflow-hidden">
-          <div 
+          <div
             className="absolute w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse"
             style={{
               left: `${mousePosition.x * 0.1}px`,
@@ -272,7 +272,7 @@ export default function PublicHome() {
               transform: 'translate(-50%, -50%)'
             }}
           />
-          <div 
+          <div
             className="absolute w-32 h-32 bg-yellow-300/20 rounded-full blur-2xl animate-bounce"
             style={{
               right: `${mousePosition.x * 0.05}px`,
@@ -290,15 +290,15 @@ export default function PublicHome() {
             Discover the best homes at unbeatable prices
           </p>
           <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
-            <Link 
-              to="/search" 
+            <Link
+              to="/search"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300"
             >
               <FaRocket className="text-lg sm:text-xl" />
               <span className="text-sm sm:text-base">Start Exploring</span>
             </Link>
-            <Link 
-              to="/about" 
+            <Link
+              to="/about"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300"
             >
               <FaInfoCircle className="text-lg sm:text-xl" />
@@ -344,7 +344,7 @@ export default function PublicHome() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">Why Choose UrbanSetu?</h2>
           <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Discover the features that make us the preferred choice for real estate</p>
         </div>
-        
+
         <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
@@ -353,7 +353,7 @@ export default function PublicHome() {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Smart Search</h3>
             <p className="text-gray-600 text-sm sm:text-base">AI-powered search with advanced filters to find your perfect property</p>
           </div>
-          
+
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaShieldAlt className="text-lg sm:text-2xl text-green-600" />
@@ -361,7 +361,7 @@ export default function PublicHome() {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Secure Transactions</h3>
             <p className="text-gray-600 text-sm sm:text-base">Bank-level security for all your real estate transactions</p>
           </div>
-          
+
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaAward className="text-lg sm:text-2xl text-purple-600" />
@@ -369,7 +369,7 @@ export default function PublicHome() {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Verified Properties</h3>
             <p className="text-gray-600 text-sm sm:text-base">All properties are verified and quality-checked by our experts</p>
           </div>
-          
+
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaRocket className="text-lg sm:text-2xl text-orange-600" />
@@ -377,7 +377,7 @@ export default function PublicHome() {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Fast Processing</h3>
             <p className="text-gray-600 text-sm sm:text-base">Quick approval and processing for all your real estate needs</p>
           </div>
-          
+
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaHeart className="text-lg sm:text-2xl text-teal-600" />
@@ -385,7 +385,7 @@ export default function PublicHome() {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">24/7 Support</h3>
             <p className="text-gray-600 text-sm sm:text-base">Round-the-clock customer support for all your queries</p>
           </div>
-          
+
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
             <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
               <FaGem className="text-lg sm:text-2xl text-pink-600" />
@@ -402,7 +402,7 @@ export default function PublicHome() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">What Our Users Say</h2>
           <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Real stories from satisfied customers</p>
         </div>
-        
+
         <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <div className="flex items-center mb-3 sm:mb-4">
@@ -421,7 +421,7 @@ export default function PublicHome() {
               ))}
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="flex items-center mb-3 sm:mb-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mr-3 sm:mr-4">
@@ -439,7 +439,7 @@ export default function PublicHome() {
               ))}
             </div>
           </div>
-          
+
           <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <div className="flex items-center mb-3 sm:mb-4">
               <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center mr-3 sm:mr-4">
@@ -462,9 +462,8 @@ export default function PublicHome() {
 
       {/* Enhanced Photo Slider Gallery */}
       {allSliderImages.length > 0 && (
-        <div className={`my-12 mx-auto max-w-6xl px-4 transition-all duration-1000 ease-out animate-slider-fade-in ${
-          isSliderVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
+        <div className={`my-12 mx-auto max-w-6xl px-4 transition-all duration-1000 ease-out animate-slider-fade-in ${isSliderVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
+          }`}>
           {/* Slider Header */}
           <div className="text-center mb-6 animate-slider-slide-up">
             <h2 className="text-3xl font-bold text-gray-800 mb-2">Featured Properties</h2>
@@ -484,8 +483,8 @@ export default function PublicHome() {
                   return `<span class="${className} w-3 h-3 bg-white/60 hover:bg-white transition-all duration-300"></span>`;
                 },
               }}
-              autoplay={{ 
-                delay: 4000, 
+              autoplay={{
+                delay: 4000,
                 disableOnInteraction: false,
                 pauseOnMouseEnter: true
               }}
@@ -505,9 +504,9 @@ export default function PublicHome() {
                     transform: 'translateZ(0)',
                     willChange: 'transform'
                   }}>
-                    <img 
-                      src={image.url} 
-                      className="w-full h-full object-cover gallery-image-crisp" 
+                    <img
+                      src={image.url}
+                      className="w-full h-full object-cover gallery-image-crisp"
                       alt={image.title}
                       loading="eager"
                       decoding="sync"
@@ -547,9 +546,9 @@ export default function PublicHome() {
 
             {/* Progress Bar */}
             <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
-              <div 
+              <div
                 className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 ease-out animate-progress-fill"
-                style={{ 
+                style={{
                   width: `${((currentSlideIndex + 1) / allSliderImages.length) * 100}%`,
                   '--progress-width': `${((currentSlideIndex + 1) / allSliderImages.length) * 100}%`
                 }}
@@ -562,15 +561,14 @@ export default function PublicHome() {
                 <button
                   key={idx}
                   onClick={() => goToSlide(idx)}
-                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-110 animate-thumbnail-bounce ${
-                    currentSlideIndex === idx 
-                      ? 'border-blue-500 ring-2 ring-blue-300' 
+                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-110 animate-thumbnail-bounce ${currentSlideIndex === idx
+                      ? 'border-blue-500 ring-2 ring-blue-300'
                       : 'border-gray-300 hover:border-gray-400'
-                  }`}
+                    }`}
                   style={{ animationDelay: `${idx * 0.1}s` }}
                 >
-                  <img 
-                    src={image.url} 
+                  <img
+                    src={image.url}
                     alt={`Thumbnail ${idx + 1}`}
                     className="w-full h-full object-cover"
                     loading="lazy"
@@ -642,7 +640,7 @@ export default function PublicHome() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">How It Works</h2>
           <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Simple steps to find your perfect property</p>
         </div>
-        
+
         <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 transition-all duration-1000 ${isHowItWorksVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
@@ -651,7 +649,7 @@ export default function PublicHome() {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">1. Search</h3>
             <p className="text-gray-600 text-sm sm:text-base">Use our smart filters to find properties that match your criteria</p>
           </div>
-          
+
           <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <FaHeart className="text-2xl sm:text-3xl text-green-600" />
@@ -659,7 +657,7 @@ export default function PublicHome() {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">2. Save</h3>
             <p className="text-gray-600 text-sm sm:text-base">Save your favorite properties and get notifications about price changes</p>
           </div>
-          
+
           <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <FaPhone className="text-2xl sm:text-3xl text-purple-600" />
@@ -667,7 +665,7 @@ export default function PublicHome() {
             <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">3. Connect</h3>
             <p className="text-gray-600 text-sm sm:text-base">Contact sellers directly through our secure messaging system</p>
           </div>
-          
+
           <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
             <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
               <FaHandshake className="text-2xl sm:text-3xl text-orange-600" />
@@ -684,7 +682,7 @@ export default function PublicHome() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">Multi-Platform Access</h2>
           <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Access UrbanSetu from any device, anywhere</p>
         </div>
-        
+
         <div className={`grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isPlatformVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
           <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
             <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
@@ -693,7 +691,7 @@ export default function PublicHome() {
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Desktop</h3>
             <p className="text-gray-600">Full-featured experience on your computer</p>
           </div>
-          
+
           <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
             <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <FaMobile className="text-3xl text-green-600" />
@@ -701,7 +699,7 @@ export default function PublicHome() {
             <h3 className="text-xl font-semibold text-gray-800 mb-2">Mobile</h3>
             <p className="text-gray-600">Optimized for smartphones and tablets</p>
           </div>
-          
+
           <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
             <div className="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
               <FaTablet className="text-3xl text-purple-600" />
@@ -718,15 +716,15 @@ export default function PublicHome() {
           <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 animate-pulse">Ready to Find Your Dream Home?</h2>
           <p className="text-lg sm:text-xl mb-8 animate-pulse" style={{ animationDelay: '0.2s' }}>Join thousands of satisfied customers who found their perfect property with UrbanSetu</p>
           <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link 
-              to="/search" 
+            <Link
+              to="/search"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-8 py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300"
             >
               <FaRocket className="text-xl" />
               <span>Start Searching Now</span>
             </Link>
-            <Link 
-              to="/sign-up" 
+            <Link
+              to="/sign-up"
               className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300"
             >
               <FaUsers className="text-xl" />
@@ -735,20 +733,20 @@ export default function PublicHome() {
           </div>
         </div>
       </div>
-      {/* 🔔 Ads Section */}
+      {/*🔔 Ads Section */}
       <div className="max-w-6xl mx-auto px-4 py-6">
         <p className="text-center text-xs text-gray-500 mb-2">🔔 Ads by Adsterra</p>
-        <AdsterraBanner />
+        {/*<AdsterraBanner />*/}
       </div>
 
       <div className="max-w-6xl mx-auto px-4 py-6">
         <p className="text-center text-xs text-gray-500 mb-2">🔔 Sponsored — Powered by Adsterra</p>
-        <AdHighperformanceBanner />
+        {/*<AdHighperformanceBanner />*/}
       </div>
 
       <ContactSupportWrapper />
       <GeminiAIWrapper />
-      
+
     </div>
   );
 } 
