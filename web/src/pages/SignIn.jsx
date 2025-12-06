@@ -641,46 +641,45 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             .animation-delay-4000 { animation-delay: 4s; }
                         `}
                     </style>
-                    <div className="hidden lg:flex lg:w-1/2 relative overflow-hidden bg-gray-900">
-                        {/* Dynamic Background with Gradients */}
-                        <div className="absolute inset-0 bg-gradient-to-br from-indigo-600 via-purple-700 to-blue-800 opacity-90"></div>
-
-                        {/* Animated Blobs */}
-                        <div className="absolute top-0 -left-4 w-72 h-72 bg-purple-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob"></div>
-                        <div className="absolute top-0 -right-4 w-72 h-72 bg-blue-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-2000"></div>
-                        <div className="absolute -bottom-8 left-20 w-72 h-72 bg-indigo-500 rounded-full mix-blend-multiply filter blur-xl opacity-70 animate-blob animation-delay-4000"></div>
-
-                        {/* Content Overlay */}
-                        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12 w-full h-full backdrop-blur-sm">
-                            <div className="text-center max-w-lg space-y-8">
-                                <h1 className="text-5xl font-extrabold tracking-tight mb-6 animate-fade-in drop-shadow-lg">
-                                    Welcome Back!
+                    <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-blue-600 to-purple-700 relative overflow-hidden">
+                        <div className="absolute inset-0 bg-black opacity-20"></div>
+                        <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
+                            <div className="text-center max-w-md">
+                                <h1 className="text-4xl font-bold mb-6 animate-fade-in">
+                                    Welcome Back
                                 </h1>
-                                <p className="text-xl text-blue-100 leading-relaxed animate-fade-in delay-100 font-light">
-                                    "Unlock the door to your perfect life. Your dream home is just a click away."
+                                <p className="text-xl mb-8 leading-relaxed animate-fade-in delay-100">
+                                    "Home is not a place, it's a feeling. Find your perfect sanctuary with us."
                                 </p>
-
-                                <div className="space-y-6 mt-12 animate-fade-in delay-200">
-                                    <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-xl backdrop-blur-md hover:bg-white/20 transition-all duration-300 transform hover:scale-105 border border-white/10">
-                                        <div className="p-2 bg-blue-500 rounded-lg shadow-lg">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"></path></svg>
-                                        </div>
-                                        <span className="font-medium text-lg">Curated Listings</span>
+                                <div className="space-y-4 text-lg animate-fade-in delay-200">
+                                    <div className="flex items-center justify-center space-x-3">
+                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse"></div>
+                                        <span>Discover Your Dream Home</span>
                                     </div>
-                                    <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-xl backdrop-blur-md hover:bg-white/20 transition-all duration-300 transform hover:scale-105 border border-white/10">
-                                        <div className="p-2 bg-purple-500 rounded-lg shadow-lg">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"></path></svg>
-                                        </div>
-                                        <span className="font-medium text-lg">Expert Agents</span>
+                                    <div className="flex items-center justify-center space-x-3">
+                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '0.5s' }}></div>
+                                        <span>Connect with Trusted Agents</span>
                                     </div>
-                                    <div className="flex items-center space-x-4 bg-white/10 p-4 rounded-xl backdrop-blur-md hover:bg-white/20 transition-all duration-300 transform hover:scale-105 border border-white/10">
-                                        <div className="p-2 bg-indigo-500 rounded-lg shadow-lg">
-                                            <svg className="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"></path></svg>
-                                        </div>
-                                        <span className="font-medium text-lg">Trusted & Secure</span>
+                                    <div className="flex items-center justify-center space-x-3">
+                                        <div className="w-2 h-2 bg-white rounded-full animate-pulse" style={{ animationDelay: '1s' }}></div>
+                                        <span>Secure & Reliable Platform</span>
                                     </div>
                                 </div>
                             </div>
+                        </div>
+
+                        {/* Floating Elements */}
+                        <div className="absolute top-20 left-20 w-16 h-16 bg-white bg-opacity-10 rounded-full animate-float"></div>
+                        <div className="absolute bottom-32 right-16 w-12 h-12 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '2s' }}></div>
+                        <div className="absolute top-1/2 right-24 w-8 h-8 bg-white bg-opacity-10 rounded-full animate-float" style={{ animationDelay: '1s' }}></div>
+
+                        {/* House Silhouette */}
+                        <div className="absolute bottom-0 left-0 right-0 h-32 bg-gradient-to-t from-black bg-opacity-20">
+                            <svg className="w-full h-full" viewBox="0 0 100 20" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M10 2L2 8V18H18V8L10 2Z" fill="white" fillOpacity="0.1" />
+                                <path d="M8 12H12V18H8V12Z" fill="white" fillOpacity="0.2" />
+                                <circle cx="10" cy="5" r="1" fill="white" fillOpacity="0.3" />
+                            </svg>
                         </div>
                     </div>
                 </>
