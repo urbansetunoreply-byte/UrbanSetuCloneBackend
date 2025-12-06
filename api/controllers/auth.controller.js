@@ -1222,11 +1222,13 @@ export const verifyLoginOTP = async (req, res, next) => {
             });
         }
 
-        // Check if user is approved
-        if (user.adminApprovalStatus !== 'approved') {
+        // Check if user is approved (only for Admins)
+        if (user.role === 'admin' && user.adminApprovalStatus !== 'approved') {
             return res.status(403).json({
                 success: false,
-                message: "Your account is pending approval. Please contact support."
+                message: user.adminApprovalStatus === 'rejected'
+                    ? "Your admin account request has been rejected. Please contact support for more information."
+                    : "Your admin account is pending approval. Please wait for an existing admin to approve your request."
             });
         }
 
