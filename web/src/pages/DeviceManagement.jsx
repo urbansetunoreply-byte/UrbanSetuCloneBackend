@@ -1,12 +1,20 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
+import {
+  FaMobileAlt, FaDesktop, FaLaptop, FaTabletAlt,
+  FaWindows, FaApple, FaLinux, FaAndroid,
+  FaGlobe, FaClock, FaCalendarAlt, FaShieldAlt,
+  FaSync, FaSignOutAlt, FaExclamationTriangle,
+  FaCheckCircle, FaLaptopCode
+} from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+
 const DeviceManagement = () => {
   // Set page title
   usePageTitle("Device Management - Security Settings");
-  
+
   const { currentUser } = useSelector((state) => state.user);
   const [sessions, setSessions] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -29,7 +37,7 @@ const DeviceManagement = () => {
       const { socket } = require('../utils/socket');
       socket.on('sessionsUpdated', handler);
       return () => socket.off('sessionsUpdated', handler);
-    } catch (_) {}
+    } catch (_) { }
   }, []);
 
   const fetchSessions = async () => {
@@ -45,9 +53,9 @@ const DeviceManagement = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         setSessions(data.sessions);
         setLastUpdated(new Date());
@@ -92,16 +100,16 @@ const DeviceManagement = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         toast.success('Session revoked successfully');
         // If the revoked session is current, trigger immediate logout via socket handler fallback
         const currentSessionId = document.cookie.split('; ').find(r => r.startsWith('session_id='))?.split('=')[1];
         if (currentSessionId && currentSessionId === sessionId) {
           // Clear local auth and redirect
-          try { localStorage.removeItem('accessToken'); } catch (_) {}
+          try { localStorage.removeItem('accessToken'); } catch (_) { }
           document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
           document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
           document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';
@@ -136,9 +144,9 @@ const DeviceManagement = () => {
       if (!res.ok) {
         throw new Error(`HTTP error! status: ${res.status}`);
       }
-      
+
       const data = await res.json();
-      
+
       if (data.success) {
         toast.success(data.message);
         // Stay on current device; just refresh sessions
@@ -153,28 +161,30 @@ const DeviceManagement = () => {
   };
 
   const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleString();
+    return new Date(dateString).toLocaleString('en-US', {
+      year: 'numeric',
+      month: 'short',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
   };
 
   const getDeviceIcon = (device) => {
-    if (device.includes('Mobile') || device.includes('Android')) {
-      return '📱';
-    } else if (device.includes('iPhone') || device.includes('iPad')) {
-      return '📱';
-    } else if (device.includes('Windows')) {
-      return '💻';
-    } else if (device.includes('Mac')) {
-      return '💻';
-    } else if (device.includes('Linux')) {
-      return '🖥️';
-    } else {
-      return '💻';
-    }
+    const d = (device || '').toLowerCase();
+    if (d.includes('android')) return <FaAndroid className="text-3xl text-green-500" />;
+    if (d.includes('iphone') || d.includes('ipad')) return <FaApple className="text-3xl text-gray-800" />;
+    if (d.includes('mac')) return <FaLaptopCode className="text-3xl text-gray-800" />;
+    if (d.includes('windows')) return <FaWindows className="text-3xl text-blue-500" />;
+    if (d.includes('linux')) return <FaLinux className="text-3xl text-yellow-600" />;
+    if (d.includes('mobile')) return <FaMobileAlt className="text-3xl text-blue-400" />;
+    if (d.includes('tablet')) return <FaTabletAlt className="text-3xl text-gray-600" />;
+    return <FaDesktop className="text-3xl text-gray-500" />;
   };
 
   const getSessionLimit = () => {
     if (!currentUser) return 5; // Default fallback
-    
+
     switch (currentUser.role) {
       case 'rootadmin':
         return 1;
@@ -188,134 +198,203 @@ const DeviceManagement = () => {
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+      <div className="min-h-screen bg-white flex items-center justify-center">
         <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading sessions...</p>
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-600 font-medium">Loading session data...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-        {/* Header */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-4 sm:p-6 mb-6">
-          <div className="flex flex-col space-y-4 sm:flex-row sm:items-center sm:justify-between sm:space-y-0">
+    <div className="min-h-screen bg-gray-50 py-12 relative overflow-hidden">
+      {/* Background Animations */}
+      <style>
+        {`
+            @keyframes blob {
+                0% { transform: translate(0px, 0px) scale(1); }
+                33% { transform: translate(30px, -50px) scale(1.1); }
+                66% { transform: translate(-20px, 20px) scale(0.9); }
+                100% { transform: translate(0px, 0px) scale(1); }
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(10px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            .animate-blob { animation: blob 7s infinite; }
+            .animate-fade-in { animation: fadeIn 0.6s ease-out forwards; }
+            .animate-fade-in-delay { animation: fadeIn 0.6s ease-out 0.2s forwards; opacity: 0; }
+            .animate-fade-in-delay-2 { animation: fadeIn 0.6s ease-out 0.4s forwards; opacity: 0; }
+        `}
+      </style>
+
+      {/* Abstract Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "2s" }}></div>
+        <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-400 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" style={{ animationDelay: "4s" }}></div>
+      </div>
+
+      <div className="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Header Section */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8 mb-8 animate-fade-in relative overflow-hidden group hover:shadow-2xl transition-shadow duration-300">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-purple-50 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
+
+          <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
             <div className="flex-1">
-              <h1 className="text-xl sm:text-2xl font-bold text-gray-900">Device Management</h1>
-              <p className="text-gray-600 mt-1 text-sm sm:text-base">
-                Manage your active login sessions and devices
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
+                Device Management
+              </h1>
+              <p className="text-gray-600 text-lg">
+                Monitor and manage your active sessions across all devices
               </p>
             </div>
-            <div className="flex flex-col space-y-3 sm:flex-row sm:items-center sm:space-y-0 sm:space-x-4">
-              <div className="flex space-x-2">
+
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex rounded-lg shadow-sm bg-gray-50 p-1 border border-gray-200">
                 <button
                   onClick={() => { setLoading(true); fetchSessions(); }}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm transition-all focus:outline-none"
                   title="Refresh sessions"
                 >
-                  <svg className="h-4 w-4 sm:mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v6h6M20 20v-6h-6M20 8a8 8 0 10-3.879 6.804" />
-                  </svg>
-                  <span className="hidden sm:inline">Refresh</span>
+                  <FaSync className={`mr-2 ${loading ? 'animate-spin text-blue-600' : 'text-gray-500'}`} />
+                  Refresh
                 </button>
+                <div className="w-px bg-gray-200 my-1 mx-1"></div>
                 <button
                   onClick={toggleAutoRefresh}
-                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-3 py-2 border ${autoRefresh ? 'border-green-300 text-green-700' : 'border-gray-300 text-gray-700'} shadow-sm text-sm leading-4 font-medium rounded-md bg-white hover:bg-gray-50`}
+                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-all focus:outline-none ${autoRefresh ? 'bg-green-100 text-green-700 shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
                   title="Auto refresh every 30s"
                 >
-                  <svg className={`h-4 w-4 sm:mr-2 ${autoRefresh ? 'text-green-600' : ''}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z" />
-                  </svg>
-                  <span className="hidden sm:inline">{autoRefresh ? 'Auto: On' : 'Auto: Off'}</span>
+                  <span className={`mr-2 h-2 w-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
+                  {autoRefresh ? 'Auto: On' : 'Auto: Off'}
                 </button>
               </div>
-              <div className="text-center sm:text-right">
-                <p className="text-sm text-gray-500">Active Sessions</p>
-                <p className="text-xl sm:text-2xl font-bold text-blue-600">{sessions.length}</p>
+
+              <div className="flex items-center gap-3 bg-blue-50 px-4 py-2 rounded-lg border border-blue-100">
+                <span className="text-sm font-medium text-blue-700">Active</span>
+                <span className="bg-blue-600 text-white text-xs font-bold px-2 py-0.5 rounded-full shadow-sm">
+                  {sessions.length}
+                </span>
                 {lastUpdated && (
-                  <p className="text-xs text-gray-400 mt-1">Updated {lastUpdated.toLocaleTimeString()}</p>
+                  <span className="text-xs text-blue-400 hidden sm:inline border-l border-blue-200 pl-3">
+                    {lastUpdated.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                  </span>
                 )}
               </div>
             </div>
           </div>
         </div>
 
-        {/* Session Limit Info */}
-        <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-6">
-          <div className="flex items-center">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-blue-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
-              </svg>
+        {/* Info Cards Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8 animate-fade-in-delay">
+          {/* Limit Card */}
+          <div className="lg:col-span-2 bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-100 rounded-2xl p-6 shadow-sm flex items-start gap-4">
+            <div className="bg-white p-3 rounded-full shadow-sm text-blue-500">
+              <FaShieldAlt className="text-xl" />
             </div>
-            <div className="ml-3">
-              <p className="text-sm text-blue-700">
-                You can have up to <strong>{getSessionLimit()} active session{getSessionLimit() !== 1 ? 's' : ''}</strong> at a time. 
-                If you exceed this limit, the oldest sessions will be automatically logged out.
+            <div>
+              <h3 className="font-semibold text-blue-900 mb-1">Session Limits</h3>
+              <p className="text-blue-700 text-sm leading-relaxed">
+                Your account allows up to <strong className="text-blue-800">{getSessionLimit()} active session{getSessionLimit() !== 1 ? 's' : ''}</strong>.
+                New logins beyond this limit will automatically sign out the oldest inactive session to maintain security.
               </p>
             </div>
+          </div>
+
+          {/* Security Status Card */}
+          <div className="bg-white border border-gray-100 rounded-2xl p-6 shadow-sm flex flex-col justify-center items-center text-center">
+            <div className="mb-3 p-3 bg-green-50 rounded-full text-green-600">
+              <FaCheckCircle className="text-2xl" />
+            </div>
+            <h3 className="font-semibold text-gray-900">Status: Secure</h3>
+            <p className="text-xs text-gray-500 mt-1">No suspicious activity detected</p>
           </div>
         </div>
 
         {/* Sessions List */}
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200">
-          <div className="px-6 py-4 border-b border-gray-200">
-            <div className="flex items-center justify-between">
-              <h2 className="text-lg font-medium text-gray-900">Active Sessions</h2>
-              {sessions.length > 1 && (
-                <button
-                  onClick={revokeAllSessions}
-                  className="inline-flex items-center px-3 py-2 border border-red-300 shadow-sm text-sm leading-4 font-medium rounded-md text-red-700 bg-white hover:bg-red-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500"
-                >
-                  <svg className="h-4 w-4 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1" />
-                  </svg>
-                  Logout All Others
-                </button>
-              )}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-delay-2">
+          <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex flex-col sm:flex-row items-center justify-between gap-4">
+            <div className="flex items-center gap-2">
+              <FaLaptopCode className="text-gray-400" />
+              <h2 className="text-lg font-bold text-gray-800">Active Sessions</h2>
             </div>
+
+            {sessions.length > 1 && (
+              <button
+                onClick={revokeAllSessions}
+                className="w-full sm:w-auto inline-flex items-center justify-center px-4 py-2 bg-white border border-red-200 shadow-sm text-sm font-medium rounded-lg text-red-600 hover:bg-red-50 hover:border-red-300 focus:outline-none transition-all duration-200 group"
+              >
+                <FaSignOutAlt className="mr-2 group-hover:rotate-180 transition-transform duration-300" />
+                Sign Out All Other Devices
+              </button>
+            )}
           </div>
 
-          <div className="divide-y divide-gray-200">
+          <div className="divide-y divide-gray-100">
             {sessions.length === 0 ? (
-              <div className="px-6 py-12 text-center">
-                <svg className="mx-auto h-12 w-12 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.75 17L9 20l-1 1h8l-1-1-.75-3M3 13h18M5 17h14a2 2 0 002-2V5a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
-                </svg>
-                <h3 className="mt-2 text-sm font-medium text-gray-900">No active sessions</h3>
-                <p className="mt-1 text-sm text-gray-500">You don't have any active sessions right now.</p>
+              <div className="px-6 py-16 text-center">
+                <div className="bg-gray-50 w-24 h-24 rounded-full flex items-center justify-center mx-auto mb-4">
+                  <FaDesktop className="h-10 w-10 text-gray-300" />
+                </div>
+                <h3 className="text-lg font-medium text-gray-900">No active sessions found</h3>
+                <p className="mt-2 text-gray-500 max-w-sm mx-auto">This seems unusual. Try refreshing the page or logging in again.</p>
+                <button
+                  onClick={() => { setLoading(true); fetchSessions(); }}
+                  className="mt-6 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                >
+                  Reload Data
+                </button>
               </div>
             ) : (
-              sessions.map((session, index) => (
-                <div key={session.sessionId} className="px-6 py-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0">
-                        <span className="text-2xl">{getDeviceIcon(session.device)}</span>
+              sessions.map((session) => (
+                <div
+                  key={session.sessionId}
+                  className={`px-6 py-6 transition-colors duration-200 ${session.isCurrent ? 'bg-blue-50/30' : 'hover:bg-gray-50'}`}
+                >
+                  <div className="flex flex-col md:flex-row items-start md:items-center justify-between gap-6">
+                    <div className="flex items-start gap-5">
+                      <div className={`flex-shrink-0 p-4 rounded-xl ${session.isCurrent ? 'bg-blue-100 text-blue-600' : 'bg-gray-100 text-gray-600'}`}>
+                        {getDeviceIcon(session.device)}
                       </div>
+
                       <div className="flex-1 min-w-0">
-                        <div className="flex items-center space-x-2">
-                          <p className="text-sm font-medium text-gray-900 truncate">
-                            {session.isCurrent ? `${session.device} (This Device)` : session.device}
-                          </p>
+                        <div className="flex flex-wrap items-center gap-2 mb-1">
+                          <h3 className="text-base font-bold text-gray-900">
+                            {session.device}
+                          </h3>
+                          {session.isCurrent && (
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800 border border-green-200 shadow-sm">
+                              <span className="w-1.5 h-1.5 bg-green-500 rounded-full mr-1.5 animate-pulse"></span>
+                              Current Device
+                            </span>
+                          )}
                         </div>
-                        <div className="mt-1 text-sm text-gray-500">
-                          <p>IP Address: {session.ip}</p>
-                          <p>Location: {session.location}</p>
-                          <p>Last Active: {formatDate(session.lastActive)}</p>
-                          <p>Login Time: {formatDate(session.loginTime)}</p>
+
+                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-x-8 gap-y-1 mt-2 text-sm text-gray-500">
+                          <div className="flex items-center gap-2">
+                            <FaGlobe className="text-gray-400 text-xs" />
+                            <span>{session.ip} • {session.location || 'Unknown Location'}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FaClock className="text-gray-400 text-xs" />
+                            <span>Last active: {formatDate(session.lastActive)}</span>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <FaCalendarAlt className="text-gray-400 text-xs" />
+                            <span>Signed in: {formatDate(session.loginTime)}</span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                    <div className="flex-shrink-0">
+
+                    <div className="flex-shrink-0 w-full md:w-auto pl-16 md:pl-0">
                       {!session.isCurrent && (
                         <button
                           onClick={() => revokeSession(session.sessionId)}
                           disabled={revokingSession === session.sessionId}
-                          className="inline-flex items-center px-3 py-2 border border-gray-300 shadow-sm text-sm leading-4 font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 disabled:opacity-50"
+                          className="w-full md:w-auto inline-flex items-center justify-center px-4 py-2 border border-gray-200 shadow-sm text-sm font-medium rounded-lg text-gray-700 bg-white hover:bg-gray-50 hover:text-red-600 hover:border-red-200 focus:outline-none transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                           {revokingSession === session.sessionId ? (
                             <>
@@ -326,9 +405,14 @@ const DeviceManagement = () => {
                               Revoking...
                             </>
                           ) : (
-                            'Revoke'
+                            'Revoke Access'
                           )}
                         </button>
+                      )}
+                      {session.isCurrent && (
+                        <div className="text-sm text-green-600 font-medium flex items-center gap-1 bg-green-50 px-3 py-1.5 rounded-lg border border-green-100">
+                          <FaCheckCircle /> Active Now
+                        </div>
                       )}
                     </div>
                   </div>
@@ -338,25 +422,18 @@ const DeviceManagement = () => {
           </div>
         </div>
 
-        {/* Security Tips */}
-        <div className="mt-6 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-          <div className="flex">
-            <div className="flex-shrink-0">
-              <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.726-1.36 3.491 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-              </svg>
-            </div>
-            <div className="ml-3">
-              <h3 className="text-sm font-medium text-yellow-800">Security Tips</h3>
-              <div className="mt-2 text-sm text-yellow-700">
-                <ul className="list-disc list-inside space-y-1">
-                  <li>Regularly review your active sessions and revoke any you don't recognize</li>
-                  <li>Always log out from shared or public computers</li>
-                  <li>If you notice suspicious activity, change your password immediately</li>
-                  <li>Consider using a password manager for better security</li>
-                </ul>
-              </div>
-            </div>
+        {/* Footer Security Tips */}
+        <div className="mt-8 bg-gradient-to-r from-yellow-50 to-orange-50 border border-yellow-200/60 rounded-2xl p-6 shadow-sm animate-fade-in-delay-2 flex items-start gap-4">
+          <div className="bg-white p-3 rounded-full shadow-sm text-orange-500 shrink-0">
+            <FaExclamationTriangle className="text-lg" />
+          </div>
+          <div>
+            <h3 className="text-base font-bold text-yellow-800 mb-2">Security Tips</h3>
+            <ul className="text-sm text-yellow-800/80 space-y-1 list-disc list-inside">
+              <li>Regularly review your active sessions and revoke any you don't recognize.</li>
+              <li>Always log out from shared or public computers.</li>
+              <li>If you notice suspicious activity, change your password immediately.</li>
+            </ul>
           </div>
         </div>
       </div>
