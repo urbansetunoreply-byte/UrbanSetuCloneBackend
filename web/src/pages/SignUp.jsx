@@ -833,40 +833,43 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                   !recaptchaToken ||
                   authInProgress === 'google'
                 }
+                className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
               >
                 Create Account
               </PrimaryButton>
 
               {success && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 mt-4">
+                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in mt-4">
+                  <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
                   <p className="text-green-700 text-sm font-semibold">{success}</p>
                 </div>
               )}
 
-              <div className="relative my-6">
+              <div className="relative my-8">
                 <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-300"></div>
+                  <div className="w-full border-t border-gray-200"></div>
                 </div>
                 <div className="relative flex justify-center text-sm">
-                  <span className="px-2 bg-white text-gray-500">OR</span>
+                  <span className="px-3 bg-white text-gray-400 font-medium">OR CONTINUE WITH</span>
                 </div>
               </div>
 
               <Oauth pageType="signUp" disabled={authInProgress !== null} onAuthStart={setAuthInProgress} />
 
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-600 text-sm">{error}</p>
+                <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
+                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                  <p className="text-red-700 text-sm font-medium">{error}</p>
                 </div>
               )}
             </form>
 
-            <div className="mt-6 text-center">
-              <p className="text-gray-600">
+            <div className="mt-8 text-center">
+              <p className="text-gray-500 font-medium">
                 Already have an account?{" "}
                 <Link
                   to="/sign-in"
-                  className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpLoading || verifyLoading)
+                  className={`text-blue-600 hover:text-blue-700 font-bold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpLoading || verifyLoading)
                     ? 'opacity-50 cursor-not-allowed pointer-events-none'
                     : ''
                     }`}
