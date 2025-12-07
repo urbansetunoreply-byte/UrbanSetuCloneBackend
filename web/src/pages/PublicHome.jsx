@@ -264,7 +264,7 @@ export default function PublicHome() {
         {/* Featured Slider */}
         {allSliderImages.length > 0 && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
-            <div className="flex flex-col md:flex-row justify-between items-end mb-8 gap-4">
+            <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-8 gap-4 text-center md:text-left">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Properties</h2>
                 <p className="text-gray-600">Handpicked premium properties just for you</p>
@@ -275,6 +275,7 @@ export default function PublicHome() {
                     key={idx}
                     onClick={() => goToSlide(idx)}
                     className={`h-2 rounded-full transition-all duration-300 ${currentSlideIndex === idx ? 'w-8 bg-blue-600' : 'w-2 bg-gray-300 hover:bg-gray-400'}`}
+                    aria-label={`Go to slide ${idx + 1}`}
                   />
                 ))}
               </div>
@@ -301,7 +302,7 @@ export default function PublicHome() {
                       style={{ animation: 'panImage 20s linear infinite alternate' }}
                     />
                     <div className="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
-                      <div className="max-w-3xl animate-fade-in-up">
+                      <div className="max-w-3xl animate-fade-in-up text-left">
                         <div className="flex flex-wrap items-center gap-3 mb-3">
                           <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-xs font-bold rounded-full uppercase tracking-wider">
                             {image.type === 'rent' ? 'For Rent' : 'For Sale'}
@@ -337,23 +338,18 @@ export default function PublicHome() {
           {offerListings.length > 0 && (
             <section>
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                  <span className="p-2 bg-orange-100 rounded-lg text-orange-600"><FaGem className="text-xl" /></span>
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                  <span className="p-2 bg-orange-100 rounded-lg text-orange-600"><FaGem className="text-lg sm:text-xl" /></span>
                   Exclusive Offers
                 </h2>
-                <Link to="/search?offer=true" className="hidden sm:flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors">
-                  View All <FaArrowRight />
+                <Link to="/search?offer=true" className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm sm:text-base whitespace-nowrap">
+                  View All <span className="hidden sm:inline">Offers</span> <FaArrowRight />
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                 {offerListings.map((listing) => (
                   <ListingItem key={listing._id} listing={listing} />
                 ))}
-              </div>
-              <div className="mt-6 sm:hidden text-center">
-                <Link to="/search?offer=true" className="inline-flex items-center gap-2 text-blue-600 font-medium">
-                  View All Offers <FaArrowRight />
-                </Link>
               </div>
             </section>
           )}
@@ -362,12 +358,12 @@ export default function PublicHome() {
           {rentListings.length > 0 && (
             <section>
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                  <span className="p-2 bg-green-100 rounded-lg text-green-600"><FaHome className="text-xl" /></span>
-                  Recent Rentals
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                  <span className="p-2 bg-green-100 rounded-lg text-green-600"><FaHome className="text-lg sm:text-xl" /></span>
+                  Homes for Rent
                 </h2>
-                <Link to="/search?type=rent" className="hidden sm:flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors">
-                  View All <FaArrowRight />
+                <Link to="/search?type=rent" className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm sm:text-base whitespace-nowrap">
+                  View All <span className="hidden sm:inline">Rentals</span> <FaArrowRight />
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -382,12 +378,12 @@ export default function PublicHome() {
           {saleListings.length > 0 && (
             <section>
               <div className="flex justify-between items-center mb-8">
-                <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
-                  <span className="p-2 bg-purple-100 rounded-lg text-purple-600"><FaHome className="text-xl" /></span>
-                  Recent Sales
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                  <span className="p-2 bg-purple-100 rounded-lg text-purple-600"><FaHome className="text-lg sm:text-xl" /></span>
+                  Homes for Sale
                 </h2>
-                <Link to="/search?type=sale" className="hidden sm:flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors">
-                  View All <FaArrowRight />
+                <Link to="/search?type=sale" className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm sm:text-base whitespace-nowrap">
+                  View All <span className="hidden sm:inline">Sales</span> <FaArrowRight />
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
@@ -397,6 +393,30 @@ export default function PublicHome() {
               </div>
             </section>
           )}
+
+          {/* How It Works Section - Restored & Modernized */}
+          <section>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">Your journey to a new home in 4 simple steps.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {[
+                { icon: FaSearch, title: "Search", desc: "Filter and find your dream property.", color: "text-blue-600", bg: "bg-blue-50" },
+                { icon: FaHeart, title: "Save", desc: "Shortlist your favorites easily.", color: "text-green-600", bg: "bg-green-50" },
+                { icon: FaPhone, title: "Connect", desc: "Contact agents or owners directly.", color: "text-purple-600", bg: "bg-purple-50" },
+                { icon: FaHandshake, title: "Deal", desc: "Close the deal securely.", color: "text-orange-600", bg: "bg-orange-50" }
+              ].map((step, idx) => (
+                <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-md transition-all duration-300">
+                  <div className={`w-16 h-16 ${step.bg} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                    <step.icon className={`text-2xl ${step.color}`} />
+                  </div>
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
+                  <p className="text-gray-600 text-sm">{step.desc}</p>
+                </div>
+              ))}
+            </div>
+          </section>
 
           {/* Why Choose Us */}
           <section className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12 relative overflow-hidden">
@@ -424,6 +444,29 @@ export default function PublicHome() {
                     <h3 className="text-lg font-bold text-gray-900 mb-1">{feature.title}</h3>
                     <p className="text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
                   </div>
+                </div>
+              ))}
+            </div>
+          </section>
+
+          {/* Multi-Platform Access - Restored */}
+          <section className="py-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Access From Anywhere</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">Enjoy a seamless experience across all your favorite devices.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {[
+                { icon: FaDesktop, title: "Desktop", desc: "Full-featured experience." },
+                { icon: FaMobile, title: "Mobile", desc: "Optimized for your pocket." },
+                { icon: FaTablet, title: "Tablet", desc: "Perfect for browsing on the go." }
+              ].map((platform, idx) => (
+                <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:-translate-y-1 transition-transform">
+                  <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mb-3 text-gray-700 text-2xl">
+                    <platform.icon />
+                  </div>
+                  <h3 className="font-bold text-gray-900">{platform.title}</h3>
+                  <p className="text-sm text-gray-500">{platform.desc}</p>
                 </div>
               ))}
             </div>
