@@ -488,6 +488,11 @@ export default function PublicHome() {
                 <div key={i} className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
                   <FaQuoteLeft className={`text-4xl ${t.text} opacity-20 mb-4`} />
                   <p className="text-gray-600 italic mb-6">"{t.quote}"</p>
+                  <div className="flex items-center mb-6">
+                    {[...Array(5)].map((_, starIndex) => (
+                      <FaStar key={starIndex} className="text-yellow-400 text-sm animate-pulse" style={{ animationDelay: `${starIndex * 0.1}s` }} />
+                    ))}
+                  </div>
                   <div className="flex items-center gap-3">
                     <div className={`w-10 h-10 rounded-full ${t.bg} flex items-center justify-center font-bold ${t.text}`}>
                       {t.name[0]}
