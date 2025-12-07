@@ -466,7 +466,7 @@ export default function Settings() {
     await signout({
       showToast: true,
       navigateTo: "/",
-      delay: 0
+      delay: 2000
     });
   };
 

@@ -207,7 +207,7 @@ export default function AdminHeader() {
     await signout({
       showToast: true,
       navigateTo: "/",
-      delay: 0
+      delay: 2000
     });
   };
 
@@ -268,7 +268,7 @@ export default function AdminHeader() {
       )}
       <header className={`relative ${getHeaderGradient()} shadow-xl border-b border-white/20 sticky top-0 z-50 transition-all duration-300 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
         {/* Admin Top Bar */}
-        <div className={`bg-black/20 border-b border-white/10 transition-all duration-300 overflow-hidden ${scrolled ? 'h-0 opacity-0' : 'h-auto py-1 opacity-100'}`}>
+        <div className={`bg-black/20 border-b border-white/10 transition-all duration-500 ease-in-out overflow-hidden ${scrolled ? 'max-h-0 opacity-0' : 'max-h-[60px] py-1 opacity-100'}`}>
           <div className="w-full px-4 sm:px-6 lg:px-8">
             <div className="flex items-center justify-between py-1 text-sm text-white/80">
               <div className="flex items-center gap-4">
