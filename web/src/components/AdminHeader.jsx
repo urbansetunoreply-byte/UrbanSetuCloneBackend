@@ -207,7 +207,7 @@ export default function AdminHeader() {
     await signout({
       showToast: true,
       navigateTo: "/",
-      delay: 2000
+      delay: 0
     });
   };
 
