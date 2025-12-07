@@ -1,3 +1,4 @@
+import React from 'react';
 import { Navigate, Outlet } from "react-router-dom";
 import { useSelector } from "react-redux";
 import NotFound from '../pages/NotFound';
@@ -18,7 +19,7 @@ export default function AdminRoute({ bootstrapped }) {
     if (currentUser.isDefaultAdmin) {
       return <Outlet />;
     }
-    
+
     // For other admins, check approval status
     if (currentUser.adminApprovalStatus === "approved") {
       return <Outlet />;

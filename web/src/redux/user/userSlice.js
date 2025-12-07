@@ -3,7 +3,8 @@ import { createSlice } from "@reduxjs/toolkit";
 const initialState = {  // ✅ Fixed spelling
     currentUser: null,
     error: null,
-    loading: false
+    loading: false,
+    isSigningOut: false
 };
 
 const userSlice = createSlice({
@@ -35,41 +36,44 @@ const userSlice = createSlice({
             state.error = action.payload;
             state.loading = false;
         },
-        updateUserStart:(state)=>{
-            state.loading=true
+        updateUserStart: (state) => {
+            state.loading = true
         },
-        updateUserSuccess:(state,action)=>{
+        updateUserSuccess: (state, action) => {
             state.currentUser = action.payload;
             state.loading = false;
             state.error = null;
         },
-        updateUserFailure:(state,action)=>{
-            state.error=action.payload 
-            state.loading=false
+        updateUserFailure: (state, action) => {
+            state.error = action.payload
+            state.loading = false
         },
-        deleteUserStart:(state)=>{
-            state.loading=true
+        deleteUserStart: (state) => {
+            state.loading = true
         },
-        deleteUserSuccess:(state,action)=>{
+        deleteUserSuccess: (state, action) => {
             state.currentUser = null;
             state.loading = false;
             state.error = null;
         },
-        deleteUserFailure:(state,action)=>{
-            state.error=action.payload 
-            state.loading=false
+        deleteUserFailure: (state, action) => {
+            state.error = action.payload
+            state.loading = false
         },
-        signoutUserStart:(state)=>{
-            state.loading=true
+        signoutUserStart: (state) => {
+            state.loading = true;
+            state.isSigningOut = true;
         },
-        signoutUserSuccess:(state,action)=>{
+        signoutUserSuccess: (state, action) => {
             state.currentUser = null;
             state.loading = false;
             state.error = null;
+            state.isSigningOut = false;
         },
-        signoutUserFailure:(state,action)=>{
-            state.error=action.payload 
-            state.loading=false
+        signoutUserFailure: (state, action) => {
+            state.error = action.payload
+            state.loading = false;
+            state.isSigningOut = false;
         }
     }
 });

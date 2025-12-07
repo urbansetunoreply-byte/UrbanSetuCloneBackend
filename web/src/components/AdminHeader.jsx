@@ -24,7 +24,7 @@ export default function AdminHeader() {
   const [appointmentCount, setAppointmentCount] = useState(0);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const { signout, isSigningOut } = useSignout();
+  const { signout } = useSignout();
 
   // NEW: For desktop search icon expansion
   const [searchOpen, setSearchOpen] = useState(false);
@@ -249,23 +249,6 @@ export default function AdminHeader() {
 
   return (
     <>
-      {/* Signout Loading Modal */}
-      {isSigningOut && (
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[9999] animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center gap-6 max-w-sm transform scale-100 animate-bounce-small">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-100 border-t-blue-600"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <LogOut className="text-blue-600 text-lg" />
-              </div>
-            </div>
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-gray-900">Signing Out</h3>
-              <p className="text-gray-500 text-sm mt-1">See you again soon!</p>
-            </div>
-          </div>
-        </div>
-      )}
       <header className={`relative ${getHeaderGradient()} shadow-xl border-b border-white/20 sticky top-0 z-50 transition-all duration-300 ${fadeIn ? 'opacity-100' : 'opacity-0'}`}>
         {/* Admin Top Bar */}
         <div className={`bg-black/20 border-b border-white/10 transition-all duration-500 ease-in-out overflow-hidden ${scrolled ? 'max-h-0 opacity-0' : 'max-h-[60px] py-1 opacity-100'}`}>

@@ -1,9 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
-import { createPortal } from "react-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo } from "react-icons/fa";
-import { LogOut } from "lucide-react";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -30,7 +28,7 @@ export default function Settings() {
   usePageTitle("Settings - Account Management");
 
   const { currentUser } = useSelector((state) => state.user);
-  const { signout, isSigningOut } = useSignout();
+  const { signout } = useSignout();
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
@@ -906,24 +904,6 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8">
       {/* Signout Loading Modal */}
-      {/* Signout Loading Modal */}
-      {isSigningOut && createPortal(
-        <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[9999] animate-fade-in">
-          <div className="bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center gap-6 max-w-sm transform scale-100 animate-bounce-small">
-            <div className="relative">
-              <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-100 border-t-blue-600"></div>
-              <div className="absolute inset-0 flex items-center justify-center">
-                <LogOut className="text-blue-600 text-lg" />
-              </div>
-            </div>
-            <div className="text-center">
-              <h3 className="text-xl font-bold text-gray-900">Signing Out</h3>
-              <p className="text-gray-500 text-sm mt-1">See you again soon!</p>
-            </div>
-          </div>
-        </div>,
-        document.body
-      )}
 
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
