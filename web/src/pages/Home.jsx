@@ -10,14 +10,21 @@ import { useSelector } from "react-redux";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import { usePageTitle } from '../hooks/usePageTitle';
-import { FaHome, FaSearch, FaHeart, FaStar, FaMapMarkerAlt, FaPhone, FaEnvelope, FaShieldAlt, FaAward, FaUsers, FaChartLine, FaLightbulb, FaRocket, FaGem, FaQuoteLeft, FaQuoteRight, FaCheckCircle, FaClock, FaHandshake, FaGlobe, FaMobile, FaDesktop, FaTablet, FaInfoCircle } from "react-icons/fa";
+import {
+  FaHome, FaSearch, FaHeart, FaStar, FaMapMarkerAlt, FaPhone, FaEnvelope,
+  FaShieldAlt, FaAward, FaUsers, FaChartLine, FaLightbulb, FaRocket, FaGem,
+  FaQuoteLeft, FaQuoteRight, FaCheckCircle, FaClock, FaHandshake, FaGlobe,
+  FaMobile, FaDesktop, FaTablet, FaInfoCircle, FaArrowRight
+} from "react-icons/fa";
+import AdsterraBanner from "../components/AdsterraBanner";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Home() {
   // Set page title
   usePageTitle("Dashboard - Find Your Dream Home");
-  
+
+  const { currentUser } = useSelector((state) => state.user);
   const [offerListings, setOfferListings] = useState([]);
   const [saleListings, setSaleListings] = useState([]);
   const [rentListings, setRentListings] = useState([]);
@@ -26,24 +33,19 @@ export default function Home() {
   const [currentSlideIndex, setCurrentSlideIndex] = useState(0);
   const [isSliderVisible, setIsSliderVisible] = useState(false);
   const [stats, setStats] = useState({ properties: 0, users: 0, transactions: 0, satisfaction: 0 });
-  const [isStatsVisible, setIsStatsVisible] = useState(false);
-  const [isHeroVisible, setIsHeroVisible] = useState(false);
-  const [isFeaturesVisible, setIsFeaturesVisible] = useState(false);
-  const [isTestimonialsVisible, setIsTestimonialsVisible] = useState(false);
-  const [isHowItWorksVisible, setIsHowItWorksVisible] = useState(false);
-  const [isPlatformVisible, setIsPlatformVisible] = useState(false);
-  const [isCTAVisible, setIsCTAVisible] = useState(false);
-  const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
-  const [isParallaxActive, setIsParallaxActive] = useState(false);
   const swiperRef = useRef(null);
   const navigate = useNavigate();
-  const isUser = window.location.pathname.startsWith('/user');
-  const { currentUser } = useSelector((state) => state.user);
+
+  // Helper to determine if we are in user dashboard context for links
+  const isUser = true; // Since this is Home.jsx, it usually implies a logged-in user context or main entry. 
+  // Original code checked window.location.pathname.startsWith('/user'). 
+  // But standard links work fine too. We'll use the check for flexible routing if needed.
+  const linkPrefix = currentUser ? "/user" : "";
 
   useEffect(() => {
     const fetchOfferListings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`); // removed &limit=6
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`);
         const data = await res.json();
         setOfferListings(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -54,7 +56,7 @@ export default function Home() {
 
     const fetchRentListings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`); // removed &limit=6
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`);
         const data = await res.json();
         setRentListings(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -65,7 +67,7 @@ export default function Home() {
 
     const fetchSaleListings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`); // removed &limit=6
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`);
         const data = await res.json();
         setSaleListings(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -99,25 +101,19 @@ export default function Home() {
     fetchRecommended();
   }, [currentUser?._id]);
 
-  // Fetch trending listings (highly watchlisted properties)
+  // Fetch trending listings
   useEffect(() => {
     const fetchTrending = async () => {
       try {
-        console.log("Fetching trending listings...");
         const res = await fetch(`${API_BASE_URL}/api/watchlist/top?limit=6`, { credentials: 'include' });
-        console.log("Trending API response status:", res.status);
         if (!res.ok) {
-          console.log("Trending API not ok, status:", res.status);
-          // Fallback: use offers if unauthorized or empty
           setTrendingListings([]);
           return;
         }
         const data = await res.json();
-        console.log("Trending listings data:", data);
         setTrendingListings(Array.isArray(data) ? data : (data?.listings || []));
       } catch (error) {
         console.error("Error fetching trending listings", error);
-        // Don't set mock data - let it remain empty to show real data only
         setTrendingListings([]);
       }
     };
@@ -132,69 +128,6 @@ export default function Home() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Mouse tracking for parallax effects
-  useEffect(() => {
-    const handleMouseMove = (e) => {
-      setMousePosition({ x: e.clientX, y: e.clientY });
-    };
-
-    const handleScroll = () => {
-      setIsParallaxActive(window.scrollY > 100);
-    };
-
-    window.addEventListener('mousemove', handleMouseMove);
-    window.addEventListener('scroll', handleScroll);
-    
-    return () => {
-      window.removeEventListener('mousemove', handleMouseMove);
-      window.removeEventListener('scroll', handleScroll);
-    };
-  }, []);
-
-  // Intersection Observer for scroll animations
-  useEffect(() => {
-    const observerOptions = {
-      threshold: 0.1,
-      rootMargin: '0px 0px -50px 0px'
-    };
-
-    const observer = new IntersectionObserver((entries) => {
-      entries.forEach((entry) => {
-        if (entry.isIntersecting) {
-          const section = entry.target.dataset.section;
-          switch (section) {
-            case 'hero':
-              setIsHeroVisible(true);
-              break;
-            case 'features':
-              setIsFeaturesVisible(true);
-              break;
-            case 'testimonials':
-              setIsTestimonialsVisible(true);
-              break;
-            case 'how-it-works':
-              setIsHowItWorksVisible(true);
-              break;
-            case 'platform':
-              setIsPlatformVisible(true);
-              break;
-            case 'cta':
-              setIsCTAVisible(true);
-              break;
-            default:
-              break;
-          }
-        }
-      });
-    }, observerOptions);
-
-    // Observe all sections
-    const sections = document.querySelectorAll('[data-section]');
-    sections.forEach(section => observer.observe(section));
-
-    return () => observer.disconnect();
-  }, []);
-
   // Fetch statistics
   useEffect(() => {
     const fetchStats = async () => {
@@ -204,30 +137,29 @@ export default function Home() {
           fetch(`${API_BASE_URL}/api/user/count`),
           fetch(`${API_BASE_URL}/api/bookings/count`)
         ]);
-        
+
         const [propertiesData, usersData, transactionsData] = await Promise.all([
           propertiesRes.json(),
           usersRes.json(),
           transactionsRes.json()
         ]);
-        
+
         setStats({
           properties: Number(propertiesData.count) || 1250,
           users: Number(usersData.count) || 5000,
           transactions: Number(transactionsData.count) || 2500,
           satisfaction: 98
         });
-        
-        // Trigger stats animation
-        setTimeout(() => setIsStatsVisible(true), 500);
       } catch (error) {
         console.error("Error fetching stats:", error);
-        // Set default stats
-        setStats({ properties: 1250, users: 5000, transactions: 2500, satisfaction: 98 });
-        setTimeout(() => setIsStatsVisible(true), 500);
+        setStats({
+          properties: 1250,
+          users: 5000,
+          transactions: 2500,
+          satisfaction: 98
+        });
       }
     };
-    
     fetchStats();
   }, []);
 
@@ -253,555 +185,437 @@ export default function Home() {
   ) : [];
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen">
-      {/* Hero Section */}
-      <div 
-        className="relative text-center py-16 bg-gradient-to-r from-blue-600 to-purple-600 text-white overflow-hidden"
-        data-section="hero"
-        style={{
-          transform: `translateY(${isParallaxActive ? -20 : 0}px)`,
-          transition: 'transform 0.3s ease-out'
-        }}
-      >
-        {/* Animated Background Elements */}
-        <div className="absolute inset-0 overflow-hidden">
-          <div 
-            className="absolute w-64 h-64 bg-white/10 rounded-full blur-3xl animate-pulse"
-            style={{
-              left: `${mousePosition.x * 0.1}px`,
-              top: `${mousePosition.y * 0.1}px`,
-              transform: 'translate(-50%, -50%)'
-            }}
-          />
-          <div 
-            className="absolute w-32 h-32 bg-yellow-300/20 rounded-full blur-2xl animate-bounce"
-            style={{
-              right: `${mousePosition.x * 0.05}px`,
-              bottom: `${mousePosition.y * 0.05}px`,
-              transform: 'translate(50%, 50%)'
-            }}
-          />
-        </div>
+    <div className="bg-gray-50 min-h-screen relative overflow-hidden font-sans">
+      {/* Background Animations */}
+      <style>
+        {`
+            @keyframes blob {
+                0% { transform: translate(0px, 0px) scale(1); }
+                33% { transform: translate(30px, -50px) scale(1.1); }
+                66% { transform: translate(-20px, 20px) scale(0.9); }
+                100% { transform: translate(0px, 0px) scale(1); }
+            }
+            @keyframes fadeIn {
+                from { opacity: 0; transform: translateY(20px); }
+                to { opacity: 1; transform: translateY(0); }
+            }
+            @keyframes float {
+                0% { transform: translateY(0px); }
+                50% { transform: translateY(-10px); }
+                100% { transform: translateY(0px); }
+            }
+            .animate-blob { animation: blob 10s infinite; }
+            .animate-fade-in { animation: fadeIn 0.8s ease-out forwards; }
+            .animate-fade-in-delay { animation: fadeIn 0.8s ease-out 0.2s forwards; opacity: 0; }
+            .animate-float { animation: float 6s ease-in-out infinite; }
+            .glass-card { background: rgba(255, 255, 255, 0.8); backdrop-filter: blur(10px); border: 1px solid rgba(255, 255, 255, 0.3); }
+        `}
+      </style>
 
-        <div className={`relative z-10 transition-all duration-1000 px-4 ${isHeroVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          {currentUser && (
-            <div className="mb-4 sm:mb-6">
-              <span
-                className="inline-flex items-center gap-2 px-4 py-2 sm:px-6 sm:py-3 rounded-full bg-white/20 backdrop-blur-md shadow-lg text-sm sm:text-lg font-semibold"
-              >
-                {(() => {
-                  const name = currentUser.firstName || currentUser.username || currentUser.name || currentUser.fullName || 'Friend';
-                  const hour = new Date().getHours();
-                  const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
-                  const emoji = hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙';
-                  return `${greet}, ${name}! ${emoji}`;
-                })()}
+      {/* Abstract Background Elements */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
+        <div className="absolute top-[-10%] left-[-10%] w-96 h-96 bg-blue-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+        <div className="absolute top-[-10%] right-[-10%] w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" style={{ animationDelay: "2s" }}></div>
+        <div className="absolute top-[20%] left-[20%] w-72 h-72 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" style={{ animationDelay: "4s" }}></div>
+        <div className="absolute bottom-[-10%] right-[20%] w-96 h-96 bg-yellow-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob" style={{ animationDelay: "6s" }}></div>
+      </div>
+
+      <div className="relative z-10">
+
+        {/* Hero Section */}
+        <div className="relative pt-20 pb-16 lg:pt-32 lg:pb-28 overflow-hidden">
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 relative text-center">
+
+            {/* User Greeting */}
+            {currentUser && (
+              <div className="mb-8 animate-fade-in flex justify-center">
+                <span
+                  className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/60 backdrop-blur-md shadow-sm border border-white text-base sm:text-lg font-semibold text-gray-800"
+                >
+                  {(() => {
+                    const name = currentUser.firstName || currentUser.username || currentUser.name || currentUser.fullName || 'Friend';
+                    const hour = new Date().getHours();
+                    const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
+                    const emoji = hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙';
+                    return `${greet}, ${name}! ${emoji}`;
+                  })()}
+                </span>
+              </div>
+            )}
+
+            <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-600 text-sm font-semibold mb-6 animate-fade-in border border-blue-100 shadow-sm">
+              <span className="relative flex h-3 w-3">
+                <span className="animate-ping absolute inline-flex h-full w-full rounded-full bg-blue-400 opacity-75"></span>
+                <span className="relative inline-flex rounded-full h-3 w-3 bg-blue-500"></span>
               </span>
+              #1 Real Estate Platform
             </div>
-          )}
-          <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-extrabold mb-3 sm:mb-4 animate-pulse px-2">
-            Find Your Dream Home
-          </h1>
-          <p className="text-lg sm:text-xl md:text-2xl mb-6 sm:mb-8 animate-pulse px-2" style={{ animationDelay: '0.2s' }}>
-            Discover the best homes at unbeatable prices
-          </p>
-          <div className="flex flex-col sm:flex-row gap-3 sm:gap-4 justify-center items-center px-4">
-            <Link 
-              to="/search" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300"
-            >
-              <FaRocket className="text-lg sm:text-xl" />
-              <span className="text-sm sm:text-base">Start Exploring</span>
-            </Link>
-            <Link 
-              to="/about" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-6 py-3 sm:px-8 sm:py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300"
-            >
-              <FaInfoCircle className="text-lg sm:text-xl" />
-              <span className="text-sm sm:text-base">Learn More</span>
-            </Link>
-          </div>
-        </div>
-      </div>
 
-      {/* Statistics Section */}
-      <div className={`max-w-6xl mx-auto px-4 py-8 sm:py-12 transition-all duration-1000 ${isStatsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-        <div className="text-center mb-6 sm:mb-8">
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 drop-shadow-lg">Our Impact in Numbers</h2>
-          <p className="text-gray-700 text-base sm:text-lg font-medium">Trusted by thousands of users worldwide</p>
-        </div>
-        <div className="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
-          <div className="text-center bg-gradient-to-br from-blue-600/80 to-purple-600/80 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-blue-400/30 hover:from-blue-500/90 hover:to-purple-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
-            <FaHome className="text-2xl sm:text-4xl text-yellow-300 mx-auto mb-2 sm:mb-4 drop-shadow-lg" />
-            <div className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stats.properties.toLocaleString()}+</div>
-            <div className="text-white text-sm sm:text-base font-semibold">Properties</div>
-          </div>
-          <div className="text-center bg-gradient-to-br from-green-600/80 to-teal-600/80 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-green-400/30 hover:from-green-500/90 hover:to-teal-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
-            <FaUsers className="text-2xl sm:text-4xl text-blue-300 mx-auto mb-2 sm:mb-4 drop-shadow-lg" />
-            <div className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stats.users.toLocaleString()}+</div>
-            <div className="text-white text-sm sm:text-base font-semibold">Happy Users</div>
-          </div>
-          <div className="text-center bg-gradient-to-br from-purple-600/80 to-pink-600/80 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-purple-400/30 hover:from-purple-500/90 hover:to-pink-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
-            <FaChartLine className="text-2xl sm:text-4xl text-green-300 mx-auto mb-2 sm:mb-4 drop-shadow-lg" />
-            <div className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stats.transactions.toLocaleString()}+</div>
-            <div className="text-white text-sm sm:text-base font-semibold">Transactions</div>
-          </div>
-          <div className="text-center bg-gradient-to-br from-orange-600/80 to-red-600/80 backdrop-blur-md rounded-xl p-4 sm:p-6 border border-orange-400/30 hover:from-orange-500/90 hover:to-red-500/90 transition-all duration-300 hover:scale-105 shadow-xl">
-            <FaStar className="text-2xl sm:text-4xl text-yellow-300 mx-auto mb-2 sm:mb-4 drop-shadow-lg" />
-            <div className="text-xl sm:text-3xl font-bold text-white mb-1 sm:mb-2 drop-shadow-lg">{stats.satisfaction}%</div>
-            <div className="text-white text-sm sm:text-base font-semibold">Satisfaction</div>
-          </div>
-        </div>
-      </div>
+            <h1 className="text-5xl md:text-6xl lg:text-7xl font-extrabold tracking-tight text-gray-900 mb-6 animate-fade-in-delay">
+              Find Your <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">Dream Home</span>
+            </h1>
 
-      {/* Features Showcase */}
-      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16" data-section="features">
-        <div className={`text-center mb-8 sm:mb-12 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">Why Choose UrbanSetu?</h2>
-          <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Discover the features that make us the preferred choice for real estate</p>
-        </div>
-        
-        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isFeaturesVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
-              <FaSearch className="text-lg sm:text-2xl text-blue-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Smart Search</h3>
-            <p className="text-gray-600 text-sm sm:text-base">AI-powered search with advanced filters to find your perfect property</p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
-              <FaShieldAlt className="text-lg sm:text-2xl text-green-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Secure Transactions</h3>
-            <p className="text-gray-600 text-sm sm:text-base">Bank-level security for all your real estate transactions</p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
-              <FaAward className="text-lg sm:text-2xl text-purple-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Verified Properties</h3>
-            <p className="text-gray-600 text-sm sm:text-base">All properties are verified and quality-checked by our experts</p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-orange-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
-              <FaRocket className="text-lg sm:text-2xl text-orange-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Fast Processing</h3>
-            <p className="text-gray-600 text-sm sm:text-base">Quick approval and processing for all your real estate needs</p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.5s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-teal-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
-              <FaHeart className="text-lg sm:text-2xl text-teal-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">24/7 Support</h3>
-            <p className="text-gray-600 text-sm sm:text-base">Round-the-clock customer support for all your queries</p>
-          </div>
-          
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.6s' }}>
-            <div className="w-10 h-10 sm:w-12 sm:h-12 bg-pink-100 rounded-lg flex items-center justify-center mb-3 sm:mb-4">
-              <FaGem className="text-lg sm:text-2xl text-pink-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">Premium Experience</h3>
-            <p className="text-gray-600 text-sm sm:text-base">Luxury real estate experience with exclusive properties</p>
-          </div>
-        </div>
-      </div>
+            <p className="mt-4 max-w-2xl mx-auto text-xl text-gray-600 mb-10 animate-fade-in-delay" style={{ animationDelay: "0.4s" }}>
+              Discover an exclusive selection of the finest properties.
+              <br className="hidden md:block" />
+              Smart search, verified listings, and seamless transactions.
+            </p>
 
-      {/* Testimonials Section */}
-      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 bg-gradient-to-r from-blue-50 to-purple-50" data-section="testimonials">
-        <div className={`text-center mb-8 sm:mb-12 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">What Our Users Say</h2>
-          <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Real stories from satisfied customers</p>
-        </div>
-        
-        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isTestimonialsVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="flex items-center mb-3 sm:mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-blue-100 rounded-full flex items-center justify-center mr-3 sm:mr-4">
-                <FaQuoteLeft className="text-blue-600 text-sm sm:text-base" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800 text-sm sm:text-base">Sarah Johnson</h4>
-                <p className="text-gray-600 text-xs sm:text-sm">Property Buyer</p>
-              </div>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center items-center animate-fade-in-delay" style={{ animationDelay: "0.6s" }}>
+              <Link
+                to="/search"
+                className="w-full sm:w-auto px-8 py-4 bg-gradient-to-r from-blue-600 to-indigo-600 text-white rounded-xl font-bold text-lg shadow-lg shadow-blue-500/30 hover:shadow-xl hover:scale-105 transition-all duration-300 flex items-center justify-center gap-2"
+              >
+                <FaRocket /> Start Exploring
+              </Link>
+              <Link
+                to="/about"
+                className="w-full sm:w-auto px-8 py-4 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold text-lg hover:bg-gray-50 hover:border-gray-300 transition-all duration-300 flex items-center justify-center gap-2 shadow-sm"
+              >
+                <FaInfoCircle /> Learn More
+              </Link>
             </div>
-            <p className="text-gray-700 italic text-sm sm:text-base">"UrbanSetu made finding my dream home so easy! The AI recommendations were spot-on and saved me weeks of searching."</p>
-            <div className="flex items-center mt-3 sm:mt-4">
-              {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
-              ))}
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="flex items-center mb-3 sm:mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-green-100 rounded-full flex items-center justify-center mr-3 sm:mr-4">
-                <FaQuoteLeft className="text-green-600 text-sm sm:text-base" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800 text-sm sm:text-base">Michael Chen</h4>
-                <p className="text-gray-600 text-xs sm:text-sm">Real Estate Agent</p>
-              </div>
-            </div>
-            <p className="text-gray-700 italic text-sm sm:text-base">"The platform's analytics and tools have revolutionized how I manage my listings. My sales have increased by 40%!"</p>
-            <div className="flex items-center mt-3 sm:mt-4">
-              {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
-              ))}
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl p-4 sm:p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="flex items-center mb-3 sm:mb-4">
-              <div className="w-10 h-10 sm:w-12 sm:h-12 bg-purple-100 rounded-full flex items-center justify-center mr-3 sm:mr-4">
-                <FaQuoteLeft className="text-purple-600 text-sm sm:text-base" />
-              </div>
-              <div>
-                <h4 className="font-semibold text-gray-800 text-sm sm:text-base">Emily Rodriguez</h4>
-                <p className="text-gray-600 text-xs sm:text-sm">Property Investor</p>
-              </div>
-            </div>
-            <p className="text-gray-700 italic text-sm sm:text-base">"The secure transaction system and verified properties give me complete confidence in every investment decision."</p>
-            <div className="flex items-center mt-3 sm:mt-4">
-              {[...Array(5)].map((_, i) => (
-                <FaStar key={i} className="text-yellow-400 text-xs sm:text-sm animate-pulse" style={{ animationDelay: `${i * 0.1}s` }} />
+
+            {/* Stats Cards */}
+            <div className="mt-16 grid grid-cols-2 lg:grid-cols-4 gap-4 max-w-5xl mx-auto animate-fade-in-delay" style={{ animationDelay: "0.8s" }}>
+              {[
+                { icon: FaHome, label: "Properties", value: stats.properties, color: "text-blue-500", bg: "bg-blue-50" },
+                { icon: FaUsers, label: "Happy Users", value: stats.users, color: "text-green-500", bg: "bg-green-50" },
+                { icon: FaChartLine, label: "Transactions", value: stats.transactions, color: "text-purple-500", bg: "bg-purple-50" },
+                { icon: FaStar, label: "Satisfaction", value: `${stats.satisfaction}%`, color: "text-yellow-500", bg: "bg-yellow-50" }
+              ].map((stat, index) => (
+                <div key={index} className="glass-card p-6 rounded-2xl shadow-lg border border-white/50 hover:transform hover:-translate-y-1 transition-all duration-300">
+                  <div className={`w-12 h-12 ${stat.bg} rounded-xl flex items-center justify-center mx-auto mb-3`}>
+                    <stat.icon className={`text-2xl ${stat.color}`} />
+                  </div>
+                  <div className="text-2xl font-bold text-gray-900">{typeof stat.value === 'number' ? stat.value.toLocaleString() + '+' : stat.value}</div>
+                  <div className="text-sm text-gray-500 font-medium">{stat.label}</div>
+                </div>
               ))}
             </div>
           </div>
         </div>
-      </div>
 
+        {/* Featured Slider */}
+        {allSliderImages.length > 0 && (
+          <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
+            <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-8 gap-4 text-center md:text-left">
+              <div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Properties</h2>
+                <p className="text-gray-600">Handpicked premium properties just for you</p>
+              </div>
+              <div className="flex gap-2">
+                {allSliderImages.slice(0, 5).map((_, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => goToSlide(idx)}
+                    className={`h-2 rounded-full transition-all duration-300 ${currentSlideIndex === idx ? 'w-8 bg-blue-600' : 'w-2 bg-gray-300 hover:bg-gray-400'}`}
+                    aria-label={`Go to slide ${idx + 1}`}
+                  />
+                ))}
+              </div>
+            </div>
 
-      {/* Enhanced Photo Slider Gallery */}
-      {allSliderImages.length > 0 && (
-        <div className={`my-12 mx-auto max-w-6xl px-4 transition-all duration-1000 ease-out animate-slider-fade-in ${
-          isSliderVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'
-        }`}>
-          {/* Slider Header */}
-          <div className="text-center mb-6 animate-slider-slide-up">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2">Featured Properties</h2>
-            <p className="text-gray-600">Explore our handpicked selection of premium homes</p>
-          </div>
-
-          {/* Main Slider Container */}
-          <div className="relative group animate-slider-scale-in">
-            {/* Enhanced Swiper */}
-            <Swiper
-              ref={swiperRef}
-              modules={[Autoplay, Pagination, EffectFade]}
-              pagination={{
-                clickable: true,
-                dynamicBullets: true,
-                renderBullet: function (index, className) {
-                  return `<span class="${className} w-3 h-3 bg-white/60 hover:bg-white transition-all duration-300"></span>`;
-                },
-              }}
-              autoplay={{ 
-                delay: 4000, 
-                disableOnInteraction: false,
-                pauseOnMouseEnter: true
-              }}
-              loop={true}
-              effect="fade"
-              fadeEffect={{
-                crossFade: true
-              }}
-              speed={800}
-              onSlideChange={handleSlideChange}
-              className="rounded-2xl shadow-2xl overflow-hidden hover:animate-slider-glow"
-            >
-              {allSliderImages.map((image, idx) => (
-                <SwiperSlide key={`${image.listingId}-${idx}`} className="relative">
-                  <div className="relative h-80 md:h-96 lg:h-[500px] overflow-hidden" style={{
-                    backfaceVisibility: 'hidden',
-                    transform: 'translateZ(0)',
-                    willChange: 'transform'
-                  }}>
-                    <img 
-                      src={image.url} 
-                      className="w-full h-full object-cover gallery-image-crisp" 
+            <div className="rounded-3xl overflow-hidden shadow-2xl relative group bg-gray-900">
+              <Swiper
+                ref={swiperRef}
+                modules={[Autoplay, Pagination, EffectFade]}
+                effect="fade"
+                autoplay={{ delay: 5000, disableOnInteraction: false }}
+                speed={1000}
+                loop={true}
+                onSlideChange={handleSlideChange}
+                className="h-[400px] md:h-[500px] lg:h-[600px] w-full"
+              >
+                {allSliderImages.map((image, idx) => (
+                  <SwiperSlide key={idx} className="relative">
+                    <div className="absolute inset-0 bg-black/40 z-10" />
+                    <img
+                      src={image.url}
                       alt={image.title}
-                      loading="eager"
-                      decoding="sync"
-                      fetchpriority="high"
-                      style={{
-                        imageRendering: 'optimize-contrast',
-                        WebkitImageRendering: '-webkit-optimize-contrast',
-                        backfaceVisibility: 'hidden',
-                        transform: 'translateZ(0)',
-                        filter: 'contrast(1.1) brightness(1.05) saturate(1.05)',
-                        WebkitFontSmoothing: 'antialiased',
-                        MozOsxFontSmoothing: 'grayscale'
-                      }}
+                      className="w-full h-full object-cover transform transition-transform duration-[10s] hover:scale-110"
+                      style={{ animation: 'panImage 20s linear infinite alternate' }}
                     />
-                    {/* Image Overlay with Property Info */}
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent animate-overlay-fade-in">
-                      <div className="absolute bottom-0 left-0 right-0 p-6 text-white">
-                        <h3 className="text-xl md:text-2xl font-bold mb-2 animate-text-slide-up">
+                    <div className="absolute bottom-0 left-0 w-full p-8 md:p-12 z-20 bg-gradient-to-t from-black/90 via-black/50 to-transparent">
+                      <div className="max-w-3xl animate-fade-in-up text-left">
+                        <div className="flex flex-wrap items-center gap-3 mb-3">
+                          <span className="px-3 py-1 bg-blue-600/90 backdrop-blur-md text-white text-xs font-bold rounded-full uppercase tracking-wider">
+                            {image.type === 'rent' ? 'For Rent' : 'For Sale'}
+                          </span>
+                          {image.price && (
+                            <span className="px-3 py-1 bg-white/20 backdrop-blur-md text-white text-xs font-bold rounded-full border border-white/30">
+                              ₹ {image.price.toLocaleString('en-IN')}
+                            </span>
+                          )}
+                        </div>
+                        <h3 className="text-2xl md:text-4xl lg:text-5xl font-bold text-white mb-2 leading-tight">
                           {image.title}
                         </h3>
-                        <div className="flex items-center gap-4 text-sm md:text-base">
-                          <span className="bg-blue-600 px-3 py-1 rounded-full font-semibold animate-price-pulse">
-                            ₹{image.price?.toLocaleString('en-IN') || 'Contact for Price'}
-                          </span>
-                          <span className="bg-white/20 px-3 py-1 rounded-full backdrop-blur-sm animate-type-badge">
-                            {image.type?.charAt(0).toUpperCase() + image.type?.slice(1) || 'Property'}
-                          </span>
-                        </div>
+                        <Link
+                          to={`/listing/${image.listingId}`}
+                          className="inline-flex items-center gap-2 text-white hover:text-blue-300 font-medium mt-2 transition-colors group/link"
+                        >
+                          View Details <FaArrowRight className="group-hover/link:translate-x-1 transition-transform" />
+                        </Link>
                       </div>
                     </div>
+                  </SwiperSlide>
+                ))}
+              </Swiper>
+            </div>
+          </div>
+        )}
+
+        {/* Categories / Listings Sections */}
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 space-y-20 py-16">
+
+          {/* Recommended Listings (signed-in only) */}
+          {currentUser && recommendedListings.length > 0 && (
+            <section>
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                  <span className="p-2 bg-blue-100 rounded-lg text-blue-600"><FaStar className="text-lg sm:text-xl" /></span>
+                  Recommended for You
+                </h2>
+                <Link to={`${linkPrefix}/search`} className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm sm:text-base whitespace-nowrap">
+                  See More <span className="hidden sm:inline">Recommendations</span> <FaArrowRight />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {recommendedListings.map((listing) => (
+                  <ListingItem key={listing._id} listing={listing} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Trending Listings */}
+          {(trendingListings.length > 0 || offerListings.length > 0) && (
+            <section>
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                  <span className="p-2 bg-red-100 rounded-lg text-red-600"><FaChartLine className="text-lg sm:text-xl" /></span>
+                  {trendingListings.length > 0 ? 'Popular / Trending' : 'Featured Properties'}
+                </h2>
+                <Link to={`${linkPrefix}/search`} className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm sm:text-base whitespace-nowrap">
+                  See More <FaArrowRight />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {trendingListings.length > 0 ? (
+                  trendingListings.map((listing) => (
+                    <ListingItem key={listing._id} listing={listing} />
+                  ))
+                ) : (
+                  offerListings.slice(0, 4).map((listing) => (
+                    <ListingItem key={listing._id} listing={listing} />
+                  ))
+                )}
+              </div>
+            </section>
+          )}
+
+          {/* Offer Listings */}
+          {offerListings.length > 0 && (
+            <section>
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                  <span className="p-2 bg-orange-100 rounded-lg text-orange-600"><FaGem className="text-lg sm:text-xl" /></span>
+                  Exclusive Offers
+                </h2>
+                <Link to={`${linkPrefix}/search?offer=true`} className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm sm:text-base whitespace-nowrap">
+                  View All <span className="hidden sm:inline">Offers</span> <FaArrowRight />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {offerListings.map((listing) => (
+                  <ListingItem key={listing._id} listing={listing} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Rent Listings */}
+          {rentListings.length > 0 && (
+            <section>
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                  <span className="p-2 bg-green-100 rounded-lg text-green-600"><FaHome className="text-lg sm:text-xl" /></span>
+                  Homes for Rent
+                </h2>
+                <Link to={`${linkPrefix}/search?type=rent`} className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm sm:text-base whitespace-nowrap">
+                  View All <span className="hidden sm:inline">Rentals</span> <FaArrowRight />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {rentListings.map((listing) => (
+                  <ListingItem key={listing._id} listing={listing} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* Sale Listings */}
+          {saleListings.length > 0 && (
+            <section>
+              <div className="flex justify-between items-center mb-8">
+                <h2 className="text-2xl sm:text-3xl font-bold text-gray-900 flex items-center gap-2 sm:gap-3">
+                  <span className="p-2 bg-purple-100 rounded-lg text-purple-600"><FaHome className="text-lg sm:text-xl" /></span>
+                  Homes for Sale
+                </h2>
+                <Link to={`${linkPrefix}/search?type=sale`} className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm sm:text-base whitespace-nowrap">
+                  View All <span className="hidden sm:inline">Sales</span> <FaArrowRight />
+                </Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                {saleListings.map((listing) => (
+                  <ListingItem key={listing._id} listing={listing} />
+                ))}
+              </div>
+            </section>
+          )}
+
+          {/* How It Works Section */}
+          <section>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">How It Works</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">Your journey to a new home in 4 simple steps.</p>
+            </div>
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
+              {[
+                { icon: FaSearch, title: "Search", desc: "Filter and find your dream property.", color: "text-blue-600", bg: "bg-blue-50" },
+                { icon: FaHeart, title: "Save", desc: "Shortlist your favorites easily.", color: "text-green-600", bg: "bg-green-50" },
+                { icon: FaPhone, title: "Connect", desc: "Contact agents or owners directly.", color: "text-purple-600", bg: "bg-purple-50" },
+                { icon: FaHandshake, title: "Deal", desc: "Close the deal securely.", color: "text-orange-600", bg: "bg-orange-50" }
+              ].map((step, idx) => (
+                <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 text-center hover:shadow-md transition-all duration-300">
+                  <div className={`w-16 h-16 ${step.bg} rounded-full flex items-center justify-center mx-auto mb-4`}>
+                    <step.icon className={`text-2xl ${step.color}`} />
                   </div>
-                </SwiperSlide>
-              ))}
-            </Swiper>
-
-
-
-            {/* Progress Bar */}
-            <div className="absolute bottom-0 left-0 right-0 h-1 bg-white/20">
-              <div 
-                className="h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300 ease-out animate-progress-fill"
-                style={{ 
-                  width: `${((currentSlideIndex + 1) / allSliderImages.length) * 100}%`,
-                  '--progress-width': `${((currentSlideIndex + 1) / allSliderImages.length) * 100}%`
-                }}
-              />
-            </div>
-
-            {/* Thumbnail Navigation */}
-            <div className="mt-4 flex justify-center gap-2 overflow-x-auto pb-2">
-              {allSliderImages.slice(0, 8).map((image, idx) => (
-                <button
-                  key={idx}
-                  onClick={() => goToSlide(idx)}
-                  className={`flex-shrink-0 w-16 h-16 rounded-lg overflow-hidden border-2 transition-all duration-300 hover:scale-110 animate-thumbnail-bounce ${
-                    currentSlideIndex === idx 
-                      ? 'border-blue-500 ring-2 ring-blue-300' 
-                      : 'border-gray-300 hover:border-gray-400'
-                  }`}
-                  style={{ animationDelay: `${idx * 0.1}s` }}
-                >
-                  <img 
-                    src={image.url} 
-                    alt={`Thumbnail ${idx + 1}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                  />
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Listings Section */}
-      <div className="max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8 py-8 overflow-x-hidden">
-        {/* Recommended Listings (signed-in only) */}
-        {currentUser && recommendedListings.length > 0 && (
-          <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-blue-700">✨ Recommended for You</h2>
-              <Link to={isUser ? "/user/search" : "/search"} className="text-blue-600 hover:underline">See More</Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {recommendedListings.map((listing) => (
-                <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
-                  <ListingItem listing={listing} />
+                  <h3 className="text-xl font-bold text-gray-900 mb-2">{step.title}</h3>
+                  <p className="text-gray-600 text-sm">{step.desc}</p>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* Trending Listings (Popular/Highly Watchlisted) */}
-        {(trendingListings.length > 0 || offerListings.length > 0) && (
-          <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-purple-700 flex items-center gap-2">
-                <span className="text-3xl">🔥</span>
-                {trendingListings.length > 0 ? 'Popular/Trending Properties' : 'Featured Properties'}
-              </h2>
-              <Link to={isUser ? "/user/search" : "/search"} className="text-purple-600 hover:underline">See More</Link>
+          {/* Why Choose Us */}
+          <section className="bg-white rounded-3xl shadow-xl border border-gray-100 p-8 md:p-12 relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-96 h-96 bg-gradient-to-br from-blue-50 to-purple-50 rounded-bl-full -mr-20 -mt-20 opacity-50 pointer-events-none"></div>
+
+            <div className="text-center mb-12 relative z-10">
+              <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">Why Choose UrbanSetu?</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">We provide a premium, secure, and seamless real estate experience tailored to your needs.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {trendingListings.length > 0 ? (
-                trendingListings.map((listing) => (
-                  <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
-                    <ListingItem listing={listing} />
+
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 relative z-10">
+              {[
+                { icon: FaSearch, title: "Smart Search", desc: "AI-powered search filters to find exactly what you need.", color: "text-blue-600", bg: "bg-blue-50" },
+                { icon: FaShieldAlt, title: "Secure & Verified", desc: "All listings are verified for your peace of mind.", color: "text-green-600", bg: "bg-green-50" },
+                { icon: FaRocket, title: "Fast Processing", desc: "Quick documentation and approval process.", color: "text-purple-600", bg: "bg-purple-50" },
+                { icon: FaHeart, title: "24/7 Support", desc: "Dedicated support team available round the clock.", color: "text-red-500", bg: "bg-red-50" },
+                { icon: FaDesktop, title: "Cross-Platform", desc: "Seamless experience across Mobile, Tablet, and Desktop.", color: "text-indigo-600", bg: "bg-indigo-50" },
+                { icon: FaGem, title: "Premium Listings", desc: "Access to exclusive luxury properties.", color: "text-amber-600", bg: "bg-amber-50" }
+              ].map((feature, idx) => (
+                <div key={idx} className="flex gap-4 p-4 rounded-xl hover:bg-gray-50 transition-colors duration-300">
+                  <div className={`w-12 h-12 ${feature.bg} rounded-xl flex-shrink-0 flex items-center justify-center`}>
+                    <feature.icon className={`text-xl ${feature.color}`} />
                   </div>
-                ))
-              ) : (
-                // Fallback to show offer listings as featured if no trending data
-                offerListings.slice(0, 6).map((listing) => (
-                  <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
-                    <ListingItem listing={listing} />
+                  <div>
+                    <h3 className="text-lg font-bold text-gray-900 mb-1">{feature.title}</h3>
+                    <p className="text-sm text-gray-500 leading-relaxed">{feature.desc}</p>
                   </div>
-                ))
-              )}
-            </div>
-          </div>
-        )}
-
-        {/* Offer Listings */}
-        {offerListings.length > 0 && (
-          <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up delay-800">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left">🎁 Exclusive Offers</h2>
-              <Link to={isUser ? "/user/search?offer=true" : "/search?offer=true"} className="text-blue-600 hover:underline">View All Offers</Link>
-            </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {offerListings.map((listing) => (
-                <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
-                  <ListingItem listing={listing} />
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* Rent Listings */}
-        {rentListings.length > 0 && (
-          <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up delay-900">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left delay-200">🏡 Homes for Rent</h2>
-              <Link to={isUser ? "/user/search?type=rent" : "/search?type=rent"} className="text-blue-600 hover:underline">View All Rentals</Link>
+          {/* Multi-Platform Access */}
+          <section className="py-8">
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Access From Anywhere</h2>
+              <p className="text-gray-600 max-w-2xl mx-auto">Enjoy a seamless experience across all your favorite devices.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {rentListings.map((listing) => (
-                <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
-                  <ListingItem listing={listing} />
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-6">
+              {[
+                { icon: FaDesktop, title: "Desktop", desc: "Full-featured experience." },
+                { icon: FaMobile, title: "Mobile", desc: "Optimized for your pocket." },
+                { icon: FaTablet, title: "Tablet", desc: "Perfect for browsing on the go." }
+              ].map((platform, idx) => (
+                <div key={idx} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 flex flex-col items-center hover:-translate-y-1 transition-transform">
+                  <div className="w-14 h-14 bg-gray-50 rounded-2xl flex items-center justify-center mb-3 text-gray-700 text-2xl">
+                    <platform.icon />
+                  </div>
+                  <h3 className="font-bold text-gray-900">{platform.title}</h3>
+                  <p className="text-sm text-gray-500">{platform.desc}</p>
                 </div>
               ))}
             </div>
-          </div>
-        )}
+          </section>
 
-        {/* Sale Listings */}
-        {saleListings.length > 0 && (
-          <div className="mb-8 bg-white rounded-xl shadow-lg p-6 animate-fade-in-up delay-1000">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left delay-400">🏠 Homes for Sale</h2>
-              <Link to={isUser ? "/user/search?type=sale" : "/search?type=sale"} className="text-blue-600 hover:underline">View All Sales</Link>
+          {/* Testimonials */}
+          <section>
+            <div className="text-center mb-12">
+              <h2 className="text-3xl font-bold text-gray-900 mb-4">Trusted by Thousands</h2>
+              <p className="text-gray-600">See what our community has to say about their experience.</p>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {saleListings.map((listing) => (
-                <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
-                  <ListingItem listing={listing} />
+
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+              {[
+                { name: "Sarah Johnson", role: "Home Buyer", quote: "Found my dream apartment in just 2 days! The interface is so intuitive.", bg: "bg-blue-100", text: "text-blue-600" },
+                { name: "Michael Chen", role: "Property Investor", quote: "The best platform for real estate analytics and verified listings.", bg: "bg-green-100", text: "text-green-600" },
+                { name: "Emily Rodriguez", role: "Tenant", quote: "Seamless rental process. The support team was incredibly helpful.", bg: "bg-purple-100", text: "text-purple-600" }
+              ].map((t, i) => (
+                <div key={i} className="bg-white p-8 rounded-2xl shadow-lg border border-gray-100 hover:-translate-y-2 transition-transform duration-300">
+                  <FaQuoteLeft className={`text-4xl ${t.text} opacity-20 mb-4`} />
+                  <p className="text-gray-600 italic mb-6">"{t.quote}"</p>
+                  <div className="flex items-center mb-6">
+                    {[...Array(5)].map((_, starIndex) => (
+                      <FaStar key={starIndex} className="text-yellow-400 text-sm animate-pulse" style={{ animationDelay: `${starIndex * 0.1}s` }} />
+                    ))}
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <div className={`w-10 h-10 rounded-full ${t.bg} flex items-center justify-center font-bold ${t.text}`}>
+                      {t.name[0]}
+                    </div>
+                    <div>
+                      <h4 className="font-bold text-gray-900">{t.name}</h4>
+                      <p className="text-xs text-gray-500 uppercase tracking-wide">{t.role}</p>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>
+          </section>
+
+          {/* CTA Section */}
+          <section className="relative rounded-3xl overflow-hidden bg-gradient-to-r from-blue-700 to-indigo-800 text-white shadow-2xl">
+            <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3&auto=format&fit=crop&w=1000&q=80')] opacity-10 bg-cover bg-center"></div>
+            <div className="relative z-10 px-8 py-16 md:py-24 text-center max-w-4xl mx-auto">
+              <h2 className="text-3xl md:text-5xl font-bold mb-6">Ready to Start Your Journey?</h2>
+              <p className="text-blue-100 text-lg md:text-xl mb-10">Join thousands of satisfied users who have found their perfect property with UrbanSetu.</p>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link to="/search" className="px-8 py-4 bg-white text-blue-700 rounded-xl font-bold text-lg hover:bg-gray-100 transition-colors shadow-lg">
+                  Find a Home
+                </Link>
+                <Link to="/about" className="px-8 py-4 bg-transparent border-2 border-white text-white rounded-xl font-bold text-lg hover:bg-white hover:text-blue-700 transition-all">
+                  Learn More
+                </Link>
+              </div>
+            </div>
+          </section>
+
+          {/* Ads Section */}
+          <div className="text-center py-6">
+            <p className="text-xs text-gray-400 mb-2 font-mono">SPONSORED CONTENT</p>
+            {/* <AdsterraBanner /> */}
           </div>
-        )}
+        </div>
+
       </div>
 
-      {/* How It Works Section */}
-      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16" data-section="how-it-works">
-        <div className={`text-center mb-8 sm:mb-12 transition-all duration-1000 ${isHowItWorksVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">How It Works</h2>
-          <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Simple steps to find your perfect property</p>
-        </div>
-        
-        <div className={`grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 sm:gap-8 transition-all duration-1000 ${isHowItWorksVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaSearch className="text-2xl sm:text-3xl text-blue-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">1. Search</h3>
-            <p className="text-gray-600 text-sm sm:text-base">Use our smart filters to find properties that match your criteria</p>
-          </div>
-          
-          <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaHeart className="text-2xl sm:text-3xl text-green-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">2. Save</h3>
-            <p className="text-gray-600 text-sm sm:text-base">Save your favorite properties and get notifications about price changes</p>
-          </div>
-          
-          <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-purple-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaHandshake className="text-2xl sm:text-3xl text-purple-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">3. Connect</h3>
-            <p className="text-gray-600 text-sm sm:text-base">Connect with property owners and schedule viewings</p>
-          </div>
-          
-          <div className="text-center animate-fade-in-up" style={{ animationDelay: '0.4s' }}>
-            <div className="w-16 h-16 sm:w-20 sm:h-20 bg-orange-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaHome className="text-2xl sm:text-3xl text-orange-600" />
-            </div>
-            <h3 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2">4. Secure</h3>
-            <p className="text-gray-600 text-sm sm:text-base">Complete secure transactions with our protected payment system</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Platform Features Section */}
-      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16 bg-gradient-to-r from-gray-50 to-blue-50" data-section="platform">
-        <div className={`text-center mb-8 sm:mb-12 transition-all duration-1000 ${isPlatformVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-gray-800 mb-3 sm:mb-4 animate-pulse">Multi-Platform Access</h2>
-          <p className="text-gray-600 text-base sm:text-lg animate-pulse px-2" style={{ animationDelay: '0.2s' }}>Access UrbanSetu from any device, anywhere</p>
-        </div>
-        
-        <div className={`grid grid-cols-1 sm:grid-cols-3 gap-6 sm:gap-8 transition-all duration-1000 ${isPlatformVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <div className="w-16 h-16 bg-blue-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <FaDesktop className="text-3xl text-blue-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Desktop</h3>
-            <p className="text-gray-600">Full-featured experience on your computer</p>
-          </div>
-          
-          <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-            <div className="w-16 h-16 bg-green-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <FaMobile className="text-3xl text-green-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Mobile</h3>
-            <p className="text-gray-600">On-the-go access with push notifications</p>
-          </div>
-          
-          <div className="text-center bg-white rounded-xl p-6 shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
-            <div className="w-16 h-16 bg-purple-100 rounded-xl flex items-center justify-center mx-auto mb-4">
-              <FaTablet className="text-3xl text-purple-600" />
-            </div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">Tablet</h3>
-            <p className="text-gray-600">Perfect balance of portability and functionality</p>
-          </div>
-        </div>
-      </div>
-
-      {/* Call to Action Section */}
-      <div className="max-w-6xl mx-auto px-4 py-12 sm:py-16" data-section="cta">
-        <div className={`bg-gradient-to-r from-blue-600 to-purple-600 rounded-2xl p-8 sm:p-12 text-center text-white transition-all duration-1000 ${isCTAVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-8'}`}>
-          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-4 animate-pulse">Ready to Find Your Dream Property?</h2>
-          <p className="text-lg sm:text-xl mb-8 animate-pulse" style={{ animationDelay: '0.2s' }}>Join thousands of satisfied customers who found their perfect property with UrbanSetu</p>
-          <div className="flex flex-col sm:flex-row gap-4 justify-center items-center">
-            <Link 
-              to="/search" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-white text-blue-600 font-bold px-8 py-4 rounded-xl shadow-2xl hover:bg-gray-100 hover:scale-105 transition-all duration-300"
-            >
-              <FaRocket className="text-xl" />
-              <span>Start Searching Now</span>
-            </Link>
-            <Link 
-              to="/about" 
-              className="w-full sm:w-auto inline-flex items-center justify-center gap-2 bg-transparent border-2 border-white text-white font-bold px-8 py-4 rounded-xl hover:bg-white hover:text-blue-600 transition-all duration-300"
-            >
-              <FaUsers className="text-xl" />
-              <span>Learn More</span>
-            </Link>
-          </div>
-        </div>
-      </div>
-
-      <GeminiAIWrapper />
       <ContactSupportWrapper />
+      <GeminiAIWrapper />
     </div>
   );
 }
-
