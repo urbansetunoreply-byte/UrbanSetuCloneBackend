@@ -1,4 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
+import { createPortal } from "react-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo } from "react-icons/fa";
@@ -905,7 +906,8 @@ export default function Settings() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8">
       {/* Signout Loading Modal */}
-      {isSigningOut && (
+      {/* Signout Loading Modal */}
+      {isSigningOut && createPortal(
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[9999] animate-fade-in">
           <div className="bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center gap-6 max-w-sm transform scale-100 animate-bounce-small">
             <div className="relative">
@@ -919,7 +921,8 @@ export default function Settings() {
               <p className="text-gray-500 text-sm mt-1">See you again soon!</p>
             </div>
           </div>
-        </div>
+        </div>,
+        document.body
       )}
 
       <div className="max-w-4xl mx-auto">
