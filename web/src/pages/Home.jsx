@@ -229,17 +229,28 @@ export default function Home() {
             {/* User Greeting */}
             {currentUser && (
               <div className="mb-8 animate-fade-in flex justify-center">
-                <span
-                  className="inline-flex items-center gap-2 px-6 py-2 rounded-full bg-white/60 backdrop-blur-md shadow-sm border border-white text-base sm:text-lg font-semibold text-gray-800"
+                <div
+                  className="inline-flex items-center gap-2 px-8 py-3 rounded-full bg-white/80 backdrop-blur-lg shadow-lg border border-white/50 transform transition-all duration-300 hover:scale-105 hover:shadow-xl"
                 >
                   {(() => {
                     const name = currentUser.firstName || currentUser.username || currentUser.name || currentUser.fullName || 'Friend';
                     const hour = new Date().getHours();
                     const greet = hour < 12 ? 'Good morning' : hour < 18 ? 'Good afternoon' : 'Good evening';
                     const emoji = hour < 12 ? '☀️' : hour < 18 ? '🌤️' : '🌙';
-                    return `${greet}, ${name}! ${emoji}`;
+
+                    return (
+                      <span className="text-lg sm:text-xl font-bold flex items-center gap-2">
+                        <span className="text-gray-700">{greet},</span>
+                        <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">
+                          {name}!
+                        </span>
+                        <span className="animate-bounce inline-block ml-1 text-2xl filter drop-shadow-md">
+                          {emoji}
+                        </span>
+                      </span>
+                    );
                   })()}
-                </span>
+                </div>
               </div>
             )}
 
