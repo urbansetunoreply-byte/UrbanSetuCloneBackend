@@ -264,7 +264,7 @@ export default function PublicHome() {
         {/* Featured Slider */}
         {allSliderImages.length > 0 && (
           <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-16 animate-fade-in">
-            <div className="flex flex-col md:flex-row justify-between items-center md:items-end mb-8 gap-4 text-center md:text-left">
+            <div className="flex flex-col items-center mb-8 gap-4 text-center">
               <div>
                 <h2 className="text-3xl font-bold text-gray-900 mb-2">Featured Properties</h2>
                 <p className="text-gray-600">Handpicked premium properties just for you</p>

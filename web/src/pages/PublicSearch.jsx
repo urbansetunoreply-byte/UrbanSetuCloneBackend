@@ -177,14 +177,14 @@ export default function PublicSearch() {
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
 
             {/* Search Header / Hero */}
-            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 pb-16 pt-10 px-4 shadow-lg mb-8 relative overflow-hidden">
+            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 pb-16 pt-10 px-4 shadow-lg mb-8 relative">
                 {/* Abstract shapes for visual interest */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
                     <div className="absolute top-[-50%] left-[-10%] w-[500px] h-[500px] rounded-full bg-white mix-blend-overlay filter blur-3xl animate-float"></div>
                     <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-300 mix-blend-overlay filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
                 </div>
 
-                <div className="max-w-7xl mx-auto text-center relative z-10 animate-slideInFromTop">
+                <div className="max-w-7xl mx-auto text-center relative z-20 animate-slideInFromTop">
                     <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
                         Find Your <span className="text-yellow-300">Perfect Place</span>
                     </h1>
@@ -193,10 +193,10 @@ export default function PublicSearch() {
                     </p>
 
                     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto relative group">
-                        <div className="flex flex-col md:flex-row gap-2 bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-2xl hover:bg-white/20 transition-all duration-300">
+                        <div className="flex flex-col md:flex-row gap-2 bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-2xl hover:bg-white/20 transition-all duration-300 relative z-30">
 
                             {/* Search Input */}
-                            <div className="relative flex-grow group-focus-within:ring-2 ring-blue-400 rounded-xl transition-all">
+                            <div className="relative flex-grow group-focus-within:ring-2 ring-blue-400 rounded-xl transition-all z-50">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
                                     <Search className="h-5 w-5 text-blue-200" />
                                 </div>
@@ -238,7 +238,7 @@ export default function PublicSearch() {
                         </div>
 
                         {/* Expanded Filters for Desktop */}
-                        <div className="hidden md:grid grid-cols-4 gap-4 mt-4 animate-fade-in-down" style={{ animationDelay: "0.1s" }}>
+                        <div className="hidden md:grid grid-cols-5 gap-4 mt-4 animate-fade-in-down" style={{ animationDelay: "0.1s" }}>
                             {/* State Select */}
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
@@ -267,8 +267,8 @@ export default function PublicSearch() {
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, type: t }))}
                                         className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
-                                                ? 'bg-blue-100 text-blue-700 shadow-sm'
-                                                : 'text-gray-500 hover:bg-gray-100'
+                                            ? 'bg-blue-100 text-blue-700 shadow-sm'
+                                            : 'text-gray-500 hover:bg-gray-100'
                                             }`}
                                     >
                                         {t}
@@ -292,6 +292,28 @@ export default function PublicSearch() {
                                     name="maxPrice"
                                     placeholder="Max Price"
                                     value={formData.maxPrice}
+                                    onChange={handleChanges}
+                                    className="w-full px-4 py-3 bg-white/90 border-none rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
+                                    min={0}
+                                />
+                            </div>
+
+                            {/* Beds / Baths */}
+                            <div className="flex gap-2">
+                                <input
+                                    type="number"
+                                    name="bedrooms"
+                                    placeholder="Beds"
+                                    value={formData.bedrooms}
+                                    onChange={handleChanges}
+                                    className="w-full px-4 py-3 bg-white/90 border-none rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
+                                    min={0}
+                                />
+                                <input
+                                    type="number"
+                                    name="bathrooms"
+                                    placeholder="Baths"
+                                    value={formData.bathrooms}
                                     onChange={handleChanges}
                                     className="w-full px-4 py-3 bg-white/90 border-none rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
                                     min={0}
