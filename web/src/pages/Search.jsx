@@ -10,14 +10,14 @@ import FormField from "../components/ui/FormField";
 import SelectField from "../components/ui/SelectField";
 import ListingSkeletonGrid from "../components/skeletons/ListingSkeletonGrid";
 import FilterChips from "../components/search/FilterChips";
-import { Search as SearchIcon, IndianRupee } from "lucide-react";
+import { Search as SearchIcon, IndianRupee, Filter, MapPin, Home, DollarSign, GripVertical, ChevronDown, RefreshCw } from "lucide-react";
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function Search() {
-  // Set page title
-  usePageTitle("Search Properties - Find Your Dream Home");
+    // Set page title
+    usePageTitle("Search Properties - Find Your Dream Home");
 
     const location = useLocation();
     const navigate = useNavigate();
@@ -98,7 +98,7 @@ export default function Search() {
             ...prev,
             [name]: type === "checkbox" ? checked : value,
         }));
-        
+
         // Show suggestions when typing in search term
         if (name === 'searchTerm') {
             setShowSuggestions(value.trim().length >= 2);
@@ -111,7 +111,7 @@ export default function Search() {
             searchTerm: suggestion.displayText
         }));
         setShowSuggestions(false);
-        
+
         // Navigate to the property listing
         navigate(`/listing/${suggestion.id}`);
     };
@@ -163,19 +163,19 @@ export default function Search() {
                 'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh',
                 'patna': 'Bihar'
             };
-            const key = (city||'').toLowerCase();
+            const key = (city || '').toLowerCase();
             return cityToState[key] || '';
         };
         const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds)/i);
         if (bedsMatch) extracted.bedrooms = bedsMatch[1];
         const priceMatch = natural.match(/(?:under|below)\s*(\d[\d,]*)/i);
-        if (priceMatch) extracted.maxPrice = priceMatch[1].replace(/,/g,'');
+        if (priceMatch) extracted.maxPrice = priceMatch[1].replace(/,/g, '');
         const nearMatch = natural.match(/near\s+([a-zA-Z ]+)/i);
         if (nearMatch) extracted.city = nearMatch[1].trim();
         const typeMatch = natural.match(/\b(rent|sale)\b/i);
         if (typeMatch) extracted.type = typeMatch[1].toLowerCase();
         if (extracted.city && !extracted.state) extracted.state = inferStateFromCity(extracted.city);
-        const states = ['andhra pradesh','arunachal pradesh','assam','bihar','chhattisgarh','goa','gujarat','haryana','himachal pradesh','jharkhand','karnataka','kerala','madhya pradesh','maharashtra','manipur','meghalaya','mizoram','nagaland','odisha','punjab','rajasthan','sikkim','tamil nadu','telangana','tripura','uttar pradesh','uttarakhand','west bengal','delhi'];
+        const states = ['andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'delhi'];
         const lower = natural.toLowerCase();
         const matchedState = states.find(s => new RegExp(`(^|\\b)${s}(\\b|$)`).test(lower));
         if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
@@ -188,7 +188,7 @@ export default function Search() {
         const natural = (smartQuery || '').trim();
         if (!natural) return;
         const extracted = { ...formData };
-        
+
         // Normalize number words (e.g., "two bhk" -> "2 bhk")
         const numberWordToDigit = (text) => {
             const map = {
@@ -198,11 +198,11 @@ export default function Search() {
             return text.replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/gi, (m) => map[m.toLowerCase()]);
         };
         const norm = numberWordToDigit(natural);
-        
+
         // Enhanced NLP processing with context understanding
         const processNaturalLanguage = (query) => {
             const lowerQuery = query.toLowerCase();
-            
+
             // Intent detection
             const intents = {
                 search: /(?:find|search|look for|looking for|need|want|require|dhundh|khoj|chahiye)/i,
@@ -213,20 +213,20 @@ export default function Search() {
                 size: /(?:room|bedroom|bhk|bed|bath|bathroom|toilet|kamra|washroom)/i,
                 amenities: /(?:parking|furnished|unfurnished|garden|balcony|lift|security|gym|pool|ac|air conditioning)/i
             };
-            
+
             // Extract intent
             const detectedIntent = Object.keys(intents).find(intent => intents[intent].test(query));
-            
+
             return { detectedIntent, query: lowerQuery };
         };
-        
+
         const { detectedIntent } = processNaturalLanguage(norm);
-        
+
         // Enhanced city to state mapping with more cities and landmarks
         const inferStateFromCity = (city) => {
             const cityToState = {
                 // Maharashtra
-                'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra', 'nashik': 'Maharashtra', 
+                'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra', 'nashik': 'Maharashtra',
                 'aurangabad': 'Maharashtra', 'solapur': 'Maharashtra', 'amravati': 'Maharashtra', 'kolhapur': 'Maharashtra',
                 'sangli': 'Maharashtra', 'malegaon': 'Maharashtra', 'ulhasnagar': 'Maharashtra', 'jalgaon': 'Maharashtra',
                 'akola': 'Maharashtra', 'latur': 'Maharashtra', 'dhule': 'Maharashtra', 'ahmednagar': 'Maharashtra',
@@ -234,33 +234,33 @@ export default function Search() {
                 'bhusawal': 'Maharashtra', 'ambad': 'Maharashtra', 'yavatmal': 'Maharashtra', 'kamptee': 'Maharashtra',
                 'gondia': 'Maharashtra', 'barshi': 'Maharashtra', 'achalpur': 'Maharashtra', 'osmanabad': 'Maharashtra',
                 'nandurbar': 'Maharashtra', 'wardha': 'Maharashtra', 'udgir': 'Maharashtra', 'hinganghat': 'Maharashtra',
-                
+
                 // Delhi & NCR
-                'delhi': 'Delhi', 'new delhi': 'Delhi', 'gurgaon': 'Haryana', 
+                'delhi': 'Delhi', 'new delhi': 'Delhi', 'gurgaon': 'Haryana',
                 'gurugram': 'Haryana', 'faridabad': 'Haryana', 'ghaziabad': 'Uttar Pradesh',
                 'sonipat': 'Haryana', 'panipat': 'Haryana', 'rohtak': 'Haryana', 'karnal': 'Haryana',
                 'hisar': 'Haryana', 'ambala': 'Haryana', 'yamunanagar': 'Haryana', 'bhiwani': 'Haryana',
                 'rewari': 'Haryana', 'palwal': 'Haryana', 'mahendragarh': 'Haryana', 'jind': 'Haryana',
                 'kaithal': 'Haryana', 'fatehabad': 'Haryana', 'sirsa': 'Haryana', 'mewat': 'Haryana',
-                
+
                 // Karnataka
-                'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka', 'mysore': 'Karnataka', 
+                'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka', 'mysore': 'Karnataka',
                 'mangalore': 'Karnataka', 'hubli': 'Karnataka', 'belgaum': 'Karnataka', 'gulbarga': 'Karnataka',
                 'davangere': 'Karnataka', 'bellary': 'Karnataka', 'bijapur': 'Karnataka', 'shimoga': 'Karnataka',
                 'tumkur': 'Karnataka', 'raichur': 'Karnataka', 'bidar': 'Karnataka', 'hospet': 'Karnataka',
                 'hassan': 'Karnataka', 'gadag': 'Karnataka', 'udupi': 'Karnataka', 'karwar': 'Karnataka',
                 'chitradurga': 'Karnataka', 'kolar': 'Karnataka', 'mandya': 'Karnataka', 'chikmagalur': 'Karnataka',
                 'gangavati': 'Karnataka', 'bagalkot': 'Karnataka', 'ranebennur': 'Karnataka', 'athani': 'Karnataka',
-                
+
                 // Tamil Nadu
-                'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu', 'madurai': 'Tamil Nadu', 'tiruchirapalli': 'Tamil Nadu', 
+                'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu', 'madurai': 'Tamil Nadu', 'tiruchirapalli': 'Tamil Nadu',
                 'salem': 'Tamil Nadu', 'tirunelveli': 'Tamil Nadu', 'tiruppur': 'Tamil Nadu', 'erode': 'Tamil Nadu',
                 'vellore': 'Tamil Nadu', 'thoothukkudi': 'Tamil Nadu', 'dindigul': 'Tamil Nadu', 'thanjavur': 'Tamil Nadu',
                 'ranipet': 'Tamil Nadu', 'sivakasi': 'Tamil Nadu', 'karur': 'Tamil Nadu', 'udhagamandalam': 'Tamil Nadu',
                 'hosur': 'Tamil Nadu', 'nagercoil': 'Tamil Nadu', 'kanchipuram': 'Tamil Nadu', 'cuddalore': 'Tamil Nadu',
                 'kumbakonam': 'Tamil Nadu', 'tiruvannamalai': 'Tamil Nadu', 'pollachi': 'Tamil Nadu', 'rajapalayam': 'Tamil Nadu',
                 'gudiyatham': 'Tamil Nadu', 'pudukkottai': 'Tamil Nadu', 'neyveli': 'Tamil Nadu', 'ambattur': 'Tamil Nadu',
-                
+
                 // West Bengal
                 'kolkata': 'West Bengal', 'howrah': 'West Bengal', 'durgapur': 'West Bengal', 'asansol': 'West Bengal',
                 'siliguri': 'West Bengal', 'malda': 'West Bengal', 'berhampore': 'West Bengal', 'habra': 'West Bengal',
@@ -268,7 +268,7 @@ export default function Search() {
                 'ranaghat': 'West Bengal', 'haldia': 'West Bengal', 'raiganj': 'West Bengal', 'krishnanagar': 'West Bengal',
                 'nabadwip': 'West Bengal', 'medinipur': 'West Bengal', 'jalpaiguri': 'West Bengal', 'balurghat': 'West Bengal',
                 'basirhat': 'West Bengal', 'bankura': 'West Bengal', 'chakdaha': 'West Bengal', 'darjeeling': 'West Bengal',
-                
+
                 // Telangana
                 'hyderabad': 'Telangana', 'warangal': 'Telangana', 'nizamabad': 'Telangana', 'khammam': 'Telangana',
                 'karimnagar': 'Telangana', 'ramagundam': 'Telangana', 'mahbubnagar': 'Telangana', 'nalgonda': 'Telangana',
@@ -276,30 +276,30 @@ export default function Search() {
                 'mancherial': 'Telangana', 'kothagudem': 'Telangana', 'dharmabad': 'Telangana', 'bhongir': 'Telangana',
                 'bodhan': 'Telangana', 'palwancha': 'Telangana', 'mandamarri': 'Telangana', 'koratla': 'Telangana',
                 'sircilla': 'Telangana', 'tandur': 'Telangana', 'siddipet': 'Telangana', 'wanaparthy': 'Telangana',
-                
+
                 // Gujarat
-                'ahmedabad': 'Gujarat', 'surat': 'Gujarat', 'vadodara': 'Gujarat', 'rajkot': 'Gujarat', 
+                'ahmedabad': 'Gujarat', 'surat': 'Gujarat', 'vadodara': 'Gujarat', 'rajkot': 'Gujarat',
                 'bhavnagar': 'Gujarat', 'jamnagar': 'Gujarat', 'nadiad': 'Gujarat', 'porbandar': 'Gujarat',
                 'anand': 'Gujarat', 'morbi': 'Gujarat', 'mahesana': 'Gujarat', 'bharuch': 'Gujarat',
                 'veraval': 'Gujarat', 'navsari': 'Gujarat', 'gandhidham': 'Gujarat',
-                
+
                 // Rajasthan
-                'jaipur': 'Rajasthan', 'jodhpur': 'Rajasthan', 'udaipur': 'Rajasthan', 'kota': 'Rajasthan', 
+                'jaipur': 'Rajasthan', 'jodhpur': 'Rajasthan', 'udaipur': 'Rajasthan', 'kota': 'Rajasthan',
                 'bikaner': 'Rajasthan', 'ajmer': 'Rajasthan', 'bharatpur': 'Rajasthan', 'bhiwadi': 'Rajasthan',
                 'alwar': 'Rajasthan', 'beawar': 'Rajasthan', 'dungarpur': 'Rajasthan', 'hindaun': 'Rajasthan',
                 'gangapur': 'Rajasthan', 'laxmangarh': 'Rajasthan', 'sikar': 'Rajasthan', 'pali': 'Rajasthan',
                 'tonk': 'Rajasthan', 'kishangarh': 'Rajasthan', 'banswara': 'Rajasthan', 'hanumangarh': 'Rajasthan',
                 'dausa': 'Rajasthan', 'churu': 'Rajasthan', 'bundi': 'Rajasthan', 'sawai madhopur': 'Rajasthan',
-                
+
                 // Uttar Pradesh
-                'lucknow': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh', 'agra': 'Uttar Pradesh', 'varanasi': 'Uttar Pradesh', 
+                'lucknow': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh', 'agra': 'Uttar Pradesh', 'varanasi': 'Uttar Pradesh',
                 'meerut': 'Uttar Pradesh', 'allahabad': 'Uttar Pradesh', 'bareilly': 'Uttar Pradesh', 'gorakhpur': 'Uttar Pradesh',
                 'moradabad': 'Uttar Pradesh', 'aligarh': 'Uttar Pradesh', 'saharanpur': 'Uttar Pradesh', 'noida': 'Uttar Pradesh',
                 'firozabad': 'Uttar Pradesh', 'jhansi': 'Uttar Pradesh', 'muzaffarnagar': 'Uttar Pradesh', 'mathura': 'Uttar Pradesh',
                 'shahjahanpur': 'Uttar Pradesh', 'rampur': 'Uttar Pradesh', 'modinagar': 'Uttar Pradesh', 'hapur': 'Uttar Pradesh',
                 'etawah': 'Uttar Pradesh', 'mirzapur': 'Uttar Pradesh', 'bulandshahr': 'Uttar Pradesh', 'sambhal': 'Uttar Pradesh',
                 'amroha': 'Uttar Pradesh', 'hardoi': 'Uttar Pradesh', 'fatehpur': 'Uttar Pradesh', 'raebareli': 'Uttar Pradesh',
-                
+
                 // Madhya Pradesh
                 'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh', 'gwalior': 'Madhya Pradesh', 'jabalpur': 'Madhya Pradesh',
                 'ujjain': 'Madhya Pradesh', 'sagar': 'Madhya Pradesh', 'dewas': 'Madhya Pradesh', 'satna': 'Madhya Pradesh',
@@ -307,21 +307,21 @@ export default function Search() {
                 'burhanpur': 'Madhya Pradesh', 'khandwa': 'Madhya Pradesh', 'morena': 'Madhya Pradesh', 'bhind': 'Madhya Pradesh',
                 'vidisha': 'Madhya Pradesh', 'chhindwara': 'Madhya Pradesh', 'guna': 'Madhya Pradesh', 'shivpuri': 'Madhya Pradesh',
                 'mandsaur': 'Madhya Pradesh', 'neemuch': 'Madhya Pradesh', 'pithampur': 'Madhya Pradesh', 'itarsi': 'Madhya Pradesh',
-                
+
                 // Bihar
                 'patna': 'Bihar', 'gaya': 'Bihar', 'bhagalpur': 'Bihar', 'muzaffarpur': 'Bihar',
                 'purnia': 'Bihar', 'darbhanga': 'Bihar', 'bihar sharif': 'Bihar', 'arrah': 'Bihar',
                 'begusarai': 'Bihar', 'katihar': 'Bihar', 'munger': 'Bihar', 'chapra': 'Bihar',
                 'sasaram': 'Bihar', 'hajipur': 'Bihar', 'dehri': 'Bihar', 'bettiah': 'Bihar',
                 'motihari': 'Bihar', 'siwan': 'Bihar', 'kishanganj': 'Bihar', 'saharsa': 'Bihar',
-                
+
                 // Kerala
                 'kochi': 'Kerala', 'thiruvananthapuram': 'Kerala', 'kozhikode': 'Kerala', 'thrissur': 'Kerala',
                 'kollam': 'Kerala', 'palakkad': 'Kerala', 'alappuzha': 'Kerala', 'malappuram': 'Kerala',
                 'kannur': 'Kerala', 'kasaragod': 'Kerala', 'pathanamthitta': 'Kerala', 'idukki': 'Kerala',
                 'wayanad': 'Kerala', 'ernakulam': 'Kerala', 'kottayam': 'Kerala', 'tirur': 'Kerala',
                 'koyilandy': 'Kerala',
-                
+
                 // Andhra Pradesh
                 'visakhapatnam': 'Andhra Pradesh', 'vijayawada': 'Andhra Pradesh', 'guntur': 'Andhra Pradesh', 'nellore': 'Andhra Pradesh',
                 'kurnool': 'Andhra Pradesh', 'rajahmundry': 'Andhra Pradesh', 'tirupati': 'Andhra Pradesh', 'kadapa': 'Andhra Pradesh',
@@ -329,7 +329,7 @@ export default function Search() {
                 'eluru': 'Andhra Pradesh', 'ongole': 'Andhra Pradesh', 'chilakaluripet': 'Andhra Pradesh', 'kadiri': 'Andhra Pradesh',
                 'adoni': 'Andhra Pradesh', 'tenali': 'Andhra Pradesh', 'chirala': 'Andhra Pradesh', 'bapatla': 'Andhra Pradesh',
                 'srikakulam': 'Andhra Pradesh', 'vizianagaram': 'Andhra Pradesh', 'parvathipuram': 'Andhra Pradesh', 'bobbili': 'Andhra Pradesh',
-                
+
                 // Union Territories
                 'chandigarh': 'Chandigarh', 'panchkula': 'Haryana', 'mohali': 'Punjab',
                 'jammu': 'Jammu and Kashmir', 'srinagar': 'Jammu and Kashmir', 'leh': 'Ladakh',
@@ -341,7 +341,7 @@ export default function Search() {
                 'pulwama': 'Jammu and Kashmir', 'shopian': 'Jammu and Kashmir', 'budgam': 'Jammu and Kashmir',
                 'kupwara': 'Jammu and Kashmir', 'handwara': 'Jammu and Kashmir', 'karnah': 'Jammu and Kashmir'
             };
-            const key = (city||'').toLowerCase().trim();
+            const key = (city || '').toLowerCase().trim();
             return cityToState[key] || '';
         };
 
@@ -354,7 +354,7 @@ export default function Search() {
             /(?:flat|apartment|ghar)\s*(?:with|mein)\s*(\d+)\s*(?:room|bed|bhk)/i,
             /(\d+)\s*(?:room|bed|bhk)\s*(?:wala|wali)\s*(?:flat|apartment|ghar)/i
         ];
-        
+
         for (const pattern of bedPatterns) {
             const bedsMatch = norm.match(pattern);
             if (bedsMatch) {
@@ -362,7 +362,7 @@ export default function Search() {
                 break;
             }
         }
-        
+
         // Enhanced bathroom detection with routine language
         const bathPatterns = [
             /(\d+)\s*(bath|baths|bathroom|bathrooms|toilet|toilets)/i,
@@ -372,7 +372,7 @@ export default function Search() {
             /(?:flat|apartment|ghar)\s*(?:with|mein)\s*(\d+)\s*(?:bath|toilet)/i,
             /(\d+)\s*(?:bath|toilet)\s*(?:wala|wali)\s*(?:flat|apartment|ghar)/i
         ];
-        
+
         for (const pattern of bathPatterns) {
             const bathMatch = norm.match(pattern);
             if (bathMatch) {
@@ -398,17 +398,17 @@ export default function Search() {
             /(?:budget|paisa|rupees)\s*(?:hai|mein)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
             /(?:price|dam|rate)\s*(?:hai|mein)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
         ];
-        
+
         for (const pattern of pricePatterns) {
             const priceMatch = norm.match(pattern);
             if (priceMatch) {
-                extracted.maxPrice = priceMatch[1].replace(/,/g,'');
+                extracted.maxPrice = priceMatch[1].replace(/,/g, '');
                 if (priceMatch[2]) {
                     const unit = priceMatch[2].toLowerCase();
-                    const val = Number(extracted.maxPrice||0);
-                    if (unit==='k' || unit==='thousand') extracted.maxPrice = String(val*1000);
-                    if (unit==='l' || unit==='lac' || unit==='lakh' || unit==='lakhs') extracted.maxPrice = String(val*100000);
-                    if (unit==='cr' || unit==='crore' || unit==='crores') extracted.maxPrice = String(val*10000000);
+                    const val = Number(extracted.maxPrice || 0);
+                    if (unit === 'k' || unit === 'thousand') extracted.maxPrice = String(val * 1000);
+                    if (unit === 'l' || unit === 'lac' || unit === 'lakh' || unit === 'lakhs') extracted.maxPrice = String(val * 100000);
+                    if (unit === 'cr' || unit === 'crore' || unit === 'crores') extracted.maxPrice = String(val * 10000000);
                 }
                 break;
             }
@@ -418,12 +418,12 @@ export default function Search() {
         const rangeMatch = norm.match(/between\s+(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?\s+(?:and|to|\-)+\s+(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?/i);
         if (rangeMatch) {
             const toNumber = (val, unit) => {
-                let n = Number((val||'').replace(/,/g,''));
+                let n = Number((val || '').replace(/,/g, ''));
                 if (!unit) return String(n);
                 const u = unit.toLowerCase();
-                if (u==='k') n *= 1000;
-                if (u==='l' || u==='lac' || u==='lakh') n *= 100000;
-                if (u==='cr' || u==='crore') n *= 10000000;
+                if (u === 'k') n *= 1000;
+                if (u === 'l' || u === 'lac' || u === 'lakh') n *= 100000;
+                if (u === 'cr' || u === 'crore') n *= 10000000;
                 return String(n);
             };
             extracted.minPrice = toNumber(rangeMatch[1], rangeMatch[2]);
@@ -435,17 +435,17 @@ export default function Search() {
             /(?:above|more than|minimum|min|from)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
             /(?:starting from|starting at)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
         ];
-        
+
         for (const pattern of minPricePatterns) {
             const minPriceMatch = norm.match(pattern);
             if (minPriceMatch) {
-                extracted.minPrice = minPriceMatch[1].replace(/,/g,'');
+                extracted.minPrice = minPriceMatch[1].replace(/,/g, '');
                 if (minPriceMatch[2]) {
                     const unit = minPriceMatch[2].toLowerCase();
-                    const val = Number(extracted.minPrice||0);
-                    if (unit==='k' || unit==='thousand') extracted.minPrice = String(val*1000);
-                    if (unit==='l' || unit==='lac' || unit==='lakh' || unit==='lakhs') extracted.minPrice = String(val*100000);
-                    if (unit==='cr' || unit==='crore' || unit==='crores') extracted.minPrice = String(val*10000000);
+                    const val = Number(extracted.minPrice || 0);
+                    if (unit === 'k' || unit === 'thousand') extracted.minPrice = String(val * 1000);
+                    if (unit === 'l' || unit === 'lac' || unit === 'lakh' || unit === 'lakhs') extracted.minPrice = String(val * 100000);
+                    if (unit === 'cr' || unit === 'crore' || unit === 'crores') extracted.minPrice = String(val * 10000000);
                 }
                 break;
             }
@@ -464,7 +464,7 @@ export default function Search() {
             /(?:located|situated|hain)\s+(?:in|mein)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
             /(?:from|se)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i
         ];
-        
+
         for (const pattern of locationPatterns) {
             const locationMatch = norm.match(pattern);
             if (locationMatch) {
@@ -483,7 +483,7 @@ export default function Search() {
         }
 
         // Enhanced state detection
-        const states = ['andhra pradesh','arunachal pradesh','assam','bihar','chhattisgarh','goa','gujarat','haryana','himachal pradesh','jharkhand','karnataka','kerala','madhya pradesh','maharashtra','manipur','meghalaya','mizoram','nagaland','odisha','punjab','rajasthan','sikkim','tamil nadu','telangana','tripura','uttar pradesh','uttarakhand','west bengal','delhi','chandigarh','jammu and kashmir','ladakh'];
+        const states = ['andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'delhi', 'chandigarh', 'jammu and kashmir', 'ladakh'];
         const lower = norm.toLowerCase();
         const matchedState = states.find(s => new RegExp(`(^|\\b)${s}(\\b|$)`).test(lower));
         if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
@@ -501,7 +501,7 @@ export default function Search() {
             /(?:want|chahiye)\s+(?:to\s+)?(?:rent|buy|kiran|kharid)/i,
             /(?:available\s+for|available)\s+(?:rent|sale|kiran|bechne)/i
         ];
-        
+
         // Enhanced amenities detection with smart context understanding
         const amenitiesPatterns = {
             parking: [
@@ -567,7 +567,7 @@ export default function Search() {
                 /(?:ac|air\s+conditioning|thandak)/i
             ]
         };
-        
+
         // Process amenities
         Object.keys(amenitiesPatterns).forEach(amenity => {
             const patterns = amenitiesPatterns[amenity];
@@ -578,7 +578,7 @@ export default function Search() {
                 if (amenity === 'offer') extracted.offer = true; // For special offers
             }
         });
-        
+
         for (const pattern of typePatterns) {
             const typeMatch = norm.match(pattern);
             if (typeMatch) {
@@ -802,259 +802,344 @@ export default function Search() {
         setFormData((prev) => ({ ...prev, state: loc.state, district: loc.district, city: loc.city }));
     };
 
+
     if (loading) {
         return (
-            <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-                <div className="max-w-6xl mx-auto">
-                    <ListingSkeletonGrid count={9} />
+            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+                <div className="text-center">
+                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
+                    <p className="text-gray-500 animate-pulse font-medium">Finding the best properties for you...</p>
                 </div>
             </div>
         );
     }
 
     return (
-        <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-            <div className="max-w-6xl mx-auto bg-white/90 backdrop-blur-xl rounded-2xl shadow-2xl p-4 md:p-6 relative">
-                <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
-                    Explore Properties
-                </h3>
-                {/* Enhanced Smart (NLP) Search */}
-                <div className="bg-gradient-to-r from-blue-50 to-indigo-50 p-6 rounded-xl mb-6 border border-blue-200">
-                    <div className="flex items-center gap-2 mb-4">
-                        <div className="p-2 bg-blue-500 rounded-lg">
-                            <svg className="w-5 h-5 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z" />
-                            </svg>
+        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
+            {/* Search Header / Hero */}
+            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 pb-20 pt-10 px-4 shadow-lg mb-8 relative overflow-hidden">
+                {/* Abstract shapes for visual interest */}
+                <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+                    <div className="absolute top-[-50%] left-[-10%] w-[500px] h-[500px] rounded-full bg-white mix-blend-overlay filter blur-3xl animate-float"></div>
+                    <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-300 mix-blend-overlay filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
+                </div>
+
+                <div className="max-w-7xl mx-auto text-center relative z-20 animate-slideInFromTop">
+                    <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
+                        Explore <span className="text-yellow-300">Properties</span>
+                    </h1>
+                    <p className="text-blue-100 mb-8 text-lg max-w-2xl mx-auto font-light">
+                        Use our AI-powered smart search or detailed filters to find your home.
+                    </p>
+
+                    {/* Smart Search Section */}
+                    <div className="max-w-4xl mx-auto mb-8 relative z-30">
+                        <div className="text-left mb-2 pl-2 animate-fade-in">
+                            <span className="text-blue-100 font-semibold text-sm flex items-center gap-2">
+                                <span className="bg-white/20 p-1 rounded-full"><svg className="w-3 h-3 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></span>
+                                Smart Search (Natural Language)
+                            </span>
                         </div>
-                        <label className="text-lg font-semibold text-blue-800">Smart Search (Natural Language)</label>
-                    </div>
-                    <form onSubmit={applySmartQuery} className="space-y-4">
-                        <div className="relative">
-                            <input
-                              value={smartQuery}
-                              onChange={(e) => setSmartQuery(e.target.value)}
-                              placeholder="2BHK under 15k near Delhi Metro, furnished with parking"
-                              className="w-full p-4 border-2 border-blue-200 rounded-xl focus:border-blue-500 focus:ring-2 focus:ring-blue-200 transition-all duration-200 text-lg pr-24 md:pr-4 placeholder:text-sm md:placeholder:text-base"
-                            />
-                            <div className="absolute right-3 top-1/2 transform -translate-y-1/2 hidden md:block">
-                                <button type="submit" className="bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-6 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold">
-                                    Search
+                        <form onSubmit={applySmartQuery} className="relative group">
+                            <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-2xl hover:bg-white/20 transition-all duration-300 flex flex-col md:flex-row gap-2">
+                                <div className="relative flex-grow">
+                                    <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
+                                        <svg className="h-6 w-6 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
+                                        </svg>
+                                    </div>
+                                    <input
+                                        value={smartQuery}
+                                        onChange={(e) => setSmartQuery(e.target.value)}
+                                        placeholder="Try '3BHK in Mumbai under 50k rent'..."
+                                        className="block w-full pl-12 pr-4 py-4 border-none rounded-xl bg-white/90 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:bg-white transition-colors text-lg"
+                                    />
+                                </div>
+                                <button type="submit" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transform hover:-translate-y-1 transition-all duration-300 min-w-[120px]">
+                                    AI Search
                                 </button>
                             </div>
+                            <div className="mt-3 flex flex-wrap justify-center gap-2">
+                                <span className="text-xs text-blue-100 uppercase tracking-widest font-semibold py-1">Try:</span>
+                                {[
+                                    "2BHK in Bangalore",
+                                    "Furnished apartment near metro",
+                                    "Budget house for rent"
+                                ].map((suggestion, index) => (
+                                    <button
+                                        key={index}
+                                        type="button"
+                                        onClick={() => setSmartQuery(suggestion)}
+                                        className="text-xs bg-white/20 border border-white/30 text-white px-3 py-1 rounded-full hover:bg-white/30 transition-colors duration-200 backdrop-blur-sm"
+                                    >
+                                        {suggestion}
+                                    </button>
+                                ))}
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+
+            {/* Main Content Area */}
+            <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-20 relative z-10 pb-20">
+                {/* Detailed Filters Card */}
+                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8 animate-fade-in-up">
+                    <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
+                        <Filter className="w-5 h-5 text-blue-600" />
+                        <h2 className="text-lg font-bold text-gray-800">Detailed Filters</h2>
+                    </div>
+
+                    <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                        {/* Keyword Search */}
+                        <div className="col-span-1 md:col-span-2 lg:col-span-4 relative group">
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Property Search</label>
+                            <div className="relative">
+                                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
+                                <input
+                                    type="text"
+                                    name="searchTerm"
+                                    value={formData.searchTerm}
+                                    onChange={handleChanges}
+                                    onFocus={handleSearchInputFocus}
+                                    onBlur={handleSearchInputBlur}
+                                    placeholder="Search by name, location, or features..."
+                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all outline-none"
+                                />
+                                <SearchSuggestions
+                                    searchTerm={formData.searchTerm}
+                                    onSuggestionClick={handleSuggestionClick}
+                                    onClose={() => setShowSuggestions(false)}
+                                    isVisible={showSuggestions}
+                                    className="mt-1"
+                                />
+                            </div>
                         </div>
-                        {/* Mobile Search Button */}
-                        <div className="md:hidden">
-                            <button type="submit" className="w-full bg-gradient-to-r from-blue-500 to-indigo-500 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-indigo-600 transition-all duration-200 transform hover:scale-105 shadow-lg font-semibold text-sm">
-                                Search
-                            </button>
+
+                        {/* Location */}
+                        <div className="lg:col-span-2">
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Location</label>
+                            <LocationSelector value={locationFilter} onChange={handleLocationChange} mode="search" className="w-full" />
                         </div>
-                        <div className="flex flex-wrap gap-2">
-                            <span className="text-sm text-gray-600">Try:</span>
-                            {[
-                                "3BHK under 25L in Mumbai",
-                                "2BHK with parking in Bangalore", 
-                                "Furnished apartment near metro",
-                                "Budget house for rent in Pune"
-                            ].map((suggestion, index) => (
-                                <button
-                                    key={index}
-                                    type="button"
-                                    onClick={() => setSmartQuery(suggestion)}
-                                    className="text-xs bg-white border border-blue-300 text-blue-700 px-3 py-1 rounded-full hover:bg-blue-50 transition-colors duration-200"
+
+                        {/* Type */}
+                        <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Property Type</label>
+                            <div className="flex bg-gray-100 p-1 rounded-xl">
+                                {['all', 'rent', 'sale'].map((t) => (
+                                    <button
+                                        key={t}
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, type: t }))}
+                                        className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
+                                            ? 'bg-white text-blue-700 shadow-sm font-bold'
+                                            : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                    >
+                                        {t}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Sort */}
+                        <div>
+                            <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Sort By</label>
+                            <div className="relative">
+                                <select
+                                    onChange={(e) => {
+                                        const [sort, order] = e.target.value.split("_");
+                                        setFormData((prev) => ({ ...prev, sort, order }));
+                                    }}
+                                    value={`${formData.sort}_${formData.order}`}
+                                    className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl appearance-none focus:bg-white focus:border-blue-500 focus:outline-none transition-all cursor-pointer"
+                                    id="sort_order"
                                 >
-                                    {suggestion}
-                                </button>
+                                    <option value="regularPrice_desc">Price: High to Low</option>
+                                    <option value="regularPrice_asc">Price: Low to High</option>
+                                    <option value="createdAt_desc">Newest First</option>
+                                    <option value="createdAt_asc">Oldest First</option>
+                                </select>
+                                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
+                            </div>
+                        </div>
+
+                        {/* Price Range */}
+                        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Min Price</label>
+                                <div className="relative">
+                                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <input
+                                        type="number"
+                                        name="minPrice"
+                                        value={formData.minPrice}
+                                        onChange={handleChanges}
+                                        placeholder="Min"
+                                        className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
+                                        min={0}
+                                    />
+                                </div>
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Max Price</label>
+                                <div className="relative">
+                                    <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
+                                    <input
+                                        type="number"
+                                        name="maxPrice"
+                                        value={formData.maxPrice}
+                                        onChange={handleChanges}
+                                        placeholder="Max"
+                                        className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
+                                        min={0}
+                                    />
+                                </div>
+                            </div>
+                        </div>
+
+                        {/* Beds / Baths */}
+                        <div className="lg:col-span-2 grid grid-cols-2 gap-4">
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Bedrooms</label>
+                                <input
+                                    type="number"
+                                    name="bedrooms"
+                                    value={formData.bedrooms}
+                                    onChange={handleChanges}
+                                    placeholder="Beds"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
+                                    min={0}
+                                />
+                            </div>
+                            <div>
+                                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Bathrooms</label>
+                                <input
+                                    type="number"
+                                    name="bathrooms"
+                                    value={formData.bathrooms}
+                                    onChange={handleChanges}
+                                    placeholder="Baths"
+                                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
+                                    min={0}
+                                />
+                            </div>
+                        </div>
+
+                        {/* Amenities */}
+                        <div className="col-span-1 md:col-span-2 lg:col-span-4 flex flex-wrap gap-4 pt-2">
+                            {[
+                                { name: 'parking', label: 'Parking Space' },
+                                { name: 'furnished', label: 'Furnished' },
+                                { name: 'offer', label: 'Special Offer' }
+                            ].map((amenity) => (
+                                <label key={amenity.name} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-gray-50 transition-colors">
+                                    <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200 ${formData[amenity.name] ? 'bg-blue-600 border-blue-600' : 'border-gray-300 group-hover:border-blue-400'
+                                        }`}>
+                                        {formData[amenity.name] && <svg className="w-4 h-4 text-white font-bold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                                    </div>
+                                    <span className={`text-sm font-medium transition-colors ${formData[amenity.name] ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-900'}`}>{amenity.label}</span>
+                                    <input
+                                        type="checkbox"
+                                        name={amenity.name}
+                                        onChange={handleChanges}
+                                        checked={formData[amenity.name]}
+                                        className="hidden"
+                                    />
+                                </label>
                             ))}
+                        </div>
+
+                        <div className="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end">
+                            <button
+                                type="submit"
+                                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2"
+                            >
+                                <RefreshCw className="w-5 h-5" />
+                                Update Results
+                            </button>
                         </div>
                     </form>
                 </div>
-                <form
-                    onSubmit={handleSubmit}
-                    className="grid md:grid-cols-2 gap-4 bg-white/80 backdrop-blur border p-4 rounded-xl mb-6"
-                >
-                    <div className="relative">
-                        <FormField
-                            id="searchTerm"
-                            name="searchTerm"
-                            value={formData.searchTerm}
-                            onChange={handleChanges}
-                            placeholder="Search..."
-                            startIcon={<SearchIcon className="w-4 h-4" />}
-                            onFocus={handleSearchInputFocus}
-                            onBlur={handleSearchInputBlur}
-                        />
-                        <SearchSuggestions
-                            searchTerm={formData.searchTerm}
-                            onSuggestionClick={handleSuggestionClick}
-                            onClose={() => setShowSuggestions(false)}
-                            isVisible={showSuggestions}
-                            className="mt-1"
-                        />
+
+                {/* Active Filters Display */}
+                <div className="mb-8">
+                    <FilterChips formData={formData} onClear={clearAllFilters} onRemove={removeFilter} />
+                </div>
+
+                {/* Listing Results */}
+                <div className="flex flex-col gap-6">
+                    <div className="flex items-center justify-between">
+                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                            Search Results
+                            <span className="text-sm font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
+                                {listings.length} properties
+                            </span>
+                        </h2>
                     </div>
 
-                    <SelectField
-                        id="sort_order"
-                        value={`${formData.sort}_${formData.order}`}
-                        onChange={(e) => {
-                            const [sort, order] = e.target.value.split("_");
-                            setFormData((prev) => ({ ...prev, sort, order }));
-                        }}
-                        options={[
-                            { value: "regularPrice_desc", label: "Price high to low" },
-                            { value: "regularPrice_asc", label: "Price low to high" },
-                            { value: "createdAt_desc", label: "Latest" },
-                            { value: "createdAt_asc", label: "Oldest" },
-                        ]}
-                    />
-
-                    {/* LocationSelector for search */}
-                    <div className="md:col-span-2">
-                        <LocationSelector value={locationFilter} onChange={handleLocationChange} mode="search" />
-                    </div>
-
-                    {/* Radio Buttons for Type Selection */}
-                    <div className="flex gap-4">
-                        <label>
-                            <input
-                                type="radio"
-                                name="type"
-                                value="all"
-                                checked={formData.type === "all"}
-                                onChange={handleChanges}
-                            />{" "}
-                            All
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="type"
-                                value="rent"
-                                checked={formData.type === "rent"}
-                                onChange={handleChanges}
-                            />{" "}
-                            Rent
-                        </label>
-                        <label>
-                            <input
-                                type="radio"
-                                name="type"
-                                value="sale"
-                                checked={formData.type === "sale"}
-                                onChange={handleChanges}
-                            />{" "}
-                            Sale
-                        </label>
-                    </div>
-
-                    {/* Checkboxes for Filters */}
-                    <div className="flex gap-4">
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="parking"
-                                onChange={handleChanges}
-                                checked={formData.parking}
-                            />{" "}
-                            Parking
-                        </label>
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="furnished"
-                                onChange={handleChanges}
-                                checked={formData.furnished}
-                            />{" "}
-                            Furnished
-                        </label>
-                        <label>
-                            <input
-                                type="checkbox"
-                                name="offer"
-                                onChange={handleChanges}
-                                checked={formData.offer}
-                            />{" "}
-                            Offer
-                        </label>
-                        
-                    </div>
-
-                    {/* Advanced Filters */}
-                    <div className="flex gap-2">
-                      <FormField id="minPrice" name="minPrice" type="number" placeholder="Min Price" value={formData.minPrice} onChange={handleChanges} startIcon={<IndianRupee className="w-4 h-4" />} min={0} />
-                      <FormField id="maxPrice" name="maxPrice" type="number" placeholder="Max Price" value={formData.maxPrice} onChange={handleChanges} startIcon={<IndianRupee className="w-4 h-4" />} min={0} />
-                    </div>
-                    <div className="flex gap-2">
-                      <input
-                        type="number"
-                        name="bedrooms"
-                        placeholder="Bedrooms"
-                        value={formData.bedrooms}
-                        onChange={handleChanges}
-                        className="p-2 border rounded-md w-full"
-                        min={1}
-                      />
-                      <input
-                        type="number"
-                        name="bathrooms"
-                        placeholder="Bathrooms"
-                        value={formData.bathrooms}
-                        onChange={handleChanges}
-                        className="p-2 border rounded-md w-full"
-                        min={1}
-                      />
-                    </div>
-
-                    <button
-                        type="submit"
-                        className="md:col-span-2 w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center justify-center gap-2"
-                    >
-                        <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M21 21l-4-4m0 0A7 7 0 104 4a7 7 0 0013 13z" /></svg>
-                        Search
-                    </button>
-                </form>
-
-                <div className="hidden md:block h-16"></div>
-                <div className="mb-4"><FilterChips formData={formData} onClear={clearAllFilters} onRemove={removeFilter} /></div>
-                {/* Listings Display */}
-                <div className="mt-4">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Listings</h2>
-                    {loading && <p className="text-center text-lg font-semibold text-blue-600 animate-pulse">Loading...</p>}
-                    {error && <p className="text-center text-red-600 text-lg mb-4">{error}</p>}
-                    {!loading && !error && listings.length === 0 && (
-                      <div className="text-center py-8">
-                        <img src={duckImg} alt="No listings found" className="w-72 h-72 object-contain mx-auto mb-0" />
-                        <h3 className="text-xl font-bold text-gray-700 mb-2">No Listings Found</h3>
-                        <p className="text-gray-500 mb-4">Try adjusting your search criteria or filters</p>
-                      </div>
+                    {error && (
+                        <div className="text-center py-10 bg-red-50 rounded-xl border border-red-100 animate-fade-in">
+                            <p className="text-red-600 text-lg font-medium">{error}</p>
+                            <button onClick={() => window.location.reload()} className="mt-4 text-blue-600 hover:underline">Try refreshing the page</button>
+                        </div>
                     )}
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        {listings && listings.map((listing) => (
-                            <ListingItem key={listing._id} listing={listing} />
+
+                    {!loading && !error && listings.length === 0 && (
+                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center animate-fade-in-up">
+                            <img src={duckImg} alt="No listings found" className="w-[280px] h-[280px] object-contain mx-auto opacity-90 hover:scale-105 transition-transform duration-500" />
+                            <h3 className="text-2xl font-bold text-gray-700 mb-2">No properties matched your search</h3>
+                            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                                We couldn't find exactly what you're looking for. Try adjusting your filters or use our Smart Search.
+                            </p>
+                            <button
+                                onClick={clearAllFilters}
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-600 rounded-full font-semibold hover:bg-blue-100 transition-colors"
+                            >
+                                <RefreshCw className="w-4 h-4" /> Clear all filters
+                            </button>
+                        </div>
+                    )}
+
+                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                        {listings.map((listing, index) => (
+                            <div
+                                key={listing._id}
+                                className="animate-fade-in-up"
+                                style={{ animationDelay: `${index * 0.05}s` }}
+                            >
+                                <ListingItem listing={listing} />
+                            </div>
                         ))}
                     </div>
+
                     {showMoreListing && (
-                        <div className="flex justify-center mt-4">
-                        <button
-                            type="button"
-                            onClick={showMoreListingClick}
-                            className="mt-4 bg-gray-600 text-white p-2 rounded-md w-500"
-                        >
-                            Show More
-                        </button>
+                        <div className="flex justify-center mt-12">
+                            <button
+                                type="button"
+                                onClick={showMoreListingClick}
+                                className="group relative px-8 py-3 bg-white text-gray-800 font-bold rounded-full shadow-md hover:shadow-lg hover:text-blue-600 transition-all border border-gray-200 border-b-4 hover:border-b active:border-b-0 active:translate-y-1"
+                            >
+                                <span className="relative z-10 flex items-center gap-2">Show More Properties <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" /></span>
+                            </button>
                         </div>
                     )}
                 </div>
+
                 {recommendations.length > 0 && (
-                  <div className="mt-10">
-                    <h2 className="text-2xl font-bold text-gray-800 mb-4">Recommended for you</h2>
-                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                      {recommendations.map((l) => (
-                        <ListingItem key={l._id} listing={l} />
-                      ))}
+                    <div className="mt-16 pt-10 border-t border-gray-200">
+                        <h2 className="text-2xl font-bold text-gray-800 mb-6">Recommended for you</h2>
+                        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            {recommendations.map((l, index) => (
+                                <div key={l._id} className="animate-fade-in-up" style={{ animationDelay: `${index * 0.05}s` }}>
+                                    <ListingItem listing={l} />
+                                </div>
+                            ))}
+                        </div>
                     </div>
-                  </div>
                 )}
-            </div>
+            </main>
+
             <GeminiAIWrapper />
             <ContactSupportWrapper />
         </div>
