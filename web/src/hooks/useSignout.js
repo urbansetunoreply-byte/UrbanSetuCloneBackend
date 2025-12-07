@@ -87,7 +87,6 @@ export const useSignout = () => {
       }
 
       if (onError) onError(error.message);
-      if (onError) onError(error.message);
       navigate(navigateTo, { replace: true });
     }
   };
