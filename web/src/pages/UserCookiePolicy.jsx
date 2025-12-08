@@ -168,11 +168,22 @@ const UserCookiePolicy = () => {
               We partner with trusted service providers who may also set cookies on your device.
             </p>
             <div className="space-y-3">
-              {['Google Analytics', 'Google Maps', 'Cloudinary CDN', 'Vercel Analytics'].map((service) => (
-                <div key={service} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
-                  <span className="font-medium text-gray-700">{service}</span>
-                  <ExternalLink className="w-4 h-4 text-gray-400" />
-                </div>
+              {[
+                { name: 'Google Analytics', url: 'https://marketingplatform.google.com/about/analytics/terms/us/' },
+                { name: 'Google Maps', url: 'https://cloud.google.com/maps-platform/terms/' },
+                { name: 'Cloudinary CDN', url: 'https://cloudinary.com/privacy' },
+                { name: 'Vercel Analytics', url: 'https://vercel.com/legal/privacy-policy' }
+              ].map((service) => (
+                <a
+                  key={service.name}
+                  href={service.url}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors group cursor-pointer"
+                >
+                  <span className="font-medium text-gray-700 group-hover:text-blue-600 transition-colors">{service.name}</span>
+                  <ExternalLink className="w-4 h-4 text-gray-400 group-hover:text-blue-600 transition-colors" />
+                </a>
               ))}
             </div>
           </div>
