@@ -420,7 +420,8 @@ export default function Settings() {
       setTransferDeleteDeleting(true);
       const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
       const vData = await vRes.json();
-      if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
+      // Backend marks this OTP as 'transfer_rights'
+      if (!vRes.ok || vData.success === false || vData.type !== 'transfer_rights') {
         const att = transferOtpAttempts + 1; setTransferOtpAttempts(att);
         setTransferOtpError(vData.message || 'Invalid OTP');
         if (att >= 5) {
@@ -546,7 +547,8 @@ export default function Settings() {
       setTransferTransferring(true);
       const vRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, { method: 'POST', body: JSON.stringify({ email: currentUser.email, otp: transferOtp }) });
       const vData = await vRes.json();
-      if (!vRes.ok || vData.success === false || vData.type !== 'forgotPassword') {
+      // Backend marks this OTP as 'transfer_rights'
+      if (!vRes.ok || vData.success === false || vData.type !== 'transfer_rights') {
         const att = transferOtpAttempts + 1; setTransferOtpAttempts(att);
         setTransferError(vData.message || 'Invalid OTP');
         if (att >= 5) {
