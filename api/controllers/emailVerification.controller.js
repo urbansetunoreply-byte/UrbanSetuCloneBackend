@@ -527,6 +527,13 @@ export const verifyOTP = async (req, res, next) => {
         success: true,
         message: "Email verified successfully"
       });
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP verified successfully",
+        userId,
+        type: 'account_deletion'
+      });
     }
 
   } catch (error) {
