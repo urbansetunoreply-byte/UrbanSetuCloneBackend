@@ -612,8 +612,27 @@ export default function Settings() {
         return;
       }
       toast.success(data.message || 'Admin rights transferred successfully!');
+      // Clear modal state and sign out to refresh role flags
       setShowTransferModal(false);
-      navigate('/sign-in', { replace: true });
+      setSelectedTransferAdmin("");
+      setTransferPassword("");
+      setTransferError("");
+      setTransferOtpSent(false);
+      setTransferOtp("");
+      setTransferOtpError("");
+      setTransferPasswordVerified(false);
+      setTransferSubmitting(false);
+      setTransferResending(false);
+      setTransferTransferring(false);
+      setTransferCanResend(true);
+      setTransferResendTimer(0);
+      setTransferPasswordAttempts(0);
+      // Force fresh session with updated roles
+      await signout({
+        showToast: false,
+        navigateTo: "/sign-in",
+        delay: 0
+      });
     } catch (e) {
       setTransferError('Failed to transfer rights.');
     } finally {
