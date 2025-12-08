@@ -599,7 +599,11 @@ export const sendTransferRightsOTP = async (req, res, next) => {
       expirationTime,
       attempts: 0,
       type: 'transfer_rights',
-      userId: user._id
+      userId: user._id,
+      meta: {
+        targetAdminId: req.body?.targetAdminId,
+        requestedAt: new Date()
+      }
     });
 
     const emailResult = await sendTransferRightsOTPEmail(emailLower, otp);
