@@ -1,8 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaSearch, FaFilter, FaCalendar, FaUser, FaEye, FaHeart, FaTag } from 'react-icons/fa';
+import {
+  Search as SearchIcon, Filter, Calendar, User, Eye, Heart, Tag,
+  ArrowRight, ChevronLeft, ChevronRight, Mail, Info, Clock,
+  TrendingUp, Lightbulb, Home
+} from 'lucide-react';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+
 const PublicBlogs = () => {
   // Set page title
   usePageTitle("Blogs - Real Estate Blog Portal");
@@ -122,56 +127,90 @@ const PublicBlogs = () => {
     return text.slice(0, maxLength) + '...';
   };
 
+  if (loading && blogs.length === 0) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
+          <p className="text-gray-500 animate-pulse font-medium">Loading insights...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 py-6 sm:py-12">
-      <div className="max-w-7xl mx-auto px-2 sm:px-4 lg:px-8">
-        {/* Enhanced Header */}
-        <div className="text-center mb-8 sm:mb-12">
-          <div className="bg-white rounded-2xl shadow-lg p-6 sm:p-8 mb-6 transform hover:scale-[1.02] transition-all duration-300">
-            <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-gray-900 mb-4 animate-fadeIn">
-              📝 Real Estate Blog
-            </h1>
-            <p className="text-lg sm:text-xl text-gray-600 max-w-3xl mx-auto leading-relaxed">
-              Stay updated with the latest insights, tips, and trends in real estate
-            </p>
-            <div className="mt-6 flex flex-wrap justify-center gap-2">
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 rounded-full text-sm font-medium">💡 Tips</span>
-              <span className="px-3 py-1 bg-green-100 text-green-800 rounded-full text-sm font-medium">📈 Market Updates</span>
-              <span className="px-3 py-1 bg-purple-100 text-purple-800 rounded-full text-sm font-medium">🏠 Investment</span>
-            </div>
-          </div>
+    <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
+      {/* Search Header / Hero */}
+      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 pb-24 pt-12 px-4 shadow-lg mb-8 relative overflow-hidden">
+        {/* Abstract shapes for visual interest */}
+        <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
+          <div className="absolute top-[-50%] left-[-10%] w-[500px] h-[500px] rounded-full bg-white mix-blend-overlay filter blur-3xl animate-float"></div>
+          <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-300 mix-blend-overlay filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
+          <div className="absolute top-[20%] right-[30%] w-[300px] h-[300px] rounded-full bg-indigo-400 mix-blend-overlay filter blur-3xl animate-float" style={{ animationDelay: "4s" }}></div>
         </div>
 
-        {/* Enhanced Search and Filters */}
-        <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
-          <form onSubmit={handleSearch} className="mb-6">
-            <div className="relative">
-              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-400 text-lg" />
-              <input
-                type="text"
-                placeholder="Search blog posts..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-12 pr-4 py-4 border-2 border-gray-300 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:border-blue-300 text-lg"
-              />
-            </div>
-          </form>
+        <div className="max-w-7xl mx-auto text-center relative z-20 animate-slideInFromTop">
+          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
+            Real Estate <span className="text-yellow-300">Insights</span>
+          </h1>
+          <p className="text-blue-100 mb-8 text-lg max-w-2xl mx-auto font-light leading-relaxed">
+            Stay updated with expert analysis, market trends, and property tips to make informed decisions.
+          </p>
 
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            {/* Enhanced Categories */}
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <FaFilter className="text-blue-500 text-lg" />
-                <span className="text-lg font-semibold text-gray-700">🏷️ Categories</span>
+          <div className="flex flex-wrap justify-center gap-3 mb-8">
+            <span className="px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-medium border border-white/20 flex items-center gap-2">
+              <Lightbulb className="w-4 h-4 text-yellow-300" /> Tips & Tricks
+            </span>
+            <span className="px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-medium border border-white/20 flex items-center gap-2">
+              <TrendingUp className="w-4 h-4 text-green-300" /> Market Trends
+            </span>
+            <span className="px-4 py-2 bg-white/10 backdrop-blur-md text-white rounded-full text-sm font-medium border border-white/20 flex items-center gap-2">
+              <Home className="w-4 h-4 text-blue-300" /> Investing
+            </span>
+          </div>
+
+          {/* Search Bar in Hero */}
+          <div className="max-w-3xl mx-auto relative group">
+            <form onSubmit={handleSearch}>
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
+                  <SearchIcon className="h-5 w-5 text-gray-500 group-focus-within:text-blue-500 transition-colors" />
+                </div>
+                <input
+                  type="text"
+                  placeholder="Search articles, topics, or keywords..."
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="block w-full pl-12 pr-4 py-4 border-none rounded-2xl bg-white/95 backdrop-blur-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 shadow-2xl transition-all text-lg relative"
+                />
+                <button type="submit" className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl font-medium transition-colors shadow-md z-10">
+                  Search
+                </button>
+              </div>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      {/* Main Content Area */}
+      <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-20 relative z-10 pb-20">
+
+        {/* Filters Card */}
+        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8 animate-fade-in-up">
+          <div className="flex flex-col lg:flex-row gap-8">
+            {/* Categories */}
+            <div className="flex-1">
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+                <Filter className="w-4 h-4 text-blue-600" />
+                <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Categories</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedCategory('all')}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
-                    selectedCategory === 'all'
-                      ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
-                  }`}
+                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === 'all'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                    }`}
                 >
                   All
                 </button>
@@ -179,11 +218,10 @@ const PublicBlogs = () => {
                   <button
                     key={category}
                     onClick={() => setSelectedCategory(category)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
-                      selectedCategory === category
-                        ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
-                    }`}
+                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === category
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                      }`}
                   >
                     {category}
                   </button>
@@ -191,32 +229,30 @@ const PublicBlogs = () => {
               </div>
             </div>
 
-            {/* Enhanced Tags */}
-            <div>
-              <div className="flex items-center space-x-2 mb-4">
-                <FaTag className="text-green-500 text-lg" />
-                <span className="text-lg font-semibold text-gray-700">🏷️ Tags</span>
+            {/* Tags */}
+            <div className="flex-1 border-t lg:border-t-0 lg:border-l border-gray-100 pt-6 lg:pt-0 lg:pl-8">
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
+                <Tag className="w-4 h-4 text-green-600" />
+                <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Popular Tags</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedTag('all')}
-                  className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
-                    selectedTag === 'all'
-                      ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
-                  }`}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${selectedTag === 'all'
+                    ? 'bg-green-600 text-white shadow-md shadow-green-200'
+                    : 'bg-green-50 text-green-700 hover:bg-green-100'
+                    }`}
                 >
                   All
                 </button>
-                {tags.slice(0, 8).map(tag => (
+                {tags.slice(0, 10).map(tag => (
                   <button
                     key={tag}
                     onClick={() => setSelectedTag(tag)}
-                    className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 transform hover:scale-105 ${
-                      selectedTag === tag
-                        ? 'bg-gradient-to-r from-green-600 to-green-700 text-white shadow-lg'
-                        : 'bg-gray-100 text-gray-700 hover:bg-gray-200 hover:shadow-md'
-                    }`}
+                    className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${selectedTag === tag
+                      ? 'bg-green-600 text-white shadow-md shadow-green-200'
+                      : 'bg-green-50 text-green-700 hover:bg-green-100'
+                      }`}
                   >
                     {tag}
                   </button>
@@ -226,119 +262,111 @@ const PublicBlogs = () => {
           </div>
         </div>
 
-        {/* Enhanced Blogs Grid */}
-        {loading ? (
-          <div className="text-center py-12">
-            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-            <p className="mt-4 text-gray-600">Loading blog posts...</p>
-          </div>
-        ) : blogs.length === 0 ? (
-          <div className="text-center py-12">
-            <div className="text-gray-400 text-6xl mb-4">📝</div>
-            <h3 className="text-xl font-semibold text-gray-900 mb-2">No blog posts found</h3>
-            <p className="text-gray-600">
-              {searchTerm || selectedCategory !== 'all' || selectedTag !== 'all'
-                ? 'Try adjusting your search or filter criteria.'
-                : 'No blog posts are available at the moment.'
-              }
+        {/* Blogs Grid */}
+        {blogs.length === 0 ? (
+          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 text-center animate-fade-in-up">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-full mb-6">
+              <SearchIcon className="w-10 h-10 text-blue-400" />
+            </div>
+            <h3 className="text-2xl font-bold text-gray-800 mb-2">No articles found</h3>
+            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+              We couldn't find any blog posts matching your criteria. Try different keywords or filters.
             </p>
+            <button
+              onClick={() => {
+                setSearchTerm('');
+                setSelectedCategory('all');
+                setSelectedTag('all');
+              }}
+              className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+            >
+              Clear Filters
+            </button>
           </div>
         ) : (
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8">
-            {blogs.map((blog) => (
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+            {blogs.map((blog, index) => (
               <article
                 key={blog._id}
-                className="bg-white rounded-2xl shadow-lg border border-gray-100 overflow-hidden hover:shadow-2xl transition-all duration-300 transform hover:scale-[1.02] hover:-translate-y-1"
+                className="bg-white rounded-2xl shadow-md hover:shadow-2xl border border-gray-100 overflow-hidden transition-all duration-500 group flex flex-col h-full animate-fade-in-up"
+                style={{ animationDelay: `${index * 0.1}s` }}
               >
-                {/* Enhanced Thumbnail */}
-                {blog.thumbnail && (
-                  <div className="relative overflow-hidden">
+                {/* Thumbnail */}
+                <div className="relative overflow-hidden h-56 flex-shrink-0">
+                  {blog.thumbnail ? (
                     <img
                       src={blog.thumbnail}
                       alt={blog.title}
-                      className="w-full h-48 sm:h-56 object-cover transition-transform duration-300 hover:scale-110"
+                      className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-110"
                     />
-                    <div className="absolute inset-0 bg-gradient-to-t from-black/20 to-transparent"></div>
-                  </div>
-                )}
-
-                <div className="p-4 sm:p-6">
-                  {/* Enhanced Category */}
-                  <div className="mb-4">
-                    <span className="inline-block bg-gradient-to-r from-blue-100 to-blue-200 text-blue-800 text-xs font-semibold px-3 py-1 rounded-full border border-blue-300">
-                      🏷️ {blog.category}
+                  ) : (
+                    <div className="w-full h-full bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
+                      <span className="text-gray-400 font-bold text-2xl">UrbanSetu</span>
+                    </div>
+                  )}
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent opacity-60 group-hover:opacity-80 transition-opacity"></div>
+                  <div className="absolute top-4 left-4">
+                    <span className="inline-flex items-center px-3 py-1 rounded-full text-xs font-bold bg-white/90 backdrop-blur-md text-blue-600 shadow-lg">
+                      {blog.category}
                     </span>
                   </div>
+                </div>
 
-                  {/* Enhanced Title */}
-                  <h2 className="text-lg sm:text-xl font-bold text-gray-900 mb-3 line-clamp-2">
-                    <Link
-                      to={`/blog/${blog.slug || blog._id}`}
-                      className="hover:text-blue-600 transition-colors duration-300"
-                    >
+                {/* Content */}
+                <div className="p-6 flex-grow flex flex-col">
+                  <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">
+                    <Link to={`/blog/${blog.slug || blog._id}`}>
                       {blog.title}
                     </Link>
                   </h2>
 
-                  {/* Enhanced Excerpt */}
-                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm sm:text-base">
+                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-grow leading-relaxed">
                     {truncateText(blog.excerpt || blog.content, 120)}
                   </p>
 
-                  {/* Enhanced Tags */}
-                  {blog.tags && blog.tags.length > 0 && (
-                    <div className="flex flex-wrap gap-2 mb-4">
-                      {blog.tags.slice(0, 3).map((tag, index) => (
-                        <span
-                          key={index}
-                          className="inline-flex items-center px-2 py-1 rounded-lg text-xs font-medium bg-gradient-to-r from-gray-100 to-gray-200 text-gray-700 border border-gray-300"
-                        >
-                          <FaTag className="mr-1 text-green-500" />
-                          {tag}
-                        </span>
-                      ))}
-                      {blog.tags.length > 3 && (
-                        <span className="text-xs text-gray-500 px-2 py-1 bg-gray-50 rounded-lg">
-                          +{blog.tags.length - 3} more
-                        </span>
-                      )}
-                    </div>
-                  )}
-
-                  {/* Enhanced Meta Info */}
-                  <div className="flex flex-col space-y-2 text-sm text-gray-500 mb-4">
-                    <div className="flex items-center space-x-1">
-                      <FaUser className="text-blue-500" />
-                      <span className="font-medium truncate">{blog.author?.username || 'UrbanSetu Team'}</span>
-                    </div>
-                    <div className="flex items-center justify-between">
-                      <div className="flex items-center space-x-1">
-                        <FaCalendar className="text-green-500" />
-                        <span>{formatDate(blog.publishedAt || blog.createdAt)}</span>
+                  <div className="border-t border-gray-100 pt-4 mt-auto">
+                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                      <div className="flex items-center gap-2">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                          {blog.author?.username?.[0]?.toUpperCase() || 'U'}
+                        </div>
+                        <span className="font-medium truncate max-w-[100px]">{blog.author?.username || 'Team'}</span>
                       </div>
-                      <div className="flex items-center space-x-3">
-                        <div className="flex items-center space-x-1">
-                          <FaEye className="text-purple-500" />
+                      <div className="flex items-center gap-3">
+                        <div className="flex items-center gap-1" title="Views">
+                          <Eye className="w-4 h-4 text-gray-400" />
                           <span>{blog.views || 0}</span>
                         </div>
-                        <div className="flex items-center space-x-1">
-                          <FaHeart className="text-red-500" />
+                        <div className="flex items-center gap-1" title="Likes">
+                          <Heart className="w-4 h-4 text-red-400" />
                           <span>{blog.likes || 0}</span>
+                        </div>
+                        <div className="flex items-center gap-1" title="Date">
+                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <span>{new Date(blog.publishedAt || blog.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                         </div>
                       </div>
                     </div>
-                  </div>
 
-                  {/* Enhanced Read More Button */}
-                  <div className="mt-4">
+                    {/* Tags Preview */}
+                    {blog.tags && blog.tags.length > 0 && (
+                      <div className="flex flex-wrap gap-2 mb-4">
+                        {blog.tags.slice(0, 2).map((tag, idx) => (
+                          <span key={idx} className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                            <Tag className="w-3 h-3" /> {tag}
+                          </span>
+                        ))}
+                        {blog.tags.length > 2 && (
+                          <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-md">+{blog.tags.length - 2}</span>
+                        )}
+                      </div>
+                    )}
+
                     <Link
                       to={`/blog/${blog.slug || blog._id}`}
-                      className="inline-flex items-center justify-center w-full sm:w-auto bg-gradient-to-r from-blue-600 to-blue-700 text-white px-6 py-3 rounded-xl hover:from-blue-700 hover:to-blue-800 font-medium text-sm transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                      className="flex items-center justify-center w-full gap-2 px-4 py-3 bg-gray-50 text-gray-700 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 group-hover:shadow-md"
                     >
-                      Read More
-                      <svg className="ml-2 w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                      </svg>
+                      Read Article <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </Link>
                   </div>
                 </div>
@@ -347,81 +375,65 @@ const PublicBlogs = () => {
           </div>
         )}
 
-        {/* Enhanced Pagination */}
+        {/* Pagination */}
         {pagination.pages > 1 && (
-          <div className="mt-12 flex justify-center">
-            <div className="bg-white rounded-2xl shadow-lg p-4 sm:p-6">
-              <div className="flex flex-col sm:flex-row items-center space-y-4 sm:space-y-0 sm:space-x-4">
-                <div className="text-sm text-gray-600">
-                  Page {pagination.current} of {pagination.pages}
-                </div>
-                <div className="flex items-center space-x-2">
-                  <button
-                    onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
-                    disabled={pagination.current === 1}
-                    className="px-4 py-2 border-2 border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
-                  >
-                    ← Previous
-                  </button>
-                  
-                  <div className="flex items-center space-x-1">
-                    {Array.from({ length: Math.min(5, pagination.pages) }, (_, i) => {
-                      const page = i + 1;
-                      return (
-                        <button
-                          key={page}
-                          onClick={() => setPagination(prev => ({ ...prev, current: page }))}
-                          className={`px-4 py-2 text-sm font-medium rounded-xl transition-all duration-200 hover:scale-105 ${
-                            pagination.current === page
-                              ? 'bg-gradient-to-r from-blue-600 to-blue-700 text-white shadow-lg'
-                              : 'text-gray-700 bg-white border-2 border-gray-300 hover:bg-gray-50 hover:border-gray-400'
-                          }`}
-                        >
-                          {page}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  
-                  <button
-                    onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
-                    disabled={pagination.current === pagination.pages}
-                    className="px-4 py-2 border-2 border-gray-300 rounded-xl text-sm font-medium text-gray-700 bg-white hover:bg-gray-50 hover:border-gray-400 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
-                  >
-                    Next →
-                  </button>
-                </div>
+          <div className="mt-16 flex justify-center">
+            <div className="bg-white rounded-full shadow-lg p-2 flex items-center gap-2 border border-gray-100">
+              <button
+                onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
+                disabled={pagination.current === 1}
+                className="w-10 h-10 flex items-center justify-center rounded-full text-gray-600 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+              >
+                <ChevronLeft className="w-5 h-5" />
+              </button>
+
+              <div className="flex items-center px-4 font-medium text-gray-700">
+                Page {pagination.current} <span className="text-gray-400 mx-2">/</span> {pagination.pages}
               </div>
+
+              <button
+                onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
+                disabled={pagination.current === pagination.pages}
+                className="w-10 h-10 flex items-center justify-center rounded-full text-gray-600 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+              >
+                <ChevronRight className="w-5 h-5" />
+              </button>
             </div>
           </div>
         )}
 
-        {/* Enhanced CTA Section */}
-        <div className="mt-16 bg-gradient-to-r from-blue-600 via-purple-600 to-indigo-600 rounded-2xl p-6 sm:p-8 lg:p-12 text-center text-white shadow-2xl">
-          <div className="max-w-4xl mx-auto">
-            <h3 className="text-2xl sm:text-3xl lg:text-4xl font-bold mb-4 animate-fadeIn">
-              📈 Stay Updated with Real Estate Insights
+        {/* Newsletter CTA */}
+        <div className="mt-20 bg-gradient-to-br from-slate-900 to-slate-800 rounded-3xl p-8 md:p-12 text-center text-white shadow-2xl relative overflow-hidden animate-fade-in-up">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20 -translate-y-1/2 translate-x-1/3"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500 rounded-full mix-blend-overlay filter blur-3xl opacity-20 translate-y-1/2 -translate-x-1/3"></div>
+
+          <div className="relative z-10 max-w-3xl mx-auto">
+            <div className="inline-block p-3 bg-white/10 rounded-2xl mb-6 backdrop-blur-sm">
+              <Mail className="w-8 h-8 text-blue-300" />
+            </div>
+            <h3 className="text-3xl md:text-4xl font-bold mb-4">
+              Get insights delivered to your inbox
             </h3>
-            <p className="text-blue-100 mb-8 max-w-3xl mx-auto text-lg leading-relaxed">
-              Get the latest property trends, investment tips, and market updates delivered to your inbox.
+            <p className="text-slate-300 mb-8 max-w-2xl mx-auto text-lg">
+              Join our weekly newsletter to get the latest real estate trends, investment tips, and market analysis.
             </p>
             <div className="flex flex-col sm:flex-row gap-4 justify-center">
-              <a
-                href="/contact"
-                className="bg-white text-blue-600 px-8 py-4 rounded-xl font-semibold hover:bg-gray-100 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+              <Link
+                to="/contact"
+                className="bg-blue-600 text-white px-8 py-4 rounded-xl font-bold text-lg hover:bg-blue-500 transition-all duration-300 shadow-lg hover:shadow-blue-500/25 hover:-translate-y-1"
               >
-                📧 Subscribe to Newsletter
-              </a>
-              <a
-                href="/about"
-                className="border-2 border-white text-white px-8 py-4 rounded-xl font-semibold hover:bg-white hover:text-blue-600 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:scale-105"
+                Subscribe Now
+              </Link>
+              <Link
+                to="/about"
+                className="bg-white/10 backdrop-blur-md text-white border border-white/20 px-8 py-4 rounded-xl font-bold text-lg hover:bg-white/20 transition-all duration-300 hover:-translate-y-1"
               >
-                🏢 Learn More About Us
-              </a>
+                Learn More
+              </Link>
             </div>
           </div>
         </div>
-      </div>
+      </main>
     </div>
   );
 };

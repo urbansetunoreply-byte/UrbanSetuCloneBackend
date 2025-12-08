@@ -3,6 +3,7 @@ import { useLocation, useNavigate } from "react-router-dom";
 import ListingItem from "../components/ListingItem";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import LocationSelector from "../components/LocationSelector";
+import data from "../data/countries+states+cities.json";
 import duckImg from "../assets/duck-go-final.gif";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import SearchSuggestions from '../components/SearchSuggestions';
@@ -44,6 +45,7 @@ export default function Search() {
     const [recommendations, setRecommendations] = useState([]);
     const [smartQuery, setSmartQuery] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
+    const [isFiltersOpen, setIsFiltersOpen] = useState(false); // Mobile filter toggle
 
     useEffect(() => {
         const urlParams = new URLSearchParams(location.search);
@@ -883,8 +885,16 @@ export default function Search() {
 
             {/* Main Content Area */}
             <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-20 relative z-10 pb-20">
+                {/* Mobile Filter Toggle Button */}
+                <button
+                    onClick={() => setIsFiltersOpen(true)}
+                    className="md:hidden w-full mb-6 bg-blue-600 text-white p-4 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
+                >
+                    <Filter className="w-5 h-5" /> Open Filters
+                </button>
+
                 {/* Detailed Filters Card */}
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8 animate-fade-in-up">
+                <div className="hidden md:block bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8 animate-fade-in-up">
                     <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
                         <Filter className="w-5 h-5 text-blue-600" />
                         <h2 className="text-lg font-bold text-gray-800">Detailed Filters</h2>
@@ -1139,6 +1149,106 @@ export default function Search() {
                     </div>
                 )}
             </main>
+
+            {/* Mobile Filters Drawer */}
+            {isFiltersOpen && (
+                <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm md:hidden" onClick={() => setIsFiltersOpen(false)}>
+                    <div className="absolute right-0 top-0 h-full w-4/5 max-w-sm bg-white shadow-2xl p-6 flex flex-col gap-4 overflow-y-auto animate-slide-in-right" onClick={e => e.stopPropagation()}>
+                        <div className="flex justify-between items-center mb-4 border-b pb-4">
+                            <h2 className="text-xl font-bold text-gray-800">Filter Properties</h2>
+                            <button onClick={() => setIsFiltersOpen(false)} className="text-gray-500 hover:text-gray-800">Close</button>
+                        </div>
+
+                        {/* Mobile Search Term */}
+                        <div className="mb-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Search Keyword</label>
+                            <div className="relative">
+                                <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                <input
+                                    type="text"
+                                    name="searchTerm"
+                                    value={formData.searchTerm}
+                                    onChange={handleChanges}
+                                    placeholder="Search..."
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+                                />
+                            </div>
+                        </div>
+
+                        {/* Mobile Location Selector */}
+                        <div className="mb-2">
+                            <LocationSelector value={locationFilter} onChange={handleLocationChange} />
+                        </div>
+
+                        {/* Mobile Type Filter */}
+                        <div className="mb-2">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Property Type</label>
+                            <div className="flex bg-gray-100 p-1 rounded-xl">
+                                {['all', 'rent', 'sale'].map((t) => (
+                                    <button
+                                        key={t}
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, type: t }))}
+                                        className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
+                                                ? 'bg-white text-blue-600 shadow-sm'
+                                                : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                    >
+                                        {t}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Mobile Detailed Filters */}
+                        <div className="p-3 bg-gray-50 rounded-xl mb-2">
+                            <label className="block text-sm font-semibold mb-2">Price & Size</label>
+                            <div className="grid grid-cols-2 gap-3">
+                                <input type="number" name="minPrice" placeholder="Min ₹" value={formData.minPrice} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
+                                <input type="number" name="maxPrice" placeholder="Max ₹" value={formData.maxPrice} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
+                                <input type="number" name="bedrooms" placeholder="Beds" value={formData.bedrooms} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
+                                <input type="number" name="bathrooms" placeholder="Baths" value={formData.bathrooms} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
+                            </div>
+                        </div>
+
+                        {/* Mobile Checkboxes */}
+                        <div className="flex flex-col gap-3 mb-4">
+                            {['parking', 'furnished', 'offer'].map(item => (
+                                <label key={item} className="flex items-center gap-2">
+                                    <input type="checkbox" name={item} checked={formData[item]} onChange={handleChanges} className="w-5 h-5 accent-blue-600" />
+                                    <span className="capitalize text-gray-700 font-medium">{item}</span>
+                                </label>
+                            ))}
+                        </div>
+
+                        {/* Mobile Sort */}
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
+                        <select
+                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all mb-4"
+                            onChange={(e) => {
+                                const [sort, order] = e.target.value.split("_");
+                                setFormData((prev) => ({ ...prev, sort, order }));
+                            }}
+                            value={`${formData.sort}_${formData.order}`}
+                        >
+                            <option value="regularPrice_desc">Price: High to Low</option>
+                            <option value="regularPrice_asc">Price: Low to High</option>
+                            <option value="createdAt_desc">Newest First</option>
+                            <option value="createdAt_asc">Oldest First</option>
+                        </select>
+
+                        <button
+                            onClick={(e) => {
+                                handleSubmit(e);
+                                setIsFiltersOpen(false);
+                            }}
+                            className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold mt-2 shadow-md"
+                        >
+                            Apply Filters
+                        </button>
+                    </div>
+                </div>
+            )}
 
             <GeminiAIWrapper />
             <ContactSupportWrapper />

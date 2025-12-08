@@ -1,17 +1,17 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { FaTimes, FaImage, FaVideo, FaTags } from 'react-icons/fa';
 
-const BlogEditModal = ({ 
-  isOpen, 
-  onClose, 
-  onSubmit, 
-  formData, 
-  setFormData, 
-  properties, 
-  categories, 
-  propertySearch, 
+const BlogEditModal = ({
+  isOpen,
+  onClose,
+  onSubmit,
+  formData,
+  setFormData,
+  properties,
+  categories,
+  propertySearch,
   setPropertySearch,
-  isEdit = false 
+  isEdit = false
 }) => {
   const [tagInput, setTagInput] = useState('');
 
@@ -42,14 +42,14 @@ const BlogEditModal = ({
       const results = await Promise.all(uploadPromises);
 
       if (type === 'image') {
-        setFormData(prev => ({ 
-          ...prev, 
-          imageUrls: [...(prev.imageUrls || []), ...results] 
+        setFormData(prev => ({
+          ...prev,
+          imageUrls: [...(prev.imageUrls || []), ...results]
         }));
       } else {
-        setFormData(prev => ({ 
-          ...prev, 
-          videoUrls: [...(prev.videoUrls || []), ...results] 
+        setFormData(prev => ({
+          ...prev,
+          videoUrls: [...(prev.videoUrls || []), ...results]
         }));
       }
     } catch (error) {
@@ -122,7 +122,7 @@ const BlogEditModal = ({
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     return () => {
       document.body.style.overflow = 'unset';
     };
@@ -146,7 +146,7 @@ const BlogEditModal = ({
             </button>
           </div>
         </div>
-        
+
         <form onSubmit={onSubmit} className="p-4 sm:p-6 space-y-6">
           <div>
             <label className="block text-sm font-medium text-gray-700 mb-2">📝 Title *</label>
@@ -199,8 +199,8 @@ const BlogEditModal = ({
             </label>
             {formData.thumbnail && (
               <div className="relative mt-3">
-                <img 
-                  src={formData.thumbnail} 
+                <img
+                  src={formData.thumbnail}
                   alt="Thumbnail preview"
                   className="w-20 h-20 rounded-xl object-cover shadow-lg"
                 />
@@ -231,13 +231,13 @@ const BlogEditModal = ({
                 <FaImage className="mr-2 text-green-600" />
                 <span className="font-medium">Upload Multiple Images</span>
               </label>
-              
+
               {formData.imageUrls && formData.imageUrls.length > 0 && (
                 <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
                   {formData.imageUrls.map((url, index) => (
                     <div key={index} className="relative">
-                      <img 
-                        src={url} 
+                      <img
+                        src={url}
                         alt={`Image ${index + 1}`}
                         className="w-full h-20 rounded-xl object-cover shadow-lg"
                       />
@@ -271,13 +271,13 @@ const BlogEditModal = ({
                 <FaVideo className="mr-2 text-purple-600" />
                 <span className="font-medium">Upload Multiple Videos</span>
               </label>
-              
+
               {formData.videoUrls && formData.videoUrls.length > 0 && (
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                   {formData.videoUrls.map((url, index) => (
                     <div key={index} className="relative">
-                      <video 
-                        src={url} 
+                      <video
+                        src={url}
                         className="w-full h-32 rounded-xl object-cover shadow-lg"
                         muted
                         playsInline
@@ -328,11 +328,11 @@ const BlogEditModal = ({
                   .filter((property) => {
                     const searchTerm = propertySearch.trim().toLowerCase();
                     if (!searchTerm) return true;
-                    
+
                     const name = (property.name || "").toLowerCase();
                     const city = (property.city || "").toLowerCase();
                     const state = (property.state || "").toLowerCase();
-                    
+
                     return (
                       name.includes(searchTerm) ||
                       city.includes(searchTerm) ||

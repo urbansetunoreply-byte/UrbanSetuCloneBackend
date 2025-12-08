@@ -377,9 +377,52 @@ export default function PublicSearch() {
                         </div>
 
                         {/* Mobile Filters Content */}
-                        {/* ... Similar inputs as desktop but stacked ... */}
+
+                        {/* State Filter */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                            <div className="relative">
+                                <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                <select
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    value={locationFilter.state || ""}
+                                    onChange={(e) => handleLocationChange({ ...locationFilter, state: e.target.value, city: "" })}
+                                >
+                                    <option value="">Select State</option>
+                                    {(() => {
+                                        const india = data.find((country) => country.name === "India");
+                                        return india ? india.states.map((s) => (
+                                            <option key={s.state_code} value={s.name}>{s.name}</option>
+                                        )) : [];
+                                    })()}
+                                </select>
+                            </div>
+                        </div>
+
+                        {/* Type Filter */}
+                        <div className="mb-4">
+                            <label className="block text-sm font-semibold text-gray-700 mb-2">Property Type</label>
+                            <div className="flex bg-gray-100 p-1 rounded-xl">
+                                {['all', 'rent', 'sale'].map((t) => (
+                                    <button
+                                        key={t}
+                                        type="button"
+                                        onClick={() => setFormData(prev => ({ ...prev, type: t }))}
+                                        className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
+                                                ? 'bg-white text-blue-600 shadow-sm'
+                                                : 'text-gray-500 hover:text-gray-700'
+                                            }`}
+                                    >
+                                        {t}
+                                    </button>
+                                ))}
+                            </div>
+                        </div>
+
+                        {/* Sort Filter */}
+                        <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
                         <select
-                            className="w-full p-3 border rounded-xl"
+                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all mb-4"
                             onChange={(e) => {
                                 const [sort, order] = e.target.value.split("_");
                                 setFormData((prev) => ({ ...prev, sort, order }));
