@@ -534,6 +534,21 @@ export const verifyOTP = async (req, res, next) => {
         userId,
         type: 'account_deletion'
       });
+    } else if (storedData.type === 'transfer_rights') {
+      // For transfer rights, return success
+      otpStore.delete(emailLower);
+
+      logSecurityEvent('transfer_rights_otp_verification_successful', {
+        email: emailLower,
+        userId: storedData.userId,
+        meta: storedData.meta || {}
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP verified successfully",
+        type: 'transfer_rights'
+      });
     }
 
   } catch (error) {
