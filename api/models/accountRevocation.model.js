@@ -19,7 +19,7 @@ const accountRevocationSchema = new mongoose.Schema({
   },
   role: { 
     type: String, 
-    enum: ['user', 'admin'], 
+    enum: ['user', 'admin', 'rootadmin'], 
     required: true 
   },
   revocationToken: { 
