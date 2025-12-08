@@ -229,7 +229,15 @@ export default function Settings() {
       const res = await fetch(`${API_BASE_URL}/api/admin/management/admins`, { credentials: 'include' });
       const data = await res.json();
       if (res.ok) {
-        setTransferAdmins(data.filter(a => a.role === 'admin' || a.role === 'rootadmin'));
+        // Only allow eligible targets: approved, active admins (not rootadmin/default)
+        setTransferAdmins(
+          data.filter(a =>
+            a.role === 'admin' &&
+            a.adminApprovalStatus === 'approved' &&
+            a.status !== 'suspended' &&
+            !a.isDefaultAdmin
+          )
+        );
       } else {
         setTransferAdmins([]);
       }
