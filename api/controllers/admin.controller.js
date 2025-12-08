@@ -236,10 +236,10 @@ export const transferRootAdminRights = async (req, res, next) => {
         const { targetAdminId, password } = req.body;
         const currentUserId = req.user._id;
 
-        // 1. Verify current user is default admin
+        // 1. Verify current user is default admin AND rootadmin
         const currentUser = await User.findById(currentUserId);
-        if (!currentUser || !currentUser.isDefaultAdmin) {
-            return res.status(403).json({ message: "Only default admins can transfer rights." });
+        if (!currentUser || !currentUser.isDefaultAdmin || currentUser.role !== 'rootadmin') {
+            return res.status(403).json({ message: "Only the root default admin can transfer rights." });
         }
 
         // 2. Check password
@@ -248,17 +248,19 @@ export const transferRootAdminRights = async (req, res, next) => {
             return res.status(401).json({ error: "invalidPassword" });
         }
 
-        // 3. Ensure target is a valid admin (not default admin/rootadmin)
+        // 3. Ensure target is a valid approved, active admin (not default admin/rootadmin)
         const targetAdmin = await User.findById(targetAdminId);
-        if (!targetAdmin || targetAdmin.role !== "admin" || targetAdmin.isDefaultAdmin) {
-            return res.status(400).json({ message: "Target must be a valid admin (not default admin)." });
+        if (!targetAdmin ||
+            targetAdmin.role !== "admin" ||
+            targetAdmin.isDefaultAdmin ||
+            targetAdmin.adminApprovalStatus !== "approved" ||
+            targetAdmin.status === 'suspended') {
+            return res.status(400).json({ message: "Target must be an approved, active admin (not default admin/rootadmin)." });
         }
 
         // 4. Swap roles/flags
         currentUser.isDefaultAdmin = false;
-        if (currentUser.role === 'rootadmin') {
-            currentUser.role = 'admin';
-        }
+        currentUser.role = 'admin';
         targetAdmin.isDefaultAdmin = true;
         targetAdmin.role = 'rootadmin';
         await currentUser.save();

@@ -329,10 +329,14 @@ export const transferDefaultAdminRights = async (req, res, next) => {
         if (!currentAdmin || !currentAdmin.isDefaultAdmin) {
             return next(errorHandler(403, "Only the default admin can transfer default admin rights"));
         }
-        // Verify new default admin exists, is approved, and is not suspended
+        // Verify new default admin exists, is approved, active, and not already default/root
         const newDefaultAdmin = await User.findById(newDefaultAdminId);
-        if (!newDefaultAdmin || newDefaultAdmin.role !== "admin" || newDefaultAdmin.adminApprovalStatus !== "approved") {
-            return next(errorHandler(400, "Selected user must be an approved admin"));
+        if (!newDefaultAdmin ||
+            newDefaultAdmin.role !== "admin" ||
+            newDefaultAdmin.adminApprovalStatus !== "approved" ||
+            newDefaultAdmin.status === 'suspended' ||
+            newDefaultAdmin.isDefaultAdmin) {
+            return next(errorHandler(400, "Selected user must be an approved, active admin (not default/root)."));
         }
         if (newDefaultAdmin.status === 'suspended') {
             return next(errorHandler(400, "Cannot transfer default admin rights to a suspended admin. Please remove suspension first."));
