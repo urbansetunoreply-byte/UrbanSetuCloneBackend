@@ -127,6 +127,7 @@ export default function Settings() {
   const [transferDeletePasswordVerified, setTransferDeletePasswordVerified] = useState(false);
   const [transferDeleteResending, setTransferDeleteResending] = useState(false);
   const [transferDeleteDeleting, setTransferDeleteDeleting] = useState(false);
+  const [transferDeletePasswordAttempts, setTransferDeletePasswordAttempts] = useState(0);
   const [transferOtp, setTransferOtp] = useState("");
   const [transferOtpSent, setTransferOtpSent] = useState(false);
   const [transferOtpError, setTransferOtpError] = useState("");
@@ -377,6 +378,7 @@ export default function Settings() {
     setTransferDeleteDeleting(false);
     setTransferCanResend(true);
     setTransferResendTimer(0);
+    setTransferDeletePasswordAttempts(0);
   };
 
   const handleConfirmTransferAndDelete = async () => {
@@ -392,12 +394,21 @@ export default function Settings() {
         body: JSON.stringify({ password: transferDeletePassword })
       });
       if (!verifyRes.ok) {
-        setShowTransferPasswordModal(false);
-        toast.error("For security reasons, you've been signed out automatically.");
-        await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-        navigate('/sign-in', { replace: true });
+        const attempts = transferDeletePasswordAttempts + 1;
+        setTransferDeletePasswordAttempts(attempts);
+        if (attempts >= 3) {
+          setShowTransferPasswordModal(false);
+          toast.error("For security reasons, you've been signed out automatically.");
+          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          navigate('/sign-in', { replace: true });
+        } else {
+          const remaining = 3 - attempts;
+          setTransferDeleteError(`Invalid password. ${remaining} attempt(s) remaining.`);
+          setTransferDeletePassword("");
+        }
         return;
       }
+      setTransferDeletePasswordAttempts(0);
       const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, {
         method: 'POST',
         body: JSON.stringify({ email: currentUser.email })
@@ -1543,6 +1554,7 @@ export default function Settings() {
                       setTransferDeleteDeleting(false);
                       setTransferCanResend(true);
                       setTransferResendTimer(0);
+                      setTransferDeletePasswordAttempts(0);
                     }}
                     className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                   >Cancel</button>
