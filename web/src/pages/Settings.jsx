@@ -112,6 +112,7 @@ export default function Settings() {
   const [deleteDeleting, setDeleteDeleting] = useState(false);
   const [deleteResending, setDeleteResending] = useState(false);
   const [deletePasswordVerified, setDeletePasswordVerified] = useState(false);
+  const [deletePasswordAttempts, setDeletePasswordAttempts] = useState(0);
   const deleteOtpRef = useRef(null);
 
   // Transfer and delete states (for default admin)
@@ -239,6 +240,7 @@ export default function Settings() {
   };
 
   const onHandleDelete = async () => {
+    setDeletePasswordAttempts(0);
     if (currentUser.isDefaultAdmin) {
       setSelectedAdmin("");
       setShowAdminModal(true);
@@ -253,16 +255,25 @@ export default function Settings() {
     setDeleteVerifying(true);
     const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-password`, { method: 'POST', body: JSON.stringify({ password: deletePassword }) });
     if (!res.ok) {
-      setShowPasswordModal(false);
-      toast.error("For security reasons, you've been signed out automatically.");
-      dispatch(signoutUserStart());
-      const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-      const signoutData = await signoutRes.json();
-      if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
-      navigate('/sign-in', { replace: true });
+      const attempts = deletePasswordAttempts + 1;
+      setDeletePasswordAttempts(attempts);
+      if (attempts >= 3) {
+        setShowPasswordModal(false);
+        toast.error("For security reasons, you've been signed out automatically.");
+        dispatch(signoutUserStart());
+        const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+        const signoutData = await signoutRes.json();
+        if (signoutData.success === false) dispatch(signoutUserFailure(signoutData.message)); else dispatch(signoutUserSuccess(signoutData));
+        navigate('/sign-in', { replace: true });
+      } else {
+        const remaining = 3 - attempts;
+        setDeleteError(`Invalid password. ${remaining} attempt(s) remaining.`);
+        setDeletePassword("");
+      }
       setDeleteVerifying(false);
       return;
     }
+    setDeletePasswordAttempts(0);
     setDeletePasswordVerified(true);
     setDeleteReasonOpen(true);
     setDeleteVerifying(false);
@@ -1447,6 +1458,7 @@ export default function Settings() {
                       setDeleteProcessing(false);
                       setDeleteDeleting(false);
                       setDeleteResending(false);
+                    setDeletePasswordAttempts(0);
                     }}
                     className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                   >Cancel</button>
