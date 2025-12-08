@@ -1,219 +1,225 @@
 import React from 'react';
-import { FaCookie, FaShieldAlt, FaChartBar, FaBullhorn, FaCog } from 'react-icons/fa';
-import { usePageTitle } from '../hooks/usePageTitle';
+import { Cookie, Shield, BarChart, FileText, Settings, Info, CheckCircle2, XCircle, ExternalLink, Mail, Phone, MapPin } from 'lucide-react';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 const UserCookiePolicy = () => {
-  // Set page title
-  usePageTitle("User Cookie Policy - Privacy Information");
-
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
-      <div className="max-w-4xl mx-auto px-4 py-8">
-        {/* Header */}
-        <div className="text-center mb-12">
-          <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 bg-amber-100 rounded-full">
-              <FaCookie className="text-3xl text-amber-600" />
+    <div className="min-h-screen bg-gray-50">
+      {/* Hero Section */}
+      <div className="relative bg-gradient-to-r from-blue-700 to-indigo-800 text-white py-24 overflow-hidden">
+        <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1557804506-669a67965ba0?ixlib=rb-1.2.1&auto=format&fit=crop&w=1567&q=80')] opacity-10 bg-cover bg-center"></div>
+        <div className="absolute inset-0 bg-gradient-to-b from-transparent to-black/30"></div>
+        <div className="max-w-7xl mx-auto px-4 relative z-10 text-center">
+          <div className="animate-fade-in-up">
+            <div className="inline-flex items-center justify-center p-4 bg-white/10 backdrop-blur-md rounded-full mb-6 ring-4 ring-white/20">
+              <Cookie className="w-12 h-12 text-amber-300" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900">User Cookie Policy</h1>
+            <h1 className="text-4xl md:text-6xl font-extrabold mb-6 tracking-tight">Cookie Policy</h1>
+            <p className="text-xl md:text-2xl text-blue-100 max-w-3xl mx-auto font-light leading-relaxed">
+              Transparency and control over your data. Learn how we use cookies to improve your experience.
+            </p>
+            <div className="mt-8 text-sm font-medium bg-blue-900/40 inline-block px-4 py-2 rounded-full border border-blue-500/30">
+              Last Updated: {new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}
+            </div>
           </div>
-          <p className="text-lg text-gray-600 max-w-2xl mx-auto">
-            Learn about how UrbanSetu uses cookies to enhance your user experience and protect your privacy.
-          </p>
-          <p className="text-sm text-gray-500 mt-2">
-            Last updated: {new Date().toLocaleDateString(`en-IN`, {
-              year: 'numeric',
-              month: 'long',
-              day: 'numeric'
-            })}
-          </p>
-        </div>
-
-        {/* Content */}
-        <div className="bg-white rounded-xl shadow-lg p-8 space-y-8">
-          {/* Manage Cookies CTA */}
-          <div className="flex items-center justify-between p-4 bg-amber-50 border border-amber-200 rounded-lg">
-            <div className="text-sm text-amber-800">You can change your cookie preferences anytime.</div>
-            <button
-              onClick={() => window.dispatchEvent(new CustomEvent('openCookieSettings'))}
-              className="px-4 py-2 text-sm font-medium text-white bg-amber-600 hover:bg-amber-700 rounded-lg"
-            >
-              Manage Cookies
-            </button>
-          </div>
-          {/* Introduction */}
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">What are Cookies?</h2>
-            <p className="text-gray-700 leading-relaxed">
-              Cookies are small text files that are stored on your device when you visit our website. 
-              They help us provide you with a better experience by remembering your preferences and 
-              understanding how you use our site as a registered user.
-            </p>
-          </section>
-
-          {/* Cookie Types */}
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-6">Types of Cookies We Use</h2>
-            
-            <div className="space-y-6">
-              {/* Necessary Cookies */}
-              <div className="border border-gray-200 rounded-lg p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-green-100 rounded-lg">
-                    <FaShieldAlt className="text-xl text-green-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Necessary Cookies</h3>
-                    <p className="text-gray-700 mb-3">
-                      These cookies are essential for your user account to function properly. They cannot be disabled 
-                      and are required for authentication, session management, and security features.
-                    </p>
-                    <div className="text-sm text-gray-600">
-                      <p><strong>Examples:</strong> Login sessions, authentication tokens, security cookies, user preferences</p>
-                      <p><strong>Duration:</strong> Session or up to 30 days</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Analytics Cookies */}
-              <div className="border border-gray-200 rounded-lg p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-blue-100 rounded-lg">
-                    <FaChartBar className="text-xl text-blue-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Analytics Cookies</h3>
-                    <p className="text-gray-700 mb-3">
-                      These cookies help us understand how you use our platform as a registered user, 
-                      allowing us to improve features and personalize your experience.
-                    </p>
-                    <div className="text-sm text-gray-600">
-                      <p><strong>Examples:</strong> User behavior tracking, feature usage analytics, performance monitoring</p>
-                      <p><strong>Duration:</strong> Up to 2 years</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Marketing Cookies */}
-              <div className="border border-gray-200 rounded-lg p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-purple-100 rounded-lg">
-                    <FaBullhorn className="text-xl text-purple-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Marketing Cookies</h3>
-                    <p className="text-gray-700 mb-3">
-                      These cookies help us show you relevant property recommendations and personalized 
-                      content based on your interests and search history.
-                    </p>
-                    <div className="text-sm text-gray-600">
-                      <p><strong>Examples:</strong> Property recommendations, personalized content, targeted notifications</p>
-                      <p><strong>Duration:</strong> Up to 1 year</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-
-              {/* Functional Cookies */}
-              <div className="border border-gray-200 rounded-lg p-6">
-                <div className="flex items-start gap-4">
-                  <div className="p-2 bg-orange-100 rounded-lg">
-                    <FaCog className="text-xl text-orange-600" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-900 mb-2">Functional Cookies</h3>
-                    <p className="text-gray-700 mb-3">
-                      These cookies remember your preferences and settings to provide a personalized 
-                      experience tailored to your needs as a user.
-                    </p>
-                    <div className="text-sm text-gray-600">
-                      <p><strong>Examples:</strong> Search preferences, favorite properties, notification settings, theme preferences</p>
-                      <p><strong>Duration:</strong> Up to 1 year</p>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </section>
-
-          {/* User-Specific Information */}
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Your Cookie Preferences</h2>
-            <div className="bg-blue-50 rounded-lg p-6">
-              <h3 className="text-lg font-semibold text-gray-900 mb-3">Managing Your Preferences</h3>
-              <p className="text-gray-700 mb-4">
-                As a registered user, you can manage your cookie preferences at any time through:
-              </p>
-              <ul className="list-disc list-inside text-gray-700 space-y-2 ml-4">
-                <li>Your user profile settings</li>
-                <li>The cookie consent banner on our website</li>
-                <li>Your browser's cookie settings</li>
-              </ul>
-              
-              <div className="mt-4 p-4 bg-white rounded-lg">
-                <p className="text-sm text-blue-800">
-                  <strong>Note:</strong> Disabling certain cookies may affect your user experience and limit 
-                  some personalized features we offer to registered users.
-                </p>
-              </div>
-            </div>
-          </section>
-
-          {/* Related Policies */}
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Related Policies</h2>
-            <div className="bg-gray-50 rounded-lg p-6">
-              <p className="text-gray-700 mb-4">
-                For more information about our data practices and terms of service, please review our:
-              </p>
-              <div className="flex flex-wrap gap-4">
-                <a 
-                  href="/user/privacy" 
-                  className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                >
-                  🔒 Privacy Policy
-                </a>
-                <a 
-                  href="/user/terms" 
-                  className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
-                >
-                  📋 Terms of Service
-                </a>
-              </div>
-            </div>
-          </section>
-
-          {/* Contact Information */}
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Contact Us</h2>
-            <p className="text-gray-700 mb-4">
-              If you have any questions about our use of cookies or this Cookie Policy, please contact us:
-            </p>
-            <div className="bg-gray-50 rounded-lg p-6">
-              <p className="text-gray-700">
-                <strong>Email:</strong> privacy@urbansetu.com<br />
-                <strong>Phone:</strong> +1 (555) 123-4567<br />
-                <strong>Address:</strong> UrbanSetu Privacy Team, 123 Real Estate Ave, City, State 12345
-              </p>
-            </div>
-          </section>
-
-          {/* Updates */}
-          <section>
-            <h2 className="text-2xl font-semibold text-gray-900 mb-4">Updates to This Policy</h2>
-            <p className="text-gray-700">
-              We may update this Cookie Policy from time to time to reflect changes in our practices 
-              or for other operational, legal, or regulatory reasons. We will notify you of any 
-              material changes through your user account or by email.
-            </p>
-          </section>
         </div>
       </div>
-      
-      {/* Contact Support Wrapper */}
+
+      <div className="max-w-5xl mx-auto px-4 py-16 -mt-16 flex flex-col gap-12 relative z-20">
+        {/* Intro Card */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 md:p-12 animate-fade-in-up border border-gray-100" style={{ animationDelay: '0.1s' }}>
+          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
+            <div>
+              <h2 className="text-3xl font-bold text-gray-900 mb-4 flex items-center gap-3">
+                <Info className="w-8 h-8 text-blue-600" />
+                What are Cookies?
+              </h2>
+              <p className="text-gray-600 text-lg leading-relaxed">
+                Cookies are small text files stored on your device when you visit our website. They act as a memory for the website, allowing it to recognize you and remember your preferences, ensuring a smoother and more personalized experience.
+              </p>
+            </div>
+            <div className="p-6 bg-blue-50 rounded-2xl border border-blue-100 min-w-[300px]">
+              <h3 className="font-bold text-blue-900 mb-3 flex items-center gap-2">
+                <Settings className="w-5 h-5" /> Your Preferences
+              </h3>
+              <p className="text-blue-800 text-sm mb-4">
+                You have full control over your cookie settings. You can modify them at any time.
+              </p>
+              <button
+                onClick={() => window.dispatchEvent(new CustomEvent('openCookieSettings'))}
+                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-xl transition-all shadow-md hover:shadow-lg transform hover:-translate-y-0.5 flex items-center justify-center gap-2"
+              >
+                <Cookie className="w-4 h-4" /> Manage Cookies
+              </button>
+            </div>
+          </div>
+        </div>
+
+        {/* Cookie Types Grid */}
+        <div>
+          <h2 className="text-3xl font-bold text-gray-900 mb-8 text-center">Types of Cookies We Use</h2>
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            {/* Necessary */}
+            <div className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100">
+              <div className="h-2 bg-green-500"></div>
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-green-100 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                    <Shield className="w-8 h-8 text-green-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">Necessary</h3>
+                </div>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Essential for the website's core functionality, security, and accessibility. These cannot be disabled.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" /> Authentication
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CheckCircle2 className="w-4 h-4 text-green-500" /> Security
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Analytics */}
+            <div className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100">
+              <div className="h-2 bg-blue-500"></div>
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-blue-100 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                    <BarChart className="w-8 h-8 text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">Analytics</h3>
+                </div>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Help us understand how you use our site, allowing us to improve performance and usability.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CheckCircle2 className="w-4 h-4 text-blue-500" /> Page Views
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CheckCircle2 className="w-4 h-4 text-blue-500" /> Navigation Paths
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Marketing */}
+            <div className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100">
+              <div className="h-2 bg-purple-500"></div>
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-purple-100 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                    <FileText className="w-8 h-8 text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">Marketing</h3>
+                </div>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Used to deliver relevant advertisements and measure the effectiveness of our marketing campaigns.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CheckCircle2 className="w-4 h-4 text-purple-500" /> Ad Personalization
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CheckCircle2 className="w-4 h-4 text-purple-500" /> Campaign Tracking
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            {/* Functional */}
+            <div className="bg-white rounded-3xl shadow-lg hover:shadow-2xl transition-all duration-300 overflow-hidden group border border-gray-100">
+              <div className="h-2 bg-orange-500"></div>
+              <div className="p-8">
+                <div className="flex items-center gap-4 mb-4">
+                  <div className="p-3 bg-orange-100 rounded-2xl group-hover:scale-110 transition-transform duration-300">
+                    <Settings className="w-8 h-8 text-orange-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-900">Functional</h3>
+                </div>
+                <p className="text-gray-600 mb-4 leading-relaxed">
+                  Enable advanced features and personalization, such as remembering your language or login details.
+                </p>
+                <div className="space-y-2">
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CheckCircle2 className="w-4 h-4 text-orange-500" /> Preferences
+                  </div>
+                  <div className="flex items-center gap-2 text-sm text-gray-500">
+                    <CheckCircle2 className="w-4 h-4 text-orange-500" /> Local Settings
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Third Party & Contact Grid */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
+          {/* Third Party Services */}
+          <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
+            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+              <ExternalLink className="w-6 h-6 text-gray-600" /> Third-Party Services
+            </h2>
+            <p className="text-gray-600 mb-6">
+              We partner with trusted service providers who may also set cookies on your device.
+            </p>
+            <div className="space-y-3">
+              {['Google Analytics', 'Google Maps', 'Cloudinary CDN', 'Vercel Analytics'].map((service) => (
+                <div key={service} className="flex items-center justify-between p-3 bg-gray-50 rounded-xl hover:bg-gray-100 transition-colors">
+                  <span className="font-medium text-gray-700">{service}</span>
+                  <ExternalLink className="w-4 h-4 text-gray-400" />
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Contact Info */}
+          <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-3xl shadow-xl p-8 text-white">
+            <h2 className="text-2xl font-bold mb-6">Have Questions?</h2>
+            <p className="text-blue-100 mb-8">
+              If you have specific questions about our cookie policy or data privacy, our team is here to help.
+            </p>
+            <div className="space-y-4">
+              <div className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl">
+                <Mail className="w-6 h-6 text-blue-200" />
+                <div>
+                  <div className="text-xs text-blue-200 uppercase tracking-wider">Email Us</div>
+                  <div className="font-medium">privacy@urbansetu.com</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl">
+                <Phone className="w-6 h-6 text-blue-200" />
+                <div>
+                  <div className="text-xs text-blue-200 uppercase tracking-wider">Call Us</div>
+                  <div className="font-medium">+91 (800) 123-4567</div>
+                </div>
+              </div>
+              <div className="flex items-center gap-4 p-4 bg-white/10 backdrop-blur-sm rounded-xl">
+                <MapPin className="w-6 h-6 text-blue-200" />
+                <div>
+                  <div className="text-xs text-blue-200 uppercase tracking-wider">Visit Us</div>
+                  <div className="font-medium">UrbanSetu HQ, Bangalore, India</div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        {/* Footer Links */}
+        <div className="text-center pt-8 border-t border-gray-200">
+          <p className="text-gray-500 mb-4">View our other policies for more details.</p>
+          <div className="flex justify-center gap-6">
+            <a href="/privacy" className="text-blue-600 hover:text-blue-800 font-medium hover:underline">Privacy Policy</a>
+            <span className="text-gray-300">|</span>
+            <a href="/terms" className="text-blue-600 hover:text-blue-800 font-medium hover:underline">Terms of Service</a>
+          </div>
+        </div>
+      </div>
+
       <ContactSupportWrapper />
     </div>
   );

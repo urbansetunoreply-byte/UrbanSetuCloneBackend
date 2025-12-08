@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { FaCookie, FaTimes, FaCog, FaCheck, FaTimes as FaX } from 'react-icons/fa';
+import { Cookie, X, Settings, Check, Shield, BarChart, FileText, ChevronRight } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -22,7 +22,7 @@ const CookieConsent = () => {
       // Show consent banner after a short delay for better UX
       const timer = setTimeout(() => {
         setIsVisible(true);
-      }, 1500); // Increased delay for better opening animation
+      }, 1000);
       return () => clearTimeout(timer);
     } else {
       // Load saved preferences
@@ -35,7 +35,7 @@ const CookieConsent = () => {
   useEffect(() => {
     const trackIfNeeded = async () => {
       try {
-        const todayKey = `visitor_tracked_${new Date().toISOString().slice(0,10)}`;
+        const todayKey = `visitor_tracked_${new Date().toISOString().slice(0, 10)}`;
         if (localStorage.getItem(todayKey) === '1') return;
         // Fire-and-forget minimal tracking with necessary-only defaults
         await fetch(`${API_BASE_URL}/api/visitors/track`, {
@@ -50,7 +50,7 @@ const CookieConsent = () => {
         localStorage.setItem(todayKey, '1');
         // Let other components refresh counts
         window.dispatchEvent(new CustomEvent('visitorTracked'));
-      } catch (_) {}
+      } catch (_) { }
     };
     trackIfNeeded();
   }, []);
@@ -58,18 +58,13 @@ const CookieConsent = () => {
   // Prevent background scrolling when modal is open
   useEffect(() => {
     if (showSettings) {
-      // Save current scroll position
       const scrollY = window.scrollY;
-      
-      // Lock body scroll
       document.body.style.position = 'fixed';
       document.body.style.top = `-${scrollY}px`;
       document.body.style.width = '100%';
       document.body.style.overflow = 'hidden';
-      
-      // Cleanup function
+
       return () => {
-        // Restore scroll position
         document.body.style.position = '';
         document.body.style.top = '';
         document.body.style.width = '';
@@ -86,7 +81,7 @@ const CookieConsent = () => {
     };
 
     window.addEventListener('openCookieSettings', handleOpenCookieSettings);
-    
+
     return () => {
       window.removeEventListener('openCookieSettings', handleOpenCookieSettings);
     };
@@ -106,7 +101,7 @@ const CookieConsent = () => {
           page: window.location.pathname
         })
       });
-      
+
       // Notify other components that a visitor was tracked
       window.dispatchEvent(new CustomEvent('visitorTracked'));
     } catch (error) {
@@ -124,17 +119,17 @@ const CookieConsent = () => {
     };
     setPreferences(allAccepted);
     localStorage.setItem('cookieConsent', JSON.stringify(allAccepted));
-    
+
     // Track visitor
     await trackVisitor(allAccepted);
-    
+
     closeBanner();
-    
+
     // Notify other components about the consent update
-    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
-      detail: { consent: allAccepted } 
+    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', {
+      detail: { consent: allAccepted }
     }));
-    
+
     // Initialize analytics and other services
     initializeServices(allAccepted);
   };
@@ -148,31 +143,31 @@ const CookieConsent = () => {
     };
     setPreferences(onlyNecessary);
     localStorage.setItem('cookieConsent', JSON.stringify(onlyNecessary));
-    
+
     // Track visitor
     await trackVisitor(onlyNecessary);
-    
+
     closeBanner();
-    
+
     // Notify other components about the consent update
-    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
-      detail: { consent: onlyNecessary } 
+    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', {
+      detail: { consent: onlyNecessary }
     }));
   };
 
   const handleSavePreferences = async () => {
     localStorage.setItem('cookieConsent', JSON.stringify(preferences));
-    
+
     // Track visitor
     await trackVisitor(preferences);
-    
+
     closeBanner();
-    
+
     // Notify other components about the consent update
-    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', { 
-      detail: { consent: preferences } 
+    window.dispatchEvent(new CustomEvent('cookieConsentUpdated', {
+      detail: { consent: preferences }
     }));
-    
+
     // Initialize services based on preferences
     initializeServices(preferences);
   };
@@ -188,7 +183,7 @@ const CookieConsent = () => {
 
   const handlePreferenceChange = (category) => {
     if (category === 'necessary') return; // Cannot disable necessary cookies
-    
+
     setPreferences(prev => ({
       ...prev,
       [category]: !prev[category]
@@ -231,221 +226,142 @@ const CookieConsent = () => {
     <>
       {/* Main Consent Banner */}
       {!showSettings && isVisible && (
-        <div className={`fixed bottom-0 left-0 right-0 z-50 bg-white border-t border-gray-200 shadow-2xl transition-all duration-300 ${
-          isClosing 
-            ? 'opacity-0 translate-y-full' 
-            : 'opacity-100 translate-y-0'
-        }`}>
-          <div className="max-w-7xl mx-auto p-4 sm:p-6">
-            <div className="flex flex-col lg:flex-row items-start lg:items-center gap-4">
-              {/* Cookie Icon and Title */}
-              <div className="flex items-center gap-3 flex-shrink-0">
-                <div className="p-2 bg-amber-100 rounded-full">
-                  <FaCookie className="text-2xl text-amber-600" />
+        <BannerWrapper isClosing={isClosing}>
+          <div className="flex flex-col md:flex-row items-center gap-6">
+            <div className="flex-1">
+              <div className="flex items-center gap-3 mb-2">
+                <div className="p-2 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl shadow-lg transform -rotate-12">
+                  <Cookie className="w-6 h-6 text-white" />
                 </div>
-                <div>
-                  <h3 className="text-lg font-semibold text-gray-900">Cookie Settings</h3>
-                  <p className="text-sm text-gray-600">to enhance your experience and analyze our traffic</p>
-                </div>
+                <h3 className="text-xl font-bold text-gray-900 tracking-tight">We value your privacy</h3>
               </div>
-
-              {/* Description */}
-              <div className="flex-1 text-sm text-gray-700">
-                <p>
-                  We use cookies to personalize content and ads, provide social media features, 
-                  and analyze our traffic. We also share information about your use of our site 
-                  with our social media, advertising, and analytics partners.
-                </p>
-                <p className="mt-2">
-                  <Link 
-                    to="/cookie-policy" 
-                    className="text-blue-600 hover:text-blue-800 underline"
-                  >
-                    Learn more about our cookie policy
-                  </Link>
-                </p>
-              </div>
-
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-2 w-full lg:w-auto">
-                <button
-                  onClick={openSettings}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors flex items-center justify-center gap-2"
-                >
-                  <FaCog className="text-sm" />
-                  Manage
-                </button>
-                <button
-                  onClick={handleRejectAll}
-                  className="px-4 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  Reject All
-                </button>
-                <button
-                  onClick={handleAcceptAll}
-                  className="px-4 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors"
-                >
-                  Accept All
-                </button>
-              </div>
+              <p className="text-gray-600 text-sm leading-relaxed max-w-2xl">
+                We use cookies to enhance your browsing experience, serve personalized ads or content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies.
+                <Link to="/cookie-policy" className="text-blue-600 hover:text-blue-700 font-semibold ml-1 inline-flex items-center gap-0.5 group">
+                  Read Policy <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
+                </Link>
+              </p>
+            </div>
+            <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto min-w-fit">
+              <button
+                onClick={openSettings}
+                className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+              >
+                <Settings className="w-4 h-4" /> Manage
+              </button>
+              <button
+                onClick={handleRejectAll}
+                className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-sm"
+              >
+                Reject All
+              </button>
+              <button
+                onClick={handleAcceptAll}
+                className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
+              >
+                Accept All
+              </button>
             </div>
           </div>
-        </div>
+        </BannerWrapper>
       )}
 
       {/* Cookie Settings Modal */}
       {showSettings && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
           {/* Backdrop */}
-          <div 
-            className="absolute inset-0 bg-black/50" 
+          <div
+            className="absolute inset-0 bg-black/40 backdrop-blur-sm transition-opacity duration-300"
             onClick={closeSettings}
           />
-          
+
           {/* Modal Content */}
-          <div className="relative bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto">
+          <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto animate-zoom-in-up border border-gray-100">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200">
+            <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-6 py-5 border-b border-gray-100 flex items-center justify-between">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-amber-100 rounded-full">
-                  <FaCookie className="text-xl text-amber-600" />
+                <div className="p-2 bg-blue-50 rounded-xl">
+                  <Settings className="w-6 h-6 text-blue-600" />
                 </div>
-                <h2 className="text-xl font-semibold text-gray-900">Cookie Preferences</h2>
+                <h2 className="text-2xl font-bold text-gray-900">Cookie Preferences</h2>
               </div>
               <button
                 onClick={closeSettings}
-                className="p-2 text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
+                className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all"
               >
-                <FaTimes className="text-lg" />
+                <X className="w-6 h-6" />
               </button>
             </div>
 
             {/* Content */}
-            <div className="p-6 space-y-6">
-              <p className="text-sm text-gray-600">
-                We use different types of cookies to optimize your experience on our platform. 
-                You can choose which categories you'd like to allow.
-              </p>
-              <p className="text-sm text-gray-600 mt-2">
-                <Link 
-                  to="/cookie-policy" 
-                  className="text-blue-600 hover:text-blue-800 underline"
-                >
-                  Read our detailed cookie policy
-                </Link>
-              </p>
+            <div className="p-6 md:p-8 space-y-8">
+              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
+                <p className="text-gray-600 leading-relaxed text-sm">
+                  When you visit our website, we store cookies on your browser to collect information. The information collected might relate to you, your preferences or your device, and is mostly used to make the site work as you expect it to and to provide a more personalized web experience.
+                </p>
+              </div>
 
               {/* Cookie Categories */}
               <div className="space-y-4">
                 {/* Necessary Cookies */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">Necessary Cookies</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        These cookies are essential for the website to function properly. 
-                        They cannot be disabled.
-                      </p>
-                    </div>
-                    <div className="flex items-center">
-                      <div className="w-12 h-6 bg-green-500 rounded-full flex items-center justify-end px-1">
-                        <FaCheck className="text-white text-xs" />
-                      </div>
-                    </div>
-                  </div>
-                </div>
+                <PreferenceToggle
+                  title="Necessary Cookies"
+                  description="Essential for the website's core functionality. These cannot be disabled."
+                  icon={<Shield className="w-5 h-5 text-green-600" />}
+                  isEnabled={preferences.necessary}
+                  isLocked={true}
+                  onChange={() => { }}
+                />
 
                 {/* Analytics Cookies */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">Analytics Cookies</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        These cookies help us understand how visitors interact with our website 
-                        by collecting and reporting information anonymously.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handlePreferenceChange('analytics')}
-                      className={`w-12 h-6 rounded-full flex items-center transition-colors ${
-                        preferences.analytics 
-                          ? 'bg-blue-500 justify-end' 
-                          : 'bg-gray-300 justify-start'
-                      }`}
-                    >
-                      <div className="w-4 h-4 bg-white rounded-full mx-1" />
-                    </button>
-                  </div>
-                </div>
+                <PreferenceToggle
+                  title="Analytics Cookies"
+                  description="Help us improve our website by collecting and reporting information on its usage."
+                  icon={<BarChart className="w-5 h-5 text-blue-600" />}
+                  isEnabled={preferences.analytics}
+                  onChange={() => handlePreferenceChange('analytics')}
+                />
 
                 {/* Marketing Cookies */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">Marketing Cookies</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        These cookies are used to track visitors across websites to display 
-                        relevant and engaging advertisements.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handlePreferenceChange('marketing')}
-                      className={`w-12 h-6 rounded-full flex items-center transition-colors ${
-                        preferences.marketing 
-                          ? 'bg-blue-500 justify-end' 
-                          : 'bg-gray-300 justify-start'
-                      }`}
-                    >
-                      <div className="w-4 h-4 bg-white rounded-full mx-1" />
-                    </button>
-                  </div>
-                </div>
+                <PreferenceToggle
+                  title="Marketing Cookies"
+                  description="Used to track visitors across websites to allow publishers to display relevant ads."
+                  icon={<FileText className="w-5 h-5 text-purple-600" />}
+                  isEnabled={preferences.marketing}
+                  onChange={() => handlePreferenceChange('marketing')}
+                />
 
                 {/* Functional Cookies */}
-                <div className="border border-gray-200 rounded-lg p-4">
-                  <div className="flex items-center justify-between">
-                    <div className="flex-1">
-                      <h3 className="font-medium text-gray-900">Functional Cookies</h3>
-                      <p className="text-sm text-gray-600 mt-1">
-                        These cookies enable enhanced functionality and personalization, 
-                        such as remembering your preferences.
-                      </p>
-                    </div>
-                    <button
-                      onClick={() => handlePreferenceChange('functional')}
-                      className={`w-12 h-6 rounded-full flex items-center transition-colors ${
-                        preferences.functional 
-                          ? 'bg-blue-500 justify-end' 
-                          : 'bg-gray-300 justify-start'
-                      }`}
-                    >
-                      <div className="w-4 h-4 bg-white rounded-full mx-1" />
-                    </button>
-                  </div>
-                </div>
+                <PreferenceToggle
+                  title="Functional Cookies"
+                  description="Allow the website to remember choices you make (such as your user name, language or the region you are in)."
+                  icon={<Settings className="w-5 h-5 text-orange-600" />}
+                  isEnabled={preferences.functional}
+                  onChange={() => handlePreferenceChange('functional')}
+                />
               </div>
+            </div>
 
-              {/* Action Buttons */}
-              <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t border-gray-200">
-                <button
-                  onClick={handleRejectAll}
-                  className="px-6 py-2 text-sm font-medium text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors"
-                >
-                  Reject All
-                </button>
-                <button
-                  onClick={handleSavePreferences}
-                  className="px-6 py-2 text-sm font-medium text-white bg-blue-600 hover:bg-blue-700 rounded-lg transition-colors flex-1"
-                >
-                  Save Preferences
-                </button>
-                <button
-                  onClick={handleAcceptAll}
-                  className="px-6 py-2 text-sm font-medium text-white bg-green-600 hover:bg-green-700 rounded-lg transition-colors"
-                >
-                  Accept All
-                </button>
-              </div>
+            {/* Action Buttons */}
+            <div className="sticky bottom-0 z-10 bg-white border-t border-gray-100 p-6 flex flex-col md:flex-row gap-4">
+              <button
+                onClick={handleRejectAll}
+                className="px-6 py-3 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors md:flex-1"
+              >
+                Reject All
+              </button>
+              <button
+                onClick={handleSavePreferences}
+                className="px-6 py-3 text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 rounded-xl transition-colors md:flex-[2] shadow-lg shadow-blue-600/20"
+              >
+                Save Preferences
+              </button>
+              <button
+                onClick={handleAcceptAll}
+                className="px-6 py-3 text-sm font-semibold text-white bg-green-600 hover:bg-green-700 rounded-xl transition-colors md:flex-1 shadow-lg shadow-green-600/20"
+              >
+                Accept All
+              </button>
             </div>
           </div>
         </div>
@@ -453,5 +369,40 @@ const CookieConsent = () => {
     </>
   );
 };
+
+// Helper Components
+const BannerWrapper = ({ children, isClosing }) => (
+  <div className={`fixed bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 z-[90] bg-white/95 backdrop-blur-md border border-gray-200/50 shadow-2xl rounded-2xl p-6 transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isClosing ? 'opacity-0 translate-y-20 scale-95' : 'opacity-100 translate-y-0 scale-100'
+    }`}>
+    {children}
+  </div>
+);
+
+const PreferenceToggle = ({ title, description, icon, isEnabled, isLocked, onChange }) => (
+  <div className="group border border-gray-100 hover:border-blue-100 bg-white p-5 rounded-2xl transition-all duration-200 hover:shadow-md">
+    <div className="flex items-start gap-4">
+      <div className={`p-2.5 rounded-xl ${isEnabled ? 'bg-blue-50' : 'bg-gray-50'} transition-colors`}>
+        {icon}
+      </div>
+      <div className="flex-1">
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">{title}</h3>
+          <button
+            onClick={onChange}
+            disabled={isLocked}
+            className={`relative w-12 h-7 rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isEnabled ? 'bg-blue-600' : 'bg-gray-200'
+              } ${isLocked ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
+          >
+            <span
+              className={`absolute top-1 left-1 bg-white w-5 h-5 rounded-full shadow-sm transform transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isEnabled ? 'translate-x-5' : 'translate-x-0'
+                }`}
+            />
+          </button>
+        </div>
+        <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+      </div>
+    </div>
+  </div>
+);
 
 export default CookieConsent;
