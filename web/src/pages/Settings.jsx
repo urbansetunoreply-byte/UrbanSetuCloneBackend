@@ -146,6 +146,7 @@ export default function Settings() {
   const [transferTransferring, setTransferTransferring] = useState(false);
   const [transferPasswordVerified, setTransferPasswordVerified] = useState(false);
   const [transferOtpAttempts, setTransferOtpAttempts] = useState(0);
+  const [transferPasswordAttempts, setTransferPasswordAttempts] = useState(0);
   const transferRightsOtpRef = useRef(null);
 
   // Lock body scroll when modals are open
@@ -495,6 +496,7 @@ export default function Settings() {
     setTransferTransferring(false);
     setTransferCanResend(true);
     setTransferResendTimer(0);
+    setTransferPasswordAttempts(0);
     fetchTransferAdmins();
   };
 
@@ -515,12 +517,21 @@ export default function Settings() {
         body: JSON.stringify({ password: transferPassword })
       });
       if (!verifyRes.ok) {
-        setShowTransferModal(false);
-        toast.error("For security reasons, you've been signed out automatically.");
-        await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-        navigate('/sign-in', { replace: true });
+        const attempts = transferPasswordAttempts + 1;
+        setTransferPasswordAttempts(attempts);
+        if (attempts >= 3) {
+          setShowTransferModal(false);
+          toast.error("For security reasons, you've been signed out automatically.");
+          await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+          navigate('/sign-in', { replace: true });
+        } else {
+          const remaining = 3 - attempts;
+          setTransferError(`Invalid password. ${remaining} attempt(s) remaining.`);
+          setTransferPassword("");
+        }
         return;
       }
+      setTransferPasswordAttempts(0);
       const sendRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-transfer-rights-otp`, {
         method: 'POST',
         body: JSON.stringify({ email: currentUser.email })
@@ -1639,6 +1650,7 @@ export default function Settings() {
                         setTransferTransferring(false);
                         setTransferCanResend(true);
                         setTransferResendTimer(0);
+                      setTransferPasswordAttempts(0);
                       }}
                       className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                     >Cancel</button>
