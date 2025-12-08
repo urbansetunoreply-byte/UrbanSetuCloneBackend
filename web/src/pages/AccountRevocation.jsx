@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
-import { FaCheckCircle, FaTimesCircle, FaClock, FaUser, FaEnvelope, FaCrown } from 'react-icons/fa';
+import { CheckCircle2, XCircle, Clock, User, Shield, AlertTriangle, ArrowRight, RefreshCw, Home, Mail, Calendar, HelpCircle, AlertCircle } from 'lucide-react';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -88,358 +88,258 @@ export default function AccountRevocation() {
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600">Verifying your account restoration link...</p>
-        </div>
-      </div>
-    );
-  }
+  // Helper to calculate days remaining
+  const getDaysRemaining = (expiresAt) => {
+    if (!expiresAt) return 0;
+    return Math.max(0, Math.ceil((new Date(expiresAt) - new Date()) / (1000 * 60 * 60 * 24)));
+  };
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FaTimesCircle className="w-8 h-8 text-red-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Invalid Link</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <div className="space-y-3">
-            <button
-              onClick={() => navigate('/')}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors"
-            >
-              Go to Home
-            </button>
-            <button
-              onClick={() => navigate('/sign-in')}
-              className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors"
-            >
-              Sign In
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
+  // Helper to calculate progress percentage for time remaining (assuming 30 days total)
+  const getProgressPercentage = (expiresAt) => {
+    if (!expiresAt) return 0;
+    const daysRemaining = getDaysRemaining(expiresAt);
+    return Math.min(100, Math.max(0, (daysRemaining / 30) * 100));
+  };
 
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-md w-full bg-white rounded-xl shadow-lg p-8 text-center">
-          <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-            <FaCheckCircle className="w-8 h-8 text-green-600" />
-          </div>
-          <h1 className="text-2xl font-bold text-gray-800 mb-2">Account Restored!</h1>
-          <p className="text-gray-600 mb-6">
-            Your account has been successfully restored. You will be redirected to the sign-in page shortly.
-          </p>
-          <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600 mx-auto"></div>
-        </div>
-      </div>
-    );
-  }
-
-  if (isPurged) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-        <div className="max-w-lg w-full bg-white rounded-xl shadow-lg overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-red-600 to-red-700 px-8 py-6 text-white text-center">
-            <h1 className="text-2xl font-bold mb-2">Account Permanently Deleted</h1>
-            <p className="text-red-100">This account can no longer be restored</p>
-          </div>
-
-          {/* Content */}
-          <div className="p-8">
-            <div className="text-center mb-6">
-              <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaTimesCircle className="w-8 h-8 text-red-600" />
-              </div>
-              <h2 className="text-xl font-semibold text-gray-800 mb-2">Account No Longer Available</h2>
-              <p className="text-gray-600">
-                This account has been permanently deleted and cannot be restored. However, you can create a new account to continue using our services.
-              </p>
-            </div>
-
-            {/* Account Details */}
-            {purgedDetails && (
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                  <FaUser className="w-4 h-4 mr-2" />
-                  Previous Account Information
-                </h3>
-                <div className="space-y-3">
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Username:</span>
-                    <span className="font-medium">{purgedDetails.username}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Email:</span>
-                    <span className="font-medium">{purgedDetails.email}</span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Permanently Deleted:</span>
-                    <span className="font-medium text-red-600">
-                      {new Date(purgedDetails.purgedAt).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                      })}
-                    </span>
-                  </div>
-                  <div className="flex justify-between">
-                    <span className="text-gray-600">Days Since Purge:</span>
-                    <span className="font-medium text-red-600">
-                      {Math.ceil((new Date() - new Date(purgedDetails.purgedAt)) / (1000 * 60 * 60 * 24))} days
-                    </span>
-                  </div>
-                </div>
-              </div>
-            )}
-
-            {/* Warning Message */}
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-              <div className="flex items-center mb-2">
-                <FaTimesCircle className="w-4 h-4 text-red-600 mr-2" />
-                <span className="font-semibold text-red-800">Important Notice</span>
-              </div>
-              <p className="text-red-700 text-sm">
-                This account has been permanently deleted and cannot be restored. All data associated with this account has been permanently removed from our systems.
-              </p>
-            </div>
-
-            {/* Action Buttons */}
-            <div className="space-y-3">
-              <button
-                onClick={() => navigate('/sign-up')}
-                className="w-full bg-blue-600 text-white py-3 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center"
-              >
-                <FaUser className="w-4 h-4 mr-2" />
-                Create New Account
-              </button>
-              <button
-                onClick={() => navigate('/sign-in')}
-                className="w-full bg-gray-600 text-white py-3 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center"
-              >
-                Sign In to Existing Account
-              </button>
-              <button
-                onClick={() => navigate('/')}
-                className="w-full bg-gray-200 text-gray-700 py-3 px-4 rounded-lg hover:bg-gray-300 transition-colors"
-              >
-                Go to Home
-              </button>
-            </div>
-
-            {/* Additional Info */}
-            <div className="mt-6 text-center">
-              <p className="text-sm text-gray-500">
-                By creating a new account, you agree to our Terms of Service and Privacy Policy.
-              </p>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-      <div className="max-w-lg w-full bg-white rounded-xl shadow-lg overflow-hidden">
-        {/* Header */}
-        <div className="bg-gradient-to-r from-blue-600 to-blue-700 px-8 py-6 text-white text-center">
-          <h1 className="text-2xl font-bold mb-2">Restore Your Account</h1>
-          <p className="text-blue-100">Welcome back to UrbanSetu!</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center relative overflow-hidden py-12 sm:px-6 lg:px-8">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div className="absolute -top-[30%] -right-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-blue-100/40 to-indigo-100/40 blur-3xl" />
+        <div className="absolute -bottom-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-purple-100/40 to-blue-100/40 blur-3xl" />
+      </div>
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
+        {/* Brand/Logo Area */}
+        <div className="text-center mb-8 animate-fade-in-up">
+          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-lg mb-4 ring-1 ring-gray-100">
+            <Shield className="w-10 h-10 text-blue-600" />
+          </div>
+          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            Account Recovery
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 max-w-xs mx-auto">
+            Securely restore access to your UrbanSetu account
+          </p>
         </div>
 
-        {/* Content */}
-        <div className="p-8">
-          <div className="text-center mb-6">
-            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-              <FaUser className="w-8 h-8 text-blue-600" />
-            </div>
-            <h2 className="text-xl font-semibold text-gray-800 mb-2">Account Found</h2>
-            <p className="text-gray-600">
-              We found your deleted account. You can restore it with all your previous data intact.
-            </p>
-          </div>
+        {/* Main Card */}
+        <div className="bg-white/80 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-white/50 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
 
-          {/* Account Details */}
-          {accountData && (
-            <div className="bg-gray-50 rounded-lg p-4 mb-6">
-              <h3 className="font-semibold text-gray-800 mb-3 flex items-center">
-                <FaUser className="w-4 h-4 mr-2" />
-                Account Information
-              </h3>
+          {loading && (
+            <div className="text-center py-8">
+              <div className="relative w-16 h-16 mx-auto mb-6">
+                <div className="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Verifying Token</h3>
+              <p className="text-gray-500 text-sm">Please wait while we validate your restoration link...</p>
+            </div>
+          )}
+
+          {!loading && error && (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-short">
+                <XCircle className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Link Invalid or Expired</h3>
+              <p className="text-gray-600 mb-8 text-sm leading-relaxed">{error}</p>
+
               <div className="space-y-3">
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Username:</span>
-                  <span className="font-medium">{accountData.username}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Email:</span>
-                  <span className="font-medium">{accountData.email}</span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Role:</span>
-                  <span className="font-medium flex items-center">
-                    {accountData.role === 'admin' ? (
-                      <>
-                        <FaCrown className="w-3 h-3 mr-1 text-purple-600" />
-                        Administrator
-                      </>
-                    ) : (
-                      'User'
-                    )}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Account Deleted:</span>
-                  <span className="font-medium">
-                    {new Date(accountData.deletedAt).toLocaleString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Days Since Deletion:</span>
-                  <span className="font-medium">
-                    {Math.ceil((new Date() - new Date(accountData.deletedAt)) / (1000 * 60 * 60 * 24))} days
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Link Valid Until:</span>
-                  <span className="font-medium text-green-600">
-                    {new Date(accountData.expiresAt).toLocaleString('en-US', {
-                      year: 'numeric',
-                      month: 'long',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit'
-                    })}
-                  </span>
-                </div>
-                <div className="flex justify-between">
-                  <span className="text-gray-600">Days Remaining:</span>
-                  <span className="font-medium text-green-600">
-                    {Math.max(0, Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)))} days
-                  </span>
-                </div>
+                <button
+                  onClick={() => navigate('/')}
+                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all hover:scale-[1.02]"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Return Home
+                </button>
+                <button
+                  onClick={() => navigate('/sign-in')}
+                  className="w-full flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all hover:scale-[1.02]"
+                >
+                  Go to Sign In
+                </button>
               </div>
             </div>
           )}
 
-          {/* Status Indicator */}
-          {accountData && (
-            <div className={`rounded-lg p-4 mb-6 ${
-              Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
-                ? 'bg-red-50 border border-red-200' 
-                : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
-                ? 'bg-orange-50 border border-orange-200' 
-                : 'bg-green-50 border border-green-200'
-            }`}>
-              <div className="flex items-center mb-2">
-                <div className={`w-3 h-3 rounded-full mr-2 ${
-                  Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
-                    ? 'bg-red-500' 
-                    : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
-                    ? 'bg-orange-500' 
-                    : 'bg-green-500'
-                }`}></div>
-                <span className={`font-semibold ${
-                  Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
-                    ? 'text-red-800' 
-                    : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
-                    ? 'text-orange-800' 
-                    : 'text-green-800'
-                }`}>
-                  {Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
-                    ? 'URGENT: Link expires soon!' 
-                    : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
-                    ? 'WARNING: Link expires in less than a week' 
-                    : 'Status: Link is valid'
-                  }
-                </span>
+          {!loading && success && (
+            <div className="text-center py-6">
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-scale-in">
+                <CheckCircle2 className="w-10 h-10 text-green-500" />
               </div>
-              <p className={`text-sm ${
-                Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
-                  ? 'text-red-700' 
-                  : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
-                  ? 'text-orange-700' 
-                  : 'text-green-700'
-              }`}>
-                {Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 3 
-                  ? 'Please restore your account immediately to avoid permanent data loss.'
-                  : Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)) <= 7 
-                  ? 'Consider restoring your account soon to avoid missing the deadline.'
-                  : 'You have plenty of time to restore your account when convenient.'
-                }
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                Your account has been successfully restored. We're redirecting you to safe waters...
               </p>
+              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2 overflow-hidden">
+                <div className="bg-green-500 h-1.5 rounded-full animate-progress-loading w-full origin-left duration-[3000ms]"></div>
+              </div>
+              <p className="text-xs text-gray-400">Redirecting in a few seconds...</p>
             </div>
           )}
 
-          {/* Expiry Warning */}
-          <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
-            <div className="flex items-center mb-2">
-              <FaClock className="w-4 h-4 text-yellow-600 mr-2" />
-              <span className="font-semibold text-yellow-800">Important Notice</span>
-            </div>
-            <div className="space-y-2">
-              <p className="text-yellow-700 text-sm">
-                This restoration link will expire on <strong>{accountData && new Date(accountData.expiresAt).toLocaleDateString('en-US', {
-                  year: 'numeric',
-                  month: 'long',
-                  day: 'numeric'
-                })}</strong> (30 days from deletion).
+          {!loading && isPurged && (
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Account Not Available</h3>
+              <p className="text-gray-600 mb-8 text-sm leading-relaxed">
+                We're sorry, but this account has been permanently deleted and cannot be restored anymore. The 30-day recovery window has passed.
               </p>
-              <p className="text-yellow-700 text-sm">
-                You have <strong className="text-yellow-800">
-                  {accountData && Math.max(0, Math.ceil((new Date(accountData.expiresAt) - new Date()) / (1000 * 60 * 60 * 24)))} days
-                </strong> remaining to restore your account.
-              </p>
-              <p className="text-yellow-700 text-sm">
-                After expiration, your account will be permanently removed and cannot be restored.
-              </p>
-            </div>
-          </div>
 
-          {/* Restore Button */}
-          <button
-            onClick={handleRestoreAccount}
-            disabled={restoring}
-            className="w-full bg-green-600 text-white py-3 px-4 rounded-lg hover:bg-green-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-          >
-            {restoring ? (
-              <>
-                <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white mr-2"></div>
-                Restoring Account...
-              </>
-            ) : (
-              <>
-                <FaCheckCircle className="w-4 h-4 mr-2" />
-                Restore My Account
-              </>
-            )}
-          </button>
+              {purgedDetails && (
+                <div className="bg-gray-50 rounded-2xl p-5 mb-8 text-left border border-gray-100">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Previous Account Info</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center text-sm">
+                      <User className="w-4 h-4 text-gray-400 mr-3" />
+                      <span className="font-medium text-gray-900">{purgedDetails.username}</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <Mail className="w-4 h-4 text-gray-400 mr-3" />
+                      <span className="text-gray-600 truncate">{purgedDetails.email}</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <Clock className="w-4 h-4 text-red-400 mr-3" />
+                      <span className="text-red-600 font-medium">Deleted on {new Date(purgedDetails.purgedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
 
-          {/* Additional Info */}
-          <div className="mt-6 text-center">
-            <p className="text-sm text-gray-500">
-              By restoring your account, you agree to our Terms of Service and Privacy Policy.
+              <div className="space-y-3">
+                <button
+                  onClick={() => navigate('/sign-up')}
+                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all hover:scale-[1.02]"
+                >
+                  Create New Account
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => navigate('/sign-in')}
+                    className="flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => navigate('/')}
+                    className="flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Home
+                  </button>
+                </div>
+
+              </div>
+            </div>
+          )}
+
+          {!loading && !error && !success && !isPurged && accountData && (
+            <div>
+              <div className="flex items-center justify-center mb-6">
+                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center animate-pulse-soft">
+                  <User className="w-8 h-8 text-blue-600" />
+                </div>
+              </div>
+
+              <div className="text-center mb-8">
+                <h3 className="text-xl font-bold text-gray-900">Welcome Back, {accountData.username}!</h3>
+                <p className="text-gray-500 text-sm mt-1">Ready to restore your account?</p>
+              </div>
+
+              {/* Status Bar */}
+              <div className="mb-8">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-medium text-gray-700">Recovery Window</span>
+                  <span className={`font-bold ${getDaysRemaining(accountData.expiresAt) < 3 ? 'text-red-500' : 'text-blue-600'}`}>
+                    {getDaysRemaining(accountData.expiresAt)} Days Left
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className={`h-2.5 rounded-full transition-all duration-1000 ease-out ${getDaysRemaining(accountData.expiresAt) < 7 ? 'bg-red-500' : 'bg-blue-600'
+                      }`}
+                    style={{ width: `${getProgressPercentage(accountData.expiresAt)}%` }}
+                  ></div>
+                </div>
+                {getDaysRemaining(accountData.expiresAt) < 7 && (
+                  <p className="text-xs text-red-500 mt-2 flex items-center justify-center">
+                    <AlertTriangle className="w-3 h-3 mr-1" />
+                    Warning: Permanent deletion is imminent
+                  </p>
+                )}
+              </div>
+
+              <div className="bg-gray-50 rounded-2xl p-5 mb-8 border border-gray-100">
+                <div className="space-y-3">
+                  <div className="flex items-center justify-between text-sm p-2 hover:bg-white rounded-lg transition-colors">
+                    <div className="flex items-center text-gray-600">
+                      <Mail className="w-4 h-4 mr-3 text-gray-400" />
+                      Email
+                    </div>
+                    <span className="font-medium text-gray-900">{accountData.email}</span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm p-2 hover:bg-white rounded-lg transition-colors">
+                    <div className="flex items-center text-gray-600">
+                      <Calendar className="w-4 h-4 mr-3 text-gray-400" />
+                      Deleted On
+                    </div>
+                    <span className="font-medium text-gray-900">
+                      {new Date(accountData.deletedAt).toLocaleDateString()}
+                    </span>
+                  </div>
+
+                  <div className="flex items-center justify-between text-sm p-2 hover:bg-white rounded-lg transition-colors">
+                    <div className="flex items-center text-gray-600">
+                      <Clock className="w-4 h-4 mr-3 text-gray-400" />
+                      Expires On
+                    </div>
+                    <span className="font-medium text-gray-900">
+                      {new Date(accountData.expiresAt).toLocaleDateString()}
+                    </span>
+                  </div>
+                </div>
+              </div>
+
+              <button
+                onClick={handleRestoreAccount}
+                disabled={restoring}
+                className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed group"
+              >
+                {restoring ? (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 animate-spin" />
+                    Restoring Account...
+                  </>
+                ) : (
+                  <>
+                    <RefreshCw className="w-4 h-4 mr-2 group-hover:rotate-180 transition-transform duration-500" />
+                    Restore My Account
+                  </>
+                )}
+              </button>
+
+              <p className="mt-6 text-center text-xs text-gray-400">
+                By restoring, you agree to our <a href="/terms" className="underline hover:text-blue-500">Terms</a> & <a href="/privacy" className="underline hover:text-blue-500">Privacy Policy</a>
+              </p>
+            </div>
+          )}
+        </div>
+
+        {/* Footer Help */}
+        {!loading && !success && (
+          <div className="mt-8 text-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+            <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
+              <HelpCircle className="w-4 h-4" />
+              Need help? <a href="/contact" className="font-medium text-blue-600 hover:text-blue-500 hover:underline">Contact Support</a>
             </p>
           </div>
-        </div>
+        )}
+
       </div>
     </div>
   );
