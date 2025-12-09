@@ -31,21 +31,21 @@ setInterval(() => {
     }
 }, 60 * 60 * 1000); // Cleanup every hour
 
-export const test=(req,res)=>{
+export const test = (req, res) => {
     res.send("Hello Api")
 }
 
 
-export const updateUser=async (req,res,next)=>{
-    if (req.user.id!==req.params.id){
-        return  next(errorHandler(401,"Unauthorized"))
+export const updateUser = async (req, res, next) => {
+    if (req.user.id !== req.params.id) {
+        return next(errorHandler(401, "Unauthorized"))
     }
-    try{
+    try {
         const user = await User.findById(req.params.id);
         if (!user) {
             return next(errorHandler(404, "User not found"));
         }
-        
+
         // Validate password if provided (for profile updates)
         if (req.body.password) {
             const isMatch = await bcryptjs.compare(req.body.password, user.password);
@@ -55,7 +55,7 @@ export const updateUser=async (req,res,next)=>{
             // Remove password from body since it's just for validation
             delete req.body.password;
         }
-        
+
         // Validate mobile number if provided
         if (req.body.mobileNumber && !/^[0-9]{10}$/.test(req.body.mobileNumber)) {
             return res.status(200).json({ status: "mobile_invalid" });
@@ -98,7 +98,7 @@ export const updateUser=async (req,res,next)=>{
                 return res.status(200).json({ status: "mobile_exists" });
             }
         }
-        
+
         // Build update object only with provided fields
         const updateFields = {};
         if (req.body.username) updateFields.username = req.body.username;
@@ -109,9 +109,9 @@ export const updateUser=async (req,res,next)=>{
         if (req.body.gender) updateFields.gender = req.body.gender;
         // If mobile number is being updated and is different, set isGeneratedMobile to false
         if (req.body.mobileNumber && req.body.mobileNumber !== user.mobileNumber) {
-          updateFields.isGeneratedMobile = false;
+            updateFields.isGeneratedMobile = false;
         }
-        
+
         const updatedUser = await User.findByIdAndUpdate(req.params.id, {
             $set: updateFields
         }, { new: true });
@@ -120,13 +120,13 @@ export const updateUser=async (req,res,next)=>{
         }
         // Update all reviews by this user
         await Review.updateMany(
-          { userId: updatedUser._id },
-          { $set: { userName: updatedUser.username, userAvatar: updatedUser.avatar } }
+            { userId: updatedUser._id },
+            { $set: { userName: updatedUser.username, userAvatar: updatedUser.avatar } }
         );
         // Update all replies by this user
         await ReviewReply.updateMany(
-          { userId: updatedUser._id },
-          { $set: { userName: updatedUser.username, userAvatar: updatedUser.avatar } }
+            { userId: updatedUser._id },
+            { $set: { userName: updatedUser.username, userAvatar: updatedUser.avatar } }
         );
         // Return a plain object with all fields except password
         const { password, ...userObj } = updatedUser._doc;
@@ -145,7 +145,7 @@ export const updateUser=async (req,res,next)=>{
         }
         res.status(200).json({ status: "success", updatedUser: userObj });
     }
-    catch (error){
+    catch (error) {
         // Handle MongoDB duplicate key error
         if (error.code === 11000) {
             if (error.keyPattern && error.keyPattern.email) {
@@ -160,10 +160,10 @@ export const updateUser=async (req,res,next)=>{
     }
 }
 
-export const deleteUser=async(req,res,next)=>{
-    try{
-        if (req.user.id!==req.params.id){
-            return  next(errorHandler(401,"Unauthorized"))
+export const deleteUser = async (req, res, next) => {
+    try {
+        if (req.user.id !== req.params.id) {
+            return next(errorHandler(401, "Unauthorized"))
         }
         // Check if user is the default admin
         const user = await User.findById(req.params.id);
@@ -246,7 +246,7 @@ export const deleteUser=async(req,res,next)=>{
         await AuditLog.create({ action: 'soft_delete', performedBy: user._id, targetAccount: deletedRecord._id, targetEmail: user.email, details: { type: 'self_delete', role: user.role } });
         res.status(200).json({ success: true, message: "User moved to DeletedAccounts" })
     }
-    catch(error){
+    catch (error) {
         console.error(error);
         next(error)
     }
@@ -256,14 +256,14 @@ export const deleteUser=async(req,res,next)=>{
 export const getApprovedAdmins = async (req, res, next) => {
     try {
         const currentUserId = req.params.currentUserId;
-        
+
         // Get all approved admins except the current user
         const admins = await User.find({
             role: "admin",
             adminApprovalStatus: "approved",
             _id: { $ne: currentUserId }
         }).select('-password');
-        
+
         res.status(200).json(admins);
     } catch (error) {
         next(error);
@@ -277,13 +277,13 @@ export const getAllUsersForAutocomplete = async (req, res, next) => {
         if (req.user.role !== 'admin' && req.user.role !== 'rootadmin' && !req.user.isDefaultAdmin) {
             return next(errorHandler(403, "Only admins can access user list"));
         }
-        
+
         // Get all users except the current admin
         const users = await User.find({
             _id: { $ne: req.user.id },
             status: { $ne: 'suspended' } // Exclude suspended users
         }).select('email username _id mobileNumber').sort({ email: 1 });
-        
+
         res.status(200).json(users);
     } catch (error) {
         next(error);
@@ -294,26 +294,26 @@ export const getAllUsersForAutocomplete = async (req, res, next) => {
 export const getUserByEmailForAssignment = async (req, res, next) => {
     try {
         const { email } = req.params;
-        
+
         if (!email) {
             return next(errorHandler(400, "Email is required"));
         }
-        
-        const user = await User.findOne({ 
+
+        const user = await User.findOne({
             email: email,
             status: { $ne: 'suspended' } // Exclude suspended users
         }).select('email username _id');
-        
+
         if (!user) {
-            return res.status(404).json({ 
-                success: false, 
-                message: "User not found with this email" 
+            return res.status(404).json({
+                success: false,
+                message: "User not found with this email"
             });
         }
-        
-        res.status(200).json({ 
-            success: true, 
-            user 
+
+        res.status(200).json({
+            success: true,
+            user
         });
     } catch (error) {
         next(error);
@@ -341,15 +341,25 @@ export const transferDefaultAdminRights = async (req, res, next) => {
         if (newDefaultAdmin.status === 'suspended') {
             return next(errorHandler(400, "Cannot transfer default admin rights to a suspended admin. Please remove suspension first."));
         }
-        // Transfer default admin rights
-        await User.findByIdAndUpdate(currentAdminId, { isDefaultAdmin: false });
-        await User.findByIdAndUpdate(newDefaultAdminId, { isDefaultAdmin: true });
+        // Transfer default admin rights and swap roles
+        // Current admin becomes regular admin
+        await User.findByIdAndUpdate(currentAdminId, {
+            isDefaultAdmin: false,
+            role: 'admin'
+        });
+
+        // New admin becomes root admin (default admin)
+        const updatedNewAdmin = await User.findByIdAndUpdate(newDefaultAdminId, {
+            isDefaultAdmin: true,
+            role: 'rootadmin'
+        }, { new: true });
+
         res.status(200).json({
             message: "Default admin rights transferred successfully",
             newDefaultAdmin: {
-                _id: newDefaultAdmin._id,
-                username: newDefaultAdmin.username,
-                email: newDefaultAdmin.email
+                _id: updatedNewAdmin._id,
+                username: updatedNewAdmin.username,
+                email: updatedNewAdmin.email
             }
         });
     } catch (error) {
@@ -387,33 +397,33 @@ export const deleteUserAfterTransfer = async (req, res, next) => {
     }
 };
 
-export const getUserListings=async (req,res,next)=>{
+export const getUserListings = async (req, res, next) => {
 
-    if (req.user.id!==req.params.id){
-        return next(errorHandler(401,'unauthorized'))
+    if (req.user.id !== req.params.id) {
+        return next(errorHandler(401, 'unauthorized'))
     }
-    else{
-        try{
-            const listing=await Listing.find({userRef:req.params.id})
+    else {
+        try {
+            const listing = await Listing.find({ userRef: req.params.id })
             res.status(200)
             res.json(listing)
         }
-        catch(error){
+        catch (error) {
             console.error(error);
             next(error)
         }
     }
 }
 
-export const getUserByEmail=async (req,res,next)=>{
-    try{
-        const user=await User.findOne({email:req.params.email})
+export const getUserByEmail = async (req, res, next) => {
+    try {
+        const user = await User.findOne({ email: req.params.email })
         if (!user) {
             return next(errorHandler(404, 'User not found'))
         }
         res.status(200).json(user)
     }
-    catch(error){
+    catch (error) {
         console.error(error);
         next(error)
     }
@@ -439,7 +449,7 @@ export const changePassword = async (req, res, next) => {
         }
         user.password = bcryptjs.hashSync(newPassword, 10);
         await user.save();
-        
+
         // Send password change success email
         try {
             const { sendPasswordChangeSuccessEmail } = await import("../utils/emailService.js");
@@ -448,7 +458,7 @@ export const changePassword = async (req, res, next) => {
             console.error('Failed to send password change success email:', emailError);
             // Don't fail the request if email fails
         }
-        
+
         res.status(200).json({ success: true, message: "Password changed successfully" });
     } catch (error) {
         next(error);
@@ -485,27 +495,27 @@ export const checkEmailAvailability = async (req, res, next) => {
     try {
         const { email } = req.params;
         const currentUserId = req.user.id;
-        
+
         if (!email) {
             return next(errorHandler(400, "Email is required"));
         }
-        
+
         // Check if email exists (excluding current user)
-        const existingUser = await User.findOne({ 
+        const existingUser = await User.findOne({
             email: email,
             _id: { $ne: currentUserId }
         });
-        
+
         if (existingUser) {
-            return res.status(200).json({ 
-                available: false, 
-                message: "Email already exists" 
+            return res.status(200).json({
+                available: false,
+                message: "Email already exists"
             });
         }
-        
-        res.status(200).json({ 
-            available: true, 
-            message: "Email available" 
+
+        res.status(200).json({
+            available: true,
+            message: "Email available"
         });
     } catch (error) {
         next(error);
@@ -517,35 +527,35 @@ export const checkMobileAvailability = async (req, res, next) => {
     try {
         const { mobile } = req.params;
         const currentUserId = req.user.id;
-        
+
         if (!mobile) {
             return next(errorHandler(400, "Mobile number is required"));
         }
-        
+
         // Validate mobile number format
         if (!/^[0-9]{10}$/.test(mobile)) {
-            return res.status(200).json({ 
-                available: false, 
-                message: "Please provide a valid 10-digit mobile number" 
+            return res.status(200).json({
+                available: false,
+                message: "Please provide a valid 10-digit mobile number"
             });
         }
-        
+
         // Check if mobile number exists (excluding current user)
-        const existingUser = await User.findOne({ 
+        const existingUser = await User.findOne({
             mobileNumber: mobile,
             _id: { $ne: currentUserId }
         });
-        
+
         if (existingUser) {
-            return res.status(200).json({ 
-                available: false, 
-                message: "Mobile number already exists" 
+            return res.status(200).json({
+                available: false,
+                message: "Mobile number already exists"
             });
         }
-        
-        res.status(200).json({ 
-            available: true, 
-            message: "Mobile number available" 
+
+        res.status(200).json({
+            available: true,
+            message: "Mobile number available"
         });
     } catch (error) {
         next(error);
@@ -700,4 +710,3 @@ export const exportData = async (req, res, next) => {
         next(error);
     }
 };
-   
