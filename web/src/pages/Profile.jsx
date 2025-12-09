@@ -1205,7 +1205,7 @@ export default function Profile() {
                     textSize="text-2xl"
                   />
                 </div>
-                {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+                {currentUser.role === 'admin' && (
                   <div className={`absolute -top-2 -right-2 bg-blue-500 text-white rounded-full p-3 shadow-xl z-20 ${animationClasses.bounceIn} animation-delay-300 ${animationClasses.float}`}>
                     <FaCrown className="w-5 h-5" />
                   </div>
@@ -1223,10 +1223,10 @@ export default function Profile() {
                     <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                       {currentUser.username}
                     </span>
-                    {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+                    {currentUser.role === 'admin' && (
                       <span className="bg-purple-100 text-purple-800 text-sm px-3 py-1 rounded-full font-medium transform transition-all duration-300 hover:scale-110 hover:bg-purple-200 flex items-center gap-1">
                         <FaCrown className="w-3 h-3 text-blue-500" />
-                        {currentUser.role === 'rootadmin' ? 'Root Admin' : 'Admin'}
+                        Admin
                       </span>
                     )}
                     {currentUser.isDefaultAdmin && (
@@ -1546,12 +1546,12 @@ export default function Profile() {
                       readOnly={!emailEditMode || (emailEditMode && otpSent) || otpLoading}
                       disabled={otpLoading}
                       className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${!emailEditMode || (emailEditMode && otpSent) || otpLoading
-                        ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-20'
-                        : emailValidation.available === false
-                          ? 'border-red-500 focus:ring-red-500 pr-12'
-                          : emailValidation.available === true
-                            ? 'border-green-500 focus:ring-green-500 pr-12'
-                            : 'border-gray-300 focus:ring-blue-500 pr-12'
+                          ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-20'
+                          : emailValidation.available === false
+                            ? 'border-red-500 focus:ring-red-500 pr-12'
+                            : emailValidation.available === true
+                              ? 'border-green-500 focus:ring-green-500 pr-12'
+                              : 'border-gray-300 focus:ring-blue-500 pr-12'
                         }`}
                     />
                     {emailValidation.loading && (
@@ -1771,7 +1771,7 @@ export default function Profile() {
                   )}
                   {emailValidation.message && !emailError && (
                     <div className={`text-sm mt-1 ${emailValidation.available === true ? 'text-green-600' :
-                      emailValidation.available === false ? 'text-red-600' : 'text-gray-600'
+                        emailValidation.available === false ? 'text-red-600' : 'text-gray-600'
                       }`}>
                       {emailValidation.message}
                     </div>
@@ -1793,10 +1793,10 @@ export default function Profile() {
                       pattern="[0-9]{10}"
                       maxLength="10"
                       className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${mobileValidation.available === false
-                        ? 'border-red-500 focus:ring-red-500'
-                        : mobileValidation.available === true
-                          ? 'border-green-500 focus:ring-green-500'
-                          : 'border-gray-300 focus:ring-blue-500'
+                          ? 'border-red-500 focus:ring-red-500'
+                          : mobileValidation.available === true
+                            ? 'border-green-500 focus:ring-green-500'
+                            : 'border-gray-300 focus:ring-blue-500'
                         }`}
                     />
                     {mobileValidation.loading && (
@@ -1823,7 +1823,7 @@ export default function Profile() {
                   )}
                   {mobileValidation.message && !mobileError && (
                     <div className={`text-sm mt-1 ${mobileValidation.available === true ? 'text-green-600' :
-                      mobileValidation.available === false ? 'text-red-600' : 'text-gray-600'
+                        mobileValidation.available === false ? 'text-red-600' : 'text-gray-600'
                       }`}>
                       {mobileValidation.message}
                     </div>
@@ -1901,12 +1901,12 @@ export default function Profile() {
                 <button
                   type="submit"
                   className={`bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 ${loading ||
-                    emailValidation.loading ||
-                    mobileValidation.loading ||
-                    emailValidation.available === false ||
-                    mobileValidation.available === false ||
-                    (formData.email !== originalEmail && !emailVerified)
-                    ? 'opacity-60 cursor-not-allowed transform-none' : ''
+                      emailValidation.loading ||
+                      mobileValidation.loading ||
+                      emailValidation.available === false ||
+                      mobileValidation.available === false ||
+                      (formData.email !== originalEmail && !emailVerified)
+                      ? 'opacity-60 cursor-not-allowed transform-none' : ''
                     }`}
                   disabled={
                     loading ||
@@ -2005,7 +2005,7 @@ export default function Profile() {
               className={`bg-blue-500 text-white p-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-110 hover:-translate-y-1 hover:shadow-xl focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-offset-2 focus-visible:ring-blue-500 flex flex-col items-center group ${animationClasses.bounceIn} animation-delay-450`}
             >
               <FaHome className={`w-4 h-4 mb-1 transition-transform duration-300 group-hover:-translate-y-0.5`} />
-              <span className="font-medium text-xs sm:text-sm">{(currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? 'Manage Listings' : 'My Listings'}</span>
+              <span className="font-medium text-xs sm:text-sm">My Listings</span>
             </button>
 
             <Link
