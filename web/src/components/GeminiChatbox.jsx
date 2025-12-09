@@ -2525,7 +2525,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // Voice Input Handling using Web Speech API
     const [isListening, setIsListening] = useState(false);
+    const [isProcessingVoice, setIsProcessingVoice] = useState(false);
     const recognitionRef = useRef(null);
+    const transcriptAccumulator = useRef('');
 
     useEffect(() => {
         // Cleanup on unmount
@@ -2558,44 +2560,68 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
         const recognition = new SpeechRecognition();
 
-        recognition.continuous = false;
+        // Continuous listening so it doesn't stop automatically on silence
+        recognition.continuous = true;
         recognition.interimResults = true;
         recognition.lang = 'en-US';
 
+        transcriptAccumulator.current = ''; // Reset accumulator
+
         recognition.onstart = () => {
             setIsListening(true);
+            setIsProcessingVoice(false);
             toast.info('Listening... Speak now', { autoClose: 2000 });
         };
 
         recognition.onresult = (event) => {
             let finalTranscript = '';
+            // Iterate through results
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
                     finalTranscript += event.results[i][0].transcript;
                 }
             }
+
+            // Append final results to our accumulator
             if (finalTranscript) {
-                setInputMessage(prev => {
-                    const separator = prev && prev.length > 0 && !prev.endsWith(' ') ? ' ' : '';
-                    return prev + separator + finalTranscript;
-                });
+                transcriptAccumulator.current += (transcriptAccumulator.current ? ' ' : '') + finalTranscript;
             }
+
+            // For continuous interim updates, we could store them separately if we wanted to show real-time preview,
+            // but requirements say "text generated should be replaced in text box" after stopping.
+            // We will just accumulate the final results.
         };
 
         recognition.onerror = (event) => {
             console.error('Speech recognition error', event.error);
-            setIsListening(false);
-            if (event.error === 'not-allowed') {
-                toast.error('Microphone access denied. Please allow microphone access.');
-            } else if (event.error === 'no-speech') {
-                // Ignore no-speech error, just stop
-            } else {
-                toast.error('Voice input error: ' + event.error);
+            // If it's a "no-speech" error and we are supposedly listening continuously, we might want to ignore or restart.
+            // But for now, we'll just stop to avoid loops.
+            if (event.error !== 'no-speech') {
+                setIsListening(false);
+                setIsProcessingVoice(false);
+                if (event.error === 'not-allowed') {
+                    toast.error('Microphone access denied.');
+                }
             }
         };
 
         recognition.onend = () => {
-            setIsListening(false);
+            // Check if we stopped intentionally or if browser stopped it
+            // If we are still "isListening" in state but it ended, and it wasn't manual stop (we can trigger manual stop by checking processing state?)
+            // Actually, simplified logic: onend triggers final processing if we were listening.
+
+            // However, since we want to wait for user to click Stop, if browser stops it early (network, silence timeout even with continuous), 
+            // we should probably process what we have.
+
+            if (isListening && !isProcessingVoice) {
+                // Unexpected stop (e.g. network error / silence timeout)
+                // We can treat this as "done" or try to restart.
+                // Let's treat it as "done" for safety, or restart if we want truly "continuous" until click.
+                // Browsers often kill continuous recognition after ~60s.
+                // Let's just stop and process.
+                setIsListening(false);
+                processVoiceResult();
+            }
         };
 
         recognitionRef.current = recognition;
@@ -2604,9 +2630,30 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     const stopListening = () => {
         if (recognitionRef.current) {
-            recognitionRef.current.stop();
+            setIsProcessingVoice(true); // Show loading state
+            recognitionRef.current.stop(); // This will trigger onend
+
+            // We'll process result in onend, or force it here if onend is too slow?
+            // onend is reliable. But we need to distinguish manual stop.
+            // We set isProcessingVoice = true.
+
+            // Wait for a brief moment to allow final results to trickle in, then process
+            setTimeout(() => {
+                processVoiceResult();
+                setIsListening(false); // Ensure listening state is off
+            }, 800); // 800ms simulated processing delay / safe buffer
+        } else {
+            setIsListening(false);
         }
-        setIsListening(false);
+    };
+
+    const processVoiceResult = () => {
+        // Use the accumulated transcript
+        const text = transcriptAccumulator.current;
+        if (text && text.trim().length > 0) {
+            setInputMessage(text.trim());
+        }
+        setIsProcessingVoice(false); // Turn off loading
     };
 
     const handleFileUpload = async (event) => {
@@ -4914,8 +4961,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     onClick={toggleVoiceInput}
                                     className={`px-3 py-2 ${isListening ? 'bg-red-500 text-white animate-pulse' : themeColors.secondary + ' ' + themeColors.accent} hover:opacity-80 rounded-full transition-all duration-200 flex items-center justify-center`}
                                     title={isListening ? "Stop Listening" : "Start Voice Input"}
+                                    disabled={isProcessingVoice}
                                 >
-                                    {isListening ? <FaStop size={14} /> : <FaMicrophone size={14} />}
+                                    {isProcessingVoice ? (
+                                        <div className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                                    ) : isListening ? (
+                                        <FaStop size={14} />
+                                    ) : (
+                                        <FaMicrophone size={14} />
+                                    )}
                                 </button>
 
                                 {/* File Upload Button */}
