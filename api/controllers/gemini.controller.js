@@ -1,16 +1,14 @@
-import OpenAI from 'openai';
+import { Groq } from 'groq-sdk';
 import ChatHistory from '../models/chatHistory.model.js';
 import MessageRating from '../models/messageRating.model.js';
-import { getRelevantWebsiteData } from '../services/websiteDataService.js';
 import { getRelevantCachedData, needsReindexing, indexAllWebsiteData } from '../services/dataSyncService.js';
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_MODEL = process.env.OPENAI_MODEL || 'gpt-5-nano';
-const OPENAI_BASE_URL = 'https://api.openai.com/v1';
+const GROQ_API_KEY = process.env.GROQ_API_KEY;
+// Using Llama 3.3 70B Versatile as the primary model
+const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
 
-const openai = new OpenAI({
-    apiKey: OPENAI_API_KEY,
-    baseURL: OPENAI_BASE_URL
+const groq = new Groq({
+    apiKey: GROQ_API_KEY
 });
 
 export const chatWithGemini = async (req, res) => {
@@ -24,16 +22,10 @@ export const chatWithGemini = async (req, res) => {
             creativity = 'balanced',
             temperature = '0.7',
             topP = '0.8',
-            topK = '40',
             maxTokens = '2048',
             enableStreaming = true,
-            enableContextMemory = true,
             contextWindow = '10',
-            enableSystemPrompts = true,
-            audioUrl,
-            imageUrl,
-            videoUrl,
-            documentUrl
+            selectedProperties
         } = req.body;
         const userId = req.user?.id;
 
@@ -43,10 +35,6 @@ export const chatWithGemini = async (req, res) => {
                 message: 'Message is required'
             });
         }
-
-        // Security: Rate limiting check
-        const userAgent = req.get('User-Agent') || '';
-        const ip = req.ip || req.connection.remoteAddress;
 
         // Basic input sanitization
         const sanitizedMessage = message.trim().substring(0, 2000); // Limit message length
@@ -103,9 +91,6 @@ export const chatWithGemini = async (req, res) => {
                 'neutral': 'Maintain a balanced, professional tone that is neither too casual nor too formal. Provide comprehensive information in a clear, organized manner.'
             };
 
-            // Get selected properties from request body
-            const selectedProperties = req.body.selectedProperties || [];
-
             // Check if data needs re-indexing and do it if necessary
             if (needsReindexing()) {
                 console.log('🔄 Data needs re-indexing, updating cache...');
@@ -118,7 +103,7 @@ export const chatWithGemini = async (req, res) => {
             }
 
             // Get relevant website data from cache (faster)
-            const websiteData = getRelevantCachedData(userMessage, selectedProperties);
+            const websiteData = getRelevantCachedData(userMessage, selectedProperties || []);
 
             return `${basePrompt}
 
@@ -131,6 +116,7 @@ IMPORTANT INSTRUCTIONS:
 - If user asks about properties, show them the actual listings from our website
 - If user asks general real estate questions, provide general advice but also mention relevant content from our website
 - Always maintain a professional tone and encourage users to contact us for more details
+- IMPORTANT: Return the response in Markdown format. Use bold, italics, lists, and code blocks where appropriate to make the response easy to read.
 
 Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         };
@@ -138,38 +124,32 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         // Prepare conversation history with security filtering using contextWindow
         const contextWindowSize = parseInt(contextWindow) || 10;
         const filteredHistory = history.slice(-contextWindowSize).map(msg => ({
-            role: msg.role,
+            role: msg.role === 'assistant' ? 'assistant' : 'user', // Groq uses 'assistant' not 'model'
             content: msg.content?.substring(0, 1000) // Limit history message length
         }));
 
         const systemPrompt = await getSystemPrompt(tone, sanitizedMessage);
 
-        console.log('Calling OpenAI API (SDK), tone:', tone, 'responseLength:', responseLength, 'creativity:', creativity);
-
-        // Dynamic model selection based on complexity
-        const messageComplexity = sanitizedMessage.length > 500 ? 'complex' : 'simple';
+        console.log('Calling Groq API, tone:', tone, 'responseLength:', responseLength, 'creativity:', creativity);
 
         // Helper functions for AI settings
-        const getMaxTokens = (responseLength, complexity) => {
-            const baseTokens = complexity === 'complex' ? 4096 : 2048;
+        const getMaxTokens = (responseLength) => {
             switch (responseLength) {
-                case 'short': return Math.min(baseTokens, 1024);
-                case 'long': return Math.min(baseTokens * 2, 8192);
-                default: return baseTokens; // medium
+                case 'short': return 1024;
+                case 'long': return 8192;
+                default: return 4096; // medium
             }
         };
 
         const getTemperature = (creativity, tone, customTemp) => {
-            // Use custom temperature if provided, otherwise use creativity-based logic
             if (customTemp && !isNaN(parseFloat(customTemp))) {
-                return Math.max(0.1, Math.min(1.0, parseFloat(customTemp)));
+                return Math.max(0.1, Math.min(2.0, parseFloat(customTemp)));
             }
-
             const baseTemp = tone === 'concise' ? 0.3 : (tone === 'formal' ? 0.5 : 0.7);
             switch (creativity) {
                 case 'conservative': return Math.max(baseTemp - 0.2, 0.1);
-                case 'creative': return Math.min(baseTemp + 0.2, 1.0);
-                default: return baseTemp; // balanced
+                case 'creative': return Math.min(baseTemp + 0.3, 1.2); // Groq allows temp > 1
+                default: return baseTemp;
             }
         };
 
@@ -177,37 +157,30 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             if (customTopP && !isNaN(parseFloat(customTopP))) {
                 return Math.max(0.1, Math.min(1.0, parseFloat(customTopP)));
             }
-            return 0.8;
+            return 1.0; // Default for Groq
         };
 
-        const getMaxTokensFromSettings = (responseLength, complexity, customMaxTokens) => {
-            if (customMaxTokens && !isNaN(parseInt(customMaxTokens))) {
-                return Math.max(1, Math.min(8192, parseInt(customMaxTokens)));
-            }
-            return getMaxTokens(responseLength, complexity);
-        };
-
-        // Check if OpenAI API key is configured
-        if (!OPENAI_API_KEY) {
+        // Check if Groq API key is configured
+        if (!GROQ_API_KEY) {
             return res.status(500).json({
                 success: false,
-                message: 'OpenAI API key is not configured. Please set OPENAI_API_KEY in environment variables.'
+                message: 'Groq API key is not configured. Please set GROQ_API_KEY in environment variables.'
             });
         }
 
-        // Build messages array for OpenAI
+        // Build messages array for Groq
         const messages = [];
 
-        // Add system prompt as first message
+        // Add system prompt
         messages.push({
             role: 'system',
             content: systemPrompt
         });
 
-        // Add conversation history
+        // Add history
         filteredHistory.forEach(msg => {
             messages.push({
-                role: msg.role === 'assistant' ? 'assistant' : 'user',
+                role: msg.role,
                 content: msg.content
             });
         });
@@ -218,22 +191,20 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             content: sanitizedMessage
         });
 
-        // Build request payload for OpenAI
         const requestPayload = {
-            model: OPENAI_MODEL,
             messages: messages,
-            max_completion_tokens: getMaxTokensFromSettings(responseLength, messageComplexity, maxTokens),
+            model: GROQ_MODEL,
             temperature: getTemperature(creativity, tone, temperature),
+            max_completion_tokens: getMaxTokens(responseLength),
             top_p: getTopP(topP),
             stream: enableStreaming === true || enableStreaming === 'true',
-            store: true // As requested by user
+            stop: null
         };
 
         // Handle streaming vs non-streaming responses
         if (enableStreaming === true || enableStreaming === 'true') {
-            console.log('Streaming enabled - setting up streaming response');
+            console.log('Streaming enabled - setting up Groq streaming response');
 
-            // Set up streaming response
             const origin = req.headers.origin || 'https://urbansetu.vercel.app';
             res.writeHead(200, {
                 'Content-Type': 'text/plain; charset=utf-8',
@@ -246,9 +217,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
             });
 
             try {
-                // Call OpenAI API with streaming using SDK
-                const stream = await openai.chat.completions.create(requestPayload);
-
+                const stream = await groq.chat.completions.create(requestPayload);
                 let fullResponse = '';
 
                 for await (const chunk of stream) {
@@ -270,7 +239,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                     done: true
                 })}\n\n`);
 
-                // Save chat history with full response
+                // Save chat history
                 if (userId) {
                     (async () => {
                         try {
@@ -279,7 +248,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                             await chatHistory.addMessage('assistant', fullResponse);
                             await chatHistory.save();
 
-                            // Auto-title generation logic
+                            // Auto-title generation
                             const updatedChatHistory = await ChatHistory.findById(chatHistory._id);
                             const isFallbackTitle = updatedChatHistory.name && (
                                 updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) ||
@@ -291,14 +260,14 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                                     const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
                                     const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
 
-                                    const titleResponse = await openai.chat.completions.create({
-                                        model: OPENAI_MODEL,
+                                    const titleResponse = await groq.chat.completions.create({
                                         messages: [
                                             { role: 'system', content: 'You are a helpful assistant that creates short, descriptive titles.' },
                                             { role: 'user', content: titlePrompt }
                                         ],
+                                        model: GROQ_MODEL,
                                         max_completion_tokens: 50,
-                                        temperature: 0.7
+                                        temperature: 0.5
                                     });
 
                                     const titleRaw = titleResponse.choices[0]?.message?.content || '';
@@ -322,39 +291,6 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
 
             } catch (streamError) {
                 console.error('Streaming error:', streamError);
-
-                // Try fallback to gpt-4o if gpt-5-nano fails
-                if (requestPayload.model === 'gpt-5-nano') {
-                    try {
-                        console.log('Falling back to gpt-4o...');
-                        requestPayload.model = 'gpt-4o';
-                        const fallbackStream = await openai.chat.completions.create(requestPayload);
-
-                        let fullResponse = '';
-                        for await (const chunk of fallbackStream) {
-                            const content = chunk.choices[0]?.delta?.content || '';
-                            if (content) {
-                                fullResponse += content;
-                                res.write(`data: ${JSON.stringify({
-                                    type: 'chunk',
-                                    content: content,
-                                    done: false
-                                })}\n\n`);
-                            }
-                        }
-
-                        res.write(`data: ${JSON.stringify({
-                            type: 'done',
-                            content: fullResponse,
-                            done: true
-                        })}\n\n`);
-                        res.end();
-                        return;
-                    } catch (fallbackErr) {
-                        console.error('Fallback failed:', fallbackErr);
-                    }
-                }
-
                 res.write(`data: ${JSON.stringify({
                     type: 'error',
                     content: 'AI service temporarily unavailable. Please try again.',
@@ -366,7 +302,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         }
 
         // Non-streaming response
-        const completion = await openai.chat.completions.create({ ...requestPayload, stream: false });
+        const completion = await groq.chat.completions.create({ ...requestPayload, stream: false });
         const responseText = completion.choices[0]?.message?.content || '';
 
         // Save chat history if user is authenticated
@@ -385,7 +321,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
                 );
 
                 if ((!updatedChatHistory.name || isFallbackTitle) && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
-                    // ... (Auto title logic, omitted for brevity but should be same as above)
+                    // ... (Auto title logic would go here, simplified for non-streaming to avoid duplication if unnecessary, but can be added if needed)
                 }
             } catch (historyError) {
                 console.error('Error saving chat history:', historyError);
@@ -399,7 +335,7 @@ Tone: ${toneInstructions[tone] || toneInstructions['neutral']}`;
         });
 
     } catch (error) {
-        console.error('OpenAI API Error:', error);
+        console.error('Groq API Error:', error);
         res.status(500).json({
             success: false,
             message: 'Sorry, I\'m having trouble processing your request. Please try again later.'
