@@ -160,6 +160,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [renameInput, setRenameInput] = useState('');
     const [refreshingBookmarks, setRefreshingBookmarks] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
+    const [showTermsModal, setShowTermsModal] = useState(false);
+    const [showConsentModal, setShowConsentModal] = useState(false);
     // Floating date label like WhatsApp
     const [floatingDateLabel, setFloatingDateLabel] = useState('');
     const [isScrolling, setIsScrolling] = useState(false);
@@ -849,6 +851,59 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setIsDarkMode(getUserSetting('gemini_dark_mode', 'false') === 'true');
         }
     }, [currentUser]);
+
+    // Terms and Conditions Consent Logic - Check IMMEDIATELY when opened
+    useEffect(() => {
+        if (isOpen) {
+            checkTermsConsent();
+        }
+    }, [isOpen]);
+
+    const checkTermsConsent = () => {
+        const TERMS_VERSION = 'v1.0';
+        const now = new Date().getTime();
+        const THIRTY_DAYS = 30 * 24 * 60 * 60 * 1000;
+
+        let shouldShow = true;
+
+        if (currentUser) {
+            const consentData = localStorage.getItem(`gemini_consent_${currentUser._id}`);
+            if (consentData) {
+                try {
+                    const { version, timestamp } = JSON.parse(consentData);
+                    if (version === TERMS_VERSION && (now - timestamp < THIRTY_DAYS)) {
+                        shouldShow = false;
+                    }
+                } catch (e) {
+                    console.error('Error parsing consent data:', e);
+                }
+            }
+        } else {
+            const consentSession = sessionStorage.getItem('gemini_consent_public');
+            if (consentSession === 'true') {
+                shouldShow = false;
+            }
+        }
+
+        if (shouldShow) {
+            setShowConsentModal(true);
+        }
+    };
+
+    const acceptTerms = () => {
+        const TERMS_VERSION = 'v1.0';
+        if (currentUser) {
+            localStorage.setItem(`gemini_consent_${currentUser._id}`, JSON.stringify({
+                version: TERMS_VERSION,
+                timestamp: new Date().getTime(),
+                userAction: 'accepted'
+            }));
+        } else {
+            sessionStorage.setItem('gemini_consent_public', 'true');
+        }
+        setShowConsentModal(false);
+        toast.success("Terms accepted. Welcome to SetuAI!");
+    };
 
     // Initialize session and load history when component mounts or user changes
     useEffect(() => {
@@ -7452,6 +7507,122 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </p>
                             </div>
                         </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Terms and Conditions Modal (Full Text) */}
+            {showTermsModal && (
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn" onClick={() => setShowTermsModal(false)}>
+                    <div className={`w-full max-w-2xl max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                        {/* Header */}
+                        <div className={`p-6 border-b flex-shrink-0 flex items-center justify-between ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                            <div className="flex items-center gap-3">
+                                <FaFileAlt className="text-blue-500 text-xl" />
+                                <h2 className="text-xl font-bold">Terms of Service</h2>
+                            </div>
+                            <button
+                                onClick={() => setShowTermsModal(false)}
+                                className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
+                            >
+                                <FaTimes size={20} />
+                            </button>
+                        </div>
+
+                        {/* Scrollable Content */}
+                        <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 text-sm leading-relaxed">
+                            <section>
+                                <h3 className="font-bold text-lg mb-2 text-blue-500">1. Introduction</h3>
+                                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                    Welcome to SetuAI. By accessing or using this AI chatbot service, you agree to be bound by these Terms and Conditions.
+                                    This service utilizes advanced artificial intelligence technology powered by Groq and Meta Llama 3 models.
+                                </p>
+                            </section>
+
+                            <section>
+                                <h3 className="font-bold text-lg mb-2 text-blue-500">2. Usage Guidelines</h3>
+                                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                    You agree to use SetuAI only for lawful purposes. You must not:
+                                </p>
+                                <ul className={`list-disc pl-5 mt-2 space-y-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                    <li>Generate harmful, abusive, or illegal content.</li>
+                                    <li>Attempt to bypass security filters or jailbreak the AI.</li>
+                                    <li>Upload malicious files or code.</li>
+                                    <li>Use the service to harass others or violate privacy rights.</li>
+                                </ul>
+                            </section>
+
+                            <section>
+                                <h3 className="font-bold text-lg mb-2 text-blue-500">3. AI Limitations & Disclaimers</h3>
+                                <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-amber-900/20 border-amber-700/50' : 'bg-amber-50 border-amber-200'}`}>
+                                    <p className={`font-semibold mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-800'}`}>Important Notice:</p>
+                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                        SetuAI is an artificial intelligence. While we strive for accuracy, the AI may occasionally generate incorrect or misleading information ("hallucinations").
+                                        Always verify critical real estate, financial, or legal information with qualified human professionals.
+                                    </p>
+                                </div>
+                            </section>
+
+                            <section>
+                                <h3 className="font-bold text-lg mb-2 text-blue-500">4. Data Privacy</h3>
+                                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                    We value your privacy. Your conversation history is stored securely and encrypted in transit.
+                                    We do not use your personal chat data to train our public models. However, for quality assurance, anonymized interactions may be reviewed.
+                                </p>
+                            </section>
+
+                            <section>
+                                <h3 className="font-bold text-lg mb-2 text-blue-500">5. Changes to Terms</h3>
+                                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                    We reserve the right to modify these terms at any time. Continued use of the service constitutes acceptance of updated terms.
+                                </p>
+                            </section>
+                        </div>
+
+                        {/* Footer Action (If viewing from consent modal, this effectively returns to it) */}
+                        <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                            <button
+                                onClick={() => setShowTermsModal(false)}
+                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                            >
+                                Close
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Mandatory Consent Modal */}
+            {showConsentModal && (
+                <div className="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn cursor-default">
+                    <div className={`w-full max-w-md rounded-3xl shadow-2xl p-8 text-center transform transition-all animate-bounceIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`}>
+                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                            <FaFileAlt className="text-blue-600 text-2xl" />
+                        </div>
+
+                        <h2 className="text-2xl font-bold mb-2">Terms & Conditions</h2>
+                        <p className={`mb-6 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                            Welcome to SetuAI! Before you start chatting, please review and accept our usage guidelines. We want to ensure a safe and helpful experience for everyone.
+                        </p>
+
+                        <div className="flex flex-col gap-3">
+                            <button
+                                onClick={acceptTerms}
+                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-95"
+                            >
+                                Accept & Continue
+                            </button>
+                            <button
+                                onClick={() => setShowTermsModal(true)}
+                                className={`w-full py-3 rounded-xl font-medium transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                            >
+                                Read Full Terms
+                            </button>
+                        </div>
+
+                        <p className={`mt-6 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                            By clicking accept, you agree to our policies regarding AI usage and data handling.
+                        </p>
                     </div>
                 </div>
             )}
