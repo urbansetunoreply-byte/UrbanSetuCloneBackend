@@ -146,69 +146,22 @@ export default function AccountRevocation() {
               <h3 className="text-xl font-bold text-gray-900 mb-2">Link Invalid or Expired</h3>
               <p className="text-gray-600 mb-8 text-sm leading-relaxed">{error}</p>
 
-              <div className="space-y-3">
-                <button
-                  onClick={() => navigate('/')}
-                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 transition-all hover:scale-[1.02]"
-                >
-                  <Home className="w-4 h-4 mr-2" />
-                  Return Home
-                </button>
-                <button
-                  onClick={() => navigate('/sign-in')}
-                  className="w-full flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl shadow-sm text-sm font-semibold text-gray-700 bg-white hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all hover:scale-[1.02]"
-                >
-                  Go to Sign In
-                </button>
+              {/* Retry with manual token entry */}
+              <div className="mb-8">
+                <input
+                  type="text"
+                  placeholder="Paste renovation token here..."
+                  className="w-full px-4 py-3 rounded-lg border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                  onChange={(e) => {
+                    const val = e.target.value.trim();
+                    if (val && val.length > 20) {
+                      window.history.pushState({}, '', `/restore-account/${val}`);
+                      window.location.href = `/restore-account/${val}`;
+                    }
+                  }}
+                />
+                <p className="text-xs text-gray-500 mt-2">If you have a valid token, paste it above to retry.</p>
               </div>
-            </div>
-          )}
-
-          {!loading && success && (
-            <div className="text-center py-6">
-              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-scale-in">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
-              </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
-              <p className="text-gray-600 mb-8 leading-relaxed">
-                Your account has been successfully restored. We're redirecting you to safe waters...
-              </p>
-              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2 overflow-hidden">
-                <div className="bg-green-500 h-1.5 rounded-full animate-progress-loading w-full origin-left duration-[3000ms]"></div>
-              </div>
-              <p className="text-xs text-gray-400">Redirecting in a few seconds...</p>
-            </div>
-          )}
-
-          {!loading && isPurged && (
-            <div className="text-center">
-              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <AlertCircle className="w-8 h-8 text-red-500" />
-              </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Account Not Available</h3>
-              <p className="text-gray-600 mb-8 text-sm leading-relaxed">
-                We're sorry, but this account has been permanently deleted and cannot be restored anymore. The 30-day recovery window has passed.
-              </p>
-
-              {purgedDetails && (
-                <div className="bg-gray-50 rounded-2xl p-5 mb-8 text-left border border-gray-100">
-                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Previous Account Info</h4>
-                  <div className="space-y-3">
-                    <div className="flex items-center text-sm">
-                      <User className="w-4 h-4 text-gray-400 mr-3" />
-                      <span className="font-medium text-gray-900">{purgedDetails.username}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Mail className="w-4 h-4 text-gray-400 mr-3" />
-                      <span className="text-gray-600 truncate">{purgedDetails.email}</span>
-                    </div>
-                    <div className="flex items-center text-sm">
-                      <Clock className="w-4 h-4 text-red-400 mr-3" />
-                      <span className="text-red-600 font-medium">Deleted on {new Date(purgedDetails.purgedAt).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </div>
-              )}
 
               <div className="space-y-3">
                 <button
@@ -232,7 +185,6 @@ export default function AccountRevocation() {
                     Home
                   </button>
                 </div>
-
               </div>
             </div>
           )}
