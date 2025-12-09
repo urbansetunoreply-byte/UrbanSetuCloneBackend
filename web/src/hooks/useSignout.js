@@ -40,6 +40,7 @@ export const useSignout = () => {
 
       // Clear all tokens and cookies
       localStorage.removeItem('accessToken');
+      localStorage.setItem('logout', Date.now()); // Notify other tabs
       document.cookie = 'access_token=; Max-Age=0; path=/; SameSite=None; Secure';
       document.cookie = 'refresh_token=; Max-Age=0; path=/; SameSite=None; Secure';
       document.cookie = 'session_id=; Max-Age=0; path=/; SameSite=None; Secure';

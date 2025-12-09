@@ -8,6 +8,7 @@ import { authenticatedFetch } from '../utils/csrf';
 import React, { useEffect, useState } from 'react';
 
 import { API_BASE_URL } from '../config/api.js';
+import { reconnectSocket } from "../utils/socket";
 
 export default function Oauth({ pageType, disabled = false, onAuthStart = null }) {
     const dispatch = useDispatch();
@@ -61,7 +62,15 @@ export default function Oauth({ pageType, disabled = false, onAuthStart = null }
                 throw new Error(data.message || 'Authentication failed');
             }
 
+            if (data.token) {
+                localStorage.setItem('accessToken', data.token);
+                localStorage.setItem('login', Date.now()); // Notify other tabs
+            }
+
             dispatch(signInSuccess(data));
+
+            // Reconnect socket with new token
+            reconnectSocket();
 
             // Navigate based on user role
             if (data.role === "admin" || data.role === "rootadmin") {

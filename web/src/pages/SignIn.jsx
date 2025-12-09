@@ -458,7 +458,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
-
+                localStorage.setItem('login', Date.now()); // Notify other tabs
             }
             // Dispatch success and wait for state update
             dispatch(signInSuccess(data));
@@ -582,7 +582,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
-
+                localStorage.setItem('login', Date.now()); // Notify other tabs
             }
             // Dispatch success and wait for state update
             dispatch(signInSuccess(data));

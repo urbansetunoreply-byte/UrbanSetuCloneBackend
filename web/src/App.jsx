@@ -282,6 +282,18 @@ function AppRoutes({ bootstrapped }) {
     }
   }, []);
 
+  // Sync tabs on login/logout (Global Session Management)
+  useEffect(() => {
+    const handleStorageChange = (e) => {
+      if (e.key === 'logout' || e.key === 'login') {
+        // Reload page to sync state with new cookies/session
+        window.location.reload();
+      }
+    };
+    window.addEventListener('storage', handleStorageChange);
+    return () => window.removeEventListener('storage', handleStorageChange);
+  }, []);
+
   // Do not show header on /appointments admin route
   const hideHeaderRoutes = ["/appointments"];
 
