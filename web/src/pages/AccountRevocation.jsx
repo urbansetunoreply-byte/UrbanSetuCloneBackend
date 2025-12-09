@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { CheckCircle2, XCircle, Clock, User, Shield, AlertTriangle, ArrowRight, RefreshCw, Home, Mail, Calendar, HelpCircle, AlertCircle } from 'lucide-react';
 
+import { useSelector } from 'react-redux';
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -11,6 +12,17 @@ export default function AccountRevocation() {
 
   const { token } = useParams();
   const navigate = useNavigate();
+  const { currentUser } = useSelector((state) => state.user);
+
+  let homePath = "/";
+  if (currentUser) {
+    if (currentUser.role === "admin" || currentUser.role === "rootadmin") {
+      homePath = "/admin";
+    } else {
+      homePath = "/user";
+    }
+  }
+
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState('');
   const [success, setSuccess] = useState(false);
@@ -179,7 +191,7 @@ export default function AccountRevocation() {
                     Sign In
                   </button>
                   <button
-                    onClick={() => navigate('/')}
+                    onClick={() => navigate(homePath)}
                     className="flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
                   >
                     Home
@@ -278,6 +290,62 @@ export default function AccountRevocation() {
               <p className="mt-6 text-center text-xs text-gray-400">
                 By restoring, you agree to our <a href="/terms" className="underline hover:text-blue-500">Terms</a> & <a href="/privacy" className="underline hover:text-blue-500">Privacy Policy</a>
               </p>
+            </div>
+          )}
+
+          {!loading && isPurged && (
+            <div className="text-center">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-8 h-8 text-red-500" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">Account Not Available</h3>
+              <p className="text-gray-600 mb-8 text-sm leading-relaxed">
+                We're sorry, but this account has been permanently deleted and cannot be restored anymore. The 30-day recovery window has passed.
+              </p>
+
+              {purgedDetails && (
+                <div className="bg-gray-50 rounded-2xl p-5 mb-8 text-left border border-gray-100">
+                  <h4 className="text-xs font-semibold text-gray-500 uppercase tracking-wider mb-4">Previous Account Info</h4>
+                  <div className="space-y-3">
+                    <div className="flex items-center text-sm">
+                      <User className="w-4 h-4 text-gray-400 mr-3" />
+                      <span className="font-medium text-gray-900">{purgedDetails.username}</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <Mail className="w-4 h-4 text-gray-400 mr-3" />
+                      <span className="text-gray-600 truncate">{purgedDetails.email}</span>
+                    </div>
+                    <div className="flex items-center text-sm">
+                      <Clock className="w-4 h-4 text-red-400 mr-3" />
+                      <span className="text-red-600 font-medium">Deleted on {new Date(purgedDetails.purgedAt).toLocaleDateString()}</span>
+                    </div>
+                  </div>
+                </div>
+              )}
+
+              <div className="space-y-3">
+                <button
+                  onClick={() => navigate('/sign-up')}
+                  className="w-full flex justify-center items-center py-3 px-4 border border-transparent rounded-xl shadow-sm text-sm font-semibold text-white bg-blue-600 hover:bg-blue-700 transition-all hover:scale-[1.02]"
+                >
+                  Create New Account
+                  <ArrowRight className="w-4 h-4 ml-2" />
+                </button>
+                <div className="grid grid-cols-2 gap-3">
+                  <button
+                    onClick={() => navigate('/sign-in')}
+                    className="flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Sign In
+                  </button>
+                  <button
+                    onClick={() => navigate(homePath)}
+                    className="flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                  >
+                    Home
+                  </button>
+                </div>
+              </div>
             </div>
           )}
         </div>
