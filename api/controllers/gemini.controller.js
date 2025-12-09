@@ -90,6 +90,7 @@ export const chatWithGemini = async (req, res) => {
             - Settings: /user/settings
             - AI Assistant: /user/ai
             - Admin Dashboard: /admin
+            - Property Details: /listing/:listing_id (Replace :listing_id with the actual Property ID)
             `;
 
             const basePrompt = `You are "SetuAI", the advanced AI assistant for UrbanSetu.
@@ -104,7 +105,8 @@ export const chatWithGemini = async (req, res) => {
             1. **CASUAL MODE (Default)**: If the user says "Hi", " What's up", or asks general questions, be friendly, concise, and casual. Do NOT dump technical info.
             2. **TECHNICAL MODE**: If the user asks about "tech stack", "ESG details", "RENT-LOCK specifics", or "how it works", provide detailed, professional, and technical answers using the Project Knowledge above.
             3. **SMART ROUTING**: If a user asks "Where can I see my meetings?" or "Go to appointments", explicitly suggest the link using Markdown: "[My Appointments](https://urbansetu.vercel.app/user/my-appointments)". Always use the predefined routes from the ROUTE_MAP when helping with navigation.
-            
+            4. **PROPERTY LINKING**: When discussing specific properties, ALWAYS link them using the format: "[Property Name](/listing/PROPERTY_ID)". The Property ID can be found in the context provided.
+             
             GENERAL INSTRUCTIONS:
             - Always provide accurate, helpful, and professional responses.
             - When uncertain, recommend consulting with licensed real estate professionals.

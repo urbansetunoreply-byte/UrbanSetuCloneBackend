@@ -39,14 +39,14 @@ let dataCache = {
 export const indexAllProperties = async () => {
     try {
         console.log('🔄 Indexing all properties for chatbot...');
-        
+
         const properties = await Listing.find({})
             .select('name city district state regularPrice discountPrice type bedrooms bathrooms area description imageUrls createdAt updatedAt')
             .lean();
 
         // Clear existing properties cache
         dataCache.properties.clear();
-        
+
         // Index properties
         properties.forEach(prop => {
             const propertyData = {
@@ -65,13 +65,13 @@ export const indexAllProperties = async () => {
                 updatedAt: prop.updatedAt,
                 indexedAt: new Date()
             };
-            
+
             dataCache.properties.set(prop._id.toString(), propertyData);
         });
 
         dataCache.totalProperties = properties.length;
         dataCache.lastSync = new Date();
-        
+
         console.log(`✅ Indexed ${properties.length} properties for chatbot`);
         return { success: true, count: properties.length };
     } catch (error) {
@@ -86,14 +86,14 @@ export const indexAllProperties = async () => {
 export const indexAllBlogs = async () => {
     try {
         console.log('🔄 Indexing all blogs for chatbot...');
-        
+
         const blogs = await Blog.find({ published: true })
             .select('title content excerpt author tags category publishedAt views likes')
             .lean();
 
         // Clear existing blogs cache
         dataCache.blogs.clear();
-        
+
         // Index blogs
         blogs.forEach(blog => {
             const blogData = {
@@ -109,13 +109,13 @@ export const indexAllBlogs = async () => {
                 likes: blog.likes,
                 indexedAt: new Date()
             };
-            
+
             dataCache.blogs.set(blog._id.toString(), blogData);
         });
 
         dataCache.totalBlogs = blogs.length;
         dataCache.lastSync = new Date();
-        
+
         console.log(`✅ Indexed ${blogs.length} blogs for chatbot`);
         return { success: true, count: blogs.length };
     } catch (error) {
@@ -130,14 +130,14 @@ export const indexAllBlogs = async () => {
 export const indexAllFAQs = async () => {
     try {
         console.log('🔄 Indexing all FAQs for chatbot...');
-        
+
         const faqs = await FAQ.find({ isActive: true })
             .select('question answer category priority tags views helpful notHelpful')
             .lean();
 
         // Clear existing FAQs cache
         dataCache.faqs.clear();
-        
+
         // Index FAQs
         faqs.forEach(faq => {
             const faqData = {
@@ -152,13 +152,13 @@ export const indexAllFAQs = async () => {
                 notHelpful: faq.notHelpful,
                 indexedAt: new Date()
             };
-            
+
             dataCache.faqs.set(faq._id.toString(), faqData);
         });
 
         dataCache.totalFAQs = faqs.length;
         dataCache.lastSync = new Date();
-        
+
         console.log(`✅ Indexed ${faqs.length} FAQs for chatbot`);
         return { success: true, count: faqs.length };
     } catch (error) {
@@ -173,7 +173,7 @@ export const indexAllFAQs = async () => {
 export const indexAllReviews = async () => {
     try {
         console.log('🔄 Indexing all reviews for chatbot...');
-        
+
         const reviews = await Review.find({ status: 'approved' })
             .populate('listingId', 'name city state')
             .populate('userId', 'username')
@@ -182,7 +182,7 @@ export const indexAllReviews = async () => {
 
         // Clear existing reviews cache
         dataCache.reviews.clear();
-        
+
         // Index reviews
         reviews.forEach(review => {
             const reviewData = {
@@ -202,13 +202,13 @@ export const indexAllReviews = async () => {
                 createdAt: review.createdAt,
                 indexedAt: new Date()
             };
-            
+
             dataCache.reviews.set(review._id.toString(), reviewData);
         });
 
         dataCache.totalReviews = reviews.length;
         dataCache.lastSync = new Date();
-        
+
         console.log(`✅ Indexed ${reviews.length} reviews for chatbot`);
         return { success: true, count: reviews.length };
     } catch (error) {
@@ -223,14 +223,14 @@ export const indexAllReviews = async () => {
 export const indexAboutContent = async () => {
     try {
         console.log('🔄 Indexing about content for chatbot...');
-        
+
         const aboutContent = await About.findOne()
             .select('heroTitle heroText mission features whoWeServe trust team contact customFields lastUpdated')
             .lean();
 
         // Clear existing about cache
         dataCache.about.clear();
-        
+
         if (aboutContent) {
             const aboutData = {
                 id: aboutContent._id.toString(),
@@ -246,12 +246,12 @@ export const indexAboutContent = async () => {
                 lastUpdated: aboutContent.lastUpdated,
                 indexedAt: new Date()
             };
-            
+
             dataCache.about.set(aboutContent._id.toString(), aboutData);
         }
 
         dataCache.lastSync = new Date();
-        
+
         console.log(`✅ Indexed about content for chatbot`);
         return { success: true, count: aboutContent ? 1 : 0 };
     } catch (error) {
@@ -266,7 +266,7 @@ export const indexAboutContent = async () => {
 export const indexContactMessages = async () => {
     try {
         console.log('🔄 Indexing contact messages for chatbot...');
-        
+
         const contacts = await Contact.find({ status: { $in: ['read', 'replied'] } })
             .select('email subject message status adminReply adminReplyAt createdAt')
             .sort({ createdAt: -1 })
@@ -275,7 +275,7 @@ export const indexContactMessages = async () => {
 
         // Clear existing contacts cache
         dataCache.contacts.clear();
-        
+
         // Index contacts
         contacts.forEach(contact => {
             const contactData = {
@@ -289,13 +289,13 @@ export const indexContactMessages = async () => {
                 createdAt: contact.createdAt,
                 indexedAt: new Date()
             };
-            
+
             dataCache.contacts.set(contact._id.toString(), contactData);
         });
 
         dataCache.totalContacts = contacts.length;
         dataCache.lastSync = new Date();
-        
+
         console.log(`✅ Indexed ${contacts.length} contact messages for chatbot`);
         return { success: true, count: contacts.length };
     } catch (error) {
@@ -310,7 +310,7 @@ export const indexContactMessages = async () => {
 export const indexBookingData = async () => {
     try {
         console.log('🔄 Indexing booking data for chatbot...');
-        
+
         const bookings = await Booking.find({ status: { $in: ['accepted', 'completed'] } })
             .populate('listingId', 'name city state type regularPrice')
             .populate('buyerId', 'username')
@@ -322,7 +322,7 @@ export const indexBookingData = async () => {
 
         // Clear existing bookings cache
         dataCache.bookings.clear();
-        
+
         // Index bookings
         bookings.forEach(booking => {
             const bookingData = {
@@ -344,13 +344,13 @@ export const indexBookingData = async () => {
                 createdAt: booking.createdAt,
                 indexedAt: new Date()
             };
-            
+
             dataCache.bookings.set(booking._id.toString(), bookingData);
         });
 
         dataCache.totalBookings = bookings.length;
         dataCache.lastSync = new Date();
-        
+
         console.log(`✅ Indexed ${bookings.length} bookings for chatbot`);
         return { success: true, count: bookings.length };
     } catch (error) {
@@ -365,8 +365,8 @@ export const indexBookingData = async () => {
 export const indexUserData = async () => {
     try {
         console.log('🔄 Indexing user data for chatbot...');
-        
-        const users = await User.find({ 
+
+        const users = await User.find({
             status: { $ne: 'suspended' },
             role: { $in: ['user', 'seller'] }
         })
@@ -377,7 +377,7 @@ export const indexUserData = async () => {
 
         // Clear existing users cache
         dataCache.users.clear();
-        
+
         // Index users (anonymized for privacy)
         users.forEach(user => {
             const userData = {
@@ -392,13 +392,13 @@ export const indexUserData = async () => {
                 createdAt: user.createdAt,
                 indexedAt: new Date()
             };
-            
+
             dataCache.users.set(user._id.toString(), userData);
         });
 
         dataCache.totalUsers = users.length;
         dataCache.lastSync = new Date();
-        
+
         console.log(`✅ Indexed ${users.length} users for chatbot`);
         return { success: true, count: users.length };
     } catch (error) {
@@ -413,7 +413,7 @@ export const indexUserData = async () => {
 export const indexAllWebsiteData = async () => {
     try {
         console.log('🚀 Starting full website data indexing...');
-        
+
         const [propertiesResult, blogsResult, faqsResult, reviewsResult, aboutResult, contactsResult, bookingsResult, usersResult] = await Promise.all([
             indexAllProperties(),
             indexAllBlogs(),
@@ -426,10 +426,10 @@ export const indexAllWebsiteData = async () => {
         ]);
 
         const totalIndexed = propertiesResult.count + blogsResult.count + faqsResult.count + reviewsResult.count + aboutResult.count + contactsResult.count + bookingsResult.count + usersResult.count;
-        
+
         console.log(`🎉 Full indexing completed: ${totalIndexed} items indexed`);
         console.log(`📊 Breakdown: ${propertiesResult.count} properties, ${blogsResult.count} blogs, ${faqsResult.count} FAQs, ${reviewsResult.count} reviews, ${aboutResult.count} about content, ${contactsResult.count} contacts, ${bookingsResult.count} bookings, ${usersResult.count} users`);
-        
+
         return {
             success: true,
             totalIndexed,
@@ -482,13 +482,13 @@ export const getCachedData = () => {
  */
 export const searchCachedProperties = (query, limit = 5) => {
     const properties = Array.from(dataCache.properties.values());
-    
+
     if (!query || query.trim().length === 0) {
         return properties.slice(0, limit);
     }
 
     const searchTerm = query.toLowerCase();
-    const filtered = properties.filter(prop => 
+    const filtered = properties.filter(prop =>
         prop.name.toLowerCase().includes(searchTerm) ||
         prop.location.toLowerCase().includes(searchTerm) ||
         prop.type.toLowerCase().includes(searchTerm) ||
@@ -504,9 +504,9 @@ export const searchCachedProperties = (query, limit = 5) => {
 export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
     const keywords = extractKeywords(userMessage);
     const cachedData = getCachedData();
-    
+
     let contextData = '';
-    
+
     // Add website info
     contextData += `COMPANY: UrbanSetu\n`;
     contextData += `TOTAL PROPERTIES: ${cachedData.stats.totalProperties}\n`;
@@ -523,7 +523,8 @@ export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
     if (selectedProperties.length > 0) {
         contextData += 'USER-SELECTED PROPERTIES (Referenced in message):\n';
         selectedProperties.forEach((prop, index) => {
-            contextData += `${index + 1}. ${prop.name} - ${prop.location}\n`;
+            const link = `/listing/${prop.id}`;
+            contextData += `${index + 1}. [${prop.name}](${link}) - ${prop.location}\n`;
             contextData += `   Price: ₹${prop.price.toLocaleString()} | Type: ${prop.type}\n`;
             contextData += `   ${prop.bedrooms}BHK | ${prop.bathrooms} Bath | ${prop.area} sq ft\n`;
             contextData += `   Description: ${prop.description || 'Property details available'}\n`;
@@ -532,11 +533,12 @@ export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
     }
 
     // Add relevant properties from cache
-    const relevantProperties = searchCachedProperties(keywords.join(' '), 3);
+    const relevantProperties = searchCachedProperties(keywords.join(' '), 5); // Increased limit to 5
     if (relevantProperties.length > 0) {
         contextData += 'RELEVANT PROPERTIES:\n';
         relevantProperties.forEach((prop, index) => {
-            contextData += `${index + 1}. ${prop.name} - ${prop.location}\n`;
+            const link = `/listing/${prop.id}`;
+            contextData += `${index + 1}. [${prop.name}](${link}) - ${prop.location}\n`;
             contextData += `   Price: ₹${prop.price.toLocaleString()} | Type: ${prop.type}\n`;
             contextData += `   ${prop.bedrooms}BHK | ${prop.bathrooms} Bath | ${prop.area} sq ft\n`;
             contextData += `   Description: ${prop.description?.slice(0, 200)}...\n`;
@@ -545,8 +547,8 @@ export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
     }
 
     // Add relevant blogs from cache
-    const relevantBlogs = cachedData.blogs.filter(blog => 
-        keywords.some(keyword => 
+    const relevantBlogs = cachedData.blogs.filter(blog =>
+        keywords.some(keyword =>
             blog.title.toLowerCase().includes(keyword) ||
             blog.content.toLowerCase().includes(keyword) ||
             blog.tags.some(tag => tag.toLowerCase().includes(keyword))
@@ -566,8 +568,8 @@ export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
     }
 
     // Add relevant FAQs from cache
-    const relevantFAQs = cachedData.faqs.filter(faq => 
-        keywords.some(keyword => 
+    const relevantFAQs = cachedData.faqs.filter(faq =>
+        keywords.some(keyword =>
             faq.question.toLowerCase().includes(keyword) ||
             faq.answer.toLowerCase().includes(keyword) ||
             faq.tags.some(tag => tag.toLowerCase().includes(keyword))
@@ -588,7 +590,7 @@ export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
         contextData += 'CUSTOMER REVIEWS:\n';
         relevantReviews.forEach((review, index) => {
             contextData += `${index + 1}. ${review.listingName} (${review.listingLocation})\n`;
-            contextData += `   Rating: ${'★'.repeat(review.rating)}${'☆'.repeat(5-review.rating)} (${review.rating}/5)\n`;
+            contextData += `   Rating: ${'★'.repeat(review.rating)}${'☆'.repeat(5 - review.rating)} (${review.rating}/5)\n`;
             contextData += `   Review: "${review.comment.slice(0, 150)}..."\n`;
             contextData += `   By: ${review.userName}${review.isVerified ? ' (Verified)' : ''}\n`;
             if (review.ownerResponse) {
@@ -634,7 +636,7 @@ export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
  */
 const extractKeywords = (message) => {
     const commonWords = ['the', 'a', 'an', 'and', 'or', 'but', 'in', 'on', 'at', 'to', 'for', 'of', 'with', 'by', 'is', 'are', 'was', 'were', 'be', 'been', 'have', 'has', 'had', 'do', 'does', 'did', 'will', 'would', 'could', 'should', 'may', 'might', 'can', 'must', 'shall'];
-    
+
     return message
         .toLowerCase()
         .replace(/[^\w\s]/g, ' ')
@@ -648,7 +650,7 @@ const extractKeywords = (message) => {
  */
 export const needsReindexing = () => {
     if (!dataCache.lastSync) return true;
-    
+
     // Re-index if data is older than 1 hour
     const oneHourAgo = new Date(Date.now() - 60 * 60 * 1000);
     return dataCache.lastSync < oneHourAgo;
@@ -673,9 +675,9 @@ export const getSyncStatus = () => {
 export const searchCachedReviews = (query, limit = 5) => {
     const keywords = extractKeywords(query);
     const reviews = Array.from(dataCache.reviews.values());
-    
-    const results = reviews.filter(review => 
-        keywords.some(keyword => 
+
+    const results = reviews.filter(review =>
+        keywords.some(keyword =>
             review.comment.toLowerCase().includes(keyword) ||
             review.listingName?.toLowerCase().includes(keyword) ||
             review.listingLocation?.toLowerCase().includes(keyword) ||
@@ -683,7 +685,7 @@ export const searchCachedReviews = (query, limit = 5) => {
             review.ownerResponse?.toLowerCase().includes(keyword)
         )
     ).sort((a, b) => b.helpfulCount - a.helpfulCount || new Date(b.createdAt) - new Date(a.createdAt));
-    
+
     return results.slice(0, limit);
 };
 
@@ -693,9 +695,9 @@ export const searchCachedReviews = (query, limit = 5) => {
 export const searchCachedAbout = (query, limit = 1) => {
     const keywords = extractKeywords(query);
     const aboutContent = Array.from(dataCache.about.values());
-    
-    const results = aboutContent.filter(about => 
-        keywords.some(keyword => 
+
+    const results = aboutContent.filter(about =>
+        keywords.some(keyword =>
             about.heroTitle?.toLowerCase().includes(keyword) ||
             about.heroText?.toLowerCase().includes(keyword) ||
             about.mission?.toLowerCase().includes(keyword) ||
@@ -706,7 +708,7 @@ export const searchCachedAbout = (query, limit = 1) => {
             about.contact?.toLowerCase().includes(keyword)
         )
     );
-    
+
     return results.slice(0, limit);
 };
 
@@ -716,16 +718,16 @@ export const searchCachedAbout = (query, limit = 1) => {
 export const searchCachedContacts = (query, limit = 5) => {
     const keywords = extractKeywords(query);
     const contacts = Array.from(dataCache.contacts.values());
-    
-    const results = contacts.filter(contact => 
-        keywords.some(keyword => 
+
+    const results = contacts.filter(contact =>
+        keywords.some(keyword =>
             contact.subject?.toLowerCase().includes(keyword) ||
             contact.message?.toLowerCase().includes(keyword) ||
             contact.adminReply?.toLowerCase().includes(keyword) ||
             contact.email?.toLowerCase().includes(keyword)
         )
     ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
+
     return results.slice(0, limit);
 };
 
@@ -735,9 +737,9 @@ export const searchCachedContacts = (query, limit = 5) => {
 export const searchCachedBookings = (query, limit = 5) => {
     const keywords = extractKeywords(query);
     const bookings = Array.from(dataCache.bookings.values());
-    
-    const results = bookings.filter(booking => 
-        keywords.some(keyword => 
+
+    const results = bookings.filter(booking =>
+        keywords.some(keyword =>
             booking.listingName?.toLowerCase().includes(keyword) ||
             booking.listingLocation?.toLowerCase().includes(keyword) ||
             booking.propertyName?.toLowerCase().includes(keyword) ||
@@ -747,7 +749,7 @@ export const searchCachedBookings = (query, limit = 5) => {
             booking.sellerName?.toLowerCase().includes(keyword)
         )
     ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
+
     return results.slice(0, limit);
 };
 
@@ -757,16 +759,16 @@ export const searchCachedBookings = (query, limit = 5) => {
 export const searchCachedUsers = (query, limit = 5) => {
     const keywords = extractKeywords(query);
     const users = Array.from(dataCache.users.values());
-    
-    const results = users.filter(user => 
-        keywords.some(keyword => 
+
+    const results = users.filter(user =>
+        keywords.some(keyword =>
             user.username?.toLowerCase().includes(keyword) ||
             user.role?.toLowerCase().includes(keyword) ||
             user.gender?.toLowerCase().includes(keyword) ||
             user.address?.toLowerCase().includes(keyword)
         )
     ).sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
+
     return results.slice(0, limit);
 };
 
