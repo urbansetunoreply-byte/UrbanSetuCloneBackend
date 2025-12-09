@@ -6,7 +6,12 @@ const processTextSegment = (text, isSentMessage, searchQuery) => {
 
   // Regex patterns
   const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
-  const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?|(?:[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?\.)+[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+  // Improved MD link regex to better handle brackets and avoid capturing trailing text
+  // Matches: [Text](URL)
+  const mdLinkRegex = /\[([^\]]+)\]\(([^)]+)\)/g;
+
+  // URL regex for raw links (http/https/www)
+  const urlRegex = /(https?:\/\/[^\s\)]+|www\.[^\s\)]+\.[^\s\)]+)/gi;
 
   // First, handle property mentions
   let processedText = text;
@@ -20,18 +25,43 @@ const processTextSegment = (text, isSentMessage, searchQuery) => {
     mentionPlaceholders.push({ placeholder, name, listingId, full });
   });
 
-  // Then handle URLs
+  // Second, handle standard Markdown links [Link Text](URL)
+  // We process this BEFORE raw URLs to avoid double-processing
+  const mdLinkMatches = [...processedText.matchAll(mdLinkRegex)];
+  const mdLinkPlaceholders = [];
+  mdLinkMatches.forEach((match, index) => {
+    const [full, linkText, linkUrl] = match;
+    const placeholder = `__MDLINK_${index}__`;
+    processedText = processedText.replace(full, placeholder);
+    mdLinkPlaceholders.push({ placeholder, linkText, linkUrl });
+  });
+
+  // Third, handle raw URLs that aren't part of markdown links
   const urlMatches = [...processedText.matchAll(urlRegex)];
   const urlPlaceholders = [];
   urlMatches.forEach((match, index) => {
     const [url] = match;
-    const placeholder = `__URL_${index}__`;
-    processedText = processedText.replace(url, placeholder);
-    urlPlaceholders.push({ placeholder, url });
+    // Basic check to strip trailing punctuation often found in text (.,!?)
+    let cleanUrl = url;
+    const trailing = cleanUrl.match(/[.,!?)]+$/);
+    if (trailing) {
+      cleanUrl = cleanUrl.substring(0, cleanUrl.length - trailing[0].length);
+    }
+
+    // Only process if it looks like a valid URL or domain
+    if (cleanUrl.length > 4) {
+      const placeholder = `__URL_${index}__`;
+      // Use replace with a check to ensure we only replace the specific instance if needed, 
+      // but simple replace works because unique placeholders.
+      // However, we must be careful not to replace parts of already placeholder'd text.
+      // Since placeholders are __XYZ__, they won't match urlRegex easily (no dots usually).
+      processedText = processedText.replace(url, placeholder + (trailing ? trailing[0] : ''));
+      urlPlaceholders.push({ placeholder, url: cleanUrl });
+    }
   });
 
   // Split by placeholders
-  const allPlaceholders = [...mentionPlaceholders, ...urlPlaceholders];
+  const allPlaceholders = [...mentionPlaceholders, ...mdLinkPlaceholders, ...urlPlaceholders];
   let parts;
   if (allPlaceholders.length > 0) {
     const placeholderRegex = new RegExp(`(${allPlaceholders.map(p => p.placeholder).join('|')})`, 'g');
@@ -62,6 +92,35 @@ const processTextSegment = (text, isSentMessage, searchQuery) => {
           title={`Open ${name}`}
         >
           @{name}
+        </a>
+      );
+    }
+
+    const mdLinkPlaceholder = mdLinkPlaceholders.find(p => p.placeholder === subPart);
+    if (mdLinkPlaceholder) {
+      const { linkText, linkUrl } = mdLinkPlaceholder;
+      let finalUrl = linkUrl;
+      if (!finalUrl.startsWith('http://') && !finalUrl.startsWith('https://') && !finalUrl.startsWith('/')) {
+        finalUrl = 'https://' + finalUrl;
+      }
+
+      // Determine if internal or external
+      const isInternal = finalUrl.startsWith('/') || finalUrl.includes('urbansetu.vercel.app');
+
+      const linkClasses = isSentMessage
+        ? "text-white hover:text-blue-200 underline cursor-pointer font-medium"
+        : "text-blue-600 hover:text-blue-800 underline cursor-pointer font-medium";
+
+      return (
+        <a
+          key={`mdlink-${index}`}
+          href={finalUrl}
+          target={isInternal ? "_self" : "_blank"}
+          rel={isInternal ? "" : "noopener noreferrer"}
+          className={linkClasses}
+          onClick={(e) => e.stopPropagation()}
+        >
+          {linkText}
         </a>
       );
     }

@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 // import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
@@ -4868,32 +4868,72 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                             <form onSubmit={handleSubmit} className="flex space-x-2">
                                 <div className="flex-1 relative">
-                                    <input
-                                        ref={inputRef}
-                                        type="text"
-                                        value={inputMessage}
-                                        onChange={handleInputChange}
-                                        onKeyPress={handleKeyPress}
-                                        onKeyDown={handleKeyDown}
-                                        placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
-                                        aria-label="Type your message"
-                                        aria-describedby="input-help"
-                                        role="textbox"
-                                        className={`w-full px-4 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
-                                            ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
-                                            : 'bg-white border-gray-300 text-gray-900'
-                                            }`}
-                                        disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
-                                    />
-                                    {inputMessage.length > 1800 && (
-                                        <div className="absolute -top-6 right-0 text-xs text-orange-600">
-                                            {inputMessage.length}/2000
+                                    {/* Voice Meter / Input Box Toggle */}
+                                    {(isListening || isProcessingVoice) ? (
+                                        <div className={`w-full h-10 px-4 flex items-center justify-center border rounded-full ${isDarkMode ? 'bg-gray-800 border-gray-600' : 'bg-white border-gray-300'}`}>
+                                            <div className="flex items-center gap-1 h-5">
+                                                {/* Simulated Audio Visualizer Bars */}
+                                                {[...Array(5)].map((_, i) => (
+                                                    <div
+                                                        key={i}
+                                                        className={`w-1 rounded-full animate-voice-bar ${isDarkMode ? 'bg-blue-400' : 'bg-blue-600'}`}
+                                                        style={{
+                                                            height: '100%',
+                                                            animationDelay: `${i * 0.1}s`,
+                                                            animationDuration: '0.5s'
+                                                        }}
+                                                    />
+                                                ))}
+                                                <span className={`ml-3 text-sm font-medium animate-pulse ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                    {isProcessingVoice ? 'Processing...' : 'Listening...'}
+                                                </span>
+                                            </div>
                                         </div>
-                                    )}
-                                    {screenReaderSupport && (
-                                        <div id="input-help" className="sr-only">
-                                            Press Enter to send your message, or use the voice input and file upload buttons for additional options.
-                                        </div>
+                                    ) : (
+                                        <>
+                                            <button
+                                                type="button"
+                                                onClick={() => {
+                                                    if (!currentUser) {
+                                                        toast.info('Please login to upload files');
+                                                        return;
+                                                    }
+                                                    setShowFileUpload(true);
+                                                }}
+                                                className={`absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+                                                title="Attach files (Images, PDF, Documents)"
+                                                disabled={isListening || isProcessingVoice}
+                                            >
+                                                <FaPaperclip size={16} />
+                                            </button>
+                                            <input
+                                                ref={inputRef}
+                                                type="text"
+                                                value={inputMessage}
+                                                onChange={handleInputChange}
+                                                onKeyPress={handleKeyPress}
+                                                onKeyDown={handleKeyDown}
+                                                placeholder={(rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin') ? "Sign in to continue chatting..." : "Ask me anything about real estate..."}
+                                                aria-label="Type your message"
+                                                aria-describedby="input-help"
+                                                role="textbox"
+                                                className={`w-full pl-10 pr-4 py-2 border rounded-full focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} focus:border-transparent text-sm ${isDarkMode
+                                                    ? 'bg-gray-800 border-gray-600 text-white placeholder-gray-400'
+                                                    : 'bg-white border-gray-300 text-gray-900'
+                                                    }`}
+                                                disabled={isLoading || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
+                                            />
+                                            {inputMessage.length > 1800 && (
+                                                <div className="absolute -top-6 right-0 text-xs text-orange-600">
+                                                    {inputMessage.length}/2000
+                                                </div>
+                                            )}
+                                            {screenReaderSupport && (
+                                                <div id="input-help" className="sr-only">
+                                                    Press Enter to send your message, or use the voice input and file upload buttons for additional options.
+                                                </div>
+                                            )}
+                                        </>
                                     )}
 
                                     {/* Property Suggestions Dropdown */}
@@ -4972,21 +5012,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     )}
                                 </button>
 
-                                {/* File Upload Button */}
-                                <button
-                                    type="button"
-                                    onClick={() => {
-                                        if (!currentUser) {
-                                            toast.info('Please login to upload files');
-                                            return;
-                                        }
-                                        setShowFileUpload(true);
-                                    }}
-                                    className="px-3 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-full transition-all duration-200 flex items-center justify-center"
-                                    title="Upload files (Images, PDF, Documents)"
-                                >
-                                    <FaUpload size={14} />
-                                </button>
+                                {/* File Upload Button Removed (Moved to input left) */}
 
                                 {isLoading ? (
                                     <button
@@ -5007,7 +5033,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 ) : (
                                     <button
                                         type="submit"
-                                        disabled={!inputMessage.trim() || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
+                                        disabled={!inputMessage.trim() || isListening || isProcessingVoice || (rateLimitInfo.remaining <= 0 && rateLimitInfo.role !== 'rootadmin')}
                                         className={`bg-gradient-to-r ${themeColors.primary} text-white p-2 rounded-full hover:opacity-90 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-300 transform hover:scale-110 flex-shrink-0 flex items-center justify-center w-10 h-10 group hover:shadow-xl active:scale-95`}
                                         aria-label="Send message"
                                         title="Send message"
