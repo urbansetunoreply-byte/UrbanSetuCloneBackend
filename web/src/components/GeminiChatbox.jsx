@@ -4027,6 +4027,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </button>
                                                 </li>
                                             )}
+                                            {/* Terms & Conditions Option - Visible to Everyone */}
+                                            <li>
+                                                <button
+                                                    onClick={() => { setShowTermsModal(true); setIsHeaderMenuOpen(false); }}
+                                                    className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
+                                                >
+                                                    <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-blue-500/20' : 'bg-blue-100'} group-hover:scale-110 transition-transform duration-200`}>
+                                                        <FaFileAlt size={14} className="text-blue-500" />
+                                                    </div>
+                                                    <span className="font-medium">Terms & Conditions</span>
+                                                </button>
+                                            </li>
+
+                                            <li className={`border-t ${isDarkMode ? 'border-gray-600/50' : 'border-gray-200/50'} my-2`}></li>
                                             {/* New Chat */}
                                             <li>
                                                 <button
