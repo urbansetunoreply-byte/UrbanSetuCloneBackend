@@ -303,6 +303,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const recordingChunksRef = useRef([]);
     const [editingMessageIndex, setEditingMessageIndex] = useState(null);
     const [editingMessageContent, setEditingMessageContent] = useState('');
+    // Edit mode property suggestions state
+    const [showEditPropertySuggestions, setShowEditPropertySuggestions] = useState(false);
+    const [editSuggestionQuery, setEditSuggestionQuery] = useState('');
+    const [editSuggestionStartPos, setEditSuggestionStartPos] = useState(-1);
+    const [selectedEditSuggestionIndex, setSelectedEditSuggestionIndex] = useState(-1);
+    const editSuggestionsRef = useRef(null);
     const typingTimeoutRef = useRef(null);
 
     const scrollToBottom = () => {
@@ -618,6 +624,46 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
+    // Handle @ input for edit mode
+    const handleEditInputChange = (e) => {
+        const value = e.target.value;
+        setEditingMessageContent(value);
+
+        const cursorPos = e.target.selectionStart;
+        const textBeforeCursor = value.substring(0, cursorPos);
+        const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+        if (lastAtIndex !== -1) {
+            const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+            const hasSpaceAfterAt = textAfterAt.includes(' ');
+
+            if (!hasSpaceAfterAt) {
+                setShowEditPropertySuggestions(true);
+                setEditSuggestionQuery(textAfterAt);
+                setEditSuggestionStartPos(lastAtIndex);
+                setSelectedEditSuggestionIndex(-1);
+                searchProperties(textAfterAt);
+            } else {
+                setShowEditPropertySuggestions(false);
+            }
+        } else {
+            setShowEditPropertySuggestions(false);
+        }
+    };
+
+    const handleEditSuggestionSelect = (property) => {
+        const beforeAt = editingMessageContent.substring(0, editSuggestionStartPos);
+        const afterAt = editingMessageContent.substring(editSuggestionStartPos + editSuggestionQuery.length + 1);
+
+        const newMessage = `${beforeAt}@${property.name}${afterAt}`;
+        setEditingMessageContent(newMessage);
+
+        setShowEditPropertySuggestions(false);
+        setEditSuggestionQuery('');
+        setEditSuggestionStartPos(-1);
+        setSelectedEditSuggestionIndex(-1);
+    };
+
     // Handle @ input for property suggestions
     const handleInputChange = (e) => {
         const value = e.target.value;
@@ -709,6 +755,27 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 break;
         }
     };
+
+    // Close edit suggestions when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            const clickedInsideSuggestions = editSuggestionsRef.current && editSuggestionsRef.current.contains(event.target);
+            const clickedInsideTextarea = event.target.closest('textarea');
+            const isEditTextarea = clickedInsideTextarea && clickedInsideTextarea.placeholder.includes('Edit your message');
+
+            if (showEditPropertySuggestions && !clickedInsideSuggestions && !isEditTextarea) {
+                setShowEditPropertySuggestions(false);
+                setEditSuggestionQuery('');
+                setEditSuggestionStartPos(-1);
+                setSelectedEditSuggestionIndex(-1);
+            }
+        };
+
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [showEditPropertySuggestions]);
 
     // Close suggestions when clicking outside
     useEffect(() => {
@@ -2114,6 +2181,32 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
     // Handle keyboard shortcuts for editing
     const handleEditKeyDown = (e, messageIndex) => {
+        if (showEditPropertySuggestions) {
+            switch (e.key) {
+                case 'ArrowDown':
+                    e.preventDefault();
+                    setSelectedEditSuggestionIndex(prev =>
+                        prev < propertySuggestions.length - 1 ? prev + 1 : 0
+                    );
+                    return;
+                case 'ArrowUp':
+                    e.preventDefault();
+                    setSelectedEditSuggestionIndex(prev =>
+                        prev > 0 ? prev - 1 : propertySuggestions.length - 1
+                    );
+                    return;
+                case 'Enter':
+                    e.preventDefault();
+                    if (selectedEditSuggestionIndex >= 0 && propertySuggestions[selectedEditSuggestionIndex]) {
+                        handleEditSuggestionSelect(propertySuggestions[selectedEditSuggestionIndex]);
+                    }
+                    return;
+                case 'Escape':
+                    setShowEditPropertySuggestions(false);
+                    return;
+            }
+        }
+
         if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) {
             e.preventDefault();
             submitEditedMessage(messageIndex);
@@ -3534,14 +3627,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const formatTextWithLinks = (text, isSentMessage = false) => {
         if (!text || typeof text !== 'string') return text;
 
-        // Simple URL regex pattern
-        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+        // URL regex pattern with negative lookbehind to exclude trailing punctuation like ), ., etc.
+        const urlRegex = /((?:https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)(?<![\.,?!:;()\]]))/gi;
 
         const parts = text.split(urlRegex);
 
         return parts.map((part, index) => {
-            // Check if this part is a URL
-            if (urlRegex.test(part)) {
+            // Check if this part is a URL (odd indices in split result are the captured groups)
+            if (index % 2 === 1) {
                 // Ensure URL has protocol
                 let url = part;
                 if (!url.startsWith('http://') && !url.startsWith('https://')) {
@@ -4665,15 +4758,36 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 {/* Message content - editable for user messages */}
                                                 {editingMessageIndex === index ? (
                                                     <div className="space-y-2">
-                                                        <textarea
-                                                            value={editingMessageContent}
-                                                            onChange={(e) => setEditingMessageContent(e.target.value)}
-                                                            onKeyDown={(e) => handleEditKeyDown(e, index)}
-                                                            className={`w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} placeholder-gray-500`}
-                                                            rows={3}
-                                                            placeholder="Edit your message... (Ctrl+Enter to send, Esc to cancel)"
-                                                        // Removed autoFocus - don't auto-focus input
-                                                        />
+                                                        <div className="relative">
+                                                            <textarea
+                                                                value={editingMessageContent}
+                                                                onChange={handleEditInputChange}
+                                                                onKeyDown={(e) => handleEditKeyDown(e, index)}
+                                                                className={`w-full p-2 text-sm text-gray-900 bg-white border border-gray-300 rounded-lg resize-none focus:outline-none focus:ring-2 ${themeColors.accent.replace('text-', 'focus:ring-').replace('-600', '-500')} placeholder-gray-500`}
+                                                                rows={3}
+                                                                placeholder="Edit your message... (Ctrl+Enter to send, Esc to cancel)"
+                                                            // Removed autoFocus - don't auto-focus input
+                                                            />
+
+                                                            {/* Edit Mode Property Suggestions */}
+                                                            {showEditPropertySuggestions && (
+                                                                <div ref={editSuggestionsRef} className={`absolute bottom-full ${message.role === 'user' ? 'right-0' : 'left-0'} mb-1 w-64 ${isDarkMode ? 'bg-gray-800 border-blue-600' : 'bg-white border-blue-300'} border-2 rounded-lg shadow-2xl z-50 max-h-48 overflow-y-auto`}>
+                                                                    {propertySuggestions.length > 0 ? propertySuggestions.map((property, idx) => (
+                                                                        <button
+                                                                            type="button"
+                                                                            key={property.id || idx}
+                                                                            onMouseDown={(e) => { e.preventDefault(); handleEditSuggestionSelect(property); }}
+                                                                            className={`w-full text-left p-2 text-xs border-b ${isDarkMode ? 'border-gray-700 hover:bg-gray-700' : 'border-gray-100 hover:bg-gray-100'} ${idx === selectedEditSuggestionIndex ? (isDarkMode ? 'bg-gray-700' : 'bg-gray-100') : ''}`}
+                                                                        >
+                                                                            <div className={`font-medium ${isDarkMode ? 'text-white' : 'text-gray-900'} truncate`}>{property.name}</div>
+                                                                            <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} truncate`}>{property.location} • ₹{property.price.toLocaleString()}</div>
+                                                                        </button>
+                                                                    )) : (
+                                                                        <div className="p-2 text-xs text-center text-gray-500">No properties found</div>
+                                                                    )}
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                         <div className="flex gap-2 justify-end">
                                                             <button
                                                                 onClick={() => cancelEditingMessage()}
@@ -6689,7 +6803,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <button
                                     key={filter}
                                     onClick={() => setRatingsFilter(filter)}
-                                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 ${ratingsFilter === filter
+                                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${ratingsFilter === filter
                                         ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
                                         : `${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
                                         }`}
@@ -6729,8 +6843,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 </div>
                                                             </div>
                                                         </div>
-                                                        <div className={`mt-3 p-3 rounded-lg text-sm ${isDarkMode ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
-                                                            "{(r.messageContent || '').slice(0, 200)}{(r.messageContent || '').length > 200 ? '...' : ''}"
+                                                        <div className={`mt-3 p-3 rounded-lg text-sm transition-all duration-300 group hover:max-h-[500px] hover:overflow-y-auto ${isDarkMode ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
+                                                            <div className="line-clamp-3 group-hover:line-clamp-none">
+                                                                "{r.messageContent || ''}"
+                                                            </div>
                                                         </div>
                                                         {r.rating === 'down' && r.feedback && (
                                                             <div className="mt-3 text-sm flex gap-2">
@@ -6772,8 +6888,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             </div>
                                                         </div>
                                                     </div>
-                                                    <div className={`mt-3 p-3 rounded-lg text-sm ${isDarkMode ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
-                                                        "{meta.messagePreview || (msg.content || '').slice(0, 140)}"
+                                                    <div className={`mt-3 p-3 rounded-lg text-sm transition-all duration-300 group hover:max-h-[500px] hover:overflow-y-auto ${isDarkMode ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
+                                                        <div className="line-clamp-3 group-hover:line-clamp-none">
+                                                            "{meta.messagePreview || msg.content || ''}"
+                                                        </div>
                                                     </div>
                                                     {r === 'down' && meta.feedback && (
                                                         <div className="mt-3 text-sm flex gap-2">
