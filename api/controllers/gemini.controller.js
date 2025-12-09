@@ -123,6 +123,7 @@ export const chatWithGemini = async (req, res) => {
                 console.log('🔄 Data needs re-indexing, updating cache...');
                 try {
                     await indexAllWebsiteData();
+                    console.log('✅ Data cache updated');
                 } catch (error) {
                     console.error('❌ Error updating data cache:', error);
                 }
