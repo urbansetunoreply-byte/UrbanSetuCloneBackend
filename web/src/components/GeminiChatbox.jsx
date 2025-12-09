@@ -159,6 +159,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [renameTargetSessionId, setRenameTargetSessionId] = useState(null);
     const [renameInput, setRenameInput] = useState('');
     const [refreshingBookmarks, setRefreshingBookmarks] = useState(false);
+    const [showInfoModal, setShowInfoModal] = useState(false);
     // Floating date label like WhatsApp
     const [floatingDateLabel, setFloatingDateLabel] = useState('');
     const [isScrolling, setIsScrolling] = useState(false);
@@ -3977,6 +3978,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {isHeaderMenuOpen && (
                                     <div ref={headerMenuRef} className={`absolute right-0 top-full mt-3 ${isDarkMode ? 'bg-gray-800/95 text-gray-200 border-gray-600' : 'bg-white/95 text-gray-800 border-gray-200'} rounded-xl shadow-2xl border backdrop-blur-sm w-64 z-50 animate-slideDown`}>
                                         <ul className="py-2 text-sm">
+                                            {/* About SetuAI */}
+                                            <li>
+                                                <button
+                                                    onClick={() => { setShowInfoModal(true); setIsHeaderMenuOpen(false); }}
+                                                    className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
+                                                >
+                                                    <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-indigo-500/20' : 'bg-indigo-100'} group-hover:scale-110 transition-transform duration-200`}>
+                                                        <FaRobot size={14} className="text-indigo-500" />
+                                                    </div>
+                                                    <span className="font-medium">About SetuAI</span>
+                                                </button>
+                                            </li>
+
+                                            <li className={`border-t ${isDarkMode ? 'border-gray-600/50' : 'border-gray-200/50'} my-2`}></li>
+
                                             {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) && (
                                                 <li>
                                                     <button
@@ -7321,6 +7337,111 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 .dark .gemini-chatbox-modal thead tr { background-color: rgba(31,41,55,0.5); }
                 `}
             </style>
+            {/* About/Info Modal */}
+            {showInfoModal && (
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setShowInfoModal(false)}>
+                    <div className={`w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                        <div className={`sticky top-0 z-10 p-6 border-b flex items-center justify-between backdrop-blur-lg bg-opacity-90 ${isDarkMode ? 'border-gray-700 bg-gray-900/90' : 'border-gray-100 bg-white/90'}`}>
+                            <div className="flex items-center gap-4">
+                                <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
+                                    <FaRobot size={24} className="text-indigo-500" />
+                                </div>
+                                <div>
+                                    <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">SetuAI</h2>
+                                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Advanced Real Estate Assistant</p>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowInfoModal(false)}
+                                className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                            >
+                                <FaTimes size={20} />
+                            </button>
+                        </div>
+
+                        <div className="p-6 space-y-8">
+                            {/* Core Technology */}
+                            <section>
+                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <FaCog className="text-indigo-500" />
+                                    Powered By
+                                </h3>
+                                <div className={`p-6 rounded-2xl ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+                                    <div className="grid md:grid-cols-2 gap-6">
+                                        <div className="space-y-2">
+                                            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">Inference Engine</div>
+                                            <div className="text-xl font-bold font-mono">Groq LPU™</div>
+                                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                Ultra-low latency inference for near-instant responses.
+                                            </p>
+                                        </div>
+                                        <div className="space-y-2">
+                                            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">LLM Model</div>
+                                            <div className="text-xl font-bold font-mono">Meta Llama 3</div>
+                                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                State-of-the-art open source model fine-tuned for accuracy.
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </section>
+
+                            {/* Features */}
+                            <section>
+                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <FaMagic className="text-purple-500" />
+                                    Capabilities
+                                </h3>
+                                <div className="grid md:grid-cols-2 gap-4">
+                                    {[
+                                        { title: 'Real Estate Expertise', desc: 'Deep knowledge of property trends, pricing, and legal processes.', icon: '🏢' },
+                                        { title: 'Live Property Search', desc: 'Can search and recommend local listings from UrbanSetu database.', icon: '🔍' },
+                                        { title: 'Smart Context', desc: 'Remembers conversation history and user preferences.', icon: '🧠' },
+                                        { title: 'Multi-Modal', desc: 'Supports text, voice input, and image analysis.', icon: '🎤' },
+                                        { title: 'Code & Math', desc: 'Capable of calculating mortgage EMIs and formatting code.', icon: '🔢' },
+                                        { title: 'Instant Translation', desc: 'Communicates fluently in multiple languages.', icon: '🌐' }
+                                    ].map((feat, i) => (
+                                        <div key={i} className={`p-4 rounded-xl border ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-100 hover:bg-gray-50'} transition-colors`}>
+                                            <div className="text-2xl mb-2">{feat.icon}</div>
+                                            <h4 className="font-semibold mb-1">{feat.title}</h4>
+                                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{feat.desc}</p>
+                                        </div>
+                                    ))}
+                                </div>
+                            </section>
+
+                            {/* Security */}
+                            <section>
+                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                    <FaCheckCircle className="text-green-500" />
+                                    Security & Privacy
+                                </h3>
+                                <ul className={`space-y-3 p-5 rounded-2xl ${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-50'}`}>
+                                    {[
+                                        'End-to-End Encryption for all data in transit',
+                                        'No personal data training - your chats are private',
+                                        'Auto-deletion options for chat history',
+                                        'Enterprise-grade rate limiting and abuse protection'
+                                    ].map((item, i) => (
+                                        <li key={i} className="flex items-start gap-3 text-sm">
+                                            <FaCheck className="text-green-500 mt-1 flex-shrink-0" size={12} />
+                                            <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{item}</span>
+                                        </li>
+                                    ))}
+                                </ul>
+                            </section>
+
+                            {/* Footer Info */}
+                            <div className={`text-center pt-6 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                    SetuAI v2.5.0 • Build 2024.12 • Powered by UrbanSetu Tech Labs
+                                </p>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
+
         </>
     );
 };
