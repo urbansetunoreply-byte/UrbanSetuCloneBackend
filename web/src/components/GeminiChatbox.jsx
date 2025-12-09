@@ -82,7 +82,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [messages, setMessages] = useState([
         {
             role: 'assistant',
-            content: 'Hello! I\'m your AI assistant powered by OpenAI. How can I help you with your real estate needs today?',
+            content: 'Hello! I\'m your AI assistant powered by Groq. How can I help you with your real estate needs today?',
             timestamp: new Date().toISOString()
         }
     ]);
@@ -480,7 +480,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setMessages([
             {
                 role: 'assistant',
-                content: 'Hello! I\'m your AI assistant powered by OpenAI. How can I help you with your real estate needs today?',
+                content: 'Hello! I\'m your AI assistant powered by Groq. How can I help you with your real estate needs today?',
                 timestamp: new Date().toISOString()
             }
         ]);
@@ -1958,7 +1958,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
-            console.log('Sending edited message to OpenAI:', messageContent, 'Session:', currentSessionId);
+            console.log('Sending edited message to Groq:', messageContent, 'Session:', currentSessionId);
 
             // Support cancelling with AbortController
             abortControllerRef.current?.abort();
@@ -2149,7 +2149,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Ensure the first message is always the default welcome message
                     const defaultMessage = {
                         role: 'assistant',
-                        content: 'Hello! I\'m your AI assistant powered by OpenAI. How can I help you with your real estate needs today?',
+                        content: 'Hello! I\'m your AI assistant powered by Groq. How can I help you with your real estate needs today?',
                         timestamp: new Date().toISOString()
                     };
 
@@ -2280,7 +2280,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     // Reset messages to default welcome message
                     const defaultMessage = {
                         role: 'assistant',
-                        content: 'Hello! I\'m your AI assistant powered by OpenAI. How can I help you with your real estate needs today?',
+                        content: 'Hello! I\'m your AI assistant powered by Groq. How can I help you with your real estate needs today?',
                         timestamp: new Date().toISOString()
                     };
                     setMessages([defaultMessage]);
@@ -4145,7 +4145,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 <button
                                                     onClick={() => {
                                                         try {
-                                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'OpenAI'}: ${m.content}`);
+                                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'Groq'}: ${m.content}`);
                                                             const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
                                                             const url = URL.createObjectURL(blob);
                                                             const a = document.createElement('a');
@@ -5317,7 +5317,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                                         const resp = await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, { credentials: 'include' });
                                                                                         const data = await resp.json();
                                                                                         if (!resp.ok || !data?.data?.messages) throw new Error('load');
-                                                                                        const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'OpenAI'}: ${m.content}`);
+                                                                                        const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'Groq'}: ${m.content}`);
                                                                                         const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
                                                                                         const url = URL.createObjectURL(blob);
                                                                                         const a = document.createElement('a');
@@ -6250,7 +6250,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             Click to start recording, click again to stop
                                         </p>
                                         <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                                            Powered by OpenAI Whisper AI
+                                            Powered by Groq Llama AI
                                         </p>
                                         <p className={`text-xs ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
                                             Note: Rate limits may apply for frequent use
@@ -6510,7 +6510,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     }`}
                                                             >
                                                                 <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
-                                                                    {message.role === 'user' ? 'You' : 'OpenAI'} • {new Date(message.timestamp).toLocaleString()}
+                                                                    {message.role === 'user' ? 'You' : 'Groq'} • {new Date(message.timestamp).toLocaleString()}
                                                                 </div>
                                                                 <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{message.content.substring(0, 100)}...</div>
                                                             </div>
