@@ -2523,382 +2523,90 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
-    // Web Speech API for real-time transcription (fallback)
-    const [isWebSpeechSupported, setIsWebSpeechSupported] = useState(false);
-    const [webSpeechRecognition, setWebSpeechRecognition] = useState(null);
+    // Voice Input Handling using Web Speech API
+    const [isListening, setIsListening] = useState(false);
+    const recognitionRef = useRef(null);
 
-    // Check for Web Speech API support
     useEffect(() => {
-        if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
-            setIsWebSpeechSupported(true);
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognition = new SpeechRecognition();
-            recognition.continuous = true;
-            recognition.interimResults = true;
-            recognition.lang = 'en-US';
-            setWebSpeechRecognition(recognition);
-        }
+        // Cleanup on unmount
+        return () => {
+            if (recognitionRef.current) {
+                recognitionRef.current.stop();
+            }
+        };
     }, []);
 
-    // Enhanced Features Functions
-    const startVoiceRecording = async () => {
-        // Prevent multiple simultaneous recordings
-        if (isRecording) {
-            console.log('Recording already in progress, ignoring start request');
+    const toggleVoiceInput = () => {
+        if (!currentUser) {
+            toast.info('Please login to use voice input');
             return;
         }
 
-        try {
-            // Cleanup any existing recording state
-            if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(recordedAudioUrl);
-            }
-            setRecordedAudioUrl(null);
-            setRecordedAudioFile(null);
-            setAudioChunks([]);
-            recordingChunksRef.current = [];
-
-            const stream = await navigator.mediaDevices.getUserMedia({
-                audio: {
-                    echoCancellation: true,
-                    noiseSuppression: true,
-                    sampleRate: 44100
-                }
-            });
-
-            // Check supported MIME types (prioritize formats that work with backend)
-            const supportedTypes = [
-                'audio/wav',
-                'video/webm',  // Backend expects video/webm for audio
-                'video/mp4',   // Backend expects video/mp4 for audio
-                'audio/webm',
-                'audio/webm;codecs=opus'
-            ];
-
-            let selectedType = 'audio/wav';
-            for (const type of supportedTypes) {
-                if (MediaRecorder.isTypeSupported(type)) {
-                    selectedType = type;
-                    break;
-                }
-            }
-
-            console.log('Selected audio type:', selectedType);
-
-            const recorder = new MediaRecorder(stream, { mimeType: selectedType });
-
-            // Reset chunks array for new recording
-            recordingChunksRef.current = [];
-            console.log('Starting new recording, chunks reset');
-
-            recorder.ondataavailable = (event) => {
-                if (event.data && event.data.size > 0) {
-                    recordingChunksRef.current.push(event.data);
-                    // Only log every 25th chunk to reduce console spam
-                    if (recordingChunksRef.current.length % 25 === 0) {
-                        console.log('Recording progress:', recordingChunksRef.current.length, 'chunks');
-                    }
-                }
-            };
-
-            recorder.onstop = async () => {
-                try {
-                    // Get the current chunks from ref
-                    const chunks = [...recordingChunksRef.current]; // Create a copy
-                    console.log('Recording stopped, chunks:', chunks.length);
-                    console.log('Chunks array:', chunks);
-                    console.log('Ref current:', recordingChunksRef.current);
-
-                    if (chunks.length === 0) {
-                        console.error('No chunks found in recordingChunksRef.current');
-                        throw new Error('No audio data recorded');
-                    }
-
-                    // Check if recording was too short
-                    const totalSize = chunks.reduce((total, chunk) => total + chunk.size, 0);
-                    if (totalSize < 1000) { // Less than 1KB
-                        throw new Error('Recording too short, please record for at least 1 second');
-                    }
-
-                    const audioBlob = new Blob(chunks, { type: selectedType });
-                    console.log('Audio blob created:', audioBlob.size, 'bytes, type:', audioBlob.type);
-
-                    if (audioBlob.size === 0) {
-                        throw new Error('Empty audio blob');
-                    }
-
-                    // Skip blob test to avoid playback issues
-                    console.log('Audio blob created successfully, skipping test');
-
-                    // Generate filename with proper extension
-                    let extension = 'webm';
-                    if (selectedType.includes('wav')) extension = 'wav';
-                    else if (selectedType.includes('mp4')) extension = 'mp4';
-                    else if (selectedType.includes('ogg')) extension = 'ogg';
-                    else if (selectedType.includes('opus')) extension = 'webm';
-
-                    const fileName = `recording-${Date.now()}.${extension}`;
-                    const audioFile = new File([audioBlob], fileName, { type: audioBlob.type });
-                    const audioUrl = URL.createObjectURL(audioBlob);
-
-                    console.log('Audio URL created:', audioUrl);
-
-                    // Store audio for preview and upload
-                    setAudioChunks([audioBlob]);
-                    setRecordedAudioFile(audioFile);
-                    setRecordedAudioUrl(audioUrl);
-                    setRecordedAudioType(selectedType);
-
-                    // Show audio preview
-                    setShowAudioPreview(true);
-                } catch (error) {
-                    console.error('Error processing recording:', error);
-                    toast.error('Failed to process recording: ' + error.message);
-                } finally {
-                    // Stop all tracks
-                    stream.getTracks().forEach(track => track.stop());
-                }
-            };
-
-            recorder.onerror = (event) => {
-                console.error('MediaRecorder error:', event);
-                toast.error('Recording error occurred');
-            };
-
-            // Start recording with time slice for better data handling
-            recorder.start(100);
-            setMediaRecorder(recorder);
-            setIsRecording(true);
-            setAudioChunks([]);
-
-            // Start recording timer
-            setRecordingStartTime(Date.now());
-        } catch (error) {
-            console.error('Voice recording error:', error);
-            toast.error('Microphone access denied or not available');
-        }
-    };
-
-    const stopVoiceRecording = () => {
-        if (mediaRecorder && isRecording) {
-            console.log('Stopping recording...');
-            if (mediaRecorder.state === 'recording') {
-                mediaRecorder.stop();
-            }
-            setIsRecording(false);
-            setRecordingStartTime(null);
-            setRecordingDuration(0);
-            // Don't clear chunks here - let onstop handle it
+        if (isListening) {
+            stopListening();
         } else {
-            console.log('No active recording to stop');
+            startListening();
         }
     };
 
-    // Cleanup audio blob URL when component unmounts or when new recording starts
-    useEffect(() => {
-        return () => {
-            if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(recordedAudioUrl);
-            }
-        };
-    }, [recordedAudioUrl]);
-
-    // Recording timer effect
-    useEffect(() => {
-        let interval;
-        if (isRecording && recordingStartTime) {
-            interval = setInterval(() => {
-                setRecordingDuration(Math.floor((Date.now() - recordingStartTime) / 1000));
-            }, 1000);
+    const startListening = () => {
+        if (!('webkitSpeechRecognition' in window) && !('SpeechRecognition' in window)) {
+            toast.error('Voice input is supported only in Chrome, Edge, and Safari.');
+            return;
         }
-        return () => {
-            if (interval) clearInterval(interval);
+
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const recognition = new SpeechRecognition();
+
+        recognition.continuous = false;
+        recognition.interimResults = true;
+        recognition.lang = 'en-US';
+
+        recognition.onstart = () => {
+            setIsListening(true);
+            toast.info('Listening... Speak now', { autoClose: 2000 });
         };
-    }, [isRecording, recordingStartTime]);
 
-    // Upload audio to Cloudinary and get transcription
-    const uploadAudioAndTranscribe = async (audioFile) => {
-        try {
-            setUploadingAudio(true);
-            setUploadProgress(0);
-
-            // Create new AbortController for this upload
-            audioUploadAbortControllerRef.current = new AbortController();
-
-            // Upload audio to Cloudinary
-            const formData = new FormData();
-            formData.append('audio', audioFile);
-
-            const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/upload/audio`, {
-                method: 'POST',
-                credentials: 'include',
-                body: formData,
-                signal: audioUploadAbortControllerRef.current.signal,
-            });
-
-            if (!response.ok) {
-                const errorText = await response.text();
-                console.error('Audio upload failed:', response.status, errorText);
-                throw new Error(`Audio upload failed: ${response.status} - ${errorText}`);
+        recognition.onresult = (event) => {
+            let finalTranscript = '';
+            for (let i = event.resultIndex; i < event.results.length; ++i) {
+                if (event.results[i].isFinal) {
+                    finalTranscript += event.results[i][0].transcript;
+                }
             }
-
-            const uploadData = await response.json();
-            const audioUrl = uploadData.audioUrl;
-
-            // Use real speech-to-text API for transcription
-            try {
-                const transcriptionResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/speech/transcribe`, {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({
-                        audioUrl: audioUrl
-                    }),
-                    signal: audioUploadAbortControllerRef.current.signal,
+            if (finalTranscript) {
+                setInputMessage(prev => {
+                    const separator = prev && prev.length > 0 && !prev.endsWith(' ') ? ' ' : '';
+                    return prev + separator + finalTranscript;
                 });
-
-                if (!transcriptionResponse.ok) {
-                    const errorData = await transcriptionResponse.json();
-
-                    // Handle rate limiting with specific user feedback
-                    if (transcriptionResponse.status === 429) {
-                        const retryAfter = errorData.retryAfter || 60;
-                        throw new Error(`Rate limit exceeded. Please wait ${retryAfter} seconds before trying again.`);
-                    }
-
-                    throw new Error(errorData.message || 'Transcription failed');
-                }
-
-                const transcriptionData = await transcriptionResponse.json();
-
-                if (transcriptionData.success && transcriptionData.transcription) {
-                    return {
-                        audioUrl,
-                        transcription: transcriptionData.transcription,
-                        confidence: transcriptionData.confidence || 0,
-                        language: transcriptionData.language || 'en',
-                        duration: transcriptionData.duration || 0
-                    };
-                } else {
-                    throw new Error('No transcription received');
-                }
-            } catch (transcriptionError) {
-                console.error('Speech-to-text error:', transcriptionError);
-
-                // Check if it's a rate limit error
-                if (transcriptionError.message.includes('Rate limit exceeded')) {
-                    return {
-                        audioUrl,
-                        transcription: 'I\'ve uploaded your audio recording, but the transcription service is currently experiencing high demand. Please describe what you said in the audio or what you need help with, and I\'ll assist you accordingly.'
-                    };
-                }
-
-                // Fallback to asking user to describe their audio
-                return {
-                    audioUrl,
-                    transcription: 'I\'ve uploaded an audio recording but had trouble transcribing it with Whisper AI. Please describe what you said in the audio or what you need help with, and I\'ll assist you accordingly.'
-                };
             }
+        };
 
-        } catch (error) {
-            console.error('Audio upload/transcription error:', error);
-
-            // Handle cancellation
-            if (error.name === 'AbortError') {
-                console.log('Audio upload/transcription cancelled by user');
-                toast.info('Audio upload cancelled');
-                return null; // Return null to indicate cancellation
-            }
-
-            toast.error('Failed to upload and transcribe audio with Whisper AI');
-            throw error;
-        } finally {
-            setUploadingAudio(false);
-            setUploadProgress(0);
-            audioUploadAbortControllerRef.current = null;
-        }
-    };
-
-    // Cancel audio upload/transcription
-    const cancelAudioUpload = () => {
-        if (audioUploadAbortControllerRef.current) {
-            audioUploadAbortControllerRef.current.abort();
-            audioUploadAbortControllerRef.current = null;
-        }
-        setUploadingAudio(false);
-        setUploadProgress(0);
-    };
-
-    // Handle sending recorded audio
-    const handleSendRecordedAudio = async () => {
-        if (!recordedAudioFile) return;
-
-        try {
-            const result = await uploadAudioAndTranscribe(recordedAudioFile);
-
-            // Check if upload was cancelled
-            if (result === null) {
-                return; // Upload was cancelled, do nothing
-            }
-
-            const { audioUrl, transcription } = result;
-
-            // Add the transcribed message to input
-            setInputMessage(transcription);
-
-            // Close audio preview and voice input modals immediately
-            setShowAudioPreview(false);
-            setShowVoiceInput(false);
-
-            // Cleanup blob URL
-            if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
-                URL.revokeObjectURL(recordedAudioUrl);
-            }
-
-            // Clear all audio-related state
-            setRecordedAudioUrl(null);
-            setRecordedAudioFile(null);
-            setAudioChunks([]);
-            recordingChunksRef.current = [];
-
-            // Auto-submit the transcribed message
-            setTimeout(() => {
-                handleSubmit(new Event('submit'));
-            }, 100);
-
-        } catch (error) {
-            console.error('Error sending recorded audio:', error);
-
-            // Show fallback option
-            const shouldContinue = window.confirm(
-                'Audio upload failed. Would you like to send a message about the audio recording instead?'
-            );
-
-            if (shouldContinue) {
-                // Send a message about the audio instead
-                setInputMessage('I recorded an audio message but had trouble uploading it. Please help me with my question.');
-
-                // Close audio preview and voice input modals
-                setShowAudioPreview(false);
-                setShowVoiceInput(false);
-                if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
-                    URL.revokeObjectURL(recordedAudioUrl);
-                }
-                setRecordedAudioUrl(null);
-                setRecordedAudioFile(null);
-                setAudioChunks([]);
-                recordingChunksRef.current = [];
-
-                // Auto-submit the fallback message
-                setTimeout(() => {
-                    handleSubmit(new Event('submit'));
-                }, 100);
+        recognition.onerror = (event) => {
+            console.error('Speech recognition error', event.error);
+            setIsListening(false);
+            if (event.error === 'not-allowed') {
+                toast.error('Microphone access denied. Please allow microphone access.');
+            } else if (event.error === 'no-speech') {
+                // Ignore no-speech error, just stop
             } else {
-                toast.error('Audio upload failed. Please try recording again.');
+                toast.error('Voice input error: ' + event.error);
             }
+        };
+
+        recognition.onend = () => {
+            setIsListening(false);
+        };
+
+        recognitionRef.current = recognition;
+        recognition.start();
+    };
+
+    const stopListening = () => {
+        if (recognitionRef.current) {
+            recognitionRef.current.stop();
         }
+        setIsListening(false);
     };
 
     const handleFileUpload = async (event) => {
@@ -5203,17 +4911,11 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {/* Voice Input Button */}
                                 <button
                                     type="button"
-                                    onClick={() => {
-                                        if (!currentUser) {
-                                            toast.info('Please login to use voice input');
-                                            return;
-                                        }
-                                        setShowVoiceInput(true);
-                                    }}
-                                    className={`px-3 py-2 ${themeColors.secondary} hover:opacity-80 ${themeColors.accent} rounded-full transition-all duration-200 flex items-center justify-center`}
-                                    title="Voice Input"
+                                    onClick={toggleVoiceInput}
+                                    className={`px-3 py-2 ${isListening ? 'bg-red-500 text-white animate-pulse' : themeColors.secondary + ' ' + themeColors.accent} hover:opacity-80 rounded-full transition-all duration-200 flex items-center justify-center`}
+                                    title={isListening ? "Stop Listening" : "Start Voice Input"}
                                 >
-                                    <FaMicrophone size={14} />
+                                    {isListening ? <FaStop size={14} /> : <FaMicrophone size={14} />}
                                 </button>
 
                                 {/* File Upload Button */}
@@ -6434,168 +6136,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </div>
                         )}
 
-                        {/* Voice Input Modal */}
-                        {showVoiceInput && (
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl animate-fadeIn">
-                                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center animate-scaleIn`}>
-                                    <div className="mb-4">
-                                        <FaMicrophone size={32} className={`mx-auto mb-2 ${isRecording ? 'text-red-500 animate-pulse' : themeColors.accent}`} />
-                                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            Voice Input
-                                        </h3>
-                                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                            Click to start recording, click again to stop
-                                        </p>
-                                        <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-500'}`}>
-                                            Powered by Groq Llama AI
-                                        </p>
-                                        <p className={`text-xs ${isDarkMode ? 'text-yellow-400' : 'text-yellow-600'}`}>
-                                            Note: Rate limits may apply for frequent use
-                                        </p>
-                                    </div>
 
-                                    <div className="space-y-3">
-                                        <button
-                                            onClick={isRecording ? stopVoiceRecording : startVoiceRecording}
-                                            className={`w-20 h-20 rounded-full mx-auto flex items-center justify-center transition-all duration-200 ${isRecording
-                                                ? 'bg-red-500 animate-pulse'
-                                                : `bg-gradient-to-r ${themeColors.primary} hover:opacity-90`
-                                                }`}
-                                        >
-                                            {isRecording ? <FaStop size={24} className="text-white" /> : <FaMicrophone size={24} className="text-white" />}
-                                        </button>
-
-                                        <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                            {isRecording ? `Recording... ${recordingDuration}s` : 'Click to start recording'}
-                                        </p>
-                                    </div>
-
-                                    <button
-                                        onClick={() => setShowVoiceInput(false)}
-                                        className="mt-4 px-4 py-2 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors"
-                                    >
-                                        Close
-                                    </button>
-                                </div>
-                            </div>
-                        )}
-
-                        {/* Audio Preview Modal */}
-                        {showAudioPreview && recordedAudioUrl && (
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl animate-fadeIn">
-                                <div className={`${isDarkMode ? 'bg-gray-900' : 'bg-white'} rounded-xl shadow-xl p-6 w-80 max-w-full text-center animate-scaleIn`}>
-                                    <div className="mb-4">
-                                        <FaMicrophone size={32} className="mx-auto text-green-500 mb-2" />
-                                        <h3 className={`text-lg font-semibold ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
-                                            Audio Preview
-                                        </h3>
-                                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                            Review your recording
-                                        </p>
-                                    </div>
-
-                                    <div className="space-y-3">
-                                        <audio
-                                            controls
-                                            className="w-full"
-                                            onError={(e) => {
-                                                console.warn('Audio playback error, but continuing with upload');
-                                                // Don't show error toast, just log it
-                                            }}
-                                            onLoadStart={() => console.log('Audio loading started')}
-                                            onCanPlay={() => console.log('Audio can play')}
-                                            onLoadedMetadata={() => console.log('Audio metadata loaded')}
-                                        >
-                                            <source src={recordedAudioUrl} type={recordedAudioType} />
-                                            <source src={recordedAudioUrl} type="audio/webm" />
-                                            <source src={recordedAudioUrl} type="audio/wav" />
-                                            <source src={recordedAudioUrl} type="audio/mp4" />
-                                            <source src={recordedAudioUrl} type="audio/ogg" />
-                                            Your browser does not support the audio element.
-                                        </audio>
-
-                                        {uploadingAudio && (
-                                            <div className="mb-3">
-                                                <div className="flex items-center justify-center gap-2 text-sm text-blue-600">
-                                                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-blue-600"></div>
-                                                    Uploading and transcribing audio...
-                                                </div>
-                                                <div className="w-full bg-gray-200 rounded-full h-2 mt-2">
-                                                    <div
-                                                        className="bg-blue-600 h-2 rounded-full transition-all duration-300"
-                                                        style={{ width: `${uploadProgress}%` }}
-                                                    ></div>
-                                                </div>
-                                            </div>
-                                        )}
-
-                                        <div className="flex gap-2 justify-center flex-wrap">
-                                            <button
-                                                onClick={uploadingAudio ? cancelAudioUpload : handleSendRecordedAudio}
-                                                className={`px-4 py-2 ${uploadingAudio ? 'bg-red-600 hover:bg-red-700' : 'bg-green-600 hover:bg-green-700'} text-white rounded-lg transition-colors flex items-center gap-2`}
-                                            >
-                                                {uploadingAudio ? (
-                                                    <>
-                                                        <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l12 12" />
-                                                        </svg>
-                                                        Cancel
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <FaMicrophone size={14} />
-                                                        Transcribe & Send
-                                                    </>
-                                                )}
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    // Send as text message about audio
-                                                    setInputMessage('I recorded an audio message but had trouble uploading it. Please help me with my question.');
-
-                                                    // Close audio preview and cleanup
-                                                    setShowAudioPreview(false);
-                                                    if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
-                                                        URL.revokeObjectURL(recordedAudioUrl);
-                                                    }
-                                                    setRecordedAudioUrl(null);
-                                                    setRecordedAudioFile(null);
-                                                    setAudioChunks([]);
-                                                    recordingChunksRef.current = [];
-
-                                                    // Auto-submit the message
-                                                    setTimeout(() => {
-                                                        handleSubmit(new Event('submit'));
-                                                    }, 100);
-                                                }}
-                                                disabled={uploadingAudio}
-                                                className={`px-4 py-2 bg-gradient-to-r ${themeColors.primary} hover:opacity-90 disabled:bg-gray-400 text-white rounded-lg transition-colors flex items-center gap-2`}
-                                            >
-                                                <FaFileAlt size={14} />
-                                                Send as Text
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    // Cleanup blob URL before clearing state
-                                                    if (recordedAudioUrl && recordedAudioUrl.startsWith('blob:')) {
-                                                        URL.revokeObjectURL(recordedAudioUrl);
-                                                    }
-                                                    setShowAudioPreview(false);
-                                                    setRecordedAudioUrl(null);
-                                                    setRecordedAudioFile(null);
-                                                    setAudioChunks([]);
-                                                    recordingChunksRef.current = [];
-                                                }}
-                                                disabled={uploadingAudio}
-                                                className="px-4 py-2 bg-gray-200 hover:bg-gray-300 disabled:bg-gray-100 text-gray-700 rounded-lg transition-colors"
-                                            >
-                                                Record Again
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
 
                         {/* File Upload Modal */}
                         {showFileUpload && (
