@@ -4,7 +4,7 @@ const messageRatingSchema = new mongoose.Schema({
   userId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: "User",
-    required: true
+    required: false
   },
   sessionId: {
     type: String,
@@ -43,7 +43,7 @@ const messageRatingSchema = new mongoose.Schema({
     type: String,
     default: ''
   }
-}, { 
+}, {
   timestamps: true,
   // Add indexes for better performance
   indexes: [

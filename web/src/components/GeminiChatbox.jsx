@@ -1855,10 +1855,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setRatingMeta(obj);
     };
     const rateMessage = async (messageIndex, rating, feedback = null) => {
-        if (!currentUser) {
-            toast.error('Please log in to rate messages');
-            return;
-        }
+        // Authentication check removed to allow public ratings
+        // if (!currentUser) { ... }
 
         const message = messages[messageIndex];
         if (!message) return;
@@ -3685,7 +3683,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const markdownProcessed = renderMarkdown(text);
 
         // Then process links in the markdown-processed text
-        const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
+        const urlRegex = /(https?:\/\/[^<>\s]+|www\.[^<>\s]+\.[^<>\s]{2,}(?:\/[^<>\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^<>\s]*)?)/gi;
 
         // Split by URLs and process each part
         const parts = markdownProcessed.split(urlRegex);

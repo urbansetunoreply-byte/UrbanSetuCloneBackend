@@ -397,15 +397,10 @@ export const getUserChatSessions = async (req, res) => {
 // Rate a message
 export const rateMessage = async (req, res) => {
     try {
-        const userId = req.user?.id;
+        const userId = req.user?.id || null;
         const { sessionId, messageIndex, messageTimestamp, rating, messageContent, messageRole, feedback } = req.body;
 
-        if (!userId) {
-            return res.status(401).json({
-                success: false,
-                message: 'Authentication required'
-            });
-        }
+        // Authentication check removed to allow public ratings
 
         if (!sessionId || messageIndex === undefined || !messageTimestamp || !rating || !messageContent || !messageRole) {
             return res.status(400).json({
@@ -421,14 +416,23 @@ export const rateMessage = async (req, res) => {
             });
         }
 
+        // Define query based on user status
+        const query = {
+            sessionId,
+            messageIndex,
+            messageTimestamp: new Date(messageTimestamp)
+        };
+
+        // If logged in, match by userId. If public, match where userId is null.
+        if (userId) {
+            query.userId = userId;
+        } else {
+            query.userId = null;
+        }
+
         // Upsert rating (update if exists, create if not)
         const ratingData = await MessageRating.findOneAndUpdate(
-            {
-                userId,
-                sessionId,
-                messageIndex,
-                messageTimestamp: new Date(messageTimestamp)
-            },
+            query,
             {
                 userId,
                 sessionId,
@@ -439,7 +443,7 @@ export const rateMessage = async (req, res) => {
                 messageRole,
                 feedback: typeof feedback === 'string' ? feedback.slice(0, 500) : ''
             },
-            { upsert: true, new: true }
+            { upsert: true, new: true } // Create if doesn't exist
         );
 
         res.status(200).json({
@@ -455,6 +459,7 @@ export const rateMessage = async (req, res) => {
         });
     }
 };
+
 
 // Get message ratings for a session
 export const getMessageRatings = async (req, res) => {
@@ -519,9 +524,9 @@ export const getAllMessageRatings = async (req, res) => {
             id: r._id,
             user: {
                 id: r.userId?._id,
-                username: r.userId?.username || null,
-                email: r.userId?.email || null,
-                role: r.userId?.role || null
+                username: r.userId?.username || 'Public Guest',
+                email: r.userId?.email || 'N/A',
+                role: r.userId?.role || 'public'
             },
             sessionId: r.sessionId,
             messageIndex: r.messageIndex,

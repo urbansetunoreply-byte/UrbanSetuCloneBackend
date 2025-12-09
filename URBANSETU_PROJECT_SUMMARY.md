@@ -4,7 +4,6 @@
 **UrbanSetu** is an advanced, full-stack **Real Estate Management Platform** designed to modernize the property market in India. Built on the **MERN Stack** (MongoDB, Express, React, Node.js), it distinguishes itself through deep AI integration, a focus on sustainability (ESG), and a "Trust-First" rental model called **Rent-Lock**.
 
 *   **Live URL:** [https://urbansetu.vercel.app](https://urbansetu.vercel.app)
-*   **Repository:** [UrbanSetu on GitHub](https://github.com/VijayChCode/UrbanSetu)
 
 ---
 

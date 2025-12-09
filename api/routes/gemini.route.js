@@ -21,8 +21,8 @@ router.delete('/sessions/:sessionId', verifyToken, deleteSession);
 // Delete all chat sessions (requires authentication)
 router.delete('/sessions', verifyToken, deleteAllSessions);
 
-// Rate a message (requires authentication)
-router.post('/rate', verifyToken, rateMessage);
+// Rate a message (optional authentication for public users)
+router.post('/rate', optionalAuth, rateMessage);
 
 // Get message ratings for a session (requires authentication)
 router.get('/ratings/:sessionId', verifyToken, getMessageRatings);
@@ -68,7 +68,7 @@ router.post('/cleanup-data', verifyToken, async (req, res) => {
 
         const { retentionDays = 30 } = req.body;
         const result = await cleanupOldChatData(retentionDays);
-        
+
         res.json({
             success: true,
             message: 'Data cleanup completed successfully',
@@ -95,7 +95,7 @@ router.get('/data-stats', verifyToken, async (req, res) => {
         }
 
         const stats = await getDataRetentionStats();
-        
+
         res.json({
             success: true,
             stats
@@ -123,7 +123,7 @@ router.post('/cleanup-user-data/:userId', verifyToken, async (req, res) => {
         const { userId } = req.params;
         const { retentionDays = 30 } = req.body;
         const result = await cleanupUserData(userId, retentionDays);
-        
+
         res.json({
             success: true,
             message: 'User data cleanup completed successfully',
