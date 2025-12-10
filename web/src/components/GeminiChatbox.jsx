@@ -7191,6 +7191,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 .dark .gemini-chatbox-modal thead tr { background-color: rgba(31,41,55,0.5); }
                 `}
             </style>
+
             {/* About/Info Modal */}
             {showInfoModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setShowInfoModal(false)}>
