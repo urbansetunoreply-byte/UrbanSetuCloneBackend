@@ -66,9 +66,9 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
         }
     };
 
-    const handleRevokeLink = async () => {
-        if (!confirm("Are you sure you want to delete this shared link? Anyone with the link will no longer be able to access it.")) return;
+    const [showRevokeConfirm, setShowRevokeConfirm] = useState(false);
 
+    const handleRevokeLink = async () => {
         setLoading(true);
         try {
             const res = await fetch(`${API_BASE_URL}/api/shared-chat/${shareData.shareToken}`, {
@@ -78,6 +78,7 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
             const data = await res.json();
             if (data.success) {
                 setShareData(null);
+                setShowRevokeConfirm(false);
                 toast.success("Link revoked successfully");
                 onClose();
             } else {
@@ -207,7 +208,7 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                         </>
                     )}
 
-                    {shareData && (
+                    {shareData && !showRevokeConfirm && (
                         <div className="space-y-6">
                             <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3">
                                 <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
@@ -256,10 +257,37 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                                     Update Link
                                 </button>
                                 <button
-                                    onClick={handleRevokeLink}
+                                    onClick={() => setShowRevokeConfirm(true)}
                                     className="flex-1 bg-red-50 border border-red-200 text-red-600 hover:bg-red-100 font-medium py-2 rounded-lg transition-colors flex items-center justify-center gap-2"
                                 >
                                     <FaTrash className="text-sm" /> Revoke Link
+                                </button>
+                            </div>
+                        </div>
+                    )}
+
+                    {shareData && showRevokeConfirm && (
+                        <div className="space-y-6 text-center animate-fade-in">
+                            <div className="bg-red-50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <FaTrash className="text-red-500 text-3xl" />
+                            </div>
+                            <h4 className="text-lg font-bold text-gray-900">Revoke Shared Link?</h4>
+                            <p className="text-gray-600 text-sm">
+                                Are you sure you want to delete this shared link? Anyone with the link will no longer be able to access this conversation.
+                            </p>
+                            <div className="flex gap-3 pt-2">
+                                <button
+                                    onClick={() => setShowRevokeConfirm(false)}
+                                    className="flex-1 bg-gray-100 text-gray-700 font-medium py-3 rounded-lg hover:bg-gray-200 transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={handleRevokeLink}
+                                    disabled={loading}
+                                    className="flex-1 bg-red-600 text-white font-medium py-3 rounded-lg hover:bg-red-700 transition-colors shadow-lg"
+                                >
+                                    {loading ? 'Revoking...' : 'Yes, Revoke Link'}
                                 </button>
                             </div>
                         </div>

@@ -175,20 +175,7 @@ export const updateSharedChat = async (req, res) => {
         // Check for changes before updating
         const originalChat = await ChatHistory.findById(sharedChat.originalChatId);
 
-        let hasChanges = false;
-
-        if (typeof isActive === 'boolean' && sharedChat.isActive !== isActive) hasChanges = true;
-        if (title && sharedChat.title !== title) hasChanges = true;
-        if (expiresType) hasChanges = true; // Assume change if expiry type is explicitly provided
-
-        // Check if messages have changed
-        if (originalChat && originalChat.messages) {
-            if (JSON.stringify(sharedChat.messages) !== JSON.stringify(originalChat.messages)) {
-                hasChanges = true;
-                sharedChat.messages = originalChat.messages;
-            }
-        }
-
+        // Check standard fields first
         if (typeof isActive === 'boolean') {
             sharedChat.isActive = isActive;
         }
@@ -197,18 +184,46 @@ export const updateSharedChat = async (req, res) => {
             sharedChat.title = title;
         }
 
-        if (expiresType) {
-            const now = new Date();
-            if (expiresType === '7days') {
-                sharedChat.expiresAt = new Date(now.setDate(now.getDate() + 7));
-            } else if (expiresType === '30days') {
-                sharedChat.expiresAt = new Date(now.setDate(now.getDate() + 30));
-            } else if (expiresType === 'never') {
-                sharedChat.expiresAt = null;
+        // Check messages diff
+        let messagesChanged = false;
+        if (originalChat && originalChat.messages) {
+            if (JSON.stringify(sharedChat.messages) !== JSON.stringify(originalChat.messages)) {
+                sharedChat.messages = originalChat.messages;
+                messagesChanged = true;
             }
         }
 
-        if (!hasChanges) {
+        // Check expiry diff
+        let expiryChanged = false;
+        if (expiresType) {
+            const now = new Date();
+            let newExpiresAt = null;
+
+            if (expiresType === '7days') {
+                newExpiresAt = new Date(now.setDate(now.getDate() + 7));
+            } else if (expiresType === '30days') {
+                newExpiresAt = new Date(now.setDate(now.getDate() + 30));
+            } else if (expiresType === 'never') {
+                newExpiresAt = null;
+            }
+
+            // Only update if significantly different (> 1 hour) to avoid "always updated" on re-click
+            let shouldUpdateExpiry = false;
+
+            if (sharedChat.expiresAt === null && newExpiresAt !== null) shouldUpdateExpiry = true;
+            else if (sharedChat.expiresAt !== null && newExpiresAt === null) shouldUpdateExpiry = true;
+            else if (sharedChat.expiresAt && newExpiresAt) {
+                const diff = Math.abs(new Date(sharedChat.expiresAt).getTime() - newExpiresAt.getTime());
+                if (diff > 3600000) shouldUpdateExpiry = true; // > 1 hour
+            }
+
+            if (shouldUpdateExpiry) {
+                sharedChat.expiresAt = newExpiresAt;
+                expiryChanged = true;
+            }
+        }
+
+        if (!sharedChat.isModified('title') && !sharedChat.isModified('isActive') && !messagesChanged && !expiryChanged) {
             return res.status(200).json({
                 success: true,
                 message: 'Link is up to date',
@@ -219,6 +234,8 @@ export const updateSharedChat = async (req, res) => {
                 }
             });
         }
+
+
 
         await sharedChat.save();
 
