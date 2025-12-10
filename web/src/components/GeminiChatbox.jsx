@@ -7195,7 +7195,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             {showInfoModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setShowInfoModal(false)}>
                     <div className={`w-full max-w-2xl max-h-[80vh] md:max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
-                        <div className={`sticky top-0 z-10 p-6 border-b flex items-center justify-between backdrop-blur-lg bg-opacity-90 ${isDarkMode ? 'border-gray-700 bg-gray-900/90' : 'border-gray-100 bg-white/90'}`}>
+                        <div className={`flex-shrink-0 p-6 border-b flex items-center justify-between backdrop-blur-lg bg-opacity-90 ${isDarkMode ? 'border-gray-700 bg-gray-900/90' : 'border-gray-100 bg-white/90'}`}>
                             <div className="flex items-center gap-4">
                                 <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
                                     <FaRobot size={24} className="text-indigo-500" />
@@ -7286,7 +7286,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </section>
 
                             {/* Footer Info */}
-                            <div className={`text-center pt-6 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                            <div className={`text-center pt-6 pb-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                                 <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
                                     SetuAI v2.5.0 • Build 2024.12 • Powered by UrbanSetu Tech Labs
                                 </p>
