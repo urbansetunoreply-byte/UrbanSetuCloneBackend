@@ -35,13 +35,18 @@ export const getReports = async (req, res, next) => {
         const limit = parseInt(req.query.limit) || 9;
         const sortDirection = req.query.sort === 'asc' ? 1 : -1;
 
-        const reports = await ReportMessage.find()
+        const query = {};
+        if (req.query.status && req.query.status !== 'all') {
+            query.status = req.query.status;
+        }
+
+        const reports = await ReportMessage.find(query)
             .populate('reportedBy', 'username email profilePicture')
             .sort({ updatedAt: sortDirection })
             .skip(start)
             .limit(limit);
 
-        const totalReports = await ReportMessage.countDocuments();
+        const totalReports = await ReportMessage.countDocuments(query);
 
         const now = new Date();
         const oneMonthAgo = new Date(
