@@ -7194,9 +7194,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             {/* About/Info Modal */}
             {showInfoModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setShowInfoModal(false)}>
-                    <div className={`w-full max-w-2xl h-[80vh] md:h-auto md:max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
-                        <div className={`flex-shrink-0 p-6 border-b flex items-center justify-between backdrop-blur-lg bg-opacity-90 ${isDarkMode ? 'border-gray-700 bg-gray-900/90' : 'border-gray-100 bg-white/90'}`}>
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl animate-fadeIn">
+                    <div
+                        className={`w-11/12 max-w-2xl max-h-[80vh] overflow-y-auto rounded-xl shadow-xl p-6 ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                        style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}
+                    >
+                        <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
                             <div className="flex items-center gap-4">
                                 <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
                                     <FaRobot size={24} className="text-indigo-500" />
@@ -7214,7 +7217,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar flex-1 relative">
+                        <div className="space-y-8">
                             {/* Core Technology */}
                             <section>
                                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -7299,10 +7302,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             {/* Terms and Conditions Modal (Full Text) */}
             {showTermsModal && (
-                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn" onClick={() => setShowTermsModal(false)}>
-                    <div className={`w-full max-w-2xl h-[80vh] md:h-auto md:max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl animate-fadeIn">
+                    <div
+                        className={`w-11/12 max-w-2xl max-h-[80vh] overflow-y-auto rounded-xl shadow-xl p-6 ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                        style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}
+                    >
                         {/* Header */}
-                        <div className={`p-6 border-b flex-shrink-0 flex items-center justify-between ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                        <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
                             <div className="flex items-center gap-3">
                                 <FaFileAlt className="text-blue-500 text-xl" />
                                 <h2 className="text-xl font-bold">Terms of Service</h2>
@@ -7316,7 +7322,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         </div>
 
                         {/* Scrollable Content */}
-                        <div className="p-6 overflow-y-auto custom-scrollbar flex-1 space-y-6 text-sm leading-relaxed">
+                        <div className="space-y-6 text-sm leading-relaxed">
                             <section>
                                 <h3 className="font-bold text-lg mb-2 text-blue-500">1. Introduction</h3>
                                 <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
