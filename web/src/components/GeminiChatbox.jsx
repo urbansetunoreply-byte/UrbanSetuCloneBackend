@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 // import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
@@ -302,6 +302,54 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const recordingChunksRef = useRef([]);
     const [editingMessageIndex, setEditingMessageIndex] = useState(null);
     const [editingMessageContent, setEditingMessageContent] = useState('');
+
+    // Reporting State
+    const [showReportModal, setShowReportModal] = useState(false);
+    const [reportStep, setReportStep] = useState(1);
+    const [selectedCategory, setSelectedCategory] = useState('');
+    const [selectedSubCategory, setSelectedSubCategory] = useState('');
+    const [reportDescription, setReportDescription] = useState('');
+    const [reportingMessage, setReportingMessage] = useState(null);
+    const [isReporting, setIsReporting] = useState(false);
+
+    // Admin Reports State
+    const [showAdminReportsModal, setShowAdminReportsModal] = useState(false);
+    const [adminReports, setAdminReports] = useState([]);
+    const [adminReportsLoading, setAdminReportsLoading] = useState(false);
+    const [adminReportsFilter, setAdminReportsFilter] = useState('pending'); // 'pending', 'resolved', 'dismissed', 'all'
+    const [showAdminNoteModal, setShowAdminNoteModal] = useState(false);
+    const [selectedAdminReport, setSelectedAdminReport] = useState(null);
+    const [adminNoteText, setAdminNoteText] = useState('');
+
+    const REPORT_OPTIONS = {
+        "Violence & self-harm": [
+            "Threats or incitement to violence", "Gender-based violence", "Sexual violence", "Weapons", "Suicide & self-harm", "Eating disorders", "Human trafficking", "Terrorism"
+        ],
+        "Sexual exploitation & abuse": [
+            "Sexual content involving children", "Non-consensual sexual content", "Sexual solicitation", "Sextortion", "Promotion of sexual violence"
+        ],
+        "Child exploitation": [
+            "Child sexual abuse material", "Grooming", "Harmful content for minors", "Cyberbullying of minors"
+        ],
+        "Bullying & harassment": [
+            "Personal attacks", "Encouraging harassment", "Defamation", "Hate speech", "Threats"
+        ],
+        "Spam, fraud & deception": [
+            "Scams", "Phishing", "Fake engagement", "False information", "Impersonation"
+        ],
+        "Privacy violation": [
+            "Sharing private information (Doxxing)", "Non-consensual intimate images", "Identity theft"
+        ],
+        "Intellectual property": [
+            "Copyright infringement", "Trademark violation", "Counterfeit goods"
+        ],
+        "Age-inappropriate content": [
+            "Adult content", "Graphic violence", "Drugs and controlled substances"
+        ],
+        "Something else": [
+            "Other illegal acts", "Policy violations", "Technical issue"
+        ]
+    };
     // Edit mode property suggestions state
     const [showEditPropertySuggestions, setShowEditPropertySuggestions] = useState(false);
     const [editSuggestionQuery, setEditSuggestionQuery] = useState('');
@@ -1965,6 +2013,73 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
+    const openReportModal = (message, index) => {
+        if (!currentUser) {
+            toast.error('Please sign in to report messages');
+            return;
+        }
+        setReportingMessage({ ...message, index });
+        setReportStep(1);
+        setSelectedCategory('');
+        setSelectedSubCategory('');
+        setReportDescription('');
+        setShowReportModal(true);
+    };
+
+    const handleReportSubmit = async () => {
+        if (!reportingMessage) return;
+
+        if (!selectedCategory) {
+            toast.error("Please select a category");
+            return;
+        }
+        if (!selectedSubCategory) {
+            toast.error("Please select a sub-category");
+            return;
+        }
+        if (!reportDescription) {
+            toast.error("Please provide a description");
+            return;
+        }
+
+        setIsReporting(true);
+        try {
+            const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+            const msgId = reportingMessage._id || `session_${getOrCreateSessionId()}_${reportingMessage.index}_${new Date(reportingMessage.timestamp).getTime()}`;
+
+            const response = await fetch(`${API_BASE_URL}/api/report-message/create`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({
+                    messageId: msgId,
+                    messageContent: reportingMessage.content,
+                    category: selectedCategory,
+                    subCategory: selectedSubCategory,
+                    description: reportDescription
+                })
+            });
+
+            if (response.ok) {
+                toast.success('Report submitted successfully');
+                setShowReportModal(false);
+                setReportStep(1);
+                setSelectedCategory('');
+                setSelectedSubCategory('');
+                setReportDescription('');
+                setReportingMessage(null);
+            } else {
+                const data = await response.json();
+                toast.error(data.message || 'Failed to submit report');
+            }
+        } catch (error) {
+            console.error('Error submitting report:', error);
+            toast.error('Failed to submit report');
+        } finally {
+            setIsReporting(false);
+        }
+    };
+
     // Open dislike modal flow
     const openDislikeModal = (index) => {
         // If already disliked, do not open modal again
@@ -2169,6 +2284,94 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         } finally {
             setIsLoading(false);
             abortControllerRef.current = null;
+        }
+    };
+
+
+
+
+
+    // Admin Reports Functions
+    const fetchAdminReports = async () => {
+        if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin')) return;
+
+        try {
+            setAdminReportsLoading(true);
+            const query = adminReportsFilter !== 'all' ? `?status=${adminReportsFilter}` : '';
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/getreports${query}`, {
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (res.ok) {
+                setAdminReports(data.reports);
+            } else {
+                toast.error(data.message || 'Failed to fetch reports');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Error fetching reports');
+        } finally {
+            setAdminReportsLoading(false);
+        }
+    };
+
+    // Use effect to re-fetch when filter changes if modal is open
+    useEffect(() => {
+        if (showAdminReportsModal) {
+            fetchAdminReports();
+        }
+    }, [adminReportsFilter]);
+
+    const handleAdminReportUpdate = async (reportId, status, notes = null) => {
+        try {
+            const body = { status };
+            if (notes !== null) body.adminNotes = notes;
+
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/update/${reportId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(body)
+            });
+            const data = await res.json();
+            if (res.ok) {
+                toast.success('Report updated successfully');
+                setAdminReports(prev => prev.map(r => r._id === reportId ? data : r));
+                if (showAdminNoteModal) {
+                    setShowAdminNoteModal(false);
+                    setAdminNoteText('');
+                    setSelectedAdminReport(null);
+                }
+                // Refresh list if filtering by status and status changed (and not 'all')
+                if (adminReportsFilter !== 'all' && status !== adminReportsFilter) {
+                    setAdminReports(prev => prev.filter(r => r._id !== reportId));
+                }
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Error updating report');
+        }
+    };
+
+    const handleAdminReportDelete = async (reportId) => {
+        if (!window.confirm('Are you sure you want to delete this report?')) return;
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/delete/${reportId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                toast.success('Report deleted');
+                setAdminReports(prev => prev.filter(r => r._id !== reportId));
+            } else {
+                const data = await res.json();
+                toast.error(data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Error deleting report');
         }
     };
 
@@ -3922,6 +4125,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </button>
                                                 </li>
                                             )}
+
+                                            {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) && (
+                                                <li>
+                                                    <button
+                                                        onClick={() => { setShowAdminReportsModal(true); fetchAdminReports(); setIsHeaderMenuOpen(false); }}
+                                                        className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
+                                                    >
+                                                        <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-red-500/20' : 'bg-red-100'} group-hover:scale-110 transition-transform duration-200`}>
+                                                            <FaClipboardList size={14} className="text-red-500" />
+                                                        </div>
+                                                        <span className="font-medium">Manage Reports</span>
+                                                    </button>
+                                                </li>
+                                            )}
                                             {/* Terms & Conditions Option - Visible to Everyone */}
                                             <li>
                                                 <button
@@ -4654,6 +4871,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                         <FaThumbsDown size={10} />
                                                                     </button>
                                                                 </div>
+                                                            )}
+
+                                                            {/* Report button */}
+                                                            {message.role === 'assistant' && !message.isError && (
+                                                                <button
+                                                                    onClick={() => openReportModal(message, index)}
+                                                                    className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all duration-200"
+                                                                    title="Report message"
+                                                                    aria-label="Report message"
+                                                                >
+                                                                    <FaFlag size={10} />
+                                                                </button>
                                                             )}
 
                                                             {/* Retry buttons */}
@@ -6314,199 +6543,203 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </div>
                         )}
                     </div>
-                </div>
+                </div >
             )}
 
             {/* Dislike feedback modal */}
-            {showDislikeModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="absolute inset-0 bg-black/50" onClick={() => { if (!dislikeSubmitting) setShowDislikeModal(false); }} />
-                    <div className={`relative w-full max-w-md rounded-xl shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} animate-scaleIn`}>
-                        <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                            <h3 className="text-lg font-semibold">Tell us what went wrong</h3>
-                        </div>
-                        <div className="p-4 space-y-3">
-                            <p className="text-sm">Select a reason (required):</p>
-                            <select value={dislikeFeedbackOption} onChange={(e) => setDislikeFeedbackOption(e.target.value)} className={`w-full p-2 rounded border ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}>
-                                <option value="">Select a reason</option>
-                                <option value="Inaccurate information">Inaccurate information</option>
-                                <option value="Not relevant">Not relevant</option>
-                                <option value="Incomplete answer">Incomplete answer</option>
-                                <option value="Harmful/unsafe">Harmful/unsafe</option>
-                                <option value="Other">Other</option>
-                            </select>
-                            {dislikeFeedbackOption === 'Other' && (
-                                <textarea
-                                    value={dislikeFeedbackText}
-                                    onChange={(e) => setDislikeFeedbackText(e.target.value)}
-                                    placeholder="Please describe the issue"
-                                    rows={3}
-                                    className={`w-full p-2 rounded border ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}
-                                />
-                            )}
-                        </div>
-                        <div className={`p-4 flex justify-end gap-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                            <button disabled={dislikeSubmitting} onClick={() => setShowDislikeModal(false)} className={`px-3 py-2 rounded ${isDarkMode ? 'bg-gray-600 text-white hover:bg-gray-500' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'} disabled:opacity-50`}>
-                                Cancel
-                            </button>
-                            <button disabled={dislikeSubmitting} onClick={submitDislike} className={`px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50`}>
-                                {dislikeSubmitting ? 'Submitting...' : 'Submit'}
-                            </button>
+            {
+                showDislikeModal && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fadeIn">
+                        <div className="absolute inset-0 bg-black/50" onClick={() => { if (!dislikeSubmitting) setShowDislikeModal(false); }} />
+                        <div className={`relative w-full max-w-md rounded-xl shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} animate-scaleIn`}>
+                            <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                                <h3 className="text-lg font-semibold">Tell us what went wrong</h3>
+                            </div>
+                            <div className="p-4 space-y-3">
+                                <p className="text-sm">Select a reason (required):</p>
+                                <select value={dislikeFeedbackOption} onChange={(e) => setDislikeFeedbackOption(e.target.value)} className={`w-full p-2 rounded border ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}>
+                                    <option value="">Select a reason</option>
+                                    <option value="Inaccurate information">Inaccurate information</option>
+                                    <option value="Not relevant">Not relevant</option>
+                                    <option value="Incomplete answer">Incomplete answer</option>
+                                    <option value="Harmful/unsafe">Harmful/unsafe</option>
+                                    <option value="Other">Other</option>
+                                </select>
+                                {dislikeFeedbackOption === 'Other' && (
+                                    <textarea
+                                        value={dislikeFeedbackText}
+                                        onChange={(e) => setDislikeFeedbackText(e.target.value)}
+                                        placeholder="Please describe the issue"
+                                        rows={3}
+                                        className={`w-full p-2 rounded border ${isDarkMode ? 'bg-gray-900 border-gray-700' : 'bg-white border-gray-300'}`}
+                                    />
+                                )}
+                            </div>
+                            <div className={`p-4 flex justify-end gap-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                                <button disabled={dislikeSubmitting} onClick={() => setShowDislikeModal(false)} className={`px-3 py-2 rounded ${isDarkMode ? 'bg-gray-600 text-white hover:bg-gray-500' : 'bg-gray-200 text-gray-800 hover:bg-gray-300'} disabled:opacity-50`}>
+                                    Cancel
+                                </button>
+                                <button disabled={dislikeSubmitting} onClick={submitDislike} className={`px-3 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50`}>
+                                    {dislikeSubmitting ? 'Submitting...' : 'Submit'}
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Ratings & Feedback modal (admin & user) */}
-            {showRatingsModal && (
-                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fadeIn">
-                    <div className="absolute inset-0 bg-black/50" onClick={() => setShowRatingsModal(false)} />
-                    <div className={`relative w-full max-w-2xl rounded-xl shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} animate-scaleIn flex flex-col max-h-[85vh]`}>
-                        <div className={`p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between flex-shrink-0`}>
-                            <div>
-                                <h3 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Ratings & Feedback</h3>
-                                <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                    {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) ? 'All System Ratings' : 'Your Session Ratings'}
-                                </p>
+            {
+                showRatingsModal && (
+                    <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 animate-fadeIn">
+                        <div className="absolute inset-0 bg-black/50" onClick={() => setShowRatingsModal(false)} />
+                        <div className={`relative w-full max-w-2xl rounded-xl shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'} border ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} animate-scaleIn flex flex-col max-h-[85vh]`}>
+                            <div className={`p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex items-center justify-between flex-shrink-0`}>
+                                <div>
+                                    <h3 className="text-xl font-bold bg-gradient-to-r from-blue-500 to-purple-500 bg-clip-text text-transparent">Ratings & Feedback</h3>
+                                    <p className={`text-sm mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                        {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) ? 'All System Ratings' : 'Your Session Ratings'}
+                                    </p>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={() => { loadRatingMeta(); try { const rs = JSON.parse(localStorage.getItem('gemini_ratings') || '{}'); setMessageRatings(rs); } catch (_) { } }}
+                                        className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                                        title="Refresh"
+                                    >
+                                        <FaSync size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => setShowRatingsModal(false)}
+                                        className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                                    >
+                                        <FaTimes size={20} />
+                                    </button>
+                                </div>
                             </div>
-                            <div className="flex items-center gap-2">
-                                <button
-                                    onClick={() => { loadRatingMeta(); try { const rs = JSON.parse(localStorage.getItem('gemini_ratings') || '{}'); setMessageRatings(rs); } catch (_) { } }}
-                                    className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
-                                    title="Refresh"
-                                >
-                                    <FaSync size={16} />
-                                </button>
-                                <button
-                                    onClick={() => setShowRatingsModal(false)}
-                                    className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
-                                >
-                                    <FaTimes size={20} />
-                                </button>
+
+                            {/* Filters */}
+                            <div className={`px-6 py-3 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex gap-2 overflow-x-auto`}>
+                                {['all', 'up', 'down'].map((filter) => (
+                                    <button
+                                        key={filter}
+                                        onClick={() => setRatingsFilter(filter)}
+                                        className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${ratingsFilter === filter
+                                            ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
+                                            : `${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
+                                            }`}
+                                    >
+                                        {filter === 'all' ? 'All Reviews' : filter === 'up' ? 'Liked' : 'Disliked'}
+                                    </button>
+                                ))}
                             </div>
-                        </div>
 
-                        {/* Filters */}
-                        <div className={`px-6 py-3 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex gap-2 overflow-x-auto`}>
-                            {['all', 'up', 'down'].map((filter) => (
-                                <button
-                                    key={filter}
-                                    onClick={() => setRatingsFilter(filter)}
-                                    className={`px-4 py-1.5 rounded-full text-sm font-medium transition-all duration-200 whitespace-nowrap flex-shrink-0 ${ratingsFilter === filter
-                                        ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/20'
-                                        : `${isDarkMode ? 'bg-gray-700 text-gray-300 hover:bg-gray-600' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
-                                        }`}
-                                >
-                                    {filter === 'all' ? 'All Reviews' : filter === 'up' ? 'Liked' : 'Disliked'}
-                                </button>
-                            ))}
-                        </div>
-
-                        <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
-                            {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) ? (
-                                allRatingsLoading ? (
-                                    <div className="flex flex-col items-center justify-center py-12 text-gray-500">
-                                        <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
-                                        <p>Loading ratings...</p>
-                                    </div>
+                            <div className="p-6 overflow-y-auto custom-scrollbar flex-1">
+                                {(currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) ? (
+                                    allRatingsLoading ? (
+                                        <div className="flex flex-col items-center justify-center py-12 text-gray-500">
+                                            <div className="w-8 h-8 border-2 border-blue-500 border-t-transparent rounded-full animate-spin mb-3"></div>
+                                            <p>Loading ratings...</p>
+                                        </div>
+                                    ) : (
+                                        (() => {
+                                            const filteredRatings = allRatings.filter(r => ratingsFilter === 'all' || r.rating === ratingsFilter);
+                                            return filteredRatings.length === 0 ? (
+                                                <div className="text-center py-12 text-gray-500">
+                                                    <FaSearch size={32} className="mx-auto mb-3 opacity-20" />
+                                                    <p>No ratings found matching your filter.</p>
+                                                </div>
+                                            ) : (
+                                                <div className="space-y-4">
+                                                    {filteredRatings.map((r) => (
+                                                        <div key={r.id} className={`p-4 rounded-xl border transition-all hover:shadow-md ${isDarkMode ? 'bg-gray-800/50 border-gray-700 hover:border-gray-600' : 'bg-white border-gray-200 hover:border-blue-200'}`}>
+                                                            <div className="flex items-start justify-between gap-4">
+                                                                <div className="flex items-center gap-3">
+                                                                    <div className={`p-2 rounded-lg ${r.rating === 'up' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                                                        {r.rating === 'up' ? <FaThumbsUp size={16} /> : <FaThumbsDown size={16} />}
+                                                                    </div>
+                                                                    <div>
+                                                                        <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{r.user?.username || r.user?.email || 'Unknown User'}</div>
+                                                                        <div className="text-xs text-gray-400">{r.user?.role || 'user'} • {r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}</div>
+                                                                    </div>
+                                                                </div>
+                                                            </div>
+                                                            <div className={`mt-3 p-3 rounded-lg text-sm transition-all duration-300 group hover:max-h-[500px] hover:overflow-y-auto ${isDarkMode ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
+                                                                <div className="line-clamp-3 group-hover:line-clamp-none">
+                                                                    "{r.messageContent || ''}"
+                                                                </div>
+                                                            </div>
+                                                            {r.rating === 'down' && r.feedback && (
+                                                                <div className="mt-3 text-sm flex gap-2">
+                                                                    <span className="font-semibold text-red-400 whitespace-nowrap">Feedback:</span>
+                                                                    <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{r.feedback}</span>
+                                                                </div>
+                                                            )}
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            );
+                                        })()
+                                    )
                                 ) : (
-                                    (() => {
-                                        const filteredRatings = allRatings.filter(r => ratingsFilter === 'all' || r.rating === ratingsFilter);
-                                        return filteredRatings.length === 0 ? (
-                                            <div className="text-center py-12 text-gray-500">
-                                                <FaSearch size={32} className="mx-auto mb-3 opacity-20" />
-                                                <p>No ratings found matching your filter.</p>
-                                            </div>
-                                        ) : (
-                                            <div className="space-y-4">
-                                                {filteredRatings.map((r) => (
-                                                    <div key={r.id} className={`p-4 rounded-xl border transition-all hover:shadow-md ${isDarkMode ? 'bg-gray-800/50 border-gray-700 hover:border-gray-600' : 'bg-white border-gray-200 hover:border-blue-200'}`}>
+                                    Object.keys(messageRatings || {}).length === 0 ? (
+                                        <div className="text-center py-12 text-gray-500">
+                                            <FaRegSmile size={32} className="mx-auto mb-3 opacity-20" />
+                                            <p>No ratings yet in this session.</p>
+                                        </div>
+                                    ) : (
+                                        <div className="space-y-4">
+                                            {messages.map((msg, idx) => {
+                                                const key = `${idx}_${msg.timestamp}`;
+                                                const r = messageRatings[key];
+                                                if (!r) return null;
+                                                if (ratingsFilter !== 'all' && r !== ratingsFilter) return null;
+
+                                                const meta = ratingMeta[key] || {};
+                                                return (
+                                                    <div key={key} className={`p-4 rounded-xl border transition-all hover:shadow-md ${isDarkMode ? 'bg-gray-800/50 border-gray-700 hover:border-gray-600' : 'bg-white border-gray-200 hover:border-blue-200'}`}>
                                                         <div className="flex items-start justify-between gap-4">
                                                             <div className="flex items-center gap-3">
-                                                                <div className={`p-2 rounded-lg ${r.rating === 'up' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                                                                    {r.rating === 'up' ? <FaThumbsUp size={16} /> : <FaThumbsDown size={16} />}
+                                                                <div className={`p-2 rounded-lg ${r === 'up' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                                                    {r === 'up' ? <FaThumbsUp size={16} /> : <FaThumbsDown size={16} />}
                                                                 </div>
                                                                 <div>
-                                                                    <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{r.user?.username || r.user?.email || 'Unknown User'}</div>
-                                                                    <div className="text-xs text-gray-400">{r.user?.role || 'user'} • {r.createdAt ? new Date(r.createdAt).toLocaleString() : ''}</div>
+                                                                    <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{meta.user || 'You'}</div>
+                                                                    <div className="text-xs text-gray-400">{meta.time ? new Date(meta.time).toLocaleString() : ''}</div>
                                                                 </div>
                                                             </div>
                                                         </div>
                                                         <div className={`mt-3 p-3 rounded-lg text-sm transition-all duration-300 group hover:max-h-[500px] hover:overflow-y-auto ${isDarkMode ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
                                                             <div className="line-clamp-3 group-hover:line-clamp-none">
-                                                                "{r.messageContent || ''}"
+                                                                "{meta.messagePreview || msg.content || ''}"
                                                             </div>
                                                         </div>
-                                                        {r.rating === 'down' && r.feedback && (
+                                                        {r === 'down' && meta.feedback && (
                                                             <div className="mt-3 text-sm flex gap-2">
                                                                 <span className="font-semibold text-red-400 whitespace-nowrap">Feedback:</span>
-                                                                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{r.feedback}</span>
+                                                                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{meta.feedback}</span>
                                                             </div>
                                                         )}
                                                     </div>
-                                                ))}
-                                            </div>
-                                        );
-                                    })()
-                                )
-                            ) : (
-                                Object.keys(messageRatings || {}).length === 0 ? (
-                                    <div className="text-center py-12 text-gray-500">
-                                        <FaRegSmile size={32} className="mx-auto mb-3 opacity-20" />
-                                        <p>No ratings yet in this session.</p>
-                                    </div>
-                                ) : (
-                                    <div className="space-y-4">
-                                        {messages.map((msg, idx) => {
-                                            const key = `${idx}_${msg.timestamp}`;
-                                            const r = messageRatings[key];
-                                            if (!r) return null;
-                                            if (ratingsFilter !== 'all' && r !== ratingsFilter) return null;
-
-                                            const meta = ratingMeta[key] || {};
-                                            return (
-                                                <div key={key} className={`p-4 rounded-xl border transition-all hover:shadow-md ${isDarkMode ? 'bg-gray-800/50 border-gray-700 hover:border-gray-600' : 'bg-white border-gray-200 hover:border-blue-200'}`}>
-                                                    <div className="flex items-start justify-between gap-4">
-                                                        <div className="flex items-center gap-3">
-                                                            <div className={`p-2 rounded-lg ${r === 'up' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
-                                                                {r === 'up' ? <FaThumbsUp size={16} /> : <FaThumbsDown size={16} />}
-                                                            </div>
-                                                            <div>
-                                                                <div className={`font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-900'}`}>{meta.user || 'You'}</div>
-                                                                <div className="text-xs text-gray-400">{meta.time ? new Date(meta.time).toLocaleString() : ''}</div>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div className={`mt-3 p-3 rounded-lg text-sm transition-all duration-300 group hover:max-h-[500px] hover:overflow-y-auto ${isDarkMode ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
-                                                        <div className="line-clamp-3 group-hover:line-clamp-none">
-                                                            "{meta.messagePreview || msg.content || ''}"
-                                                        </div>
-                                                    </div>
-                                                    {r === 'down' && meta.feedback && (
-                                                        <div className="mt-3 text-sm flex gap-2">
-                                                            <span className="font-semibold text-red-400 whitespace-nowrap">Feedback:</span>
-                                                            <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{meta.feedback}</span>
-                                                        </div>
-                                                    )}
-                                                </div>
-                                            );
-                                        })}
-                                    </div>
-                                )
-                            )}
-                        </div>
-                        {/* Footer Action */}
-                        <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
-                            <button
-                                onClick={() => setShowRatingsModal(false)}
-                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                            >
-                                Close
-                            </button>
+                                                );
+                                            })}
+                                        </div>
+                                    )
+                                )}
+                            </div>
+                            {/* Footer Action */}
+                            <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                                <button
+                                    onClick={() => setShowRatingsModal(false)}
+                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Animation styles */}
             <style>
@@ -7192,227 +7425,536 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 `}
             </style>
 
-            {showInfoModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+            {
+                showInfoModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div
+                            className={`w-11/12 max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 relative ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                            style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+                        >
+                            <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
+                                <div className="flex items-center gap-4">
+                                    <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
+                                        <FaRobot size={24} className="text-indigo-500" />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">SetuAI</h2>
+                                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Advanced Real Estate Assistant</p>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowInfoModal(false)}
+                                    className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                                >
+                                    <FaTimes size={20} />
+                                </button>
+                            </div>
+
+                            <div className="space-y-8">
+                                {/* Core Technology */}
+                                <section>
+                                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                        <FaCog className="text-indigo-500" />
+                                        Powered By
+                                    </h3>
+                                    <div className={`p-6 rounded-2xl ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
+                                        <div className="grid md:grid-cols-2 gap-6">
+                                            <div className="space-y-2">
+                                                <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">Inference Engine</div>
+                                                <div className="text-xl font-bold font-mono">Groq LPU™</div>
+                                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    Ultra-low latency inference for near-instant responses.
+                                                </p>
+                                            </div>
+                                            <div className="space-y-2">
+                                                <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">LLM Model</div>
+                                                <div className="text-xl font-bold font-mono">Meta Llama 3</div>
+                                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                                    State-of-the-art open source model fine-tuned for accuracy.
+                                                </p>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </section>
+
+                                {/* Features */}
+                                <section>
+                                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                        <FaMagic className="text-purple-500" />
+                                        Capabilities
+                                    </h3>
+                                    <div className="grid md:grid-cols-2 gap-4">
+                                        {[
+                                            { title: 'Real Estate Expertise', desc: 'Deep knowledge of property trends, pricing, and legal processes.', icon: '🏢' },
+                                            { title: 'Live Property Search', desc: 'Can search and recommend local listings from UrbanSetu database.', icon: '🔍' },
+                                            { title: 'Smart Context', desc: 'Remembers conversation history and user preferences.', icon: '🧠' },
+                                            { title: 'Multi-Modal', desc: 'Supports text, voice input, and image analysis.', icon: '🎤' },
+                                            { title: 'Code & Math', desc: 'Capable of calculating mortgage EMIs and formatting code.', icon: '🔢' },
+                                            { title: 'Instant Translation', desc: 'Communicates fluently in multiple languages.', icon: '🌐' }
+                                        ].map((feat, i) => (
+                                            <div key={i} className={`p-4 rounded-xl border ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-100 hover:bg-gray-50'} transition-colors`}>
+                                                <div className="text-2xl mb-2">{feat.icon}</div>
+                                                <h4 className="font-semibold mb-1">{feat.title}</h4>
+                                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{feat.desc}</p>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </section>
+
+                                {/* Security */}
+                                <section>
+                                    <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
+                                        <FaCheckCircle className="text-green-500" />
+                                        Security & Privacy
+                                    </h3>
+                                    <ul className={`space-y-3 p-5 rounded-2xl ${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-50'}`}>
+                                        {[
+                                            'End-to-End Encryption for all data in transit',
+                                            'No personal data training - your chats are private',
+                                            'Auto-deletion options for chat history',
+                                            'Enterprise-grade rate limiting and abuse protection'
+                                        ].map((item, i) => (
+                                            <li key={i} className="flex items-start gap-3 text-sm">
+                                                <FaCheck className="text-green-500 mt-1 flex-shrink-0" size={12} />
+                                                <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{item}</span>
+                                            </li>
+                                        ))}
+                                    </ul>
+                                </section>
+
+                                {/* Footer Info */}
+                                <div className={`text-center pt-6 pb-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                    <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                        SetuAI v2.5.0 • Build 2024.12 • Powered by UrbanSetu Tech Labs
+                                    </p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {
+                showTermsModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
+                        <div
+                            className={`w-11/12 max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 relative ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                            style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+                        >
+                            {/* Header */}
+                            <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
+                                <div className="flex items-center gap-3">
+                                    <FaFileAlt className="text-blue-500 text-xl" />
+                                    <h2 className="text-xl font-bold">Terms of Service</h2>
+                                </div>
+                                <button
+                                    onClick={() => setShowTermsModal(false)}
+                                    className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
+                                >
+                                    <FaTimes size={20} />
+                                </button>
+                            </div>
+
+                            {/* Scrollable Content */}
+                            <div className="space-y-6 text-sm leading-relaxed">
+                                <section>
+                                    <h3 className="font-bold text-lg mb-2 text-blue-500">1. Introduction</h3>
+                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                        Welcome to SetuAI. By accessing or using this AI chatbot service, you agree to be bound by these Terms and Conditions.
+                                        This service utilizes advanced artificial intelligence technology powered by Groq and Meta Llama 3 models.
+                                    </p>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-bold text-lg mb-2 text-blue-500">2. Usage Guidelines</h3>
+                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                        You agree to use SetuAI only for lawful purposes. You must not:
+                                    </p>
+                                    <ul className={`list-disc pl-5 mt-2 space-y-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                        <li>Generate harmful, abusive, or illegal content.</li>
+                                        <li>Attempt to bypass security filters or jailbreak the AI.</li>
+                                        <li>Upload malicious files or code.</li>
+                                        <li>Use the service to harass others or violate privacy rights.</li>
+                                    </ul>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-bold text-lg mb-2 text-blue-500">3. AI Limitations & Disclaimers</h3>
+                                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-amber-900/20 border-amber-700/50' : 'bg-amber-50 border-amber-200'}`}>
+                                        <p className={`font-semibold mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-800'}`}>Important Notice:</p>
+                                        <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                            SetuAI is an artificial intelligence. While we strive for accuracy, the AI may occasionally generate incorrect or misleading information ("hallucinations").
+                                            Always verify critical real estate, financial, or legal information with qualified human professionals.
+                                        </p>
+                                    </div>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-bold text-lg mb-2 text-blue-500">4. Data Privacy</h3>
+                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                        We value your privacy. Your conversation history is stored securely and encrypted in transit.
+                                        We do not use your personal chat data to train our public models. However, for quality assurance, anonymized interactions may be reviewed.
+                                    </p>
+                                </section>
+
+                                <section>
+                                    <h3 className="font-bold text-lg mb-2 text-blue-500">5. Changes to Terms</h3>
+                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                        We reserve the right to modify these terms at any time. Continued use of the service constitutes acceptance of updated terms.
+                                    </p>
+                                </section>
+                            </div>
+
+                            {/* Footer Action (If viewing from consent modal, this effectively returns to it) */}
+                            <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                <button
+                                    onClick={() => setShowTermsModal(false)}
+                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                                >
+                                    Close
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Mandatory Consent Modal */}
+            {
+                showConsentModal && (
+                    <div className="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn cursor-default">
+                        <div className={`w-full max-w-md rounded-3xl shadow-2xl p-8 text-center transform transition-all animate-bounceIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`}>
+                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
+                                <FaFileAlt className="text-blue-600 text-2xl" />
+                            </div>
+
+                            <h2 className="text-2xl font-bold mb-2">Terms & Conditions</h2>
+                            <p className={`mb-6 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
+                                Welcome to SetuAI! Before you start chatting, please review and accept our usage guidelines. We want to ensure a safe and helpful experience for everyone.
+                            </p>
+
+                            <div className="flex flex-col gap-3">
+                                <button
+                                    onClick={acceptTerms}
+                                    className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-95"
+                                >
+                                    Accept & Continue
+                                </button>
+                                <button
+                                    onClick={() => setShowTermsModal(true)}
+                                    className={`w-full py-3 rounded-xl font-medium transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                                >
+                                    Read Full Terms
+                                </button>
+                            </div>
+
+                            <p className={`mt-6 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
+                                By clicking accept, you agree to our policies regarding AI usage and data handling.
+                            </p>
+                        </div>
+                    </div>
+                )
+            }
+
+            {
+                showReportModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowReportModal(false)}>
+                        <div
+                            className={`w-full max-w-lg flex flex-col rounded-2xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                <h2 className="text-xl font-bold flex items-center gap-2">
+                                    <FaFlag className="text-red-500" />
+                                    Report Message
+                                </h2>
+                                <button
+                                    onClick={() => setShowReportModal(false)}
+                                    className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                                >
+                                    <FaTimes size={20} />
+                                </button>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto p-6 max-h-[60vh] custom-scrollbar">
+                                {reportStep === 1 && (
+                                    <div className="space-y-4">
+                                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Please select a problem to continue.</p>
+                                        <div className="space-y-2">
+                                            {Object.keys(REPORT_OPTIONS).map((category) => (
+                                                <button
+                                                    key={category}
+                                                    onClick={() => { setSelectedCategory(category); setReportStep(2); }}
+                                                    className={`w-full text-left p-3 rounded-xl border transition-all duration-200 flex items-center justify-between group ${isDarkMode
+                                                        ? 'border-gray-700 hover:bg-gray-800 hover:border-gray-600'
+                                                        : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
+                                                >
+                                                    <span className="font-medium">{category}</span>
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`text-gray-400 group-hover:translate-x-1 transition-transform`}>
+                                                        <path d="M9 18l6-6-6-6" />
+                                                    </svg>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {reportStep === 2 && (
+                                    <div className="space-y-4 animate-fadeIn">
+                                        <button
+                                            onClick={() => setReportStep(1)}
+                                            className="text-sm text-blue-500 hover:underline flex items-center gap-1 mb-2"
+                                        >
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                                            Back to categories
+                                        </button>
+                                        <h3 className="font-semibold text-lg">{selectedCategory}</h3>
+                                        <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>Select a specific issue.</p>
+                                        <div className="space-y-2">
+                                            {REPORT_OPTIONS[selectedCategory].map((subCat) => (
+                                                <button
+                                                    key={subCat}
+                                                    onClick={() => { setSelectedSubCategory(subCat); setReportStep(3); }}
+                                                    className={`w-full text-left p-3 rounded-xl border transition-all duration-200 flex items-center justify-between group ${isDarkMode
+                                                        ? 'border-gray-700 hover:bg-gray-800 hover:border-gray-600'
+                                                        : 'border-gray-200 hover:bg-gray-50 hover:border-gray-300'}`}
+                                                >
+                                                    <span className="font-medium">{subCat}</span>
+                                                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" className={`text-gray-400 group-hover:translate-x-1 transition-transform`}>
+                                                        <path d="M9 18l6-6-6-6" />
+                                                    </svg>
+                                                </button>
+                                            ))}
+                                        </div>
+                                    </div>
+                                )}
+
+                                {reportStep === 3 && (
+                                    <div className="space-y-4 animate-fadeIn">
+                                        <button
+                                            onClick={() => setReportStep(2)}
+                                            className="text-sm text-blue-500 hover:underline flex items-center gap-1 mb-2"
+                                        >
+                                            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M15 18l-6-6 6-6" /></svg>
+                                            Back to options
+                                        </button>
+                                        <div>
+                                            <h3 className="font-semibold text-lg mb-1">{selectedSubCategory}</h3>
+                                            <span className="text-xs text-gray-500 uppercase tracking-wider">{selectedCategory}</span>
+                                        </div>
+
+                                        <div className="space-y-2">
+                                            <label className="block text-sm font-medium">Please tell us more</label>
+                                            <textarea
+                                                value={reportDescription}
+                                                onChange={(e) => setReportDescription(e.target.value)}
+                                                className={`w-full p-3 rounded-xl border focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none transition-all ${isDarkMode
+                                                    ? 'bg-gray-800 border-gray-700 text-white placeholder-gray-500'
+                                                    : 'bg-white border-gray-300 text-gray-900 placeholder-gray-400'}`}
+                                                rows={4}
+                                                placeholder="Provide additional details about this issue..."
+                                            />
+                                        </div>
+
+                                        <div className="flex justify-end pt-2">
+                                            <button
+                                                onClick={handleReportSubmit}
+                                                disabled={!reportDescription.trim() || isReporting}
+                                                className={`px-6 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition-all shadow-lg hover:shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
+                                            >
+                                                {isReporting ? (
+                                                    <>
+                                                        <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
+                                                        Submitting...
+                                                    </>
+                                                ) : (
+                                                    'Submit Report'
+                                                )}
+                                            </button>
+                                        </div>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
+
+            {/* Admin Reports Management Modal */}
+            {showAdminReportsModal && (
+                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdminReportsModal(false)}>
                     <div
-                        className={`w-11/12 max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 relative ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
-                        style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+                        className={`w-full max-w-5xl h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                        onClick={e => e.stopPropagation()}
                     >
-                        <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
-                            <div className="flex items-center gap-4">
-                                <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
-                                    <FaRobot size={24} className="text-indigo-500" />
+                        {/* Header */}
+                        <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-red-500/20' : 'bg-red-100'}`}>
+                                    <FaClipboardList className="text-red-500 text-xl" />
                                 </div>
                                 <div>
-                                    <h2 className="text-2xl font-bold bg-gradient-to-r from-indigo-500 to-purple-500 bg-clip-text text-transparent">SetuAI</h2>
-                                    <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Advanced Real Estate Assistant</p>
+                                    <h2 className="text-xl font-bold">Message Reports</h2>
+                                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Manage and resolve reported content</p>
                                 </div>
                             </div>
                             <button
-                                onClick={() => setShowInfoModal(false)}
+                                onClick={() => setShowAdminReportsModal(false)}
                                 className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
                             >
                                 <FaTimes size={20} />
                             </button>
                         </div>
 
-                        <div className="space-y-8">
-                            {/* Core Technology */}
-                            <section>
-                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                    <FaCog className="text-indigo-500" />
-                                    Powered By
-                                </h3>
-                                <div className={`p-6 rounded-2xl ${isDarkMode ? 'bg-gray-800/50' : 'bg-gray-50'}`}>
-                                    <div className="grid md:grid-cols-2 gap-6">
-                                        <div className="space-y-2">
-                                            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">Inference Engine</div>
-                                            <div className="text-xl font-bold font-mono">Groq LPU™</div>
-                                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                Ultra-low latency inference for near-instant responses.
-                                            </p>
-                                        </div>
-                                        <div className="space-y-2">
-                                            <div className="text-xs font-semibold uppercase tracking-wider text-gray-500">LLM Model</div>
-                                            <div className="text-xl font-bold font-mono">Meta Llama 3</div>
-                                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                                                State-of-the-art open source model fine-tuned for accuracy.
-                                            </p>
-                                        </div>
+                        {/* Filters */}
+                        <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'} flex gap-2 overflow-x-auto`}>
+                            {['pending', 'resolved', 'dismissed', 'all'].map(status => (
+                                <button
+                                    key={status}
+                                    onClick={() => setAdminReportsFilter(status)}
+                                    className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-all ${adminReportsFilter === status
+                                        ? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
+                                        : `${isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
+                                        }`}
+                                >
+                                    {status}
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                            {adminReportsLoading ? (
+                                <div className="flex justify-center items-center h-full">
+                                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-red-500"></div>
+                                </div>
+                            ) : adminReports.length === 0 ? (
+                                <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                                    <div className={`p-6 rounded-full mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                                        <FaCheckCircle className="text-green-500 text-4xl" />
                                     </div>
-                                </div>
-                            </section>
-
-                            {/* Features */}
-                            <section>
-                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                    <FaMagic className="text-purple-500" />
-                                    Capabilities
-                                </h3>
-                                <div className="grid md:grid-cols-2 gap-4">
-                                    {[
-                                        { title: 'Real Estate Expertise', desc: 'Deep knowledge of property trends, pricing, and legal processes.', icon: '🏢' },
-                                        { title: 'Live Property Search', desc: 'Can search and recommend local listings from UrbanSetu database.', icon: '🔍' },
-                                        { title: 'Smart Context', desc: 'Remembers conversation history and user preferences.', icon: '🧠' },
-                                        { title: 'Multi-Modal', desc: 'Supports text, voice input, and image analysis.', icon: '🎤' },
-                                        { title: 'Code & Math', desc: 'Capable of calculating mortgage EMIs and formatting code.', icon: '🔢' },
-                                        { title: 'Instant Translation', desc: 'Communicates fluently in multiple languages.', icon: '🌐' }
-                                    ].map((feat, i) => (
-                                        <div key={i} className={`p-4 rounded-xl border ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-100 hover:bg-gray-50'} transition-colors`}>
-                                            <div className="text-2xl mb-2">{feat.icon}</div>
-                                            <h4 className="font-semibold mb-1">{feat.title}</h4>
-                                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>{feat.desc}</p>
-                                        </div>
-                                    ))}
-                                </div>
-                            </section>
-
-                            {/* Security */}
-                            <section>
-                                <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
-                                    <FaCheckCircle className="text-green-500" />
-                                    Security & Privacy
-                                </h3>
-                                <ul className={`space-y-3 p-5 rounded-2xl ${isDarkMode ? 'bg-gray-800/30' : 'bg-gray-50'}`}>
-                                    {[
-                                        'End-to-End Encryption for all data in transit',
-                                        'No personal data training - your chats are private',
-                                        'Auto-deletion options for chat history',
-                                        'Enterprise-grade rate limiting and abuse protection'
-                                    ].map((item, i) => (
-                                        <li key={i} className="flex items-start gap-3 text-sm">
-                                            <FaCheck className="text-green-500 mt-1 flex-shrink-0" size={12} />
-                                            <span className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>{item}</span>
-                                        </li>
-                                    ))}
-                                </ul>
-                            </section>
-
-                            {/* Footer Info */}
-                            <div className={`text-center pt-6 pb-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                                <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                    SetuAI v2.5.0 • Build 2024.12 • Powered by UrbanSetu Tech Labs
-                                </p>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {showTermsModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div
-                        className={`w-11/12 max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 relative ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
-                        style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
-                    >
-                        {/* Header */}
-                        <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
-                            <div className="flex items-center gap-3">
-                                <FaFileAlt className="text-blue-500 text-xl" />
-                                <h2 className="text-xl font-bold">Terms of Service</h2>
-                            </div>
-                            <button
-                                onClick={() => setShowTermsModal(false)}
-                                className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800' : 'hover:bg-gray-100'}`}
-                            >
-                                <FaTimes size={20} />
-                            </button>
-                        </div>
-
-                        {/* Scrollable Content */}
-                        <div className="space-y-6 text-sm leading-relaxed">
-                            <section>
-                                <h3 className="font-bold text-lg mb-2 text-blue-500">1. Introduction</h3>
-                                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                                    Welcome to SetuAI. By accessing or using this AI chatbot service, you agree to be bound by these Terms and Conditions.
-                                    This service utilizes advanced artificial intelligence technology powered by Groq and Meta Llama 3 models.
-                                </p>
-                            </section>
-
-                            <section>
-                                <h3 className="font-bold text-lg mb-2 text-blue-500">2. Usage Guidelines</h3>
-                                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                                    You agree to use SetuAI only for lawful purposes. You must not:
-                                </p>
-                                <ul className={`list-disc pl-5 mt-2 space-y-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                    <li>Generate harmful, abusive, or illegal content.</li>
-                                    <li>Attempt to bypass security filters or jailbreak the AI.</li>
-                                    <li>Upload malicious files or code.</li>
-                                    <li>Use the service to harass others or violate privacy rights.</li>
-                                </ul>
-                            </section>
-
-                            <section>
-                                <h3 className="font-bold text-lg mb-2 text-blue-500">3. AI Limitations & Disclaimers</h3>
-                                <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-amber-900/20 border-amber-700/50' : 'bg-amber-50 border-amber-200'}`}>
-                                    <p className={`font-semibold mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-800'}`}>Important Notice:</p>
-                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-                                        SetuAI is an artificial intelligence. While we strive for accuracy, the AI may occasionally generate incorrect or misleading information ("hallucinations").
-                                        Always verify critical real estate, financial, or legal information with qualified human professionals.
+                                    <h3 className="text-xl font-semibold mb-2">No Reports Found</h3>
+                                    <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
+                                        There are no {adminReportsFilter !== 'all' ? adminReportsFilter : ''} reports to review at this time.
                                     </p>
                                 </div>
-                            </section>
+                            ) : (
+                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+                                    {adminReports.map(report => (
+                                        <div key={report._id} className={`rounded-xl p-5 border transition-all hover:shadow-lg ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200 shadow-sm'}`}>
+                                            <div className="flex justify-between items-start mb-3">
+                                                <div className="flex items-center gap-2">
+                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${report.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                                                        report.status === 'resolved' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                                            'bg-gray-100 text-gray-700 border border-gray-200'
+                                                        }`}>
+                                                        {report.status}
+                                                    </span>
+                                                    <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                        {new Date(report.createdAt).toLocaleDateString()}
+                                                    </span>
+                                                </div>
+                                                <div className="flex gap-1">
+                                                    <button
+                                                        onClick={() => handleAdminReportDelete(report._id)}
+                                                        className={`p-1.5 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-red-900/30 text-red-400' : 'hover:bg-red-50 text-red-500'}`}
+                                                        title="Delete Report"
+                                                    >
+                                                        <FaTrash size={14} />
+                                                    </button>
+                                                </div>
+                                            </div>
 
-                            <section>
-                                <h3 className="font-bold text-lg mb-2 text-blue-500">4. Data Privacy</h3>
-                                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                                    We value your privacy. Your conversation history is stored securely and encrypted in transit.
-                                    We do not use your personal chat data to train our public models. However, for quality assurance, anonymized interactions may be reviewed.
-                                </p>
-                            </section>
+                                            <div className="mb-3">
+                                                <h3 className="font-semibold text-base mb-1">{report.category}</h3>
+                                                <span className={`text-xs px-2 py-0.5 rounded border inline-block ${isDarkMode ? 'bg-indigo-900/30 text-indigo-300 border-indigo-800' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
+                                                    {report.subCategory}
+                                                </span>
+                                            </div>
 
-                            <section>
-                                <h3 className="font-bold text-lg mb-2 text-blue-500">5. Changes to Terms</h3>
-                                <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                                    We reserve the right to modify these terms at any time. Continued use of the service constitutes acceptance of updated terms.
-                                </p>
-                            </section>
-                        </div>
+                                            {/* Reported Content Snippet */}
+                                            <div className={`p-3 rounded-lg mb-4 text-sm font-mono border-l-4 ${isDarkMode ? 'bg-gray-900/50 border-gray-600 text-gray-300' : 'bg-gray-50 border-gray-300 text-gray-700'}`}>
+                                                <div className="float-right ml-2 opacity-50"><FaFlag size={10} /></div>
+                                                <p className="line-clamp-3 italic">"{report.messageContent}"</p>
+                                            </div>
 
-                        {/* Footer Action (If viewing from consent modal, this effectively returns to it) */}
-                        <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                            <button
-                                onClick={() => setShowTermsModal(false)}
-                                className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                            >
-                                Close
-                            </button>
+                                            <div className="mb-4">
+                                                <p className={`text-xs font-semibold uppercase mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reporter's Description:</p>
+                                                <p className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>{report.description}</p>
+                                            </div>
+
+                                            {report.adminNotes && (
+                                                <div className={`mb-4 p-3 rounded-lg border ${isDarkMode ? 'bg-blue-900/20 border-blue-800 text-blue-200' : 'bg-blue-50 border-blue-100 text-blue-800'}`}>
+                                                    <p className="text-xs font-bold uppercase mb-1 opacity-70">Admin Notes:</p>
+                                                    <p className="text-sm">{report.adminNotes}</p>
+                                                </div>
+                                            )}
+
+                                            <div className="flex items-center justify-between pt-3 border-t border-dashed border-gray-600/30">
+                                                <div className="flex gap-2">
+                                                    {report.status === 'pending' && (
+                                                        <>
+                                                            <button
+                                                                onClick={() => handleAdminReportUpdate(report._id, 'resolved')}
+                                                                className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg flex items-center gap-1 transition-colors shadow-sm"
+                                                            >
+                                                                <FaCheck size={12} /> Resolve
+                                                            </button>
+                                                            <button
+                                                                onClick={() => handleAdminReportUpdate(report._id, 'dismissed')}
+                                                                className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1 transition-colors border ${isDarkMode ? 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+                                                            >
+                                                                <FaTimes size={12} /> Dismiss
+                                                            </button>
+                                                        </>
+                                                    )}
+                                                </div>
+                                                <button
+                                                    onClick={() => { setSelectedAdminReport(report); setAdminNoteText(report.adminNotes || ''); setShowAdminNoteModal(true); }}
+                                                    className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1 transition-colors ${isDarkMode ? 'text-blue-400 hover:bg-blue-900/20' : 'text-blue-600 hover:bg-blue-50'}`}
+                                                >
+                                                    <FaCommentAlt size={12} /> {report.adminNotes ? 'Edit Note' : 'Add Note'}
+                                                </button>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                     </div>
                 </div>
             )}
 
-            {/* Mandatory Consent Modal */}
-            {showConsentModal && (
-                <div className="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn cursor-default">
-                    <div className={`w-full max-w-md rounded-3xl shadow-2xl p-8 text-center transform transition-all animate-bounceIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`}>
-                        <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                            <FaFileAlt className="text-blue-600 text-2xl" />
-                        </div>
-
-                        <h2 className="text-2xl font-bold mb-2">Terms & Conditions</h2>
-                        <p className={`mb-6 text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-600'}`}>
-                            Welcome to SetuAI! Before you start chatting, please review and accept our usage guidelines. We want to ensure a safe and helpful experience for everyone.
-                        </p>
-
-                        <div className="flex flex-col gap-3">
+            {/* Admin Note Modal (Nested) */}
+            {showAdminNoteModal && (
+                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdminNoteModal(false)}>
+                    <div
+                        className={`w-full max-w-md rounded-xl p-6 shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'}`}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        <h3 className="text-lg font-bold mb-4">Admin Note</h3>
+                        <textarea
+                            value={adminNoteText}
+                            onChange={e => setAdminNoteText(e.target.value)}
+                            className={`w-full border rounded-lg p-3 h-32 focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-4 ${isDarkMode ? 'bg-gray-900 border-gray-600 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+                            placeholder="Enter internal notes about this report..."
+                        />
+                        <div className="flex justify-end gap-2">
                             <button
-                                onClick={acceptTerms}
-                                className="w-full py-3 bg-blue-600 hover:bg-blue-700 text-white rounded-xl font-bold shadow-lg shadow-blue-500/30 transition-all hover:scale-[1.02] active:scale-95"
+                                onClick={() => setShowAdminNoteModal(false)}
+                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
                             >
-                                Accept & Continue
+                                Cancel
                             </button>
                             <button
-                                onClick={() => setShowTermsModal(true)}
-                                className={`w-full py-3 rounded-xl font-medium transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                                onClick={() => handleAdminReportUpdate(selectedAdminReport._id, selectedAdminReport.status, adminNoteText)}
+                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-lg shadow-blue-500/20"
                             >
-                                Read Full Terms
+                                Save Note
                             </button>
                         </div>
-
-                        <p className={`mt-6 text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                            By clicking accept, you agree to our policies regarding AI usage and data handling.
-                        </p>
                     </div>
                 </div>
             )}
