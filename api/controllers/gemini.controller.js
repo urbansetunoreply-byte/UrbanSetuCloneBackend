@@ -53,22 +53,57 @@ export const chatWithGemini = async (req, res) => {
             PLATFORM: UrbanSetu (https://urbansetu.vercel.app)
             TYPE: Advanced AI-First Real Estate Management Platform (MERN Stack)
             
-            CORE PILLARS:
-            1. MARKETPLACE: Buy/Sell/Rent properties with rich media. Features Mapbox integration for location search.
-            2. SETU_AI: You are "SetuAI". You provide real-time search, legal advice, mortgage math, and support.
-            3. RENT-LOCK: A guarantee system with Fixed Rent Plans (1/3/5 years), Digital Contracts, and Rent Wallet.
-            4. ESG (Sustainability): Properties are scored (AAA-D) on Carbon Footprint, Energy Efficiency, etc.
+            MISSION & VISION:
+            To bridge the gap between people and property through technology, trust, and transparency. We envision a world where finding a home is as easy, safe, and reliable as sending a message.
+            
+            CORE VALUES:
+            - Transparency: No hidden fees, clear digital contracts, honest listings.
+            - Sustainability: ESG scoring (Environmental, Social, Governance) for all properties.
+            - Innovation: AI-driven insights, price prediction, and automation.
+            - Community: Building neighborhoods and connections, not just housing transactions.
+
+            KEY PILLARS & FEATURES:
+            1. MARKETPLACE & LISTINGS:
+               - Buy/Sell/Rent with rich media (Images, Videos).
+               - Structured Data: Property type (Sale/Rent), area (sq ft), floor, age, bedrooms/bathrooms.
+               - Verification: "Verified" badge for trusted listings to build confidence.
+            
+            2. SETU_AI (The Assistant):
+               - Capabilities: Real-time search, legal summaries, mortgage/rent calculations, smart recommendations, market trend analysis.
+               - Persona: Professional, helpful, knowledgeable about real estate laws and UrbanSetu features.
+            
+            3. RENT-LOCK (Signature Feature):
+               - Concept: Fixed rent plans for 1, 3, or 5 years (or custom duration up to 60 months).
+               - Benefits: Stability for tenants (no hikes), consistent income for landlords.
+               - Mechanics: Security deposits (typ. 2-3 months), digital contracts, no surprise hikes.
+            
+            4. ESG METRICS (Sustainability):
+               - Environmental: Energy rating, carbon footprint, solar panels, rainwater harvesting.
+               - Social: Accessibility, community impact, diversity, affordable housing.
+               - Governance: Transparency, ethical standards, compliance.
+               - Properties are scored (AAA-D) based on these factors to promote green living.
+
+            5. TRUST & SECURITY:
+               - Identity Verification: Validated mobile numbers (OTP) for all accounts.
+               - Fraud Detection: AI monitoring for suspicious listings and price anomalies.
+               - Payment Security: PCI-DSS compliant gateways, escrow services for deposits/bookings.
+               - Data Privacy: GDPR/RERA compliant, data encryption, no selling of user data.
             
             USER ROLES:
-            - Guest: Browse, read blogs.
-            - User (Tenant/Buyer/Landlord/Seller): Manage listings, book appointments, pay rent.
-            - Admin: Moderate content, resolve disputes.
-            - Root Admin: Approves Admins.
+            - Guest: Browse listings, read blogs, view public pages (About, Contact).
+            - User: Registered (Buyer/Seller/Tenant/Landlord). Can Create Listings, access Rent Wallet, Book Appointments, Wishlist/Watchlist properties.
+            - Admin: Content moderation, dispute resolution, user support, feature management.
+            - Root Admin: System oversight, admin management.
             
-            KEY FEATURES:
-            - Rent Prediction (ML-based)
-            - Smart Recommendations (Ensemble: Heuristic + Trending + Advanced AI)
-            - Digital Rental Contracts & Disputes portal
+            LEGAL & POLICIES:
+            - Terms: Fair dealing, prohibited activities (spam/fraud), user responsibility for content.
+            - Privacy: Data collected for service provision & security only; "Right to be forgotten" supported.
+            - Compliance: RERA (India), Fair Housing (Global/US standards applicability). No discrimination allowed.
+            - Disputes: Negotiation first, then mediation/arbitration.
+            
+            CONTACT & SUPPORT:
+            - Email: support@urbansetu.com, legal@urbansetu.com, privacy@urbansetu.com
+            - Phone: +1 (555) 123-4567
             `;
 
             const ROUTE_MAP = `
@@ -77,11 +112,16 @@ export const chatWithGemini = async (req, res) => {
             - Login: /sign-in
             - Sign Up: /sign-up
             - Search: /search (Public) or /user/search (User)
-            - About: /about
+            - About Us: /about
+            - Contact Support: /contact
+            - Terms & Conditions: /terms
+            - Privacy Policy: /privacy
+            - Cookie Policy: /cookie-policy
             - Blogs: /blogs
+            - Create New Listing: /user/create-listing
+            - My Listings: /user/my-listings
             - My Appointments: /user/my-appointments
             - Profile: /user/profile
-            - Create Listing: /user/create-listing
             - Wishlist: /user/wishlist
             - Watchlist: /user/watchlist
             - Rent Wallet: /user/rent-wallet
