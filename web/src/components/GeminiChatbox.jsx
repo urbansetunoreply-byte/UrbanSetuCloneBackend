@@ -1,6 +1,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH } from 'react-icons/fa';
 import EqualizerButton from './EqualizerButton';
+import ShareChatModal from './ShareChatModal';
 import { toast } from 'react-toastify';
 // import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
@@ -158,6 +159,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [showDeleteSingleModal, setShowDeleteSingleModal] = useState(false);
     const [showRenameModal, setShowRenameModal] = useState(false);
     const [renameTargetSessionId, setRenameTargetSessionId] = useState(null);
+    const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [renameInput, setRenameInput] = useState('');
     const [refreshingBookmarks, setRefreshingBookmarks] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
@@ -4437,6 +4439,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 </button>
                                             </li>
 
+                                            {/* Share Chat */}
+                                            {currentUser && (
+                                                <li>
+                                                    <button
+                                                        onClick={() => { setIsShareModalOpen(true); setIsHeaderMenuOpen(false); }}
+                                                        className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
+                                                    >
+                                                        <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-cyan-500/20' : 'bg-cyan-100'} group-hover:scale-110 transition-transform duration-200`}>
+                                                            <FaShareAlt size={14} className="text-cyan-500" />
+                                                        </div>
+                                                        <span className="font-medium">Share Chat</span>
+                                                    </button>
+                                                </li>
+                                            )}
+
                                             {/* Clear */}
                                             {(messages && (messages.length > 1 || messages.some(m => m.role === 'user'))) && (
                                                 <li>
@@ -8123,6 +8140,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 )
             }
 
+
+            {/* Share Chat Modal */}
+            <ShareChatModal
+                isOpen={isShareModalOpen}
+                onClose={() => setIsShareModalOpen(false)}
+                sessionId={getOrCreateSessionId()}
+                currentChatName={chatSessions.find(s => s.sessionId === getOrCreateSessionId())?.name || "Shared Chat"}
+            />
         </>
     );
 };

@@ -120,6 +120,7 @@ const AdminRentalRatings = lazy(() => import('./pages/AdminRentalRatings'));
 const AdminRentalContracts = lazy(() => import('./pages/AdminRentalContracts'));
 const AdminRentalLoans = lazy(() => import('./pages/AdminRentalLoans'));
 const RentalLoans = lazy(() => import('./pages/RentalLoans'));
+const SharedChatView = lazy(() => import('./pages/SharedChatView'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -637,6 +638,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/restore-account/:token" element={<AccountRevocation />} />
             <Route path="/restore-property" element={<RestoreProperty />} />
             <Route path="/offers" element={<Offers />} />
+            <Route path="/ai/share/:shareToken" element={<SharedChatView />} />
 
             {/* User Routes (Protected) */}
             <Route element={<Private bootstrapped={bootstrapped} />}>
