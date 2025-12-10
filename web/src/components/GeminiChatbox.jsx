@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH, FaShareAlt } from 'react-icons/fa';
 import EqualizerButton from './EqualizerButton';
 import ShareChatModal from './ShareChatModal';
 import { toast } from 'react-toastify';
@@ -160,6 +160,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [showRenameModal, setShowRenameModal] = useState(false);
     const [renameTargetSessionId, setRenameTargetSessionId] = useState(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
+    const [shareTargetSessionId, setShareTargetSessionId] = useState(null);
     const [renameInput, setRenameInput] = useState('');
     const [refreshingBookmarks, setRefreshingBookmarks] = useState(false);
     const [showInfoModal, setShowInfoModal] = useState(false);
@@ -4443,7 +4444,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             {currentUser && (
                                                 <li>
                                                     <button
-                                                        onClick={() => { setIsShareModalOpen(true); setIsHeaderMenuOpen(false); }}
+                                                        onClick={() => { setShareTargetSessionId(getOrCreateSessionId()); setIsShareModalOpen(true); setIsHeaderMenuOpen(false); }}
                                                         className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
                                                     >
                                                         <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-cyan-500/20' : 'bg-cyan-100'} group-hover:scale-110 transition-transform duration-200`}>
@@ -5678,6 +5679,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     </button>
                                                                     {openHistoryMenuSessionId === session.sessionId && (
                                                                         <div className={`absolute right-0 top-6 ${isDarkMode ? 'bg-gray-700 border-gray-600' : 'bg-white border-gray-200'} border rounded shadow-lg z-10 w-36`} data-chat-options-dropdown>
+                                                                            <button
+                                                                                onClick={(e) => {
+                                                                                    e.stopPropagation();
+                                                                                    setShareTargetSessionId(session.sessionId);
+                                                                                    setIsShareModalOpen(true);
+                                                                                    setOpenHistoryMenuSessionId(null);
+                                                                                }}
+                                                                                className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
+                                                                            >
+                                                                                Share chat
+                                                                            </button>
                                                                             <button
                                                                                 onClick={(e) => {
                                                                                     e.stopPropagation();
@@ -8144,9 +8156,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             {/* Share Chat Modal */}
             <ShareChatModal
                 isOpen={isShareModalOpen}
-                onClose={() => setIsShareModalOpen(false)}
-                sessionId={getOrCreateSessionId()}
-                currentChatName={chatSessions.find(s => s.sessionId === getOrCreateSessionId())?.name || "Shared Chat"}
+                onClose={() => { setIsShareModalOpen(false); setShareTargetSessionId(null); }}
+                sessionId={shareTargetSessionId || getOrCreateSessionId()}
+                currentChatName={chatSessions.find(s => s.sessionId === (shareTargetSessionId || getOrCreateSessionId()))?.name || "Shared Chat"}
             />
         </>
     );
