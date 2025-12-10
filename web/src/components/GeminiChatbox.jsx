@@ -1,5 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH } from 'react-icons/fa';
+import EqualizerButton from './EqualizerButton';
 import { toast } from 'react-toastify';
 // import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
 import { useSelector } from 'react-redux';
@@ -319,7 +320,76 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [adminReportsFilter, setAdminReportsFilter] = useState('pending'); // 'pending', 'resolved', 'dismissed', 'all'
     const [showAdminNoteModal, setShowAdminNoteModal] = useState(false);
     const [selectedAdminReport, setSelectedAdminReport] = useState(null);
+
     const [adminNoteText, setAdminNoteText] = useState('');
+
+    // State for managing which message's "more options" menu is open
+    const [openMessageMenuIndex, setOpenMessageMenuIndex] = useState(null);
+
+    // Close menus when clicking outside
+    useEffect(() => {
+        const handleClickOutside = (event) => {
+            if (openMessageMenuIndex !== null && !event.target.closest('.message-menu-container')) {
+                setOpenMessageMenuIndex(null);
+            }
+        };
+        document.addEventListener('mousedown', handleClickOutside);
+        return () => {
+            document.removeEventListener('mousedown', handleClickOutside);
+        };
+    }, [openMessageMenuIndex]);
+
+    // Speech Synthesis State
+    const [speakingMessageIndex, setSpeakingMessageIndex] = useState(null);
+    const synthRef = useRef(window.speechSynthesis);
+    const speechUtteranceRef = useRef(null);
+
+    const handleSpeak = (text, index) => {
+        const synth = synthRef.current;
+        if (speakingMessageIndex === index) {
+            // Already speaking this message -> Stop
+            synth.cancel();
+            setSpeakingMessageIndex(null);
+            return;
+        }
+
+        // Cancel previous speech if any
+        if (synth.speaking) {
+            synth.cancel();
+        }
+
+        const utterance = new SpeechSynthesisUtterance(text);
+
+        // Try to select a better voice
+        const voices = synth.getVoices();
+        const googleVoice = voices.find(v => v.name.includes("Google US English"));
+        if (googleVoice) utterance.voice = googleVoice;
+
+        utterance.rate = 1;
+        utterance.pitch = 1;
+        utterance.volume = 1;
+
+        utterance.onstart = () => setSpeakingMessageIndex(index);
+        utterance.onend = () => setSpeakingMessageIndex(null);
+        utterance.onerror = () => setSpeakingMessageIndex(null);
+
+        speechUtteranceRef.current = utterance;
+        synth.speak(utterance);
+    };
+
+    const handleStopSpeak = () => {
+        synthRef.current.cancel();
+        setSpeakingMessageIndex(null);
+    };
+
+    // Cleanup speech on unmount
+    useEffect(() => {
+        return () => {
+            if (synthRef.current) {
+                synthRef.current.cancel();
+            }
+        };
+    }, []);
 
     const REPORT_OPTIONS = {
         "Violence & self-harm": [
@@ -4873,18 +4943,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 </div>
                                                             )}
 
-                                                            {/* Report button */}
-                                                            {message.role === 'assistant' && !message.isError && (
-                                                                <button
-                                                                    onClick={() => openReportModal(message, index)}
-                                                                    className="p-1 text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded transition-all duration-200"
-                                                                    title="Report message"
-                                                                    aria-label="Report message"
-                                                                >
-                                                                    <FaFlag size={10} />
-                                                                </button>
-                                                            )}
-
                                                             {/* Retry buttons */}
                                                             {message.role === 'assistant' && (
                                                                 <button
@@ -4906,6 +4964,52 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                         <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46C6.26 13.86 6 12.97 6 12c0-3.31 2.69-6 6-6zm5.76 1.74L16.3 9.2C17.74 10.14 18.5 11.49 18.5 13c0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
                                                                     </svg>
                                                                 </button>
+                                                            )}
+
+                                                            {/* More Options Menu for Assistant Messages */}
+                                                            {message.role === 'assistant' && !message.isError && (
+                                                                <div className="relative message-menu-container">
+                                                                    <button
+                                                                        onClick={() => setOpenMessageMenuIndex(openMessageMenuIndex === index ? null : index)}
+                                                                        className="p-1 text-gray-500 hover:text-gray-700 hover:bg-gray-200 rounded transition-all duration-200"
+                                                                        title="More options"
+                                                                        aria-label="More options"
+                                                                    >
+                                                                        <FaEllipsisH size={10} />
+                                                                    </button>
+
+                                                                    {/* Dropdown Menu */}
+                                                                    {openMessageMenuIndex === index && (
+                                                                        <div className={`absolute bottom-full left-0 mb-2 w-48 rounded-md shadow-lg py-1 z-10 border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                                                                            {/* Read Aloud Option */}
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    handleSpeak(message.content, index);
+                                                                                }}
+                                                                                className={`w-full text-left px-4 py-2 text-xs flex items-center gap-2 ${isDarkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                                                                            >
+                                                                                {speakingMessageIndex === index ? (
+                                                                                    <EqualizerButton isPlaying={true} onClick={() => { }} />
+                                                                                ) : (
+                                                                                    <FaVolumeUp size={12} />
+                                                                                )}
+                                                                                <span>{speakingMessageIndex === index ? 'Stop Reading' : 'Read Aloud'}</span>
+                                                                            </button>
+
+                                                                            {/* Report Option */}
+                                                                            <button
+                                                                                onClick={() => {
+                                                                                    openReportModal(message, index);
+                                                                                    setOpenMessageMenuIndex(null);
+                                                                                }}
+                                                                                className={`w-full text-left px-4 py-2 text-xs flex items-center gap-2 ${isDarkMode ? 'text-gray-200 hover:bg-gray-700' : 'text-gray-700 hover:bg-gray-100'}`}
+                                                                            >
+                                                                                <FaFlag size={12} />
+                                                                                <span>Report Message</span>
+                                                                            </button>
+                                                                        </div>
+                                                                    )}
+                                                                </div>
                                                             )}
                                                         </div>
                                                     )}
@@ -7783,181 +7887,185 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
 
             {/* Admin Reports Management Modal */}
-            {showAdminReportsModal && (
-                <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdminReportsModal(false)}>
-                    <div
-                        className={`w-full max-w-5xl h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {/* Header */}
-                        <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-red-500/20' : 'bg-red-100'}`}>
-                                    <FaClipboardList className="text-red-500 text-xl" />
-                                </div>
-                                <div>
-                                    <h2 className="text-xl font-bold">Message Reports</h2>
-                                    <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Manage and resolve reported content</p>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setShowAdminReportsModal(false)}
-                                className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
-                            >
-                                <FaTimes size={20} />
-                            </button>
-                        </div>
-
-                        {/* Filters */}
-                        <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'} flex gap-2 overflow-x-auto`}>
-                            {['pending', 'resolved', 'dismissed', 'all'].map(status => (
-                                <button
-                                    key={status}
-                                    onClick={() => setAdminReportsFilter(status)}
-                                    className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-all ${adminReportsFilter === status
-                                        ? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
-                                        : `${isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
-                                        }`}
-                                >
-                                    {status}
-                                </button>
-                            ))}
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-                            {adminReportsLoading ? (
-                                <div className="flex justify-center items-center h-full">
-                                    <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-red-500"></div>
-                                </div>
-                            ) : adminReports.length === 0 ? (
-                                <div className="flex flex-col items-center justify-center h-full text-center p-8">
-                                    <div className={`p-6 rounded-full mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                                        <FaCheckCircle className="text-green-500 text-4xl" />
+            {
+                showAdminReportsModal && (
+                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdminReportsModal(false)}>
+                        <div
+                            className={`w-full max-w-5xl h-[85vh] flex flex-col rounded-2xl shadow-2xl overflow-hidden ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${isDarkMode ? 'bg-red-500/20' : 'bg-red-100'}`}>
+                                        <FaClipboardList className="text-red-500 text-xl" />
                                     </div>
-                                    <h3 className="text-xl font-semibold mb-2">No Reports Found</h3>
-                                    <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
-                                        There are no {adminReportsFilter !== 'all' ? adminReportsFilter : ''} reports to review at this time.
-                                    </p>
+                                    <div>
+                                        <h2 className="text-xl font-bold">Message Reports</h2>
+                                        <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Manage and resolve reported content</p>
+                                    </div>
                                 </div>
-                            ) : (
-                                <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
-                                    {adminReports.map(report => (
-                                        <div key={report._id} className={`rounded-xl p-5 border transition-all hover:shadow-lg ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200 shadow-sm'}`}>
-                                            <div className="flex justify-between items-start mb-3">
-                                                <div className="flex items-center gap-2">
-                                                    <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${report.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
-                                                        report.status === 'resolved' ? 'bg-green-100 text-green-700 border border-green-200' :
-                                                            'bg-gray-100 text-gray-700 border border-gray-200'
-                                                        }`}>
-                                                        {report.status}
-                                                    </span>
-                                                    <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                        {new Date(report.createdAt).toLocaleDateString()}
+                                <button
+                                    onClick={() => setShowAdminReportsModal(false)}
+                                    className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                                >
+                                    <FaTimes size={20} />
+                                </button>
+                            </div>
+
+                            {/* Filters */}
+                            <div className={`p-4 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'} flex gap-2 overflow-x-auto`}>
+                                {['pending', 'resolved', 'dismissed', 'all'].map(status => (
+                                    <button
+                                        key={status}
+                                        onClick={() => setAdminReportsFilter(status)}
+                                        className={`px-4 py-2 rounded-full text-sm font-medium capitalize transition-all ${adminReportsFilter === status
+                                            ? 'bg-red-500 text-white shadow-lg shadow-red-500/20'
+                                            : `${isDarkMode ? 'bg-gray-800 text-gray-300 hover:bg-gray-700' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`
+                                            }`}
+                                    >
+                                        {status}
+                                    </button>
+                                ))}
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                                {adminReportsLoading ? (
+                                    <div className="flex justify-center items-center h-full">
+                                        <div className="animate-spin rounded-full h-12 w-12 border-4 border-gray-200 border-t-red-500"></div>
+                                    </div>
+                                ) : adminReports.length === 0 ? (
+                                    <div className="flex flex-col items-center justify-center h-full text-center p-8">
+                                        <div className={`p-6 rounded-full mb-4 ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                                            <FaCheckCircle className="text-green-500 text-4xl" />
+                                        </div>
+                                        <h3 className="text-xl font-semibold mb-2">No Reports Found</h3>
+                                        <p className={isDarkMode ? 'text-gray-400' : 'text-gray-500'}>
+                                            There are no {adminReportsFilter !== 'all' ? adminReportsFilter : ''} reports to review at this time.
+                                        </p>
+                                    </div>
+                                ) : (
+                                    <div className="grid gap-4 md:grid-cols-2 lg:grid-cols-2">
+                                        {adminReports.map(report => (
+                                            <div key={report._id} className={`rounded-xl p-5 border transition-all hover:shadow-lg ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-white border-gray-200 shadow-sm'}`}>
+                                                <div className="flex justify-between items-start mb-3">
+                                                    <div className="flex items-center gap-2">
+                                                        <span className={`px-2.5 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${report.status === 'pending' ? 'bg-yellow-100 text-yellow-700 border border-yellow-200' :
+                                                            report.status === 'resolved' ? 'bg-green-100 text-green-700 border border-green-200' :
+                                                                'bg-gray-100 text-gray-700 border border-gray-200'
+                                                            }`}>
+                                                            {report.status}
+                                                        </span>
+                                                        <span className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                            {new Date(report.createdAt).toLocaleDateString()}
+                                                        </span>
+                                                    </div>
+                                                    <div className="flex gap-1">
+                                                        <button
+                                                            onClick={() => handleAdminReportDelete(report._id)}
+                                                            className={`p-1.5 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-red-900/30 text-red-400' : 'hover:bg-red-50 text-red-500'}`}
+                                                            title="Delete Report"
+                                                        >
+                                                            <FaTrash size={14} />
+                                                        </button>
+                                                    </div>
+                                                </div>
+
+                                                <div className="mb-3">
+                                                    <h3 className="font-semibold text-base mb-1">{report.category}</h3>
+                                                    <span className={`text-xs px-2 py-0.5 rounded border inline-block ${isDarkMode ? 'bg-indigo-900/30 text-indigo-300 border-indigo-800' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
+                                                        {report.subCategory}
                                                     </span>
                                                 </div>
-                                                <div className="flex gap-1">
+
+                                                {/* Reported Content Snippet */}
+                                                <div className={`p-3 rounded-lg mb-4 text-sm font-mono border-l-4 ${isDarkMode ? 'bg-gray-900/50 border-gray-600 text-gray-300' : 'bg-gray-50 border-gray-300 text-gray-700'}`}>
+                                                    <div className="float-right ml-2 opacity-50"><FaFlag size={10} /></div>
+                                                    <p className="line-clamp-3 italic">"{report.messageContent}"</p>
+                                                </div>
+
+                                                <div className="mb-4">
+                                                    <p className={`text-xs font-semibold uppercase mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reporter's Description:</p>
+                                                    <p className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>{report.description}</p>
+                                                </div>
+
+                                                {report.adminNotes && (
+                                                    <div className={`mb-4 p-3 rounded-lg border ${isDarkMode ? 'bg-blue-900/20 border-blue-800 text-blue-200' : 'bg-blue-50 border-blue-100 text-blue-800'}`}>
+                                                        <p className="text-xs font-bold uppercase mb-1 opacity-70">Admin Notes:</p>
+                                                        <p className="text-sm">{report.adminNotes}</p>
+                                                    </div>
+                                                )}
+
+                                                <div className="flex items-center justify-between pt-3 border-t border-dashed border-gray-600/30">
+                                                    <div className="flex gap-2">
+                                                        {report.status === 'pending' && (
+                                                            <>
+                                                                <button
+                                                                    onClick={() => handleAdminReportUpdate(report._id, 'resolved')}
+                                                                    className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg flex items-center gap-1 transition-colors shadow-sm"
+                                                                >
+                                                                    <FaCheck size={12} /> Resolve
+                                                                </button>
+                                                                <button
+                                                                    onClick={() => handleAdminReportUpdate(report._id, 'dismissed')}
+                                                                    className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1 transition-colors border ${isDarkMode ? 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
+                                                                >
+                                                                    <FaTimes size={12} /> Dismiss
+                                                                </button>
+                                                            </>
+                                                        )}
+                                                    </div>
                                                     <button
-                                                        onClick={() => handleAdminReportDelete(report._id)}
-                                                        className={`p-1.5 rounded-lg transition-colors ${isDarkMode ? 'hover:bg-red-900/30 text-red-400' : 'hover:bg-red-50 text-red-500'}`}
-                                                        title="Delete Report"
+                                                        onClick={() => { setSelectedAdminReport(report); setAdminNoteText(report.adminNotes || ''); setShowAdminNoteModal(true); }}
+                                                        className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1 transition-colors ${isDarkMode ? 'text-blue-400 hover:bg-blue-900/20' : 'text-blue-600 hover:bg-blue-50'}`}
                                                     >
-                                                        <FaTrash size={14} />
+                                                        <FaCommentAlt size={12} /> {report.adminNotes ? 'Edit Note' : 'Add Note'}
                                                     </button>
                                                 </div>
                                             </div>
-
-                                            <div className="mb-3">
-                                                <h3 className="font-semibold text-base mb-1">{report.category}</h3>
-                                                <span className={`text-xs px-2 py-0.5 rounded border inline-block ${isDarkMode ? 'bg-indigo-900/30 text-indigo-300 border-indigo-800' : 'bg-indigo-50 text-indigo-600 border-indigo-100'}`}>
-                                                    {report.subCategory}
-                                                </span>
-                                            </div>
-
-                                            {/* Reported Content Snippet */}
-                                            <div className={`p-3 rounded-lg mb-4 text-sm font-mono border-l-4 ${isDarkMode ? 'bg-gray-900/50 border-gray-600 text-gray-300' : 'bg-gray-50 border-gray-300 text-gray-700'}`}>
-                                                <div className="float-right ml-2 opacity-50"><FaFlag size={10} /></div>
-                                                <p className="line-clamp-3 italic">"{report.messageContent}"</p>
-                                            </div>
-
-                                            <div className="mb-4">
-                                                <p className={`text-xs font-semibold uppercase mb-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Reporter's Description:</p>
-                                                <p className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-700'}`}>{report.description}</p>
-                                            </div>
-
-                                            {report.adminNotes && (
-                                                <div className={`mb-4 p-3 rounded-lg border ${isDarkMode ? 'bg-blue-900/20 border-blue-800 text-blue-200' : 'bg-blue-50 border-blue-100 text-blue-800'}`}>
-                                                    <p className="text-xs font-bold uppercase mb-1 opacity-70">Admin Notes:</p>
-                                                    <p className="text-sm">{report.adminNotes}</p>
-                                                </div>
-                                            )}
-
-                                            <div className="flex items-center justify-between pt-3 border-t border-dashed border-gray-600/30">
-                                                <div className="flex gap-2">
-                                                    {report.status === 'pending' && (
-                                                        <>
-                                                            <button
-                                                                onClick={() => handleAdminReportUpdate(report._id, 'resolved')}
-                                                                className="px-3 py-1.5 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg flex items-center gap-1 transition-colors shadow-sm"
-                                                            >
-                                                                <FaCheck size={12} /> Resolve
-                                                            </button>
-                                                            <button
-                                                                onClick={() => handleAdminReportUpdate(report._id, 'dismissed')}
-                                                                className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1 transition-colors border ${isDarkMode ? 'bg-transparent border-gray-600 text-gray-300 hover:bg-gray-700' : 'bg-white border-gray-300 text-gray-600 hover:bg-gray-50'}`}
-                                                            >
-                                                                <FaTimes size={12} /> Dismiss
-                                                            </button>
-                                                        </>
-                                                    )}
-                                                </div>
-                                                <button
-                                                    onClick={() => { setSelectedAdminReport(report); setAdminNoteText(report.adminNotes || ''); setShowAdminNoteModal(true); }}
-                                                    className={`px-3 py-1.5 text-sm rounded-lg flex items-center gap-1 transition-colors ${isDarkMode ? 'text-blue-400 hover:bg-blue-900/20' : 'text-blue-600 hover:bg-blue-50'}`}
-                                                >
-                                                    <FaCommentAlt size={12} /> {report.adminNotes ? 'Edit Note' : 'Add Note'}
-                                                </button>
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            )}
+                                        ))}
+                                    </div>
+                                )}
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Admin Note Modal (Nested) */}
-            {showAdminNoteModal && (
-                <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdminNoteModal(false)}>
-                    <div
-                        className={`w-full max-w-md rounded-xl p-6 shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'}`}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        <h3 className="text-lg font-bold mb-4">Admin Note</h3>
-                        <textarea
-                            value={adminNoteText}
-                            onChange={e => setAdminNoteText(e.target.value)}
-                            className={`w-full border rounded-lg p-3 h-32 focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-4 ${isDarkMode ? 'bg-gray-900 border-gray-600 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
-                            placeholder="Enter internal notes about this report..."
-                        />
-                        <div className="flex justify-end gap-2">
-                            <button
-                                onClick={() => setShowAdminNoteModal(false)}
-                                className={`px-4 py-2 rounded-lg font-medium transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={() => handleAdminReportUpdate(selectedAdminReport._id, selectedAdminReport.status, adminNoteText)}
-                                className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-lg shadow-blue-500/20"
-                            >
-                                Save Note
-                            </button>
+            {
+                showAdminNoteModal && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdminNoteModal(false)}>
+                        <div
+                            className={`w-full max-w-md rounded-xl p-6 shadow-2xl ${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-white text-gray-900'}`}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            <h3 className="text-lg font-bold mb-4">Admin Note</h3>
+                            <textarea
+                                value={adminNoteText}
+                                onChange={e => setAdminNoteText(e.target.value)}
+                                className={`w-full border rounded-lg p-3 h-32 focus:ring-2 focus:ring-blue-500 outline-none resize-none mb-4 ${isDarkMode ? 'bg-gray-900 border-gray-600 text-white placeholder-gray-500' : 'bg-gray-50 border-gray-300 text-gray-900'}`}
+                                placeholder="Enter internal notes about this report..."
+                            />
+                            <div className="flex justify-end gap-2">
+                                <button
+                                    onClick={() => setShowAdminNoteModal(false)}
+                                    className={`px-4 py-2 rounded-lg font-medium transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-300' : 'hover:bg-gray-100 text-gray-600'}`}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={() => handleAdminReportUpdate(selectedAdminReport._id, selectedAdminReport.status, adminNoteText)}
+                                    className="px-4 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium shadow-lg shadow-blue-500/20"
+                                >
+                                    Save Note
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
         </>
     );

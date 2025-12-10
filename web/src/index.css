@@ -1342,35 +1342,102 @@ body.modal-open {
     box-shadow: 0 0 0 8px rgba(59, 130, 246, 0);
   }
 }
-  @keyframes typeBadge {
-    0% {
-      opacity: 0;
-      transform: scale(0.5) rotate(-10deg);
-    }
 
-    50% {
-      transform: scale(1.1) rotate(5deg);
-    }
-
-    100% {
-      opacity: 1;
-      transform: scale(1) rotate(0deg);
-    }
+@keyframes typeBadge {
+  0% {
+    opacity: 0;
+    transform: scale(0.5) rotate(-10deg);
   }
 
-  /* Chat Bubble Animation */
-  @keyframes fadeInChatBubble {
-    0% {
-      opacity: 0;
-      transform: scale(0.9) translateY(10px);
-    }
-
-    100% {
-      opacity: 1;
-      transform: scale(1) translateY(0);
-    }
+  50% {
+    transform: scale(1.1) rotate(5deg);
   }
 
-  .animate-fadeInChatBubble {
-    animation: fadeInChatBubble 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+  100% {
+    opacity: 1;
+    transform: scale(1) rotate(0deg);
   }
+}
+
+/* Chat Bubble Animation */
+@keyframes fadeInChatBubble {
+  0% {
+    opacity: 0;
+    transform: scale(0.9) translateY(10px);
+  }
+
+  100% {
+    opacity: 1;
+    transform: scale(1) translateY(0);
+  }
+}
+
+.animate-fadeInChatBubble {
+  animation: fadeInChatBubble 0.4s cubic-bezier(0.25, 0.46, 0.45, 0.94) both;
+}
+
+/* Equalizer Animation for Text-to-Speech */
+.equalizer {
+  display: flex;
+  align-items: center;
+  gap: 3px;
+  width: 20px;
+  height: 16px;
+  cursor: pointer;
+  margin-left: 8px;
+  /* Add some spacing */
+}
+
+.bar {
+  width: 3px;
+  background: #4b5563;
+  /* Tailwind gray-600 */
+  border-radius: 2px;
+  animation: none;
+  height: 4px;
+  /* Default height */
+}
+
+/* Dark mode adjustment if generic class exists, or rely on .dark context if processed by Tailwind */
+.dark .bar {
+  background: #e5e7eb;
+  /* Tailwind gray-200 */
+}
+
+.bar.playing {
+  animation: equalizer 0.8s infinite ease-in-out;
+}
+
+.bar:nth-child(1) {
+  animation-delay: 0s;
+}
+
+.bar:nth-child(2) {
+  animation-delay: 0.15s;
+}
+
+.bar:nth-child(3) {
+  animation-delay: 0.3s;
+}
+
+@keyframes equalizer {
+  0% {
+    height: 4px;
+  }
+
+  50% {
+    height: 14px;
+  }
+
+  100% {
+    height: 4px;
+  }
+}
+
+.equalizer:hover .bar {
+  background: #000;
+}
+
+.dark .equalizer:hover .bar {
+  background: #fff;
+}
