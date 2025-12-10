@@ -179,8 +179,8 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                                                 key={type}
                                                 onClick={() => setExpiryType(type)}
                                                 className={`py-2 text-sm rounded-lg border transition-all ${expiryType === type
-                                                        ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium'
-                                                        : 'border-gray-200 text-gray-600 hover:bg-gray-50'
+                                                    ? 'bg-blue-50 border-blue-500 text-blue-700 font-medium'
+                                                    : 'border-gray-200 text-gray-600 hover:bg-gray-50'
                                                     }`}
                                             >
                                                 {type === '7days' && '7 Days'}
@@ -248,7 +248,7 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                                     onClick={handleUpdate}
                                     className="flex-1 bg-white border border-gray-300 text-gray-700 hover:bg-gray-50 font-medium py-2 rounded-lg transition-colors"
                                 >
-                                    Save Changes
+                                    Update Link
                                 </button>
                                 <button
                                     onClick={handleRevokeLink}

@@ -103,7 +103,7 @@ export default function SharedChatView() {
                             </div>
                         </div>
                     </div>
-                    <a href="/" className="hidden sm:block text-sm font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors">
+                    <a href="/ai" className="hidden sm:block text-sm font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors">
                         Try SetuAI
                     </a>
                 </div>
@@ -139,7 +139,7 @@ export default function SharedChatView() {
                 <div className="max-w-4xl mx-auto px-4 text-center">
                     <h3 className="text-xl font-bold text-gray-900 mb-2">Start your own conversation with SetuAI</h3>
                     <p className="text-gray-600 mb-6">Get instant answers about real estate, market trends, and more.</p>
-                    <a href="/" className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
+                    <a href="/ai" className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
                         Launch SetuAI
                     </a>
                 </div>

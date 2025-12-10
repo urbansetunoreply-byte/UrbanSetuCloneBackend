@@ -191,6 +191,12 @@ export const updateSharedChat = async (req, res) => {
             }
         }
 
+        // Refresh content from original chat
+        const originalChat = await ChatHistory.findById(sharedChat.originalChatId);
+        if (originalChat && originalChat.messages) {
+            sharedChat.messages = originalChat.messages;
+        }
+
         await sharedChat.save();
 
         res.status(200).json({
