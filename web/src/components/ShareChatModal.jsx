@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaShareAlt, FaCopy, FaTrash, FaClock, FaCheck, FaTimes, FaGlobe } from 'react-icons/fa';
+import { FaShareAlt, FaCopy, FaTrash, FaClock, FaCheck, FaTimes, FaGlobe, FaSync } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 export default function ShareChatModal({ isOpen, onClose, sessionId, currentChatName }) {
@@ -105,7 +105,7 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
             });
             const data = await res.json();
             if (data.success) {
-                toast.success("Settings updated!");
+                toast.success(data.message);
                 fetchShareInfo(); // Refresh
             } else {
                 toast.error(data.message);
@@ -135,9 +135,14 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                     <h3 className="text-xl font-bold flex items-center gap-2">
                         <FaShareAlt /> Share Chat
                     </h3>
-                    <button onClick={onClose} className="hover:bg-white/20 p-2 rounded-full transition-colors">
-                        <FaTimes />
-                    </button>
+                    <div className="flex items-center gap-2">
+                        <button onClick={fetchShareInfo} className="hover:bg-white/20 p-2 rounded-full transition-colors" title="Refresh Views">
+                            <FaSync />
+                        </button>
+                        <button onClick={onClose} className="hover:bg-white/20 p-2 rounded-full transition-colors">
+                            <FaTimes />
+                        </button>
+                    </div>
                 </div>
 
                 <div className="p-6 space-y-6">
