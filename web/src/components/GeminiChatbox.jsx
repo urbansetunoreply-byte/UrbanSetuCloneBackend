@@ -7194,7 +7194,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             {/* About/Info Modal */}
             {showInfoModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setShowInfoModal(false)}>
-                    <div className={`w-full max-w-2xl max-h-[80vh] md:max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                    <div className={`w-full max-w-2xl h-[80vh] md:h-auto md:max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
                         <div className={`flex-shrink-0 p-6 border-b flex items-center justify-between backdrop-blur-lg bg-opacity-90 ${isDarkMode ? 'border-gray-700 bg-gray-900/90' : 'border-gray-100 bg-white/90'}`}>
                             <div className="flex items-center gap-4">
                                 <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
@@ -7213,7 +7213,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar flex-1">
+                        <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar flex-1 relative">
                             {/* Core Technology */}
                             <section>
                                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -7299,7 +7299,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             {/* Terms and Conditions Modal (Full Text) */}
             {showTermsModal && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn" onClick={() => setShowTermsModal(false)}>
-                    <div className={`w-full max-w-2xl max-h-[80vh] md:max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                    <div className={`w-full max-w-2xl h-[80vh] md:h-auto md:max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
                         {/* Header */}
                         <div className={`p-6 border-b flex-shrink-0 flex items-center justify-between ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                             <div className="flex items-center gap-3">
