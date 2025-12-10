@@ -7192,12 +7192,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 `}
             </style>
 
-            {/* About/Info Modal */}
             {showInfoModal && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl animate-fadeIn">
+                <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setShowInfoModal(false)}>
                     <div
-                        className={`w-11/12 max-w-2xl max-h-[80vh] overflow-y-auto rounded-xl shadow-xl p-6 ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                        className={`w-11/12 max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 relative animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
                         style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}
+                        onClick={e => e.stopPropagation()}
                     >
                         <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
                             <div className="flex items-center gap-4">
@@ -7300,12 +7300,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 </div>
             )}
 
-            {/* Terms and Conditions Modal (Full Text) */}
             {showTermsModal && (
-                <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl animate-fadeIn">
+                <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn" onClick={() => setShowTermsModal(false)}>
                     <div
-                        className={`w-11/12 max-w-2xl max-h-[80vh] overflow-y-auto rounded-xl shadow-xl p-6 ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                        className={`w-11/12 max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 relative animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
                         style={{ touchAction: 'pan-y', WebkitOverflowScrolling: 'touch' }}
+                        onClick={e => e.stopPropagation()}
                     >
                         {/* Header */}
                         <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
