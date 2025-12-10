@@ -105,8 +105,10 @@ export const getSharedChat = async (req, res) => {
             return res.status(410).json({ success: false, message: 'This shared link has expired.' });
         }
 
-        // Increment views
-        sharedChat.views += 1;
+        // Increment views unless suppressed
+        if (req.query.inc !== '0') {
+            sharedChat.views += 1;
+        }
         await sharedChat.save();
 
         res.status(200).json({

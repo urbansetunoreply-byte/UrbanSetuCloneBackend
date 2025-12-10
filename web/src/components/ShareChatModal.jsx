@@ -106,7 +106,11 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
             });
             const data = await res.json();
             if (data.success) {
-                toast.success(data.message);
+                if (data.message === 'Link is up to date') {
+                    toast.info(data.message);
+                } else {
+                    toast.success(data.message);
+                }
                 fetchShareInfo(); // Refresh
             } else {
                 toast.error(data.message);
@@ -148,8 +152,9 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
 
                 <div className="p-6 space-y-6">
                     {loading && !shareData && (
-                        <div className="flex justify-center py-8">
+                        <div className="flex flex-col items-center justify-center py-8 gap-3">
                             <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                            <span className="text-gray-500 text-sm font-medium">Verifying Link Status...</span>
                         </div>
                     )}
 
@@ -214,7 +219,11 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                                 <FaCheck className="text-green-500 mt-1 flex-shrink-0" />
                                 <div>
                                     <h4 className="font-semibold text-green-800 text-sm">Link is Active</h4>
-                                    <p className="text-xs text-green-700">This chat is publicly accessible via the link below.</p>
+                                    <p className="text-xs text-green-700 mt-1">This chat is publicly accessible via the link below.</p>
+                                    <ul className="text-xs text-green-700 mt-2 list-disc list-inside space-y-1">
+                                        <li>Shared content is read-only.</li>
+                                        <li>If you continue chatting, click <b>Update Link</b> to sync new messages.</li>
+                                    </ul>
                                 </div>
                             </div>
 

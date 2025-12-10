@@ -12,10 +12,17 @@ export default function SharedChatView() {
     useEffect(() => {
         const fetchChat = async () => {
             try {
-                const res = await fetch(`${API_BASE_URL}/api/shared-chat/view/${shareToken}`);
+                const viewedKey = `viewed_${shareToken}`;
+                const alreadyViewed = sessionStorage.getItem(viewedKey);
+
+                const res = await fetch(`${API_BASE_URL}/api/shared-chat/view/${shareToken}${alreadyViewed ? '?inc=0' : ''}`);
                 const data = await res.json();
+
                 if (data.success) {
                     setChatData(data.sharedChat);
+                    if (!alreadyViewed) {
+                        sessionStorage.setItem(viewedKey, 'true');
+                    }
                 } else {
                     setError(data.message || "Chat not found");
                 }
@@ -62,8 +69,9 @@ export default function SharedChatView() {
 
     if (loading) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
                 <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+                <p className="text-gray-600 font-medium">Loading conversation...</p>
             </div>
         );
     }
