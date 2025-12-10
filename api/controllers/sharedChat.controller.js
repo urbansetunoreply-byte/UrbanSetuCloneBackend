@@ -172,6 +172,23 @@ export const updateSharedChat = async (req, res) => {
             return res.status(404).json({ success: false, message: 'Shared chat not found' });
         }
 
+        // Check for changes before updating
+        const originalChat = await ChatHistory.findById(sharedChat.originalChatId);
+
+        let hasChanges = false;
+
+        if (typeof isActive === 'boolean' && sharedChat.isActive !== isActive) hasChanges = true;
+        if (title && sharedChat.title !== title) hasChanges = true;
+        if (expiresType) hasChanges = true; // Assume change if expiry type is explicitly provided
+
+        // Check if messages have changed
+        if (originalChat && originalChat.messages) {
+            if (JSON.stringify(sharedChat.messages) !== JSON.stringify(originalChat.messages)) {
+                hasChanges = true;
+                sharedChat.messages = originalChat.messages;
+            }
+        }
+
         if (typeof isActive === 'boolean') {
             sharedChat.isActive = isActive;
         }
@@ -191,17 +208,23 @@ export const updateSharedChat = async (req, res) => {
             }
         }
 
-        // Refresh content from original chat
-        const originalChat = await ChatHistory.findById(sharedChat.originalChatId);
-        if (originalChat && originalChat.messages) {
-            sharedChat.messages = originalChat.messages;
+        if (!hasChanges) {
+            return res.status(200).json({
+                success: true,
+                message: 'Link is up to date',
+                sharedChat: {
+                    isActive: sharedChat.isActive,
+                    expiresAt: sharedChat.expiresAt,
+                    title: sharedChat.title
+                }
+            });
         }
 
         await sharedChat.save();
 
         res.status(200).json({
             success: true,
-            message: 'Settings updated successfully',
+            message: 'Link updated successfully',
             sharedChat: {
                 isActive: sharedChat.isActive,
                 expiresAt: sharedChat.expiresAt,

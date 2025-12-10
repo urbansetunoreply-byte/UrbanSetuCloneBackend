@@ -237,7 +237,7 @@ export default function ShareChatModal({ isOpen, onClose, sessionId, currentChat
                                     <span className="text-gray-500 block text-xs uppercase tracking-wide">Expires</span>
                                     <span className="font-bold text-gray-800">
                                         {shareData.expiresAt
-                                            ? new Date(shareData.expiresAt).toLocaleDateString()
+                                            ? new Date(shareData.expiresAt).toLocaleDateString('en-IN')
                                             : 'Never'}
                                     </span>
                                 </div>

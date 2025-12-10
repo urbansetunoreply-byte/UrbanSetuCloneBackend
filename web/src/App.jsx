@@ -679,6 +679,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/device-management" element={<DeviceManagement />} />
               <Route path="/user/contact" element={<UserContact />} />
               <Route path="/user/ai" element={<UserAI />} />
+              <Route path="/user/ai/share/:shareToken" element={<SharedChatView />} />
               <Route path="/user/investment-tools" element={<InvestmentTools />} />
               <Route path="/user/settings" element={<Settings />} />
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
@@ -723,6 +724,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/session-audit-logs" element={<SessionAuditLogs />} />
               <Route path="/admin/support" element={<AdminSupport />} />
               <Route path="/admin/ai" element={<AdminAI />} />
+              <Route path="/admin/ai/share/:shareToken" element={<SharedChatView />} />
               <Route path="/admin/investment-tools" element={<InvestmentTools />} />
               <Route path="/admin/property-verification" element={<AdminPropertyVerification />} />
               <Route path="/admin/rental-ratings" element={<AdminRentalRatings />} />
