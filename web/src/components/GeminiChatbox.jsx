@@ -151,7 +151,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     });
     const [showSignInModal, setShowSignInModal] = useState(false);
     const [ratingsFilter, setRatingsFilter] = useState('all'); // all, up, down
-    const [showSignInOverlay, setShowSignInOverlay] = useState(false);
     const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
     const [showDeleteSelectedModal, setShowDeleteSelectedModal] = useState(false);
     const [deleteTargetSessionId, setDeleteTargetSessionId] = useState(null);
@@ -394,15 +393,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                     // Show appropriate modal if rate limit is exceeded
                     if (data.rateLimit.remaining <= 0 && data.rateLimit.role !== 'rootadmin') {
-                        if (currentUser) {
-                            setShowSignInModal(true);
-                        } else {
-                            setShowSignInOverlay(true);
-                        }
+                        setShowSignInModal(true);
                     } else {
                         // Hide modals if rate limit is not exceeded
                         setShowSignInModal(false);
-                        setShowSignInOverlay(false);
                     }
                 }
             } else {
@@ -423,7 +417,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             // Hide modals in fallback case since we're setting full limit
             setShowSignInModal(false);
-            setShowSignInOverlay(false);
         }
     };
 
@@ -2080,7 +2073,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
-            console.log('Sending edited message to Groq:', messageContent, 'Session:', currentSessionId);
+            console.log('Sending edited message to SetuAI:', messageContent, 'Session:', currentSessionId);
 
             // Support cancelling with AbortController
             abortControllerRef.current?.abort();
@@ -4077,7 +4070,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 <button
                                                     onClick={() => {
                                                         try {
-                                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'Groq'}: ${m.content}`);
+                                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'SetuAI'}: ${m.content}`);
                                                             const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
                                                             const url = URL.createObjectURL(blob);
                                                             const a = document.createElement('a');
@@ -5297,12 +5290,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                                         const resp = await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, { credentials: 'include' });
                                                                                         const data = await resp.json();
                                                                                         if (!resp.ok || !data?.data?.messages) throw new Error('load');
-                                                                                        const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'Groq'}: ${m.content}`);
+                                                                                        const lines = data.data.messages.map(m => `${m.role === 'user' ? 'You' : 'SetuAI'}: ${m.content}`);
                                                                                         const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
                                                                                         const url = URL.createObjectURL(blob);
                                                                                         const a = document.createElement('a');
                                                                                         a.href = url;
-                                                                                        a.download = `gemini_chat_${new Date().toISOString().split('T')[0]}.txt`;
+                                                                                        a.download = `setuai_chat_${new Date().toISOString().split('T')[0]}.txt`;
                                                                                         document.body.appendChild(a);
                                                                                         a.click();
                                                                                         document.body.removeChild(a);
@@ -5499,102 +5492,77 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         {/* Sign In Modal for Prompt Limit */}
                         {showSignInModal && (
                             <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
-                                <div className="bg-white rounded-xl shadow-xl p-6 w-96 max-w-sm mx-4">
-                                    <div className="text-center">
-                                        <div className="mx-auto flex items-center justify-center h-12 w-12 rounded-full bg-blue-100 mb-4">
-                                            <FaRobot className="h-6 w-6 text-blue-600" />
-                                        </div>
-                                        <h3 className="text-lg font-semibold text-gray-900 mb-2">
-                                            Prompt Limit Reached
-                                        </h3>
-                                        <p className="text-sm text-gray-600 mb-6">
-                                            {rateLimitInfo.role === 'public'
-                                                ? "You've used all 5 free prompts! Sign in to enjoy unlimited access to our AI assistant and unlock premium features like chat history, message ratings, and more."
-                                                : `You've reached your rate limit! Sign in to enjoy higher limits and premium features like chat history, message ratings, and more.`
-                                            }
-                                        </p>
-                                        <div className="flex flex-col gap-3">
-                                            <button
-                                                onClick={() => {
-                                                    setShowSignInModal(false);
-                                                    window.location.href = '/signin';
-                                                }}
-                                                className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200"
-                                            >
-                                                Sign In to Continue
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    setShowSignInModal(false);
-                                                    window.location.href = '/signup';
-                                                }}
-                                                className="w-full bg-green-600 hover:bg-green-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200"
-                                            >
-                                                Create Free Account
-                                            </button>
-                                            <button
-                                                onClick={() => setShowSignInModal(false)}
-                                                className="w-full text-gray-500 hover:text-gray-700 text-sm py-2"
-                                            >
-                                                Maybe Later
-                                            </button>
-                                        </div>
-                                    </div>
-                                </div>
-                            </div>
-                        )}
-                        {/* Sign-in Overlay for Public Users when Prompts Reach Zero */}
-                        {!currentUser && rateLimitInfo.remaining <= 0 && showSignInOverlay && (
-                            <div className="absolute inset-0 bg-black/40 flex items-center justify-center z-50 rounded-2xl">
                                 <div className={`max-w-md mx-4 p-6 rounded-2xl shadow-2xl border-2 border-dashed ${isDarkMode ? 'bg-gray-800/95 border-gray-600' : 'bg-white/95 border-blue-200'} transition-all duration-300`}>
                                     <div className="text-center">
                                         <div className={`inline-flex items-center justify-center w-16 h-16 rounded-full mb-4 ${isDarkMode ? 'bg-blue-900/30' : 'bg-blue-100'}`}>
-                                            <svg className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
-                                            </svg>
+                                            {!currentUser ? (
+                                                <svg className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                    <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                                </svg>
+                                            ) : (
+                                                <FaRobot className={`w-8 h-8 ${isDarkMode ? 'text-blue-400' : 'text-blue-600'}`} />
+                                            )}
                                         </div>
-                                        <h3 className={`text-xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
-                                            Sign in to unlock full chatbot features
-                                        </h3>
-                                        <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                            Get access to advanced AI settings, voice input, file uploads, chat history, and much more!
-                                        </p>
-                                        <div className="flex flex-col sm:flex-row gap-3 justify-center">
-                                            <button
-                                                onClick={() => {
-                                                    // Close chatbot and redirect to sign-in
-                                                    setIsOpen(false);
-                                                    navigate('/sign-in');
-                                                }}
-                                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${isDarkMode
-                                                    ? 'bg-blue-600 hover:bg-blue-700 text-white'
-                                                    : 'bg-blue-600 hover:bg-blue-700 text-white'
-                                                    } hover:shadow-lg hover:scale-105`}
-                                            >
-                                                Sign In
-                                            </button>
-                                            <button
-                                                onClick={() => {
-                                                    // Close chatbot and redirect to sign-up
-                                                    setIsOpen(false);
-                                                    navigate('/sign-up');
-                                                }}
-                                                className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 ${isDarkMode
-                                                    ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600'
-                                                    : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
-                                                    } hover:shadow-lg hover:scale-105`}
-                                            >
-                                                Create Account
-                                            </button>
-                                        </div>
-                                        <div className="mt-4">
-                                            <button
-                                                onClick={() => setShowSignInOverlay(false)}
-                                                className={`text-xs ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} transition-colors`}
-                                            >
-                                                Maybe Later
-                                            </button>
-                                        </div>
+
+                                        {!currentUser ? (
+                                            <>
+                                                <h3 className={`text-xl font-bold mb-3 ${isDarkMode ? 'text-white' : 'text-gray-800'}`}>
+                                                    Sign in to unlock full chatbot features
+                                                </h3>
+                                                <p className={`text-sm mb-4 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                    Get access to advanced AI settings, voice input, file uploads, chat history, and much more!
+                                                </p>
+                                                <p className={`text-xs mb-6 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} italic border-t border-dashed pt-2 ${isDarkMode ? 'border-gray-700' : 'border-gray-200'}`}>
+                                                    To ensure fair usage and prevent system abuse on our servers, we have restricted guest access. Sign in to enjoy unlimited seamless conversations.
+                                                </p>
+                                                <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                                                    <button
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            navigate('/sign-in');
+                                                        }}
+                                                        className="px-6 py-3 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 hover:shadow-lg hover:scale-105"
+                                                    >
+                                                        Sign In
+                                                    </button>
+                                                    <button
+                                                        onClick={() => {
+                                                            setIsOpen(false);
+                                                            navigate('/sign-up');
+                                                        }}
+                                                        className={`px-6 py-3 rounded-lg font-semibold transition-all duration-200 hover:shadow-lg hover:scale-105 ${isDarkMode
+                                                            ? 'bg-gray-700 hover:bg-gray-600 text-white border border-gray-600'
+                                                            : 'bg-white hover:bg-gray-50 text-gray-700 border border-gray-300'
+                                                            }`}
+                                                    >
+                                                        Create Account
+                                                    </button>
+                                                </div>
+                                                <div className="mt-4">
+                                                    <button
+                                                        onClick={() => setShowSignInModal(false)}
+                                                        className={`text-xs ${isDarkMode ? 'text-gray-400 hover:text-gray-300' : 'text-gray-500 hover:text-gray-700'} transition-colors`}
+                                                    >
+                                                        Maybe Later
+                                                    </button>
+                                                </div>
+                                            </>
+                                        ) : (
+                                            <>
+                                                <h3 className={`text-lg font-semibold mb-2 ${isDarkMode ? 'text-white' : 'text-gray-900'}`}>
+                                                    Rate Limit Reached
+                                                </h3>
+                                                <p className={`text-sm mb-6 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                                    You have reached the maximum number of messages allowed for your account tier. Please try again later.
+                                                </p>
+                                                <button
+                                                    onClick={() => setShowSignInModal(false)}
+                                                    className="w-full bg-blue-600 hover:bg-blue-700 text-white font-medium py-2.5 px-4 rounded-lg transition-colors duration-200"
+                                                >
+                                                    Understood
+                                                </button>
+                                            </>
+                                        )}
                                     </div>
                                 </div>
                             </div>
@@ -6328,7 +6296,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     }`}
                                                             >
                                                                 <div className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'} mb-1`}>
-                                                                    {message.role === 'user' ? 'You' : 'Groq'} • {new Date(message.timestamp).toLocaleString()}
+                                                                    {message.role === 'user' ? 'You' : 'SetuAI'} • {new Date(message.timestamp).toLocaleString()}
                                                                 </div>
                                                                 <div className={`text-sm ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>{message.content.substring(0, 100)}...</div>
                                                             </div>
@@ -7226,7 +7194,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             {/* About/Info Modal */}
             {showInfoModal && (
                 <div className="fixed inset-0 z-[60] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fadeIn" onClick={() => setShowInfoModal(false)}>
-                    <div className={`w-full max-w-2xl max-h-[85vh] overflow-y-auto rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                    <div className={`w-full max-w-2xl max-h-[80vh] md:max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
                         <div className={`sticky top-0 z-10 p-6 border-b flex items-center justify-between backdrop-blur-lg bg-opacity-90 ${isDarkMode ? 'border-gray-700 bg-gray-900/90' : 'border-gray-100 bg-white/90'}`}>
                             <div className="flex items-center gap-4">
                                 <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
@@ -7245,7 +7213,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </button>
                         </div>
 
-                        <div className="p-6 space-y-8">
+                        <div className="p-6 space-y-8 overflow-y-auto custom-scrollbar flex-1">
                             {/* Core Technology */}
                             <section>
                                 <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -7331,7 +7299,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             {/* Terms and Conditions Modal (Full Text) */}
             {showTermsModal && (
                 <div className="fixed inset-0 z-[70] flex items-center justify-center p-4 bg-black/70 backdrop-blur-sm animate-fadeIn" onClick={() => setShowTermsModal(false)}>
-                    <div className={`w-full max-w-2xl max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                    <div className={`w-full max-w-2xl max-h-[80vh] md:max-h-[85vh] flex flex-col rounded-3xl shadow-2xl transform transition-all animate-scaleIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
                         {/* Header */}
                         <div className={`p-6 border-b flex-shrink-0 flex items-center justify-between ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                             <div className="flex items-center gap-3">
