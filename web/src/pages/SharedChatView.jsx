@@ -15,7 +15,7 @@ export default function SharedChatView() {
                 const res = await fetch(`${API_BASE_URL}/api/shared-chat/view/${shareToken}`);
                 const data = await res.json();
                 if (data.success) {
-                    setChatData(data.chat);
+                    setChatData(data.sharedChat);
                 } else {
                     setError(data.message || "Chat not found");
                 }
@@ -119,8 +119,8 @@ export default function SharedChatView() {
                         </div>
 
                         <div className={`flex-1 max-w-[85%] rounded-2xl p-4 shadow-sm ${msg.role === 'user'
-                                ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-tr-none'
-                                : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'
+                            ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-tr-none'
+                            : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'
                             }`}>
                             <div className="prose prose-sm max-w-none text-sm leading-relaxed">
                                 {formatText(msg.content)}
