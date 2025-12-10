@@ -358,27 +358,71 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             synth.cancel();
         }
 
-        const utterance = new SpeechSynthesisUtterance(text);
+        setSpeakingMessageIndex(index);
 
-        // Try to select a better voice
-        const voices = synth.getVoices();
-        const googleVoice = voices.find(v => v.name.includes("Google US English"));
-        if (googleVoice) utterance.voice = googleVoice;
+        // Get voices if not already available (sometimes they load async)
+        let voices = synth.getVoices();
 
-        utterance.rate = 1;
-        utterance.pitch = 1;
-        utterance.volume = 1;
+        // Chunking function to split long text into sentences/phrases
+        // This avoids the browser's ~15s limit on speech synthesis
+        const chunkText = (str) => {
+            // Split by punctuation, keeping the punctuation
+            const chunks = str.match(/[^.!?]+[.!?]+|[^.!?]+$/g) || [str];
+            return chunks.map(c => c.trim()).filter(c => c.length > 0);
+        };
 
-        utterance.onstart = () => setSpeakingMessageIndex(index);
-        utterance.onend = () => setSpeakingMessageIndex(null);
-        utterance.onerror = () => setSpeakingMessageIndex(null);
+        const chunks = chunkText(text);
+        let currentChunkIndex = 0;
 
-        speechUtteranceRef.current = utterance;
-        synth.speak(utterance);
+        const speakNextChunk = () => {
+            if (currentChunkIndex >= chunks.length) {
+                setSpeakingMessageIndex(null);
+                return;
+            }
+
+            const chunk = chunks[currentChunkIndex];
+            const utterance = new SpeechSynthesisUtterance(chunk);
+
+            // Refetch voices just in case they loaded late
+            if (voices.length === 0) voices = synth.getVoices();
+
+            // Try to select a better voice - prioritizing "Natural", "Google", "Microsoft" in that order
+            const preferredVoice = voices.find(v => v.name.includes("Google US English") || v.name.includes("Microsoft David") || v.name.includes("Natural"));
+            if (preferredVoice) utterance.voice = preferredVoice;
+
+            utterance.rate = 1;
+            utterance.pitch = 1;
+            utterance.volume = 1;
+
+            utterance.onend = () => {
+                currentChunkIndex++;
+                speakNextChunk();
+            };
+
+            utterance.onerror = (e) => {
+                console.error("Speech verification warning (often ignorable):", e);
+                // On error, try to continue to next chunk anyway, or stop
+                // Often 'interrupted' or 'canceled' errors happen if we click stop, 
+                // in which case `speakingMessageIndex` check handles UI, but we should ensure we don't loop
+                if (speakingMessageIndex === null) return;
+                currentChunkIndex++;
+                speakNextChunk();
+            };
+
+            speechUtteranceRef.current = utterance;
+            synth.speak(utterance);
+        };
+
+        speakNextChunk();
     };
 
     const handleStopSpeak = () => {
-        synthRef.current.cancel();
+        const synth = synthRef.current;
+        synth.cancel();
+        // Clear the onend handler so it doesn't trigger the next chunk loop
+        if (speechUtteranceRef.current) {
+            speechUtteranceRef.current.onend = null;
+        }
         setSpeakingMessageIndex(null);
     };
 
@@ -2829,7 +2873,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         // Continuous listening so it doesn't stop automatically on silence
         recognition.continuous = true;
         recognition.interimResults = true;
-        recognition.lang = 'en-US';
+        recognition.lang = navigator.language || 'en-US'; // Use browser language preferencerecognition.lang = 'en-US';
 
         transcriptAccumulator.current = ''; // Reset accumulator
 
@@ -2841,10 +2885,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         recognition.onresult = (event) => {
             let finalTranscript = '';
+            let interimTranscript = '';
+
             // Iterate through results
             for (let i = event.resultIndex; i < event.results.length; ++i) {
                 if (event.results[i].isFinal) {
                     finalTranscript += event.results[i][0].transcript;
+                } else {
+                    interimTranscript += event.results[i][0].transcript;
                 }
             }
 
@@ -2853,9 +2901,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 transcriptAccumulator.current += (transcriptAccumulator.current ? ' ' : '') + finalTranscript;
             }
 
-            // For continuous interim updates, we could store them separately if we wanted to show real-time preview,
-            // but requirements say "text generated should be replaced in text box" after stopping.
-            // We will just accumulate the final results.
+            // Show real-time feedback in the input box
+            // Combine already accumulated final text with current interim text
+            const currentDisplayText = (transcriptAccumulator.current + (transcriptAccumulator.current && interimTranscript ? ' ' : '') + interimTranscript).trim();
+            setInputMessage(currentDisplayText);
         };
 
         recognition.onerror = (event) => {
@@ -2876,8 +2925,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             // If we are still "isListening" in state but it ended, and it wasn't manual stop (we can trigger manual stop by checking processing state?)
             // Actually, simplified logic: onend triggers final processing if we were listening.
 
-            // However, since we want to wait for user to click Stop, if browser stops it early (network, silence timeout even with continuous), 
-            // we should probably process what we have.
+            // Do nothing on onend if it's continuous; we rely on `stopListening` to finalize.
+            // But if it stops unexpectedly (silence), we might want to restart if we were truly in "always on" mode.
+            // For now, we accept the stop to avoid infinite loops, but we allow user to see what was captured.
+            if (isListening && !isProcessingVoice) {
+                setIsListening(false);
+                setIsProcessingVoice(false);
+
+                // Keep whatever is in the input box (which now includes final + interim that became final effectively)
+                // We don't need to call processVoiceResult anymore because onresult updates input directly.
+            }
 
             if (isListening && !isProcessingVoice) {
                 // Unexpected stop (e.g. network error / silence timeout)
@@ -2905,21 +2962,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             // Wait for a brief moment to allow final results to trickle in, then process
             setTimeout(() => {
-                processVoiceResult();
-                setIsListening(false); // Ensure listening state is off
-            }, 800); // 800ms simulated processing delay / safe buffer
+                processVoiceResult(); // Just final polish
+                setIsListening(false);
+            }, 300);
         } else {
             setIsListening(false);
         }
     };
 
     const processVoiceResult = () => {
-        // Use the accumulated transcript
-        const text = transcriptAccumulator.current;
-        if (text && text.trim().length > 0) {
-            setInputMessage(text.trim());
-        }
-        setIsProcessingVoice(false); // Turn off loading
+        // Since we are updating inputMessage in real-time in onresult, 
+        // there's less need to "process" strictly here, but we can ensure cleanup.
+        // We might want to remove trailing whitespace.
+        setInputMessage(prev => prev.trim());
+        setIsProcessingVoice(false);
     };
 
     const handleFileUpload = async (event) => {
@@ -4980,7 +5036,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
                                                                     {/* Dropdown Menu */}
                                                                     {openMessageMenuIndex === index && (
-                                                                        <div className={`absolute bottom-full left-0 mb-2 w-48 rounded-md shadow-lg py-1 z-10 border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
+                                                                        <div className={`absolute bottom-full right-0 left-auto md:left-0 md:right-auto mb-2 w-48 rounded-md shadow-lg py-1 z-10 border ${isDarkMode ? 'bg-gray-800 border-gray-700' : 'bg-white border-gray-200'}`}>
                                                                             {/* Read Aloud Option */}
                                                                             <button
                                                                                 onClick={() => {
