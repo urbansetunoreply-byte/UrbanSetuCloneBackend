@@ -5500,7 +5500,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     }
                                                     setShowFileUpload(true);
                                                 }}
-                                                className={`absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-700'}`}
+                                                className={`absolute left-2 top-1/2 -translate-y-1/2 p-1.5 rounded-full hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${isDarkMode ? 'text-gray-400 hover:text-gray-200' : 'text-gray-500 hover:text-gray-600'}`}
                                                 title="Attach files (Images, PDF, Documents)"
                                                 disabled={isListening || isProcessingVoice}
                                             >
@@ -8069,6 +8069,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 showConsentModal && (
                     <div className="fixed inset-0 z-[65] flex items-center justify-center p-4 bg-black/80 backdrop-blur-md animate-fadeIn cursor-default">
                         <div className={`w-full max-w-md rounded-3xl shadow-2xl p-8 text-center transform transition-all animate-bounceIn ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-700' : 'bg-white text-gray-900'}`}>
+                            <button
+                                onClick={() => {
+                                    setShowConsentModal(false);
+                                    if (onModalClose) onModalClose();
+                                    else setIsOpen(false);
+                                }}
+                                className={`absolute top-4 right-4 p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                            >
+                                <FaTimes size={16} />
+                            </button>
+
                             <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-6">
                                 <FaFileAlt className="text-blue-600 text-2xl" />
                             </div>
