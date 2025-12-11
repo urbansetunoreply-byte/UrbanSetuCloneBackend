@@ -1,62 +1,78 @@
 import React, { useState, useEffect } from 'react';
 import { useSearchParams, useNavigate } from 'react-router-dom';
-import { FaHome, FaArrowLeft, FaCheckCircle, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
-
+import {
+  CheckCircle2,
+  XCircle,
+  Clock,
+  Shield,
+  AlertTriangle,
+  ArrowRight,
+  RefreshCw,
+  Home,
+  MapPin,
+  DollarSign,
+  HelpCircle,
+  Building,
+  Image as ImageIcon
+} from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const RestoreProperty = () => {
   // Set page title
   usePageTitle("Restore Property - Property Restoration");
 
-  const [searchParams] = useSearchParams();
+  const [searchParams, setSearchParams] = useSearchParams();
   const navigate = useNavigate();
-  const [loading, setLoading] = useState(true);
+
+  const [token, setToken] = useState(searchParams.get('token') || '');
+  const [inputToken, setInputToken] = useState('');
+
+  const [loading, setLoading] = useState(false);
   const [restoring, setRestoring] = useState(false);
   const [propertyData, setPropertyData] = useState(null);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(false);
   const [confirmRestore, setConfirmRestore] = useState(false);
 
-  const token = searchParams.get('token');
-
   useEffect(() => {
-    if (!token) {
-      setError('Invalid restoration link. No token provided.');
-      setLoading(false);
-      return;
+    const urlToken = searchParams.get('token');
+    if (urlToken) {
+      setToken(urlToken);
+      verifyToken(urlToken);
     }
+  }, [searchParams]);
 
-    verifyToken();
-  }, [token]);
-
-  const verifyToken = async () => {
+  const verifyToken = async (tokenToVerify) => {
+    setLoading(true);
+    setError(null);
     try {
-      console.log('🔍 Verifying token:', token);
-      console.log('🔍 API Base URL:', API_BASE_URL);
-      
-      const response = await fetch(`${API_BASE_URL}/api/property-restoration/verify/${token}`);
-      console.log('🔍 Response status:', response.status);
-      
+      const response = await fetch(`${API_BASE_URL}/api/property-restoration/verify/${tokenToVerify}`);
       const data = await response.json();
-      console.log('🔍 Response data:', data);
 
       if (data.success) {
         setPropertyData(data.deletedListing);
       } else {
         setError(data.message || 'Invalid or expired restoration token');
       }
-    } catch (error) {
-      console.error('Error verifying token:', error);
-      setError('Failed to verify restoration token. Please try again.');
+    } catch (err) {
+      console.error('Error verifying token:', err);
+      setError('Failed to verify restoration token. Please check your network connection.');
     } finally {
       setLoading(false);
     }
   };
 
+  const handleManualTokenSubmit = (e) => {
+    e.preventDefault();
+    if (!inputToken.trim()) return;
+    setSearchParams({ token: inputToken.trim() });
+  };
+
   const handleRestore = async () => {
     if (!confirmRestore) {
-      setError('Please confirm that you want to restore this property.');
+      setError('Please check the confirmation box to proceed.');
       return;
     }
 
@@ -78,236 +94,284 @@ const RestoreProperty = () => {
 
       if (data.success) {
         setSuccess(true);
-        // Redirect to my listings after 3 seconds
         setTimeout(() => {
           navigate('/user/my-listings');
         }, 3000);
       } else {
         setError(data.message || 'Failed to restore property');
       }
-    } catch (error) {
-      console.error('Error restoring property:', error);
+    } catch (err) {
+      console.error('Error restoring property:', err);
       setError('Failed to restore property. Please try again.');
     } finally {
       setRestoring(false);
     }
   };
 
-  const formatDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const getDaysRemaining = (expiryDate) => {
+    if (!expiryDate) return 0;
+    const days = Math.ceil((new Date(expiryDate) - new Date()) / (1000 * 60 * 60 * 24));
+    return Math.max(0, days);
   };
 
-  const formatExpiryDate = (dateString) => {
-    return new Date(dateString).toLocaleDateString('en-US', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric'
-    });
+  const getProgressPercentage = (expiryDate) => {
+    // Assuming 30 days is the standard window
+    const days = getDaysRemaining(expiryDate);
+    return Math.min(100, Math.max(0, (days / 30) * 100));
   };
-
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Verifying restoration token...</p>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <FaExclamationTriangle className="text-6xl text-red-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Restoration Failed</h1>
-          <p className="text-gray-600 mb-6">{error}</p>
-          <div className="space-y-3">
-            <button
-              onClick={() => navigate('/')}
-              className="w-full bg-blue-600 text-white py-2 px-4 rounded-lg hover:bg-blue-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <FaHome className="text-lg" />
-              Go to Home
-            </button>
-            <button
-              onClick={() => navigate('/user/my-listings')}
-              className="w-full bg-gray-600 text-white py-2 px-4 rounded-lg hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
-            >
-              <FaArrowLeft className="text-lg" />
-              My Properties
-            </button>
-          </div>
-        </div>
-      </div>
-    );
-  }
-
-  if (success) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="max-w-md w-full bg-white rounded-lg shadow-lg p-8 text-center">
-          <FaCheckCircle className="text-6xl text-green-500 mx-auto mb-4" />
-          <h1 className="text-2xl font-bold text-gray-900 mb-4">Property Restored!</h1>
-          <p className="text-gray-600 mb-6">
-            Your property "{propertyData?.propertyName}" has been successfully restored and is now available in your listings.
-          </p>
-          <p className="text-sm text-gray-500 mb-6">
-            You will be redirected to your properties page in a few seconds...
-          </p>
-          <button
-            onClick={() => navigate('/user/my-listings')}
-            className="w-full bg-green-600 text-white py-2 px-4 rounded-lg hover:bg-green-700 transition-colors flex items-center justify-center gap-2"
-          >
-            <FaHome className="text-lg" />
-            Go to My Properties
-          </button>
-        </div>
-      </div>
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8">
-      <div className="max-w-4xl mx-auto px-4">
-        <div className="bg-white rounded-lg shadow-lg overflow-hidden">
-          {/* Header */}
-          <div className="bg-gradient-to-r from-red-500 to-red-600 text-white p-6">
-            <h1 className="text-3xl font-bold mb-2">🔄 Restore Property</h1>
-            <p className="text-red-100">Restore your accidentally deleted property</p>
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center relative overflow-hidden py-12 sm:px-6 lg:px-8">
+      {/* Background Decor */}
+      <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
+        <div className="absolute -top-[30%] -right-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-red-100/40 to-orange-100/40 blur-3xl animate-blob" />
+        <div className="absolute -bottom-[20%] -left-[10%] w-[60%] h-[60%] rounded-full bg-gradient-to-tr from-pink-100/40 to-red-100/40 blur-3xl animate-blob animation-delay-2000" />
+      </div>
+
+      <div className="sm:mx-auto sm:w-full sm:max-w-xl relative z-10">
+        {/* Brand Area */}
+        <div className="text-center mb-8 animate-fade-in-up">
+          <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-lg mb-4 ring-1 ring-gray-100">
+            <Building className="w-10 h-10 text-red-500" />
           </div>
+          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+            Property Restoration
+          </h2>
+          <p className="mt-2 text-sm text-gray-600 max-w-xs mx-auto">
+            Restore your accidentally deleted property listings
+          </p>
+        </div>
 
-          {/* Content */}
-          <div className="p-6">
-            {/* Property Details */}
-            <div className="bg-gray-50 rounded-lg p-6 mb-6">
-              <h2 className="text-2xl font-bold text-gray-900 mb-4">{propertyData?.propertyName}</h2>
-              
-              <div className="grid md:grid-cols-2 gap-6">
-                <div>
-                  <img
-                    src={propertyData?.propertyImages?.[0] || '/placeholder-property.jpg'}
-                    alt={propertyData?.propertyName}
-                    className="w-full h-48 object-cover rounded-lg mb-4"
+        {/* Main Card */}
+        <div className="bg-white/80 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-white/50 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+
+          {/* Loading State */}
+          {loading && (
+            <div className="text-center py-12">
+              <div className="relative w-16 h-16 mx-auto mb-6">
+                <div className="absolute inset-0 border-4 border-red-100 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-red-500 rounded-full border-t-transparent animate-spin"></div>
+              </div>
+              <h3 className="text-lg font-semibold text-gray-900 mb-2">Verifying Token</h3>
+              <p className="text-gray-500 text-sm">Validating revocation details...</p>
+            </div>
+          )}
+
+          {/* Success State */}
+          {!loading && success && (
+            <div className="text-center py-8">
+              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-scale-in">
+                <CheckCircle2 className="w-10 h-10 text-green-500" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-900 mb-2">Restoration Complete!</h3>
+              <p className="text-gray-600 mb-8 leading-relaxed">
+                Your property <span className="font-semibold">"{propertyData?.propertyName}"</span> is now active and visible to buyers.
+              </p>
+              <div className="w-full bg-gray-100 rounded-full h-1.5 mb-2 overflow-hidden">
+                <div className="bg-green-500 h-1.5 rounded-full animate-progress-loading w-full origin-left duration-[3000ms]"></div>
+              </div>
+              <p className="text-xs text-gray-400">Redirecting to your listings...</p>
+            </div>
+          )}
+
+          {/* Input/Error State */}
+          {!loading && !success && (!token || error) && (
+            <div className="text-center py-4">
+              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-short">
+                {error ? <XCircle className="w-8 h-8 text-red-500" /> : <Shield className="w-8 h-8 text-gray-400" />}
+              </div>
+              <h3 className="text-xl font-bold text-gray-900 mb-2">
+                {error ? 'Restoration Failed' : 'Enter Restoration Token'}
+              </h3>
+              <p className="text-gray-600 mb-8 text-sm leading-relaxed max-w-sm mx-auto">
+                {error || 'Please enter the restoration token sent to your email to recover your property listing.'}
+              </p>
+
+              <form onSubmit={handleManualTokenSubmit} className="mb-8">
+                <div className="relative max-w-sm mx-auto">
+                  <input
+                    type="text"
+                    value={inputToken}
+                    onChange={(e) => setInputToken(e.target.value)}
+                    placeholder="Paste token here..."
+                    className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 focus:ring-2 focus:ring-red-500 focus:border-red-500 transition-all outline-none"
                   />
+                  <button
+                    type="submit"
+                    className="absolute right-2 top-2 hover:bg-red-100 text-red-600 rounded-lg transition-colors p-1.5"
+                  >
+                    <ArrowRight size={20} />
+                  </button>
                 </div>
-                
-                <div className="space-y-3">
-                  <div>
-                    <span className="font-semibold text-gray-700">Address:</span>
-                    <p className="text-gray-600">{propertyData?.propertyAddress || 'Address not specified'}</p>
+                <p className="text-xs text-gray-400 mt-2">Check your email inbox or spam folder</p>
+              </form>
+
+              <div className="grid grid-cols-2 gap-3 max-w-sm mx-auto">
+                <button
+                  onClick={() => navigate('/user/my-listings')}
+                  className="flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  My Listings
+                </button>
+                <button
+                  onClick={() => navigate('/')}
+                  className="flex justify-center items-center py-3 px-4 border border-gray-200 rounded-xl text-sm font-semibold text-gray-700 hover:bg-gray-50 transition-colors"
+                >
+                  <Home className="w-4 h-4 mr-2" />
+                  Home
+                </button>
+              </div>
+            </div>
+          )}
+
+          {/* Property Data State (Verify Success) */}
+          {!loading && !success && !error && propertyData && (
+            <div className="animate-fade-in-up">
+
+              {/* Status Bar */}
+              <div className="mb-6">
+                <div className="flex justify-between text-sm mb-2">
+                  <span className="font-medium text-gray-700">Recovery Window</span>
+                  <span className={`font-bold ${getDaysRemaining(propertyData.tokenExpiry) < 3 ? 'text-red-500' : 'text-blue-600'}`}>
+                    {getDaysRemaining(propertyData.tokenExpiry)} Days Remaining
+                  </span>
+                </div>
+                <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
+                  <div
+                    className={`h-2.5 rounded-full transition-all duration-1000 ease-out ${getDaysRemaining(propertyData.tokenExpiry) < 5 ? 'bg-red-500' : 'bg-blue-600'}`}
+                    style={{ width: `${getProgressPercentage(propertyData.tokenExpiry)}%` }}
+                  ></div>
+                </div>
+              </div>
+
+              {/* Property Details Card */}
+              <div className="bg-gray-50 rounded-2xl p-4 mb-6 border border-gray-100 overflow-hidden">
+                <div className="flex gap-4">
+                  <div className="w-24 h-24 flex-shrink-0 bg-gray-200 rounded-xl overflow-hidden relative">
+                    {propertyData.propertyImages?.[0] ? (
+                      <img
+                        src={propertyData.propertyImages[0]}
+                        alt="Property"
+                        className="w-full h-full object-cover"
+                      />
+                    ) : (
+                      <div className="w-full h-full flex items-center justify-center">
+                        <ImageIcon className="text-gray-400" />
+                      </div>
+                    )}
                   </div>
-                  
-                  <div>
-                    <span className="font-semibold text-gray-700">Price:</span>
-                    <p className="text-gray-600">₹{propertyData?.propertyPrice || 'Price not specified'}</p>
-                  </div>
-                  
-                  <div>
-                    <span className="font-semibold text-gray-700">Deleted on:</span>
-                    <p className="text-gray-600">{formatDate(propertyData?.deletedAt)}</p>
-                  </div>
-                  
-                  <div>
-                    <span className="font-semibold text-gray-700">Deleted by:</span>
-                    <p className="text-gray-600">
-                      {propertyData?.deletionType === 'admin' ? 'Administrator' : 'You'}
-                    </p>
-                  </div>
-                  
-                  {propertyData?.deletionReason && (
-                    <div>
-                      <span className="font-semibold text-gray-700">Reason:</span>
-                      <p className="text-gray-600">{propertyData.deletionReason}</p>
+                  <div className="flex-1 min-w-0">
+                    <h3 className="font-bold text-gray-900 truncate mb-1">{propertyData.propertyName}</h3>
+                    <div className="space-y-1.5">
+                      <div className="flex items-center text-xs text-gray-500">
+                        <MapPin className="w-3 h-3 mr-1.5 flex-shrink-0" />
+                        <span className="truncate">{propertyData.propertyAddress || 'No address'}</span>
+                      </div>
+                      <div className="flex items-center text-xs text-gray-500">
+                        <DollarSign className="w-3 h-3 mr-1.5 flex-shrink-0" />
+                        <span className="font-semibold text-gray-900">₹{propertyData.propertyPrice?.toLocaleString()}</span>
+                      </div>
+                      <div className="flex items-center text-xs text-red-500">
+                        <Clock className="w-3 h-3 mr-1.5 flex-shrink-0" />
+                        <span>Deleted on {new Date(propertyData.deletedAt).toLocaleDateString()}</span>
+                      </div>
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
-            </div>
 
-            {/* Restoration Info */}
-            <div className="bg-green-50 border border-green-200 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-green-800 mb-3">🔄 Restoration Information</h3>
-              <div className="space-y-2 text-green-700">
-                <p><strong>Expiry Date:</strong> {formatExpiryDate(propertyData?.tokenExpiry)}</p>
-                <p><strong>Owner:</strong> {propertyData?.ownerUsername} ({propertyData?.ownerEmail})</p>
-                <p className="text-sm">
-                  This property can be restored within 30 days of deletion. After restoration, 
-                  it will appear in your property listings with all original data intact.
-                </p>
+              {/* Restoration Information */}
+              <div className="bg-green-50/50 border border-green-200/60 rounded-xl p-4 mb-4 text-sm">
+                <h4 className="font-semibold text-green-900 mb-2 flex items-center gap-2">
+                  <RefreshCw className="w-4 h-4" /> Restoration Information
+                </h4>
+                <div className="space-y-1 text-green-800">
+                  <p><span className="font-medium">Expiry Date:</span> {new Date(propertyData.tokenExpiry).toLocaleDateString('en-US', { weekday: 'long', year: 'numeric', month: 'long', day: 'numeric' })}</p>
+                  <p><span className="font-medium">Owner:</span> {propertyData.ownerUsername} ({propertyData.ownerEmail})</p>
+                  <p className="mt-2 text-green-700/80">
+                    This property can be restored within 30 days of deletion. After restoration, it will appear in your property listings with all original data intact.
+                  </p>
+                </div>
               </div>
-            </div>
 
-            {/* Confirmation */}
-            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-6 mb-6">
-              <h3 className="text-lg font-semibold text-yellow-800 mb-3">⚠️ Important Notice</h3>
-              <div className="space-y-3 text-yellow-700">
-                <p>Before restoring this property, please confirm:</p>
-                <ul className="list-disc list-inside space-y-1 ml-4">
+              {/* Important Notice */}
+              <div className="bg-yellow-50/50 border border-yellow-200/60 rounded-xl p-4 mb-6 text-sm">
+                <h4 className="font-semibold text-yellow-900 mb-2 flex items-center gap-2">
+                  <AlertTriangle className="w-4 h-4" /> Important Notice
+                </h4>
+                <p className="mb-2 text-yellow-800">Before restoring this property, please confirm:</p>
+                <ul className="list-disc list-inside space-y-1 text-yellow-800 ml-1">
                   <li>You want to restore this property to your listings</li>
                   <li>All original property data will be restored</li>
                   <li>The property will be visible to potential buyers again</li>
                   <li>This action cannot be undone</li>
                 </ul>
               </div>
-            </div>
 
-            {/* Confirmation Checkbox */}
-            <div className="mb-6">
-              <label className="flex items-start space-x-3 cursor-pointer">
-                <input
-                  type="checkbox"
-                  checked={confirmRestore}
-                  onChange={(e) => setConfirmRestore(e.target.checked)}
-                  className="mt-1 h-4 w-4 text-green-600 focus:ring-green-500 border-gray-300 rounded"
-                />
-                <span className="text-gray-700">
-                  I confirm that I want to restore this property and understand that it will be made available to potential buyers again.
-                </span>
-              </label>
-            </div>
+              {/* Confirmation Box - Simplified for user action */}
+              <div className="bg-white border-2 border-dashed border-gray-200 rounded-xl p-4 mb-8">
+                <div className="flex items-start gap-3">
+                  <AlertTriangle className="w-5 h-5 text-yellow-600 flex-shrink-0 mt-0.5" />
+                  <div className="flex-1">
+                    <h4 className="text-sm font-semibold text-yellow-900 mb-1">Confirm Restoration</h4>
+                    <label className="flex items-start gap-2 cursor-pointer group">
+                      <div className="relative flex items-center mt-0.5">
+                        <input
+                          type="checkbox"
+                          checked={confirmRestore}
+                          onChange={(e) => setConfirmRestore(e.target.checked)}
+                          className="peer h-4 w-4 rounded border-gray-300 text-red-600 focus:ring-red-500 cursor-pointer"
+                        />
+                      </div>
+                      <span className="text-xs text-yellow-800 leading-snug group-hover:text-yellow-900 transition-colors">
+                        I confirm specifically that I want to restore this listing and make it publicly visible again.
+                      </span>
+                    </label>
+                  </div>
+                </div>
+              </div>
 
-            {/* Action Buttons */}
-            <div className="flex flex-col sm:flex-row gap-4">
-              <button
-                onClick={handleRestore}
-                disabled={!confirmRestore || restoring}
-                className={`flex-1 py-3 px-6 rounded-lg font-semibold transition-colors flex items-center justify-center gap-2 ${
-                  confirmRestore && !restoring
-                    ? 'bg-green-600 text-white hover:bg-green-700'
-                    : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                }`}
-              >
-                {restoring ? (
-                  <>
-                    <FaSpinner className="animate-spin" />
-                    Restoring...
-                  </>
-                ) : (
-                  <>
-                    <FaCheckCircle />
-                    Restore Property
-                  </>
-                )}
-              </button>
-              
-              <button
-                onClick={() => navigate('/user/my-listings')}
-                className="flex-1 py-3 px-6 bg-gray-600 text-white rounded-lg font-semibold hover:bg-gray-700 transition-colors flex items-center justify-center gap-2"
-              >
-                <FaArrowLeft />
-                Cancel
-              </button>
+              {/* Action Button */}
+              <div className="space-y-3">
+                <button
+                  onClick={handleRestore}
+                  disabled={restoring || !confirmRestore}
+                  className="w-full flex justify-center items-center py-4 px-4 border border-transparent rounded-xl shadow-lg text-sm font-bold text-white bg-gradient-to-r from-red-600 to-orange-600 hover:from-red-700 hover:to-orange-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all hover:scale-[1.02] disabled:opacity-70 disabled:cursor-not-allowed group"
+                >
+                  {restoring ? (
+                    <>
+                      <RefreshCw className="w-5 h-5 mr-2 animate-spin" />
+                      Restoring Property...
+                    </>
+                  ) : (
+                    <>
+                      <RefreshCw className="w-5 h-5 mr-2 group-hover:rotate-180 transition-transform duration-500" />
+                      Restore Property
+                    </>
+                  )}
+                </button>
+
+                <button
+                  onClick={() => navigate('/user/my-listings')}
+                  className="w-full text-sm text-gray-500 hover:text-gray-900 py-2 transition-colors"
+                >
+                  Cancel and return to listings
+                </button>
+              </div>
+
             </div>
-          </div>
+          )}
+
         </div>
+
+        {/* Footer Help */}
+        <div className="mt-8 text-center animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <p className="text-sm text-gray-500 flex items-center justify-center gap-2">
+            <HelpCircle className="w-4 h-4" />
+            Need help? <a href="/contact" className="font-medium text-red-600 hover:text-red-500 hover:underline">Contact Support</a>
+          </p>
+        </div>
+
       </div>
     </div>
   );
