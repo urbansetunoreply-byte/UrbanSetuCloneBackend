@@ -148,6 +148,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [isHistoryLoaded, setIsHistoryLoaded] = useState(false);
     const messagesEndRef = useRef(null);
     const inputRef = useRef(null);
+    const [authModal, setAuthModal] = useState({ isOpen: false, type: 'save' });
     const [sendIconAnimating, setSendIconAnimating] = useState(false);
     const [sendIconSent, setSendIconSent] = useState(false);
     const messagesContainerRef = useRef(null);
@@ -4563,8 +4564,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 <li>
                                                     <button
                                                         onClick={() => {
+                                                            setIsHeaderMenuOpen(false);
+                                                            if (!currentUser) {
+                                                                setAuthModal({ isOpen: true, type: 'save' });
+                                                                return;
+                                                            }
                                                             try {
-                                                                const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'SetuAI'}: ${m.content}`);
+                                                                const lines = messages.map(m => {
+                                                                    // Mask restricted content in downloaded file
+                                                                    if (m.isRestricted) {
+                                                                        if (m.role === 'user') return `You: [Restricted Content - Violation Detected]`;
+                                                                        return `SetuAI: [Restricted Response]`;
+                                                                    }
+                                                                    return `${m.role === 'user' ? 'You' : 'SetuAI'}: ${m.content}`;
+                                                                });
                                                                 const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
                                                                 const url = URL.createObjectURL(blob);
                                                                 const a = document.createElement('a');
@@ -4574,7 +4587,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 a.click();
                                                                 document.body.removeChild(a);
                                                                 URL.revokeObjectURL(url);
-                                                                setIsHeaderMenuOpen(false);
                                                             } catch (e) {
                                                                 toast.error('Failed to save chat');
                                                             }
@@ -4590,10 +4602,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             )}
 
                                             {/* Share Chat */}
-                                            {(messages.length > 1 || messages.some(m => m.role === 'user')) && currentUser && (
+                                            {(messages.length > 1 || messages.some(m => m.role === 'user')) && (
                                                 <li>
                                                     <button
-                                                        onClick={() => { setShareTargetSessionId(getOrCreateSessionId()); setIsShareModalOpen(true); setIsHeaderMenuOpen(false); }}
+                                                        onClick={() => {
+                                                            setIsHeaderMenuOpen(false);
+                                                            if (!currentUser) {
+                                                                setAuthModal({ isOpen: true, type: 'share' });
+                                                                return;
+                                                            }
+                                                            setShareTargetSessionId(getOrCreateSessionId());
+                                                            setIsShareModalOpen(true);
+                                                        }}
                                                         className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
                                                     >
                                                         <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-cyan-500/20' : 'bg-cyan-100'} group-hover:scale-110 transition-transform duration-200`}>
@@ -8610,13 +8630,41 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 </div>
             )}
 
-            {/* Share Chat Modal */}
             <ShareChatModal
                 isOpen={isShareModalOpen}
                 onClose={() => { setIsShareModalOpen(false); setShareTargetSessionId(null); }}
                 sessionId={shareTargetSessionId || getOrCreateSessionId()}
                 currentChatName={chatSessions.find(s => s.sessionId === (shareTargetSessionId || getOrCreateSessionId()))?.name || "Shared Chat"}
             />
+
+            {/* Auth Required Modal */}
+            {authModal.isOpen && (
+                <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setAuthModal({ ...authModal, isOpen: false })}>
+                    <div className={`w-full max-w-sm p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-800' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                        <div className="text-center mb-6">
+                            <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-100'}`}>
+                                <FaUser className="text-blue-500 text-2xl" />
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">
+                                {authModal.type === 'save' ? 'Login to Save Chat' : 'Login to Share Chat'}
+                            </h3>
+                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                {authModal.type === 'save'
+                                    ? 'Login to save chat with login and signup links'
+                                    : 'Login to share chat publicy anywhere with signup and signin links'}
+                            </p>
+                        </div>
+                        <div className="flex gap-3 flex-col sm:flex-row">
+                            <a href="/login" className="flex-1 py-2.5 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white text-center transition-colors shadow-lg shadow-blue-500/25">
+                                Login
+                            </a>
+                            <a href="/signup" className={`flex-1 py-2.5 rounded-xl font-medium text-center transition-colors border ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200 hover:bg-gray-50'}`}>
+                                Sign Up
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            )}
         </>
     );
 };

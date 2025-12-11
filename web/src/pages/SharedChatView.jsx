@@ -133,9 +133,17 @@ export default function SharedChatView() {
                             ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-tr-none'
                             : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'
                             }`}>
-                            <div className="prose prose-sm max-w-none text-sm leading-relaxed">
-                                {formatText(msg.content)}
-                            </div>
+                            {/* Check for restricted content */}
+                            {msg.isRestricted ? (
+                                <div className={`flex items-center gap-2 p-3 rounded-lg border ${msg.role === 'user' ? 'bg-red-900/30 border-red-500/50 text-red-200' : 'bg-red-50 border-red-100 text-red-600'}`}>
+                                    <FaExclamationTriangle className="flex-shrink-0" />
+                                    <span className="italic text-sm">Content hidden due to safety policy violation.</span>
+                                </div>
+                            ) : (
+                                <div className="prose prose-sm max-w-none text-sm leading-relaxed">
+                                    {formatText(msg.content)}
+                                </div>
+                            )}
                             <div className={`mt-2 text-xs flex justify-end ${msg.role === 'user' ? 'text-gray-400' : 'text-gray-400'}`}>
                                 <FaClock className="mr-1 mt-0.5" />
                                 {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
