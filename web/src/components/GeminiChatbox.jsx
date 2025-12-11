@@ -1905,8 +1905,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 // Handle AI Moderated Restriction
                 setMessages(prev => {
                     const currentMessages = Array.isArray(prev) ? prev : [];
-                    // Find the last user message to mark it restricted
                     const updatedMessages = [...currentMessages];
+
+                    // 1. Find the last user message to mark it restricted
                     for (let i = updatedMessages.length - 1; i >= 0; i--) {
                         if (updatedMessages[i].role === 'user') {
                             updatedMessages[i] = {
@@ -1917,6 +1918,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             break;
                         }
                     }
+
+                    // 2. Add the violation message bubble
+                    updatedMessages.push({
+                        role: 'assistant',
+                        content: "⚠️ **Safety Policy Violation Detected**\n\nI cannot fulfill this request because it falls under a restricted category (e.g., Harassment, Hate Speech, Violence, or Illegal Activities).\n\nThis incident has been flagged for review.",
+                        timestamp: new Date().toISOString(),
+                        isError: true,
+                        isViolation: true
+                    });
+
                     return updatedMessages;
                 });
                 autoReportRestrictedContent(lastUserMessageRef.current, "AI Moderated");
