@@ -44,7 +44,12 @@ export const createSharedChat = async (req, res) => {
             // If the user is requesting a "Create", and one exists, we can perhaps just update the content validation
             // But if they clicked "Create Link" again, maybe they want a fresh snapshot.
             // Let's update the snapshot and reactivate.
-            sharedChat.messages = originalChat.messages.map(m => ({ role: m.role, content: m.content, timestamp: m.timestamp }));
+            sharedChat.messages = originalChat.messages.map(m => ({
+                role: m.role,
+                content: m.content,
+                timestamp: m.timestamp,
+                isRestricted: m.isRestricted
+            }));
             sharedChat.title = title || originalChat.name || 'Shared Conversation';
             sharedChat.isActive = true;
             if (expiresType) sharedChat.expiresAt = expiresAt;
@@ -60,7 +65,12 @@ export const createSharedChat = async (req, res) => {
                 originalSessionId: sessionId,
                 shareToken: shareToken,
                 title: title || originalChat.name || 'Shared Conversation',
-                messages: originalChat.messages.map(m => ({ role: m.role, content: m.content, timestamp: m.timestamp })),
+                messages: originalChat.messages.map(m => ({
+                    role: m.role,
+                    content: m.content,
+                    timestamp: m.timestamp,
+                    isRestricted: m.isRestricted
+                })),
                 expiresAt: expiresAt
             });
             await sharedChat.save();

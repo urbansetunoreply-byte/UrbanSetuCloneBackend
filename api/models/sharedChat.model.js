@@ -38,6 +38,10 @@ const sharedChatSchema = new mongoose.Schema({
         timestamp: {
             type: Date,
             default: Date.now
+        },
+        isRestricted: {
+            type: Boolean,
+            default: false
         }
     }],
     isActive: {
