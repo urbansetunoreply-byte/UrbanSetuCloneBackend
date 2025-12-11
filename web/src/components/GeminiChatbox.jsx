@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH, FaShareAlt } from 'react-icons/fa';
+import { FaComments, FaTimes, FaPaperPlane, FaRobot, FaCopy, FaSync, FaCheck, FaDownload, FaUpload, FaPaperclip, FaCog, FaLightbulb, FaHistory, FaBookmark, FaShare, FaThumbsUp, FaThumbsDown, FaRegBookmark, FaBookmark as FaBookmarkSolid, FaMicrophone, FaStop, FaImage, FaFileAlt, FaMagic, FaStar, FaMoon, FaSun, FaPalette, FaVolumeUp, FaVolumeMute, FaExpand, FaCompress, FaSearch, FaFilter, FaSort, FaEye, FaEyeSlash, FaEdit, FaCheck as FaCheckCircle, FaTimes as FaTimesCircle, FaFlag, FaClipboardList, FaCommentAlt, FaArrowDown, FaTrash, FaEllipsisH, FaShareAlt, FaBan } from 'react-icons/fa';
 import EqualizerButton from './EqualizerButton';
 import ShareChatModal from './ShareChatModal';
 import { toast } from 'react-toastify';
@@ -17,6 +17,60 @@ import 'prismjs/components/prism-json';
 import 'prismjs/components/prism-sql';
 import 'prismjs/components/prism-bash';
 import 'prismjs/components/prism-markdown';
+
+// --- INTELLIGENCE SYSTEM UTILS ---
+const RESTRICTED_PATTERNS = {
+    abuse: /\b(fuck|shit|asshole|bitch|bastard|cunt|dick|pussy|whore|slut)\b/i,
+    hate_speech: /\b(nigger|faggot|retard|spic|kike|chink|tranny|dyke)\b/i,
+    spam: /\b(buy now|click here|subscribe now|lottery winner|claim prize|credit score|viagra|cialis)\b/i,
+    self_harm: /\b(kill myself|suicide|end my life|cut myself|die now)\b/i
+};
+
+const checkRestrictedContent = (text) => {
+    if (!text) return { isRestricted: false };
+
+    for (const [category, pattern] of Object.entries(RESTRICTED_PATTERNS)) {
+        if (pattern.test(text)) {
+            return {
+                isRestricted: true,
+                reason: category,
+                category: 'System Flag',
+                subCategory: category === 'self_harm' ? 'Violence & self-harm' :
+                    category === 'spam' ? 'Spam, fraud & deception' : 'Bullying & harassment'
+            };
+        }
+    }
+    return { isRestricted: false };
+};
+
+const autoReportRestrictedContent = async (content, reason) => {
+    try {
+        const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+        // Create a dummy ID for the system report if needed
+        const messageId = `sys_flag_${Date.now()}`;
+
+        await fetch(`${API_BASE_URL}/api/report-message/create`, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            credentials: 'include',
+            body: JSON.stringify({
+                messageId: messageId,
+                messageContent: '[RESTRICTED CONTENT HIDDEN FROM CHAT]',
+                prompt: content, // Send the actual content as prompt for admin review
+                category: 'System Flag',
+                subCategory: reason === 'self_harm' ? 'Violence & self-harm' :
+                    reason === 'spam' ? 'Spam, fraud & deception' : 'Bullying & harassment',
+                description: `[AUTO-DETECTED] System blocked a restricted prompt. Reason: ${reason}. Please review immediately.`,
+                adminNotes: 'High Priority: Auto-flagged by Intelligence System.',
+                priority: 'high'
+            })
+        });
+        console.log('Restricted content auto-reported successfully');
+    } catch (error) {
+        console.error('Failed to auto-report restricted content:', error);
+    }
+};
+// ---------------------------------
 
 const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const { currentUser } = useSelector((state) => state.user);
@@ -1595,6 +1649,35 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         if (currentTone && currentTone !== 'neutral') {
             userMessage = `[Tone: ${currentTone}] ${userMessage}`;
         }
+
+        // --- INTELLIGENCE SYSTEM: Check for Restricted Content ---
+        const restrictedCheck = checkRestrictedContent(userMessage);
+        if (restrictedCheck.isRestricted) {
+            setInputMessage('');
+            setSelectedProperties([]);
+
+            // Create restricted message object
+            const restrictedMsg = {
+                role: 'user',
+                content: userMessage, // Keep original content for reference but don't show it
+                isRestricted: true,
+                restrictionReason: restrictedCheck.reason,
+                timestamp: new Date().toISOString()
+            };
+
+            setMessages(prev => [...prev, restrictedMsg]);
+            setSendIconAnimating(false);
+            setSendIconSent(true);
+            setTimeout(() => setSendIconSent(false), 2000);
+            setTimeout(() => scrollToBottom(), 100);
+
+            // Auto-report to Admin
+            autoReportRestrictedContent(userMessage, restrictedCheck.reason);
+
+            return; // STOP execution
+        }
+        // ---------------------------------------------------------
+
         setInputMessage('');
         setSelectedProperties([]); // Clear selected properties after sending
         setMessages(prev => {
@@ -2135,7 +2218,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 // store meta locally for admin view
                 saveRatingMeta(ratingKey, {
                     feedback: feedback || '',
-                    user: currentUser?.username || currentUser?.email || 'Unknown',
+                    user: currentUser?.username || currentUser?.email || 'Public Guest',
                     time: new Date().toISOString(),
                     messagePreview: (message.content || '').slice(0, 140)
                 });
@@ -4583,11 +4666,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             aria-describedby={screenReaderSupport ? `message-${index}-content` : undefined}
                                         >
                                             <div
-                                                className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${message.role === 'user'
-                                                    ? `bg-gradient-to-r ${themeColors.primary} text-white`
-                                                    : message.isError
-                                                        ? `${isDarkMode ? 'bg-red-900/20 text-red-300 border border-red-700' : 'bg-red-50 text-red-900 border border-red-300 shadow-sm'}`
-                                                        : `${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-800'}`
+                                                className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${message.isRestricted
+                                                    ? 'bg-red-500 text-white'
+                                                    : message.role === 'user'
+                                                        ? `bg-gradient-to-r ${themeColors.primary} text-white`
+                                                        : message.isError
+                                                            ? `${isDarkMode ? 'bg-red-900/20 text-red-300 border border-red-700' : 'bg-red-50 text-red-900 border border-red-300 shadow-sm'}`
+                                                            : `${isDarkMode ? 'bg-gray-800 text-gray-100' : 'bg-gray-100 text-gray-800'}`
                                                     } ${highlightedMessage === index
                                                         ? 'ring-4 ring-yellow-400 ring-opacity-50 shadow-lg transform scale-105'
                                                         : ''
@@ -4979,12 +5064,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         </div>
                                                     </div>
                                                 ) : (
-                                                    <div
-                                                        className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed ${message.role === 'user' ? 'text-white' : 'text-gray-800 dark:text-gray-100'}`}
-                                                        id={screenReaderSupport ? `message-${index}-content` : undefined}
-                                                    >
-                                                        {renderTextWithMarkdownAndLinks(message.content, message.role === 'user')}
-                                                    </div>
+                                                    message.isRestricted ? (
+                                                        <div className={`${getFontSizeClass()} flex items-center gap-2 text-white font-medium`}>
+                                                            <FaBan size={16} />
+                                                            <span>Prompt violates the usage terms</span>
+                                                        </div>
+                                                    ) : (
+                                                        <div
+                                                            className={`${getFontSizeClass()} whitespace-pre-wrap leading-relaxed ${message.role === 'user' ? 'text-white' : 'text-gray-800 dark:text-gray-100'}`}
+                                                            id={screenReaderSupport ? `message-${index}-content` : undefined}
+                                                        >
+                                                            {renderTextWithMarkdownAndLinks(message.content, message.role === 'user')}
+                                                        </div>
+                                                    )
                                                 )}
                                                 {/* Message footer with timestamp and actions */}
                                                 <div className={`flex items-center justify-between mt-2 pt-2 border-t ${isDarkMode ? 'border-gray-200/20' : 'border-gray-300/60'}`}>
@@ -5011,7 +5103,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                             </button>
 
                                                             {/* Edit button for user messages */}
-                                                            {message.role === 'user' && (
+                                                            {message.role === 'user' && !message.isRestricted && (
                                                                 <button
                                                                     onClick={() => startEditingMessage(index, message.content)}
                                                                     className="p-1 text-white/80 hover:text-white hover:bg-white/20 rounded transition-all duration-200"
@@ -8190,7 +8282,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                         {report.category} <span className="opacity-50 mx-1">•</span> <span className="text-xs font-normal opacity-80">{report.subCategory}</span>
                                                     </div>
                                                     <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                                        Reported by: <span className="font-medium">{report.reportedBy?.username || report.reportedBy?.email || 'Unknown'}</span>
+                                                        Reported by: <span className="font-medium">{report.reportedBy?.username || report.reportedBy?.email || 'Public Guest'}</span>
                                                     </div>
                                                 </div>
 
@@ -8303,7 +8395,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     <div>
                                         <h2 className="text-xl font-bold">Feedback Details</h2>
                                         <div className="flex items-center gap-2 text-xs opacity-70">
-                                            <span>{selectedRating.user?.username || 'Unknown'}</span>
+                                            <span>{selectedRating.user?.username || 'Public Guest'}</span>
                                             <span>•</span>
                                             <span>{new Date(selectedRating.createdAt).toLocaleString()}</span>
                                         </div>
@@ -8428,7 +8520,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 <div>
                                     <h2 className="text-xl font-bold">Report Details</h2>
                                     <div className="flex items-center gap-2 text-xs opacity-70">
-                                        <span>{selectedReportDetail.reportedBy?.username || 'Unknown'}</span>
+                                        <span>{selectedReportDetail.reportedBy?.username || 'Public Guest'}</span>
                                         <span>•</span>
                                         <span>{new Date(selectedReportDetail.createdAt).toLocaleString()}</span>
                                     </div>

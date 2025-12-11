@@ -38,6 +38,11 @@ const reportMessageSchema = new mongoose.Schema({
     adminNotes: {
         type: String,
         default: '',
+    },
+    priority: {
+        type: String,
+        enum: ['low', 'medium', 'high'],
+        default: 'medium',
     }
 }, { timestamps: true });
 
