@@ -2159,6 +2159,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             return;
         }
 
+        // Get the prompt content
+        const promptContent = reportingMessage.originalUserMessage ||
+            (reportingMessage.index > 0 && messages[reportingMessage.index - 1] ? messages[reportingMessage.index - 1].content : 'Unknown prompt');
+
         setIsReporting(true);
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -2171,6 +2175,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 body: JSON.stringify({
                     messageId: msgId,
                     messageContent: reportingMessage.content,
+                    prompt: promptContent,
                     category: selectedCategory,
                     subCategory: selectedSubCategory,
                     description: reportDescription
@@ -4412,36 +4417,38 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                             </li>
 
                                             {/* Save current chat */}
-                                            <li>
-                                                <button
-                                                    onClick={() => {
-                                                        try {
-                                                            const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'SetuAI'}: ${m.content}`);
-                                                            const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
-                                                            const url = URL.createObjectURL(blob);
-                                                            const a = document.createElement('a');
-                                                            a.href = url;
-                                                            a.download = `setuai_chat_${new Date().toISOString().split('T')[0]}.txt`;
-                                                            document.body.appendChild(a);
-                                                            a.click();
-                                                            document.body.removeChild(a);
-                                                            URL.revokeObjectURL(url);
-                                                            setIsHeaderMenuOpen(false);
-                                                        } catch (e) {
-                                                            toast.error('Failed to save chat');
-                                                        }
-                                                    }}
-                                                    className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
-                                                >
-                                                    <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-green-500/20' : 'bg-green-100'} group-hover:scale-110 transition-transform duration-200`}>
-                                                        <FaDownload size={14} className="text-green-500" />
-                                                    </div>
-                                                    <span className="font-medium">Save Chat</span>
-                                                </button>
-                                            </li>
+                                            {(messages.length > 1 || messages.some(m => m.role === 'user')) && (
+                                                <li>
+                                                    <button
+                                                        onClick={() => {
+                                                            try {
+                                                                const lines = messages.map(m => `${m.role === 'user' ? 'You' : 'SetuAI'}: ${m.content}`);
+                                                                const blob = new Blob([lines.join('\n\n')], { type: 'text/plain;charset=utf-8' });
+                                                                const url = URL.createObjectURL(blob);
+                                                                const a = document.createElement('a');
+                                                                a.href = url;
+                                                                a.download = `setuai_chat_${new Date().toISOString().split('T')[0]}.txt`;
+                                                                document.body.appendChild(a);
+                                                                a.click();
+                                                                document.body.removeChild(a);
+                                                                URL.revokeObjectURL(url);
+                                                                setIsHeaderMenuOpen(false);
+                                                            } catch (e) {
+                                                                toast.error('Failed to save chat');
+                                                            }
+                                                        }}
+                                                        className={`w-full text-left px-4 py-3 ${isDarkMode ? 'hover:bg-gray-700/50' : 'hover:bg-gray-100/80'} flex items-center gap-3 transition-all duration-200 hover:scale-[1.02] group`}
+                                                    >
+                                                        <div className={`p-1.5 rounded-lg ${isDarkMode ? 'bg-green-500/20' : 'bg-green-100'} group-hover:scale-110 transition-transform duration-200`}>
+                                                            <FaDownload size={14} className="text-green-500" />
+                                                        </div>
+                                                        <span className="font-medium">Save Chat</span>
+                                                    </button>
+                                                </li>
+                                            )}
 
                                             {/* Share Chat */}
-                                            {currentUser && (
+                                            {(messages.length > 1 || messages.some(m => m.role === 'user')) && currentUser && (
                                                 <li>
                                                     <button
                                                         onClick={() => { setShareTargetSessionId(getOrCreateSessionId()); setIsShareModalOpen(true); setIsHeaderMenuOpen(false); }}
@@ -5037,6 +5044,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     <svg width="10" height="10" viewBox="0 0 24 24" fill="currentColor">
                                                                         <path d="M12 6v3l4-4-4-4v3c-4.42 0-8 3.58-8 8 0 1.57.46 3.03 1.24 4.26l1.46-1.46C6.26 13.86 6 12.97 6 12c0-3.31 2.69-6 6-6zm5.76 1.74L16.3 9.2C17.74 10.14 18.5 11.49 18.5 13c0 3.31-2.69 6-6 6v-3l-4 4 4 4v-3c4.42 0 8-3.58 8-8 0-1.57-.46-3.03-1.24-4.26z" />
                                                                     </svg>
+                                                                </button>
+                                                            )}
+
+                                                            {message.role === 'assistant' && message.isError && (
+                                                                <button
+                                                                    onClick={() => openReportModal(message, index)}
+                                                                    className="p-1 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded transition-all duration-200"
+                                                                    title="Report Error"
+                                                                    aria-label="Report Error"
+                                                                >
+                                                                    <FaFlag size={10} />
                                                                 </button>
                                                             )}
 
@@ -5682,11 +5700,15 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                             <button
                                                                                 onClick={(e) => {
                                                                                     e.stopPropagation();
+                                                                                    if (session.messageCount <= 1) {
+                                                                                        toast.info("Cannot share empty conversation");
+                                                                                        return;
+                                                                                    }
                                                                                     setShareTargetSessionId(session.sessionId);
                                                                                     setIsShareModalOpen(true);
                                                                                     setOpenHistoryMenuSessionId(null);
                                                                                 }}
-                                                                                className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
+                                                                                className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'} ${session.messageCount <= 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                                             >
                                                                                 Share chat
                                                                             </button>
@@ -5703,6 +5725,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                             <button
                                                                                 onClick={async (e) => {
                                                                                     e.stopPropagation();
+                                                                                    if (session.messageCount <= 1) {
+                                                                                        toast.info("Cannot save empty conversation");
+                                                                                        return;
+                                                                                    }
                                                                                     try {
                                                                                         const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
                                                                                         const resp = await fetch(`${API_BASE_URL}/api/chat-history/session/${session.sessionId}`, { credentials: 'include' });
@@ -5723,7 +5749,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                                         toast.error('Failed to save chat');
                                                                                     }
                                                                                 }}
-                                                                                className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'}`}
+                                                                                className={`block w-full text-left px-3 py-2 text-sm ${isDarkMode ? 'text-gray-200 hover:bg-gray-600' : 'text-gray-800 hover:bg-gray-100'} ${session.messageCount <= 1 ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                                             >
                                                                                 Save chat
                                                                             </button>
@@ -8067,7 +8093,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                 {/* Reported Content Snippet */}
                                                 <div className={`p-3 rounded-lg mb-4 text-sm font-mono border-l-4 ${isDarkMode ? 'bg-gray-900/50 border-gray-600 text-gray-300' : 'bg-gray-50 border-gray-300 text-gray-700'}`}>
                                                     <div className="float-right ml-2 opacity-50"><FaFlag size={10} /></div>
-                                                    <p className="line-clamp-3 italic">"{report.messageContent}"</p>
+
+                                                    {report.prompt && (
+                                                        <div className="mb-3 pb-2 border-b border-dashed border-gray-500/30">
+                                                            <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">User Prompt</div>
+                                                            <p className="italic text-opacity-90 whitespace-pre-wrap">{report.prompt}</p>
+                                                        </div>
+                                                    )}
+
+                                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">AI Response</div>
+                                                    <p className="italic text-opacity-90 whitespace-pre-wrap">{report.messageContent}</p>
                                                 </div>
 
                                                 <div className="mb-4">

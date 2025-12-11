@@ -3,7 +3,7 @@ import { errorHandler } from '../utils/error.js';
 
 export const createReport = async (req, res, next) => {
     try {
-        const { messageId, messageContent, category, subCategory, description } = req.body;
+        const { messageId, messageContent, prompt, category, subCategory, description } = req.body;
 
         if (!messageId || !messageContent || !category || !subCategory || !description) {
             return next(errorHandler(400, 'All fields are required'));
@@ -12,6 +12,7 @@ export const createReport = async (req, res, next) => {
         const newReport = new ReportMessage({
             messageId,
             messageContent,
+            prompt,
             reportedBy: req.user.id,
             category,
             subCategory,

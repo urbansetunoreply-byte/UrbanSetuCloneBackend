@@ -9,6 +9,10 @@ const reportMessageSchema = new mongoose.Schema({
         type: String,
         required: true,
     },
+    prompt: {
+        type: String,
+        required: false,
+    },
     reportedBy: {
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User',

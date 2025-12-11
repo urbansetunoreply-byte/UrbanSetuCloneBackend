@@ -2,9 +2,12 @@ import React, { useEffect, useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { FaRobot, FaUser, FaClock, FaCalendar, FaExclamationTriangle } from 'react-icons/fa';
 
+import { usePageTitle } from '../hooks/usePageTitle';
+
 export default function SharedChatView() {
     const { shareToken } = useParams();
     const [chatData, setChatData] = useState(null);
+    usePageTitle(chatData ? chatData.title : "Shared Chat", "SetuAI");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
