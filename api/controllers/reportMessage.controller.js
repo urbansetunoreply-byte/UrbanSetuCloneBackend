@@ -9,11 +9,15 @@ export const createReport = async (req, res, next) => {
             return next(errorHandler(400, 'All fields are required'));
         }
 
+        //     if (!messageId || !messageContent || !category || !subCategory || !description) {
+        //         return next(errorHandler(400, 'All fields are required'));
+        //     }
+
         const newReport = new ReportMessage({
             messageId,
             messageContent,
             prompt,
-            reportedBy: req.user.id,
+            reportedBy: req.user ? req.user.id : null,
             category,
             subCategory,
             description,

@@ -2150,10 +2150,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     };
 
     const openReportModal = (message, index) => {
-        if (!currentUser) {
-            toast.error('Please sign in to report messages');
-            return;
-        }
         setReportingMessage({ ...message, index });
         setReportStep(1);
         setSelectedCategory('');
