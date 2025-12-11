@@ -160,6 +160,12 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [showRenameModal, setShowRenameModal] = useState(false);
     const [showRatingDetailModal, setShowRatingDetailModal] = useState(false);
     const [selectedRating, setSelectedRating] = useState(null);
+    const [showReportDeleteModal, setShowReportDeleteModal] = useState(false);
+    const [selectedReportToDelete, setSelectedReportToDelete] = useState(null);
+    const [showReportDetailModal, setShowReportDetailModal] = useState(false);
+    const [selectedReportDetail, setSelectedReportDetail] = useState(null);
+    const [showRatingDeleteModal, setShowRatingDeleteModal] = useState(false);
+    const [selectedRatingToDelete, setSelectedRatingToDelete] = useState(null);
     const [renameTargetSessionId, setRenameTargetSessionId] = useState(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [shareTargetSessionId, setShareTargetSessionId] = useState(null);
@@ -2490,16 +2496,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     };
 
-    const handleAdminReportDelete = async (reportId) => {
-        if (!window.confirm('Are you sure you want to delete this report?')) return;
+    const handleAdminReportDelete = (reportId) => {
+        setSelectedReportToDelete(reportId);
+        setShowReportDeleteModal(true);
+    };
+
+    const confirmDeleteReport = async () => {
+        if (!selectedReportToDelete) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/delete/${reportId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/report-message/delete/${selectedReportToDelete}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
             if (res.ok) {
-                toast.success('Report deleted');
-                setAdminReports(prev => prev.filter(r => r._id !== reportId));
+                toast.success('Report deleted successfully');
+                setAdminReports(prev => prev.filter(r => r._id !== selectedReportToDelete));
+                setShowReportDeleteModal(false);
+                setSelectedReportToDelete(null);
             } else {
                 const data = await res.json();
                 toast.error(data.message);
@@ -2507,6 +2520,40 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         } catch (error) {
             console.error(error);
             toast.error('Error deleting report');
+        }
+    };
+
+    const handleRatingDelete = (ratingId) => {
+        setSelectedRatingToDelete(ratingId);
+        setShowRatingDeleteModal(true);
+    };
+
+    const confirmDeleteRating = async () => {
+        if (!selectedRatingToDelete) return;
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/gemini/rating/${selectedRatingToDelete}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            const data = await res.json();
+            if (res.ok) {
+                toast.success('Rating deleted successfully');
+                setAllRatings(prev => prev.filter(r => r.id !== selectedRatingToDelete));
+
+                // If the deleted rating was being viewed in the detail modal, close it
+                if (selectedRating && selectedRating.id === selectedRatingToDelete) {
+                    setShowRatingDetailModal(false);
+                    setSelectedRating(null);
+                }
+
+                setShowRatingDeleteModal(false);
+                setSelectedRatingToDelete(null);
+            } else {
+                toast.error(data.message);
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Error deleting rating');
         }
     };
 
@@ -6898,7 +6945,17 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                 </div>
                                                             </div>
 
-                                                            <div className="flex justify-end">
+                                                            <div className="flex justify-end gap-2">
+                                                                <button
+                                                                    onClick={() => handleRatingDelete(r.id)}
+                                                                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1 ${isDarkMode
+                                                                        ? 'border-red-900/30 text-red-400 hover:bg-red-900/20'
+                                                                        : 'border-red-100 text-red-600 hover:bg-red-50'
+                                                                        }`}
+                                                                    title="Delete Rating"
+                                                                >
+                                                                    <FaTrash size={10} />
+                                                                </button>
                                                                 <button
                                                                     onClick={() => { setSelectedRating(r); setShowRatingDetailModal(true); }}
                                                                     className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1 ${isDarkMode
@@ -8042,6 +8099,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     </div>
                                 </div>
                                 <button
+                                    onClick={fetchAdminReports}
+                                    title="Refresh Reports"
+                                    disabled={adminReportsLoading}
+                                    className={`p-2 rounded-full transition-colors mr-1 ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'} ${adminReportsLoading ? 'animate-spin' : ''}`}
+                                >
+                                    <FaSync size={16} />
+                                </button>
+                                <button
                                     onClick={() => setShowAdminReportsModal(false)}
                                     className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
                                 >
@@ -8115,19 +8180,23 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </span>
                                                 </div>
 
-                                                {/* Reported Content Snippet */}
-                                                <div className={`p-3 rounded-lg mb-4 text-sm font-mono border-l-4 ${isDarkMode ? 'bg-gray-900/50 border-gray-600 text-gray-300' : 'bg-gray-50 border-gray-300 text-gray-700'}`}>
-                                                    <div className="float-right ml-2 opacity-50"><FaFlag size={10} /></div>
+                                                {/* Summary Info */}
+                                                <div className="mb-4">
+                                                    <div className={`text-sm font-semibold ${isDarkMode ? 'text-gray-200' : 'text-gray-800'}`}>
+                                                        {report.category} <span className="opacity-50 mx-1">•</span> <span className="text-xs font-normal opacity-80">{report.subCategory}</span>
+                                                    </div>
+                                                    <div className={`text-xs mt-1 ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                                        Reported by: <span className="font-medium">{report.reportedBy?.username || report.reportedBy?.email || 'Unknown'}</span>
+                                                    </div>
+                                                </div>
 
-                                                    {report.prompt && (
-                                                        <div className="mb-3 pb-2 border-b border-dashed border-gray-500/30">
-                                                            <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">User Prompt</div>
-                                                            <p className="italic text-opacity-90 whitespace-pre-wrap">{report.prompt}</p>
-                                                        </div>
-                                                    )}
-
-                                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">AI Response</div>
-                                                    <p className="italic text-opacity-90 whitespace-pre-wrap">{report.messageContent}</p>
+                                                <div className="flex items-center gap-2 mb-4">
+                                                    <button
+                                                        onClick={() => { setSelectedReportDetail(report); setShowReportDetailModal(true); }}
+                                                        className={`flex-1 flex items-center justify-center gap-2 py-2 rounded-lg text-sm font-medium transition-colors border ${isDarkMode ? 'border-gray-600 hover:bg-gray-700 text-gray-300' : 'border-gray-200 hover:bg-gray-50 text-gray-600'}`}
+                                                    >
+                                                        <FaExpand size={12} /> View Full Details
+                                                    </button>
                                                 </div>
 
                                                 <div className="mb-4">
@@ -8276,6 +8345,140 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     </div>
                 )
             }
+
+            {/* Report Delete Confirmation Modal */}
+            {showReportDeleteModal && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => !selectedReportToDelete && setShowReportDeleteModal(false)}>
+                    <div className={`w-full max-w-sm p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-800' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                        <div className="text-center mb-6">
+                            <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-red-900/20' : 'bg-red-100'}`}>
+                                <FaTrash className="text-red-500 text-2xl" />
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">Delete Report?</h3>
+                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                Are you sure you want to delete this report? This action cannot be undone.
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowReportDeleteModal(false)}
+                                className={`flex-1 py-2.5 rounded-xl font-medium transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDeleteReport}
+                                className="flex-1 py-2.5 rounded-xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors shadow-lg shadow-red-500/25"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Rating Delete Confirmation Modal */}
+            {showRatingDeleteModal && (
+                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowRatingDeleteModal(false)}>
+                    <div className={`w-full max-w-sm p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-800' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                        <div className="text-center mb-6">
+                            <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-red-900/20' : 'bg-red-100'}`}>
+                                <FaTrash className="text-red-500 text-2xl" />
+                            </div>
+                            <h3 className="text-xl font-bold mb-2">Delete Rating?</h3>
+                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                Are you sure you want to delete this rating?
+                            </p>
+                        </div>
+                        <div className="flex gap-3">
+                            <button
+                                onClick={() => setShowRatingDeleteModal(false)}
+                                className={`flex-1 py-2.5 rounded-xl font-medium transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                            >
+                                Cancel
+                            </button>
+                            <button
+                                onClick={confirmDeleteRating}
+                                className="flex-1 py-2.5 rounded-xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors shadow-lg shadow-red-500/25"
+                            >
+                                Delete
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+
+            {/* Report Detail Modal */}
+            {showReportDetailModal && selectedReportDetail && (
+                <div className="fixed inset-0 z-[115] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowReportDetailModal(false)}>
+                    <div
+                        className={`w-full max-w-2xl flex flex-col rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                        onClick={e => e.stopPropagation()}
+                    >
+                        {/* Header */}
+                        <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                            <div className="flex items-center gap-3">
+                                <div className={`p-2 rounded-lg ${selectedReportDetail.status === 'resolved' ? 'bg-green-500/20 text-green-500' : selectedReportDetail.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-gray-500/20 text-gray-500'}`}>
+                                    <FaFlag size={20} />
+                                </div>
+                                <div>
+                                    <h2 className="text-xl font-bold">Report Details</h2>
+                                    <div className="flex items-center gap-2 text-xs opacity-70">
+                                        <span>{selectedReportDetail.reportedBy?.username || 'Unknown'}</span>
+                                        <span>•</span>
+                                        <span>{new Date(selectedReportDetail.createdAt).toLocaleString()}</span>
+                                    </div>
+                                </div>
+                            </div>
+                            <button
+                                onClick={() => setShowReportDetailModal(false)}
+                                className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                            >
+                                <FaTimes size={20} />
+                            </button>
+                        </div>
+
+                        {/* Content */}
+                        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                            {/* Meta Info */}
+                            <div className="flex gap-4 mb-6">
+                                <div className={`flex-1 p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
+                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Category</div>
+                                    <div className="font-semibold">{selectedReportDetail.category}</div>
+                                </div>
+                                <div className={`flex-1 p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
+                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Context</div>
+                                    <div className="font-semibold">{selectedReportDetail.subCategory}</div>
+                                </div>
+                            </div>
+
+                            {/* User Description */}
+                            <div className={`mb-6 p-4 rounded-xl border ${isDarkMode ? 'bg-red-900/10 border-red-900/30' : 'bg-red-50 border-red-100'}`}>
+                                <div className="text-xs font-bold uppercase tracking-wider text-red-500 mb-2">Report Description</div>
+                                <p className="whitespace-pre-wrap font-medium">{selectedReportDetail.description}</p>
+                            </div>
+
+                            {/* User Prompt */}
+                            {selectedReportDetail.prompt && (
+                                <div className="mb-6">
+                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-2 border-b border-dashed border-gray-500/30 pb-1 inline-block">Reported User Prompt</div>
+                                    <div className={`p-4 rounded-xl text-sm leading-relaxed ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                                        <p className="whitespace-pre-wrap font-mono text-opacity-90">{selectedReportDetail.prompt}</p>
+                                    </div>
+                                </div>
+                            )}
+
+                            {/* AI Response */}
+                            <div>
+                                <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-2 border-b border-dashed border-gray-500/30 pb-1 inline-block">Reported AI Response</div>
+                                <div className={`p-4 rounded-xl text-sm leading-relaxed ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                                    <p className="whitespace-pre-wrap text-opacity-90">{selectedReportDetail.messageContent}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            )}
 
             {/* Share Chat Modal */}
             <ShareChatModal

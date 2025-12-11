@@ -852,3 +852,21 @@ export const getBookmarkedMessages = async (req, res) => {
         });
     }
 };
+
+// Admin: Delete a rating
+export const deleteRating = async (req, res) => {
+    try {
+        // Only admins/rootadmins allowed
+        const role = req.user?.role;
+        if (role !== 'admin' && role !== 'rootadmin') {
+            return res.status(403).json({ success: false, message: 'Forbidden' });
+        }
+
+        const { ratingId } = req.params;
+        await MessageRating.findByIdAndDelete(ratingId);
+        res.status(200).json({ success: true, message: 'Rating deleted successfully' });
+    } catch (error) {
+        console.error('Error deleting rating:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete rating' });
+    }
+};
