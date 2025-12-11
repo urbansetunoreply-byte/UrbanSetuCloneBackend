@@ -48,6 +48,71 @@ export const chatWithGemini = async (req, res) => {
         // Generate session ID if not provided
         const currentSessionId = sessionId || `session_${Date.now()}_${Math.random().toString(36).substr(2, 9)}`;
 
+        const LEGAL_POLICIES = `
+            LEGAL & POLICIES:
+            - Terms: Fair dealing, prohibited activities (spam/fraud), user responsibility for content.
+            - Privacy: Data collected for service provision & security only; "Right to be forgotten" supported.
+            - Compliance: RERA (India), Fair Housing (Global/US standards applicability). No discrimination allowed.
+            - Disputes: Negotiation first, then mediation/arbitration.
+            - Prohibited Content: Hate speech, harassment, sexually explicit content, spam, fraud, violence, illegal acts.
+        `;
+
+        // -------------------------------------------------------------
+        // INTELLIGENCE SYSTEM: AI-Based Moderation
+        // -------------------------------------------------------------
+        const moderateContent = async (text) => {
+            try {
+                const moderationCompletion = await groq.chat.completions.create({
+                    messages: [
+                        {
+                            role: 'system',
+                            content: `You are a strict content moderation AI for UrbanSetu. 
+                            Your task is to analyze the user's prompt against the usage policies.
+                            
+                            Violations include:
+                            1. Hate speech, discrimination, or harassment.
+                            2. Sexually explicit or NSFW content.
+                            3. Spam, fraud, or phishing attempts.
+                            4. Promoting illegal activities or violence.
+                            5. Content that is completely irrelevant to real estate, housing, or general conversation (e.g. asking to generate code for hacking).
+                            
+                            POLICIES:
+                            ${LEGAL_POLICIES}
+
+                            INSTRUCTION:
+                            Does this prompt violate the policies? 
+                            Reply strictly with "YES" or "NO". Do not provide explanations.`
+                        },
+                        {
+                            role: 'user',
+                            content: text
+                        }
+                    ],
+                    model: 'llama3-8b-8192', // Use a faster/smaller model for moderation
+                    temperature: 0,
+                    max_completion_tokens: 5
+                });
+
+                const result = moderationCompletion.choices[0]?.message?.content?.trim().toUpperCase();
+                return result === 'YES';
+            } catch (error) {
+                console.error('Moderation check failed:', error);
+                // Fail safe: If moderation fails, allow (or block depending on strictness). allowing for now to avoid blocking on service errors.
+                return false;
+            }
+        };
+
+        const isRestricted = await moderateContent(sanitizedMessage);
+
+        if (isRestricted) {
+            console.warn(`[Moderation] Blocked restricted content from user ${userId || 'guest'}`);
+            return res.status(403).json({
+                success: false,
+                message: 'Policy violation: restricted content detected.'
+            });
+        }
+        // -------------------------------------------------------------
+
         const getSystemPrompt = async (tone, userMessage) => {
             const PROJECT_KNOWLEDGE = `
             PLATFORM: UrbanSetu (https://urbansetu.vercel.app)
@@ -95,11 +160,7 @@ export const chatWithGemini = async (req, res) => {
             - Admin: Content moderation, dispute resolution, user support, feature management.
             - Root Admin: System oversight, admin management.
             
-            LEGAL & POLICIES:
-            - Terms: Fair dealing, prohibited activities (spam/fraud), user responsibility for content.
-            - Privacy: Data collected for service provision & security only; "Right to be forgotten" supported.
-            - Compliance: RERA (India), Fair Housing (Global/US standards applicability). No discrimination allowed.
-            - Disputes: Negotiation first, then mediation/arbitration.
+            ${LEGAL_POLICIES}
             
             CONTACT & SUPPORT:
             - Email: support@urbansetu.com, legal@urbansetu.com, privacy@urbansetu.com

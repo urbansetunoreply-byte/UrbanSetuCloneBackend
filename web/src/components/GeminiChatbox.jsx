@@ -1650,33 +1650,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             userMessage = `[Tone: ${currentTone}] ${userMessage}`;
         }
 
-        // --- INTELLIGENCE SYSTEM: Check for Restricted Content ---
-        const restrictedCheck = checkRestrictedContent(userMessage);
-        if (restrictedCheck.isRestricted) {
-            setInputMessage('');
-            setSelectedProperties([]);
 
-            // Create restricted message object
-            const restrictedMsg = {
-                role: 'user',
-                content: userMessage, // Keep original content for reference but don't show it
-                isRestricted: true,
-                restrictionReason: restrictedCheck.reason,
-                timestamp: new Date().toISOString()
-            };
-
-            setMessages(prev => [...prev, restrictedMsg]);
-            setSendIconAnimating(false);
-            setSendIconSent(true);
-            setTimeout(() => setSendIconSent(false), 2000);
-            setTimeout(() => scrollToBottom(), 100);
-
-            // Auto-report to Admin
-            autoReportRestrictedContent(userMessage, restrictedCheck.reason);
-
-            return; // STOP execution
-        }
-        // ---------------------------------------------------------
 
         setInputMessage('');
         setSelectedProperties([]); // Clear selected properties after sending
@@ -1927,28 +1901,49 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 return;
             }
 
-            if (error.message.includes('timeout')) {
-                errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
-            } else if (error.message.includes('HTTP error')) {
-                errorMessage = 'Server error. Please try again later.';
-            } else if (error.message.includes('Invalid response structure')) {
-                errorMessage = 'I received an invalid response. Please try again.';
-            } else if (error.message.includes('Failed to fetch')) {
-                errorMessage = 'Network error. Please check your connection and try again.';
-            }
+            if (error.message.includes('restricted content')) {
+                // Handle AI Moderated Restriction
+                setMessages(prev => {
+                    const currentMessages = Array.isArray(prev) ? prev : [];
+                    // Find the last user message to mark it restricted
+                    const updatedMessages = [...currentMessages];
+                    for (let i = updatedMessages.length - 1; i >= 0; i--) {
+                        if (updatedMessages[i].role === 'user') {
+                            updatedMessages[i] = {
+                                ...updatedMessages[i],
+                                isRestricted: true,
+                                restrictionReason: "AI Moderated"
+                            };
+                            break;
+                        }
+                    }
+                    return updatedMessages;
+                });
+                autoReportRestrictedContent(lastUserMessageRef.current, "AI Moderated");
+            } else {
+                if (error.message.includes('timeout')) {
+                    errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
+                } else if (error.message.includes('HTTP error')) {
+                    errorMessage = 'Server error. Please try again later.';
+                } else if (error.message.includes('Invalid response structure')) {
+                    errorMessage = 'I received an invalid response. Please try again.';
+                } else if (error.message.includes('Failed to fetch')) {
+                    errorMessage = 'Network error. Please check your connection and try again.';
+                }
 
-            setMessages(prev => {
-                const currentMessages = Array.isArray(prev) ? prev : [];
-                return [...currentMessages, {
-                    role: 'assistant',
-                    content: errorMessage,
-                    timestamp: new Date().toISOString(),
-                    isError: true,
-                    originalUserMessage: lastUserMessageRef.current
-                }];
-            });
-            if (!isOpen) {
-                setUnreadCount(count => count + 1);
+                setMessages(prev => {
+                    const currentMessages = Array.isArray(prev) ? prev : [];
+                    return [...currentMessages, {
+                        role: 'assistant',
+                        content: errorMessage,
+                        timestamp: new Date().toISOString(),
+                        isError: true,
+                        originalUserMessage: lastUserMessageRef.current
+                    }];
+                });
+                if (!isOpen) {
+                    setUnreadCount(count => count + 1);
+                }
             }
         } finally {
             setIsLoading(false);
