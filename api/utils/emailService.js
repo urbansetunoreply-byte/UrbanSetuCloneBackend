@@ -11503,6 +11503,7 @@ export const sendLoanDisbursedEmail = async (email, loanDetails) => {
 
 // Send Report Acknowledgement Email
 export const sendReportAcknowledgementEmail = async (email, reportDetails) => {
+  const clientBaseUrl = 'https://urbansetu.vercel.app';
   try {
     const {
       messageId,
@@ -11511,7 +11512,7 @@ export const sendReportAcknowledgementEmail = async (email, reportDetails) => {
       createdAt
     } = reportDetails;
 
-    const subject = `Report Received - UrbanSetu`;
+    const subject = `AI Report Received - UrbanSetu`;
 
     const html = `
       <!DOCTYPE html>
@@ -11526,10 +11527,10 @@ export const sendReportAcknowledgementEmail = async (email, reportDetails) => {
           <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
             <div style="text-align: center; margin-bottom: 30px;">
               <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);">
-                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">🛡️</span>
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">🤖</span>
               </div>
               <h1 style="color: #1f2937; margin: 0; font-size: 28px;">We've Got You Covered</h1>
-              <p style="color: #6b7280; margin: 10px 0 0 0;">Report Acknowledgement</p>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">AI Response Report</p>
             </div>
             
             <div style="background-color: #eef2ff; padding: 25px; border-radius: 8px; border-left: 4px solid #6366f1; margin-bottom: 25px;">
@@ -11540,14 +11541,18 @@ export const sendReportAcknowledgementEmail = async (email, reportDetails) => {
                 <p style="color: #4b5563; margin: 0;"><strong>Date:</strong> ${new Date(createdAt).toLocaleString('en-IN')}</p>
               </div>
               <p style="color: #3730a3; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                Thank you for helping us keep UrbanSetu safe. We have received your report regarding an inappropriate message. Our moderation team will review this shortly and take appropriate action.
+                Thank you for helping us improve our AI. We have received your report regarding an inappropriate or incorrect AI response. Our team will review this incident to enhance safety and accuracy.
               </p>
             </div>
              
              <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 13px; color: #6b7280; text-align: center;">
-                 <p style="margin: 0;"><strong>Note:</strong> We do not reveal your identity to the reported user.</p>
+                 <p style="margin: 0;"><strong>Note:</strong> Your feedback directly helps in training and finetuning our AI models.</p>
              </div>
             
+            <div style="text-align: center; margin-top: 30px;">
+              <a href="${clientBaseUrl}/user/ai" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);">Return to AI Assistant</a>
+            </div>
+
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
               <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
