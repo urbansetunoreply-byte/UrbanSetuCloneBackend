@@ -27,6 +27,10 @@ const chatHistorySchema = new mongoose.Schema({
       type: String,
       required: true
     },
+    isRestricted: {
+      type: Boolean,
+      default: false
+    },
     timestamp: {
       type: Date,
       default: Date.now
@@ -44,7 +48,7 @@ const chatHistorySchema = new mongoose.Schema({
     type: Boolean,
     default: true
   }
-}, { 
+}, {
   timestamps: true,
   // Add indexes for better performance
   indexes: [
@@ -55,16 +59,16 @@ const chatHistorySchema = new mongoose.Schema({
 });
 
 // Update lastActivity and totalMessages before saving
-chatHistorySchema.pre('save', function(next) {
+chatHistorySchema.pre('save', function (next) {
   this.lastActivity = new Date();
   this.totalMessages = this.messages.length;
   next();
 });
 
 // Static method to find or create a chat session
-chatHistorySchema.statics.findOrCreateSession = async function(userId, sessionId) {
+chatHistorySchema.statics.findOrCreateSession = async function (userId, sessionId) {
   let chatHistory = await this.findOne({ userId, sessionId, isActive: true });
-  
+
   if (!chatHistory) {
     chatHistory = new this({
       userId,
@@ -73,43 +77,44 @@ chatHistorySchema.statics.findOrCreateSession = async function(userId, sessionId
     });
     await chatHistory.save();
   }
-  
+
   return chatHistory;
 };
 
 // Instance method to add a message
-chatHistorySchema.methods.addMessage = function(role, content) {
+chatHistorySchema.methods.addMessage = function (role, content, isRestricted = false) {
   this.messages.push({
     role,
     content,
+    isRestricted,
     timestamp: new Date()
   });
   return this.save();
 };
 
 // Instance method to clear messages
-chatHistorySchema.methods.clearMessages = function() {
+chatHistorySchema.methods.clearMessages = function () {
   this.messages = [];
   this.totalMessages = 0;
   return this.save();
 };
 
 // Instance method to deactivate session
-chatHistorySchema.methods.deactivate = function() {
+chatHistorySchema.methods.deactivate = function () {
   this.isActive = false;
   return this.save();
 };
 
 // Static method to get user's chat sessions
-chatHistorySchema.statics.getUserSessions = async function(userId) {
-  const sessions = await this.find({ 
-    userId, 
-    isActive: true 
+chatHistorySchema.statics.getUserSessions = async function (userId) {
+  const sessions = await this.find({
+    userId,
+    isActive: true
   })
-  .select('sessionId totalMessages lastActivity createdAt name')
-  .sort({ lastActivity: -1 })
-  .limit(20); // Limit to last 20 sessions
-  
+    .select('sessionId totalMessages lastActivity createdAt name')
+    .sort({ lastActivity: -1 })
+    .limit(20); // Limit to last 20 sessions
+
   return sessions.map(session => ({
     sessionId: session.sessionId,
     name: session.name,

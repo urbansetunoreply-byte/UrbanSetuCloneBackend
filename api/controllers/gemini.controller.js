@@ -106,6 +106,17 @@ export const chatWithGemini = async (req, res) => {
 
         if (isRestricted) {
             console.warn(`[Moderation] Blocked restricted content from user ${userId || 'guest'}`);
+
+            // Save restricted message to history if user is logged in
+            if (userId) {
+                try {
+                    const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
+                    await chatHistory.addMessage('user', sanitizedMessage, true); // true = isRestricted
+                } catch (saveError) {
+                    console.error('Error saving restricted message to history:', saveError);
+                }
+            }
+
             return res.status(403).json({
                 success: false,
                 message: 'Policy violation: restricted content detected.'
