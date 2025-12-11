@@ -23,8 +23,12 @@ import UserAvatar from '../components/UserAvatar';
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import { getThemeColors, getDarkModeContainerClass, getDarkModeInputClass, getDarkModeTextClass, getDarkModeSecondaryTextClass, getDarkModeBorderClass, getDarkModeHoverClass } from '../utils/chatTheme';
+import GeminiAIWrapper from "../components/GeminiAIWrapper";
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const APPOINTMENT_TIME_SLOTS = Array.from({ length: 21 }, (_, i) => {
@@ -13126,6 +13130,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* Chat Settings Modal */}
 
 
+      {/* <GeminiAIWrapper /> */}
+      <ContactSupportWrapper />
     </div>
   );
 }

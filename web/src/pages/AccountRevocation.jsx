@@ -4,6 +4,7 @@ import { CheckCircle2, XCircle, Clock, User, Shield, AlertTriangle, ArrowRight, 
 
 import { useSelector } from 'react-redux';
 import { usePageTitle } from '../hooks/usePageTitle';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AccountRevocation() {
@@ -377,6 +378,7 @@ export default function AccountRevocation() {
         )}
 
       </div>
+      <ContactSupportWrapper />
     </div>
   );
 }

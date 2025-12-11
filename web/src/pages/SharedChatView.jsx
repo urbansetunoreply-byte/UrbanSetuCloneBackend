@@ -3,6 +3,8 @@ import { useParams } from 'react-router-dom';
 import { FaRobot, FaUser, FaClock, FaCalendar, FaExclamationTriangle } from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import GeminiAIWrapper from "../components/GeminiAIWrapper";
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 export default function SharedChatView() {
     const { shareToken } = useParams();
@@ -163,6 +165,9 @@ export default function SharedChatView() {
                     </a>
                 </div>
             </footer>
+
+            <GeminiAIWrapper />
+            <ContactSupportWrapper />
         </div>
     );
 }

@@ -25,6 +25,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { useSignout } from '../hooks/useSignout';
 // Note: Do not import server-only libs here
 import { useAudioActivity } from '../hooks/useAudioActivity';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -11674,6 +11675,7 @@ function AdminAppointmentRow({
           </div>
         )}
 
+        <ContactSupportWrapper />
       </td>
     </tr>
   );

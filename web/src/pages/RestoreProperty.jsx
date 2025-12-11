@@ -16,6 +16,7 @@ import {
   Image as ImageIcon
 } from 'lucide-react';
 import { usePageTitle } from '../hooks/usePageTitle';
+import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -373,6 +374,7 @@ const RestoreProperty = () => {
         </div>
 
       </div>
+      <ContactSupportWrapper />
     </div>
   );
 };

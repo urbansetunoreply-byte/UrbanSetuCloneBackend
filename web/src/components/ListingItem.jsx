@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { MdLocationOn } from 'react-icons/md';
 import { useWishlist } from '../WishlistContext';
-import { FaHeart, FaTrash, FaCheckCircle } from 'react-icons/fa';
+import { FaHeart, FaTrash, FaCheckCircle, FaLock } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { maskAddress } from '../utils/addressMasking';
 import PrimaryButton from "./ui/PrimaryButton";
@@ -12,6 +12,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
   const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
   const [isInWishlistState, setIsInWishlistState] = useState(false);
   const [showAppointmentTooltip, setShowAppointmentTooltip] = useState(false);
+  const [showRentTooltip, setShowRentTooltip] = useState(false);
   const [showWishlistTooltip, setShowWishlistTooltip] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -31,7 +32,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
       setTimeout(() => setShowWishlistTooltip(false), 3000);
       return;
     }
-    
+
     if (isInWishlistState) {
       await removeFromWishlist(listing._id);
       setIsInWishlistState(false);
@@ -49,11 +50,20 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
       setTimeout(() => setShowAppointmentTooltip(false), 3000);
       return;
     }
-    
-    const appointmentUrl = isAdminContext 
+
+    const appointmentUrl = isAdminContext
       ? `/admin/appointmentlisting?listingId=${listing._id}&listingType=${listing.type}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}`
       : `/user/appointment?listingId=${listing._id}&listingType=${listing.type}&propertyName=${encodeURIComponent(listing.name)}&propertyDescription=${encodeURIComponent(listing.description)}`;
     navigate(appointmentUrl);
+  };
+
+  const onHandleRent = () => {
+    if (!currentUser) {
+      setShowRentTooltip(true);
+      setTimeout(() => setShowRentTooltip(false), 3000);
+      return;
+    }
+    navigate(`/user/rent-property?listingId=${listing._id}`);
   };
 
   const formatINR = (amount) => {
@@ -103,9 +113,8 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
           <div className="relative">
             <button
               onClick={handleWishList}
-              className={`p-2 rounded-full transition ${
-                isInWishlistState ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500'
-              }`}
+              className={`p-2 rounded-full transition ${isInWishlistState ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500'
+                }`}
               title={isInWishlistState ? 'Remove from wishlist' : 'Add to wishlist'}
             >
               <FaHeart className="text-base sm:text-lg" />
@@ -222,7 +231,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
             <span className="inline-flex items-center gap-1"><BedDouble className="w-4 h-4" /> {listing.bedrooms} {listing.bedrooms > 1 ? 'beds' : 'bed'}</span>
             <span className="inline-flex items-center gap-1"><Bath className="w-4 h-4" /> {listing.bathrooms} {listing.bathrooms > 1 ? 'baths' : 'bath'}</span>
           </div>
-          
+
           {/* Property Features - Special Offer + Type badge */}
           <div className="mt-2 flex flex-wrap items-center gap-1">
             {listing.offer && (
@@ -232,9 +241,8 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
             )}
             {listing.type && (
               <span
-                className={`text-xs px-2 py-1 rounded-full font-medium ${
-                  listing.type === 'rent' ? 'bg-teal-100 text-teal-700' : 'bg-purple-100 text-purple-700'
-                }`}
+                className={`text-xs px-2 py-1 rounded-full font-medium ${listing.type === 'rent' ? 'bg-teal-100 text-teal-700' : 'bg-purple-100 text-purple-700'
+                  }`}
               >
                 {listing.type === 'rent' ? 'Rent' : 'Sale'}
               </span>
@@ -246,18 +254,34 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
       <div className="mt-2 sm:mt-4">
         {currentUser && currentUser._id === listing.userRef ? (
           <div className="w-full text-red-500 font-semibold text-center py-2 sm:py-3 rounded-lg bg-red-50 border border-red-200">
-            You cannot book an appointment for your own property.
+            You cannot book/rent your own property.
           </div>
         ) : (
           <div className="relative flex justify-center">
-            <PrimaryButton variant="blue" type="button" onClick={onHandleAppointment} className="!py-2 sm:!py-3">
-              📅 Book Appointment
-            </PrimaryButton>
-            {showAppointmentTooltip && (
-              <div className="absolute bottom-full mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
-                Please login to book appointments
-                <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
-              </div>
+            {listing.type === 'rent' ? (
+              <>
+                <PrimaryButton variant="green" type="button" onClick={onHandleRent} className="!py-2 sm:!py-3 flex items-center justify-center gap-2">
+                  <FaLock className="w-4 h-4" /> Rent This Property
+                </PrimaryButton>
+                {showRentTooltip && (
+                  <div className="absolute bottom-full mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                    Please login to rent this property
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                  </div>
+                )}
+              </>
+            ) : (
+              <>
+                <PrimaryButton variant="blue" type="button" onClick={onHandleAppointment} className="!py-2 sm:!py-3 flex items-center justify-center gap-2">
+                  📅 Book Appointment
+                </PrimaryButton>
+                {showAppointmentTooltip && (
+                  <div className="absolute bottom-full mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
+                    Please login to book appointments
+                    <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                  </div>
+                )}
+              </>
             )}
           </div>
         )}
