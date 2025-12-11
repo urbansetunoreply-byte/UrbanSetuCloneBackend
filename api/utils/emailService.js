@@ -4,10 +4,10 @@ import { sendBrevoEmail, initializeBrevoService, initializeBrevoApiService, test
 // Enhanced transporter configuration with multiple fallback options
 const createTransporter = () => {
   const baseConfig = {
-  auth: {
-    user: process.env.EMAIL_USER,
-    pass: process.env.EMAIL_PASS
-  },
+    auth: {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS
+    },
     // Very conservative timeout settings for Render
     connectionTimeout: 15000, // 15 seconds
     greetingTimeout: 10000,   // 10 seconds
@@ -116,7 +116,7 @@ let transporterIndex = 0;
 // Initialize transporter with fallback
 const initializeTransporter = async () => {
   const configs = createTransporterConfigs();
-  
+
   for (let i = 0; i < configs.length; i++) {
     try {
       const testTransporter = nodemailer.createTransport(configs[i]);
@@ -141,7 +141,7 @@ const verifyTransporter = async () => {
   if (!currentTransporter) {
     return await initializeTransporter();
   }
-  
+
   try {
     await currentTransporter.verify();
     return true;
@@ -157,7 +157,7 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
   // Try Brevo first
   try {
     console.log('Attempting to send email via Brevo...');
-    
+
     const brevoEmailData = {
       to: mailOptions.to,
       subject: mailOptions.subject,
@@ -166,13 +166,13 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
     };
 
     const brevoResult = await sendBrevoEmail(brevoEmailData);
-    
+
     if (brevoResult.success) {
       emailDeliveryStats.sent++;
       emailDeliveryStats.lastSent = new Date();
       console.log('✅ Email sent successfully via Brevo:', brevoResult.messageId);
-      return { 
-        success: true, 
+      return {
+        success: true,
         messageId: brevoResult.messageId,
         attempts: 1,
         provider: 'brevo'
@@ -186,7 +186,7 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
 
   // Fallback to Gmail if Brevo fails
   console.log('Falling back to Gmail SMTP...');
-  
+
   // Verify Gmail connection before first attempt
   if (!await verifyTransporter()) {
     return {
@@ -200,14 +200,14 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
   for (let attempt = 1; attempt <= maxRetries; attempt++) {
     try {
       console.log(`Gmail send attempt ${attempt}...`);
-      
+
       const result = await currentTransporter.sendMail(mailOptions);
       emailDeliveryStats.sent++;
       emailDeliveryStats.lastSent = new Date();
-      
+
       console.log(`✅ Email sent successfully via Gmail (attempt ${attempt}):`, result.messageId);
-      return { 
-        success: true, 
+      return {
+        success: true,
         messageId: result.messageId,
         attempts: attempt,
         provider: 'gmail',
@@ -215,7 +215,7 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
       };
     } catch (error) {
       console.log(`Gmail send attempt ${attempt} failed:`, error.message);
-      
+
       // Check for specific error types and try to reinitialize
       if (error.code === 'ECONNECTION' || error.code === 'ETIMEDOUT' || error.code === 'ECONNRESET') {
         console.error('Connection error detected, attempting to reinitialize transporter...');
@@ -224,7 +224,7 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
           console.error('Failed to reinitialize transporter');
         }
       }
-      
+
       // Track failed attempts
       if (attempt === maxRetries) {
         emailDeliveryStats.failed++;
@@ -235,9 +235,9 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
           errorCode: error.code,
           configUsed: transporterIndex + 1
         };
-        
-        return { 
-          success: false, 
+
+        return {
+          success: false,
           error: error.message,
           attempts: attempt,
           errorCode: error.code,
@@ -245,11 +245,11 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
           configUsed: transporterIndex + 1
         };
       }
-      
+
       // Calculate delay with exponential backoff
       const delay = baseDelay * Math.pow(2, attempt - 1);
       emailDeliveryStats.retries++;
-      
+
       console.log(`Retrying Gmail send in ${delay}ms...`);
       await new Promise(resolve => setTimeout(resolve, delay));
     }
@@ -260,9 +260,9 @@ const sendEmailWithRetry = async (mailOptions, maxRetries = 3, baseDelay = 1000)
 const createErrorResponse = (error, context = '') => {
   const errorMessage = error.message || 'Unknown error occurred';
   console.error(`Email sending error${context ? ` (${context})` : ''}:`, error);
-  
-  return { 
-    success: false, 
+
+  return {
+    success: false,
     error: errorMessage,
     context: context,
     timestamp: new Date().toISOString()
@@ -271,8 +271,8 @@ const createErrorResponse = (error, context = '') => {
 
 // Standardized success response format
 const createSuccessResponse = (messageId = null, context = '') => {
-  return { 
-    success: true, 
+  return {
+    success: true,
     messageId: messageId,
     context: context,
     timestamp: new Date().toISOString()
@@ -353,8 +353,8 @@ export const sendSignupOTPEmail = async (email, otp) => {
 
   try {
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'signup_otp') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'signup_otp') :
       createErrorResponse(new Error(result.error), 'signup_otp');
   } catch (error) {
     return createErrorResponse(error, 'signup_otp');
@@ -406,8 +406,8 @@ export const sendForgotPasswordOTPEmail = async (email, otp) => {
 
   try {
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'forgot_password_otp') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'forgot_password_otp') :
       createErrorResponse(new Error(result.error), 'forgot_password_otp');
   } catch (error) {
     return createErrorResponse(error, 'forgot_password_otp');
@@ -459,8 +459,8 @@ export const sendProfileEmailOTPEmail = async (email, otp) => {
 
   try {
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'profile_email_otp') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'profile_email_otp') :
       createErrorResponse(new Error(result.error), 'profile_email_otp');
   } catch (error) {
     return createErrorResponse(error, 'profile_email_otp');
@@ -512,8 +512,8 @@ export const sendLoginOTPEmail = async (email, otp) => {
 
   try {
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'login_otp') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'login_otp') :
       createErrorResponse(new Error(result.error), 'login_otp');
   } catch (error) {
     return createErrorResponse(error, 'login_otp');
@@ -560,8 +560,8 @@ export const sendAccountDeletionOTPEmail = async (email, otp) => {
 
   try {
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'account_deletion_otp') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'account_deletion_otp') :
       createErrorResponse(new Error(result.error), 'account_deletion_otp');
   } catch (error) {
     return createErrorResponse(error, 'account_deletion_otp');
@@ -608,8 +608,8 @@ export const sendTransferRightsOTPEmail = async (email, otp) => {
 
   try {
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'transfer_rights_otp') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'transfer_rights_otp') :
       createErrorResponse(new Error(result.error), 'transfer_rights_otp');
   } catch (error) {
     return createErrorResponse(error, 'transfer_rights_otp');
@@ -664,8 +664,8 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
 
   try {
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'new_login_notification') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'new_login_notification') :
       createErrorResponse(new Error(result.error), 'new_login_notification');
   } catch (error) {
     return createErrorResponse(error, 'new_login_notification');
@@ -729,8 +729,8 @@ export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, 
 
   try {
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'suspicious_login_alert') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'suspicious_login_alert') :
       createErrorResponse(new Error(result.error), 'suspicious_login_alert');
   } catch (error) {
     return createErrorResponse(error, 'suspicious_login_alert');
@@ -780,8 +780,8 @@ export const sendForcedLogoutEmail = async (email, reason, performedBy) => {
 
   try {
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'forced_logout_notification') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'forced_logout_notification') :
       createErrorResponse(new Error(result.error), 'forced_logout_notification');
   } catch (error) {
     return createErrorResponse(error, 'forced_logout_notification');
@@ -791,19 +791,19 @@ export const sendForcedLogoutEmail = async (email, reason, performedBy) => {
 // Payment Success Email
 export const sendPaymentSuccessEmail = async (email, paymentDetails) => {
   try {
-    const { 
-      paymentId, 
-      amount, 
-      currency, 
-      propertyName, 
-      appointmentDate, 
-      receiptUrl, 
+    const {
+      paymentId,
+      amount,
+      currency,
+      propertyName,
+      appointmentDate,
+      receiptUrl,
       paymentType,
-      gateway 
+      gateway
     } = paymentDetails;
 
     const subject = `Payment Successful - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -971,19 +971,19 @@ export const sendPaymentSuccessEmail = async (email, paymentDetails) => {
 // Payment Failed Email
 export const sendPaymentFailedEmail = async (email, paymentDetails) => {
   try {
-    const { 
-      paymentId, 
-      amount, 
-      currency, 
-      propertyName, 
-      appointmentDate, 
+    const {
+      paymentId,
+      amount,
+      currency,
+      propertyName,
+      appointmentDate,
       paymentType,
       gateway,
-      reason 
+      reason
     } = paymentDetails;
 
     const subject = `Payment Failed - ${propertyName}`;
-    
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -1088,7 +1088,7 @@ export const sendOTPEmail = async (email, otp) => {
 // Initialize email service and verify connection on startup
 const initializeEmailService = async () => {
   console.log('🚀 Initializing email service...');
-  
+
   // Initialize Brevo API service first (more reliable)
   console.log('📧 Initializing Brevo API service...');
   const brevoApiResult = initializeBrevoApiService();
@@ -1106,14 +1106,14 @@ const initializeEmailService = async () => {
   } else {
     console.log('⚠️ Brevo SMTP service initialization failed:', brevoSmtpResult.error);
   }
-  
+
   // Check Gmail fallback environment variables
   if (!process.env.EMAIL_USER || !process.env.EMAIL_PASS) {
     console.warn('⚠️ Gmail fallback not configured: Missing EMAIL_USER or EMAIL_PASS environment variables');
     console.log('📧 Email service will use Brevo only');
   } else {
     console.log(`📧 Gmail fallback configured for: ${process.env.EMAIL_USER}`);
-    
+
     // Try to initialize Gmail transporter as fallback
     const isGmailConnected = await initializeTransporter();
     if (isGmailConnected) {
@@ -1122,11 +1122,11 @@ const initializeEmailService = async () => {
       console.warn('⚠️ Gmail fallback initialization failed: All SMTP configurations failed');
     }
   }
-  
+
   // Check if at least one service is available
   const brevoStatus = getBrevoStatus();
   const hasGmailFallback = process.env.EMAIL_USER && process.env.EMAIL_PASS;
-  
+
   if (brevoStatus.isInitialized || hasGmailFallback) {
     console.log('✅ Email service ready with at least one provider');
     return true;
@@ -1185,15 +1185,15 @@ export const sendPasswordResetSuccessEmail = async (userEmail, userName, resetMe
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0;">
                   <span style="color: #6b7280; font-weight: 500;">Reset Time:</span>
-                  <span style="color: #1f2937; font-weight: 600;">${formatIndiaTime(undefined, { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZoneName: 'short'
-                  })}</span>
+                  <span style="color: #1f2937; font-weight: 600;">${formatIndiaTime(undefined, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    })}</span>
                 </div>
               </div>
             </div>
@@ -1286,15 +1286,15 @@ export const sendPasswordChangeSuccessEmail = async (userEmail, userName, change
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0;">
                   <span style="color: #6b7280; font-weight: 500;">Change Time:</span>
-                  <span style="color: #1f2937; font-weight: 600;">${formatIndiaTime(undefined, { 
-                    weekday: 'long', 
-                    year: 'numeric', 
-                    month: 'long', 
-                    day: 'numeric',
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    timeZoneName: 'short'
-                  })}</span>
+                  <span style="color: #1f2937; font-weight: 600;">${formatIndiaTime(undefined, {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    })}</span>
                 </div>
               </div>
             </div>
@@ -1345,16 +1345,16 @@ export const sendPasswordChangeSuccessEmail = async (userEmail, userName, change
 // Welcome Email for New Account
 export const sendWelcomeEmail = async (email, userDetails) => {
   try {
-    const { 
-      username, 
-      role, 
-      mobileNumber, 
+    const {
+      username,
+      role,
+      mobileNumber,
       address,
-      adminApprovalStatus 
+      adminApprovalStatus
     } = userDetails;
 
     const subject = `Welcome to UrbanSetu, ${username}!`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -1481,7 +1481,7 @@ export const sendAccountDeletionEmail = async (email, userDetails, revocationLin
     const { username, role } = userDetails;
 
     const subject = `Account Deleted - UrbanSetu`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -1586,7 +1586,7 @@ export const sendAccountDeletionEmail = async (email, userDetails, revocationLin
 export const sendContactSupportConfirmationEmail = async (email, ticketId, message, senderName) => {
   try {
     const subject = `📬 We've Received Your Support Request - Ticket #${ticketId}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -1691,7 +1691,7 @@ export const sendContactSupportConfirmationEmail = async (email, ticketId, messa
 export const sendContactSupportReplyEmail = async (email, ticketId, senderName, adminReply) => {
   try {
     const subject = `📨 You Have a Reply from UrbanSetu Support - Ticket #${ticketId}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -1791,7 +1791,7 @@ export const sendAccountActivationEmail = async (email, userDetails) => {
     const { username, role } = userDetails;
 
     const subject = `Account Restored - Welcome Back to UrbanSetu!`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -1891,15 +1891,15 @@ export const sendAccountActivationEmail = async (email, userDetails) => {
 // Appointment Reminder Email
 export const sendAppointmentReminderEmail = async (email, appointmentDetails, userRole) => {
   try {
-    const { 
-      propertyName, 
-      propertyDescription, 
-      date, 
-      time, 
-      buyerName, 
-      buyerEmail, 
-      sellerName, 
-      sellerEmail, 
+    const {
+      propertyName,
+      propertyDescription,
+      date,
+      time,
+      buyerName,
+      buyerEmail,
+      sellerName,
+      sellerEmail,
       purpose,
       listingId
     } = appointmentDetails;
@@ -1911,13 +1911,13 @@ export const sendAppointmentReminderEmail = async (email, appointmentDetails, us
       month: 'long',
       day: 'numeric'
     });
-    
+
     const isBuyer = userRole === 'buyer';
     const otherPartyName = isBuyer ? sellerName : buyerName;
     const otherPartyEmail = isBuyer ? sellerEmail : buyerEmail;
-    
+
     const subject = `Appointment Reminder - ${propertyName} - Tomorrow at ${time}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -2051,13 +2051,13 @@ export const sendAppointmentReminderEmail = async (email, appointmentDetails, us
 // Price Drop Alert Email
 export const sendPriceDropAlertEmail = async (email, priceDropDetails) => {
   try {
-    const { 
-      propertyName, 
-      propertyDescription, 
+    const {
+      propertyName,
+      propertyDescription,
       propertyImage,
-      originalPrice, 
-      currentPrice, 
-      dropAmount, 
+      originalPrice,
+      currentPrice,
+      dropAmount,
       dropPercentage,
       propertyType,
       propertyLocation,
@@ -2066,7 +2066,7 @@ export const sendPriceDropAlertEmail = async (email, priceDropDetails) => {
     } = priceDropDetails;
 
     const subject = `💰 Price Drop Alert - ${propertyName} - Save ₹${dropAmount.toLocaleString()}!`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -2209,7 +2209,7 @@ export const sendAccountDeletionReminderEmail = async (email, userDetails, revoc
     const { username, role } = userDetails;
 
     const subject = `Reminder: Restore Your UrbanSetu Account (${daysLeft} days left)`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -2305,7 +2305,7 @@ export const sendAccountDeletionFinalWarningEmail = async (email, userDetails, r
     const { username, role } = userDetails;
 
     const subject = `FINAL WARNING: Your UrbanSetu Account Will Be Deleted in ${daysLeft} Day${daysLeft === 1 ? '' : 's'}!`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -2404,7 +2404,7 @@ export const sendAdminApprovalEmail = async (email, adminDetails) => {
     const { username, role, approvedBy, approvedAt } = adminDetails;
 
     const subject = `🎉 Welcome! Your Admin Account Has Been Approved - UrbanSetu`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -2507,7 +2507,7 @@ export const sendAdminRejectionEmail = async (email, adminDetails) => {
     const { username, role, rejectedBy, rejectedAt } = adminDetails;
 
     const subject = `❌ Admin Account Request Update - UrbanSetu`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -2609,10 +2609,10 @@ export const sendAccountSuspensionEmail = async (email, suspensionDetails) => {
   try {
     const { username, role, reason, suspendedBy, suspendedAt, isSuspension } = suspensionDetails;
 
-    const subject = isSuspension 
-      ? `⚠️ Account Suspended - UrbanSetu` 
+    const subject = isSuspension
+      ? `⚠️ Account Suspended - UrbanSetu`
       : `✅ Account Reactivated - UrbanSetu`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -2741,7 +2741,7 @@ export const sendUserPromotionEmail = async (email, promotionDetails) => {
     const { username, promotedBy, promotedAt } = promotionDetails;
 
     const subject = `🎉 Congratulations! You've Been Promoted to Admin - UrbanSetu`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -2845,7 +2845,7 @@ export const sendManualSoftbanEmail = async (email, softbanDetails) => {
     const { username, role, reason, softbannedBy, softbannedAt, revocationLink } = softbanDetails;
 
     const subject = `⚠️ Account Softbanned - UrbanSetu`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -2963,7 +2963,7 @@ export const sendManualAccountRestorationEmail = async (email, restorationDetail
     const { username, role, restoredBy, restoredAt } = restorationDetails;
 
     const subject = `✅ Account Restored by Administrator - UrbanSetu`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -3074,7 +3074,7 @@ export const sendAdminDemotionEmail = async (email, demotionDetails) => {
     const { username, demotedBy, demotedAt, reason } = demotionDetails;
 
     const subject = `📋 Admin Access Revoked - UrbanSetu`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -3182,19 +3182,19 @@ export const sendAdminDemotionEmail = async (email, demotionDetails) => {
 // Send outdated appointment email
 export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, userRole) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
-      buyerName, 
-      buyerEmail, 
-      sellerName, 
-      sellerEmail, 
+      date,
+      time,
+      buyerName,
+      buyerEmail,
+      sellerName,
+      sellerEmail,
       purpose,
       listingId,
       message
@@ -3207,14 +3207,14 @@ export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, us
       month: 'long',
       day: 'numeric'
     });
-    
+
     const isBuyer = userRole === 'buyer';
     const otherPartyName = isBuyer ? sellerName : buyerName;
     const otherPartyEmail = isBuyer ? sellerEmail : buyerEmail;
     const userName = isBuyer ? buyerName : sellerName;
-    
+
     const subject = `Appointment Expired - ${propertyName} - Book New Appointment`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -3365,18 +3365,18 @@ export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, us
 // Appointment Booking Confirmation Email
 export const sendAppointmentBookingEmail = async (email, appointmentDetails, userRole) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
-      buyerName, 
-      buyerEmail, 
-      sellerName, 
+      date,
+      time,
+      buyerName,
+      buyerEmail,
+      sellerName,
       sellerEmail,
       purpose,
       message,
@@ -3386,10 +3386,10 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
     } = appointmentDetails;
 
     const subject = `🏠 Appointment Booked - ${propertyName} | UrbanSetu`;
-    
+
     const isBuyer = userRole === 'buyer';
     const isSeller = userRole === 'seller';
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -3397,7 +3397,7 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -3405,8 +3405,8 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -3799,16 +3799,16 @@ export const sendAppointmentBookingEmail = async (email, appointmentDetails, use
 // Seller Payment Notification Email (when buyer makes payment)
 export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
-      buyerName, 
+      date,
+      time,
+      buyerName,
       paymentAmount,
       paymentCurrency,
       paymentGateway,
@@ -3816,7 +3816,7 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
     } = paymentDetails;
 
     const subject = `💰 Payment Received - ${propertyName} | UrbanSetu`;
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -3824,7 +3824,7 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -3832,8 +3832,8 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -4191,15 +4191,15 @@ export const sendSellerPaymentNotificationEmail = async (email, paymentDetails) 
 // Appointment Rejected Email (to buyer)
 export const sendAppointmentRejectedEmail = async (email, appointmentDetails) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
+      date,
+      time,
       sellerName,
       purpose,
       message,
@@ -4208,7 +4208,7 @@ export const sendAppointmentRejectedEmail = async (email, appointmentDetails) =>
     } = appointmentDetails;
 
     const subject = `❌ Appointment Rejected - ${propertyName} | UrbanSetu`;
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -4216,7 +4216,7 @@ export const sendAppointmentRejectedEmail = async (email, appointmentDetails) =>
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -4224,8 +4224,8 @@ export const sendAppointmentRejectedEmail = async (email, appointmentDetails) =>
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -4600,15 +4600,15 @@ export const sendAppointmentRejectedEmail = async (email, appointmentDetails) =>
 // Appointment Accepted Email (to buyer)
 export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
+      date,
+      time,
       sellerName,
       purpose,
       message,
@@ -4616,7 +4616,7 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
     } = appointmentDetails;
 
     const subject = `✅ Appointment Accepted - ${propertyName} | UrbanSetu`;
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -4624,7 +4624,7 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -4632,8 +4632,8 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -5000,15 +5000,15 @@ export const sendAppointmentAcceptedEmail = async (email, appointmentDetails) =>
 // Appointment Cancelled by Buyer Email (to seller)
 export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDetails) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
+      date,
+      time,
       buyerName,
       purpose,
       message,
@@ -5017,7 +5017,7 @@ export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDet
     } = appointmentDetails;
 
     const subject = `❌ Appointment Cancelled by Buyer - ${propertyName} | UrbanSetu`;
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -5025,7 +5025,7 @@ export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDet
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -5033,8 +5033,8 @@ export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDet
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -5409,15 +5409,15 @@ export const sendAppointmentCancelledByBuyerEmail = async (email, appointmentDet
 // Appointment Cancelled by Seller Email (to buyer)
 export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDetails) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
+      date,
+      time,
       sellerName,
       purpose,
       message,
@@ -5426,7 +5426,7 @@ export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDe
     } = appointmentDetails;
 
     const subject = `❌ Appointment Cancelled by Seller - ${propertyName} | UrbanSetu`;
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -5434,7 +5434,7 @@ export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDe
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -5442,8 +5442,8 @@ export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDe
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -5818,15 +5818,15 @@ export const sendAppointmentCancelledBySellerEmail = async (email, appointmentDe
 // Appointment Cancelled by Admin Email (to both buyer and seller)
 export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDetails, userRole) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
+      date,
+      time,
       buyerName,
       sellerName,
       purpose,
@@ -5837,10 +5837,10 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
     } = appointmentDetails;
 
     const subject = `❌ Appointment Cancelled by Admin - ${propertyName} | UrbanSetu`;
-    
+
     const isBuyer = userRole === 'buyer';
     const isSeller = userRole === 'seller';
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -5848,7 +5848,7 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -5856,8 +5856,8 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -6264,15 +6264,15 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
 // Appointment Reinitiated by Admin Email (to both buyer and seller)
 export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentDetails, userRole) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
+      date,
+      time,
       buyerName,
       sellerName,
       purpose,
@@ -6282,10 +6282,10 @@ export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentD
     } = appointmentDetails;
 
     const subject = `🔄 Appointment Reinitiated by Admin - ${propertyName} | UrbanSetu`;
-    
+
     const isBuyer = userRole === 'buyer';
     const isSeller = userRole === 'seller';
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -6293,7 +6293,7 @@ export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentD
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -6301,8 +6301,8 @@ export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentD
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -6706,15 +6706,15 @@ export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentD
 // Appointment Reinitiated by Seller Email (to buyer)
 export const sendAppointmentReinitiatedBySellerEmail = async (email, appointmentDetails) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
+      date,
+      time,
       sellerName,
       purpose,
       message,
@@ -6723,7 +6723,7 @@ export const sendAppointmentReinitiatedBySellerEmail = async (email, appointment
     } = appointmentDetails;
 
     const subject = `🔄 Appointment Reinitiated by Seller - ${propertyName} | UrbanSetu`;
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -6731,7 +6731,7 @@ export const sendAppointmentReinitiatedBySellerEmail = async (email, appointment
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -6739,8 +6739,8 @@ export const sendAppointmentReinitiatedBySellerEmail = async (email, appointment
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -7113,15 +7113,15 @@ export const sendAppointmentReinitiatedBySellerEmail = async (email, appointment
 // Appointment Reinitiated by Buyer Email (to seller)
 export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentDetails) => {
   try {
-    const { 
+    const {
       appointmentId,
-      propertyName, 
-      propertyDescription, 
+      propertyName,
+      propertyDescription,
       propertyAddress,
       propertyPrice,
       propertyImages,
-      date, 
-      time, 
+      date,
+      time,
       buyerName,
       purpose,
       message,
@@ -7130,7 +7130,7 @@ export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentD
     } = appointmentDetails;
 
     const subject = `🔄 Appointment Reinitiated by Buyer - ${propertyName} | UrbanSetu`;
-    
+
     // Format date and time
     const appointmentDate = new Date(date).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -7138,7 +7138,7 @@ export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentD
       month: 'long',
       day: 'numeric'
     });
-    
+
     const appointmentTime = time ? new Date(`2000-01-01T${time}`).toLocaleTimeString('en-US', {
       hour: 'numeric',
       minute: '2-digit',
@@ -7146,8 +7146,8 @@ export const sendAppointmentReinitiatedByBuyerEmail = async (email, appointmentD
     }) : 'Time TBD';
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -7542,7 +7542,7 @@ export const sendRefundRequestApprovedEmail = async (email, refundDetails) => {
     } = refundDetails;
 
     const subject = `✅ Refund Request Approved - ${propertyName} | UrbanSetu`;
-    
+
     // Format date and time
     const appointmentDateFormatted = new Date(appointmentDate).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -8067,7 +8067,7 @@ export const sendRefundRequestRejectedEmail = async (email, refundDetails) => {
     } = refundDetails;
 
     const subject = `❌ Refund Request Rejected - ${propertyName} | UrbanSetu`;
-    
+
     // Format date and time
     const appointmentDateFormatted = new Date(appointmentDate).toLocaleDateString('en-US', {
       weekday: 'long',
@@ -8553,9 +8553,9 @@ export const sendRefundRequestRejectedEmail = async (email, refundDetails) => {
 // Property Listing Published Email
 export const sendPropertyListingPublishedEmail = async (email, listingDetails, isAdminCreated = false) => {
   try {
-    const { 
+    const {
       listingId,
-      propertyName, 
+      propertyName,
       propertyDescription,
       propertyAddress,
       propertyPrice,
@@ -8569,7 +8569,7 @@ export const sendPropertyListingPublishedEmail = async (email, listingDetails, i
       createdBy
     } = listingDetails;
 
-    const subject = isAdminCreated 
+    const subject = isAdminCreated
       ? `🏠 Property Added by Admin - ${propertyName}`
       : `🎉 Your Property "${propertyName}" is Now Live!`;
 
@@ -8866,7 +8866,7 @@ export const sendOwnerAssignedEmail = async (email, details = {}) => {
 // New Properties Matching Search Email
 export const sendNewPropertiesMatchingSearchEmail = async (email, searchDetails) => {
   try {
-    const { 
+    const {
       searchQuery,
       properties,
       totalCount,
@@ -8980,7 +8980,7 @@ export const sendNewPropertiesMatchingSearchEmail = async (email, searchDetails)
 // Property Edit Notification Email
 export const sendPropertyEditNotificationEmail = async (email, editDetails, userRole) => {
   try {
-    const { 
+    const {
       propertyName,
       propertyId,
       propertyDescription,
@@ -8993,13 +8993,13 @@ export const sendPropertyEditNotificationEmail = async (email, editDetails, user
     } = editDetails;
 
     const isAdminEdit = editType === 'admin';
-    const subject = isAdminEdit 
+    const subject = isAdminEdit
       ? `📝 Property Updated by Admin - ${propertyName} | UrbanSetu`
       : `📝 Property Updated - ${propertyName} | UrbanSetu`;
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     const html = `
@@ -9323,7 +9323,7 @@ export const sendPropertyEditNotificationEmail = async (email, editDetails, user
 // Property Deletion Confirmation Email
 export const sendPropertyDeletionConfirmationEmail = async (email, deletionDetails) => {
   try {
-    const { 
+    const {
       propertyName,
       propertyId,
       propertyDescription,
@@ -9338,13 +9338,13 @@ export const sendPropertyDeletionConfirmationEmail = async (email, deletionDetai
     } = deletionDetails;
 
     const isAdminDeletion = deletionType === 'admin';
-    const subject = isAdminDeletion 
+    const subject = isAdminDeletion
       ? `🗑️ Property Deleted by Admin - ${propertyName} | UrbanSetu`
       : `🗑️ Property Deleted - ${propertyName} | UrbanSetu`;
 
     // Get property image for email
-    const propertyImage = propertyImages && propertyImages.length > 0 
-      ? propertyImages[0] 
+    const propertyImage = propertyImages && propertyImages.length > 0
+      ? propertyImages[0]
       : `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/placeholder-property.jpg`;
 
     // Format expiry date (only for user deletions)
@@ -9681,7 +9681,7 @@ export const sendPropertyDeletionConfirmationEmail = async (email, deletionDetai
 // Property Views Milestone Email
 export const sendPropertyViewsMilestoneEmail = async (email, milestoneDetails) => {
   try {
-    const { 
+    const {
       propertyName,
       propertyId,
       viewCount,
@@ -9812,7 +9812,7 @@ export const sendPropertyViewsMilestoneEmail = async (email, milestoneDetails) =
 // New Message Notification Email for Appointment Chatbox
 export const sendNewMessageNotificationEmail = async (email, messageDetails) => {
   try {
-    const { 
+    const {
       recipientName,
       senderName,
       appointmentId,
@@ -9824,7 +9824,7 @@ export const sendNewMessageNotificationEmail = async (email, messageDetails) => 
 
     const chatUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-appointments/chat/${appointmentId}`;
     const subject = `💬 New Message from ${senderName} - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html>
@@ -9933,14 +9933,14 @@ export const sendNewMessageNotificationEmail = async (email, messageDetails) => 
 export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtDownloadUrl) => {
   try {
     const subject = `Your UrbanSetu Data Export - ${new Date().toLocaleDateString()}`;
-    const exportDate = formatIndiaTime(new Date(), { 
-      year: 'numeric', 
-      month: 'long', 
+    const exportDate = formatIndiaTime(new Date(), {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
       hour: '2-digit',
       minute: '2-digit'
     });
-    
+
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
@@ -10010,7 +10010,7 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
         </div>
       </div>
     `;
-    
+
     const mailOptions = {
       from: process.env.EMAIL_USER,
       to: email,
@@ -10019,8 +10019,8 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
     };
 
     const result = await sendEmailWithRetry(mailOptions);
-    return result.success ? 
-      createSuccessResponse(result.messageId, 'data_export') : 
+    return result.success ?
+      createSuccessResponse(result.messageId, 'data_export') :
       createErrorResponse(new Error(result.error), 'data_export');
   } catch (error) {
     return createErrorResponse(error, 'data_export');
@@ -10031,10 +10031,10 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
 export const sendCallInitiatedEmail = async (toEmail, { callType, callerName, propertyName, appointmentId, isReceiverAdmin = false }) => {
   try {
     const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
-    const chatLink = isReceiverAdmin 
+    const chatLink = isReceiverAdmin
       ? `${clientUrl}/admin/appointments/chat/${appointmentId}`
       : `${clientUrl}/user/my-appointments/chat/${appointmentId}`;
-    
+
     const subject = `${callerName} is calling you - ${callType === 'video' ? 'Video' : 'Audio'} Call`;
     const html = `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
@@ -10071,7 +10071,7 @@ export const sendCallInitiatedEmail = async (toEmail, { callType, callerName, pr
         </div>
       </div>
     `;
-    
+
     return await sendEmailWithRetry({
       to: toEmail,
       subject: subject,
@@ -10120,7 +10120,7 @@ export const sendCallMissedEmail = async (toEmail, { callType, callerName, prope
         </div>
       </div>
     `;
-    
+
     return await sendEmailWithRetry({
       to: toEmail,
       subject: subject,
@@ -10136,13 +10136,13 @@ export const sendCallMissedEmail = async (toEmail, { callType, callerName, prope
 export const sendCallEndedEmail = async (toEmail, { callType, duration, callerName, receiverName, propertyName, appointmentId, isReceiverAdmin = false }) => {
   try {
     const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
-    const chatLink = isReceiverAdmin 
+    const chatLink = isReceiverAdmin
       ? `${clientUrl}/admin/appointments/chat/${appointmentId}`
       : `${clientUrl}/user/my-appointments/chat/${appointmentId}`;
     const callHistoryLink = isReceiverAdmin
       ? `${clientUrl}/admin/call-history`
       : `${clientUrl}/user/call-history`;
-    
+
     const otherPersonName = receiverName || callerName;
     const subject = `Call Ended - ${callType === 'video' ? 'Video' : 'Audio'} Call Summary`;
     const html = `
@@ -10186,7 +10186,7 @@ export const sendCallEndedEmail = async (toEmail, { callType, duration, callerNa
         </div>
       </div>
     `;
-    
+
     return await sendEmailWithRetry({
       to: toEmail,
       subject: subject,
@@ -10205,11 +10205,11 @@ export const sendCallEndedEmail = async (toEmail, { callType, duration, callerNa
 // Send rent payment received email (to tenant)
 export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
   try {
-    const { 
-      paymentId, 
-      amount, 
-      propertyName, 
-      rentMonth, 
+    const {
+      paymentId,
+      amount,
+      propertyName,
+      rentMonth,
       rentYear,
       dueDate,
       receiptUrl,
@@ -10219,7 +10219,7 @@ export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
 
     const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
     const subject = `✅ Rent Payment Received - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -10267,7 +10267,7 @@ export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -10282,11 +10282,11 @@ export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
 // Send rent payment received email to landlord
 export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetails) => {
   try {
-    const { 
-      paymentId, 
-      amount, 
-      propertyName, 
-      rentMonth, 
+    const {
+      paymentId,
+      amount,
+      propertyName,
+      rentMonth,
       rentYear,
       tenantName,
       contractId,
@@ -10294,7 +10294,7 @@ export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetai
     } = paymentDetails;
 
     const subject = `💰 Rent Payment Received from ${tenantName} - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -10341,7 +10341,7 @@ export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetai
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -10356,10 +10356,10 @@ export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetai
 // Send rent payment reminder email
 export const sendRentPaymentReminderEmail = async (email, reminderDetails) => {
   try {
-    const { 
-      propertyName, 
-      amount, 
-      dueDate, 
+    const {
+      propertyName,
+      amount,
+      dueDate,
       daysLeft,
       contractId,
       walletUrl,
@@ -10367,7 +10367,7 @@ export const sendRentPaymentReminderEmail = async (email, reminderDetails) => {
     } = reminderDetails;
 
     const subject = `⏰ Rent Payment Reminder - ${daysLeft} Day${daysLeft > 1 ? 's' : ''} Left`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -10413,7 +10413,7 @@ export const sendRentPaymentReminderEmail = async (email, reminderDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -10428,16 +10428,16 @@ export const sendRentPaymentReminderEmail = async (email, reminderDetails) => {
 // Send rent payment overdue email
 export const sendRentPaymentOverdueEmail = async (email, overdueDetails) => {
   try {
-    const { 
-      propertyName, 
-      totalOverdue, 
+    const {
+      propertyName,
+      totalOverdue,
       overdueCount,
       contractId,
       walletUrl
     } = overdueDetails;
 
     const subject = `⚠️ Rent Payment Overdue - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -10482,7 +10482,7 @@ export const sendRentPaymentOverdueEmail = async (email, overdueDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -10497,11 +10497,11 @@ export const sendRentPaymentOverdueEmail = async (email, overdueDetails) => {
 // Send escrow released email
 export const sendEscrowReleasedEmail = async (email, releaseDetails) => {
   try {
-    const { 
-      paymentId, 
-      amount, 
-      propertyName, 
-      rentMonth, 
+    const {
+      paymentId,
+      amount,
+      propertyName,
+      rentMonth,
       rentYear,
       userRole, // 'tenant' or 'landlord'
       tenantName,
@@ -10511,10 +10511,10 @@ export const sendEscrowReleasedEmail = async (email, releaseDetails) => {
     } = releaseDetails;
 
     const isLandlord = userRole === 'landlord';
-    const subject = isLandlord 
+    const subject = isLandlord
       ? `✅ Rent Payment Released - ${propertyName}`
       : `✅ Rent Payment Released to Landlord - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -10544,10 +10544,10 @@ export const sendEscrowReleasedEmail = async (email, releaseDetails) => {
                 <p style="color: #4b5563; margin: 0;"><strong>Payment ID:</strong> ${paymentId}</p>
               </div>
               <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                ${isLandlord 
-                  ? `The rent payment of ₹${amount} has been released from escrow and transferred to your account. The 3-day escrow period has completed without any disputes.`
-                  : `Your rent payment of ₹${amount} has been released from escrow to your landlord. The 3-day escrow period has completed without any disputes.`
-                }
+                ${isLandlord
+        ? `The rent payment of ₹${amount} has been released from escrow and transferred to your account. The 3-day escrow period has completed without any disputes.`
+        : `Your rent payment of ₹${amount} has been released from escrow to your landlord. The 3-day escrow period has completed without any disputes.`
+      }
               </p>
             </div>
             
@@ -10564,7 +10564,7 @@ export const sendEscrowReleasedEmail = async (email, releaseDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -10579,9 +10579,9 @@ export const sendEscrowReleasedEmail = async (email, releaseDetails) => {
 // Send contract signed email
 export const sendContractSignedEmail = async (email, contractDetails) => {
   try {
-    const { 
+    const {
       contractId,
-      propertyName, 
+      propertyName,
       tenantName,
       landlordName,
       rentAmount,
@@ -10594,7 +10594,7 @@ export const sendContractSignedEmail = async (email, contractDetails) => {
 
     const isLandlord = userRole === 'landlord';
     const subject = `✅ Rental Contract Signed - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -10625,10 +10625,10 @@ export const sendContractSignedEmail = async (email, contractDetails) => {
                 <p style="color: #4b5563; margin: 0;"><strong>End Date:</strong> ${new Date(endDate).toLocaleDateString()}</p>
               </div>
               <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                ${isLandlord 
-                  ? `Congratulations! The rental contract for ${propertyName} has been fully signed by both parties. The rent-lock period is now active.`
-                  : `Congratulations! Your rental contract for ${propertyName} has been fully signed by both parties. Your rent-lock period begins now.`
-                }
+                ${isLandlord
+        ? `Congratulations! The rental contract for ${propertyName} has been fully signed by both parties. The rent-lock period is now active.`
+        : `Congratulations! Your rental contract for ${propertyName} has been fully signed by both parties. Your rent-lock period begins now.`
+      }
               </p>
             </div>
             
@@ -10645,7 +10645,7 @@ export const sendContractSignedEmail = async (email, contractDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -10660,7 +10660,7 @@ export const sendContractSignedEmail = async (email, contractDetails) => {
 // Send contract expiring soon email
 export const sendContractRejectedEmail = async (email, contractDetails) => {
   const { contractId, propertyName, rejectionReason, rejectedBy } = contractDetails;
-  
+
   const htmlContent = `
     <!DOCTYPE html>
     <html lang="en">
@@ -10751,8 +10751,8 @@ export const sendContractRejectedEmail = async (email, contractDetails) => {
 
 export const sendContractExpiringSoonEmail = async (email, contractDetails) => {
   try {
-    const { 
-      propertyName, 
+    const {
+      propertyName,
       endDate,
       tenantName,
       landlordName,
@@ -10762,7 +10762,7 @@ export const sendContractExpiringSoonEmail = async (email, contractDetails) => {
 
     const isLandlord = userRole === 'landlord';
     const subject = `⏰ Rental Contract Expiring Soon - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -10790,10 +10790,10 @@ export const sendContractExpiringSoonEmail = async (email, contractDetails) => {
                 <p style="color: #4b5563; margin: 0;"><strong>Expiry Date:</strong> ${new Date(endDate).toLocaleDateString()}</p>
               </div>
               <p style="color: #92400e; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                ${isLandlord 
-                  ? `Your rental contract for ${propertyName} with tenant ${tenantName} will expire on ${new Date(endDate).toLocaleDateString()}. Please contact the tenant to discuss renewal or move-out arrangements.`
-                  : `Your rental contract for ${propertyName} will expire on ${new Date(endDate).toLocaleDateString()}. Please contact your landlord to discuss renewal or move-out arrangements.`
-                }
+                ${isLandlord
+        ? `Your rental contract for ${propertyName} with tenant ${tenantName} will expire on ${new Date(endDate).toLocaleDateString()}. Please contact the tenant to discuss renewal or move-out arrangements.`
+        : `Your rental contract for ${propertyName} will expire on ${new Date(endDate).toLocaleDateString()}. Please contact your landlord to discuss renewal or move-out arrangements.`
+      }
               </p>
             </div>
             
@@ -10810,7 +10810,7 @@ export const sendContractExpiringSoonEmail = async (email, contractDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -10834,7 +10834,7 @@ export const sendDisputeRaisedEmail = async (email, disputeDetails) => {
     } = disputeDetails;
 
     const subject = `⚠️ Dispute Raised - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -10880,7 +10880,7 @@ export const sendDisputeRaisedEmail = async (email, disputeDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -10903,7 +10903,7 @@ export const sendDisputeResolvedEmail = async (email, disputeDetails) => {
     } = disputeDetails;
 
     const subject = `✅ Dispute Resolved - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -10948,7 +10948,7 @@ export const sendDisputeResolvedEmail = async (email, disputeDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -10969,7 +10969,7 @@ export const sendVerificationRequestedEmail = async (email, verificationDetails)
     } = verificationDetails;
 
     const subject = `📋 Property Verification Request Submitted - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -11013,7 +11013,7 @@ export const sendVerificationRequestedEmail = async (email, verificationDetails)
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -11034,7 +11034,7 @@ export const sendVerificationApprovedEmail = async (email, verificationDetails) 
     } = verificationDetails;
 
     const subject = `✅ Property Verification Approved - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -11078,7 +11078,7 @@ export const sendVerificationApprovedEmail = async (email, verificationDetails) 
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -11100,7 +11100,7 @@ export const sendVerificationRejectedEmail = async (email, verificationDetails) 
     } = verificationDetails;
 
     const subject = `❌ Property Verification Rejected - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -11145,7 +11145,7 @@ export const sendVerificationRejectedEmail = async (email, verificationDetails) 
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -11168,7 +11168,7 @@ export const sendRatingReceivedEmail = async (email, ratingDetails) => {
     } = ratingDetails;
 
     const subject = `⭐ New Rating Received - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -11213,7 +11213,7 @@ export const sendRatingReceivedEmail = async (email, ratingDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -11236,7 +11236,7 @@ export const sendLoanAppliedEmail = async (email, loanDetails) => {
     } = loanDetails;
 
     const subject = `📝 Rental Loan Application Submitted - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -11281,7 +11281,7 @@ export const sendLoanAppliedEmail = async (email, loanDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -11304,7 +11304,7 @@ export const sendLoanApprovedEmail = async (email, loanDetails) => {
     } = loanDetails;
 
     const subject = `✅ Rental Loan Approved - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -11349,7 +11349,7 @@ export const sendLoanApprovedEmail = async (email, loanDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -11373,7 +11373,7 @@ export const sendLoanRejectedEmail = async (email, loanDetails) => {
     } = loanDetails;
 
     const subject = `❌ Rental Loan Application Rejected - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -11419,7 +11419,7 @@ export const sendLoanRejectedEmail = async (email, loanDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -11443,7 +11443,7 @@ export const sendLoanDisbursedEmail = async (email, loanDetails) => {
     } = loanDetails;
 
     const subject = `💰 Rental Loan Disbursed - ${propertyName}`;
-    
+
     const html = `
       <!DOCTYPE html>
       <html lang="en">
@@ -11489,7 +11489,7 @@ export const sendLoanDisbursedEmail = async (email, loanDetails) => {
       </body>
       </html>
     `;
-    
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
@@ -11498,6 +11498,75 @@ export const sendLoanDisbursedEmail = async (email, loanDetails) => {
   } catch (error) {
     console.error('Error sending loan disbursed email:', error);
     throw error;
+  }
+};
+
+// Send Report Acknowledgement Email
+export const sendReportAcknowledgementEmail = async (email, reportDetails) => {
+  try {
+    const {
+      messageId,
+      category,
+      subCategory,
+      createdAt
+    } = reportDetails;
+
+    const subject = `Report Received - UrbanSetu`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Report Received - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #6366f1, #4f46e5); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(99, 102, 241, 0.3);">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">🛡️</span>
+              </div>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">We've Got You Covered</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Report Acknowledgement</p>
+            </div>
+            
+            <div style="background-color: #eef2ff; padding: 25px; border-radius: 8px; border-left: 4px solid #6366f1; margin-bottom: 25px;">
+              <h2 style="color: #3730a3; margin: 0 0 15px 0; font-size: 20px;">Report Details</h2>
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Category:</strong> ${category}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Sub-Category:</strong> ${subCategory}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Date:</strong> ${new Date(createdAt).toLocaleString('en-IN')}</p>
+              </div>
+              <p style="color: #3730a3; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
+                Thank you for helping us keep UrbanSetu safe. We have received your report regarding an inappropriate message. Our moderation team will review this shortly and take appropriate action.
+              </p>
+            </div>
+             
+             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; margin-top: 20px; font-size: 13px; color: #6b7280; text-align: center;">
+                 <p style="margin: 0;"><strong>Note:</strong> We do not reveal your identity to the reported user.</p>
+             </div>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending report acknowledgement email:', error);
+    // Don't throw error here to avoid blocking the report process
+    return { success: false, error: error.message };
   }
 };
 

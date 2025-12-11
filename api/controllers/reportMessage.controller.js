@@ -25,6 +25,19 @@ export const createReport = async (req, res, next) => {
         });
 
         await newReport.save();
+
+        // Send acknowledgement email if user is logged in
+        if (req.user && req.user.email) {
+            const { sendReportAcknowledgementEmail } = await import('../utils/emailService.js');
+            // Send email asynchronously without blocking the response
+            sendReportAcknowledgementEmail(req.user.email, {
+                messageId,
+                category,
+                subCategory,
+                createdAt: newReport.createdAt
+            }).catch(err => console.error('Failed to send report acknowledgement email:', err));
+        }
+
         res.status(201).json(newReport);
     } catch (error) {
         next(error);
