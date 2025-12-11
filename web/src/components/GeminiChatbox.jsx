@@ -6878,8 +6878,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
-                                        onClick={() => { loadRatingMeta(); try { const rs = JSON.parse(localStorage.getItem('gemini_ratings') || '{}'); setMessageRatings(rs); } catch (_) { } }}
-                                        className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                                        onClick={() => {
+                                            loadRatingMeta();
+                                            try {
+                                                const rs = JSON.parse(localStorage.getItem('gemini_ratings') || '{}');
+                                                setMessageRatings(rs);
+                                            } catch (_) { }
+                                        }}
+                                        className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'} ${allRatingsLoading ? 'animate-spin' : ''}`}
                                         title="Refresh"
                                     >
                                         <FaSync size={16} />
@@ -8098,20 +8104,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <p className={`text-xs ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>Manage and resolve reported content</p>
                                     </div>
                                 </div>
-                                <button
-                                    onClick={fetchAdminReports}
-                                    title="Refresh Reports"
-                                    disabled={adminReportsLoading}
-                                    className={`p-2 rounded-full transition-colors mr-1 ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'} ${adminReportsLoading ? 'animate-spin' : ''}`}
-                                >
-                                    <FaSync size={16} />
-                                </button>
-                                <button
-                                    onClick={() => setShowAdminReportsModal(false)}
-                                    className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
-                                >
-                                    <FaTimes size={20} />
-                                </button>
+                                <div className="flex items-center gap-2">
+                                    <button
+                                        onClick={fetchAdminReports}
+                                        title="Refresh Reports"
+                                        disabled={adminReportsLoading}
+                                        className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'} ${adminReportsLoading ? 'animate-spin' : ''}`}
+                                    >
+                                        <FaSync size={16} />
+                                    </button>
+                                    <button
+                                        onClick={() => setShowAdminReportsModal(false)}
+                                        className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                                    >
+                                        <FaTimes size={20} />
+                                    </button>
+                                </div>
                             </div>
 
                             {/* Filters */}
