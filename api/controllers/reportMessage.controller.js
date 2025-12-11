@@ -101,7 +101,7 @@ export const deleteReport = async (req, res, next) => {
             return next(errorHandler(403, 'You are not allowed to delete reports'));
         }
         await ReportMessage.findByIdAndDelete(req.params.reportId);
-        res.status(200).json('The report has been deleted');
+        res.status(200).json({ success: true, message: 'The report has been deleted' });
     } catch (error) {
         next(error);
     }
