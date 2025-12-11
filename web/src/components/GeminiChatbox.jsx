@@ -158,6 +158,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [deleteTargetSessionId, setDeleteTargetSessionId] = useState(null);
     const [showDeleteSingleModal, setShowDeleteSingleModal] = useState(false);
     const [showRenameModal, setShowRenameModal] = useState(false);
+    const [showRatingDetailModal, setShowRatingDetailModal] = useState(false);
+    const [selectedRating, setSelectedRating] = useState(null);
     const [renameTargetSessionId, setRenameTargetSessionId] = useState(null);
     const [isShareModalOpen, setIsShareModalOpen] = useState(false);
     const [shareTargetSessionId, setShareTargetSessionId] = useState(null);
@@ -2087,6 +2089,16 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const message = messages[messageIndex];
         if (!message) return;
 
+        // Try to find the prompt associated with this message
+        let prompt = message.originalUserMessage;
+        if (!prompt && messageIndex > 0) {
+            const prevMsg = messages[messageIndex - 1];
+            if (prevMsg && prevMsg.role === 'user') {
+                prompt = prevMsg.content;
+            }
+        }
+        if (!prompt) prompt = "Unknown prompt"; // Fallback
+
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
@@ -2104,7 +2116,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     rating,
                     feedback,
                     messageContent: message.content,
-                    messageRole: message.role
+                    messageRole: message.role,
+                    prompt
                 })
             });
 
@@ -6879,10 +6892,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                                     </div>
                                                                 </div>
                                                             </div>
-                                                            <div className={`mt-3 p-3 rounded-lg text-sm transition-all duration-300 group hover:max-h-[500px] hover:overflow-y-auto ${isDarkMode ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
-                                                                <div className="line-clamp-3 group-hover:line-clamp-none">
+                                                            <div className={`mt-3 p-3 rounded-lg text-sm mb-3 ${isDarkMode ? 'bg-gray-900/50 text-gray-300' : 'bg-gray-50 text-gray-600'}`}>
+                                                                <div className="line-clamp-2 italic opacity-80">
                                                                     "{r.messageContent || ''}"
                                                                 </div>
+                                                            </div>
+
+                                                            <div className="flex justify-end">
+                                                                <button
+                                                                    onClick={() => { setSelectedRating(r); setShowRatingDetailModal(true); }}
+                                                                    className={`text-xs font-semibold px-3 py-1.5 rounded-lg border transition-all flex items-center gap-1 ${isDarkMode
+                                                                        ? 'border-gray-700 text-blue-400 hover:bg-gray-700'
+                                                                        : 'border-gray-200 text-blue-600 hover:bg-blue-50'
+                                                                        }`}
+                                                                >
+                                                                    <FaExpand size={10} /> Read Details
+                                                                </button>
                                                             </div>
                                                             {r.rating === 'down' && r.feedback && (
                                                                 <div className="mt-3 text-sm flex gap-2">
@@ -8187,6 +8212,70 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 )
             }
 
+
+            {/* Rating Detail Modal */}
+            {
+                showRatingDetailModal && selectedRating && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowRatingDetailModal(false)}>
+                        <div
+                            className={`w-full max-w-2xl flex flex-col rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${selectedRating.rating === 'up' ? 'bg-green-500/10 text-green-500' : 'bg-red-500/10 text-red-500'}`}>
+                                        {selectedRating.rating === 'up' ? <FaThumbsUp size={20} /> : <FaThumbsDown size={20} />}
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold">Feedback Details</h2>
+                                        <div className="flex items-center gap-2 text-xs opacity-70">
+                                            <span>{selectedRating.user?.username || 'Unknown'}</span>
+                                            <span>•</span>
+                                            <span>{new Date(selectedRating.createdAt).toLocaleString()}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button
+                                    onClick={() => setShowRatingDetailModal(false)}
+                                    className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                                >
+                                    <FaTimes size={20} />
+                                </button>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                                {/* Feedback (if exists) */}
+                                {selectedRating.feedback && (
+                                    <div className={`mb-6 p-4 rounded-xl border ${isDarkMode ? 'bg-red-900/10 border-red-900/30' : 'bg-red-50 border-red-100'}`}>
+                                        <div className="text-xs font-bold uppercase tracking-wider text-red-500 mb-2">User Feedback</div>
+                                        <p className="whitespace-pre-wrap">{selectedRating.feedback}</p>
+                                    </div>
+                                )}
+
+                                {/* User Prompt */}
+                                {selectedRating.prompt && (
+                                    <div className="mb-6">
+                                        <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-2 border-b border-dashed border-gray-500/30 pb-1 inline-block">User Prompt</div>
+                                        <div className={`p-4 rounded-xl text-sm leading-relaxed ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                                            <p className="whitespace-pre-wrap font-mono text-opacity-90">{selectedRating.prompt}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* AI Response */}
+                                <div>
+                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-2 border-b border-dashed border-gray-500/30 pb-1 inline-block">AI Response</div>
+                                    <div className={`p-4 rounded-xl text-sm leading-relaxed ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                                        <p className="whitespace-pre-wrap text-opacity-90">{selectedRating.messageContent}</p>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )
+            }
 
             {/* Share Chat Modal */}
             <ShareChatModal

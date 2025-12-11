@@ -440,7 +440,7 @@ export const getUserChatSessions = async (req, res) => {
 export const rateMessage = async (req, res) => {
     try {
         const userId = req.user?.id || null;
-        const { sessionId, messageIndex, messageTimestamp, rating, messageContent, messageRole, feedback } = req.body;
+        const { sessionId, messageIndex, messageTimestamp, rating, messageContent, messageRole, feedback, prompt } = req.body;
 
         // Authentication check removed to allow public ratings
 
@@ -483,6 +483,7 @@ export const rateMessage = async (req, res) => {
                 rating,
                 messageContent,
                 messageRole,
+                prompt: prompt || '',
                 feedback: typeof feedback === 'string' ? feedback.slice(0, 500) : ''
             },
             { upsert: true, new: true } // Create if doesn't exist
@@ -576,6 +577,7 @@ export const getAllMessageRatings = async (req, res) => {
             rating: r.rating,
             feedback: r.feedback || '',
             messageContent: r.messageContent,
+            prompt: r.prompt || '',
             messageRole: r.messageRole,
             createdAt: r.createdAt
         }));

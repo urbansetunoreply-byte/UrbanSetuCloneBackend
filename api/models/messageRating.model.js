@@ -33,6 +33,10 @@ const messageRatingSchema = new mongoose.Schema({
     type: String,
     required: true
   },
+  prompt: {
+    type: String,
+    default: ""
+  },
   messageRole: {
     type: String,
     enum: ["user", "assistant"],
