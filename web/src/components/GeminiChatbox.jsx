@@ -5067,7 +5067,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     message.isRestricted ? (
                                                         <div className={`${getFontSizeClass()} flex items-center gap-2 text-white font-medium`}>
                                                             <FaBan size={16} />
-                                                            <span>Prompt violates the usage terms</span>
+                                                            <span>This content may violate our usage policies.</span>
                                                         </div>
                                                     ) : (
                                                         <div
@@ -6966,12 +6966,32 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </div>
                                 <div className="flex items-center gap-2">
                                     <button
-                                        onClick={() => {
+                                        onClick={async () => {
                                             loadRatingMeta();
-                                            try {
-                                                const rs = JSON.parse(localStorage.getItem('gemini_ratings') || '{}');
-                                                setMessageRatings(rs);
-                                            } catch (_) { }
+                                            // For admins, refresh the global ratings list from API
+                                            if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
+                                                try {
+                                                    setAllRatingsLoading(true);
+                                                    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
+                                                    const resp = await fetch(`${API_BASE_URL}/api/gemini/ratings-all?limit=500&days=90`, { credentials: 'include' });
+                                                    if (resp.ok) {
+                                                        const data = await resp.json();
+                                                        setAllRatings(Array.isArray(data.ratings) ? data.ratings : []);
+                                                    } else {
+                                                        setAllRatings([]);
+                                                    }
+                                                } catch (_) {
+                                                    setAllRatings([]);
+                                                } finally {
+                                                    setAllRatingsLoading(false);
+                                                }
+                                            } else {
+                                                // For normal users, just refresh local storage state
+                                                try {
+                                                    const rs = JSON.parse(localStorage.getItem('gemini_ratings') || '{}');
+                                                    setMessageRatings(rs);
+                                                } catch (_) { }
+                                            }
                                         }}
                                         className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-700 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'} ${allRatingsLoading ? 'animate-spin' : ''}`}
                                         title="Refresh"
