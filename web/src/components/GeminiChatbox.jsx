@@ -6900,7 +6900,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </div>
 
                             {/* Filters */}
-                            <div className={`px-6 py-3 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex gap-2 overflow-x-auto`}>
+                            <div className={`px-6 py-3 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-200'} flex gap-2`}>
                                 {['all', 'up', 'down'].map((filter) => (
                                     <button
                                         key={filter}
