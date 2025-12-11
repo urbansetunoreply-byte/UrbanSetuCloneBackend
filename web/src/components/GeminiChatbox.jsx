@@ -2252,10 +2252,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             toast.error("Please select a sub-category");
             return;
         }
-        if (!reportDescription) {
-            toast.error("Please provide a description");
-            return;
-        }
+
 
         // Get the prompt content
         const promptContent = reportingMessage.originalUserMessage ||
@@ -8426,7 +8423,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <div className="flex items-center gap-2 text-xs opacity-70">
                                             <span>{selectedRating.user?.username || 'Public Guest'}</span>
                                             <span>•</span>
-                                            <span>{new Date(selectedRating.createdAt).toLocaleString()}</span>
+                                            <span>{new Date(selectedRating.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                         </div>
                                     </div>
                                 </div>
@@ -8551,7 +8548,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                     <div className="flex items-center gap-2 text-xs opacity-70">
                                         <span>{selectedReportDetail.reportedBy?.username || 'Public Guest'}</span>
                                         <span>•</span>
-                                        <span>{new Date(selectedReportDetail.createdAt).toLocaleString()}</span>
+                                        <span>{new Date(selectedReportDetail.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
                                     </div>
                                 </div>
                             </div>
