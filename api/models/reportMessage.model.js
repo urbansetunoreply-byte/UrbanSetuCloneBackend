@@ -28,7 +28,7 @@ const reportMessageSchema = new mongoose.Schema({
     },
     description: {
         type: String,
-        required: true, // "Please tell us more" field
+        required: false, // "Please tell us more" field
     },
     status: {
         type: String,

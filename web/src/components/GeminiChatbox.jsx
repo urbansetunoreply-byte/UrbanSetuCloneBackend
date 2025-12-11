@@ -4667,7 +4667,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         >
                                             <div
                                                 className={`max-w-[85%] ${getMessageDensityClass()} rounded-2xl break-words relative group ${message.isRestricted
-                                                    ? 'bg-red-500 text-white'
+                                                    ? `${isDarkMode ? 'bg-red-900/20 text-red-300 border border-red-700' : 'bg-red-50 text-red-900 border border-red-300 shadow-sm'}`
                                                     : message.role === 'user'
                                                         ? `bg-gradient-to-r ${themeColors.primary} text-white`
                                                         : message.isError
@@ -5065,9 +5065,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     </div>
                                                 ) : (
                                                     message.isRestricted ? (
-                                                        <div className={`${getFontSizeClass()} flex items-center gap-2 text-white font-medium`}>
-                                                            <FaBan size={16} />
-                                                            <span>This content may violate our usage policies.</span>
+                                                        <div className={`${getFontSizeClass()} flex items-center gap-2 font-medium`}>
+                                                            <FaBan size={16} className="flex-shrink-0" />
+                                                            <span>
+                                                                This content may violate our{' '}
+                                                                <button
+                                                                    onClick={() => setShowTermsModal(true)}
+                                                                    className="underline hover:opacity-80 focus:outline-none"
+                                                                >
+                                                                    usage policies
+                                                                </button>
+                                                                .
+                                                            </span>
                                                         </div>
                                                     ) : (
                                                         <div
@@ -8157,7 +8166,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         </div>
 
                                         <div className="space-y-2">
-                                            <label className="block text-sm font-medium">Please tell us more</label>
+                                            <label className="block text-sm font-medium">Please tell us more (Optional)</label>
                                             <textarea
                                                 value={reportDescription}
                                                 onChange={(e) => setReportDescription(e.target.value)}
@@ -8172,7 +8181,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                         <div className="flex justify-end pt-2">
                                             <button
                                                 onClick={handleReportSubmit}
-                                                disabled={!reportDescription.trim() || isReporting}
+                                                disabled={isReporting}
                                                 className={`px-6 py-2 rounded-xl bg-red-500 hover:bg-red-600 text-white font-medium transition-all shadow-lg hover:shadow-red-500/20 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2`}
                                             >
                                                 {isReporting ? (

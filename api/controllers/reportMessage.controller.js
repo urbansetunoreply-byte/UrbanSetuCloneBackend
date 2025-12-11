@@ -5,7 +5,7 @@ export const createReport = async (req, res, next) => {
     try {
         const { messageId, messageContent, prompt, category, subCategory, description, priority } = req.body;
 
-        if (!messageId || !messageContent || !category || !subCategory || !description) {
+        if (!messageId || !messageContent || !category || !subCategory) {
             return next(errorHandler(400, 'All fields are required'));
         }
 
