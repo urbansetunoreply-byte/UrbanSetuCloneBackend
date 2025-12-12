@@ -80,7 +80,7 @@ export default function AdminEditListing() {
   const getPreviousPath = () => {
     const from = location.state?.from;
     if (from) return from;
-    
+
     // Default paths for admin
     return "/admin/listings";
   };
@@ -123,10 +123,10 @@ export default function AdminEditListing() {
     try { new URL(url); } catch { return false; }
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
     const hasImageExtension = imageExtensions.some(ext => url.toLowerCase().includes(ext));
-    
+
     // Check for Cloudinary URLs (they contain 'cloudinary.com')
     const isCloudinaryUrl = url.includes('cloudinary.com');
-    
+
     return hasImageExtension || url.includes('images') || url.includes('img') || isCloudinaryUrl;
   };
 
@@ -160,7 +160,7 @@ export default function AdminEditListing() {
     const newImageErrors = { ...imageErrors };
     delete newImageErrors[index];
     setImageErrors(newImageErrors);
-    
+
     // Clear uploading state
     const newUploadingImages = { ...uploadingImages };
     delete newUploadingImages[index];
@@ -182,40 +182,40 @@ export default function AdminEditListing() {
 
   const handleFileUpload = async (index, file) => {
     if (!file) return;
-    
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setImageErrors(prev => ({ ...prev, [index]: 'Please select an image file' }));
       return;
     }
-    
+
     // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       setImageErrors(prev => ({ ...prev, [index]: 'File size must be less than 5MB' }));
       return;
     }
-    
+
     setUploadingImages(prev => ({ ...prev, [index]: true }));
     setImageErrors(prev => ({ ...prev, [index]: '' }));
-    
+
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('image', file);
-      
+
       const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
         credentials: 'include',
         body: uploadFormData,
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         // Update the image URL with the uploaded image URL
         const newImageUrls = [...formData.imageUrls];
         newImageUrls[index] = data.imageUrl;
         setFormData(prev => ({ ...prev, imageUrls: newImageUrls }));
-        
+
         // Clear any existing errors for this image
         setImageErrors(prev => {
           const newErrors = { ...prev };
@@ -324,7 +324,7 @@ export default function AdminEditListing() {
       };
       const res = await fetch(`${API_BASE_URL}${apiUrl}`, options);
       const data = await res.json();
-      
+
       if (res.ok) {
         toast.success(data.message || "Property Details Updated Successfully!!");
         navigate(getPreviousPath());
@@ -431,22 +431,22 @@ export default function AdminEditListing() {
             <h4 className="font-semibold text-gray-800 mb-3">Property Type</h4>
             <div className="flex gap-6">
               <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="sale" 
-                  onChange={onHandleChanges} 
+                <input
+                  type="radio"
+                  name="type"
+                  value="sale"
+                  onChange={onHandleChanges}
                   checked={formData.type === "sale"}
                   className="text-blue-600"
                 />
                 <span className="font-medium">For Sale</span>
               </label>
               <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="rent" 
-                  onChange={onHandleChanges} 
+                <input
+                  type="radio"
+                  name="type"
+                  value="rent"
+                  onChange={onHandleChanges}
                   checked={formData.type === "rent"}
                   className="text-blue-600"
                 />
@@ -470,7 +470,7 @@ export default function AdminEditListing() {
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-4">
               <div className="flex flex-col">
                 <span className="text-gray-700 font-medium mb-1">Floor Number *</span>
@@ -489,7 +489,7 @@ export default function AdminEditListing() {
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-4">
               <div className="flex flex-col">
                 <span className="text-gray-700 font-medium mb-1">Property Age (years) *</span>
@@ -508,6 +508,7 @@ export default function AdminEditListing() {
                 </p>
               </div>
             </div>
+
           </div>
 
           {/* Property Details */}
@@ -565,10 +566,10 @@ export default function AdminEditListing() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {["parking", "furnished", "offer"].map((item) => (
                 <label key={item} className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm">
-                  <input 
-                    type="checkbox" 
-                    id={item} 
-                    onChange={onHandleChanges} 
+                  <input
+                    type="checkbox"
+                    id={item}
+                    onChange={onHandleChanges}
                     checked={formData[item]}
                     className="text-blue-600"
                   />
@@ -593,9 +594,8 @@ export default function AdminEditListing() {
                       placeholder={`Image URL ${index + 1} (e.g., https://example.com/image.jpg)`}
                       value={url || ""}
                       onChange={(e) => handleImageChange(index, e.target.value)}
-                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        imageErrors[index] ? 'border-red-500' : ''
-                      }`}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${imageErrors[index] ? 'border-red-500' : ''
+                        }`}
                     />
                     <label className={`p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center gap-2 ${uploadingImages[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       <input
@@ -650,9 +650,9 @@ export default function AdminEditListing() {
                   {formData.imageUrls.map((url, index) => (
                     url && (
                       <div key={url} className="relative">
-                        <img 
-                          src={url} 
-                          alt="listing" 
+                        <img
+                          src={url}
+                          alt="listing"
                           className="w-full h-24 object-cover rounded-lg"
                           onError={(e) => {
                             e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
@@ -689,9 +689,8 @@ export default function AdminEditListing() {
                       placeholder={`Video URL ${index + 1} (e.g., https://example.com/video.mp4)`}
                       value={url || ""}
                       onChange={(e) => handleVideoUrlChange(index, e.target.value)}
-                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        videoErrors[index] ? 'border-red-500' : ''
-                      }`}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${videoErrors[index] ? 'border-red-500' : ''
+                        }`}
                     />
                     <label className={`p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center gap-2 ${uploadingVideos[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       <input
@@ -752,9 +751,9 @@ export default function AdminEditListing() {
 
           {/* ESG Management Section */}
           <div className="mb-6">
-            <ESGManagement 
+            <ESGManagement
               esgData={formData.esg}
-              onESGChange={(esgData) => setFormData({...formData, esg: esgData})}
+              onESGChange={(esgData) => setFormData({ ...formData, esg: esgData })}
               isEditing={true}
             />
           </div>

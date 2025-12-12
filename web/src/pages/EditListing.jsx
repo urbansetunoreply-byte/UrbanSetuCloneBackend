@@ -63,6 +63,16 @@ export default function EditListing() {
         stakeholderEngagement: 'Not Rated'
       }
     },
+    // Rent-Lock Plan Configuration (for rental properties)
+    rentLockPlans: {
+      availablePlans: [],
+      defaultPlan: '1_year'
+    },
+    monthlyRent: 0,
+    securityDepositMonths: 2,
+    maintenanceCharges: 0,
+    advanceRentMonths: 0,
+    customLockDuration: 12 // in months, if custom plan
   });
   const [error, setError] = useState("");
   const [loading, setLoading] = useState(false);
@@ -81,7 +91,7 @@ export default function EditListing() {
   const getPreviousPath = () => {
     const from = location.state?.from;
     if (from) return from;
-    
+
     // Default paths based on user role
     if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
       return "/admin/my-listings";
@@ -128,10 +138,10 @@ export default function EditListing() {
     try { new URL(url); } catch { return false; }
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
     const hasImageExtension = imageExtensions.some(ext => url.toLowerCase().includes(ext));
-    
+
     // Check for Cloudinary URLs (they contain 'cloudinary.com')
     const isCloudinaryUrl = url.includes('cloudinary.com');
-    
+
     return hasImageExtension || url.includes('images') || url.includes('img') || isCloudinaryUrl;
   };
 
@@ -165,7 +175,7 @@ export default function EditListing() {
     const newImageErrors = { ...imageErrors };
     delete newImageErrors[index];
     setImageErrors(newImageErrors);
-    
+
     // Clear uploading state
     const newUploadingImages = { ...uploadingImages };
     delete newUploadingImages[index];
@@ -187,40 +197,40 @@ export default function EditListing() {
 
   const handleFileUpload = async (index, file) => {
     if (!file) return;
-    
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setImageErrors(prev => ({ ...prev, [index]: 'Please select an image file' }));
       return;
     }
-    
+
     // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       setImageErrors(prev => ({ ...prev, [index]: 'File size must be less than 5MB' }));
       return;
     }
-    
+
     setUploadingImages(prev => ({ ...prev, [index]: true }));
     setImageErrors(prev => ({ ...prev, [index]: '' }));
-    
+
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('image', file);
-      
+
       const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
         credentials: 'include',
         body: uploadFormData,
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         // Update the image URL with the uploaded image URL
         const newImageUrls = [...formData.imageUrls];
         newImageUrls[index] = data.imageUrl;
         setFormData(prev => ({ ...prev, imageUrls: newImageUrls }));
-        
+
         // Clear any existing errors for this image
         setImageErrors(prev => {
           const newErrors = { ...prev };
@@ -307,6 +317,29 @@ export default function EditListing() {
   const onSubmitForm = async (e) => {
     e.preventDefault();
     if (!formData.type) return setError("Please select a listing type (Sale or Rent)");
+
+    // Validate rent-lock plan configuration for rental properties
+    if (formData.type === "rent") {
+      if (formData.rentLockPlans.availablePlans.length === 0) {
+        return setError("Please select at least one available rent-lock plan.");
+      }
+      if (!formData.monthlyRent || formData.monthlyRent <= 0) {
+        return setError("Please enter a valid monthly rent amount.");
+      }
+      if (!formData.securityDepositMonths || formData.securityDepositMonths < 0) {
+        return setError("Please enter a valid security deposit (months of rent).");
+      }
+      if (formData.rentLockPlans.defaultPlan === "custom" && (!formData.customLockDuration || formData.customLockDuration < 1 || formData.customLockDuration > 60)) {
+        return setError("Custom lock duration must be between 1 and 60 months.");
+      }
+      if (formData.maintenanceCharges < 0) {
+        return setError("Maintenance charges cannot be negative.");
+      }
+      if (formData.advanceRentMonths < 0 || formData.advanceRentMonths > 12) {
+        return setError("Advance rent must be between 0 and 12 months.");
+      }
+    }
+
     // Images are optional when editing as well
     if (formData.regularPrice < formData.discountPrice)
       return setError("Discount price should be less than regular price");
@@ -327,7 +360,7 @@ export default function EditListing() {
     setError("");
     try {
       const apiUrl = `${API_BASE_URL}/api/listing/update/${params.listingId}`;
-      
+
       // Prepare request body - preserve original ownership for admin edits
       let requestBody = formData;
       if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
@@ -337,7 +370,7 @@ export default function EditListing() {
         // Regular user editing their own listing - maintain ownership
         requestBody = { ...formData, userRef: currentUser._id };
       }
-      
+
       const options = {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -346,7 +379,7 @@ export default function EditListing() {
       };
       const res = await fetch(apiUrl, options);
       const data = await res.json();
-      
+
       if (res.ok) {
         toast.success(data.message || "Property Details Updated Successfully!!");
         navigate(getPreviousPath());
@@ -453,22 +486,22 @@ export default function EditListing() {
             <h4 className="font-semibold text-gray-800 mb-3">Property Type</h4>
             <div className="flex gap-6">
               <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="sale" 
-                  onChange={onHandleChanges} 
+                <input
+                  type="radio"
+                  name="type"
+                  value="sale"
+                  onChange={onHandleChanges}
                   checked={formData.type === "sale"}
                   className="text-blue-600"
                 />
                 <span className="font-medium">For Sale</span>
               </label>
               <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="rent" 
-                  onChange={onHandleChanges} 
+                <input
+                  type="radio"
+                  name="type"
+                  value="rent"
+                  onChange={onHandleChanges}
                   checked={formData.type === "rent"}
                   className="text-blue-600"
                 />
@@ -492,7 +525,7 @@ export default function EditListing() {
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-4">
               <div className="flex flex-col">
                 <span className="text-gray-700 font-medium mb-1">Floor Number *</span>
@@ -511,7 +544,7 @@ export default function EditListing() {
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-4">
               <div className="flex flex-col">
                 <span className="text-gray-700 font-medium mb-1">Property Age (years) *</span>
@@ -530,6 +563,172 @@ export default function EditListing() {
                 </p>
               </div>
             </div>
+
+            {/* Rent-Lock Plan Configuration (only for rental properties) */}
+            {formData.type === "rent" && (
+              <div className="mt-6 border-t pt-4">
+                <h5 className="font-semibold text-gray-800 mb-3">Rent-Lock Plan Configuration</h5>
+                <div className="space-y-4">
+                  {/* Rent-Lock Plan Selection */}
+                  <div className="flex flex-col">
+                    <span className="text-gray-700 font-medium mb-2">Rent-Lock Plan *</span>
+                    <select
+                      id="rentLockPlan"
+                      name="defaultPlan"
+                      onChange={(e) => {
+                        const selectedPlan = e.target.value;
+                        setFormData(prev => ({
+                          ...prev,
+                          rentLockPlans: {
+                            ...prev.rentLockPlans,
+                            defaultPlan: selectedPlan,
+                            availablePlans: prev.rentLockPlans.availablePlans.includes(selectedPlan)
+                              ? prev.rentLockPlans.availablePlans
+                              : [...prev.rentLockPlans.availablePlans, selectedPlan]
+                          }
+                        }));
+                      }}
+                      value={formData.rentLockPlans?.defaultPlan || '1_year'}
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    >
+                      <option value="1_year">1 Year Rent-Lock</option>
+                      <option value="3_year">3 Year Rent-Lock</option>
+                      <option value="5_year">5 Year Rent-Lock</option>
+                      <option value="custom">Custom Duration</option>
+                    </select>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select the rent-lock plan duration. Rent will remain fixed for this period.
+                    </p>
+                  </div>
+
+                  {/* Custom Lock Duration (if custom plan selected) */}
+                  {formData.rentLockPlans?.defaultPlan === "custom" && (
+                    <div className="flex flex-col">
+                      <span className="text-gray-700 font-medium mb-2">Custom Lock Duration (months) *</span>
+                      <input
+                        type="number"
+                        id="customLockDuration"
+                        min="1"
+                        max="60"
+                        onChange={onHandleChanges}
+                        value={formData.customLockDuration}
+                        placeholder="Enter duration in months (1-60)"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Enter the lock duration in months (minimum 1 month, maximum 60 months).
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Monthly Rent */}
+                  <div className="flex flex-col">
+                    <span className="text-gray-700 font-medium mb-2">Monthly Rent (₹) *</span>
+                    <input
+                      type="number"
+                      id="monthlyRent"
+                      min="0"
+                      onChange={onHandleChanges}
+                      value={formData.monthlyRent}
+                      placeholder="Enter monthly rent amount"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      The fixed monthly rent amount that will remain unchanged during the rent-lock period.
+                    </p>
+                  </div>
+
+                  {/* Security Deposit */}
+                  <div className="flex flex-col">
+                    <span className="text-gray-700 font-medium mb-2">Security Deposit (months of rent) *</span>
+                    <input
+                      type="number"
+                      id="securityDepositMonths"
+                      min="0"
+                      max="12"
+                      onChange={onHandleChanges}
+                      value={formData.securityDepositMonths}
+                      placeholder="Enter months (typically 2-3 months)"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Number of months of rent as security deposit (typically 2-3 months).
+                    </p>
+                  </div>
+
+                  {/* Maintenance Charges */}
+                  <div className="flex flex-col">
+                    <span className="text-gray-700 font-medium mb-2">Maintenance Charges (₹/month) (Optional)</span>
+                    <input
+                      type="number"
+                      id="maintenanceCharges"
+                      min="0"
+                      onChange={onHandleChanges}
+                      value={formData.maintenanceCharges}
+                      placeholder="Enter monthly maintenance charges (0 if none)"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Monthly maintenance charges, if applicable. Leave 0 if no maintenance charges.
+                    </p>
+                  </div>
+
+                  {/* Advance Rent */}
+                  <div className="flex flex-col">
+                    <span className="text-gray-700 font-medium mb-2">Advance Rent (months) (Optional)</span>
+                    <input
+                      type="number"
+                      id="advanceRentMonths"
+                      min="0"
+                      max="12"
+                      onChange={onHandleChanges}
+                      value={formData.advanceRentMonths}
+                      placeholder="Enter months of advance rent (0 if none)"
+                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    />
+                    <p className="text-xs text-gray-500 mt-1">
+                      Number of months of rent to be paid in advance, if required. Leave 0 if no advance rent.
+                    </p>
+                  </div>
+
+                  {/* Available Plans (multi-select) */}
+                  <div className="flex flex-col">
+                    <span className="text-gray-700 font-medium mb-2">Available Plans (Select all that apply)</span>
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                      {['1_year', '3_year', '5_year', 'custom'].map((plan) => (
+                        <label key={plan} className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm cursor-pointer">
+                          <input
+                            type="checkbox"
+                            checked={formData.rentLockPlans?.availablePlans.includes(plan)}
+                            onChange={(e) => {
+                              const checked = e.target.checked;
+                              setFormData(prev => ({
+                                ...prev,
+                                rentLockPlans: {
+                                  ...prev.rentLockPlans,
+                                  availablePlans: checked
+                                    ? [...(prev.rentLockPlans?.availablePlans || []), plan]
+                                    : (prev.rentLockPlans?.availablePlans || []).filter(p => p !== plan)
+                                }
+                              }));
+                            }}
+                            className="text-blue-600"
+                          />
+                          <span className="text-gray-700 text-sm font-medium">
+                            {plan === '1_year' ? '1 Year' :
+                              plan === '3_year' ? '3 Years' :
+                                plan === '5_year' ? '5 Years' : 'Custom'}
+                          </span>
+                        </label>
+                      ))}
+                    </div>
+                    <p className="text-xs text-gray-500 mt-1">
+                      Select all rent-lock plans you want to offer to tenants. At least one plan should be selected.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Property Details */}
@@ -587,10 +786,10 @@ export default function EditListing() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {["parking", "furnished", "offer"].map((item) => (
                 <label key={item} className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm">
-                  <input 
-                    type="checkbox" 
-                    id={item} 
-                    onChange={onHandleChanges} 
+                  <input
+                    type="checkbox"
+                    id={item}
+                    onChange={onHandleChanges}
                     checked={formData[item]}
                     className="text-blue-600"
                   />
@@ -615,9 +814,8 @@ export default function EditListing() {
                       placeholder={`Image URL ${index + 1} (e.g., https://example.com/image.jpg)`}
                       value={url || ""}
                       onChange={(e) => handleImageChange(index, e.target.value)}
-                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        imageErrors[index] ? 'border-red-500' : ''
-                      }`}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${imageErrors[index] ? 'border-red-500' : ''
+                        }`}
                     />
                     <label className={`p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center gap-2 ${uploadingImages[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       <input
@@ -672,9 +870,9 @@ export default function EditListing() {
                   {formData.imageUrls.map((url, index) => (
                     url && (
                       <div key={url} className="relative">
-                        <img 
-                          src={url} 
-                          alt="listing" 
+                        <img
+                          src={url}
+                          alt="listing"
                           className="w-full h-24 object-cover rounded-lg"
                           onError={(e) => {
                             e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
@@ -711,9 +909,8 @@ export default function EditListing() {
                       placeholder={`Video URL ${index + 1} (e.g., https://example.com/video.mp4)`}
                       value={url || ""}
                       onChange={(e) => handleVideoUrlChange(index, e.target.value)}
-                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        videoErrors[index] ? 'border-red-500' : ''
-                      }`}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${videoErrors[index] ? 'border-red-500' : ''
+                        }`}
                     />
                     <label className={`p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center gap-2 ${uploadingVideos[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       <input
@@ -774,9 +971,9 @@ export default function EditListing() {
 
           {/* ESG Management Section */}
           <div className="mb-6">
-            <ESGManagement 
+            <ESGManagement
               esgData={formData.esg}
-              onESGChange={(esgData) => setFormData({...formData, esg: esgData})}
+              onESGChange={(esgData) => setFormData({ ...formData, esg: esgData })}
               isEditing={true}
             />
           </div>
