@@ -1,9 +1,10 @@
 import React, { useEffect, useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash, FaEye, FaPlus, FaLock, FaFlag, FaTimes, FaSync } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { maskAddress } from '../utils/addressMasking';
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
 import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -12,6 +13,9 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function AdminListings() {
   // Set page title
   usePageTitle("Property Management - Admin Panel");
+
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
 
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -25,7 +29,7 @@ export default function AdminListings() {
   const [deletePassword, setDeletePassword] = useState("");
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
-    const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
 
   // Property Reports state
   const [showPropertyReportsModal, setShowPropertyReportsModal] = useState(false);
@@ -41,20 +45,20 @@ export default function AdminListings() {
     sortBy: 'date',
     sortOrder: 'desc'
   });
- 
-   // Lock body scroll when deletion modals are open on Admin Listings
-   useEffect(() => {
-     const shouldLock = showReasonModal || showPasswordModal || showPropertyReportsModal;
-     if (shouldLock) {
-       document.body.classList.add('modal-open');
-     } else {
-       document.body.classList.remove('modal-open');
-     }
-     return () => {
-       document.body.classList.remove('modal-open');
-     };
-   }, [showReasonModal, showPasswordModal, showPropertyReportsModal]);
- 
+
+  // Lock body scroll when deletion modals are open on Admin Listings
+  useEffect(() => {
+    const shouldLock = showReasonModal || showPasswordModal || showPropertyReportsModal;
+    if (shouldLock) {
+      document.body.classList.add('modal-open');
+    } else {
+      document.body.classList.remove('modal-open');
+    }
+    return () => {
+      document.body.classList.remove('modal-open');
+    };
+  }, [showReasonModal, showPasswordModal, showPropertyReportsModal]);
+
   const [filters, setFilters] = useState({
     searchTerm: '',
     type: 'all',
@@ -122,7 +126,7 @@ export default function AdminListings() {
       const data = await res.json();
       setListings((prev) => [...prev, ...data]);
       setShowMoreListing(Array.isArray(data) && data.length === limit);
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const handleDelete = (id) => {
@@ -160,10 +164,44 @@ export default function AdminListings() {
         body: JSON.stringify({ password: deletePassword }),
       });
       if (!verifyRes.ok) {
-        setDeleteError("Incorrect password. Property not deleted.");
+        // Track wrong attempts locally (allow up to 3 attempts before logout)
+        const key = 'deleteAdminListingPwAttempts';
+        const prev = parseInt(localStorage.getItem(key) || '0');
+        const next = prev + 1;
+        localStorage.setItem(key, String(next));
+
+        if (next >= 3) {
+          // Sign out and redirect on third wrong attempt
+          toast.error("Too many incorrect attempts. You've been signed out for security.");
+          dispatch(signoutUserStart());
+          try {
+            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutData = await signoutRes.json();
+            if (signoutData.success === false) {
+              dispatch(signoutUserFailure(signoutData.message));
+            } else {
+              dispatch(signoutUserSuccess(signoutData));
+            }
+          } catch (err) {
+            dispatch(signoutUserFailure(err.message));
+          }
+          localStorage.removeItem(key); // Clear attempts on logout
+          setShowPasswordModal(false);
+          setTimeout(() => {
+            navigate('/sign-in');
+          }, 800);
+          return;
+        }
+
+        const remaining = 3 - next;
+        setDeleteError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
         setDeleteLoading(false);
         return;
       }
+
+      // Success - Clear attempts
+      localStorage.removeItem('deleteAdminListingPwAttempts');
+
       // Proceed to delete
       const res = await fetch(`${API_BASE_URL}/api/listing/delete/${pendingDeleteId}`, {
         method: 'DELETE',
@@ -209,7 +247,7 @@ export default function AdminListings() {
     try {
       setPropertyReportsLoading(true);
       setPropertyReportsError('');
-      
+
       const params = new URLSearchParams();
       if (propertyReportsFilters.dateFrom) params.append('dateFrom', propertyReportsFilters.dateFrom);
       if (propertyReportsFilters.dateTo) params.append('dateTo', propertyReportsFilters.dateTo);
@@ -219,14 +257,14 @@ export default function AdminListings() {
       params.append('sortOrder', propertyReportsFilters.sortOrder);
 
       console.log('Fetching property reports from:', `${API_BASE_URL}/api/notifications/reports/properties?${params}`);
-      
+
       const res = await fetch(`${API_BASE_URL}/api/notifications/reports/properties?${params}`, {
         credentials: 'include'
       });
       const data = await res.json();
-      
+
       console.log('Property Reports API response:', data);
-      
+
       if (data.success) {
         setPropertyReports(data.reports || []);
         console.log('Property Reports set:', data.reports?.length || 0);
@@ -265,7 +303,7 @@ export default function AdminListings() {
     // Apply search filter
     if (propertyReportsFilters.search) {
       const searchTerm = propertyReportsFilters.search.toLowerCase();
-      filtered = filtered.filter(report => 
+      filtered = filtered.filter(report =>
         report.propertyName?.toLowerCase().includes(searchTerm) ||
         report.reporter?.toLowerCase().includes(searchTerm) ||
         report.reporterEmail?.toLowerCase().includes(searchTerm) ||
@@ -278,7 +316,7 @@ export default function AdminListings() {
     // Apply reporter filter
     if (propertyReportsFilters.reporter) {
       const reporterTerm = propertyReportsFilters.reporter.toLowerCase();
-      filtered = filtered.filter(report => 
+      filtered = filtered.filter(report =>
         report.reporter?.toLowerCase().includes(reporterTerm)
       );
     }
@@ -286,7 +324,7 @@ export default function AdminListings() {
     // Apply date filters
     if (propertyReportsFilters.dateFrom) {
       const fromDate = new Date(propertyReportsFilters.dateFrom);
-      filtered = filtered.filter(report => 
+      filtered = filtered.filter(report =>
         new Date(report.createdAt) >= fromDate
       );
     }
@@ -294,7 +332,7 @@ export default function AdminListings() {
     if (propertyReportsFilters.dateTo) {
       const toDate = new Date(propertyReportsFilters.dateTo);
       toDate.setHours(23, 59, 59, 999); // Include entire day
-      filtered = filtered.filter(report => 
+      filtered = filtered.filter(report =>
         new Date(report.createdAt) <= toDate
       );
     }
@@ -302,7 +340,7 @@ export default function AdminListings() {
     // Apply sorting
     filtered.sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (propertyReportsFilters.sortBy) {
         case 'reporter':
           aValue = a.reporter || '';
@@ -384,33 +422,33 @@ export default function AdminListings() {
 
             {/* Filters */}
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <input type="text" value={filters.searchTerm} onChange={(e)=>setFilters({...filters,searchTerm:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="Search by name/address/city/state" />
-              <select className="border rounded px-3 py-2 text-sm" value={filters.type} onChange={(e)=>setFilters({...filters,type:e.target.value})}>
+              <input type="text" value={filters.searchTerm} onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="Search by name/address/city/state" />
+              <select className="border rounded px-3 py-2 text-sm" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
                 <option value="all">All Types</option>
                 <option value="sale">Sale</option>
                 <option value="rent">Rent</option>
               </select>
-              <select className="border rounded px-3 py-2 text-sm" value={filters.offer} onChange={(e)=>setFilters({...filters,offer:e.target.value})}>
+              <select className="border rounded px-3 py-2 text-sm" value={filters.offer} onChange={(e) => setFilters({ ...filters, offer: e.target.value })}>
                 <option value="all">Offer: Any</option>
                 <option value="true">Offer: Yes</option>
                 <option value="false">Offer: No</option>
               </select>
               <div className="grid grid-cols-2 gap-2">
-                <select className="border rounded px-3 py-2 text-sm" value={filters.furnished} onChange={(e)=>setFilters({...filters,furnished:e.target.value})}>
+                <select className="border rounded px-3 py-2 text-sm" value={filters.furnished} onChange={(e) => setFilters({ ...filters, furnished: e.target.value })}>
                   <option value="all">Furnished: Any</option>
                   <option value="true">Furnished</option>
                   <option value="false">Unfurnished</option>
                 </select>
-                <select className="border rounded px-3 py-2 text-sm" value={filters.parking} onChange={(e)=>setFilters({...filters,parking:e.target.value})}>
+                <select className="border rounded px-3 py-2 text-sm" value={filters.parking} onChange={(e) => setFilters({ ...filters, parking: e.target.value })}>
                   <option value="all">Parking: Any</option>
                   <option value="true">With Parking</option>
                   <option value="false">No Parking</option>
                 </select>
               </div>
-              <input type="number" min="0" value={filters.minPrice} onChange={(e)=>setFilters({...filters,minPrice:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="Min Price" />
-              <input type="number" min="0" value={filters.maxPrice} onChange={(e)=>setFilters({...filters,maxPrice:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="Max Price" />
-              <input type="text" value={filters.city} onChange={(e)=>setFilters({...filters,city:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="City" />
-              <input type="text" value={filters.state} onChange={(e)=>setFilters({...filters,state:e.target.value})} className="border rounded px-3 py-2 text-sm" placeholder="State" />
+              <input type="number" min="0" value={filters.minPrice} onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="Min Price" />
+              <input type="number" min="0" value={filters.maxPrice} onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="Max Price" />
+              <input type="text" value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="City" />
+              <input type="text" value={filters.state} onChange={(e) => setFilters({ ...filters, state: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="State" />
             </div>
 
             {listings.length === 0 ? (
@@ -427,135 +465,134 @@ export default function AdminListings() {
               </div>
             ) : (
               <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                {listings.map((listing) => (
-                  <div key={listing._id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                    {/* Image */}
-                    <div className="relative h-48 bg-gray-200 rounded-t-lg overflow-hidden">
-                      {listing.imageUrls && listing.imageUrls.length > 0 ? (
-                        <img
-                          src={listing.imageUrls[0]}
-                          alt={listing.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-400">
-                          <span>No Image</span>
-                        </div>
-                      )}
-                      
-                      {/* Offer Badge */}
-                      {listing.offer && getDiscountPercentage(listing) > 0 && (
-                        <div className="absolute top-2 left-2 z-20">
-                          <span 
-                            className="bg-yellow-400 text-gray-900 text-xs font-semibold px-2 py-1 rounded-full shadow-md animate-pulse"
-                            title="Limited-time offer!"
-                          >
-                            {getDiscountPercentage(listing)}% OFF
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                  {listings.map((listing) => (
+                    <div key={listing._id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                      {/* Image */}
+                      <div className="relative h-48 bg-gray-200 rounded-t-lg overflow-hidden">
+                        {listing.imageUrls && listing.imageUrls.length > 0 ? (
+                          <img
+                            src={listing.imageUrls[0]}
+                            alt={listing.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <span>No Image</span>
+                          </div>
+                        )}
+
+                        {/* Offer Badge */}
+                        {listing.offer && getDiscountPercentage(listing) > 0 && (
+                          <div className="absolute top-2 left-2 z-20">
+                            <span
+                              className="bg-yellow-400 text-gray-900 text-xs font-semibold px-2 py-1 rounded-full shadow-md animate-pulse"
+                              title="Limited-time offer!"
+                            >
+                              {getDiscountPercentage(listing)}% OFF
+                            </span>
+                          </div>
+                        )}
+
+                        <div className="absolute top-2 right-2">
+                          <span className={`px-2 py-1 rounded-full text-xs font-bold ${listing.type === 'sale'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-blue-100 text-blue-700'
+                            }`}>
+                            {listing.type === 'sale' ? 'For Sale' : 'For Rent'}
                           </span>
                         </div>
-                      )}
-                      
-                      <div className="absolute top-2 right-2">
-                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                          listing.type === 'sale' 
-                            ? 'bg-green-100 text-green-700' 
-                            : 'bg-blue-100 text-blue-700'
-                        }`}>
-                          {listing.type === 'sale' ? 'For Sale' : 'For Rent'}
-                        </span>
-                      </div>
-                    </div>
-
-                    {/* Content */}
-                    <div className="p-4">
-                      <h4 className="font-semibold text-lg text-gray-800 mb-2 truncate">{listing.name}</h4>
-                      <p className="text-gray-600 text-sm mb-2 truncate">
-                        {maskAddress(
-                          // Create address object if structured fields exist, otherwise use legacy address
-                          listing.propertyNumber || listing.city ? {
-                            propertyNumber: listing.propertyNumber,
-                            landmark: listing.landmark,
-                            city: listing.city,
-                            district: listing.district,
-                            state: listing.state,
-                            pincode: listing.pincode
-                          } : listing.address,
-                          true
-                        )}
-                      </p>
-                      
-                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                        <span>{listing.bedrooms} bed</span>
-                        <span>{listing.bathrooms} bath</span>
-                        {listing.parking && <span>Parking</span>}
-                        {listing.furnished && <span>Furnished</span>}
                       </div>
 
-                      <div className="flex items-center justify-between mb-4">
-                        <div className="text-lg font-bold text-blue-600">
-                          {listing.offer && getDiscountPercentage(listing) > 0 ? (
-                            <div className="flex items-center gap-2">
-                              <span>{formatPrice(listing.discountPrice)}</span>
-                              <span className="text-sm text-gray-500 line-through">
+                      {/* Content */}
+                      <div className="p-4">
+                        <h4 className="font-semibold text-lg text-gray-800 mb-2 truncate">{listing.name}</h4>
+                        <p className="text-gray-600 text-sm mb-2 truncate">
+                          {maskAddress(
+                            // Create address object if structured fields exist, otherwise use legacy address
+                            listing.propertyNumber || listing.city ? {
+                              propertyNumber: listing.propertyNumber,
+                              landmark: listing.landmark,
+                              city: listing.city,
+                              district: listing.district,
+                              state: listing.state,
+                              pincode: listing.pincode
+                            } : listing.address,
+                            true
+                          )}
+                        </p>
+
+                        <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                          <span>{listing.bedrooms} bed</span>
+                          <span>{listing.bathrooms} bath</span>
+                          {listing.parking && <span>Parking</span>}
+                          {listing.furnished && <span>Furnished</span>}
+                        </div>
+
+                        <div className="flex items-center justify-between mb-4">
+                          <div className="text-lg font-bold text-blue-600">
+                            {listing.offer && getDiscountPercentage(listing) > 0 ? (
+                              <div className="flex items-center gap-2">
+                                <span>{formatPrice(listing.discountPrice)}</span>
+                                <span className="text-sm text-gray-500 line-through">
+                                  {formatPrice(listing.regularPrice)}
+                                </span>
+                              </div>
+                            ) : (
+                              <span>
                                 {formatPrice(listing.regularPrice)}
+                                {listing.type === 'rent' && <span className="text-sm text-gray-500">/month</span>}
                               </span>
-                            </div>
-                          ) : (
-                            <span>
-                              {formatPrice(listing.regularPrice)}
-                              {listing.type === 'rent' && <span className="text-sm text-gray-500">/month</span>}
+                            )}
+                          </div>
+                          {listing.offer && getDiscountPercentage(listing) > 0 && (
+                            <span className="text-sm text-green-600 font-medium">
+                              Save {formatPrice(listing.regularPrice - listing.discountPrice)}
                             </span>
                           )}
                         </div>
-                        {listing.offer && getDiscountPercentage(listing) > 0 && (
-                          <span className="text-sm text-green-600 font-medium">
-                            Save {formatPrice(listing.regularPrice - listing.discountPrice)}
-                          </span>
-                        )}
-                      </div>
 
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        <Link
-                          to={`/admin/listing/${listing._id}`}
-                          className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-1"
-                        >
-                          <FaEye /> View
-                        </Link>
-                        <Link
-                          to={`/admin/update-listing/${listing._id}`}
-                          className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-yellow-600 transition flex items-center justify-center gap-1"
-                        >
-                          <FaEdit /> Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(listing._id)}
-                          className="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-red-600 transition flex items-center justify-center gap-1"
-                        >
-                          <FaTrash /> Delete
-                        </button>
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Link
+                            to={`/admin/listing/${listing._id}`}
+                            className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-1"
+                          >
+                            <FaEye /> View
+                          </Link>
+                          <Link
+                            to={`/admin/update-listing/${listing._id}`}
+                            className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-yellow-600 transition flex items-center justify-center gap-1"
+                          >
+                            <FaEdit /> Edit
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(listing._id)}
+                            className="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-red-600 transition flex items-center justify-center gap-1"
+                          >
+                            <FaTrash /> Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-              {fetching && (
-                <div className="flex justify-center mt-4 text-sm text-gray-500">Updating results…</div>
-              )}
-              {showMoreListing && (
-                <div className="flex justify-center mt-6">
-                  <button
-                    onClick={handleShowMore}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                  >
-                    Show more
-                  </button>
+                  ))}
                 </div>
-              )}
+                {fetching && (
+                  <div className="flex justify-center mt-4 text-sm text-gray-500">Updating results…</div>
+                )}
+                {showMoreListing && (
+                  <div className="flex justify-center mt-6">
+                    <button
+                      onClick={handleShowMore}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Show more
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>
@@ -668,7 +705,7 @@ export default function AdminListings() {
                     />
                   </div>
                 </div>
-                
+
                 {/* Secondary controls - compact on mobile */}
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center justify-between">
                   <div className="flex gap-2">
@@ -839,22 +876,20 @@ export default function AdminListings() {
                           )}
                           <a
                             href={report.reporterEmail ? `mailto:${report.reporterEmail}` : '#'}
-                            className={`px-3 py-1 text-sm rounded-md transition text-center ${
-                              report.reporterEmail 
-                                ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' 
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
+                            className={`px-3 py-1 text-sm rounded-md transition text-center ${report.reporterEmail
+                              ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              }`}
                             onClick={!report.reporterEmail ? (e) => e.preventDefault() : undefined}
                           >
                             Email Reporter
                           </a>
                           <a
                             href={report.reporterPhone ? `tel:${report.reporterPhone}` : '#'}
-                            className={`px-3 py-1 text-sm rounded-md transition text-center ${
-                              report.reporterPhone 
-                                ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' 
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
+                            className={`px-3 py-1 text-sm rounded-md transition text-center ${report.reporterPhone
+                              ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              }`}
                             onClick={!report.reporterPhone ? (e) => e.preventDefault() : undefined}
                           >
                             Call Reporter

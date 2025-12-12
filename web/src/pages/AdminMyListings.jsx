@@ -1,7 +1,9 @@
 import React, { useEffect, useState } from "react";
 import { useSelector } from "react-redux";
-import { Link } from "react-router-dom";
-import { FaEdit, FaTrash, FaEye, FaPlus } from "react-icons/fa";
+import { Link, useNavigate } from "react-router-dom";
+import { FaEdit, FaTrash, FaEye, FaPlus, FaLock } from "react-icons/fa";
+import { useDispatch } from "react-redux";
+import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { maskAddress } from '../utils/addressMasking';
 import { toast } from 'react-toastify';
@@ -14,7 +16,14 @@ export default function AdminMyListings() {
   usePageTitle("My Properties - Admin Panel");
 
   const { currentUser } = useSelector((state) => state.user);
+  const navigate = useNavigate();
+  const dispatch = useDispatch();
   const [listings, setListings] = useState([]);
+  const [showPasswordModal, setShowPasswordModal] = useState(false);
+  const [deletePassword, setDeletePassword] = useState("");
+  const [deleteLoading, setDeleteLoading] = useState(false);
+  const [deleteError, setDeleteError] = useState("");
+  const [pendingDeleteId, setPendingDeleteId] = useState(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
   const [visibleCount, setVisibleCount] = useState(12);
@@ -39,11 +48,11 @@ export default function AdminMyListings() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const res = await fetch(`${API_BASE_URL}/api/listing/user`, {
           credentials: 'include'
         });
-        
+
         if (res.ok) {
           const data = await res.json();
           if (currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin) {
@@ -65,24 +74,83 @@ export default function AdminMyListings() {
     fetchMyListings();
   }, [currentUser]);
 
-  const handleDelete = async (id) => {
-    if (!window.confirm("Are you sure you want to delete this listing?")) return;
-    
+  const handleDelete = (id) => {
+    setPendingDeleteId(id);
+    setShowPasswordModal(true);
+    setDeletePassword("");
+    setDeleteError("");
+  };
+
+  const handlePasswordSubmit = async (e) => {
+    e.preventDefault();
+    setDeleteLoading(true);
+    setDeleteError("");
     try {
-      const res = await fetch(`/api/listing/delete/${id}`, {
+      // Verify password
+      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ password: deletePassword }),
+      });
+
+      if (!verifyRes.ok) {
+        // Track wrong attempts locally (allow up to 3 attempts before logout)
+        const key = 'adminMyListingPwAttempts';
+        const prev = parseInt(localStorage.getItem(key) || '0');
+        const next = prev + 1;
+        localStorage.setItem(key, String(next));
+
+        if (next >= 3) {
+          // Sign out and redirect on third wrong attempt
+          toast.error("Too many incorrect attempts. You've been signed out for security.");
+          dispatch(signoutUserStart());
+          try {
+            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutData = await signoutRes.json();
+            if (signoutData.success === false) {
+              dispatch(signoutUserFailure(signoutData.message));
+            } else {
+              dispatch(signoutUserSuccess(signoutData));
+            }
+          } catch (err) {
+            dispatch(signoutUserFailure(err.message));
+          }
+          localStorage.removeItem(key); // Clear attempts on logout
+          setShowPasswordModal(false);
+          setTimeout(() => {
+            navigate('/sign-in');
+          }, 800);
+          return;
+        }
+
+        const remaining = 3 - next;
+        setDeleteError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
+        setDeleteLoading(false);
+        return;
+      }
+
+      // Success - Clear attempts
+      localStorage.removeItem('adminMyListingPwAttempts');
+
+      const res = await fetch(`/api/listing/delete/${pendingDeleteId}`, {
         method: "DELETE",
         credentials: 'include'
       });
-      
+
       if (res.ok) {
-        setListings((prev) => prev.filter((listing) => listing._id !== id));
+        setListings((prev) => prev.filter((listing) => listing._id !== pendingDeleteId));
         toast.success("Listing deleted successfully!");
+        setShowPasswordModal(false);
+        setPendingDeleteId(null);
       } else {
         const data = await res.json();
-        toast.error(data.message || "Failed to delete listing.");
+        setDeleteError(data.message || "Failed to delete listing.");
       }
     } catch (err) {
-      toast.error("An error occurred. Please try again.");
+      setDeleteError("An error occurred. Please try again.");
+    } finally {
+      setDeleteLoading(false);
     }
   };
 
@@ -106,9 +174,9 @@ export default function AdminMyListings() {
   const filteredListings = listings.filter((l) => {
     const matchesSearch = filters.searchTerm
       ? (l.name?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-         (l.address && String(l.address).toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
-         (l.city && l.city.toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
-         (l.state && l.state.toLowerCase().includes(filters.searchTerm.toLowerCase())))
+        (l.address && String(l.address).toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
+        (l.city && l.city.toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
+        (l.state && l.state.toLowerCase().includes(filters.searchTerm.toLowerCase())))
       : true;
     const matchesType = filters.type === 'all' ? true : l.type === filters.type;
     const matchesOffer = filters.offer === 'all' ? true : (filters.offer === 'true' ? !!l.offer : !l.offer);
@@ -220,128 +288,147 @@ export default function AdminMyListings() {
               </div>
             ) : (
               <>
-              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-                {filteredListings.slice(0, visibleCount).map((listing) => (
-                  <div key={listing._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
-                    {/* Image */}
-                    <div className="relative h-48 bg-gray-200">
-                      {listing.imageUrls && listing.imageUrls.length > 0 ? (
-                        <img
-                          src={listing.imageUrls[0]}
-                          alt={listing.name}
-                          className="w-full h-full object-cover"
-                          onError={(e) => {
-                            e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
-                            e.target.className = "w-full h-full object-cover opacity-50";
-                          }}
-                        />
-                      ) : (
-                        <div className="w-full h-full flex items-center justify-center">
-                          <div className="text-center text-gray-500">
-                            <div className="text-4xl mb-2">🏠</div>
-                            <p className="text-sm">No Image</p>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                  {filteredListings.slice(0, visibleCount).map((listing) => (
+                    <div key={listing._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                      {/* Image */}
+                      <div className="relative h-48 bg-gray-200">
+                        {listing.imageUrls && listing.imageUrls.length > 0 ? (
+                          <img
+                            src={listing.imageUrls[0]}
+                            alt={listing.name}
+                            className="w-full h-full object-cover"
+                            onError={(e) => {
+                              e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
+                              e.target.className = "w-full h-full object-cover opacity-50";
+                            }}
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center">
+                            <div className="text-center text-gray-500">
+                              <div className="text-4xl mb-2">🏠</div>
+                              <p className="text-sm">No Image</p>
+                            </div>
                           </div>
-                        </div>
-                      )}
-                      
-                      {/* Type Badge */}
-                      <div className="absolute top-2 left-2">
-                        <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${
-                          listing.type === 'rent' ? 'bg-blue-500' : 'bg-green-500'
-                        }`}>
-                          {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
-                        </span>
-                      </div>
-                      
-                      {/* Offer Badge */}
-                      {listing.offer && (
-                        <div className="absolute top-2 right-2">
-                          <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">
-                            {getDiscountPercentage(listing)}% OFF
+                        )}
+
+                        {/* Type Badge */}
+                        <div className="absolute top-2 left-2">
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${listing.type === 'rent' ? 'bg-blue-500' : 'bg-green-500'
+                            }`}>
+                            {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
                           </span>
                         </div>
-                      )}
-                    </div>
 
-                    {/* Content */}
-                    <div className="p-4">
-                      <h4 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">{listing.name}</h4>
-                      <p className="text-gray-600 text-sm mb-3 line-clamp-2">
-                        {maskAddress(
-                          // Create address object if structured fields exist, otherwise use legacy address
-                          listing.propertyNumber || listing.city ? {
-                            propertyNumber: listing.propertyNumber,
-                            landmark: listing.landmark,
-                            city: listing.city,
-                            district: listing.district,
-                            state: listing.state,
-                            pincode: listing.pincode
-                          } : listing.address,
-                          true
-                        )}
-                      </p>
-                      
-                      {/* Price */}
-                      <div className="mb-3">
-                        <span className="text-xl font-bold text-blue-600">
-                          {formatPrice(listing.regularPrice)}
-                        </span>
-                        {listing.type === 'rent' && <span className="text-gray-500 text-sm">/month</span>}
+                        {/* Offer Badge */}
                         {listing.offer && (
-                          <div className="text-sm text-gray-500 line-through">
-                            {formatPrice(listing.regularPrice)}
+                          <div className="absolute top-2 right-2">
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">
+                              {getDiscountPercentage(listing)}% OFF
+                            </span>
                           </div>
                         )}
                       </div>
 
-                      {/* Property Details */}
-                      <div className="flex justify-between text-sm text-gray-600 mb-4">
-                        <span>{listing.bedrooms} bed</span>
-                        <span>{listing.bathrooms} bath</span>
-                        <span>{listing.furnished ? 'Furnished' : 'Unfurnished'}</span>
-                        <span>{listing.parking ? 'Parking' : 'No Parking'}</span>
-                      </div>
+                      {/* Content */}
+                      <div className="p-4">
+                        <h4 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">{listing.name}</h4>
+                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                          {maskAddress(
+                            // Create address object if structured fields exist, otherwise use legacy address
+                            listing.propertyNumber || listing.city ? {
+                              propertyNumber: listing.propertyNumber,
+                              landmark: listing.landmark,
+                              city: listing.city,
+                              district: listing.district,
+                              state: listing.state,
+                              pincode: listing.pincode
+                            } : listing.address,
+                            true
+                          )}
+                        </p>
 
-                      {/* Actions */}
-                      <div className="flex gap-2">
-                        <Link
-                          to={`/admin/listing/${listing._id}`}
-                          className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-1"
-                        >
-                          <FaEye /> View
-                        </Link>
-                        <Link
-                          to={`/admin/update-listing/${listing._id}`}
-                          className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-yellow-600 transition flex items-center justify-center gap-1"
-                        >
-                          <FaEdit /> Edit
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(listing._id)}
-                          className="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-red-600 transition flex items-center justify-center gap-1"
-                        >
-                          <FaTrash /> Delete
-                        </button>
+                        {/* Price */}
+                        <div className="mb-3">
+                          <span className="text-xl font-bold text-blue-600">
+                            {formatPrice(listing.regularPrice)}
+                          </span>
+                          {listing.type === 'rent' && <span className="text-gray-500 text-sm">/month</span>}
+                          {listing.offer && (
+                            <div className="text-sm text-gray-500 line-through">
+                              {formatPrice(listing.regularPrice)}
+                            </div>
+                          )}
+                        </div>
+
+                        {/* Property Details */}
+                        <div className="flex justify-between text-sm text-gray-600 mb-4">
+                          <span>{listing.bedrooms} bed</span>
+                          <span>{listing.bathrooms} bath</span>
+                          <span>{listing.furnished ? 'Furnished' : 'Unfurnished'}</span>
+                          <span>{listing.parking ? 'Parking' : 'No Parking'}</span>
+                        </div>
+
+                        {/* Actions */}
+                        <div className="flex gap-2">
+                          <Link
+                            to={`/admin/listing/${listing._id}`}
+                            className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-1"
+                          >
+                            <FaEye /> View
+                          </Link>
+                          <Link
+                            to={`/admin/update-listing/${listing._id}`}
+                            className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-yellow-600 transition flex items-center justify-center gap-1"
+                          >
+                            <FaEdit /> Edit
+                          </Link>
+                          <button
+                            onClick={() => handleDelete(listing._id)}
+                            className="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-red-600 transition flex items-center justify-center gap-1"
+                          >
+                            <FaTrash /> Delete
+                          </button>
+                        </div>
                       </div>
                     </div>
-                  </div>
-                ))}
-              </div>
-              {filteredListings.length > visibleCount && (
-                <div className="flex justify-center mt-6">
-                  <button
-                    onClick={() => setVisibleCount((c) => c + 12)}
-                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                  >
-                    Show more
-                  </button>
+                  ))}
                 </div>
-              )}
+                {filteredListings.length > visibleCount && (
+                  <div className="flex justify-center mt-6">
+                    <button
+                      onClick={() => setVisibleCount((c) => c + 12)}
+                      className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                    >
+                      Show more
+                    </button>
+                  </div>
+                )}
               </>
             )}
           </div>
         </div>
       </div>
+      {showPasswordModal && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+          <form onSubmit={handlePasswordSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+            <input
+              type="password"
+              className="border rounded p-2 w-full"
+              placeholder="Enter your password"
+              value={deletePassword}
+              onChange={e => setDeletePassword(e.target.value)}
+              autoFocus
+            />
+            {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
+            <div className="flex gap-2 justify-end">
+              <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold">Cancel</button>
+              <button type="submit" className="px-4 py-2 rounded bg-red-600 text-white font-semibold" disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Confirm & Delete'}</button>
+            </div>
+          </form>
+        </div>
+      )}
       <ContactSupportWrapper />
     </>
   );

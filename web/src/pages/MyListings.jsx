@@ -48,11 +48,11 @@ export default function MyListings() {
       try {
         setLoading(true);
         setError(null);
-        
+
         const res = await fetch(`${API_BASE_URL}/api/listing/user`, {
           credentials: 'include'
         });
-        
+
         if (res.ok) {
           const data = await res.json();
           setListings(data);
@@ -89,11 +89,46 @@ export default function MyListings() {
         credentials: 'include',
         body: JSON.stringify({ password: deletePassword }),
       });
+
       if (!verifyRes.ok) {
-        setDeleteError("Incorrect password. Listing not deleted.");
+        // Track wrong attempts locally (allow up to 3 attempts before logout)
+        const key = 'deleteListingPwAttempts';
+        const prev = parseInt(localStorage.getItem(key) || '0');
+        const next = prev + 1;
+        localStorage.setItem(key, String(next));
+
+        if (next >= 3) {
+          // Sign out and redirect on third wrong attempt
+          toast.error("Too many incorrect attempts. You've been signed out for security.");
+          dispatch(signoutUserStart());
+          try {
+            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutData = await signoutRes.json();
+            if (signoutData.success === false) {
+              dispatch(signoutUserFailure(signoutData.message));
+            } else {
+              dispatch(signoutUserSuccess(signoutData));
+            }
+          } catch (err) {
+            dispatch(signoutUserFailure(err.message));
+          }
+          localStorage.removeItem(key); // Clear attempts on logout
+          setShowPasswordModal(false);
+          setTimeout(() => {
+            navigate('/sign-in');
+          }, 800);
+          return;
+        }
+
+        const remaining = 3 - next;
+        setDeleteError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
         setDeleteLoading(false);
         return;
       }
+
+      // Success - Clear attempts
+      localStorage.removeItem('deleteListingPwAttempts');
+
       // Proceed to delete
       const res = await fetch(`${API_BASE_URL}/api/listing/delete/${pendingDeleteId}`, {
         method: "DELETE",
@@ -128,9 +163,9 @@ export default function MyListings() {
   const filteredListings = listings.filter((l) => {
     const matchesSearch = filters.searchTerm
       ? (l.name?.toLowerCase().includes(filters.searchTerm.toLowerCase()) ||
-         (l.address && String(l.address).toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
-         (l.city && l.city.toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
-         (l.state && l.state.toLowerCase().includes(filters.searchTerm.toLowerCase())))
+        (l.address && String(l.address).toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
+        (l.city && l.city.toLowerCase().includes(filters.searchTerm.toLowerCase())) ||
+        (l.state && l.state.toLowerCase().includes(filters.searchTerm.toLowerCase())))
       : true;
     const matchesType = filters.type === 'all' ? true : l.type === filters.type;
     const matchesOffer = filters.offer === 'all' ? true : (filters.offer === 'true' ? !!l.offer : !l.offer);
@@ -241,123 +276,122 @@ export default function MyListings() {
             </div>
           ) : (
             <>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-              {filteredListings.slice(0, visibleCount).map((listing) => (
-                <div key={listing._id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
-                  {/* Image */}
-                  <div className="relative h-48 bg-gray-200 rounded-t-lg overflow-hidden">
-                    {listing.imageUrls && listing.imageUrls.length > 0 ? (
-                      <img
-                        src={listing.imageUrls[0]}
-                        alt={listing.name}
-                        className="w-full h-full object-cover"
-                        onError={(e) => {
-                          e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
-                        }}
-                      />
-                    ) : (
-                      <div className="w-full h-full flex items-center justify-center text-gray-400">
-                        <span>No Image</span>
-                      </div>
-                    )}
-                    <div className="absolute top-2 right-2">
-                      <span className={`px-2 py-1 rounded-full text-xs font-bold ${
-                        listing.type === 'sale' 
-                          ? 'bg-green-100 text-green-700' 
-                          : 'bg-blue-100 text-blue-700'
-                      }`}>
-                        {listing.type === 'sale' ? 'For Sale' : 'For Rent'}
-                      </span>
-                    </div>
-                  </div>
-
-                  {/* Content */}
-                  <div className="p-4">
-                    <h4 className="font-semibold text-lg text-gray-800 mb-2 truncate">{listing.name}</h4>
-                    <p className="text-gray-600 text-sm mb-2 truncate">
-                      {maskAddress(
-                        // Create address object if structured fields exist, otherwise use legacy address
-                        listing.propertyNumber || listing.city ? {
-                          propertyNumber: listing.propertyNumber,
-                          landmark: listing.landmark,
-                          city: listing.city,
-                          district: listing.district,
-                          state: listing.state,
-                          pincode: listing.pincode
-                        } : listing.address,
-                        !!currentUser
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {filteredListings.slice(0, visibleCount).map((listing) => (
+                  <div key={listing._id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    {/* Image */}
+                    <div className="relative h-48 bg-gray-200 rounded-t-lg overflow-hidden">
+                      {listing.imageUrls && listing.imageUrls.length > 0 ? (
+                        <img
+                          src={listing.imageUrls[0]}
+                          alt={listing.name}
+                          className="w-full h-full object-cover"
+                          onError={(e) => {
+                            e.target.src = "https://via.placeholder.com/400x300?text=No+Image";
+                          }}
+                        />
+                      ) : (
+                        <div className="w-full h-full flex items-center justify-center text-gray-400">
+                          <span>No Image</span>
+                        </div>
                       )}
-                    </p>
-                    
-                    <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
-                      <span>{listing.bedrooms} bed</span>
-                      <span>{listing.bathrooms} bath</span>
-                      {listing.parking && <span>Parking</span>}
-                      {listing.furnished && <span>Furnished</span>}
-                    </div>
-
-                    <div className="flex items-center justify-between mb-4">
-                      <div className="text-lg font-bold text-blue-600">
-                        {listing.offer ? formatPrice(listing.discountPrice) : formatPrice(listing.regularPrice)}
-                        {listing.type === 'rent' && <span className="text-sm text-gray-500">/month</span>}
-                      </div>
-                      {listing.offer && (
-                        <span className="text-sm text-green-600 font-medium">Offer!</span>
-                      )}
-                    </div>
-
-                    {/* Verification Badge */}
-                    {listing.type === 'rent' && listing.isVerified && (
-                      <div className="mb-3">
-                        <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold flex items-center gap-1 w-fit">
-                          <FaShieldAlt /> Verified
+                      <div className="absolute top-2 right-2">
+                        <span className={`px-2 py-1 rounded-full text-xs font-bold ${listing.type === 'sale'
+                            ? 'bg-green-100 text-green-700'
+                            : 'bg-blue-100 text-blue-700'
+                          }`}>
+                          {listing.type === 'sale' ? 'For Sale' : 'For Rent'}
                         </span>
                       </div>
-                    )}
+                    </div>
 
-                    {/* Actions */}
-                    <div className="flex flex-wrap gap-2">
-                      <Link
-                        to={`/user/listing/${listing._id}`}
-                        className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-1"
-                      >
-                        <FaEye /> View
-                      </Link>
-                      <Link
-                        to={`/user/update-listing/${listing._id}`}
-                        className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-yellow-600 transition flex items-center justify-center gap-1"
-                      >
-                        <FaEdit /> Edit
-                      </Link>
-                      {listing.type === 'rent' && (
-                        <Link
-                          to={`/user/property-verification?listingId=${listing._id}`}
-                          className="flex-1 bg-green-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-1"
-                        >
-                          <FaShieldAlt /> {listing.isVerified ? 'Verify Status' : 'Verify'}
-                        </Link>
+                    {/* Content */}
+                    <div className="p-4">
+                      <h4 className="font-semibold text-lg text-gray-800 mb-2 truncate">{listing.name}</h4>
+                      <p className="text-gray-600 text-sm mb-2 truncate">
+                        {maskAddress(
+                          // Create address object if structured fields exist, otherwise use legacy address
+                          listing.propertyNumber || listing.city ? {
+                            propertyNumber: listing.propertyNumber,
+                            landmark: listing.landmark,
+                            city: listing.city,
+                            district: listing.district,
+                            state: listing.state,
+                            pincode: listing.pincode
+                          } : listing.address,
+                          !!currentUser
+                        )}
+                      </p>
+
+                      <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                        <span>{listing.bedrooms} bed</span>
+                        <span>{listing.bathrooms} bath</span>
+                        {listing.parking && <span>Parking</span>}
+                        {listing.furnished && <span>Furnished</span>}
+                      </div>
+
+                      <div className="flex items-center justify-between mb-4">
+                        <div className="text-lg font-bold text-blue-600">
+                          {listing.offer ? formatPrice(listing.discountPrice) : formatPrice(listing.regularPrice)}
+                          {listing.type === 'rent' && <span className="text-sm text-gray-500">/month</span>}
+                        </div>
+                        {listing.offer && (
+                          <span className="text-sm text-green-600 font-medium">Offer!</span>
+                        )}
+                      </div>
+
+                      {/* Verification Badge */}
+                      {listing.type === 'rent' && listing.isVerified && (
+                        <div className="mb-3">
+                          <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold flex items-center gap-1 w-fit">
+                            <FaShieldAlt /> Verified
+                          </span>
+                        </div>
                       )}
-                      <button
-                        onClick={() => handleDelete(listing._id)}
-                        className="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-red-600 transition flex items-center justify-center gap-1"
-                      >
-                        <FaTrash /> Delete
-                      </button>
+
+                      {/* Actions */}
+                      <div className="flex flex-wrap gap-2">
+                        <Link
+                          to={`/user/listing/${listing._id}`}
+                          className="flex-1 bg-blue-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-blue-600 transition flex items-center justify-center gap-1"
+                        >
+                          <FaEye /> View
+                        </Link>
+                        <Link
+                          to={`/user/update-listing/${listing._id}`}
+                          className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-yellow-600 transition flex items-center justify-center gap-1"
+                        >
+                          <FaEdit /> Edit
+                        </Link>
+                        {listing.type === 'rent' && (
+                          <Link
+                            to={`/user/property-verification?listingId=${listing._id}`}
+                            className="flex-1 bg-green-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-1"
+                          >
+                            <FaShieldAlt /> {listing.isVerified ? 'Verify Status' : 'Verify'}
+                          </Link>
+                        )}
+                        <button
+                          onClick={() => handleDelete(listing._id)}
+                          className="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-red-600 transition flex items-center justify-center gap-1"
+                        >
+                          <FaTrash /> Delete
+                        </button>
+                      </div>
                     </div>
                   </div>
-                </div>
-              ))}
-            </div>
-            {filteredListings.length > visibleCount && (
-              <div className="flex justify-center mt-6">
-                <button
-                  onClick={() => setVisibleCount((c) => c + 12)}
-                  className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
-                >
-                  Show more
-                </button>
+                ))}
               </div>
-            )}
+              {filteredListings.length > visibleCount && (
+                <div className="flex justify-center mt-6">
+                  <button
+                    onClick={() => setVisibleCount((c) => c + 12)}
+                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+                  >
+                    Show more
+                  </button>
+                </div>
+              )}
             </>
           )}
         </div>
