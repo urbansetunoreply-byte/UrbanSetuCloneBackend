@@ -11809,7 +11809,10 @@ export const sendSessionRevokedEmail = async (email, device, ip, location, time)
 
           <div style="text-align: center; margin-top: 30px;">
             <a href="${clientBaseUrl}/user/device-management" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-right: 10px;">Check Active Sessions</a>
-             <a href="${clientBaseUrl}/sign-in" style="display: inline-block; background-color: #ffffff; color: #2563eb; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; border: 1px solid #2563eb;">Sign In</a>
+             <a href="${clientBaseUrl}/sign-in" style="display: inline-block; background-color: #ffffff; color: #2563eb; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; border: 1px solid #2563eb; margin-right: 10px;">Sign In</a>
+             <div style="margin-top: 15px;">
+               <a href="${clientBaseUrl}/forgot-password" style="color: #6b7280; text-decoration: underline; font-size: 14px;">Reset Password</a>
+             </div>
           </div>
         </div>
         <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 20px;">
@@ -11848,7 +11851,10 @@ export const sendAllSessionsRevokedEmail = async (email, count) => {
 
           <div style="text-align: center; margin-top: 30px;">
             <a href="${clientBaseUrl}/user/device-management" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-right: 10px;">Check Active Sessions</a>
-            <a href="${clientBaseUrl}/sign-in" style="display: inline-block; background-color: #ffffff; color: #2563eb; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; border: 1px solid #2563eb;">Sign In</a>
+            <a href="${clientBaseUrl}/sign-in" style="display: inline-block; background-color: #ffffff; color: #2563eb; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; border: 1px solid #2563eb; margin-right: 10px;">Sign In</a>
+            <div style="margin-top: 15px;">
+              <a href="${clientBaseUrl}/forgot-password" style="color: #6b7280; text-decoration: underline; font-size: 14px;">Reset Password</a>
+            </div>
           </div>
         </div>
         <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 20px;">
