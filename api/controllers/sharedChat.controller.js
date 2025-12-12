@@ -138,7 +138,8 @@ export const createSharedChat = async (req, res) => {
                         sharedLink,
                         sharedChat.title,
                         sharedChat.expiresAt,
-                        sharedChat.messages.length
+                        sharedChat.messages.length,
+                        sharedChat.shareToken
                     );
                     console.log(`✅ Shared chat email sent to: ${user.email}`);
                 }

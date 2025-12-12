@@ -1479,6 +1479,7 @@ initializeEmailService().catch(error => {
 export const sendAccountDeletionEmail = async (email, userDetails, revocationLink) => {
   try {
     const { username, role } = userDetails;
+    const token = revocationLink.split('/').pop();
 
     const subject = `Account Deleted - UrbanSetu`;
 
@@ -1537,6 +1538,14 @@ export const sendAccountDeletionEmail = async (email, userDetails, revocationLin
                 <a href="${revocationLink}" style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 12px 24px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(245, 158, 11, 0.3); transition: all 0.3s ease;">
                   🔄 Restore My Account
                 </a>
+              </div>
+              
+              <div style="margin-top: 20px; border-top: 1px dashed #f59e0b; padding-top: 15px;">
+                <p style="color: #92400e; margin: 0 0 10px; font-size: 13px;">If the button doesn't work, copy this token:</p>
+                <div style="background: rgba(255,255,255,0.6); padding: 10px; border-radius: 6px; font-family: monospace; font-size: 14px; color: #78350f; border: 1px solid #fcd34d; user-select: all; word-break: break-all;">
+                  ${token}
+                </div>
+                <p style="color: #92400e; margin: 10px 0 0; font-size: 13px;">And paste it on the <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/restore-account" style="color: #92400e; text-decoration: underline;">restoration page</a>.</p>
               </div>
               <p style="color: #92400e; margin: 15px 0 0; font-size: 12px; text-align: center;">
                 This link will expire in 30 days
@@ -9635,6 +9644,14 @@ export const sendPropertyDeletionConfirmationEmail = async (email, deletionDetai
                 </a>
               </div>
             </div>
+            
+            <div style="border-top: 1px dashed #bbf7d0; margin-top: 20px; padding-top: 15px; text-align: center;">
+                <p style="color: #047857; margin: 0 0 8px; font-size: 13px;">If the link doesn't work, copy this token:</p>
+                <div style="background: white; border: 1px solid #bbf7d0; padding: 10px; border-radius: 6px; font-family: monospace; font-size: 14px; color: #047857; font-weight: bold; word-break: break-all; user-select: all; display: inline-block;">
+                    ${restorationToken}
+                </div>
+                <p style="color: #047857; margin: 8px 0 0; font-size: 12px;">And paste it on the <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/restore-property" style="color: #059669; text-decoration: underline;">restoration page</a>.</p>
+            </div>
           </div>
           ` : `
           <div class="action-buttons">
@@ -11576,7 +11593,7 @@ export const sendReportAcknowledgementEmail = async (email, reportDetails) => {
 };
 
 // Send Shared Chat Link Email
-export const sendSharedChatLinkEmail = async (email, sharedLink, title, expiryDate, messageCount) => {
+export const sendSharedChatLinkEmail = async (email, sharedLink, title, expiryDate, messageCount, shareToken = null) => {
   const clientBaseUrl = 'https://urbansetu.vercel.app';
   const formattedExpiry = expiryDate ? new Date(expiryDate).toLocaleDateString('en-IN', {
     weekday: 'long',
@@ -11634,6 +11651,15 @@ export const sendSharedChatLinkEmail = async (email, sharedLink, title, expiryDa
             <div style="margin-top: 15px; background: #fff; padding: 10px; border: 1px solid #e5e7eb; border-radius: 4px; word-break: break-all; color: #4b5563; font-size: 12px; font-family: monospace;">
               ${sharedLink}
             </div>
+            
+            ${shareToken ? `
+            <div style="margin-top: 15px; border-top: 1px dashed #e5e7eb; padding-top: 15px; text-align: center;">
+              <p style="color: #6b7280; margin: 0 0 10px; font-size: 13px;">Or copy this access token:</p>
+              <div style="background: #eff6ff; padding: 8px; border-radius: 4px; font-family: monospace; font-size: 14px; color: #1e40af; border: 1px solid #bfdbfe; display: inline-block; padding-left: 15px; padding-right: 15px; user-select: all;">
+                ${shareToken}
+              </div>
+            </div>
+            ` : ''}
           </div>
 
           <!-- Action Buttons -->
@@ -11747,6 +11773,8 @@ export const sendSharedChatRevokedEmail = async (email, title, revokedDate) => {
     return createErrorResponse(error, 'shared_chat_revoked');
   }
 };
+
+
 
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;
