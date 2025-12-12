@@ -1,5 +1,7 @@
 import SharedChat from '../models/sharedChat.model.js';
 import ChatHistory from '../models/chatHistory.model.js';
+import User from '../models/user.model.js';
+import { sendSharedChatLinkEmail } from '../utils/emailService.js';
 import crypto from 'crypto';
 
 // Create a new shared chat link
@@ -75,6 +77,28 @@ export const createSharedChat = async (req, res) => {
             });
             await sharedChat.save();
         }
+
+        // Send email notification (async, non-blocking)
+        (async () => {
+            try {
+                const user = await User.findById(userId).select('email');
+                if (user && user.email) {
+                    const clientBaseUrl = 'https://urbansetu.vercel.app'; // Or process.env.CLIENT_URL
+                    const sharedLink = `${clientBaseUrl}/ai/share/${sharedChat.shareToken}`;
+
+                    await sendSharedChatLinkEmail(
+                        user.email,
+                        sharedLink,
+                        sharedChat.title,
+                        sharedChat.expiresAt,
+                        sharedChat.messages.length
+                    );
+                    console.log(`✅ Shared chat email sent to: ${user.email}`);
+                }
+            } catch (emailError) {
+                console.error('Failed to send shared chat email:', emailError);
+            }
+        })();
 
         // Return the full object
         res.status(200).json({

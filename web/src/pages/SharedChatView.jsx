@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from 'react';
-import { useParams } from 'react-router-dom';
-import { FaRobot, FaUser, FaClock, FaCalendar, FaExclamationTriangle } from 'react-icons/fa';
+import { useParams, useNavigate } from 'react-router-dom';
+import { FaRobot, FaUser, FaClock, FaCalendar, FaExclamationTriangle, FaArrowRight } from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
@@ -8,10 +8,12 @@ import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 export default function SharedChatView() {
     const { shareToken } = useParams();
+    const navigate = useNavigate();
     const [chatData, setChatData] = useState(null);
     usePageTitle(chatData ? chatData.title : "Shared Chat", "SetuAI");
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [inputToken, setInputToken] = useState('');
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
     useEffect(() => {
@@ -72,6 +74,25 @@ export default function SharedChatView() {
         });
     };
 
+    const handleManualSubmit = () => {
+        if (!inputToken.trim()) return;
+
+        // Construct new path by replacing the last segment (token)
+        const currentPath = window.location.pathname;
+        const parts = currentPath.split('/');
+        // Handle potential trailing slash
+        if (parts[parts.length - 1] === '') parts.pop();
+
+        // Update the last part with new token
+        parts[parts.length - 1] = inputToken.trim();
+        const newPath = parts.join('/');
+
+        navigate(newPath);
+        // Reset error state to trigger loading state if needed, though navigation usually handles remount/update
+        setError(null);
+        setLoading(true);
+    };
+
     if (loading) {
         return (
             <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
@@ -90,6 +111,32 @@ export default function SharedChatView() {
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Unavailable</h2>
                     <p className="text-gray-600 mb-6">{error}</p>
+
+                    {/* Manual Token Input */}
+                    <div className="mb-6 text-left">
+                        <div className="relative">
+                            <input
+                                type="text"
+                                value={inputToken}
+                                onChange={(e) => setInputToken(e.target.value)}
+                                placeholder="Paste token here..."
+                                className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                                onKeyDown={(e) => {
+                                    if (e.key === 'Enter') {
+                                        handleManualSubmit();
+                                    }
+                                }}
+                            />
+                            <button
+                                onClick={handleManualSubmit}
+                                className="absolute right-2 top-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors p-1.5"
+                            >
+                                <FaArrowRight size={20} />
+                            </button>
+                        </div>
+                        <p className="text-xs text-gray-500 mt-2">If you have a valid token, paste it above to view.</p>
+                    </div>
+
                     <a href="/" className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
                         Go Home
                     </a>
