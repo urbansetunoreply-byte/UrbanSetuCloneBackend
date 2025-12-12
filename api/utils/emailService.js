@@ -11665,4 +11665,88 @@ export const sendSharedChatLinkEmail = async (email, sharedLink, title, expiryDa
 };
 
 // Export the current transporter (will be set during initialization)
+
+// Send Shared Chat Revoked Email
+export const sendSharedChatRevokedEmail = async (email, title, revokedDate) => {
+  const clientBaseUrl = 'https://urbansetu.vercel.app';
+  const formattedDate = new Date(revokedDate).toLocaleDateString('en-IN', {
+    weekday: 'long',
+    year: 'numeric',
+    month: 'long',
+    day: 'numeric'
+  });
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Shared Chat Link Revoked - SetuAI',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #dc2626; margin: 0; font-size: 28px;">SetuAI</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Link Revocation</p>
+          </div>
+          
+          <!-- Success Banner -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <div style="display: inline-block; background-color: #fef2f2; padding: 15px; border-radius: 50%; margin-bottom: 15px;">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#dc2626" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
+                <line x1="12" y1="2" x2="12" y2="12" />
+              </svg>
+            </div>
+            <h2 style="color: #1f2937; margin: 0; font-size: 22px;">Revocation Successful</h2>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">This shared link is no longer accessible.</p>
+          </div>
+
+          <!-- Revocation Details -->
+          <div style="background-color: #f3f4f6; padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+            <h3 style="margin: 0 0 15px 0; color: #374151; font-size: 16px; border-bottom: 1px solid #e5e7eb; padding-bottom: 10px;">Revocation Details</h3>
+            
+            <table style="width: 100%; border-collapse: collapse;">
+              <tr>
+                <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Chat Title</td>
+                <td style="padding: 8px 0; text-align: right; color: #1f2937; font-weight: 500; font-size: 14px;">${title}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Revoked On</td>
+                <td style="padding: 8px 0; text-align: right; color: #1f2937; font-weight: 500; font-size: 14px;">${formattedDate}</td>
+              </tr>
+              <tr>
+                <td style="padding: 8px 0; color: #6b7280; font-size: 14px;">Status</td>
+                <td style="padding: 8px 0; text-align: right; color: #dc2626; font-weight: 500; font-size: 14px;">Inactive</td>
+              </tr>
+            </table>
+          </div>
+
+          <!-- Action Buttons -->
+          <div style="text-align: center; margin-top: 10px;">
+             <a href="${clientBaseUrl}/user/ai" style="display: block; width: 100%; background-color: #2563eb; color: white; text-decoration: none; padding: 14px 0; border-radius: 8px; font-weight: bold; font-size: 16px; box-sizing: border-box;">Return to SetuAI</a>
+          </div>
+          
+          <!-- Footer -->
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved. • <a href="${clientBaseUrl}/privacy" style="color: #9ca3af; text-decoration: underline;">Privacy</a>
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'shared_chat_revoked') :
+      createErrorResponse(new Error(result.error), 'shared_chat_revoked');
+  } catch (error) {
+    return createErrorResponse(error, 'shared_chat_revoked');
+  }
+};
+
+// Export the current transporter (will be set during initialization)
 export default currentTransporter;

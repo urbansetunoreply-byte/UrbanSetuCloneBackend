@@ -137,9 +137,14 @@ export default function SharedChatView() {
                         <p className="text-xs text-gray-500 mt-2">If you have a valid token, paste it above to view.</p>
                     </div>
 
-                    <a href="/" className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
-                        Go Home
-                    </a>
+                    <div className="flex gap-4 justify-center">
+                        <a href="/" className="inline-block bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                            Go Home
+                        </a>
+                        <a href="/ai" className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
+                            Go to SetuAI
+                        </a>
+                    </div>
                 </div>
             </div>
         );

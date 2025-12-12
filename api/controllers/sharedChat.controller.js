@@ -1,8 +1,55 @@
 import SharedChat from '../models/sharedChat.model.js';
 import ChatHistory from '../models/chatHistory.model.js';
 import User from '../models/user.model.js';
-import { sendSharedChatLinkEmail } from '../utils/emailService.js';
+import { sendSharedChatLinkEmail, sendSharedChatRevokedEmail } from '../utils/emailService.js';
 import crypto from 'crypto';
+
+// ... (createSharedChat, getSharedChat, getShareInfo, updateSharedChat remain unchanged) ...
+
+// Delete/Revoke completely
+export const deleteSharedChat = async (req, res) => {
+    try {
+        const userId = req.user?.id;
+        const { shareToken } = req.params;
+
+        if (!userId) return res.status(401).json({ success: false, message: 'Auth required' });
+
+        // Find first to get title for email
+        const sharedChat = await SharedChat.findOne({ shareToken, userId });
+
+        if (!sharedChat) {
+            return res.status(404).json({ success: false, message: 'Shared chat not found' });
+        }
+
+        const title = sharedChat.title;
+
+        // Verify and delete
+        await SharedChat.findOneAndDelete({ shareToken, userId });
+
+        // Send email notification (async, non-blocking)
+        (async () => {
+            try {
+                const user = await User.findById(userId).select('email');
+                if (user && user.email) {
+                    await sendSharedChatRevokedEmail(
+                        user.email,
+                        title,
+                        new Date()
+                    );
+                    console.log(`✅ Revocation email sent to: ${user.email}`);
+                }
+            } catch (emailError) {
+                console.error('Failed to send revocation email:', emailError);
+            }
+        })();
+
+        res.status(200).json({ success: true, message: 'Link revoked and deleted permanently' });
+
+    } catch (error) {
+        console.error('Error deleting shared chat:', error);
+        res.status(500).json({ success: false, message: 'Failed to delete shared chat' });
+    }
+};
 
 // Create a new shared chat link
 export const createSharedChat = async (req, res) => {
@@ -291,20 +338,4 @@ export const updateSharedChat = async (req, res) => {
     }
 };
 
-// Delete/Revoke completely
-export const deleteSharedChat = async (req, res) => {
-    try {
-        const userId = req.user?.id;
-        const { shareToken } = req.params;
 
-        if (!userId) return res.status(401).json({ success: false, message: 'Auth required' });
-
-        await SharedChat.findOneAndDelete({ shareToken, userId });
-
-        res.status(200).json({ success: true, message: 'Link revoked and deleted permanently' });
-
-    } catch (error) {
-        console.error('Error deleting shared chat:', error);
-        res.status(500).json({ success: false, message: 'Failed to delete shared chat' });
-    }
-};
