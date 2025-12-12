@@ -1,8 +1,8 @@
 import express from 'express';
 import { verifyToken } from '../utils/verify.js';
-import { 
-  getUserActiveSessions, 
-  revokeSessionFromDB, 
+import {
+  getUserActiveSessions,
+  revokeSessionFromDB,
   revokeAllUserSessionsFromDB,
   revokeAllOtherUserSessionsFromDB,
   logSessionAction,
@@ -12,7 +12,7 @@ import {
 } from '../utils/sessionManager.js';
 import User from '../models/user.model.js';
 import SessionAuditLog from '../models/sessionAuditLog.model.js';
-import { sendForcedLogoutEmail } from '../utils/emailService.js';
+import { sendForcedLogoutEmail, sendSessionRevokedEmail, sendAllSessionsRevokedEmail } from '../utils/emailService.js';
 
 const router = express.Router();
 
@@ -21,14 +21,14 @@ router.get('/my-sessions', verifyToken, async (req, res, next) => {
   try {
     const userId = req.user._id;
     const sessions = await getUserActiveSessions(userId);
-    
+
     // Mark current session
     const currentSessionId = req.headers['x-session-id'] || req.cookies.session_id;
     const sessionsWithCurrent = sessions.map(session => ({
       ...session,
       isCurrent: session.sessionId === currentSessionId
     }));
-    
+
     res.json({
       success: true,
       sessions: sessionsWithCurrent,
@@ -44,45 +44,56 @@ router.post('/revoke-session', verifyToken, async (req, res, next) => {
   try {
     const { sessionId } = req.body;
     const userId = req.user._id;
-    
+
     if (!sessionId) {
       return res.status(400).json({ success: false, message: 'Session ID is required' });
     }
-    
+
     // Check if session belongs to user
     const user = await User.findById(userId);
-    const sessionExists = user.activeSessions.some(s => s.sessionId === sessionId);
-    
-    if (!sessionExists) {
+    const sessionToRevoke = user.activeSessions.find(s => s.sessionId === sessionId);
+
+    if (!sessionToRevoke) {
       return res.status(404).json({ success: false, message: 'Session not found' });
     }
-    
+
     // Revoke session
     await revokeSessionFromDB(userId, sessionId);
-    
-  // Notify target session via socket to logout immediately; also user room with targeted sessionId as fallback
-  try {
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'Session revoked by user' });
-      io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason: 'Session revoked by user' });
-      // Let clients refresh their session lists
-      io.to(userId.toString()).emit('sessionsUpdated');
-      io.emit('adminSessionsUpdated');
-    }
-  } catch (_) {}
+
+    // Notify target session via socket to logout immediately; also user room with targeted sessionId as fallback
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'Session revoked by user' });
+        io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason: 'Session revoked by user' });
+        // Let clients refresh their session lists
+        io.to(userId.toString()).emit('sessionsUpdated');
+        io.emit('adminSessionsUpdated');
+      }
+    } catch (_) { }
 
     // Log action
     await logSessionAction(
-      userId, 
-      'logout', 
-      sessionId, 
-      req.ip, 
+      userId,
+      'logout',
+      sessionId,
+      req.ip,
       getDeviceInfo(req.get('User-Agent')),
       getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
       'User revoked session'
     );
-    
+
+    // Send notification email
+    if (sessionToRevoke) {
+      await sendSessionRevokedEmail(
+        user.email,
+        sessionToRevoke.device,
+        sessionToRevoke.ip,
+        sessionToRevoke.location,
+        sessionToRevoke.lastActive || sessionToRevoke.loginTime
+      );
+    }
+
     res.json({ success: true, message: 'Session revoked successfully' });
   } catch (error) {
     next(error);
@@ -95,37 +106,47 @@ router.post('/revoke-all-sessions', verifyToken, async (req, res, next) => {
     const userId = req.user._id;
     const currentSessionId = req.headers['x-session-id'] || req.cookies.session_id;
     const { count: sessionCount, revokedSessionIds } = await revokeAllOtherUserSessionsFromDB(userId, currentSessionId);
-    
-  // Notify all other sessions to logout immediately
-  try {
-    const io = req.app.get('io');
-    if (io) {
-      if (Array.isArray(revokedSessionIds)) {
-        revokedSessionIds.forEach(sessionId => {
-          io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'All sessions revoked by user' });
-          io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason: 'All sessions revoked by user' });
-        });
+
+    // Fetch user for email
+    const user = await User.findById(userId).select('email');
+
+    // Notify all other sessions to logout immediately
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        if (Array.isArray(revokedSessionIds)) {
+          revokedSessionIds.forEach(sessionId => {
+            io.to(`session_${sessionId}`).emit('forceLogout', { reason: 'All sessions revoked by user' });
+            io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason: 'All sessions revoked by user' });
+          });
+        }
+        // Trigger UI refresh for remaining session(s)
+        io.to(userId.toString()).emit('sessionsUpdated');
+        io.emit('adminSessionsUpdated');
       }
-      // Trigger UI refresh for remaining session(s)
-      io.to(userId.toString()).emit('sessionsUpdated');
-      io.emit('adminSessionsUpdated');
-    }
-  } catch (_) {}
+    } catch (_) { }
 
     // Log action
     await logSessionAction(
-      userId, 
-      'logout', 
-      'others', 
-      req.ip, 
+      userId,
+      'logout',
+      'others',
+      req.ip,
       getDeviceInfo(req.get('User-Agent')),
       getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
       `User revoked ${sessionCount} other session(s)`
     );
-    
-    res.json({ 
-      success: true, 
-      message: `Logged out ${sessionCount} other device(s)` 
+
+
+
+    // Send email notification
+    if (user && sessionCount > 0) {
+      await sendAllSessionsRevokedEmail(user.email, sessionCount);
+    }
+
+    res.json({
+      success: true,
+      message: `Logged out ${sessionCount} other device(s)`
     });
   } catch (error) {
     next(error);
@@ -138,22 +159,22 @@ router.get('/admin/all-sessions', verifyToken, async (req, res, next) => {
     if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
-    
-    const { 
-      page = 1, 
-      limit = 20, 
-      role = 'all', 
-      search = '', 
-      device = 'all', 
-      location = 'all', 
-      dateRange = 'all' 
+
+    const {
+      page = 1,
+      limit = 20,
+      role = 'all',
+      search = '',
+      device = 'all',
+      location = 'all',
+      dateRange = 'all'
     } = req.query;
-    
+
     let userFilter = {};
     if (role !== 'all') {
       userFilter.role = role;
     }
-    
+
     // Add search filter for username/email
     if (search) {
       userFilter.$or = [
@@ -161,11 +182,11 @@ router.get('/admin/all-sessions', verifyToken, async (req, res, next) => {
         { email: { $regex: search, $options: 'i' } }
       ];
     }
-    
+
     // Get all users first (we'll filter sessions after)
     const users = await User.find(userFilter)
       .select('username email role activeSessions');
-    
+
     let sessionsWithUserInfo = [];
     users.forEach(user => {
       if (user.activeSessions && user.activeSessions.length > 0) {
@@ -185,11 +206,11 @@ router.get('/admin/all-sessions', verifyToken, async (req, res, next) => {
         });
       }
     });
-    
+
     // Apply session-level filters
     if (search) {
       const searchLower = search.toLowerCase();
-      sessionsWithUserInfo = sessionsWithUserInfo.filter(session => 
+      sessionsWithUserInfo = sessionsWithUserInfo.filter(session =>
         session.username.toLowerCase().includes(searchLower) ||
         session.email.toLowerCase().includes(searchLower) ||
         session.device.toLowerCase().includes(searchLower) ||
@@ -197,7 +218,7 @@ router.get('/admin/all-sessions', verifyToken, async (req, res, next) => {
         session.location.toLowerCase().includes(searchLower)
       );
     }
-    
+
     if (device !== 'all') {
       sessionsWithUserInfo = sessionsWithUserInfo.filter(session => {
         const deviceLower = session.device.toLowerCase();
@@ -213,17 +234,17 @@ router.get('/admin/all-sessions', verifyToken, async (req, res, next) => {
         }
       });
     }
-    
+
     if (location !== 'all') {
-      sessionsWithUserInfo = sessionsWithUserInfo.filter(session => 
+      sessionsWithUserInfo = sessionsWithUserInfo.filter(session =>
         session.location && session.location.toLowerCase().includes(location.toLowerCase())
       );
     }
-    
+
     if (dateRange !== 'all') {
       const now = new Date();
       let cutoffDate;
-      
+
       switch (dateRange) {
         case '1h':
           cutoffDate = new Date(now.getTime() - 60 * 60 * 1000);
@@ -240,22 +261,22 @@ router.get('/admin/all-sessions', verifyToken, async (req, res, next) => {
         default:
           cutoffDate = null;
       }
-      
+
       if (cutoffDate) {
-        sessionsWithUserInfo = sessionsWithUserInfo.filter(session => 
+        sessionsWithUserInfo = sessionsWithUserInfo.filter(session =>
           new Date(session.lastActive) >= cutoffDate
         );
       }
     }
-    
+
     // Sort by last active (most recent first)
     sessionsWithUserInfo.sort((a, b) => new Date(b.lastActive) - new Date(a.lastActive));
-    
+
     // Apply pagination
     const total = sessionsWithUserInfo.length;
     const skip = (page - 1) * limit;
     const paginatedSessions = sessionsWithUserInfo.slice(skip, skip + parseInt(limit));
-    
+
     res.json({
       success: true,
       sessions: paginatedSessions,
@@ -274,52 +295,52 @@ router.post('/admin/force-logout', verifyToken, async (req, res, next) => {
     if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
-    
+
     const { userId, sessionId, reason = 'Admin action' } = req.body;
-    
+
     if (!userId || !sessionId) {
       return res.status(400).json({ success: false, message: 'User ID and Session ID are required' });
     }
-    
+
     // Check if target user exists
     const targetUser = await User.findById(userId);
     if (!targetUser) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    
+
     // Check if session exists
     const sessionExists = targetUser.activeSessions.some(s => s.sessionId === sessionId);
     if (!sessionExists) {
       return res.status(404).json({ success: false, message: 'Session not found' });
     }
-    
+
     // Revoke session
     await revokeSessionFromDB(userId, sessionId);
-    
-  // Notify target session for immediate logout; also notify user room with targeted sessionId as fallback
-  try {
-    const io = req.app.get('io');
-    if (io) {
-      io.to(`session_${sessionId}`).emit('forceLogout', { reason });
-      io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason });
-      io.to(userId.toString()).emit('sessionsUpdated');
-      io.emit('adminSessionsUpdated');
-    }
-  } catch (_) {}
+
+    // Notify target session for immediate logout; also notify user room with targeted sessionId as fallback
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        io.to(`session_${sessionId}`).emit('forceLogout', { reason });
+        io.to(userId.toString()).emit('forceLogoutSession', { sessionId, reason });
+        io.to(userId.toString()).emit('sessionsUpdated');
+        io.emit('adminSessionsUpdated');
+      }
+    } catch (_) { }
 
     // Send notification email
     await sendForcedLogoutEmail(
-      targetUser.email, 
-      reason, 
+      targetUser.email,
+      reason,
       `${req.user.username} (${req.user.role})`
     );
-    
+
     // Log action
     await logSessionAction(
-      userId, 
-      'forced_logout', 
-      sessionId, 
-      req.ip, 
+      userId,
+      'forced_logout',
+      sessionId,
+      req.ip,
       getDeviceInfo(req.get('User-Agent')),
       getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
       `Forced logout by ${req.user.username}: ${reason}`,
@@ -327,7 +348,7 @@ router.post('/admin/force-logout', verifyToken, async (req, res, next) => {
       null,
       req.user._id
     );
-    
+
     res.json({ success: true, message: 'Session force logged out successfully' });
   } catch (error) {
     next(error);
@@ -340,44 +361,44 @@ router.post('/admin/force-logout-all', verifyToken, async (req, res, next) => {
     if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
-    
+
     const { userId, reason = 'Admin action' } = req.body;
-    
+
     if (!userId) {
       return res.status(400).json({ success: false, message: 'User ID is required' });
     }
-    
+
     // Check if target user exists
     const targetUser = await User.findById(userId);
     if (!targetUser) {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
-    
+
     const sessionCount = await revokeAllUserSessionsFromDB(userId);
-    
-  // Notify all sessions of this user
-  try {
-    const io = req.app.get('io');
-    if (io) {
-      io.to(userId.toString()).emit('forceLogout', { reason });
-      io.to(userId.toString()).emit('sessionsUpdated');
-      io.emit('adminSessionsUpdated');
-    }
-  } catch (_) {}
+
+    // Notify all sessions of this user
+    try {
+      const io = req.app.get('io');
+      if (io) {
+        io.to(userId.toString()).emit('forceLogout', { reason });
+        io.to(userId.toString()).emit('sessionsUpdated');
+        io.emit('adminSessionsUpdated');
+      }
+    } catch (_) { }
 
     // Send notification email
     await sendForcedLogoutEmail(
-      targetUser.email, 
-      reason, 
+      targetUser.email,
+      reason,
       `${req.user.username} (${req.user.role})`
     );
-    
+
     // Log action
     await logSessionAction(
-      userId, 
-      'forced_logout', 
-      'all', 
-      req.ip, 
+      userId,
+      'forced_logout',
+      'all',
+      req.ip,
       getDeviceInfo(req.get('User-Agent')),
       getLocationFromIP(req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip),
       `Forced logout all sessions by ${req.user.username}: ${reason}`,
@@ -385,10 +406,10 @@ router.post('/admin/force-logout-all', verifyToken, async (req, res, next) => {
       null,
       req.user._id
     );
-    
-    res.json({ 
-      success: true, 
-      message: `All ${sessionCount} sessions force logged out successfully` 
+
+    res.json({
+      success: true,
+      message: `All ${sessionCount} sessions force logged out successfully`
     });
   } catch (error) {
     next(error);
@@ -401,18 +422,18 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
     if (req.user.role !== 'rootadmin') {
       return res.status(403).json({ success: false, message: 'Access denied' });
     }
-    
-    const { 
-      page = 1, 
-      limit = 50, 
-      action, 
-      isSuspicious, 
-      userId, 
-      search = '', 
-      dateRange = 'all', 
-      role = 'all' 
+
+    const {
+      page = 1,
+      limit = 50,
+      action,
+      isSuspicious,
+      userId,
+      search = '',
+      dateRange = 'all',
+      role = 'all'
     } = req.query;
-    
+
     let filter = {};
     if (action) filter.action = action;
     if (isSuspicious !== undefined && isSuspicious !== '') filter.isSuspicious = isSuspicious === 'true';
@@ -426,12 +447,12 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
         return res.json({ success: true, logs: [], total: 0, page: parseInt(page), limit: parseInt(limit) });
       }
     }
-    
+
     // Date range filter
     if (dateRange !== 'all') {
       const now = new Date();
       let cutoffDate;
-      
+
       switch (dateRange) {
         case '1h':
           cutoffDate = new Date(now.getTime() - 60 * 60 * 1000);
@@ -448,18 +469,18 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
         default:
           cutoffDate = null;
       }
-      
+
       if (cutoffDate) {
         filter.timestamp = { $gte: cutoffDate };
       }
     }
-    
+
     // Get logs with population
     let logs = await SessionAuditLog.find(filter)
       .populate('userId', 'username email role')
       .populate('performedBy', 'username email role')
       .sort({ timestamp: -1 });
-    
+
     // Apply search filter after population
     if (search) {
       const searchLower = search.toLowerCase();
@@ -483,7 +504,7 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
         );
       });
     }
-    
+
     // Apply role filter after population
     if (role !== 'all') {
       logs = logs.filter(log => {
@@ -491,12 +512,12 @@ router.get('/admin/audit-logs', verifyToken, async (req, res, next) => {
         return user && user.role === role;
       });
     }
-    
+
     // Apply pagination
     const total = logs.length;
     const skip = (page - 1) * limit;
     const paginatedLogs = logs.slice(skip, skip + parseInt(limit));
-    
+
     res.json({
       success: true,
       logs: paginatedLogs,
@@ -549,11 +570,11 @@ router.post('/update-activity', verifyToken, async (req, res, next) => {
   try {
     const userId = req.user._id;
     const sessionId = req.headers['x-session-id'] || req.cookies.session_id;
-    
+
     if (sessionId) {
       await updateSessionActivityInDB(userId, sessionId);
     }
-    
+
     res.json({ success: true });
   } catch (error) {
     next(error);

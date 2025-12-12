@@ -11784,5 +11784,87 @@ export const sendSharedChatRevokedEmail = async (email, title, revokedDate) => {
 
 
 
+
+// Send Session Revoked Email
+export const sendSessionRevokedEmail = async (email, device, ip, location, time) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Session Revoked - UrbanSetu Security Alert',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+        <h2 style="color: #2563eb; text-align: center;">Session Access Revoked</h2>
+        <div style="padding: 20px; background-color: #f9fafb; border-radius: 8px;">
+          <p>This is a confirmation that access for a specific device has been revoked from your UrbanSetu account.</p>
+          
+          <div style="background-color: #ffffff; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb; margin: 20px 0;">
+            <p style="margin: 5px 0;"><strong>Device:</strong> ${device}</p>
+            <p style="margin: 5px 0;"><strong>Location:</strong> ${location || 'Unknown'}</p>
+            <p style="margin: 5px 0;"><strong>IP Address:</strong> ${ip}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date(time).toLocaleString()}</p>
+          </div>
+
+          <p style="margin-bottom: 20px;">If you did not authorize this action, please secure your account immediately.</p>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="${clientBaseUrl}/user/device-management" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-right: 10px;">Check Active Sessions</a>
+             <a href="${clientBaseUrl}/sign-in" style="display: inline-block; background-color: #ffffff; color: #2563eb; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; border: 1px solid #2563eb;">Sign In</a>
+          </div>
+        </div>
+        <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 20px;">
+          © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+        </p>
+      </div>
+    `
+  };
+
+  try {
+    await sendEmailWithRetry(mailOptions);
+    console.log(`Session revoked email sent to ${email}`);
+  } catch (error) {
+    console.error('Error sending session revoked email:', error);
+  }
+};
+
+// Send All Sessions Revoked Email
+export const sendAllSessionsRevokedEmail = async (email, count) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'All Other Sessions Signed Out - UrbanSetu Security Alert',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333;">
+        <h2 style="color: #2563eb; text-align: center;">All Other Devices Signed Out</h2>
+        <div style="padding: 20px; background-color: #f9fafb; border-radius: 8px;">
+          <p>You have successfully signed out from all other devices connected to your UrbanSetu account.</p>
+          
+          <div style="background-color: #ffffff; padding: 15px; border-radius: 6px; border: 1px solid #e5e7eb; margin: 20px 0; text-align: center;">
+            <p style="font-size: 18px; margin: 0;"><strong>${count}</strong> other session(s) were terminated.</p>
+          </div>
+
+          <p>Your current session remains active. If you did not initiate this action, please reset your password immediately.</p>
+
+          <div style="text-align: center; margin-top: 30px;">
+            <a href="${clientBaseUrl}/user/device-management" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; margin-right: 10px;">Check Active Sessions</a>
+            <a href="${clientBaseUrl}/sign-in" style="display: inline-block; background-color: #ffffff; color: #2563eb; text-decoration: none; padding: 12px 24px; border-radius: 6px; font-weight: bold; border: 1px solid #2563eb;">Sign In</a>
+          </div>
+        </div>
+        <p style="text-align: center; color: #6b7280; font-size: 12px; margin-top: 20px;">
+          © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+        </p>
+      </div>
+    `
+  };
+
+  try {
+    await sendEmailWithRetry(mailOptions);
+    console.log(`All sessions revoked email sent to ${email}`);
+  } catch (error) {
+    console.error('Error sending all sessions revoked email:', error);
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;
