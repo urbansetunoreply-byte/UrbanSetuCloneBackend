@@ -119,7 +119,7 @@ export default function Header() {
     }
     switch (path) {
       case '/sign-in':
-        return 'bg-gradient-to-r from-blue-600 to-blue-700'; // Blue for sign-in
+        return 'bg-gradient-to-r from-blue-700 to-purple-700'; // Blue-Purple for sign-in
       case '/sign-up':
         return 'bg-gradient-to-r from-green-600 to-green-700'; // Green for sign-up
       case '/forgot-password':
