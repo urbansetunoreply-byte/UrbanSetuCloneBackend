@@ -618,7 +618,7 @@ export const sendTransferRightsOTPEmail = async (email, otp) => {
 
 // Send new login notification email
 export const sendNewLoginEmail = async (email, device, ip, location, loginTime) => {
-  const clientBaseUrl = 'https://urbansetu.vercel.app/';
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -645,10 +645,16 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
             </div>
             
             <p style="color: #6b7280; margin: 15px 0 10px 0; font-size: 14px;">
-              If you didn't make this login, please secure your account immediately by changing your password.
+              You can review your active sessions to verify this activity.
+            </p>
+            <div style="text-align:center; margin-top: 15px;">
+              <a href="${clientBaseUrl}/user/device-management" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:600; margin-bottom: 10px;">Check Active Sessions</a>
+            </div>
+            <p style="color: #6b7280; margin: 10px 0 10px 0; font-size: 14px;">
+              If you didn't make this login, please secure your account immediately.
             </p>
             <div style="text-align:center; margin-top: 10px;">
-              <a href="${clientBaseUrl}/forgot-password" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:10px 16px; border-radius:6px; font-weight:600;">Reset Password</a>
+              <a href="${clientBaseUrl}/forgot-password" style="display:inline-block; border: 1px solid #2563eb; color:#2563eb; text-decoration:none; padding:10px 16px; border-radius:6px; font-weight:600;">Reset Password</a>
             </div>
           </div>
           
@@ -674,7 +680,7 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
 
 // Send suspicious login alert email
 export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, currentLocation, previousDevice, previousIp, previousLocation) => {
-  const clientBaseUrl = 'https://urbansetu.vercel.app/';
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
@@ -709,10 +715,12 @@ export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, 
             
             <div style="background-color: #fef3c7; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #f59e0b;">
               <p style="color: #92400e; margin: 0; font-weight: bold;">
-                If this wasn't you, please secure your account immediately by logging out all sessions and changing your password.
+                If this wasn't you, please secure your account immediately. We recommend reviewing your active sessions.
               </p>
             </div>
-            <div style="text-align:center; margin-top: 10px;">
+            <div style="text-align:center; margin-top: 15px;">
+              <a href="${clientBaseUrl}/user/device-management" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:600; margin-bottom: 15px;">Check Active Sessions</a>
+              <br>
               <a href="${clientBaseUrl}/forgot-password" style="display:inline-block; background-color:#dc2626; color:#ffffff; text-decoration:none; padding:10px 16px; border-radius:6px; font-weight:600;">Reset Password</a>
             </div>
           </div>
