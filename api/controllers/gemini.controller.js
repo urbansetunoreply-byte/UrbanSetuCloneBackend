@@ -1,6 +1,7 @@
 import { Groq } from 'groq-sdk';
 import ChatHistory from '../models/chatHistory.model.js';
 import MessageRating from '../models/messageRating.model.js';
+import About from '../models/about.model.js';
 import { getRelevantCachedData, needsReindexing, indexAllWebsiteData } from '../services/dataSyncService.js';
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
@@ -202,9 +203,45 @@ export const chatWithGemini = async (req, res) => {
         // -------------------------------------------------------------
 
         const getSystemPrompt = async (tone, userMessage) => {
+            // Fetch dynamic About Us data
+            let aboutContext = '';
+            try {
+                const aboutData = await About.findOne();
+                if (aboutData) {
+                    const teamMembers = aboutData.teamMembers?.map(m => `- ${m.name} (${m.role}): ${m.description}`).join('\n               ') || 'N/A';
+                    const coreValues = aboutData.coreValues?.map(v => `- ${v.title}: ${v.description}`).join('\n               ') || 'N/A';
+
+                    aboutContext = `
+            ORGANIZATIONAL DETAILS (FROM DB):
+            - LEADERSHIP TEAM:
+               ${teamMembers}
+            
+            - MISSION: ${aboutData.mission}
+            - VISION: ${aboutData.vision}
+            
+            - CORE VALUES:
+               ${coreValues}
+            
+            - OUR JOURNEY:
+               ${aboutData.journey?.title}: ${aboutData.journey?.story}
+               Milestones: ${aboutData.journey?.milestones?.map(m => `${m.year}: ${m.title}`).join(' | ')}
+            
+            - WHO WE SERVE: ${(aboutData.whoWeServe || []).join(', ')}
+            
+            - CONTACT INFO:
+               ${aboutData.contact}
+               Socials: ${JSON.stringify(aboutData.socialLinks)}
+                    `;
+                }
+            } catch (err) {
+                console.error('Error fetching About data for AI context:', err);
+            }
+
             const PROJECT_KNOWLEDGE = `
             PLATFORM: UrbanSetu (https://urbansetu.vercel.app)
             TYPE: Advanced AI-First Real Estate Management Platform (MERN Stack)
+            
+            ${aboutContext}
             
             MISSION & VISION:
             To bridge the gap between people and property through technology, trust, and transparency. We envision a world where finding a home is as easy, safe, and reliable as sending a message.
