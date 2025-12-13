@@ -365,10 +365,16 @@ export default function EditListing() {
       let requestBody = formData;
       if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
         // Admin editing - don't change ownership, just update the data
-        requestBody = formData;
+        requestBody = { ...formData };
       } else {
         // Regular user editing their own listing - maintain ownership
         requestBody = { ...formData, userRef: currentUser._id };
+      }
+
+      // For rentals, sync regular price with monthly rent
+      if (requestBody.type === 'rent') {
+        requestBody.regularPrice = requestBody.monthlyRent;
+        requestBody.discountPrice = 0;
       }
 
       const options = {
@@ -760,10 +766,11 @@ export default function EditListing() {
                 <input
                   type="number"
                   id="regularPrice"
+                  disabled={formData.type === 'rent'}
                   onChange={onHandleChanges}
-                  value={formData.regularPrice}
+                  value={formData.type === 'rent' ? formData.monthlyRent : formData.regularPrice}
                   placeholder="Enter price"
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 />
               </div>
               <div className="flex flex-col">
@@ -771,10 +778,11 @@ export default function EditListing() {
                 <input
                   type="number"
                   id="discountPrice"
+                  disabled={formData.type === 'rent'}
                   onChange={onHandleChanges}
-                  value={formData.discountPrice}
+                  value={formData.type === 'rent' ? 0 : formData.discountPrice}
                   placeholder="Enter discount"
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 />
               </div>
             </div>

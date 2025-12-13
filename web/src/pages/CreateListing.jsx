@@ -93,7 +93,7 @@ export default function CreateListing() {
   const getPreviousPath = () => {
     const from = location.state?.from;
     if (from) return from;
-    
+
     // Default paths based on user role
     if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
       return "/admin/my-listings";
@@ -113,23 +113,23 @@ export default function CreateListing() {
 
   const validateImageUrl = (url) => {
     if (!url) return true;
-    
+
     // Basic URL validation
     try {
       new URL(url);
     } catch {
       return false;
     }
-    
+
     // Check if it's an image URL
     const imageExtensions = ['.jpg', '.jpeg', '.png', '.gif', '.webp', '.svg'];
-    const hasImageExtension = imageExtensions.some(ext => 
+    const hasImageExtension = imageExtensions.some(ext =>
       url.toLowerCase().includes(ext)
     );
-    
+
     // Check for Cloudinary URLs (they contain 'cloudinary.com')
     const isCloudinaryUrl = url.includes('cloudinary.com');
-    
+
     return hasImageExtension || url.includes('images') || url.includes('img') || isCloudinaryUrl;
   };
 
@@ -150,7 +150,7 @@ export default function CreateListing() {
     const newImageUrls = [...formData.imageUrls];
     newImageUrls[index] = url;
     setFormData({ ...formData, imageUrls: newImageUrls });
-    
+
     // Validate image URL
     const newImageErrors = { ...imageErrors };
     if (url && !validateImageUrl(url)) {
@@ -163,40 +163,40 @@ export default function CreateListing() {
 
   const handleFileUpload = async (index, file) => {
     if (!file) return;
-    
+
     // Validate file type
     if (!file.type.startsWith('image/')) {
       setImageErrors(prev => ({ ...prev, [index]: 'Please select an image file' }));
       return;
     }
-    
+
     // Validate file size (5MB limit)
     if (file.size > 5 * 1024 * 1024) {
       setImageErrors(prev => ({ ...prev, [index]: 'File size must be less than 5MB' }));
       return;
     }
-    
+
     setUploadingImages(prev => ({ ...prev, [index]: true }));
     setImageErrors(prev => ({ ...prev, [index]: '' }));
-    
+
     try {
       const uploadFormData = new FormData();
       uploadFormData.append('image', file);
-      
+
       const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
         method: 'POST',
         credentials: 'include',
         body: uploadFormData,
       });
-      
+
       const data = await res.json();
-      
+
       if (res.ok) {
         // Update the image URL with the uploaded image URL
         const newImageUrls = [...formData.imageUrls];
         newImageUrls[index] = data.imageUrl;
         setFormData(prev => ({ ...prev, imageUrls: newImageUrls }));
-        
+
         // Clear any existing errors for this image
         setImageErrors(prev => {
           const newErrors = { ...prev };
@@ -273,12 +273,12 @@ export default function CreateListing() {
       ...formData,
       imageUrls: formData.imageUrls.filter((_, i) => i !== index),
     });
-    
+
     // Clear error for this image
     const newImageErrors = { ...imageErrors };
     delete newImageErrors[index];
     setImageErrors(newImageErrors);
-    
+
     // Clear uploading state
     const newUploadingImages = { ...uploadingImages };
     delete newUploadingImages[index];
@@ -316,7 +316,7 @@ export default function CreateListing() {
     e.preventDefault();
 
     if (!formData.type) return setError("Please select a listing type (Sale or Rent)");
-    
+
     // Validate rent-lock plan configuration for rental properties
     if (formData.type === "rent") {
       if (formData.rentLockPlans.availablePlans.length === 0) {
@@ -338,17 +338,17 @@ export default function CreateListing() {
         return setError("Advance rent must be between 0 and 12 months.");
       }
     }
-    
+
     // Images are optional
     if (formData.regularPrice < formData.discountPrice)
       return setError("Discount price should be less than regular price");
-    
+
     // Validate required address fields
     if (!formData.propertyNumber) return setError("Property number is required");
     if (!formData.city) return setError("City is required");
     if (!formData.state) return setError("State is required");
     if (!formData.pincode) return setError("Pincode is required");
-    
+
     // Check for image errors
     if (Object.keys(imageErrors).length > 0) {
       return setError("Please fix the image URL errors before submitting");
@@ -370,20 +370,29 @@ export default function CreateListing() {
       console.log("Sending form data:", formData);
       console.log("ESG data being sent:", formData.esg);
 
+      // Prepare submission data
+      const submissionData = { ...formData, userRef: currentUser._id };
+
+      // For rentals, sync regular price with monthly rent
+      if (submissionData.type === 'rent') {
+        submissionData.regularPrice = submissionData.monthlyRent;
+        submissionData.discountPrice = 0;
+      }
+
       const res = await fetch(`${API_BASE_URL}/api/listing/create`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         credentials: 'include',
-        body: JSON.stringify({ ...formData, userRef: currentUser._id }),
+        body: JSON.stringify(submissionData),
       });
 
       const data = await res.json();
       setLoading(false);
-      
+
       if (res.ok) {
         toast.success("Property Added Successfully!!");
         const newListingId = data.listing?._id || data._id;
-        
+
         // If rental property, suggest verification and auto-generate prediction
         if (formData.type === "rent") {
           // Auto-generate rent prediction in background
@@ -391,7 +400,7 @@ export default function CreateListing() {
             method: 'POST',
             credentials: 'include'
           }).catch(err => console.error('Error generating prediction:', err));
-          
+
           setTimeout(() => {
             toast.info(
               <div>
@@ -511,22 +520,22 @@ export default function CreateListing() {
             <h4 className="font-semibold text-gray-800 mb-3">Property Type</h4>
             <div className="flex gap-6">
               <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="sale" 
-                  onChange={onHandleChanges} 
+                <input
+                  type="radio"
+                  name="type"
+                  value="sale"
+                  onChange={onHandleChanges}
                   checked={formData.type === "sale"}
                   className="text-blue-600"
                 />
                 <span className="font-medium">For Sale</span>
               </label>
               <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
-                <input 
-                  type="radio" 
-                  name="type" 
-                  value="rent" 
-                  onChange={onHandleChanges} 
+                <input
+                  type="radio"
+                  name="type"
+                  value="rent"
+                  onChange={onHandleChanges}
                   checked={formData.type === "rent"}
                   className="text-blue-600"
                 />
@@ -550,7 +559,7 @@ export default function CreateListing() {
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-4">
               <div className="flex flex-col">
                 <span className="text-gray-700 font-medium mb-1">Floor Number *</span>
@@ -569,7 +578,7 @@ export default function CreateListing() {
                 </p>
               </div>
             </div>
-            
+
             <div className="mt-4">
               <div className="flex flex-col">
                 <span className="text-gray-700 font-medium mb-1">Property Age (years) *</span>
@@ -588,7 +597,7 @@ export default function CreateListing() {
                 </p>
               </div>
             </div>
-            
+
             {/* Rent-Lock Plan Configuration (only for rental properties) */}
             {formData.type === "rent" && (
               <div className="mt-6 border-t pt-4">
@@ -607,8 +616,8 @@ export default function CreateListing() {
                           rentLockPlans: {
                             ...prev.rentLockPlans,
                             defaultPlan: selectedPlan,
-                            availablePlans: prev.rentLockPlans.availablePlans.includes(selectedPlan) 
-                              ? prev.rentLockPlans.availablePlans 
+                            availablePlans: prev.rentLockPlans.availablePlans.includes(selectedPlan)
+                              ? prev.rentLockPlans.availablePlans
                               : [...prev.rentLockPlans.availablePlans, selectedPlan]
                           }
                         }));
@@ -740,9 +749,9 @@ export default function CreateListing() {
                             className="text-blue-600"
                           />
                           <span className="text-gray-700 text-sm font-medium">
-                            {plan === '1_year' ? '1 Year' : 
-                             plan === '3_year' ? '3 Years' : 
-                             plan === '5_year' ? '5 Years' : 'Custom'}
+                            {plan === '1_year' ? '1 Year' :
+                              plan === '3_year' ? '3 Years' :
+                                plan === '5_year' ? '5 Years' : 'Custom'}
                           </span>
                         </label>
                       ))}
@@ -785,10 +794,11 @@ export default function CreateListing() {
                 <input
                   type="number"
                   id="regularPrice"
+                  disabled={formData.type === 'rent'}
                   onChange={onHandleChanges}
-                  value={formData.regularPrice}
+                  value={formData.type === 'rent' ? formData.monthlyRent : formData.regularPrice}
                   placeholder="Enter price"
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 />
               </div>
               <div className="flex flex-col">
@@ -796,10 +806,11 @@ export default function CreateListing() {
                 <input
                   type="number"
                   id="discountPrice"
+                  disabled={formData.type === 'rent'}
                   onChange={onHandleChanges}
-                  value={formData.discountPrice}
+                  value={formData.type === 'rent' ? 0 : formData.discountPrice}
                   placeholder="Enter discount"
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 />
               </div>
             </div>
@@ -811,10 +822,10 @@ export default function CreateListing() {
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {["parking", "furnished", "offer"].map((item) => (
                 <label key={item} className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm">
-                  <input 
-                    type="checkbox" 
-                    id={item} 
-                    onChange={onHandleChanges} 
+                  <input
+                    type="checkbox"
+                    id={item}
+                    onChange={onHandleChanges}
                     checked={formData[item]}
                     className="text-blue-600"
                   />
@@ -839,9 +850,8 @@ export default function CreateListing() {
                       placeholder={`Image URL ${index + 1} (e.g., https://example.com/image.jpg)`}
                       value={url || ""}
                       onChange={(e) => handleImageChange(index, e.target.value)}
-                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        imageErrors[index] ? 'border-red-500' : ''
-                      }`}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${imageErrors[index] ? 'border-red-500' : ''
+                        }`}
                     />
                     <label className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition cursor-pointer">
                       {uploadingImages[index] ? 'Uploading...' : 'Upload File'}
@@ -887,9 +897,9 @@ export default function CreateListing() {
                   {formData.imageUrls.map((url, index) => (
                     url && (
                       <div key={url} className="relative">
-                        <img 
-                          src={url} 
-                          alt="listing" 
+                        <img
+                          src={url}
+                          alt="listing"
                           className="w-full h-24 object-cover rounded-lg"
                           onError={(e) => {
                             e.target.src = "https://via.placeholder.com/400x300?text=Image+Not+Found";
@@ -926,9 +936,8 @@ export default function CreateListing() {
                       placeholder={`Video URL ${index + 1} (e.g., https://example.com/video.mp4)`}
                       value={url || ""}
                       onChange={(e) => handleVideoUrlChange(index, e.target.value)}
-                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${
-                        videoErrors[index] ? 'border-red-500' : ''
-                      }`}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${videoErrors[index] ? 'border-red-500' : ''
+                        }`}
                     />
                     <label className="bg-green-500 text-white px-3 py-2 rounded-lg hover:bg-green-600 transition cursor-pointer">
                       {uploadingVideos[index] ? 'Uploading...' : 'Upload File'}
@@ -980,9 +989,9 @@ export default function CreateListing() {
 
           {/* ESG Management Section */}
           <div className="mb-6">
-            <ESGManagement 
+            <ESGManagement
               esgData={formData.esg}
-              onESGChange={(esgData) => setFormData({...formData, esg: esgData})}
+              onESGChange={(esgData) => setFormData({ ...formData, esg: esgData })}
               isEditing={false}
             />
           </div>
