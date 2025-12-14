@@ -10939,73 +10939,7 @@ export const sendDisputeRaisedEmail = async (email, disputeDetails) => {
   }
 };
 
-// Send Dispute Resolved Email
-export const sendDisputeResolvedEmail = async (email, disputeDetails) => {
-  try {
-    const {
-      propertyName,
-      decision,
-      amount,
-      disputeUrl
-    } = disputeDetails;
-
-    const subject = `✅ Dispute Resolved - ${propertyName}`;
-
-    const html = `
-      <!DOCTYPE html>
-      <html lang="en">
-      <head>
-        <meta charset="UTF-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Dispute Resolved - UrbanSetu</title>
-      </head>
-      <body>
-        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
-          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
-                <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✅</span>
-              </div>
-              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Dispute Resolved</h1>
-              <p style="color: #6b7280; margin: 10px 0 0 0;">Resolution complete</p>
-            </div>
-            
-            <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
-              <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Dispute Resolution</h2>
-              <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
-                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
-                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Decision:</strong> ${decision}</p>
-                ${amount ? `<p style="color: #4b5563; margin: 0;"><strong>Amount:</strong> ₹${amount}</p>` : ''}
-              </div>
-              <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                The dispute regarding ${propertyName} has been resolved. The decision has been made by our admin team. If you have any concerns, please contact support.
-              </p>
-            </div>
-            
-            ${disputeUrl ? `<div style="text-align: center; margin-top: 30px;">
-              <a href="${disputeUrl}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">View Dispute Details</a>
-            </div>` : ''}
-            
-            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
-            </div>
-          </div>
-        </div>
-      </body>
-      </html>
-    `;
-
-    return await sendEmailWithRetry({
-      to: email,
-      subject: subject,
-      html: html
-    });
-  } catch (error) {
-    console.error('Error sending dispute resolved email:', error);
-    throw error;
-  }
-};
+// Output: (Empty string to remove the duplicate block)
 
 // Send Verification Requested Email
 export const sendVerificationRequestedEmail = async (email, verificationDetails) => {
@@ -11925,6 +11859,170 @@ export const sendAllSessionsRevokedEmail = async (email, count) => {
     console.log(`All sessions revoked email sent to ${email}`);
   } catch (error) {
     console.error('Error sending all sessions revoked email:', error);
+  }
+};
+
+// Output: (Empty string to remove the duplicate block)
+
+// Send Dispute Resolved Email
+export const sendDisputeResolvedEmail = async (email, disputeDetails) => {
+  try {
+    const {
+      propertyName,
+      decision,
+      amount,
+      resolutionNotes,
+      resolvedAt,
+      resolvedBy,
+      disputeUrl
+    } = disputeDetails;
+
+    const subject = `✅ Dispute Resolved - ${propertyName}`;
+
+    const resolutionDate = resolvedAt ? new Date(resolvedAt).toLocaleString('en-IN', {
+      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
+    }) : new Date().toLocaleString('en-IN');
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dispute Resolved - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #059669; margin: 0; font-size: 28px;">Dispute Resolved</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">${propertyName}</p>
+            </div>
+            
+            <div style="background-color: #f0fdf4; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #059669;">
+              <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Resolution Details</h2>
+              
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <p style="margin: 5px 0; color: #374151;"><strong>Decision:</strong> ${decision}</p>
+                ${amount > 0 ? `<p style="margin: 5px 0; color: #374151;"><strong>Refund/Compensation:</strong> ₹${amount}</p>` : ''}
+              </div>
+              
+              ${resolutionNotes ? `
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <p style="margin: 0 0 5px 0; font-weight: bold; color: #374151;">Resolution Notes:</p>
+                <p style="margin: 0; color: #4b5563; font-style: italic;">"${resolutionNotes}"</p>
+              </div>
+              ` : ''}
+              
+              <div style="margin-top: 15px; font-size: 13px; color: #6b7280;">
+                <p style="margin: 2px 0;">Resolved on: ${resolutionDate}</p>
+                ${resolvedBy ? `<p style="margin: 2px 0;">Resolved by: ${resolvedBy}</p>` : ''}
+              </div>
+
+              <p style="color: #4b5563; margin: 15px 0 0 0; font-size: 14px;">
+                The dispute status has been updated. You can view the full details using the link below.
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+              <a href="${disputeUrl}" style="background-color: #059669; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Resolution</a>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending dispute resolved email:', error);
+    throw error;
+  }
+};
+
+// Send Dispute Raised Acknowledgement Email (to the person who raised it)
+export const sendDisputeRaisedAcknowledgementEmail = async (email, disputeDetails) => {
+  try {
+    const {
+      propertyName,
+      disputeId,
+      disputeType,
+      description,
+      disputeUrl
+    } = disputeDetails;
+
+    const subject = `Dispute Raised Successfully - ${propertyName}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html lang="en">
+      <head>
+        <meta charset="UTF-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Dispute Raised - UrbanSetu</title>
+      </head>
+      <body>
+        <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+          <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h1 style="color: #d97706; margin: 0; font-size: 28px;">Dispute Submitted</h1>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">${propertyName}</p>
+            </div>
+            
+            <div style="background-color: #fffbeb; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #d97706;">
+              <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">We've Received Your Dispute</h2>
+              <p style="color: #4b5563; margin: 0 0 15px 0;">
+                Your dispute has been successfully logged. Our team/admin will review the details and get back to you shortly.
+              </p>
+              
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <p style="margin: 5px 0; color: #374151;"><strong>Dispute ID:</strong> ${disputeId}</p>
+                <p style="margin: 5px 0; color: #374151;"><strong>Category:</strong> ${disputeType}</p>
+              </div>
+
+              ${description ? `
+              <div style="background-color: white; padding: 15px; border-radius: 6px; margin-bottom: 15px;">
+                <p style="margin: 0 0 5px 0; font-weight: bold; color: #374151;">Description:</p>
+                <p style="margin: 0; color: #4b5563; font-style: italic;">"${description}"</p>
+              </div>
+              ` : ''}
+              
+              <p style="color: #4b5563; margin: 15px 0 0 0; font-size: 14px;">
+                The other party has also been notified. Please allow some time for review.
+              </p>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px;">
+              <a href="${disputeUrl}" style="background-color: #d97706; color: white; padding: 12px 24px; text-decoration: none; border-radius: 6px; font-weight: bold; display: inline-block;">View Dispute Status</a>
+            </div>
+            
+            <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending dispute acknowledgement email:', error);
+    throw error;
   }
 };
 

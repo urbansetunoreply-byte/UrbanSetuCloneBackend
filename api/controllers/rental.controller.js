@@ -29,7 +29,8 @@ import {
   sendLoanAppliedEmail,
   sendLoanApprovedEmail,
   sendLoanRejectedEmail,
-  sendLoanDisbursedEmail
+  sendLoanDisbursedEmail,
+  sendDisputeRaisedAcknowledgementEmail
 } from "../utils/emailService.js";
 import { markListingUnderContract, markListingAsRented, releaseListingLock } from "../utils/listingAvailability.js";
 
@@ -1573,12 +1574,25 @@ export const createDispute = async (req, res, next) => {
         io
       });
 
-      // Send email notification
+      // Send email notification to Raised Against
       if (raisedAgainstUser?.email) {
         const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
         await sendDisputeRaisedEmail(raisedAgainstUser.email, {
           propertyName: listing.name,
           raisedByName: dispute.raisedBy?.username || 'User',
+          disputeType: category || 'other',
+          description: description,
+          disputeUrl: `${clientUrl}/user/disputes?disputeId=${dispute._id}`
+        });
+      }
+
+      // Send acknowledgement email to Raised By
+      const raisedByUser = await User.findById(userId);
+      if (raisedByUser?.email) {
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+        await sendDisputeRaisedAcknowledgementEmail(raisedByUser.email, {
+          propertyName: listing.name,
+          disputeId: dispute._id,
           disputeType: category || 'other',
           description: description,
           disputeUrl: `${clientUrl}/user/disputes?disputeId=${dispute._id}`

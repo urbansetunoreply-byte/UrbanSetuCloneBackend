@@ -28,7 +28,7 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
   const { currentUser } = useSelector((state) => state.user);
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [uploading, setUploading] = useState(false);
+  const [uploading, setUploading] = useState(null);
   const [formData, setFormData] = useState({
     contractId: contract?._id || '',
     category: 'other',
@@ -69,7 +69,7 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    setUploading(true);
+    setUploading(type);
     try {
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
@@ -113,7 +113,7 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
       toast.error('Failed to upload files');
       console.error(error);
     } finally {
-      setUploading(false);
+      setUploading(null);
     }
   };
 
@@ -275,8 +275,8 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
           Evidence (Optional)
         </label>
         <div className="grid grid-cols-3 gap-2 mb-4">
-          <label className="flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 border border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100">
-            {uploading ? <FaSpinner className="animate-spin" /> : <FaImage />}
+          <label className={`flex items-center justify-center gap-2 px-4 py-2 bg-blue-50 border border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            {uploading === 'image' ? <FaSpinner className="animate-spin" /> : <FaImage />}
             <span className="text-sm font-medium text-blue-700">Upload Images</span>
             <input
               type="file"
@@ -284,11 +284,11 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
               multiple
               className="hidden"
               onChange={(e) => handleEvidenceUpload(e, 'image')}
-              disabled={uploading}
+              disabled={!!uploading}
             />
           </label>
-          <label className="flex items-center justify-center gap-2 px-4 py-2 bg-purple-50 border border-purple-300 rounded-lg cursor-pointer hover:bg-purple-100">
-            {uploading ? <FaSpinner className="animate-spin" /> : <FaVideo />}
+          <label className={`flex items-center justify-center gap-2 px-4 py-2 bg-purple-50 border border-purple-300 rounded-lg cursor-pointer hover:bg-purple-100 ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            {uploading === 'video' ? <FaSpinner className="animate-spin" /> : <FaVideo />}
             <span className="text-sm font-medium text-purple-700">Upload Videos</span>
             <input
               type="file"
@@ -296,11 +296,11 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
               multiple
               className="hidden"
               onChange={(e) => handleEvidenceUpload(e, 'video')}
-              disabled={uploading}
+              disabled={!!uploading}
             />
           </label>
-          <label className="flex items-center justify-center gap-2 px-4 py-2 bg-green-50 border border-green-300 rounded-lg cursor-pointer hover:bg-green-100">
-            {uploading ? <FaSpinner className="animate-spin" /> : <FaFile />}
+          <label className={`flex items-center justify-center gap-2 px-4 py-2 bg-green-50 border border-green-300 rounded-lg cursor-pointer hover:bg-green-100 ${uploading ? 'opacity-50 cursor-not-allowed' : ''}`}>
+            {uploading === 'document' ? <FaSpinner className="animate-spin" /> : <FaFile />}
             <span className="text-sm font-medium text-green-700">Upload Documents</span>
             <input
               type="file"
@@ -308,7 +308,7 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
               multiple
               className="hidden"
               onChange={(e) => handleEvidenceUpload(e, 'document')}
-              disabled={uploading}
+              disabled={!!uploading}
             />
           </label>
         </div>
