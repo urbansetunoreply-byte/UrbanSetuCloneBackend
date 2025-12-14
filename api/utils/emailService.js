@@ -12193,5 +12193,169 @@ export const sendLoanRepaidEmail = async (email, details) => {
   }
 };
 
+// Send Rent Payment Due Reminder Email
+export const sendRentPaymentDueReminderEmail = async (email, details) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Rent Payment Reminder - ${details.propertyName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Rent Payment Reminder</p>
+          </div>
+          
+          <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2563eb;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Upcoming Rent Payment</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              This is a gentle reminder that your rent payment for <strong>${details.propertyName}</strong> is due on <strong>${details.dueDate}</strong>.
+            </p>
+            
+            <div style="background-color: #fff; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #e5e7eb;">
+              <p style="margin: 5px 0; color: #374151;"><strong>Month:</strong> ${details.month}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Amount Due:</strong> ₹${details.amount}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Due Date:</strong> ${details.dueDate}</p>
+            </div>
+            
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Please make the payment by the due date to avoid any late fees.
+            </p>
+            
+            <div style="text-align:center; margin-top: 20px;">
+              <a href="${details.paymentUrl}" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:600;">Pay Rent Now</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'rent_due_reminder') :
+      createErrorResponse(new Error(result.error), 'rent_due_reminder');
+  } catch (error) {
+    return createErrorResponse(error, 'rent_due_reminder');
+  }
+};
+
+// Send Rent Payment Overdue Reminder Email
+export const sendRentPaymentOverdueReminderEmail = async (email, details) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Urgent: Rent Payment Overdue - ${details.propertyName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #dc2626; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Payment Overdue Alert</p>
+          </div>
+          
+          <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+            <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">Action Required: Rent Overdue</h2>
+            <p style="color: #7f1d1d; margin: 0 0 15px 0; line-height: 1.6;">
+              Your rent payment for <strong>${details.propertyName}</strong> is overdue by <strong>${details.daysOverdue} days</strong>.
+            </p>
+            
+            <div style="background-color: #fff; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #fca5a5;">
+              <p style="margin: 5px 0; color: #374151;"><strong>Month:</strong> ${details.month}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Base Amount:</strong> ₹${details.amount}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Due Date:</strong> ${details.dueDate}</p>
+              ${details.penalty > 0 ? `<p style="margin: 5px 0; color: #dc2626;"><strong>Late Fee Applied:</strong> ₹${details.penalty}</p>` : ''}
+              <p style="margin: 5px 0; color: #374151; font-weight: bold;"><strong>Total Payable:</strong> ₹${details.totalAmount}</p>
+            </div>
+            
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Please make the payment immediately to avoid further penalties.
+            </p>
+            
+            <div style="text-align:center; margin-top: 20px;">
+              <a href="${details.paymentUrl}" style="display:inline-block; background-color:#dc2626; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:600;">Pay Rent Now</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'rent_overdue_reminder') :
+      createErrorResponse(new Error(result.error), 'rent_overdue_reminder');
+  } catch (error) {
+    return createErrorResponse(error, 'rent_overdue_reminder');
+  }
+};
+
+// Send Rent Payment Confirmation Email
+export const sendRentPaymentConfirmationEmail = async (email, details) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Rent Payment Receipt - ${details.propertyName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Payment Receipt</p>
+          </div>
+          
+          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #059669;">
+            <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Payment Successful</h2>
+            <p style="color: #047857; margin: 0 0 15px 0; line-height: 1.6;">
+              Thank you! Your rent payment for <strong>${details.propertyName}</strong> has been successfully processed.
+            </p>
+            
+            <div style="background-color: #fff; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #d1fae5;">
+              <p style="margin: 5px 0; color: #374151;"><strong>Transaction ID:</strong> ${details.transactionId}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Month:</strong> ${details.month}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Amount Paid:</strong> ₹${details.amount}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Date:</strong> ${details.paymentDate}</p>
+            </div>
+            
+            <div style="text-align:center; margin-top: 20px;">
+              <a href="${details.walletUrl}" style="display:inline-block; background-color:#059669; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:600;">View Rent Wallet</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'rent_payment_receipt') :
+      createErrorResponse(new Error(result.error), 'rent_payment_receipt');
+  } catch (error) {
+    return createErrorResponse(error, 'rent_payment_receipt');
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;

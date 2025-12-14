@@ -6,6 +6,7 @@ import { sendAccountDeletionReminders } from './accountReminderService.js';
 import { checkEmailServiceStatus } from './emailMonitoringService.js';
 import { cleanupOldChatData } from './dataRetentionService.js';
 import { checkAndSendLoanReminders } from './loanReminderService.js';
+import { checkAndSendRentReminders } from './rentReminderService.js';
 
 // Schedule appointment reminders to run every day at 9:00 AM
 const scheduleAppointmentReminders = () => {
@@ -163,6 +164,28 @@ const scheduleLoanReminders = () => {
   console.log('📋 Schedule: Every day at 9:30 AM (Asia/Kolkata timezone)');
 };
 
+// Schedule rent reminders to run every day at 10:30 AM
+const scheduleRentReminders = () => {
+  console.log('🏠 Setting up rent reminder scheduler...');
+
+  // Run every day at 10:30 AM
+  cron.schedule('30 10 * * *', async () => {
+    console.log('⏰ Running scheduled rent reminder check...');
+    try {
+      const result = await checkAndSendRentReminders();
+      console.log('✅ Scheduled rent reminder check completed:', result);
+    } catch (error) {
+      console.error('❌ Error in scheduled rent reminder check:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kolkata"
+  });
+
+  console.log('✅ Rent reminder scheduler set up successfully');
+  console.log('📋 Schedule: Every day at 10:30 AM (Asia/Kolkata timezone)');
+};
+
 // Start the scheduler
 export const startScheduler = (app) => {
   console.log('🚀 Starting scheduler service...');
@@ -173,6 +196,7 @@ export const startScheduler = (app) => {
   scheduleEmailMonitoring(app);
   scheduleDataRetentionCleanup();
   scheduleLoanReminders();
+  scheduleRentReminders();
   console.log('✅ Scheduler service started successfully');
 };
 

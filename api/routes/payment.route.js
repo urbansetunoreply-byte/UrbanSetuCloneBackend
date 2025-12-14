@@ -9,7 +9,18 @@ import Notification from "../models/notification.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
-import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendSellerPaymentNotificationEmail, sendRefundRequestApprovedEmail, sendRefundRequestRejectedEmail, sendRentPaymentReceivedEmail, sendRentPaymentReceivedToLandlordEmail, sendEscrowReleasedEmail, sendLoanRepaidEmail } from '../utils/emailService.js';
+import {
+  sendPaymentSuccessEmail,
+  sendPaymentFailedEmail,
+  sendAppointmentCancelledEmail,
+  sendRefundRequestApprovedEmail,
+  sendRefundRequestRejectedEmail,
+  sendSellerPaymentNotificationEmail,
+  sendEscrowReleasedEmail,
+  sendRentPaymentReceivedToLandlordEmail,
+  sendLoanRepaidEmail,
+  sendRentPaymentConfirmationEmail
+} from '../utils/emailService.js';
 import { sendRentalNotification } from '../utils/rentalNotificationService.js';
 import fetch from 'node-fetch';
 import PDFDocument from 'pdfkit';
@@ -686,16 +697,13 @@ router.post("/verify", verifyToken, async (req, res) => {
 
           // Send email to tenant
           try {
-            await sendRentPaymentReceivedEmail(contract.tenantId.email, {
-              paymentId: payment.paymentId,
-              amount: payment.amount,
+            await sendRentPaymentConfirmationEmail(contract.tenantId.email, {
               propertyName: listing.name,
-              rentMonth: payment.rentMonth,
-              rentYear: payment.rentYear,
-              dueDate: payment.rentMonth && payment.rentYear ? new Date(payment.rentYear, payment.rentMonth - 1, 1) : null,
-              receiptUrl,
-              contractId: contract._id,
-              walletUrl
+              transactionId: payment.paymentId,
+              month: `${payment.rentMonth}/${payment.rentYear}`,
+              amount: payment.amount,
+              paymentDate: new Date().toLocaleDateString('en-GB'),
+              walletUrl: walletUrl
             });
             console.log(`✅ Rent payment received email sent to tenant ${contract.tenantId.email}`);
           } catch (emailError) {
