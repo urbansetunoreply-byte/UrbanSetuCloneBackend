@@ -92,7 +92,9 @@ export default function RentProperty() {
           }));
         }
 
-        // If contractId is provided, fetch and resume contract
+        let existingContract = null;
+
+        // 1. Try to fetch contract if ID is provided
         if (contractIdParam) {
           try {
             const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractIdParam}`, {
@@ -101,113 +103,134 @@ export default function RentProperty() {
 
             if (contractRes.ok) {
               const contractData = await contractRes.json();
-              const existingContract = contractData.contract || contractData;
-
-              if (existingContract && existingContract._id) {
-                // Check if contract is rejected or terminated
-                if (existingContract.status === 'rejected' || existingContract.status === 'terminated') {
-                  setContract(existingContract);
-                  setResumingContract(true);
-                  setLoading(false);
-
-                  // Show rejection message
-                  const rejectionMessage = existingContract.status === 'rejected'
-                    ? `This contract was rejected by the seller${existingContract.rejectionReason ? `: ${existingContract.rejectionReason}` : ''}. Please try booking a new one.`
-                    : `This contract was terminated${existingContract.terminationReason ? `: ${existingContract.terminationReason}` : ''}. Please try booking a new one.`;
-
-                  toast.error(rejectionMessage);
-                  return; // Stop further processing
-                }
-
-                setContract(existingContract);
-                setResumingContract(true);
-
-                // Determine which step to resume from based on contract status and signatures
-                let resumeStep = 1;
-                const tenantSigned = existingContract.tenantSignature?.signed || false;
-                const landlordSigned = existingContract.landlordSignature?.signed || false;
-                const isTenant = currentUser?._id === existingContract.tenantId?._id || currentUser?._id === existingContract.tenantId;
-
-                if (existingContract.status === 'draft') {
-                  // Draft contracts: start from plan selection (step 1) if plan not set, otherwise contract review (step 2)
-                  if (existingContract.rentLockPlan) {
-                    resumeStep = 2; // Contract review step
-                  } else {
-                    resumeStep = 1; // Plan selection step
-                  }
-                } else if (existingContract.status === 'pending_signature') {
-                  // Pending signature: check who needs to sign
-                  if (isTenant && !tenantSigned) {
-                    // Tenant hasn't signed yet - go to signing step
-                    resumeStep = 3;
-                  } else if (!isTenant && !landlordSigned) {
-                    // Landlord hasn't signed yet - but this page is for tenant, so show signing status
-                    resumeStep = 3;
-                  } else if (!tenantSigned || !landlordSigned) {
-                    // One party hasn't signed - show signing step
-                    resumeStep = 3;
-                  } else {
-                    // Both signed - proceed to payment
-                    resumeStep = 4;
-                  }
-                } else if (existingContract.status === 'active') {
-                  // Active contract - check if payment was made (wallet exists)
-                  if (existingContract.walletId) {
-                    resumeStep = 5; // Move-in step (payment already done)
-                  } else {
-                    resumeStep = 4; // Payment step (contract signed but payment pending)
-                  }
-                } else if (existingContract.status === 'rejected' || existingContract.status === 'terminated') {
-                  // Already handled above, but just in case
-                  setLoading(false);
-                  return;
-                } else {
-                  // Default to contract review step
-                  resumeStep = 2;
-                }
-
-                const bookingDetails = existingContract.bookingId && typeof existingContract.bookingId === 'object'
-                  ? existingContract.bookingId
-                  : null;
-
-                setStep(resumeStep);
-                setFormData(prev => ({
-                  ...prev,
-                  rentLockPlan: existingContract.rentLockPlan || prev.rentLockPlan,
-                  customLockDuration: existingContract.lockDuration || prev.customLockDuration,
-                  moveInDate: existingContract.moveInDate ? new Date(existingContract.moveInDate).toISOString().split('T')[0] : prev.moveInDate,
-                  bookingId: existingContract.bookingId?._id || existingContract.bookingId || prev.bookingId,
-                  depositPlan: existingContract.depositPlan || prev.depositPlan || 'standard',
-                  appointmentTime: bookingDetails?.time || prev.appointmentTime,
-                  appointmentMessage: bookingDetails?.message || prev.appointmentMessage,
-                  appointmentPurpose: bookingDetails?.purpose || prev.appointmentPurpose || 'rent'
-                }));
-
-                // Fetch booking if it exists
-                if (existingContract.bookingId) {
-                  try {
-                    const bookingId = existingContract.bookingId?._id || existingContract.bookingId;
-                    const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
-                      credentials: 'include'
-                    });
-                    if (bookingRes.ok) {
-                      const bookingData = await bookingRes.json();
-                      const booking = bookingData.appointment || bookingData.booking || bookingData;
-                      if (booking && booking._id) {
-                        setBooking(booking);
-                      }
-                    }
-                  } catch (bookingError) {
-                    console.error("Error fetching booking:", bookingError);
-                  }
-                }
-
-                toast.info('Resuming your contract from where you left off.');
-              }
+              existingContract = contractData.contract || contractData;
             }
           } catch (contractError) {
-            console.error("Error fetching contract:", contractError);
-            // Continue with normal flow if contract fetch fails
+            console.error("Error fetching specific contract:", contractError);
+          }
+        }
+        // 2. If no ID provided, try to find an active contract for this listing user
+        else {
+          try {
+            const contractsRes = await fetch(`${API_BASE_URL}/api/rental/contracts?role=tenant`, {
+              credentials: 'include'
+            });
+
+            if (contractsRes.ok) {
+              const contractsData = await contractsRes.json();
+              if (contractsData.success && contractsData.contracts) {
+                // Find a non-terminated/non-rejected contract for this listing
+                existingContract = contractsData.contracts.find(c => {
+                  const cListingId = c.listingId?._id || c.listingId;
+                  return String(cListingId) === String(listingId) &&
+                    c.status !== 'rejected' &&
+                    c.status !== 'terminated';
+                });
+              }
+            }
+          } catch (autoFetchError) {
+            console.error("Error checking existing contracts:", autoFetchError);
+          }
+        }
+
+        // 3. If a contract is found (either way), resume it
+        if (existingContract && existingContract._id) {
+          // Check if contract is rejected or terminated (double check for safety)
+          if (existingContract.status === 'rejected' || existingContract.status === 'terminated') {
+            // If specific ID was passed, we show the error.
+            if (contractIdParam) {
+              setContract(existingContract);
+              setResumingContract(true);
+              setLoading(false);
+
+              const rejectionMessage = existingContract.status === 'rejected'
+                ? `This contract was rejected by the seller${existingContract.rejectionReason ? `: ${existingContract.rejectionReason}` : ''}. Please try booking a new one.`
+                : `This contract was terminated${existingContract.terminationReason ? `: ${existingContract.terminationReason}` : ''}. Please try booking a new one.`;
+
+              toast.error(rejectionMessage);
+              return;
+            }
+            // If auto-discovered rejected, ignore it
+            else {
+              existingContract = null;
+            }
+          }
+
+          if (existingContract) {
+            setContract(existingContract);
+            setResumingContract(true);
+
+            // Determine which step to resume from
+            let resumeStep = 1;
+            const tenantSigned = existingContract.tenantSignature?.signed || false;
+            const landlordSigned = existingContract.landlordSignature?.signed || false;
+            const isTenant = currentUser?._id === existingContract.tenantId?._id || currentUser?._id === existingContract.tenantId;
+
+            if (existingContract.status === 'draft') {
+              if (existingContract.rentLockPlan) {
+                resumeStep = 2; // Contract review
+              } else {
+                resumeStep = 1; // Plan selection
+              }
+            } else if (existingContract.status === 'pending_signature') {
+              if (isTenant && !tenantSigned) {
+                resumeStep = 3;
+              } else if (!isTenant && !landlordSigned) {
+                resumeStep = 3;
+              } else if (!tenantSigned || !landlordSigned) {
+                resumeStep = 3;
+              } else {
+                resumeStep = 4;
+              }
+            } else if (existingContract.status === 'active') {
+              if (existingContract.walletId) {
+                resumeStep = 5; // Move-in
+              } else {
+                resumeStep = 4; // Payment
+              }
+            } else {
+              resumeStep = 2;
+            }
+
+            const bookingDetails = existingContract.bookingId && typeof existingContract.bookingId === 'object'
+              ? existingContract.bookingId
+              : null;
+
+            setStep(resumeStep);
+            setFormData(prev => ({
+              ...prev,
+              rentLockPlan: existingContract.rentLockPlan || prev.rentLockPlan,
+              customLockDuration: existingContract.lockDuration || prev.customLockDuration,
+              moveInDate: existingContract.moveInDate ? new Date(existingContract.moveInDate).toISOString().split('T')[0] : prev.moveInDate,
+              bookingId: existingContract.bookingId?._id || existingContract.bookingId || prev.bookingId,
+              depositPlan: existingContract.depositPlan || prev.depositPlan || 'standard',
+              appointmentTime: bookingDetails?.time || prev.appointmentTime,
+              appointmentMessage: bookingDetails?.message || prev.appointmentMessage,
+              appointmentPurpose: bookingDetails?.purpose || prev.appointmentPurpose || 'rent'
+            }));
+
+            // Fetch booking if exists
+            if (existingContract.bookingId) {
+              try {
+                const bookingId = existingContract.bookingId?._id || existingContract.bookingId;
+                const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
+                  credentials: 'include'
+                });
+                if (bookingRes.ok) {
+                  const bookingData = await bookingRes.json();
+                  const booking = bookingData.appointment || bookingData.booking || bookingData;
+                  if (booking && booking._id) {
+                    setBooking(booking);
+                  }
+                }
+              } catch (bookingError) {
+                console.error("Error fetching booking:", bookingError);
+              }
+            }
+
+            if (!contractIdParam) {
+              toast.info('Found an existing application. Resuming where you left off.');
+            }
           }
         }
       } catch (error) {
@@ -810,8 +833,8 @@ export default function RentProperty() {
                 <label
                   key={plan}
                   className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${formData.rentLockPlan === plan
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-300 hover:border-blue-400'
+                    ? 'border-blue-600 bg-blue-50'
+                    : 'border-gray-300 hover:border-blue-400'
                     }`}
                 >
                   <input
@@ -942,8 +965,8 @@ export default function RentProperty() {
                 {/* Standard Deposit */}
                 <label
                   className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'standard'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-300 hover:border-blue-400'
+                    ? 'border-blue-600 bg-blue-50'
+                    : 'border-gray-300 hover:border-blue-400'
                     }`}
                 >
                   <input
@@ -970,8 +993,8 @@ export default function RentProperty() {
                 {/* Low Deposit Plan */}
                 <label
                   className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'low'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-300 hover:border-blue-400'
+                    ? 'border-blue-600 bg-blue-50'
+                    : 'border-gray-300 hover:border-blue-400'
                     }`}
                 >
                   <input
@@ -1000,8 +1023,8 @@ export default function RentProperty() {
                 {/* Zero Deposit Plan */}
                 <label
                   className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'zero'
-                      ? 'border-blue-600 bg-blue-50'
-                      : 'border-gray-300 hover:border-blue-400'
+                    ? 'border-blue-600 bg-blue-50'
+                    : 'border-gray-300 hover:border-blue-400'
                     }`}
                 >
                   <input
