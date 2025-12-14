@@ -429,15 +429,20 @@ export default function DisputeDetail({
                   key={index}
                   className={`flex gap-3 ${isOwnMessage ? 'flex-row-reverse' : ''}`}
                 >
-                  <UserAvatar
-                    user={message.sender}
-                    size="md"
-                  />
+                  <div className="shrink-0">
+                    <UserAvatar
+                      user={message.sender}
+                      size="md"
+                    />
+                  </div>
                   <div className={`flex-1 max-w-[80%] ${isOwnMessage ? 'text-right' : ''}`}>
                     <div className={`inline-block p-3 rounded-lg text-left ${isOwnMessage ? 'bg-blue-100 text-blue-900' : 'bg-gray-100 text-gray-900'
                       }`}>
                       <div className="font-semibold text-sm mb-1">
-                        {message.sender?.username || 'Unknown'} {isOwnMessage && '(You)'}
+                        {(message.sender?.role === 'admin' || message.sender?.role === 'rootadmin')
+                          ? 'UrbanSetu Support'
+                          : (message.sender?.username || 'Unknown')}
+                        {isOwnMessage && ' (You)'}
                       </div>
                       <p className="text-sm border-b border-black/5 pb-2 mb-2 whitespace-pre-wrap">{message.message}</p>
 
