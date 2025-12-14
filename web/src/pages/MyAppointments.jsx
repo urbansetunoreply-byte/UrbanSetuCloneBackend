@@ -3906,10 +3906,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
     appt.purpose === 'rent' &&
     ['move_out_pending', 'completed', 'terminated'].includes(appt.rentalStatus);
 
-  // Chat availability: allow outdated sales & rentals until move-out is completed
+  // Chat availability: allow outdated sales & rentals until move-out is completed (Modified to allow paid accepted/outdated)
   const isChatSendBlocked =
-    frozenStatuses.includes(appt.status) ||
-    (appt.purpose === 'rent' ? (!isUpcoming && hasMoveOutCompleted) : false);
+    ((appt.status === 'accepted' || appt.status === 'outdated') && appt.paymentConfirmed)
+      ? false
+      : (frozenStatuses.includes(appt.status) ||
+        (appt.purpose === 'rent' ? (!isUpcoming && hasMoveOutCompleted) : false));
 
   // Status indicators: hide for pending and frozen appointments
   const isStatusHidden = appt.status === 'pending' || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
