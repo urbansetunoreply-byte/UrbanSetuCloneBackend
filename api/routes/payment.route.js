@@ -684,11 +684,16 @@ router.post("/verify", verifyToken, async (req, res) => {
           if (wallet) {
             const scheduleEntry = wallet.paymentSchedule.find(p => p.month === payment.rentMonth && p.year === payment.rentYear);
             if (scheduleEntry) {
-              scheduleEntry.status = 'paid'; // Mark as paid
+              scheduleEntry.status = 'completed'; // Mark as completed (enum: pending, scheduled, processing, completed, failed, overdue)
               scheduleEntry.paidAt = new Date();
               scheduleEntry.paymentId = payment._id;
+
+              // Update wallet totals
+              wallet.totalPaid = (wallet.totalPaid || 0) + payment.amount;
+              wallet.totalDue = Math.max(0, (wallet.totalDue || 0) - payment.amount);
+
               await wallet.save();
-              console.log(`✅ Rent wallet updated: ${payment.rentMonth}/${payment.rentYear} marked as paid.`);
+              console.log(`✅ Rent wallet updated: ${payment.rentMonth}/${payment.rentYear} marked as completed. Total Paid: ${wallet.totalPaid}`);
             }
           }
 

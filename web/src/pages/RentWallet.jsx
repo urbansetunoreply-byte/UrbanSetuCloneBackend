@@ -17,11 +17,11 @@ export default function RentWallet() {
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
   const location = useLocation();
-  
+
   // Get contractId from URL params or state
   const searchParams = new URLSearchParams(location.search);
   const contractId = searchParams.get('contractId');
-  
+
   const [loading, setLoading] = useState(true);
   const [wallet, setWallet] = useState(null);
   const [contract, setContract] = useState(null);
@@ -42,7 +42,7 @@ export default function RentWallet() {
 
     try {
       setLoading(true);
-      
+
       // Fetch wallet
       const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`, {
         credentials: 'include'
@@ -180,11 +180,10 @@ export default function RentWallet() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 font-semibold transition ${
-                  activeTab === tab.id
+                className={`flex items-center gap-2 px-4 py-2 font-semibold transition ${activeTab === tab.id
                     ? 'text-blue-600 border-b-2 border-blue-600'
                     : 'text-gray-600 hover:text-blue-600'
-                }`}
+                  }`}
               >
                 <tab.icon />
                 {tab.label}
@@ -302,7 +301,7 @@ export default function RentWallet() {
               {wallet.paymentSchedule && wallet.paymentSchedule.length > 0 ? (
                 <div className="space-y-2">
                   {wallet.paymentSchedule
-                    .filter(p => p.status === 'completed')
+                    .filter(p => p.status === 'completed' || p.status === 'paid')
                     .sort((a, b) => new Date(b.paidAt || 0) - new Date(a.paidAt || 0))
                     .slice(0, 5)
                     .map((payment, index) => (

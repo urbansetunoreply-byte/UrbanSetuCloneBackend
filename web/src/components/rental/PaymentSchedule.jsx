@@ -19,6 +19,7 @@ export default function PaymentSchedule({ wallet, contract }) {
   const getPaymentStatusIcon = (payment) => {
     switch (payment.status) {
       case 'completed':
+      case 'paid':
         return <FaCheckCircle className="text-green-600" />;
       case 'overdue':
         return <FaExclamationTriangle className="text-red-600" />;
@@ -32,6 +33,7 @@ export default function PaymentSchedule({ wallet, contract }) {
   const getPaymentStatusColor = (payment) => {
     switch (payment.status) {
       case 'completed':
+      case 'paid':
         return 'bg-green-50 border-green-200';
       case 'overdue':
         return 'bg-red-50 border-red-200';
@@ -50,9 +52,9 @@ export default function PaymentSchedule({ wallet, contract }) {
 
     try {
       // Find the schedule index
-      const scheduleIndex = wallet.paymentSchedule.findIndex(p => 
-        p.month === payment.month && 
-        p.year === payment.year && 
+      const scheduleIndex = wallet.paymentSchedule.findIndex(p =>
+        p.month === payment.month &&
+        p.year === payment.year &&
         p.dueDate === payment.dueDate
       );
 
@@ -94,7 +96,7 @@ export default function PaymentSchedule({ wallet, contract }) {
   // Calculate stats
   const stats = useMemo(() => {
     const total = payments.length;
-    const completed = payments.filter(p => p.status === 'completed').length;
+    const completed = payments.filter(p => p.status === 'completed' || p.status === 'paid').length;
     const pending = payments.filter(p => p.status === 'pending').length;
     const overdue = payments.filter(p => p.status === 'overdue').length;
     const processing = payments.filter(p => p.status === 'processing').length;
@@ -214,9 +216,9 @@ export default function PaymentSchedule({ wallet, contract }) {
                           <button
                             onClick={() => {
                               // If stuck in processing, allow retry by navigating to payment page
-                              const scheduleIndex = wallet.paymentSchedule.findIndex(p => 
-                                p.month === payment.month && 
-                                p.year === payment.year && 
+                              const scheduleIndex = wallet.paymentSchedule.findIndex(p =>
+                                p.month === payment.month &&
+                                p.year === payment.year &&
                                 p.dueDate === payment.dueDate
                               );
                               if (scheduleIndex !== -1) {
@@ -229,7 +231,7 @@ export default function PaymentSchedule({ wallet, contract }) {
                             Retry Payment
                           </button>
                         )}
-                        {payment.status === 'completed' && payment.paymentId && (
+                        {(payment.status === 'completed' || payment.status === 'paid') && payment.paymentId && (
                           <button
                             onClick={() => {
                               // Navigate to payment receipt or download

@@ -11,9 +11,9 @@ export default function RentPaymentHistory({ wallet, contract }) {
 
   const payments = useMemo(() => {
     if (!wallet?.paymentSchedule) return [];
-    
+
     let filtered = wallet.paymentSchedule;
-    
+
     // Apply status filter
     if (filter !== 'all') {
       filtered = filtered.filter(p => {
@@ -23,7 +23,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
         return p.status === filter;
       });
     }
-    
+
     // Apply search filter
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
@@ -34,13 +34,14 @@ export default function RentPaymentHistory({ wallet, contract }) {
         return dateStr.includes(term) || amountStr.includes(term) || statusStr.includes(term);
       });
     }
-    
+
     return filtered.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
   }, [wallet, filter, searchTerm]);
 
   const getStatusIcon = (payment) => {
     switch (payment.status) {
       case 'completed':
+      case 'paid':
         return <FaCheckCircle className="text-green-600" />;
       case 'failed':
         return <FaTimesCircle className="text-red-600" />;
@@ -56,6 +57,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
   const getStatusColor = (payment) => {
     switch (payment.status) {
       case 'completed':
+      case 'paid':
         return 'bg-green-100 text-green-800 border-green-200';
       case 'failed':
         return 'bg-red-100 text-red-800 border-red-200';
@@ -92,12 +94,12 @@ export default function RentPaymentHistory({ wallet, contract }) {
 
       // Prepare CSV headers
       const headers = ['Date', 'Due Date', 'Amount (₹)', 'Penalty (₹)', 'Total (₹)', 'Status', 'Paid Date', 'Payment ID', 'Remarks'];
-      
+
       // Prepare CSV rows
       const rows = payments.map(payment => {
         const dueDate = new Date(payment.dueDate);
         const paidDate = payment.paidAt ? new Date(payment.paidAt) : null;
-        
+
         return [
           dueDate.toLocaleDateString('en-GB'),
           dueDate.toLocaleDateString('en-GB'),
@@ -133,16 +135,16 @@ export default function RentPaymentHistory({ wallet, contract }) {
       const url = window.URL.createObjectURL(blob);
       const link = document.createElement('a');
       link.href = url;
-      
+
       const contractIdStr = contract?.contractId || contract?._id || 'rent-wallet';
       const fileName = `rent_payment_history_${contractIdStr}_${new Date().toISOString().split('T')[0]}.csv`;
       link.download = fileName;
-      
+
       document.body.appendChild(link);
       link.click();
       document.body.removeChild(link);
       window.URL.revokeObjectURL(url);
-      
+
       toast.success("Payment history exported to CSV successfully!");
     } catch (error) {
       console.error("Error exporting to CSV:", error);
@@ -162,7 +164,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
       const pageHeight = doc.internal.pageSize.getHeight();
       const margin = 15;
       let yPosition = margin;
-      
+
       // Helper function to add a new page if needed
       const checkPageBreak = (requiredHeight) => {
         if (yPosition + requiredHeight > pageHeight - margin) {
@@ -190,7 +192,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
         }
         doc.text(contractInfo, margin, yPosition);
         yPosition += 6;
-        
+
         const exportDate = `Exported on: ${new Date().toLocaleDateString('en-GB')} ${new Date().toLocaleTimeString('en-GB')}`;
         doc.text(exportDate, margin, yPosition);
         yPosition += 10;
@@ -201,7 +203,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
       doc.setFont('helvetica', 'bold');
       doc.text('Summary', margin, yPosition);
       yPosition += 8;
-      
+
       doc.setFontSize(10);
       doc.setFont('helvetica', 'normal');
       doc.text(`Total Payments: ${stats.total}`, margin, yPosition);
@@ -226,7 +228,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
       const colWidths = [25, 25, 25, 25, 25, 25, 40];
       const headers = ['Date', 'Amount', 'Penalty', 'Total', 'Status', 'Paid Date', 'Payment ID'];
       let xPosition = margin;
-      
+
       doc.setFontSize(8);
       doc.setFont('helvetica', 'bold');
       headers.forEach((header, index) => {
@@ -239,7 +241,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
       doc.setFont('helvetica', 'normal');
       payments.forEach((payment, index) => {
         checkPageBreak(20);
-        
+
         const dueDate = new Date(payment.dueDate);
         const paidDate = payment.paidAt ? new Date(payment.paidAt) : null;
         const amount = payment.amount.toFixed(2);
@@ -248,7 +250,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
         const status = payment.status.charAt(0).toUpperCase() + payment.status.slice(1);
         const paidDateStr = paidDate ? paidDate.toLocaleDateString('en-GB') : '-';
         const paymentId = typeof payment.paymentId === 'object' ? (payment.paymentId?.paymentId || '-') : (payment.paymentId || '-');
-        
+
         xPosition = margin;
         const rowData = [
           dueDate.toLocaleDateString('en-GB'),
@@ -259,7 +261,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
           paidDateStr,
           paymentId.substring(0, 10) + (paymentId.length > 10 ? '...' : '')
         ];
-        
+
         doc.setFontSize(7);
         rowData.forEach((cell, colIndex) => {
           const text = doc.splitTextToSize(String(cell), colWidths[colIndex] - 2);
@@ -267,7 +269,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
           xPosition += colWidths[colIndex];
         });
         yPosition += 6;
-        
+
         // Add remarks if present
         if (payment.remarks) {
           checkPageBreak(8);
@@ -278,7 +280,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
           yPosition += remarks.length * 3;
           doc.setTextColor(0, 0, 0);
         }
-        
+
         yPosition += 2;
       });
 
@@ -286,7 +288,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
       const contractIdStr = contract?.contractId || contract?._id || 'rent-wallet';
       const fileName = `rent_payment_history_${contractIdStr}_${new Date().toISOString().split('T')[0]}.pdf`;
       doc.save(fileName);
-      
+
       toast.success("Payment history exported to PDF successfully!");
     } catch (error) {
       console.error("Error exporting to PDF:", error);
@@ -297,11 +299,11 @@ export default function RentPaymentHistory({ wallet, contract }) {
   // Calculate statistics
   const stats = useMemo(() => {
     if (!wallet?.paymentSchedule) return { total: 0, totalPaid: 0, totalDue: 0 };
-    
+
     const allPayments = wallet.paymentSchedule;
-    const completed = allPayments.filter(p => p.status === 'completed');
+    const completed = allPayments.filter(p => p.status === 'completed' || p.status === 'paid');
     const pending = allPayments.filter(p => p.status === 'pending' || p.status === 'overdue');
-    
+
     return {
       total: allPayments.length,
       totalPaid: completed.reduce((sum, p) => sum + p.amount + (p.penaltyAmount || 0), 0),
