@@ -124,14 +124,41 @@ export default function VerificationStatus({ verification, listing, currentUser,
       }
 
       // Determine extension
-      // Safeguard against URL parameters in extension extraction
       let extension = 'file';
       if (isPDF) {
         extension = 'pdf';
       } else {
-        const urlParts = docUrl.split('?')[0].split('.');
-        if (urlParts.length > 1) {
-          extension = urlParts.pop();
+        // First try to get extension from the URL path (ignoring query params)
+        try {
+          // Get the last path segment specifically
+          const urlPath = docUrl.split('?')[0];
+          const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
+
+          if (lastSegment.includes('.')) {
+            // If it has a dot, extract extension
+            extension = lastSegment.split('.').pop();
+          } else if (contentType) {
+            // If no extension in URL, try MIME type mapping
+            const mimeMap = {
+              'application/pdf': 'pdf',
+              'image/jpeg': 'jpg',
+              'image/jpg': 'jpg',
+              'image/png': 'png',
+              'application/msword': 'doc',
+              'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+              'text/plain': 'txt'
+            };
+            const mimeExt = mimeMap[contentType.toLowerCase()];
+            if (mimeExt) {
+              extension = mimeExt;
+            } else if (contentType.includes('/')) {
+              // Last resort fallback from mime
+              extension = contentType.split('/')[1];
+            }
+          }
+        } catch (e) {
+          console.warn('Error extracting extension:', e);
+          // Keep default 'file' or 'pdf' if isPDF was true
         }
       }
 
