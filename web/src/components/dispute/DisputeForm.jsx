@@ -74,7 +74,7 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
         let endpoint = '/api/upload/image';
-        
+
         if (type === 'image') {
           formData.append('image', file);
         } else if (type === 'video') {
@@ -320,19 +320,36 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
               <div key={index} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg border">
                 <div className="flex-1">
                   {evidence.type === 'image' && (
-                    <div className="w-20 h-20 rounded overflow-hidden">
-                      <ImagePreview imageUrl={evidence.url} />
+                    <div className="w-20 h-20 rounded overflow-hidden bg-gray-200">
+                      <img
+                        src={evidence.url}
+                        alt="Evidence preview"
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   )}
                   {evidence.type === 'video' && (
-                    <div className="w-20 h-20 rounded overflow-hidden">
-                      <VideoPreview videoUrl={evidence.url} />
+                    <div className="w-20 h-20 rounded overflow-hidden bg-gray-200">
+                      <video
+                        src={evidence.url}
+                        className="w-full h-full object-cover"
+                      />
                     </div>
                   )}
                   {evidence.type === 'document' && (
                     <div className="flex items-center gap-2">
                       <FaFile className="text-blue-600" />
-                      <span className="text-sm text-gray-700">Document</span>
+                      <div className="flex flex-col">
+                        <span className="text-sm text-gray-700">Document</span>
+                        <a
+                          href={evidence.url}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="text-xs text-blue-500 hover:underline"
+                        >
+                          View Document
+                        </a>
+                      </div>
                     </div>
                   )}
                 </div>

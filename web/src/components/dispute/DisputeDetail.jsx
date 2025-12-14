@@ -8,13 +8,13 @@ import UserAvatar from '../UserAvatar';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default function DisputeDetail({ 
-  dispute, 
-  currentUser, 
-  onUpdate, 
-  getStatusColor, 
-  DISPUTE_CATEGORIES, 
-  DISPUTE_STATUS, 
+export default function DisputeDetail({
+  dispute,
+  currentUser,
+  onUpdate,
+  getStatusColor,
+  DISPUTE_CATEGORIES,
+  DISPUTE_STATUS,
   PRIORITY_COLORS,
   isAdmin: propIsAdmin,
   onUpdateStatus,
@@ -38,6 +38,12 @@ export default function DisputeDetail({
     resolutionNotes: ''
   });
 
+  // Media Preview States
+  const [selectedImage, setSelectedImage] = useState(null);
+  const [selectedVideo, setSelectedVideo] = useState(null);
+  const [showImagePreview, setShowImagePreview] = useState(false);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+
   const isAdmin = propIsAdmin || currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
   const isRaisedBy = dispute.raisedBy?._id === currentUser?._id || dispute.raisedBy === currentUser?._id;
   const isRaisedAgainst = dispute.raisedAgainst?._id === currentUser?._id || dispute.raisedAgainst === currentUser?._id;
@@ -46,6 +52,11 @@ export default function DisputeDetail({
   const handleSendMessage = async () => {
     if (!newMessage.trim() && attachments.length === 0) {
       toast.error('Please enter a message or attach files');
+      return;
+    }
+
+    if (dispute.status === 'resolved' || dispute.status === 'closed') {
+      toast.error('Cannot send messages in a resolved or closed dispute you can use myappointments page chatbox to chat');
       return;
     }
 
@@ -87,7 +98,7 @@ export default function DisputeDetail({
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
         let endpoint = '/api/upload/image';
-        
+
         if (type === 'image') {
           formData.append('image', file);
         } else if (type === 'video') {
@@ -188,22 +199,55 @@ export default function DisputeDetail({
             {dispute.evidence.map((evidence, index) => (
               <div key={index} className="border rounded-lg p-3 bg-gray-50">
                 {evidence.type === 'image' && (
-                  <div className="aspect-square rounded overflow-hidden mb-2">
-                    <ImagePreview imageUrl={evidence.url} />
+                  <div
+                    className="aspect-square rounded overflow-hidden mb-2 cursor-pointer relative group"
+                    onClick={() => {
+                      setSelectedImage(evidence.url);
+                      setShowImagePreview(true);
+                    }}
+                  >
+                    <img
+                      src={evidence.url}
+                      alt="Evidence"
+                      className="w-full h-full object-cover group-hover:opacity-90 transition-opacity"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 bg-black bg-opacity-30 transition-opacity">
+                      <FaImage className="text-white text-2xl" />
+                    </div>
                   </div>
                 )}
                 {evidence.type === 'video' && (
-                  <div className="aspect-square rounded overflow-hidden mb-2">
-                    <VideoPreview videoUrl={evidence.url} />
+                  <div
+                    className="aspect-square rounded overflow-hidden mb-2 cursor-pointer relative group"
+                    onClick={() => {
+                      setSelectedVideo(evidence.url);
+                      setShowVideoPreview(true);
+                    }}
+                  >
+                    <video
+                      src={evidence.url}
+                      className="w-full h-full object-cover"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30">
+                      <FaVideo className="text-white text-2xl" />
+                    </div>
                   </div>
                 )}
                 {evidence.type === 'document' && (
-                  <div className="aspect-square flex items-center justify-center bg-blue-100 rounded mb-2">
-                    <FaFile className="text-4xl text-blue-600" />
+                  <div className="aspect-square flex flex-col items-center justify-center bg-blue-50 rounded mb-2 border border-blue-100">
+                    <FaFile className="text-4xl text-blue-600 mb-2" />
+                    <a
+                      href={evidence.url}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 hover:underline"
+                    >
+                      <FaDownload className="text-[10px]" /> Download
+                    </a>
                   </div>
                 )}
                 {evidence.description && (
-                  <p className="text-xs text-gray-600">{evidence.description}</p>
+                  <p className="text-xs text-gray-600 line-clamp-2" title={evidence.description}>{evidence.description}</p>
                 )}
               </div>
             ))}
@@ -256,9 +300,8 @@ export default function DisputeDetail({
                     size="md"
                   />
                   <div className={`flex-1 ${isOwnMessage ? 'text-right' : ''}`}>
-                    <div className={`inline-block p-3 rounded-lg ${
-                      isOwnMessage ? 'bg-blue-100 text-blue-900' : 'bg-gray-100 text-gray-900'
-                    }`}>
+                    <div className={`inline-block p-3 rounded-lg ${isOwnMessage ? 'bg-blue-100 text-blue-900' : 'bg-gray-100 text-gray-900'
+                      }`}>
                       <div className="font-semibold text-sm mb-1">
                         {message.sender?.username || 'Unknown'}
                       </div>
@@ -326,9 +369,8 @@ export default function DisputeDetail({
 
             {/* Upload Buttons */}
             <div className="flex items-center gap-2 mb-3">
-              <label className={`flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-sm ${
-                uploading.image ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-blue-100'
-              }`}>
+              <label className={`flex items-center gap-2 px-3 py-2 bg-blue-50 border border-blue-300 rounded-lg text-sm ${uploading.image ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-blue-100'
+                }`}>
                 {uploading.image ? <FaSpinner className="animate-spin" /> : <FaImage />}
                 <span className="text-blue-700">Image</span>
                 <input
@@ -340,9 +382,8 @@ export default function DisputeDetail({
                   disabled={uploading.image || uploading.video || uploading.document}
                 />
               </label>
-              <label className={`flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-300 rounded-lg text-sm ${
-                uploading.video ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-purple-100'
-              }`}>
+              <label className={`flex items-center gap-2 px-3 py-2 bg-purple-50 border border-purple-300 rounded-lg text-sm ${uploading.video ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-purple-100'
+                }`}>
                 {uploading.video ? <FaSpinner className="animate-spin" /> : <FaVideo />}
                 <span className="text-purple-700">Video</span>
                 <input
@@ -354,9 +395,8 @@ export default function DisputeDetail({
                   disabled={uploading.image || uploading.video || uploading.document}
                 />
               </label>
-              <label className={`flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-300 rounded-lg text-sm ${
-                uploading.document ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-green-100'
-              }`}>
+              <label className={`flex items-center gap-2 px-3 py-2 bg-green-50 border border-green-300 rounded-lg text-sm ${uploading.document ? 'cursor-not-allowed opacity-50' : 'cursor-pointer hover:bg-green-100'
+                }`}>
                 {uploading.document ? <FaSpinner className="animate-spin" /> : <FaFile />}
                 <span className="text-green-700">Document</span>
                 <input
@@ -524,6 +564,29 @@ export default function DisputeDetail({
             </div>
           </div>
         </div>
+      )}
+      {/* Image Preview Modal */}
+      {showImagePreview && selectedImage && (
+        <ImagePreview
+          isOpen={showImagePreview}
+          onClose={() => {
+            setShowImagePreview(false);
+            setSelectedImage(null);
+          }}
+          images={[selectedImage]}
+        />
+      )}
+
+      {/* Video Preview Modal */}
+      {showVideoPreview && selectedVideo && (
+        <VideoPreview
+          isOpen={showVideoPreview}
+          onClose={() => {
+            setShowVideoPreview(false);
+            setSelectedVideo(null);
+          }}
+          videos={[selectedVideo]}
+        />
       )}
     </div>
   );
