@@ -156,6 +156,53 @@ export default function RentProperty() {
             }
           }
 
+          // Check associated booking status if exists
+          let bookingIsCancelledOrOutdated = false;
+          if (existingContract && existingContract.bookingId) {
+            try {
+              let bookingData = null;
+              // If bookingId is already an object (populated), use it
+              if (typeof existingContract.bookingId === 'object' && existingContract.bookingId.status) {
+                bookingData = existingContract.bookingId;
+              } else {
+                // Otherwise fetch it
+                const bookingId = existingContract.bookingId?._id || existingContract.bookingId;
+                const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
+                  credentials: 'include'
+                });
+                if (bookingRes.ok) {
+                  const data = await bookingRes.json();
+                  bookingData = data.appointment || data.booking || data;
+                }
+              }
+
+              if (bookingData) {
+                // Check if cancelled
+                const cancelledStatuses = ['cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin'];
+                if (cancelledStatuses.includes(bookingData.status)) {
+                  bookingIsCancelledOrOutdated = true;
+                }
+
+                // Check if outdated
+                const isOutdated = new Date(bookingData.date) < new Date() || (new Date(bookingData.date).toDateString() === new Date().toDateString() && bookingData.time && bookingData.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+
+                // If it's outdated and not in a terminal successful state (like 'completed'), treat as invalid
+                if (isOutdated && bookingData.status !== 'completed') {
+                  bookingIsCancelledOrOutdated = true;
+                }
+              }
+            } catch (err) {
+              console.error("Error checking booking status:", err);
+            }
+          }
+
+          if (bookingIsCancelledOrOutdated) {
+            existingContract = null;
+            if (contractIdParam) {
+              toast.info("The appointment associated with this contract is cancelled or outdated. Starting a new application.");
+            }
+          }
+
           if (existingContract) {
             setContract(existingContract);
             setResumingContract(true);
