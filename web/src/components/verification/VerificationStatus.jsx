@@ -102,6 +102,63 @@ export default function VerificationStatus({ verification, listing, currentUser,
     }
   };
 
+  const handleDownloadDocument = async (docUrl, docType, docName) => {
+    try {
+      if (!docUrl) return;
+
+      // Initial check for PDF from metadata
+      let isPDF = (docType && docType.toUpperCase() === 'PDF') ||
+        (docUrl && docUrl.toLowerCase().split('?')[0].endsWith('.pdf'));
+
+      // Clean URL for fetching
+      const fetchUrl = docUrl;
+
+      // Fetch the document
+      const response = await fetch(fetchUrl, { mode: 'cors' });
+      if (!response.ok) throw new Error('Failed to fetch document');
+
+      // Check Content-Type header
+      const contentType = response.headers.get('content-type');
+      if (contentType && contentType.toLowerCase().includes('application/pdf')) {
+        isPDF = true;
+      }
+
+      // Determine extension
+      // Safeguard against URL parameters in extension extraction
+      let extension = 'file';
+      if (isPDF) {
+        extension = 'pdf';
+      } else {
+        const urlParts = docUrl.split('?')[0].split('.');
+        if (urlParts.length > 1) {
+          extension = urlParts.pop();
+        }
+      }
+
+      const filename = `${docName}-${verification.verificationId}.${extension}`;
+
+      // Create Blob
+      const blob = await response.blob();
+      const blobUrl = window.URL.createObjectURL(new Blob([blob], {
+        type: isPDF ? 'application/pdf' : (blob.type || 'application/octet-stream')
+      }));
+
+      // Trigger Download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      // Fallback: Open in new tab
+      window.open(docUrl, '_blank');
+    }
+  };
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
@@ -172,45 +229,13 @@ export default function VerificationStatus({ verification, listing, currentUser,
             {verification.documents.ownershipProof.documentUrl && (
               <div className="mt-2">
                 <button
-                  onClick={async (e) => {
+                  onClick={(e) => {
                     e.preventDefault();
-                    try {
-                      const url = verification.documents.ownershipProof.documentUrl;
-                      const documentType = verification.documents.ownershipProof.documentType || 'PDF';
-                      const isPDF = documentType === 'PDF' || url.toLowerCase().endsWith('.pdf');
-                      const filename = isPDF ? `ownership-proof-${verification.verificationId}.pdf` : `ownership-proof-${verification.verificationId}.${url.split('.').pop() || 'file'}`;
-                      
-                      // Transform Cloudinary URL to force download
-                      let downloadUrl = url;
-                      if (url.includes('/upload/') && !url.includes('fl_attachment')) {
-                        const uploadIndex = url.indexOf('/upload/');
-                        downloadUrl = url.slice(0, uploadIndex + '/upload/'.length) + 
-                                     `fl_attachment:${filename}/` + 
-                                     url.slice(uploadIndex + '/upload/'.length);
-                      }
-                      
-                      // Fetch and download with proper content-type
-                      const response = await fetch(downloadUrl, { mode: 'cors' });
-                      if (!response.ok) throw new Error('Failed to fetch document');
-                      
-                      const blob = await response.blob();
-                      const blobUrl = window.URL.createObjectURL(new Blob([blob], { 
-                        type: isPDF ? 'application/pdf' : blob.type || 'application/octet-stream' 
-                      }));
-                      
-                      const link = document.createElement('a');
-                      link.href = blobUrl;
-                      link.download = filename;
-                      link.style.display = 'none';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      window.URL.revokeObjectURL(blobUrl);
-                    } catch (error) {
-                      console.error('Error downloading document:', error);
-                      // Fallback to direct link
-                      window.open(verification.documents.ownershipProof.documentUrl, '_blank');
-                    }
+                    handleDownloadDocument(
+                      verification.documents.ownershipProof.documentUrl,
+                      verification.documents.ownershipProof.documentType,
+                      'ownership-proof'
+                    );
                   }}
                   className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
                 >
@@ -246,45 +271,13 @@ export default function VerificationStatus({ verification, listing, currentUser,
             {verification.documents.identityProof.documentUrl && (
               <div className="mt-2">
                 <button
-                  onClick={async (e) => {
+                  onClick={(e) => {
                     e.preventDefault();
-                    try {
-                      const url = verification.documents.identityProof.documentUrl;
-                      const documentType = verification.documents.identityProof.documentType || 'PDF';
-                      const isPDF = documentType === 'PDF' || url.toLowerCase().endsWith('.pdf');
-                      const filename = isPDF ? `identity-proof-${verification.verificationId}.pdf` : `identity-proof-${verification.verificationId}.${url.split('.').pop() || 'file'}`;
-                      
-                      // Transform Cloudinary URL to force download
-                      let downloadUrl = url;
-                      if (url.includes('/upload/') && !url.includes('fl_attachment')) {
-                        const uploadIndex = url.indexOf('/upload/');
-                        downloadUrl = url.slice(0, uploadIndex + '/upload/'.length) + 
-                                     `fl_attachment:${filename}/` + 
-                                     url.slice(uploadIndex + '/upload/'.length);
-                      }
-                      
-                      // Fetch and download with proper content-type
-                      const response = await fetch(downloadUrl, { mode: 'cors' });
-                      if (!response.ok) throw new Error('Failed to fetch document');
-                      
-                      const blob = await response.blob();
-                      const blobUrl = window.URL.createObjectURL(new Blob([blob], { 
-                        type: isPDF ? 'application/pdf' : blob.type || 'application/octet-stream' 
-                      }));
-                      
-                      const link = document.createElement('a');
-                      link.href = blobUrl;
-                      link.download = filename;
-                      link.style.display = 'none';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      window.URL.revokeObjectURL(blobUrl);
-                    } catch (error) {
-                      console.error('Error downloading document:', error);
-                      // Fallback to direct link
-                      window.open(verification.documents.identityProof.documentUrl, '_blank');
-                    }
+                    handleDownloadDocument(
+                      verification.documents.identityProof.documentUrl,
+                      verification.documents.identityProof.documentType,
+                      'identity-proof'
+                    );
                   }}
                   className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
                 >
@@ -320,45 +313,13 @@ export default function VerificationStatus({ verification, listing, currentUser,
             {verification.documents.addressProof.documentUrl && (
               <div className="mt-2">
                 <button
-                  onClick={async (e) => {
+                  onClick={(e) => {
                     e.preventDefault();
-                    try {
-                      const url = verification.documents.addressProof.documentUrl;
-                      const documentType = verification.documents.addressProof.documentType || 'PDF';
-                      const isPDF = documentType === 'PDF' || url.toLowerCase().endsWith('.pdf');
-                      const filename = isPDF ? `address-proof-${verification.verificationId}.pdf` : `address-proof-${verification.verificationId}.${url.split('.').pop() || 'file'}`;
-                      
-                      // Transform Cloudinary URL to force download
-                      let downloadUrl = url;
-                      if (url.includes('/upload/') && !url.includes('fl_attachment')) {
-                        const uploadIndex = url.indexOf('/upload/');
-                        downloadUrl = url.slice(0, uploadIndex + '/upload/'.length) + 
-                                     `fl_attachment:${filename}/` + 
-                                     url.slice(uploadIndex + '/upload/'.length);
-                      }
-                      
-                      // Fetch and download with proper content-type
-                      const response = await fetch(downloadUrl, { mode: 'cors' });
-                      if (!response.ok) throw new Error('Failed to fetch document');
-                      
-                      const blob = await response.blob();
-                      const blobUrl = window.URL.createObjectURL(new Blob([blob], { 
-                        type: isPDF ? 'application/pdf' : blob.type || 'application/octet-stream' 
-                      }));
-                      
-                      const link = document.createElement('a');
-                      link.href = blobUrl;
-                      link.download = filename;
-                      link.style.display = 'none';
-                      document.body.appendChild(link);
-                      link.click();
-                      document.body.removeChild(link);
-                      window.URL.revokeObjectURL(blobUrl);
-                    } catch (error) {
-                      console.error('Error downloading document:', error);
-                      // Fallback to direct link
-                      window.open(verification.documents.addressProof.documentUrl, '_blank');
-                    }
+                    handleDownloadDocument(
+                      verification.documents.addressProof.documentUrl,
+                      verification.documents.addressProof.documentType,
+                      'address-proof'
+                    );
                   }}
                   className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
                 >
