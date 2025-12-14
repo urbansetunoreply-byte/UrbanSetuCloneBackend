@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaExclamationTriangle, FaSearch, FaFilter, FaTimes, FaFileAlt, FaComments, FaCheckCircle, FaClock, FaGavel, FaUser, FaPaperclip, FaImage, FaVideo, FaFile, FaDownload, FaEdit, FaBan, FaEye } from 'react-icons/fa';
+import { FaExclamationTriangle, FaSearch, FaFilter, FaTimes, FaFileAlt, FaComments, FaCheckCircle, FaClock, FaGavel, FaUser, FaPaperclip, FaImage, FaVideo, FaFile, FaDownload, FaEdit, FaBan, FaEye, FaSync } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import DisputeDetail from '../components/dispute/DisputeDetail';
 
@@ -57,14 +57,14 @@ export default function AdminDisputeResolution() {
       navigate('/sign-in');
       return;
     }
-    
+
     // Check if user is admin or rootadmin
     if (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin') {
       toast.error('Access denied. Admin access required.');
       navigate('/user');
       return;
     }
-    
+
     // Only fetch on initial load, not on filter changes
     if (disputes.length === 0) {
       fetchDisputes();
@@ -190,14 +190,14 @@ export default function AdminDisputeResolution() {
   };
 
   const filteredDisputes = disputes.filter(dispute => {
-    const matchesSearch = filters.search === '' || 
+    const matchesSearch = filters.search === '' ||
       dispute.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
       dispute.disputeId?.toLowerCase().includes(filters.search.toLowerCase()) ||
       dispute.raisedBy?.username?.toLowerCase().includes(filters.search.toLowerCase()) ||
       dispute.raisedAgainst?.username?.toLowerCase().includes(filters.search.toLowerCase());
-    
+
     const matchesPriority = filters.priority === 'all' || dispute.priority === filters.priority;
-    
+
     return matchesSearch && matchesPriority;
   });
 
@@ -246,6 +246,13 @@ export default function AdminDisputeResolution() {
               </h1>
               <p className="text-gray-600 mt-2">Manage and resolve all rental disputes</p>
             </div>
+            <button
+              onClick={() => fetchDisputes(true)}
+              className="p-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-colors duration-200"
+              title="Refresh Disputes"
+            >
+              <FaSync className={loading ? 'animate-spin' : ''} />
+            </button>
           </div>
 
           {/* Filters */}

@@ -89,6 +89,75 @@ export default function DisputeDetail({
     }
   };
 
+  const handleDownloadDocument = async (docUrl, docName) => {
+    try {
+      if (!docUrl) return;
+
+      // Clean URL for fetching
+      const fetchUrl = docUrl;
+
+      // Fetch the document
+      const response = await fetch(fetchUrl, { mode: 'cors' });
+      if (!response.ok) throw new Error('Failed to fetch document');
+
+      const contentType = response.headers.get('content-type') || '';
+
+      // Determine file extension
+      let extension = 'pdf'; // Default to PDF 
+
+      // 1. Try to get extension from URL 
+      try {
+        const urlPath = docUrl.split('?')[0];
+        const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
+        if (lastSegment.includes('.')) {
+          extension = lastSegment.split('.').pop();
+        }
+      } catch (e) {
+        console.warn('URL parsing failed', e);
+      }
+
+      // 2. Check content-type if explicit and not octet-stream
+      if ((!extension || extension === 'file') && contentType && !contentType.includes('octet-stream')) {
+        const mimeMap = {
+          'application/pdf': 'pdf',
+          'image/jpeg': 'jpg',
+          'image/jpg': 'jpg',
+          'image/png': 'png',
+          'application/msword': 'doc',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+          'text/plain': 'txt'
+        };
+        extension = mimeMap[contentType.toLowerCase()] || 'pdf';
+      }
+
+      const filename = `${docName || 'evidence'}-${dispute.disputeId}.${extension}`;
+
+      // Create Blob
+      const blob = await response.blob();
+
+      // Force correct MIME type if we assume PDF but served as octet-stream
+      const finalBlob = extension === 'pdf' && contentType.includes('octet-stream')
+        ? new Blob([blob], { type: 'application/pdf' })
+        : blob;
+
+      const blobUrl = window.URL.createObjectURL(finalBlob);
+
+      // Trigger Download
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      // Fallback: Open in new tab
+      window.open(docUrl, '_blank');
+    }
+  };
+
   const handleAttachmentUpload = async (e, type) => {
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
@@ -236,14 +305,15 @@ export default function DisputeDetail({
                 {evidence.type === 'document' && (
                   <div className="aspect-square flex flex-col items-center justify-center bg-blue-50 rounded mb-2 border border-blue-100">
                     <FaFile className="text-4xl text-blue-600 mb-2" />
-                    <a
-                      href={evidence.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 hover:underline"
+                    <button
+                      onClick={(e) => {
+                        e.preventDefault();
+                        handleDownloadDocument(evidence.url, 'document');
+                      }}
+                      className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 hover:underline cursor-pointer"
                     >
                       <FaDownload className="text-[10px]" /> Download
-                    </a>
+                    </button>
                   </div>
                 )}
                 {evidence.description && (

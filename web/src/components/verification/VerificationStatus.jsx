@@ -106,10 +106,6 @@ export default function VerificationStatus({ verification, listing, currentUser,
     try {
       if (!docUrl) return;
 
-      // Initial check for PDF from metadata
-      let isPDF = (docType && docType.toUpperCase() === 'PDF') ||
-        (docUrl && docUrl.toLowerCase().split('?')[0].endsWith('.pdf'));
-
       // Clean URL for fetching
       const fetchUrl = docUrl;
 
@@ -117,58 +113,60 @@ export default function VerificationStatus({ verification, listing, currentUser,
       const response = await fetch(fetchUrl, { mode: 'cors' });
       if (!response.ok) throw new Error('Failed to fetch document');
 
-      // Check Content-Type header
-      const contentType = response.headers.get('content-type');
-      if (contentType && contentType.toLowerCase().includes('application/pdf')) {
-        isPDF = true;
+      const contentType = response.headers.get('content-type') || '';
+
+      // Determine file extension
+      let extension = 'pdf'; // Default to PDF as it's the most common document type
+
+      // 1. Try to get extension from URL first as it's often most reliable for Cloudinary
+      try {
+        const urlPath = docUrl.split('?')[0];
+        const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
+        if (lastSegment.includes('.')) {
+          extension = lastSegment.split('.').pop();
+        }
+      } catch (e) {
+        console.warn('URL parsing failed', e);
       }
 
-      // Determine extension
-      let extension = 'file';
-      if (isPDF) {
-        extension = 'pdf';
-      } else {
-        // First try to get extension from the URL path (ignoring query params)
-        try {
-          // Get the last path segment specifically
-          const urlPath = docUrl.split('?')[0];
-          const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
-
-          if (lastSegment.includes('.')) {
-            // If it has a dot, extract extension
-            extension = lastSegment.split('.').pop();
-          } else if (contentType) {
-            // If no extension in URL, try MIME type mapping
-            const mimeMap = {
-              'application/pdf': 'pdf',
-              'image/jpeg': 'jpg',
-              'image/jpg': 'jpg',
-              'image/png': 'png',
-              'application/msword': 'doc',
-              'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-              'text/plain': 'txt'
-            };
-            const mimeExt = mimeMap[contentType.toLowerCase()];
-            if (mimeExt) {
-              extension = mimeExt;
-            } else if (contentType.includes('/')) {
-              // Last resort fallback from mime
-              extension = contentType.split('/')[1];
-            }
-          }
-        } catch (e) {
-          console.warn('Error extracting extension:', e);
-          // Keep default 'file' or 'pdf' if isPDF was true
+      // 2. If URL didn't have extension, check metadata docType
+      if (extension === 'file' || extension === 'pdf') { // if default or generic
+        if (docType && docType.toLowerCase() !== 'document') {
+          // e.g., 'image/png' map to png, or simple 'PDF' map to pdf
+          if (docType.toLowerCase().includes('pdf')) extension = 'pdf';
+          else if (docType.toLowerCase().includes('image')) extension = 'jpg';
         }
       }
 
-      const filename = `${docName}-${verification.verificationId}.${extension}`;
+      // 3. Last fallback: Check content-type if we still don't have a good extension
+      // But ignore octet-stream as it's useless for typing
+      if (!extension && contentType && !contentType.includes('octet-stream')) {
+        const mimeMap = {
+          'application/pdf': 'pdf',
+          'image/jpeg': 'jpg',
+          'image/jpg': 'jpg',
+          'image/png': 'png',
+          'application/msword': 'doc',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+          'text/plain': 'txt'
+        };
+        extension = mimeMap[contentType.toLowerCase()] || extension;
+      }
+
+      // Ensure we have a valid extension
+      if (!extension || extension === 'file') extension = 'pdf';
+
+      const filename = `${docName || 'document'}-${verification.verificationId}.${extension}`;
 
       // Create Blob
       const blob = await response.blob();
-      const blobUrl = window.URL.createObjectURL(new Blob([blob], {
-        type: isPDF ? 'application/pdf' : (blob.type || 'application/octet-stream')
-      }));
+
+      // Force correct MIME type if we know it's a PDF but served as octet-stream
+      const finalBlob = extension === 'pdf' && contentType.includes('octet-stream')
+        ? new Blob([blob], { type: 'application/pdf' })
+        : blob;
+
+      const blobUrl = window.URL.createObjectURL(finalBlob);
 
       // Trigger Download
       const link = document.createElement('a');
