@@ -5,11 +5,12 @@ import { autoPurgeSoftbannedAccounts } from './autoPurgeService.js';
 import { sendAccountDeletionReminders } from './accountReminderService.js';
 import { checkEmailServiceStatus } from './emailMonitoringService.js';
 import { cleanupOldChatData } from './dataRetentionService.js';
+import { checkAndSendLoanReminders } from './loanReminderService.js';
 
 // Schedule appointment reminders to run every day at 9:00 AM
 const scheduleAppointmentReminders = () => {
   console.log('📅 Setting up appointment reminder scheduler...');
-  
+
   // Run every day at 9:00 AM
   cron.schedule('0 9 * * *', async () => {
     console.log('⏰ Running scheduled appointment reminder check...');
@@ -23,7 +24,7 @@ const scheduleAppointmentReminders = () => {
     scheduled: true,
     timezone: "Asia/Kolkata" // Adjust timezone as needed
   });
-  
+
   console.log('✅ Appointment reminder scheduler set up successfully');
   console.log('📋 Schedule: Every day at 9:00 AM (Asia/Kolkata timezone)');
 };
@@ -31,7 +32,7 @@ const scheduleAppointmentReminders = () => {
 // Schedule outdated appointment emails to run every day at 8:00 AM
 const scheduleOutdatedAppointmentEmails = () => {
   console.log('📅 Setting up outdated appointment email scheduler...');
-  
+
   // Run every day at 8:00 AM
   cron.schedule('0 8 * * *', async () => {
     console.log('⏰ Running scheduled outdated appointment email check...');
@@ -45,7 +46,7 @@ const scheduleOutdatedAppointmentEmails = () => {
     scheduled: true,
     timezone: "Asia/Kolkata" // Adjust timezone as needed
   });
-  
+
   console.log('✅ Outdated appointment email scheduler set up successfully');
   console.log('📋 Schedule: Every day at 8:00 AM (Asia/Kolkata timezone)');
 };
@@ -53,7 +54,7 @@ const scheduleOutdatedAppointmentEmails = () => {
 // Schedule automatic purging of softbanned accounts to run every day at 2:00 AM
 const scheduleAutoPurge = () => {
   console.log('🗑️ Setting up automatic purging scheduler...');
-  
+
   // Run every day at 2:00 AM
   cron.schedule('0 2 * * *', async () => {
     console.log('⏰ Running scheduled automatic purging check...');
@@ -67,7 +68,7 @@ const scheduleAutoPurge = () => {
     scheduled: true,
     timezone: "Asia/Kolkata" // Adjust timezone as needed
   });
-  
+
   console.log('✅ Automatic purging scheduler set up successfully');
   console.log('📋 Schedule: Every day at 2:00 AM (Asia/Kolkata timezone)');
 };
@@ -75,7 +76,7 @@ const scheduleAutoPurge = () => {
 // Schedule account deletion reminders to run every day at 10:00 AM
 const scheduleAccountReminders = () => {
   console.log('📧 Setting up account deletion reminder scheduler...');
-  
+
   // Run every day at 10:00 AM
   cron.schedule('0 10 * * *', async () => {
     console.log('⏰ Running scheduled account deletion reminder check...');
@@ -89,7 +90,7 @@ const scheduleAccountReminders = () => {
     scheduled: true,
     timezone: "Asia/Kolkata" // Adjust timezone as needed
   });
-  
+
   console.log('✅ Account deletion reminder scheduler set up successfully');
   console.log('📋 Schedule: Every day at 10:00 AM (Asia/Kolkata timezone)');
 };
@@ -97,7 +98,7 @@ const scheduleAccountReminders = () => {
 // Schedule email service monitoring to run every 24 hours at 11:00 PM
 const scheduleEmailMonitoring = (app) => {
   console.log('📧 Setting up email service monitoring scheduler...');
-  
+
   // Run every 24 hours at 11:00 PM
   cron.schedule('0 23 * * *', async () => {
     console.log('⏰ Running scheduled email service monitoring check...');
@@ -111,7 +112,7 @@ const scheduleEmailMonitoring = (app) => {
     scheduled: true,
     timezone: "Asia/Kolkata" // Adjust timezone as needed
   });
-  
+
   console.log('✅ Email service monitoring scheduler set up successfully');
   console.log('📋 Schedule: Every 24 hours at 11:00 PM (Asia/Kolkata timezone)');
 };
@@ -119,7 +120,7 @@ const scheduleEmailMonitoring = (app) => {
 // Schedule data retention cleanup to run every day at 3:00 AM
 const scheduleDataRetentionCleanup = () => {
   console.log('🗑️ Setting up data retention cleanup scheduler...');
-  
+
   // Run every day at 3:00 AM
   cron.schedule('0 3 * * *', async () => {
     console.log('⏰ Running scheduled data retention cleanup...');
@@ -133,9 +134,33 @@ const scheduleDataRetentionCleanup = () => {
     scheduled: true,
     timezone: "Asia/Kolkata" // Adjust timezone as needed
   });
-  
+
   console.log('✅ Data retention cleanup scheduler set up successfully');
   console.log('📋 Schedule: Every day at 3:00 AM (Asia/Kolkata timezone)');
+};
+
+
+
+// Schedule loan EMI reminders to run every day at 9:30 AM
+const scheduleLoanReminders = () => {
+  console.log('💰 Setting up loan reminder scheduler...');
+
+  // Run every day at 9:30 AM
+  cron.schedule('30 9 * * *', async () => {
+    console.log('⏰ Running scheduled loan reminder check...');
+    try {
+      const result = await checkAndSendLoanReminders();
+      console.log('✅ Scheduled loan reminder check completed:', result);
+    } catch (error) {
+      console.error('❌ Error in scheduled loan reminder check:', error);
+    }
+  }, {
+    scheduled: true,
+    timezone: "Asia/Kolkata"
+  });
+
+  console.log('✅ Loan reminder scheduler set up successfully');
+  console.log('📋 Schedule: Every day at 9:30 AM (Asia/Kolkata timezone)');
 };
 
 // Start the scheduler
@@ -147,8 +172,10 @@ export const startScheduler = (app) => {
   scheduleAccountReminders();
   scheduleEmailMonitoring(app);
   scheduleDataRetentionCleanup();
+  scheduleLoanReminders();
   console.log('✅ Scheduler service started successfully');
 };
+
 
 // Stop the scheduler (for graceful shutdown)
 export const stopScheduler = () => {

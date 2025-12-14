@@ -12026,5 +12026,172 @@ export const sendDisputeRaisedAcknowledgementEmail = async (email, disputeDetail
   }
 };
 
+
+// Send Loan EMI Due Reminder Email
+export const sendLoanEMIDueReminderEmail = async (email, details) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Upcoming EMI Payment Reminder - ${details.propertyName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">EMI Payment Reminder</p>
+          </div>
+          
+          <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2563eb;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">Upcoming Payment</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              This is a reminder that your EMI payment for the <strong>${details.loanType}</strong> loan on <strong>${details.propertyName}</strong> is due on <strong>${details.dueDate}</strong>.
+            </p>
+            
+            <div style="background-color: #fff; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #e5e7eb;">
+              <p style="margin: 5px 0; color: #374151;"><strong>Amount Due:</strong> ₹${details.amount}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Due Date:</strong> ${details.dueDate}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Month:</strong> ${details.month}</p>
+            </div>
+            
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Please ensure your account is funded to avoid any late fees or penalties.
+            </p>
+            
+            <div style="text-align:center; margin-top: 20px;">
+              <a href="${details.loanUrl}" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:600;">Pay Now</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'loan_emi_reminder') :
+      createErrorResponse(new Error(result.error), 'loan_emi_reminder');
+  } catch (error) {
+    return createErrorResponse(error, 'loan_emi_reminder');
+  }
+};
+
+// Send Loan EMI Overdue Reminder Email
+export const sendLoanEMIOverdueReminderEmail = async (email, details) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Overdue EMI Payment Alert - ${details.propertyName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #dc2626; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Payment Overdue Alert</p>
+          </div>
+          
+          <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+            <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">Action Required: Payment Overdue</h2>
+            <p style="color: #7f1d1d; margin: 0 0 15px 0; line-height: 1.6;">
+              Your EMI payment for the <strong>${details.loanType}</strong> loan on <strong>${details.propertyName}</strong> is overdue.
+            </p>
+            
+            <div style="background-color: #fff; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #fca5a5;">
+              <p style="margin: 5px 0; color: #374151;"><strong>Amount Due:</strong> ₹${details.amount}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Due Date:</strong> ${details.dueDate}</p>
+              <p style="margin: 5px 0; color: #dc2626; font-weight: bold;"><strong>Days Overdue:</strong> ${details.daysOverdue}</p>
+              ${details.penalty > 0 ? `<p style="margin: 5px 0; color: #dc2626;"><strong>Penalty Applied:</strong> ₹${details.penalty}</p>` : ''}
+              <p style="margin: 5px 0; color: #374151; font-weight: bold;"><strong>Total Payable:</strong> ₹${details.totalAmount}</p>
+            </div>
+            
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Please make the payment immediately to avoid further penalties and impact on your credit score.
+            </p>
+            
+            <div style="text-align:center; margin-top: 20px;">
+              <a href="${details.loanUrl}" style="display:inline-block; background-color:#dc2626; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:600;">Pay Now</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'loan_emi_overdue') :
+      createErrorResponse(new Error(result.error), 'loan_emi_overdue');
+  } catch (error) {
+    return createErrorResponse(error, 'loan_emi_overdue');
+  }
+};
+
+// Send Loan Repaid Email
+export const sendLoanRepaidEmail = async (email, details) => {
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Loan Repayment Confirmation - ${details.propertyName}`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #059669; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Loan Repayment Confirmation</p>
+          </div>
+          
+          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #059669;">
+            <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Loan Fully Repaid!</h2>
+            <p style="color: #047857; margin: 0 0 15px 0; line-height: 1.6;">
+              Congratulations! You have successfully repaid your <strong>${details.loanType}</strong> loan for <strong>${details.propertyName}</strong>.
+            </p>
+            
+            <div style="background-color: #fff; padding: 15px; border-radius: 6px; margin: 15px 0; border: 1px solid #d1fae5;">
+              <p style="margin: 5px 0; color: #374151;"><strong>Total Amount Paid:</strong> ₹${details.totalPaid}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Closure Date:</strong> ${details.repaidAt}</p>
+            </div>
+            
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              This loan is now closed. Thank you for using our financial services.
+            </p>
+            
+            <div style="text-align:center; margin-top: 20px;">
+              <a href="${details.loanUrl}" style="display:inline-block; background-color:#059669; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:600;">View Loan Details</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'loan_repaid') :
+      createErrorResponse(new Error(result.error), 'loan_repaid');
+  } catch (error) {
+    return createErrorResponse(error, 'loan_repaid');
+  }
+};
+
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;

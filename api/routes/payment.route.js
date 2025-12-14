@@ -9,7 +9,7 @@ import Notification from "../models/notification.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
-import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendSellerPaymentNotificationEmail, sendRefundRequestApprovedEmail, sendRefundRequestRejectedEmail, sendRentPaymentReceivedEmail, sendRentPaymentReceivedToLandlordEmail, sendEscrowReleasedEmail } from '../utils/emailService.js';
+import { sendPaymentSuccessEmail, sendPaymentFailedEmail, sendSellerPaymentNotificationEmail, sendRefundRequestApprovedEmail, sendRefundRequestRejectedEmail, sendRentPaymentReceivedEmail, sendRentPaymentReceivedToLandlordEmail, sendEscrowReleasedEmail, sendLoanRepaidEmail } from '../utils/emailService.js';
 import { sendRentalNotification } from '../utils/rentalNotificationService.js';
 import fetch from 'node-fetch';
 import PDFDocument from 'pdfkit';
@@ -123,16 +123,16 @@ router.post("/create-intent", verifyToken, async (req, res) => {
       const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
       contract = await RentLockContract.findById(contractId)
         .populate('listingId', 'name address');
-      
+
       if (!contract) {
         return res.status(404).json({ message: "Rental contract not found." });
       }
-      
+
       // Verify user is the tenant
       if (contract.tenantId.toString() !== userId) {
         return res.status(403).json({ message: "Unauthorized. Only tenant can make rental payments." });
       }
-      
+
       // Calculate total: security deposit + first month rent
       rentalPaymentAmount = (contract.securityDeposit || 0) + (contract.lockedRentAmount || 0);
     }
@@ -147,13 +147,13 @@ router.post("/create-intent", verifyToken, async (req, res) => {
     await appointment.save();
 
     // Check if payment is already completed for this appointment
-    const completedPayment = await Payment.findOne({ 
-      appointmentId, 
-      status: 'completed' 
+    const completedPayment = await Payment.findOne({
+      appointmentId,
+      status: 'completed'
     }).sort({ createdAt: -1 });
-    
+
     if (completedPayment) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: "Payment already completed for this appointment.",
         payment: completedPayment
       });
@@ -166,7 +166,7 @@ router.post("/create-intent", verifyToken, async (req, res) => {
     // - Reusing order IDs can cause payment failures (BAD_REQUEST_ERROR, ORDER_ERROR, etc.)
     // - Since each payment gets a new ID, the appointment lock timer is reset to 10 minutes for each new payment
     // - The 10 minutes is the payment window time (fresh window per attempt), NOT tied to a specific payment ID
-    
+
     // Cancel any existing pending/processing payments for this appointment
     // This keeps the database clean while ensuring we always create fresh payment IDs
     // (reusing 'now' variable declared above)
@@ -181,7 +181,7 @@ router.post("/create-intent", verifyToken, async (req, res) => {
         expiresAt: null
       }
     );
-    
+
     if (cancelledPayments.modifiedCount > 0) {
       console.log(`Cancelled ${cancelledPayments.modifiedCount} existing pending/processing payment(s) before creating new payment intent for appointment ${appointmentId}`);
     }
@@ -295,17 +295,17 @@ router.get('/:paymentId/receipt', async (req, res) => {
     res.setHeader('Content-Disposition', `attachment; filename="receipt_${payment.paymentId}.pdf"`);
     const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
     doc.on('error', (e) => {
-      try { res.end(); } catch {}
+      try { res.end(); } catch { }
     });
     const stream = doc.pipe(res);
-    stream.on('error', () => { try { res.end(); } catch {} });
+    stream.on('error', () => { try { res.end(); } catch { } });
 
     // Header with enhanced styling
     doc.fontSize(28).fillColor('#1f2937').text('Payment Receipt', { align: 'center' });
     doc.moveDown(0.3);
     doc.fontSize(16).fillColor('#6b7280').text('UrbanSetu', { align: 'center' });
     doc.moveDown(0.8);
-    
+
     // Success indicator with checkmark
     const headerY = doc.y;
     doc.save();
@@ -313,7 +313,7 @@ router.get('/:paymentId/receipt', async (req, res) => {
     doc.fillColor('#ffffff').fontSize(24).text('✓', doc.page.width / 2 - 8, headerY + 3);
     doc.restore();
     doc.moveDown(1.2);
-    
+
     // Status and date
     doc.fontSize(14).fillColor('#10b981').text('Payment Successful', { align: 'center' });
     doc.moveDown(0.3);
@@ -326,44 +326,44 @@ router.get('/:paymentId/receipt', async (req, res) => {
     const boxHeight = 120;
     const boxX = doc.page.margins.left;
     const boxY = doc.y;
-    
+
     // Background with gradient effect
     doc.save();
     doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 8).fill('#f3f4f6');
     doc.restore();
-    
+
     // Border
     doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 8).stroke('#e5e7eb');
-    
+
     // Header
     doc.moveDown(0.3);
     doc.fontSize(16).fillColor('#1f2937').text('Payment Details', boxX + 15, doc.y);
     doc.moveDown(0.8);
-    
+
     const currencySymbol = (payment.currency || 'USD') === 'INR' ? '₹' : '$';
     const amountText = `${currencySymbol} ${Number(payment.amount).toFixed(2)}`;
-    
+
     // Payment info in two columns
     const leftX = boxX + 15;
     const rightX = boxX + boxWidth / 2;
     const lineHeight = 15;
-    
+
     doc.fontSize(11).fillColor('#6b7280').text('Payment ID:', leftX, doc.y);
     doc.fillColor('#1f2937').text(payment.paymentId, leftX + 60, doc.y);
     doc.y += lineHeight;
-    
+
     doc.fillColor('#6b7280').text('Status:', leftX, doc.y);
     doc.fillColor('#10b981').text(payment.status === 'completed' ? 'Completed' : 'Pending', leftX + 60, doc.y);
     doc.y += lineHeight;
-    
+
     doc.fillColor('#6b7280').text('Gateway:', leftX, doc.y);
     doc.fillColor('#1f2937').text(payment.gateway?.toUpperCase() || 'N/A', leftX + 60, doc.y);
     doc.y += lineHeight;
-    
+
     doc.fillColor('#6b7280').text('Amount:', leftX, doc.y);
     doc.fontSize(12).fillColor('#1f2937').text(amountText, leftX + 60, doc.y);
     doc.fontSize(11);
-    
+
     if (payment.refundAmount > 0) {
       doc.y += lineHeight;
       doc.fillColor('#6b7280').text('Refunded:', leftX, doc.y);
@@ -375,50 +375,50 @@ router.get('/:paymentId/receipt', async (req, res) => {
         doc.fillColor('#1f2937').text(`${refundedAt.toLocaleDateString('en-GB')} ${refundedAt.toLocaleTimeString('en-GB')}`, leftX + 60, doc.y);
       }
     }
-    
+
     doc.moveDown(1.2);
 
     // Appointment/listing info with enhanced styling
     const infoBoxY = doc.y;
     const infoBoxHeight = 100;
-    
+
     // Background
     doc.save();
     doc.roundedRect(boxX, infoBoxY, boxWidth, infoBoxHeight, 8).fill('#f9fafb');
     doc.restore();
     doc.roundedRect(boxX, infoBoxY, boxWidth, infoBoxHeight, 8).stroke('#e5e7eb');
-    
+
     doc.moveDown(0.3);
     doc.fontSize(16).fillColor('#1f2937').text('Appointment Details', boxX + 15, doc.y);
     doc.moveDown(0.8);
-    
+
     doc.fontSize(11).fillColor('#6b7280').text('Property:', leftX, doc.y);
     doc.fillColor('#1f2937').text(payment.appointmentId?.propertyName || payment.listingId?.name || 'N/A', leftX + 60, doc.y);
     doc.y += lineHeight;
-    
+
     if (payment.appointmentId?.date) {
       doc.fillColor('#6b7280').text('Appointment Date:', leftX, doc.y);
       doc.fillColor('#1f2937').text(new Date(payment.appointmentId.date).toLocaleDateString('en-GB'), leftX + 60, doc.y);
       doc.y += lineHeight;
     }
-    
+
     if (payment.appointmentId?.time) {
       doc.fillColor('#6b7280').text('Appointment Time:', leftX, doc.y);
       doc.fillColor('#1f2937').text(payment.appointmentId.time, leftX + 60, doc.y);
       doc.y += lineHeight;
     }
-    
+
     if (payment.completedAt) {
       const paidAt = new Date(payment.completedAt);
       doc.fillColor('#6b7280').text('Payment Date:', leftX, doc.y);
       doc.fillColor('#1f2937').text(`${paidAt.toLocaleDateString('en-GB')} ${paidAt.toLocaleTimeString('en-GB')}`, leftX + 60, doc.y);
       doc.y += lineHeight;
     }
-    
+
     doc.fillColor('#6b7280').text('Buyer:', leftX, doc.y);
     doc.fillColor('#1f2937').text(payment.userId?.username || payment.userId?.email || 'N/A', leftX + 60, doc.y);
     doc.y += lineHeight;
-    
+
     // Show different "Generated For" text based on admin access
     if (admin === 'true') {
       doc.fillColor('#6b7280').text('Generated For:', leftX, doc.y);
@@ -427,23 +427,23 @@ router.get('/:paymentId/receipt', async (req, res) => {
       doc.fillColor('#6b7280').text('Generated For:', leftX, doc.y);
       doc.fillColor('#10b981').text('User (Trusted Access)', leftX + 60, doc.y);
     }
-    
+
     doc.moveDown(1.5);
 
     // Trust/verification note with enhanced styling
     const noteBoxY = doc.y;
     const noteBoxHeight = 40;
-    
+
     // Background for note
     doc.save();
     doc.roundedRect(boxX, noteBoxY, boxWidth, noteBoxHeight, 8).fill('#eff6ff');
     doc.restore();
     doc.roundedRect(boxX, noteBoxY, boxWidth, noteBoxHeight, 8).stroke('#3b82f6');
-    
+
     doc.moveDown(0.2);
     doc.fontSize(12).fillColor('#1e40af').text('Verification Status', boxX + 15, doc.y);
     doc.moveDown(0.3);
-    
+
     let note = '';
     if (payment.gateway === 'razorpay') {
       note = payment.status === 'completed' ? '✓ Paid via Razorpay (verified)' : '⏳ Pending via Razorpay';
@@ -462,12 +462,12 @@ router.get('/:paymentId/receipt', async (req, res) => {
     const y = doc.y;
     const badgeWidth = 140;
     const badgeHeight = 25;
-    
+
     doc.save();
     doc.roundedRect(x, y, badgeWidth, badgeHeight, 12).fill(badgeColor);
     doc.fillColor('#ffffff').fontSize(11).text(`Platform: ${badge}`, x + 8, y + 7);
     doc.restore();
-    
+
     // Amount highlight on right
     const amt = `${currencySymbol} ${Number(payment.amount).toFixed(2)}`;
     doc.fontSize(14).fillColor('#1f2937').text(amt, doc.page.width - doc.page.margins.right - 100, y + 5, { width: 100, align: 'right' });
@@ -476,13 +476,13 @@ router.get('/:paymentId/receipt', async (req, res) => {
     doc.moveDown(2.5);
     const footerY = doc.y;
     const footerHeight = 30;
-    
+
     // Footer background
     doc.save();
     doc.rect(doc.page.margins.left, footerY, boxWidth, footerHeight).fill('#f9fafb');
     doc.restore();
     doc.rect(doc.page.margins.left, footerY, boxWidth, footerHeight).stroke('#e5e7eb');
-    
+
     doc.moveDown(0.3);
     const footerText = 'This is a system-generated receipt from UrbanSetu.';
     const contentWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
@@ -512,7 +512,7 @@ router.post("/verify", verifyToken, async (req, res) => {
     const appointment = await Booking.findById(payment.appointmentId)
       .populate('buyerId', 'email username')
       .populate('listingId', 'name');
-    
+
     const user = appointment.buyerId;
     const listing = appointment.listingId;
 
@@ -574,16 +574,16 @@ router.post("/verify", verifyToken, async (req, res) => {
       try {
         const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
         const RentWallet = (await import('../models/rentWallet.model.js')).default;
-        
+
         const contract = await RentLockContract.findById(payment.contractId)
           .populate('listingId', 'name address')
           .populate('tenantId', 'username email')
           .populate('landlordId', 'username email');
-        
+
         if (contract) {
           // Mark security deposit as paid
           contract.securityDepositPaid = true;
-          
+
           // Create/update rent wallet if it doesn't exist
           let wallet = await RentWallet.findOne({ contractId: contract._id, userId: contract.tenantId._id });
           if (!wallet) {
@@ -594,17 +594,17 @@ router.post("/verify", verifyToken, async (req, res) => {
             wallet.generatePaymentSchedule(contract);
             await wallet.save();
           }
-          
+
           // Update booking with wallet ID
           await Booking.findByIdAndUpdate(payment.appointmentId, { walletId: wallet._id });
-          
+
           // Update contract with wallet ID
           if (!contract.walletId) {
             contract.walletId = wallet._id;
           }
-          
+
           await contract.save();
-          
+
           // Emit socket events for rental contract update
           const io = req.app.get('io');
           if (io) {
@@ -637,17 +637,17 @@ router.post("/verify", verifyToken, async (req, res) => {
     // Emit socket event for real-time payment status update
     const io = req.app.get('io');
     if (io) {
-      io.emit('paymentStatusUpdated', { 
+      io.emit('paymentStatusUpdated', {
         appointmentId: payment.appointmentId,
         paymentId: payment.paymentId,
         contractId: payment.contractId,
-        paymentConfirmed: true 
+        paymentConfirmed: true
       });
-      io.to(`user_${user._id}`).emit('paymentStatusUpdated', { 
+      io.to(`user_${user._id}`).emit('paymentStatusUpdated', {
         appointmentId: payment.appointmentId,
         paymentId: payment.paymentId,
         contractId: payment.contractId,
-        paymentConfirmed: true 
+        paymentConfirmed: true
       });
     }
 
@@ -665,7 +665,7 @@ router.post("/verify", verifyToken, async (req, res) => {
           const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
           const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
           const receiptUrl = payment.receiptUrl || `${clientUrl}/api/payments/${payment.paymentId}/receipt`;
-          
+
           // Notify tenant
           await sendRentalNotification({
             userId: contract.tenantId._id,
@@ -743,6 +743,67 @@ router.post("/verify", verifyToken, async (req, res) => {
       }
     }
 
+    // Handle loan EMI payment
+    if (payment.paymentType === 'emi' && payment.emiDetails && payment.emiDetails.loanId) {
+      try {
+        const RentalLoan = (await import('../models/rentalLoan.model.js')).default;
+        const loan = await RentalLoan.findOne({ loanId: payment.emiDetails.loanId })
+          .populate('userId', 'email username')
+          .populate('contractId', 'listingId')
+          .populate({
+            path: 'contractId',
+            populate: { path: 'listingId', select: 'name address' }
+          });
+
+        if (loan) {
+          // Update EMI schedule status
+          // Assuming payment.rentMonth & rentYear track which EMI (or find first pending)
+          let emiToUpdate;
+          if (payment.rentMonth && payment.rentYear) {
+            emiToUpdate = loan.emiSchedule.find(e => e.month === payment.rentMonth && e.year === payment.rentYear);
+          } else {
+            // Fallback: find first pending/overdue EMI based on payment amount or just earliest
+            emiToUpdate = loan.emiSchedule.find(e => e.status === 'pending' || e.status === 'overdue');
+          }
+
+          if (emiToUpdate) {
+            emiToUpdate.status = 'completed';
+            emiToUpdate.paidAt = new Date();
+            emiToUpdate.paymentId = payment._id;
+
+            // Update totals
+            loan.totalPaid = (loan.totalPaid || 0) + payment.amount;
+
+            // Check if fully repaid
+            const totalScheduled = loan.emiSchedule.reduce((sum, e) => sum + loan.emiAmount, 0);
+            // Allow small buffer for rounding errors
+            if (loan.totalPaid >= totalScheduled - 10) {
+              loan.status = 'repaid';
+              loan.repaidAt = new Date();
+
+              // Send Loan Repaid Email
+              try {
+                await sendLoanRepaidEmail(loan.userId.email, {
+                  propertyName: loan.contractId?.listingId?.name || 'Property',
+                  loanType: loan.loanType.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()),
+                  totalPaid: loan.totalPaid,
+                  repaidAt: new Date().toLocaleDateString(),
+                  loanUrl: `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/loans/${loan.loanId}`
+                });
+                console.log(`✅ Loan repaid email sent to ${loan.userId.email}`);
+              } catch (emailError) {
+                console.error('Error sending loan repaid email:', emailError);
+              }
+            }
+
+            await loan.save();
+          }
+        }
+      } catch (loanError) {
+        console.error('Error handling loan EMI payment:', loanError);
+      }
+    }
+
     // Send payment success email to buyer
     try {
       await sendPaymentSuccessEmail(user.email, {
@@ -765,7 +826,7 @@ router.post("/verify", verifyToken, async (req, res) => {
       // Get seller details
       await appointment.populate('sellerId', 'email username firstName lastName');
       const seller = appointment.sellerId;
-      
+
       await sendSellerPaymentNotificationEmail(seller.email, {
         appointmentId: appointment._id,
         propertyName: listing.name,
@@ -775,8 +836,8 @@ router.post("/verify", verifyToken, async (req, res) => {
         propertyImages: listing.imageUrls || [],
         date: appointment.date,
         time: appointment.time,
-        buyerName: user.firstName && user.lastName 
-          ? `${user.firstName} ${user.lastName}` 
+        buyerName: user.firstName && user.lastName
+          ? `${user.firstName} ${user.lastName}`
           : user.username,
         paymentAmount: payment.amount,
         paymentCurrency: payment.currency,
@@ -815,7 +876,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     const appointment = await Booking.findById(payment.appointmentId)
       .populate('buyerId', 'email username')
       .populate('listingId', 'name');
-    
+
     const user = appointment.buyerId;
     const listing = appointment.listingId;
 
@@ -880,7 +941,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
         console.error('Error sending payment failed email:', emailError);
       }
 
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: 'Signature verification failed',
         payment: payment
       });
@@ -895,7 +956,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     payment.userAgent = userAgent || req.headers['user-agent'];
     await payment.save();
 
-    await Booking.findByIdAndUpdate(payment.appointmentId, { 
+    await Booking.findByIdAndUpdate(payment.appointmentId, {
       paymentConfirmed: true,
       visibleToBuyer: true,
       visibleToSeller: true
@@ -911,16 +972,16 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
       try {
         const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
         const RentWallet = (await import('../models/rentWallet.model.js')).default;
-        
+
         const contract = await RentLockContract.findById(payment.contractId)
           .populate('listingId', 'name address')
           .populate('tenantId', 'username email')
           .populate('landlordId', 'username email');
-        
+
         if (contract) {
           // Mark security deposit as paid
           contract.securityDepositPaid = true;
-          
+
           // Create/update rent wallet if it doesn't exist
           let wallet = await RentWallet.findOne({ contractId: contract._id, userId: contract.tenantId._id });
           if (!wallet) {
@@ -931,17 +992,17 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
             wallet.generatePaymentSchedule(contract);
             await wallet.save();
           }
-          
+
           // Update booking with wallet ID
           await Booking.findByIdAndUpdate(payment.appointmentId, { walletId: wallet._id });
-          
+
           // Update contract with wallet ID
           if (!contract.walletId) {
             contract.walletId = wallet._id;
           }
-          
+
           await contract.save();
-          
+
           // Emit socket events for rental contract update
           const io = req.app.get('io');
           if (io) {
@@ -974,17 +1035,17 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     // Emit socket event for real-time payment status update
     const io = req.app.get('io');
     if (io) {
-      io.emit('paymentStatusUpdated', { 
+      io.emit('paymentStatusUpdated', {
         appointmentId: payment.appointmentId,
         paymentId: payment.paymentId,
         contractId: payment.contractId,
-        paymentConfirmed: true 
+        paymentConfirmed: true
       });
-      io.to(`user_${user._id}`).emit('paymentStatusUpdated', { 
+      io.to(`user_${user._id}`).emit('paymentStatusUpdated', {
         appointmentId: payment.appointmentId,
         paymentId: payment.paymentId,
         contractId: payment.contractId,
-        paymentConfirmed: true 
+        paymentConfirmed: true
       });
     }
 
@@ -1002,7 +1063,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
           const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
           const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
           const receiptUrl = payment.receiptUrl || `${clientUrl}/api/payments/${payment.paymentId}/receipt`;
-          
+
           // Notify tenant
           await sendRentalNotification({
             userId: contract.tenantId._id,
@@ -1102,7 +1163,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
       // Get seller details
       await appointment.populate('sellerId', 'email username firstName lastName');
       const seller = appointment.sellerId;
-      
+
       await sendSellerPaymentNotificationEmail(seller.email, {
         appointmentId: appointment._id,
         propertyName: listing.name,
@@ -1112,8 +1173,8 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
         propertyImages: listing.imageUrls || [],
         date: appointment.date,
         time: appointment.time,
-        buyerName: user.firstName && user.lastName 
-          ? `${user.firstName} ${user.lastName}` 
+        buyerName: user.firstName && user.lastName
+          ? `${user.firstName} ${user.lastName}`
           : user.username,
         paymentAmount: payment.amount,
         paymentCurrency: payment.currency,
@@ -1167,7 +1228,7 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
     }
 
     // Find the payment schedule entry
-    const scheduleEntry = wallet.paymentSchedule.find((p, idx) => 
+    const scheduleEntry = wallet.paymentSchedule.find((p, idx) =>
       idx === scheduleIndex || (p.month === month && p.year === year)
     );
 
@@ -1305,7 +1366,7 @@ router.post("/monthly-rent/release-escrow", verifyToken, async (req, res) => {
     // Emit socket event
     const io = req.app.get('io');
     if (io) {
-      io.emit('escrowReleased', { 
+      io.emit('escrowReleased', {
         paymentId: payment.paymentId,
         contractId: contract._id,
         amount: payment.amount
@@ -1321,7 +1382,7 @@ router.post("/monthly-rent/release-escrow", verifyToken, async (req, res) => {
 
       if (contractPopulated) {
         const listing = contractPopulated.listingId;
-        
+
         const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
         const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
 
@@ -1467,7 +1528,7 @@ router.post("/refund", verifyToken, async (req, res) => {
     const appointment = await Booking.findById(payment.appointmentId);
     const isBuyer = appointment.buyerId.toString() === userId;
     const isSeller = appointment.sellerId.toString() === userId;
-    
+
     // Check if user is admin
     const user = await User.findById(userId);
     const isAdmin = user.role === 'admin' || user.role === 'rootadmin';
@@ -1482,7 +1543,7 @@ router.post("/refund", verifyToken, async (req, res) => {
 
     // Process refund (mock implementation)
     const refundId = `refund_${Date.now()}`;
-    
+
     payment.refundAmount = refundAmount;
     payment.refundReason = reason;
     payment.refundedAt = new Date();
@@ -1709,15 +1770,15 @@ router.put("/refund-request/:requestId", verifyToken, async (req, res) => {
     // If approved, process the actual refund
     if (status === 'approved') {
       const payment = await Payment.findOne({ paymentId: refundRequest.paymentId });
-      
+
       // Use admin override amount if provided, otherwise use requested amount
       const finalRefundAmount = adminRefundAmount !== undefined ? adminRefundAmount : refundRequest.requestedAmount;
-      
+
       // Validate refund amount
       if (finalRefundAmount < 0 || finalRefundAmount > payment.amount) {
         return res.status(400).json({ message: "Invalid refund amount" });
       }
-      
+
       // Update payment record
       payment.refundAmount = finalRefundAmount;
       payment.refundReason = refundRequest.reason;
@@ -1824,7 +1885,7 @@ router.get("/history", verifyToken, async (req, res) => {
     const { page = 1, limit = 10, status, paymentType, appointmentId, gateway, currency, q, fromDate, toDate } = req.query;
 
     let query = {};
-    
+
     // If appointmentId is provided, allow both buyer and seller to see payment data
     if (appointmentId) {
       // First, find the appointment to check if user is buyer or seller
@@ -1832,7 +1893,7 @@ router.get("/history", verifyToken, async (req, res) => {
       if (appointment) {
         const isBuyer = appointment.buyerId && appointment.buyerId.toString() === userId;
         const isSeller = appointment.sellerId && appointment.sellerId.toString() === userId;
-        
+
         if (isBuyer || isSeller) {
           query.appointmentId = appointmentId;
         } else {
@@ -1846,7 +1907,7 @@ router.get("/history", verifyToken, async (req, res) => {
       // For general payment history, only show user's own payments
       query.userId = userId;
     }
-    
+
     if (status) query.status = status;
     if (paymentType) query.paymentType = paymentType;
     if (gateway) query.gateway = gateway;
@@ -1865,7 +1926,7 @@ router.get("/history", verifyToken, async (req, res) => {
       if (fromDate) query.createdAt.$gte = new Date(fromDate);
       if (toDate) query.createdAt.$lte = new Date(toDate);
     }
-    
+
     const payments = await Payment.find(query)
       .populate('appointmentId', 'propertyName date status')
       .populate('listingId', 'name address')
@@ -1911,7 +1972,7 @@ router.get('/export-csv', verifyToken, async (req, res) => {
       .populate('appointmentId', 'propertyName date status')
       .populate('listingId', 'name address')
       .sort({ createdAt: -1 });
-    const headers = ['PaymentID','Currency','Amount','Status','Gateway','Property','AppointmentDate','CreatedDate','CreatedTime','PaidDate','PaidTime','Receipt'];
+    const headers = ['PaymentID', 'Currency', 'Amount', 'Status', 'Gateway', 'Property', 'AppointmentDate', 'CreatedDate', 'CreatedTime', 'PaidDate', 'PaidTime', 'Receipt'];
     const formatDMY = (d) => {
       if (!d) return '';
       const dt = new Date(d);
@@ -1987,7 +2048,7 @@ router.get("/stats/overview", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
     const user = await User.findById(userId);
-    
+
     if (user.role !== 'admin' && user.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized" });
     }
@@ -2251,7 +2312,7 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
     if (currency) payment.currency = currency.toUpperCase();
     if (typeof amount === 'number') payment.amount = amount;
     if (gateway) payment.gateway = gateway;
-    
+
     // Set metadata to indicate admin marked this payment
     if (!payment.metadata) payment.metadata = {};
     payment.metadata.adminMarked = true;
@@ -2292,7 +2353,7 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
       // Get seller details
       await appointment.populate('sellerId', 'email username firstName lastName');
       const seller = appointment.sellerId;
-      
+
       await sendSellerPaymentNotificationEmail(seller.email, {
         appointmentId: appointment._id,
         propertyName: listing.name,
@@ -2302,8 +2363,8 @@ router.post('/admin/mark-paid', verifyToken, async (req, res) => {
         propertyImages: listing.imageUrls || [],
         date: appointment.date,
         time: appointment.time,
-        buyerName: buyer.firstName && buyer.lastName 
-          ? `${buyer.firstName} ${buyer.lastName}` 
+        buyerName: buyer.firstName && buyer.lastName
+          ? `${buyer.firstName} ${buyer.lastName}`
           : buyer.username,
         paymentAmount: payment.amount,
         paymentCurrency: payment.currency,
@@ -2350,25 +2411,25 @@ router.post('/lock/acquire', verifyToken, async (req, res) => {
   try {
     const { appointmentId } = req.body;
     const userId = req.user.id;
-    
+
     if (!appointmentId) {
       return res.status(400).json({ message: 'Appointment ID is required' });
     }
-    
+
     // Check if appointment exists and user is authorized
     const appointment = await Booking.findById(appointmentId);
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found' });
     }
-    
+
     // Check if user is the buyer
     if (appointment.buyerId.toString() !== userId) {
       return res.status(403).json({ message: 'Unauthorized' });
     }
-    
+
     const now = Date.now();
     const existingLock = paymentLocks.get(appointmentId);
-    
+
     // Check if lock exists and is not stale
     if (existingLock) {
       // If lock is stale (older than 5 seconds), allow acquiring it
@@ -2379,32 +2440,32 @@ router.post('/lock/acquire', verifyToken, async (req, res) => {
           timestamp: now,
           sessionId: req.sessionId || null
         });
-        return res.json({ 
-          ok: true, 
+        return res.json({
+          ok: true,
           message: 'Lock acquired (stale lock replaced)',
           locked: true
         });
       }
-      
+
       // Lock is active (not stale) - prevent acquiring even if same user
       // This ensures only one browser/device can have the payment modal open at a time
-      return res.status(409).json({ 
-        ok: false, 
+      return res.status(409).json({
+        ok: false,
         message: 'Payment session is already open in another browser/device. Please close that browser/device first before opening a new payment session.',
         locked: true,
         lockedBy: existingLock.userId
       });
     }
-    
+
     // No lock exists, acquire it
     paymentLocks.set(appointmentId, {
       userId,
       timestamp: now,
       sessionId: req.sessionId || null
     });
-    
-    return res.json({ 
-      ok: true, 
+
+    return res.json({
+      ok: true,
       message: 'Lock acquired',
       locked: true
     });
@@ -2419,24 +2480,24 @@ router.post('/lock/release', verifyToken, async (req, res) => {
   try {
     const { appointmentId } = req.body;
     const userId = req.user.id;
-    
+
     if (!appointmentId) {
       return res.status(400).json({ message: 'Appointment ID is required' });
     }
-    
+
     const existingLock = paymentLocks.get(appointmentId);
-    
+
     if (existingLock && existingLock.userId === userId) {
       paymentLocks.delete(appointmentId);
-      return res.json({ 
-        ok: true, 
+      return res.json({
+        ok: true,
         message: 'Lock released',
         locked: false
       });
     }
-    
-    return res.json({ 
-      ok: true, 
+
+    return res.json({
+      ok: true,
       message: 'Lock not found or not owned by user',
       locked: false
     });
@@ -2451,40 +2512,40 @@ router.get('/lock/check/:appointmentId', verifyToken, async (req, res) => {
   try {
     const { appointmentId } = req.params;
     const userId = req.user.id;
-    
+
     const existingLock = paymentLocks.get(appointmentId);
     const now = Date.now();
-    
+
     if (existingLock) {
       // If lock is stale, consider it free
       if (now - existingLock.timestamp > 5000) {
-        return res.json({ 
-          ok: true, 
+        return res.json({
+          ok: true,
           locked: false,
           stale: true
         });
       }
-      
+
       // If lock belongs to current user, it's not locked (same user can access)
       if (existingLock.userId === userId) {
-        return res.json({ 
-          ok: true, 
+        return res.json({
+          ok: true,
           locked: false,
           ownedByUser: true
         });
       }
-      
+
       // Lock is held by another user
-      return res.json({ 
-        ok: true, 
+      return res.json({
+        ok: true,
         locked: true,
         lockedBy: existingLock.userId,
         message: 'Payment session is already open in another browser/device'
       });
     }
-    
-    return res.json({ 
-      ok: true, 
+
+    return res.json({
+      ok: true,
       locked: false
     });
   } catch (err) {
@@ -2498,26 +2559,26 @@ router.post('/lock/heartbeat', verifyToken, async (req, res) => {
   try {
     const { appointmentId } = req.body;
     const userId = req.user.id;
-    
+
     if (!appointmentId) {
       return res.status(400).json({ message: 'Appointment ID is required' });
     }
-    
+
     const existingLock = paymentLocks.get(appointmentId);
-    
+
     if (existingLock && existingLock.userId === userId) {
       // Update timestamp to keep lock alive
       existingLock.timestamp = Date.now();
       paymentLocks.set(appointmentId, existingLock);
-      return res.json({ 
-        ok: true, 
+      return res.json({
+        ok: true,
         message: 'Heartbeat received',
         locked: true
       });
     }
-    
-    return res.status(404).json({ 
-      ok: false, 
+
+    return res.status(404).json({
+      ok: false,
       message: 'Lock not found or not owned by user',
       locked: false
     });
@@ -2549,8 +2610,8 @@ router.post('/cancel', verifyToken, async (req, res) => {
 
     // Only allow cancelling pending or processing payments
     if (payment.status !== 'pending' && payment.status !== 'processing') {
-      return res.status(400).json({ 
-        message: `Cannot cancel payment with status: ${payment.status}` 
+      return res.status(400).json({
+        message: `Cannot cancel payment with status: ${payment.status}`
       });
     }
 
@@ -2562,10 +2623,10 @@ router.post('/cancel', verifyToken, async (req, res) => {
 
     console.log(`Payment ${paymentId} cancelled by user ${userId}`);
 
-    return res.json({ 
-      ok: true, 
+    return res.json({
+      ok: true,
       message: 'Payment cancelled successfully',
-      payment 
+      payment
     });
   } catch (err) {
     console.error('Error cancelling payment:', err);
@@ -2588,12 +2649,12 @@ router.post('/admin/mark-unpaid', verifyToken, async (req, res) => {
       payment.status = 'pending';
       payment.completedAt = undefined;
       payment.receiptUrl = undefined;
-      
+
       // Clear admin marked flag
       if (payment.metadata) {
         payment.metadata.adminMarked = false;
       }
-      
+
       await payment.save();
     }
 
@@ -2636,7 +2697,7 @@ router.get('/export', verifyToken, async (req, res) => {
       .populate('appointmentId', 'propertyName date status')
       .populate('listingId', 'name address')
       .sort({ createdAt: -1 });
-    const headers = ['PaymentID','Currency','Amount','Status','Gateway','Property','AppointmentDate','CreatedDate','CreatedTime','PaidDate','PaidTime','Receipt'];
+    const headers = ['PaymentID', 'Currency', 'Amount', 'Status', 'Gateway', 'Property', 'AppointmentDate', 'CreatedDate', 'CreatedTime', 'PaidDate', 'PaidTime', 'Receipt'];
     const formatDMY = (d) => {
       if (!d) return '';
       const dt = new Date(d);
