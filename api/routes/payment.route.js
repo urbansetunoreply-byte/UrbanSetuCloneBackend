@@ -677,6 +677,21 @@ router.post("/verify", verifyToken, async (req, res) => {
           const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
           const receiptUrl = payment.receiptUrl || `${clientUrl}/api/payments/${payment.paymentId}/receipt`;
 
+          // Update Rent Wallet status
+          const RentWallet = (await import('../models/rentWallet.model.js')).default;
+          const wallet = await RentWallet.findOne({ contractId: contract._id }); // Find wallet associated with contract
+
+          if (wallet) {
+            const scheduleEntry = wallet.paymentSchedule.find(p => p.month === payment.rentMonth && p.year === payment.rentYear);
+            if (scheduleEntry) {
+              scheduleEntry.status = 'paid'; // Mark as paid
+              scheduleEntry.paidAt = new Date();
+              scheduleEntry.paymentId = payment._id;
+              await wallet.save();
+              console.log(`✅ Rent wallet updated: ${payment.rentMonth}/${payment.rentYear} marked as paid.`);
+            }
+          }
+
           // Notify tenant
           await sendRentalNotification({
             userId: contract.tenantId._id,

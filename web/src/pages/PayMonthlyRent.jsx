@@ -219,7 +219,7 @@ export default function PayMonthlyRent() {
     }
   };
 
-  if (loading && !contract) {
+  if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -313,8 +313,8 @@ export default function PayMonthlyRent() {
                         setStep(2);
                       }}
                       className={`border-2 rounded-lg p-4 cursor-pointer transition ${selectedPayment?.scheduleIndex === originalIdx
-                          ? 'border-blue-600 bg-blue-50'
-                          : 'border-gray-200 hover:border-blue-300'
+                        ? 'border-blue-600 bg-blue-50'
+                        : 'border-gray-200 hover:border-blue-300'
                         } ${isPayOverdue ? 'bg-red-50 border-red-300' : ''}`}
                     >
                       <div className="flex items-center justify-between">
