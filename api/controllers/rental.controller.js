@@ -1797,7 +1797,7 @@ export const updateDisputeStatus = async (req, res, next) => {
               // Prepare email details
               const emailDetails = {
                 propertyName: listing?.name || 'Property',
-                decision: 'Dispute closed by Admin',
+                decision: dispute.resolution?.decision || 'Dispute closed by Admin',
                 amount: 0,
                 disputeUrl: `${clientUrl}/user/disputes?disputeId=${dispute._id}`
               };
@@ -1977,6 +1977,7 @@ export const resolveDispute = async (req, res, next) => {
             propertyName: listing.name,
             decision,
             amount: amount || 0,
+            resolutionNotes: notes || '',
             disputeUrl: `${clientUrl}/user/disputes?disputeId=${dispute._id}`
           });
         }
@@ -1985,6 +1986,7 @@ export const resolveDispute = async (req, res, next) => {
             propertyName: listing.name,
             decision,
             amount: amount || 0,
+            resolutionNotes: notes || '',
             disputeUrl: `${clientUrl}/user/disputes?disputeId=${dispute._id}`
           });
         }
