@@ -7,10 +7,10 @@ const bookingSchema = new mongoose.Schema({
   date: Date,
   time: String,
   message: String,
-  listingId: { 
-    type: mongoose.Schema.Types.ObjectId, 
+  listingId: {
+    type: mongoose.Schema.Types.ObjectId,
     ref: 'Listing',
-    required: true 
+    required: true
   },
   buyerId: {
     type: mongoose.Schema.Types.ObjectId,
@@ -24,7 +24,7 @@ const bookingSchema = new mongoose.Schema({
   },
   purpose: {
     type: String,
-    enum: ["buy", "rent"],
+    enum: ["buy", "rent", "followup"],
     required: true
   },
   propertyName: {
@@ -167,7 +167,7 @@ const bookingSchema = new mongoose.Schema({
   sellerLastEmailSentAt: { type: Date, default: null },
   buyerUnreadMessageCount: { type: Number, default: 0 },
   sellerUnreadMessageCount: { type: Number, default: 0 },
-  
+
   // Rent-Lock Specific (for rental appointments)
   rentLockPlanSelected: {
     type: String,
@@ -180,21 +180,21 @@ const bookingSchema = new mongoose.Schema({
     max: 60,
     default: null
   },
-  
+
   // Contract
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RentLockContract',
     default: null
   },
-  
+
   // Rental Status
   rentalStatus: {
     type: String,
     enum: ['pending_contract', 'contract_signed', 'move_in_pending', 'active_rental', 'move_out_pending', 'completed', 'terminated'],
     default: null
   },
-  
+
   // Move Dates
   moveInDate: {
     type: Date,
@@ -204,7 +204,7 @@ const bookingSchema = new mongoose.Schema({
     type: Date,
     default: null
   },
-  
+
   // Security Deposit
   securityDepositPaid: {
     type: Boolean,
@@ -215,7 +215,7 @@ const bookingSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
-  
+
   // Rent Wallet
   walletId: {
     type: mongoose.Schema.Types.ObjectId,
