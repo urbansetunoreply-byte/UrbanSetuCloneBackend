@@ -41,6 +41,7 @@ export default function RentProperty() {
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [booking, setBooking] = useState(null);
   const [showSignatureModal, setShowSignatureModal] = useState(false);
+  const [showInitConfirmation, setShowInitConfirmation] = useState(false);
   const [signingAs, setSigningAs] = useState(null); // 'tenant' or 'landlord'
   const readyForPayment = !!(contract?.tenantSignature?.signed && contract?.landlordSignature?.signed);
 
@@ -356,6 +357,136 @@ export default function RentProperty() {
     }));
   };
 
+  const handleContractGeneration = async () => {
+    setShowInitConfirmation(false);
+    try {
+      setLoading(true);
+      const bookingRes = await fetch(`${API_BASE_URL}/api/bookings`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          listingId,
+          date: formData.moveInDate || new Date().toISOString().split('T')[0],
+          time: formData.appointmentTime || '12:00',
+          message: formData.appointmentMessage?.trim()
+            ? formData.appointmentMessage
+            : `Rent-Lock Plan: ${formData.rentLockPlan}`,
+          purpose: formData.appointmentPurpose || 'rent',
+          propertyName: listing?.name || '',
+          propertyDescription: listing?.description || '',
+          rentLockPlanSelected: formData.rentLockPlan,
+          customLockDuration: formData.rentLockPlan === 'custom' ? formData.customLockDuration : null,
+          visibleToBuyer: false, // Hide booking until payment is complete
+          visibleToSeller: false // Hide booking until payment is complete
+        })
+      });
+
+      const bookingData = await bookingRes.json();
+      if (!bookingRes.ok) {
+        throw new Error(bookingData.message || "Failed to create booking");
+      }
+
+      // Validate booking data structure - booking API returns 'appointment', not 'booking'
+      const booking = bookingData.appointment || bookingData.booking || bookingData;
+      if (!booking || !booking._id) {
+        throw new Error("Invalid booking data received. Please try again.");
+      }
+
+      setBooking(booking);
+      setFormData(prev => ({
+        ...prev,
+        bookingId: booking._id,
+        appointmentTime: booking.time || prev.appointmentTime,
+        appointmentMessage: booking.message || prev.appointmentMessage,
+        appointmentPurpose: booking.purpose || prev.appointmentPurpose || 'rent'
+      }));
+
+      // Create contract
+      const lockDuration = formData.rentLockPlan === '1_year' ? 12 :
+        formData.rentLockPlan === '3_year' ? 36 :
+          formData.rentLockPlan === '5_year' ? 60 :
+            formData.customLockDuration;
+
+      const startDate = formData.moveInDate ? new Date(formData.moveInDate) : new Date();
+      const endDate = new Date(startDate);
+      endDate.setMonth(endDate.getMonth() + lockDuration);
+
+      const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/create`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({
+          bookingId: booking._id,
+          rentLockPlan: formData.rentLockPlan,
+          lockDuration,
+          lockedRentAmount: listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0,
+          startDate: startDate.toISOString(),
+          endDate: endDate.toISOString(),
+          paymentFrequency: 'monthly',
+          dueDate: 1,
+          securityDeposit: securityDeposit,
+          depositPlan: formData.depositPlan,
+          extraMonthlyCharge: depositDetails.extraMonthlyCharge,
+          insuranceFee: depositDetails.insuranceFee,
+          maintenanceCharges: listing?.maintenanceCharges || 0,
+          advanceRent: 0,
+          moveInDate: startDate.toISOString()
+        })
+      });
+
+      const contractData = await contractRes.json();
+      if (!contractRes.ok) {
+        throw new Error(contractData.message || "Failed to create contract");
+      }
+
+      // Validate contract data structure
+      const contract = contractData.contract || contractData;
+      if (!contract) {
+        throw new Error("Invalid contract data received. Please try again.");
+      }
+
+      // Get contract ID (check both contractId and _id)
+      const contractId = contract.contractId || contract._id;
+      if (!contractId) {
+        throw new Error("Contract ID not found. Please try again.");
+      }
+
+      // Fetch full contract details with populated fields
+      try {
+        const fullContractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
+          credentials: 'include'
+        });
+
+        if (fullContractRes.ok) {
+          const fullContractData = await fullContractRes.json();
+          if (fullContractData.success && fullContractData.contract) {
+            setContract(fullContractData.contract);
+          } else if (fullContractData.contract) {
+            setContract(fullContractData.contract);
+          } else {
+            // Fallback to contract from create response
+            setContract(contract);
+          }
+        } else {
+          // If fetch fails, use contract from create response
+          setContract(contract);
+        }
+      } catch (fetchError) {
+        console.error("Error fetching full contract details:", fetchError);
+        // Fallback to contract from create response
+        setContract(contract);
+      }
+
+      setStep(2); // Move to contract review
+    } catch (error) {
+      console.error("Error creating booking/contract:", error);
+      toast.error(error.message || "Failed to proceed. Please try again.");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   const handleNext = async () => {
     if (step === 1) {
       // Validate plan selection
@@ -385,133 +516,9 @@ export default function RentProperty() {
         return;
       }
 
-      // Create booking first
-      try {
-        setLoading(true);
-        const bookingRes = await fetch(`${API_BASE_URL}/api/bookings`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            listingId,
-            date: formData.moveInDate || new Date().toISOString().split('T')[0],
-            time: formData.appointmentTime || '12:00',
-            message: formData.appointmentMessage?.trim()
-              ? formData.appointmentMessage
-              : `Rent-Lock Plan: ${formData.rentLockPlan}`,
-            purpose: formData.appointmentPurpose || 'rent',
-            propertyName: listing?.name || '',
-            propertyDescription: listing?.description || '',
-            rentLockPlanSelected: formData.rentLockPlan,
-            customLockDuration: formData.rentLockPlan === 'custom' ? formData.customLockDuration : null,
-            visibleToBuyer: false, // Hide booking until payment is complete
-            visibleToSeller: false // Hide booking until payment is complete
-          })
-        });
+      // Show confirmation modal instead of proceeding directly
+      setShowInitConfirmation(true);
 
-        const bookingData = await bookingRes.json();
-        if (!bookingRes.ok) {
-          throw new Error(bookingData.message || "Failed to create booking");
-        }
-
-        // Validate booking data structure - booking API returns 'appointment', not 'booking'
-        const booking = bookingData.appointment || bookingData.booking || bookingData;
-        if (!booking || !booking._id) {
-          throw new Error("Invalid booking data received. Please try again.");
-        }
-
-        setBooking(booking);
-        setFormData(prev => ({
-          ...prev,
-          bookingId: booking._id,
-          appointmentTime: booking.time || prev.appointmentTime,
-          appointmentMessage: booking.message || prev.appointmentMessage,
-          appointmentPurpose: booking.purpose || prev.appointmentPurpose || 'rent'
-        }));
-
-        // Create contract
-        const lockDuration = formData.rentLockPlan === '1_year' ? 12 :
-          formData.rentLockPlan === '3_year' ? 36 :
-            formData.rentLockPlan === '5_year' ? 60 :
-              formData.customLockDuration;
-
-        const startDate = formData.moveInDate ? new Date(formData.moveInDate) : new Date();
-        const endDate = new Date(startDate);
-        endDate.setMonth(endDate.getMonth() + lockDuration);
-
-        const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/create`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
-          body: JSON.stringify({
-            bookingId: booking._id,
-            rentLockPlan: formData.rentLockPlan,
-            lockDuration,
-            lockedRentAmount: listing?.monthlyRent || listing?.discountPrice || listing?.regularPrice || 0,
-            startDate: startDate.toISOString(),
-            endDate: endDate.toISOString(),
-            paymentFrequency: 'monthly',
-            dueDate: 1,
-            securityDeposit: securityDeposit,
-            depositPlan: formData.depositPlan,
-            extraMonthlyCharge: depositDetails.extraMonthlyCharge,
-            insuranceFee: depositDetails.insuranceFee,
-            maintenanceCharges: listing?.maintenanceCharges || 0,
-            advanceRent: 0,
-            moveInDate: startDate.toISOString()
-          })
-        });
-
-        const contractData = await contractRes.json();
-        if (!contractRes.ok) {
-          throw new Error(contractData.message || "Failed to create contract");
-        }
-
-        // Validate contract data structure
-        const contract = contractData.contract || contractData;
-        if (!contract) {
-          throw new Error("Invalid contract data received. Please try again.");
-        }
-
-        // Get contract ID (check both contractId and _id)
-        const contractId = contract.contractId || contract._id;
-        if (!contractId) {
-          throw new Error("Contract ID not found. Please try again.");
-        }
-
-        // Fetch full contract details with populated fields
-        try {
-          const fullContractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
-            credentials: 'include'
-          });
-
-          if (fullContractRes.ok) {
-            const fullContractData = await fullContractRes.json();
-            if (fullContractData.success && fullContractData.contract) {
-              setContract(fullContractData.contract);
-            } else if (fullContractData.contract) {
-              setContract(fullContractData.contract);
-            } else {
-              // Fallback to contract from create response
-              setContract(contract);
-            }
-          } else {
-            // If fetch fails, use contract from create response
-            setContract(contract);
-          }
-        } catch (fetchError) {
-          console.error("Error fetching full contract details:", fetchError);
-          // Fallback to contract from create response
-          setContract(contract);
-        }
-
-        setStep(2); // Move to contract review
-      } catch (error) {
-        console.error("Error creating booking/contract:", error);
-        toast.error(error.message || "Failed to proceed. Please try again.");
-      } finally {
-        setLoading(false);
-      }
     } else if (step === 2) {
       // Contract review - user can proceed to signing
       setStep(3); // Move to signing
@@ -1398,7 +1405,7 @@ export default function RentProperty() {
               <DigitalSignature
                 title={`${signingAs === 'tenant' ? 'Tenant' : 'Landlord'} Signature`}
                 userName={signingAs === 'tenant' ? (currentUser.username || currentUser.email) : 'Property Owner'}
-                onSign={handleSignatureConfirm}
+                onSign={(signatureData) => handleSignatureConfirm(signatureData)}
                 onCancel={() => {
                   setShowSignatureModal(false);
                   setSigningAs(null);
