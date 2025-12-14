@@ -10614,11 +10614,25 @@ export const sendContractSignedEmail = async (email, contractDetails) => {
       endDate,
       lockDuration,
       userRole, // 'tenant' or 'landlord'
-      contractUrl
+      contractUrl,
+      listingId // Added listingId for constructing the URL
     } = contractDetails;
 
     const isLandlord = userRole === 'landlord';
-    const subject = `✅ Rental Contract Signed - ${propertyName}`;
+    const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+
+    // Construct URLs
+    // For tenant: Direct link to rent-property page with listingId and contractId to resume flow
+    const tenantContractUrl = listingId
+      ? `${clientUrl}/user/rent-property?listingId=${listingId}&contractId=${contractId}`
+      : contractUrl;
+
+    // For tenant: Link to my appointments page
+    const myAppointmentsUrl = `${clientUrl}/user/my-appointments`;
+
+    const subject = isLandlord
+      ? `✅ Rental Contract Signed - ${propertyName}`
+      : `✅ Landlord Signed Contract - ${propertyName}`;
 
     const html = `
       <!DOCTYPE html>
@@ -10636,7 +10650,9 @@ export const sendContractSignedEmail = async (email, contractDetails) => {
                 <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✅</span>
               </div>
               <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Contract Signed</h1>
-              <p style="color: #6b7280; margin: 10px 0 0 0;">Your rental contract is now active</p>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">
+                ${isLandlord ? 'Your rental contract is now active' : 'Landlord has signed the contract'}
+              </p>
             </div>
             
             <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
@@ -10652,14 +10668,20 @@ export const sendContractSignedEmail = async (email, contractDetails) => {
               <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
                 ${isLandlord
         ? `Congratulations! The rental contract for ${propertyName} has been fully signed by both parties. The rent-lock period is now active.`
-        : `Congratulations! Your rental contract for ${propertyName} has been fully signed by both parties. Your rent-lock period begins now.`
+        : `Great news! The landlord has signed the rental contract for ${propertyName}. You can now proceed to the next steps.`
       }
               </p>
             </div>
             
-            ${contractUrl ? `<div style="text-align: center; margin-top: 30px;">
-              <a href="${contractUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Contract</a>
-            </div>` : ''}
+            <div style="text-align: center; margin-top: 30px;">
+              ${isLandlord
+        ? (contractUrl ? `<a href="${contractUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Contract</a>` : '')
+        : `
+                  <a href="${tenantContractUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #1d4ed8 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; margin: 5px; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Contract</a>
+                  <a href="${myAppointmentsUrl}" style="background: linear-gradient(135deg, #6366f1 0%, #4f46e5 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; margin: 5px; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.3);">My Appointments</a>
+                `
+      }
+            </div>
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>

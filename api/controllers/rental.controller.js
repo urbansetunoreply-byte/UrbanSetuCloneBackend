@@ -836,7 +836,8 @@ export const signContract = async (req, res, next) => {
                 endDate: contract.endDate,
                 lockDuration: contract.lockDuration,
                 userRole: 'tenant',
-                contractUrl
+                contractUrl,
+                listingId: listing._id // Added listingId
               });
               console.log(`✅ Contract signed email sent to tenant: ${contractPopulated.tenantId.email}`);
             } catch (tenantEmailError) {
