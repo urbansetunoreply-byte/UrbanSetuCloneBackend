@@ -24,7 +24,7 @@ const bookingSchema = new mongoose.Schema({
   },
   purpose: {
     type: String,
-    enum: ["buy", "rent", "followup"],
+    enum: ["buy", "rent", "followup", "inspection"],
     required: true
   },
   propertyName: {
