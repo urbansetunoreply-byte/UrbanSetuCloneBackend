@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FaUpload, FaTimes, FaSpinner, FaImage, FaVideo, FaFile, FaPaperclip } from 'react-icons/fa';
+import { FaUpload, FaTimes, FaSpinner, FaImage, FaVideo, FaFile, FaPaperclip, FaDownload } from 'react-icons/fa';
 import ImagePreview from '../ImagePreview';
 import VideoPreview from '../VideoPreview';
 
@@ -63,6 +63,61 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
   const handleInputChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
+  };
+
+  const handleDownloadDocument = async (docUrl, docName) => {
+    try {
+      if (!docUrl) return;
+
+      const response = await fetch(docUrl, { mode: 'cors' });
+      if (!response.ok) throw new Error('Failed to fetch document');
+
+      const contentType = response.headers.get('content-type') || '';
+      let extension = 'pdf';
+
+      try {
+        const urlPath = docUrl.split('?')[0];
+        const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
+        if (lastSegment.includes('.')) {
+          extension = lastSegment.split('.').pop();
+        }
+      } catch (e) {
+        console.warn('URL parsing failed', e);
+      }
+
+      if ((!extension || extension === 'file') && contentType && !contentType.includes('octet-stream')) {
+        const mimeMap = {
+          'application/pdf': 'pdf',
+          'image/jpeg': 'jpg',
+          'image/jpg': 'jpg',
+          'image/png': 'png',
+          'application/msword': 'doc',
+          'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+          'text/plain': 'txt'
+        };
+        extension = mimeMap[contentType.toLowerCase()] || 'pdf';
+      }
+
+      const filename = `${docName || 'document'}-${new Date().getTime()}.${extension}`;
+      const blob = await response.blob();
+
+      const finalBlob = extension === 'pdf' && contentType.includes('octet-stream')
+        ? new Blob([blob], { type: 'application/pdf' })
+        : blob;
+
+      const blobUrl = window.URL.createObjectURL(finalBlob);
+      const link = document.createElement('a');
+      link.href = blobUrl;
+      link.download = filename;
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      window.URL.revokeObjectURL(blobUrl);
+
+    } catch (error) {
+      console.error('Error downloading document:', error);
+      window.open(docUrl, '_blank');
+    }
   };
 
   const handleEvidenceUpload = async (e, type) => {
@@ -341,14 +396,15 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
                       <FaFile className="text-blue-600" />
                       <div className="flex flex-col">
                         <span className="text-sm text-gray-700">Document</span>
-                        <a
-                          href={evidence.url}
-                          target="_blank"
-                          rel="noopener noreferrer"
-                          className="text-xs text-blue-500 hover:underline"
+                        <button
+                          onClick={(e) => {
+                            e.preventDefault();
+                            handleDownloadDocument(evidence.url, 'evidence');
+                          }}
+                          className="text-xs text-blue-500 hover:text-blue-700 font-medium flex items-center gap-1 hover:underline text-left"
                         >
-                          View Document
-                        </a>
+                          <FaDownload className="text-[10px]" /> Download
+                        </button>
                       </div>
                     </div>
                   )}

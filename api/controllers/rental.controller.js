@@ -1526,6 +1526,18 @@ export const createDispute = async (req, res, next) => {
       return res.status(403).json({ message: "Unauthorized. Only tenant or landlord can raise disputes." });
     }
 
+    // Check for existing active dispute
+    const ongoingDispute = await Dispute.findOne({
+      contractId: contract._id,
+      status: { $nin: ['resolved', 'closed'] }
+    });
+
+    if (ongoingDispute) {
+      return res.status(400).json({
+        message: "An active dispute already exists for this contract. Please resolve it before raising a new one."
+      });
+    }
+
     // Determine who the dispute is against
     const raisedAgainst = isTenant ? contract.landlordId._id : contract.tenantId._id;
 
