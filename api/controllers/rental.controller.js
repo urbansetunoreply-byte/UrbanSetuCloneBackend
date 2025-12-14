@@ -1853,7 +1853,7 @@ export const addDisputeComment = async (req, res, next) => {
     const isRaisedBy = dispute.raisedBy.toString() === userId;
     const isRaisedAgainst = dispute.raisedAgainst.toString() === userId;
     const user = await User.findById(userId);
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
 
     if (!isTenant && !isLandlord && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });

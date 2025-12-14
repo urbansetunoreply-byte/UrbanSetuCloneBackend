@@ -208,6 +208,70 @@ export default function DisputeDetail({
     setAttachments(attachments.filter((_, i) => i !== index));
   };
 
+  const getMediaType = (url) => {
+    if (!url) return 'document';
+    const extension = url.split('.').pop().toLowerCase();
+    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension)) return 'image';
+    if (['mp4', 'webm', 'ogg', 'mov'].includes(extension)) return 'video';
+    return 'document';
+  };
+
+  const renderMessageAttachment = (url, idx) => {
+    const type = getMediaType(url);
+
+    if (type === 'image') {
+      return (
+        <div
+          key={idx}
+          className="relative group cursor-pointer aspect-square rounded overflow-hidden border border-gray-200"
+          onClick={() => {
+            setSelectedImage(url);
+            setShowImagePreview(true);
+          }}
+        >
+          <img src={url} alt="Attachment" className="w-full h-full object-cover" />
+          <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all flex items-center justify-center">
+            <FaImage className="text-white opacity-0 group-hover:opacity-100" />
+          </div>
+        </div>
+      );
+    }
+
+    if (type === 'video') {
+      return (
+        <div
+          key={idx}
+          className="relative group cursor-pointer aspect-square rounded overflow-hidden border border-gray-200 bg-black"
+          onClick={() => {
+            setSelectedVideo(url);
+            setShowVideoPreview(true);
+          }}
+        >
+          <video src={url} className="w-full h-full object-cover opacity-80" />
+          <div className="absolute inset-0 flex items-center justify-center">
+            <FaVideo className="text-white text-2xl" />
+          </div>
+        </div>
+      );
+    }
+
+    return (
+      <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200">
+        <FaFile className="text-blue-500" />
+        <button
+          onClick={(e) => {
+            e.preventDefault();
+            handleDownloadDocument(url, 'attachment');
+          }}
+          className="text-xs text-blue-600 hover:underline truncate max-w-[150px]"
+          title="Download"
+        >
+          Attachment {idx + 1}
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div className="space-y-6">
       {/* Header */}
@@ -356,7 +420,7 @@ export default function DisputeDetail({
         <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
           <FaComments /> Messages ({dispute.messages?.length || 0})
         </h4>
-        <div className="space-y-4 max-h-96 overflow-y-auto mb-4">
+        <div className="space-y-4 max-h-96 overflow-y-auto mb-4 p-2">
           {dispute.messages && dispute.messages.length > 0 ? (
             dispute.messages.map((message, index) => {
               const isOwnMessage = message.sender?._id === currentUser?._id || message.sender === currentUser?._id;
@@ -369,29 +433,22 @@ export default function DisputeDetail({
                     user={message.sender}
                     size="md"
                   />
-                  <div className={`flex-1 ${isOwnMessage ? 'text-right' : ''}`}>
-                    <div className={`inline-block p-3 rounded-lg ${isOwnMessage ? 'bg-blue-100 text-blue-900' : 'bg-gray-100 text-gray-900'
+                  <div className={`flex-1 max-w-[80%] ${isOwnMessage ? 'text-right' : ''}`}>
+                    <div className={`inline-block p-3 rounded-lg text-left ${isOwnMessage ? 'bg-blue-100 text-blue-900' : 'bg-gray-100 text-gray-900'
                       }`}>
                       <div className="font-semibold text-sm mb-1">
-                        {message.sender?.username || 'Unknown'}
+                        {message.sender?.username || 'Unknown'} {isOwnMessage && '(You)'}
                       </div>
-                      <p className="text-sm">{message.message}</p>
+                      <p className="text-sm border-b border-black/5 pb-2 mb-2 whitespace-pre-wrap">{message.message}</p>
+
+                      {/* Message Attachments Preview */}
                       {message.attachments && message.attachments.length > 0 && (
-                        <div className="mt-2 space-y-1">
-                          {message.attachments.map((url, idx) => (
-                            <a
-                              key={idx}
-                              href={url}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="text-xs text-blue-600 hover:underline flex items-center gap-1"
-                            >
-                              <FaFileAlt /> Attachment {idx + 1}
-                            </a>
-                          ))}
+                        <div className="mt-2 grid grid-cols-2 gap-2">
+                          {message.attachments.map((url, idx) => renderMessageAttachment(url, idx))}
                         </div>
                       )}
-                      <div className="text-xs text-gray-600 mt-1">
+
+                      <div className="text-xs text-gray-500 mt-2 text-right">
                         {new Date(message.timestamp).toLocaleString()}
                       </div>
                     </div>
@@ -417,23 +474,34 @@ export default function DisputeDetail({
               />
             </div>
 
-            {/* Attachments */}
+            {/* Attachments Preview (Pending Uploads) */}
             {attachments.length > 0 && (
-              <div className="mb-3 flex flex-wrap gap-2">
-                {attachments.map((attachment, index) => (
-                  <div key={index} className="flex items-center gap-2 p-2 bg-gray-100 rounded">
-                    {attachment.type === 'image' && <FaImage className="text-blue-600" />}
-                    {attachment.type === 'video' && <FaVideo className="text-purple-600" />}
-                    {attachment.type === 'document' && <FaFile className="text-green-600" />}
-                    <span className="text-xs text-gray-700">File {index + 1}</span>
-                    <button
-                      onClick={() => removeAttachment(index)}
-                      className="text-red-600 hover:text-red-700"
-                    >
-                      <FaTimes className="text-xs" />
-                    </button>
-                  </div>
-                ))}
+              <div className="mb-3">
+                <p className="text-xs text-gray-500 mb-2">Attached Files:</p>
+                <div className="flex flex-wrap gap-2">
+                  {attachments.map((attachment, index) => (
+                    <div key={index} className="relative w-20 h-20 border rounded overflow-hidden group">
+                      {attachment.type === 'image' ? (
+                        <img src={attachment.url} className="w-full h-full object-cover" alt="preview" />
+                      ) : attachment.type === 'video' ? (
+                        <div className="w-full h-full bg-black flex items-center justify-center">
+                          <FaVideo className="text-white" />
+                        </div>
+                      ) : (
+                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-green-600">
+                          <FaFile size={24} />
+                        </div>
+                      )}
+                      <button
+                        onClick={() => removeAttachment(index)}
+                        className="absolute top-0 right-0 p-1 bg-red-500 text-white hover:bg-red-600 rounded-bl"
+                        title="Remove"
+                      >
+                        <FaTimes className="text-xs" />
+                      </button>
+                    </div>
+                  ))}
+                </div>
               </div>
             )}
 
