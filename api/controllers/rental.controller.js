@@ -1753,6 +1753,44 @@ export const updateDisputeStatus = async (req, res, next) => {
         if (status === 'resolved' && !dispute.resolution.resolutionDate) {
           dispute.resolution.resolutionDate = new Date();
         }
+
+        // Send email if closed manually
+        if (status === 'closed') {
+          try {
+            const contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId)
+              .populate('listingId');
+
+            if (contract) {
+              const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+              const listing = contract.listingId;
+
+              // Get the parties involved
+              const raisedByUser = await User.findById(dispute.raisedBy);
+              const raisedAgainstUser = await User.findById(dispute.raisedAgainst);
+
+              // Prepare email details
+              const emailDetails = {
+                propertyName: listing?.name || 'Property',
+                decision: 'Dispute closed by Admin',
+                amount: 0,
+                disputeUrl: `${clientUrl}/user/disputes?disputeId=${dispute._id}`
+              };
+
+              // Send to raisedBy user
+              if (raisedByUser?.email) {
+                await sendDisputeResolvedEmail(raisedByUser.email, emailDetails);
+              }
+
+              // Send to raisedAgainst user
+              if (raisedAgainstUser?.email) {
+                await sendDisputeResolvedEmail(raisedAgainstUser.email, emailDetails);
+              }
+            }
+          } catch (emailError) {
+            console.error('Error sending dispute closed email:', emailError);
+            // Don't block the status update if email fails
+          }
+        }
       }
     }
 
