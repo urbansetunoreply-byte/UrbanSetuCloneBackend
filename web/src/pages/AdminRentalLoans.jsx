@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaCreditCard, FaSpinner, FaSearch, FaTimes, FaCheckCircle, FaClock, FaTimesCircle, FaHome, FaUser, FaMoneyBillWave, FaCheck, FaBan, FaDownload, FaFile } from 'react-icons/fa';
+import { FaCreditCard, FaSpinner, FaSearch, FaTimes, FaCheckCircle, FaClock, FaTimesCircle, FaHome, FaUser, FaMoneyBillWave, FaCheck, FaBan, FaDownload, FaFile, FaSync } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import LoanStatusDisplay from '../components/loans/LoanStatusDisplay';
 
@@ -49,7 +49,7 @@ export default function AdminRentalLoans() {
   const [showRejectModal, setShowRejectModal] = useState(false);
   const [showDisburseModal, setShowDisburseModal] = useState(false);
   const [actionLoading, setActionLoading] = useState('');
-  
+
   // Approve modal fields
   const [eligibilityCheck, setEligibilityCheck] = useState({
     passed: false,
@@ -60,10 +60,10 @@ export default function AdminRentalLoans() {
   });
   const [adminNotes, setAdminNotes] = useState('');
   const [disbursementDate, setDisbursementDate] = useState('');
-  
+
   // Reject modal fields
   const [rejectionReason, setRejectionReason] = useState('');
-  
+
   // Disburse modal fields
   const [disbursedAmount, setDisbursedAmount] = useState('');
   const [disbursementReference, setDisbursementReference] = useState('');
@@ -114,17 +114,17 @@ export default function AdminRentalLoans() {
   // Client-side filtering for search, status, and loanType
   const filteredLoans = React.useMemo(() => {
     let filtered = loans;
-    
+
     // Filter by status
     if (statusFilter !== 'all') {
       filtered = filtered.filter(loan => loan.status === statusFilter);
     }
-    
+
     // Filter by loanType
     if (loanTypeFilter !== 'all') {
       filtered = filtered.filter(loan => loan.loanType === loanTypeFilter);
     }
-    
+
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -137,7 +137,7 @@ export default function AdminRentalLoans() {
         loan.contractId?.listingId?.address?.toLowerCase().includes(query)
       );
     }
-    
+
     return filtered;
   }, [loans, searchQuery, statusFilter, loanTypeFilter]);
 
@@ -333,6 +333,13 @@ export default function AdminRentalLoans() {
               </h1>
               <p className="text-gray-600 mt-2">Manage all rental loan applications across the platform</p>
             </div>
+            <button
+              onClick={() => fetchAllLoans()}
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+            >
+              <FaSync className={loading ? "animate-spin" : ""} />
+              Refresh
+            </button>
           </div>
 
           {/* Statistics */}
@@ -496,7 +503,7 @@ export default function AdminRentalLoans() {
                       >
                         <FaUser /> View Details
                       </button>
-                      
+
                       {/* Admin Actions */}
                       {loan.status === 'pending' && (
                         <>
@@ -597,7 +604,7 @@ export default function AdminRentalLoans() {
                 ×
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
@@ -724,7 +731,7 @@ export default function AdminRentalLoans() {
                 ×
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
@@ -801,7 +808,7 @@ export default function AdminRentalLoans() {
                 ×
               </button>
             </div>
-            
+
             <div className="space-y-4">
               <div>
                 <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
