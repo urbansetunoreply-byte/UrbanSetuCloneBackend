@@ -11,14 +11,14 @@ import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
 import { errorHandler } from "../utils/error.js";
 import { generateRentLockContractPDF } from "../utils/contractPDFGenerator.js";
-import { 
-  calculateRentPrediction, 
-  calculateLocalityScore, 
-  findSimilarProperties 
+import {
+  calculateRentPrediction,
+  calculateLocalityScore,
+  findSimilarProperties
 } from "../utils/rentPredictionEngine.js";
 import realTimeDataService from "../services/realTimeDataService.js";
 import { sendRentalNotification } from "../utils/rentalNotificationService.js";
-import { 
+import {
   sendContractSignedEmail,
   sendDisputeRaisedEmail,
   sendDisputeResolvedEmail,
@@ -50,16 +50,16 @@ export const sendPaymentReminders = async () => {
 
     for (const contract of activeContracts) {
       const wallet = await RentWallet.findOne({ contractId: contract._id, userId: contract.tenantId._id });
-      
+
       if (!wallet || !wallet.paymentSchedule) continue;
 
       // Find upcoming payments (5 days before and each day until due date or overdue)
       const upcomingPayments = wallet.paymentSchedule.filter(payment => {
         if (payment.status === 'completed') return false;
-        
+
         const dueDate = new Date(payment.dueDate);
         const daysUntilDue = Math.ceil((dueDate.getTime() - now.getTime()) / (1000 * 60 * 60 * 24));
-        
+
         // Send reminders starting 5 days before, each day until paid
         return daysUntilDue <= 5 && daysUntilDue >= -30; // Track up to 30 days overdue
       });
@@ -73,22 +73,22 @@ export const sendPaymentReminders = async () => {
         if (daysUntilDue <= 5) {
           const today = new Date().toDateString();
           const paymentKey = `${payment.month}-${payment.year}`;
-          
+
           // Track last reminder date per payment (initialize if needed)
           if (!wallet.paymentReminders) {
             wallet.paymentReminders = {};
           }
-          const lastPaymentReminder = wallet.paymentReminders[paymentKey] 
-            ? new Date(wallet.paymentReminders[paymentKey]).toDateString() 
+          const lastPaymentReminder = wallet.paymentReminders[paymentKey]
+            ? new Date(wallet.paymentReminders[paymentKey]).toDateString()
             : null;
-          
+
           // Send reminder if:
           // 1. 5 days before due (only once)
           // 2. Daily reminder if overdue or 5 days or less until due and not sent today
-          const shouldSendReminder = 
+          const shouldSendReminder =
             (daysUntilDue === 5 && !payment.reminderSent3Days) || // 5 days before (use existing flag)
             ((daysUntilDue < 0 || (daysUntilDue >= 0 && daysUntilDue < 5)) && lastPaymentReminder !== today); // Daily reminder if not sent today
-          
+
           if (shouldSendReminder) {
             reminders.push({
               contract,
@@ -103,12 +103,12 @@ export const sendPaymentReminders = async () => {
               isOverdue: daysUntilDue < 0,
               paymentKey
             });
-            
+
             // Mark 5-day reminder sent
             if (daysUntilDue === 5) {
               payment.reminderSent3Days = true; // Reuse existing flag for 5-day reminder
             }
-            
+
             // Track last reminder date per payment
             wallet.paymentReminders[paymentKey] = new Date();
           }
@@ -123,14 +123,14 @@ export const sendPaymentReminders = async () => {
 
     // Send email reminders
     const { sendRentPaymentReminderEmail, sendRentPaymentOverdueEmail } = await import('../utils/emailService.js');
-    
+
     for (const reminder of reminders) {
       try {
         const dueDate = new Date(reminder.payment.dueDate);
         const daysLeft = Math.max(0, reminder.daysUntilDue);
         const isOverdue = reminder.daysUntilDue < 0;
         const daysOverdue = isOverdue ? Math.abs(reminder.daysUntilDue) : 0;
-        
+
         if (isOverdue) {
           // Send overdue email
           await sendRentPaymentOverdueEmail(reminder.tenantEmail, {
@@ -325,7 +325,7 @@ export const listContracts = async (req, res, next) => {
     const { status, role } = req.query; // role: 'tenant' or 'landlord'
 
     let query = {};
-    
+
     if (role === 'tenant') {
       query.tenantId = userId;
     } else if (role === 'landlord') {
@@ -356,7 +356,7 @@ export const listContracts = async (req, res, next) => {
           try {
             const wallet = await RentWallet.findById(contract.walletId)
               .select('paymentSchedule totalPaid totalDue');
-            
+
             if (wallet) {
               // Add payment status summary to contract
               const contractObj = contract.toObject();
@@ -388,20 +388,20 @@ export const listContracts = async (req, res, next) => {
 export const listAllContracts = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    
+
     const user = await User.findById(userId);
     if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can access all contracts." });
     }
 
     const { status, search } = req.query;
-    
+
     // Build query - no user filter for admin
     let query = {};
     if (status && status !== 'all') {
       query.status = status;
     }
-    
+
     // Fetch all contracts
     let contracts = await RentLockContract.find(query)
       .populate('listingId', 'name propertyNumber address city state imageUrls type')
@@ -413,7 +413,7 @@ export const listAllContracts = async (req, res, next) => {
     // Apply search filter if provided
     if (search) {
       const searchLower = search.toLowerCase();
-      contracts = contracts.filter(c => 
+      contracts = contracts.filter(c =>
         c.contractId?.toLowerCase().includes(searchLower) ||
         c.listingId?.name?.toLowerCase().includes(searchLower) ||
         c.listingId?.address?.toLowerCase().includes(searchLower) ||
@@ -431,7 +431,7 @@ export const listAllContracts = async (req, res, next) => {
           try {
             const wallet = await RentWallet.findById(contract.walletId)
               .select('paymentSchedule totalPaid totalDue');
-            
+
             if (wallet) {
               // Add payment status summary to contract
               const contractObj = contract.toObject();
@@ -622,7 +622,7 @@ export const updateContractStatus = async (req, res, next) => {
         try {
           const { sendContractRejectedEmail, sendContractTerminatedEmail } = await import('../utils/emailService.js');
           const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
-          
+
           if (status === 'rejected' && contractPopulated.tenantId?.email) {
             await sendContractRejectedEmail(contractPopulated.tenantId.email, {
               contractId: contract.contractId || contract._id,
@@ -631,7 +631,7 @@ export const updateContractStatus = async (req, res, next) => {
               rejectedBy: user?.username || 'Admin'
             });
           }
-          
+
           // Note: sendContractTerminatedEmail would need to be implemented if not exists
         } catch (emailError) {
           console.error('Error sending contract status change emails:', emailError);
@@ -725,7 +725,7 @@ export const signContract = async (req, res, next) => {
     // Update status if both parties signed
     if (contract.tenantSignature.signed && contract.landlordSignature.signed) {
       contract.status = 'active';
-      
+
       // Update booking status
       const booking = await Booking.findById(contract.bookingId);
       if (booking) {
@@ -735,7 +735,7 @@ export const signContract = async (req, res, next) => {
 
       // Create rent wallet - check if wallet already exists first (to prevent duplicate key error)
       let wallet = await RentWallet.findOne({ contractId: contract._id });
-      
+
       if (!wallet) {
         // Create rent wallet - use new + save to ensure pre-save hook runs
         wallet = new RentWallet({
@@ -787,7 +787,7 @@ export const signContract = async (req, res, next) => {
 
       if (contractPopulated) {
         const listing = contractPopulated.listingId;
-        
+
         // Notify tenant
         await sendRentalNotification({
           userId: contractPopulated.tenantId._id,
@@ -1016,7 +1016,7 @@ export const downloadContractPDF = async (req, res, next) => {
     const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
     const tenantIdStr = contract.tenantId?._id?.toString() || contract.tenantId?.toString();
     const landlordIdStr = contract.landlordId?._id?.toString() || contract.landlordId?.toString();
-    
+
     if (!isAdmin && tenantIdStr !== userId && landlordIdStr !== userId) {
       return res.status(403).json({ message: "Unauthorized." });
     }
@@ -1038,7 +1038,7 @@ export const downloadContractPDF = async (req, res, next) => {
     // Stream PDF to response
     doc.pipe(res);
     doc.on('error', (e) => {
-      try { res.end(); } catch {}
+      try { res.end(); } catch { }
       console.error('PDF generation error:', e);
     });
     doc.end();
@@ -1072,13 +1072,13 @@ export const createMoveInOutChecklist = async (req, res, next) => {
     }
 
     // Check if checklist already exists
-    const existingChecklist = await MoveInOutChecklist.findOne({ 
-      contractId: contract._id, 
-      type 
+    const existingChecklist = await MoveInOutChecklist.findOne({
+      contractId: contract._id,
+      type
     });
 
     if (existingChecklist) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: `${type === 'move_in' ? 'Move-in' : 'Move-out'} checklist already exists for this contract.`,
         checklist: existingChecklist
       });
@@ -1343,14 +1343,14 @@ export const updateMoveOutCondition = async (req, res, next) => {
 export const listAllChecklists = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    
+
     const user = await User.findById(userId);
     if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can access all checklists." });
     }
 
     const { type, status, search } = req.query;
-    
+
     // Build query - no user filter for admin
     let query = {};
     if (type && type !== 'all') {
@@ -1359,7 +1359,7 @@ export const listAllChecklists = async (req, res, next) => {
     if (status && status !== 'all') {
       query.status = status;
     }
-    
+
     // Fetch all checklists
     let checklists = await MoveInOutChecklist.find(query)
       .populate('contractId', 'contractId listingId lockedRentAmount startDate endDate status')
@@ -1411,7 +1411,7 @@ export const deleteChecklist = async (req, res, next) => {
   try {
     const userId = req.user.id;
     const { checklistId } = req.params;
-    
+
     const user = await User.findById(userId);
     if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can delete checklists." });
@@ -1454,19 +1454,19 @@ export const assessDamages = async (req, res, next) => {
     }
 
     // Get move-in and move-out checklists
-    const moveInChecklist = await MoveInOutChecklist.findOne({ 
-      contractId: contract._id, 
-      type: 'move_in' 
+    const moveInChecklist = await MoveInOutChecklist.findOne({
+      contractId: contract._id,
+      type: 'move_in'
     });
 
-    const moveOutChecklist = await MoveInOutChecklist.findOne({ 
-      contractId: contract._id, 
-      type: 'move_out' 
+    const moveOutChecklist = await MoveInOutChecklist.findOne({
+      contractId: contract._id,
+      type: 'move_out'
     });
 
     if (!moveInChecklist || !moveOutChecklist) {
-      return res.status(400).json({ 
-        message: "Both move-in and move-out checklists are required for damage assessment." 
+      return res.status(400).json({
+        message: "Both move-in and move-out checklists are required for damage assessment."
       });
     }
 
@@ -1553,9 +1553,9 @@ export const createDispute = async (req, res, next) => {
 
     if (contractPopulated) {
       const listing = contractPopulated.listingId;
-      
+
       const raisedAgainstUser = await User.findById(raisedAgainst);
-      
+
       // Notify the party against whom dispute is raised
       await sendRentalNotification({
         userId: raisedAgainst,
@@ -1636,12 +1636,12 @@ export const getDispute = async (req, res, next) => {
     if (!contract) {
       return res.status(404).json({ message: "Contract not found." });
     }
-    
+
     const contractTenantId = contract?.tenantId?._id?.toString() || contract?.tenantId?.toString();
     const contractLandlordId = contract?.landlordId?._id?.toString() || contract?.landlordId?.toString();
     const raisedById = dispute.raisedBy?._id?.toString() || dispute.raisedBy?.toString();
     const raisedAgainstId = dispute.raisedAgainst?._id?.toString() || dispute.raisedAgainst?.toString();
-    
+
     const isTenant = contractTenantId === userId.toString();
     const isLandlord = contractLandlordId === userId.toString();
     const isRaisedBy = raisedById === userId.toString();
@@ -1940,11 +1940,11 @@ export const resolveDispute = async (req, res, next) => {
 export const requestVerification = async (req, res, next) => {
   try {
     const { listingId } = req.params;
-    const { 
-      ownershipProof, 
-      identityProof, 
+    const {
+      ownershipProof,
+      identityProof,
       addressProof,
-      verificationFee 
+      verificationFee
     } = req.body;
     const userId = req.user.id;
 
@@ -1962,13 +1962,13 @@ export const requestVerification = async (req, res, next) => {
     const existingVerification = await PropertyVerification.findOne({ listingId: listing._id });
     if (existingVerification) {
       if (existingVerification.status === 'verified') {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Property is already verified.",
           verification: existingVerification
         });
       }
       if (existingVerification.status === 'pending' || existingVerification.status === 'in_progress') {
-        return res.status(400).json({ 
+        return res.status(400).json({
           message: "Verification request already exists and is being processed.",
           verification: existingVerification
         });
@@ -2035,6 +2035,8 @@ export const requestVerification = async (req, res, next) => {
       const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
       await sendVerificationRequestedEmail(verification.landlordId.email, {
         propertyName: verification.listingId.name,
+        userName: verification.landlordId.username,
+        documents: verification.documents,
         verificationUrl: `${clientUrl}/user/property-verification?listingId=${listing._id}`
       });
     }
@@ -2063,7 +2065,7 @@ export const getVerificationStatus = async (req, res, next) => {
     // Verify user has access (owner or admin)
     const user = await User.findById(userId);
     const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
-    
+
     if (listing.userRef.toString() !== userId && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });
     }
@@ -2097,7 +2099,7 @@ export const getVerificationStatus = async (req, res, next) => {
 export const approveVerification = async (req, res, next) => {
   try {
     const { verificationId } = req.params;
-    const { 
+    const {
       ownershipVerified,
       identityVerified,
       addressVerified,
@@ -2164,12 +2166,12 @@ export const approveVerification = async (req, res, next) => {
     }
 
     // Check if all required verifications are complete
-    const allDocumentsVerified = 
+    const allDocumentsVerified =
       verification.documents.ownershipProof.verified &&
       verification.documents.identityProof.verified &&
       verification.documents.addressProof.verified;
-    
-    const allInspectionsVerified = 
+
+    const allInspectionsVerified =
       verification.photosVerified &&
       verification.locationVerified;
 
@@ -2177,7 +2179,7 @@ export const approveVerification = async (req, res, next) => {
     if (allDocumentsVerified && allInspectionsVerified) {
       verification.status = 'verified';
       verification.verifiedBadgeIssued = true;
-      
+
       // Update listing
       if (verification.listingId) {
         const listing = await Listing.findById(verification.listingId._id || verification.listingId);
@@ -2219,6 +2221,7 @@ export const approveVerification = async (req, res, next) => {
           const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
           await sendVerificationApprovedEmail(verificationPopulated.landlordId.email, {
             propertyName: verificationPopulated.listingId.name,
+            userName: verificationPopulated.landlordId.username,
             verificationUrl: `${clientUrl}/user/property-verification?listingId=${verificationPopulated.listingId._id}`
           });
         }
@@ -2258,7 +2261,7 @@ export const rejectVerification = async (req, res, next) => {
     verification.rejectionReason = rejectionReason || '';
     verification.rejectedAt = new Date();
     verification.rejectedBy = userId;
-    
+
     if (adminNotes) {
       verification.adminNotes = adminNotes;
     }
@@ -2300,6 +2303,7 @@ export const rejectVerification = async (req, res, next) => {
         const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
         await sendVerificationRejectedEmail(verificationPopulated.landlordId.email, {
           propertyName: verificationPopulated.listingId.name,
+          userName: verificationPopulated.landlordId.username,
           rejectionReason: rejectionReason || 'Please check admin notes for details',
           verificationUrl: `${clientUrl}/user/property-verification?listingId=${verificationPopulated.listingId._id}`
         });
@@ -2422,7 +2426,7 @@ export const submitRentalRating = async (req, res, next) => {
       // Send email notification
       if (ratedUser?.email) {
         const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
-        const overallRating = role === 'tenant' 
+        const overallRating = role === 'tenant'
           ? rating.tenantRating?.overallRating || 0
           : rating.landlordRating?.overallRating || 0;
         await sendRatingReceivedEmail(ratedUser.email, {
@@ -2533,8 +2537,8 @@ export const listRentalRatings = async (req, res, next) => {
     if (listingId) {
       filteredRatings = ratings.filter(rating => {
         const contract = rating.contractId;
-        return contract?.listingId?.toString() === listingId || 
-               (contract?.listingId?._id && contract.listingId._id.toString() === listingId);
+        return contract?.listingId?.toString() === listingId ||
+          (contract?.listingId?._id && contract.listingId._id.toString() === listingId);
       });
     }
 
@@ -2551,14 +2555,14 @@ export const listRentalRatings = async (req, res, next) => {
 export const listAllRatings = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    
+
     const user = await User.findById(userId);
     if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can access all ratings." });
     }
 
     const { role, search } = req.query;
-    
+
     // Build query - no user filter for admin
     let query = {};
     if (role && role !== 'all') {
@@ -2569,7 +2573,7 @@ export const listAllRatings = async (req, res, next) => {
         query = { 'landlordToTenantRating.overallRating': { $exists: true, $ne: null } };
       }
     }
-    
+
     // Fetch all ratings - add error handling for invalid ObjectIds
     let ratings = await RentalRating.find(query)
       .populate({
@@ -2585,14 +2589,14 @@ export const listAllRatings = async (req, res, next) => {
       .populate('landlordId', 'username email avatar')
       .sort({ createdAt: -1 })
       .lean(); // Use lean() to avoid Mongoose casting issues
-    
+
     // Filter out ratings with invalid contractIds after populate
     ratings = ratings.filter(r => r.contractId && typeof r.contractId === 'object' && r.contractId._id);
 
     // Apply search filter if provided
     if (search) {
       const searchLower = search.toLowerCase();
-      ratings = ratings.filter(r => 
+      ratings = ratings.filter(r =>
         r.contractId?.contractId?.toLowerCase().includes(searchLower) ||
         r.contractId?.listingId?.name?.toLowerCase().includes(searchLower) ||
         r.contractId?.listingId?.address?.toLowerCase().includes(searchLower) ||
@@ -2656,12 +2660,12 @@ export const getPropertyRatings = async (req, res, next) => {
       }
     });
 
-    const averageLandlordRating = landlordRatingsCount > 0 
-      ? (totalLandlordRatings / landlordRatingsCount).toFixed(2) 
+    const averageLandlordRating = landlordRatingsCount > 0
+      ? (totalLandlordRatings / landlordRatingsCount).toFixed(2)
       : null;
-    
-    const averageTenantRating = tenantRatingsCount > 0 
-      ? (totalTenantRatings / tenantRatingsCount).toFixed(2) 
+
+    const averageTenantRating = tenantRatingsCount > 0
+      ? (totalTenantRatings / tenantRatingsCount).toFixed(2)
       : null;
 
     res.json({
@@ -2684,20 +2688,20 @@ export const getPropertyRatings = async (req, res, next) => {
 export const listAllVerifications = async (req, res, next) => {
   try {
     const userId = req.user.id;
-    
+
     const user = await User.findById(userId);
     if (user?.role !== 'admin' && user?.role !== 'rootadmin') {
       return res.status(403).json({ message: "Unauthorized. Only admin can access all verifications." });
     }
 
     const { status, search } = req.query;
-    
+
     // Build query
     const query = {};
     if (status && status !== 'all') {
       query.status = status;
     }
-    
+
     // Fetch all verifications
     let verifications = await PropertyVerification.find(query)
       .populate('listingId', 'name address city state type monthlyRent')
@@ -2710,7 +2714,7 @@ export const listAllVerifications = async (req, res, next) => {
     // Apply search filter if provided
     if (search) {
       const searchLower = search.toLowerCase();
-      verifications = verifications.filter(v => 
+      verifications = verifications.filter(v =>
         v.listingId?.name?.toLowerCase().includes(searchLower) ||
         v.listingId?.address?.toLowerCase().includes(searchLower) ||
         v.landlordId?.username?.toLowerCase().includes(searchLower) ||
@@ -2733,11 +2737,11 @@ export const listAllVerifications = async (req, res, next) => {
 export const applyForRentalLoan = async (req, res, next) => {
   try {
     const { contractId } = req.params;
-    const { 
-      loanType, 
-      loanAmount, 
-      interestRate, 
-      tenure, 
+    const {
+      loanType,
+      loanAmount,
+      interestRate,
+      tenure,
       partnerName,
       documents,
       applicantIncome,
@@ -2767,7 +2771,7 @@ export const applyForRentalLoan = async (req, res, next) => {
     });
 
     if (existingLoan) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         message: `A ${loanType} loan already exists for this contract.`,
         loan: existingLoan
       });
@@ -2775,8 +2779,8 @@ export const applyForRentalLoan = async (req, res, next) => {
 
     // Calculate EMI
     const monthlyRate = interestRate / 100 / 12;
-    const emi = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, tenure)) / 
-                (Math.pow(1 + monthlyRate, tenure) - 1);
+    const emi = (loanAmount * monthlyRate * Math.pow(1 + monthlyRate, tenure)) /
+      (Math.pow(1 + monthlyRate, tenure) - 1);
 
     // Create loan application
     const loan = await RentalLoan.create({
@@ -2871,7 +2875,7 @@ export const getRentalLoan = async (req, res, next) => {
     // Verify user has access (applicant or admin)
     const user = await User.findById(userId);
     const isAdmin = user?.role === 'admin';
-    
+
     if (loan.userId._id.toString() !== userId && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });
     }
@@ -2942,7 +2946,7 @@ export const listRentalLoans = async (req, res, next) => {
 export const approveRentalLoan = async (req, res, next) => {
   try {
     const { loanId } = req.params;
-    const { 
+    const {
       eligibilityCheck,
       adminNotes,
       disbursementDate
@@ -3007,7 +3011,7 @@ export const approveRentalLoan = async (req, res, next) => {
           userId: loanPopulated.userId._id,
           type: loan.status === 'disbursed' ? 'rent_loan_disbursed' : 'rent_loan_approved',
           title: loan.status === 'disbursed' ? 'Rental Loan Disbursed' : 'Rental Loan Approved',
-          message: loan.status === 'disbursed' 
+          message: loan.status === 'disbursed'
             ? `Your ${loan.loanType} loan of ₹${loan.loanAmount} for ${contract.listingId.name} has been disbursed. Reference: ${loan.disbursementReference}`
             : `Your ${loan.loanType} loan application of ₹${loan.loanAmount} for ${contract.listingId.name} has been approved.`,
           meta: {
@@ -3238,9 +3242,9 @@ export const generateRentPrediction = async (req, res, next) => {
     }
 
     // Find similar properties for comparison
-    const allListings = await Listing.find({ 
+    const allListings = await Listing.find({
       type: 'rent',
-      city: listing.city 
+      city: listing.city
     }).limit(100);
 
     const similarProperties = findSimilarProperties(listing, allListings, 20);
@@ -3261,20 +3265,20 @@ export const generateRentPrediction = async (req, res, next) => {
 
       // Get location intelligence which includes amenities, schools, transport, etc.
       const locationIntelligence = await realTimeDataService.getLocationIntelligence(location);
-      
+
       if (locationIntelligence) {
         // Format analytics data for locality score calculation
         // Combine amenities.school with schoolData.schools
         const amenities = locationIntelligence.amenities || {};
         const schoolData = locationIntelligence.schoolData || {};
         const transportData = locationIntelligence.transportData || {};
-        
+
         // Merge school data from both sources
         if (schoolData.schools && Array.isArray(schoolData.schools)) {
           amenities.school = amenities.school || [];
           amenities.school = [...amenities.school, ...schoolData.schools];
         }
-        
+
         analyticsData = {
           locationData: {
             amenities: amenities,
@@ -3323,7 +3327,7 @@ export const generateRentPrediction = async (req, res, next) => {
       const timestamp = Date.now();
       const random = Math.random().toString(36).substring(2, 9).toUpperCase();
       const predictionId = `PREDICT-${timestamp}-${random}`;
-      
+
       prediction = new RentPrediction({
         predictionId: predictionId,
         listingId: listing._id,
@@ -3344,7 +3348,7 @@ export const generateRentPrediction = async (req, res, next) => {
 
     // Update listing with prediction reference
     listing.rentPrediction = prediction._id;
-    
+
     // Update listing with full localityScore object (matching Listing model structure)
     // The localityScore object from calculateLocalityScore already has all required fields
     listing.localityScore = {
@@ -3359,7 +3363,7 @@ export const generateRentPrediction = async (req, res, next) => {
       shopping: localityScore.shopping || 0,
       overall: localityScore.overall || 0
     };
-    
+
     await listing.save();
 
     await prediction.populate('listingId', 'name address city');
@@ -3434,20 +3438,20 @@ export const getLocalityScore = async (req, res, next) => {
 
         // Get location intelligence which includes amenities, schools, transport, etc.
         const locationIntelligence = await realTimeDataService.getLocationIntelligence(location);
-        
+
         if (locationIntelligence) {
           // Format analytics data for locality score calculation
           // Combine amenities.school with schoolData.schools
           const amenities = locationIntelligence.amenities || {};
           const schoolData = locationIntelligence.schoolData || {};
           const transportData = locationIntelligence.transportData || {};
-          
+
           // Merge school data from both sources
           if (schoolData.schools && Array.isArray(schoolData.schools)) {
             amenities.school = amenities.school || [];
             amenities.school = [...amenities.school, ...schoolData.schools];
           }
-          
+
           analyticsData = {
             locationData: {
               amenities: amenities,
@@ -3464,7 +3468,7 @@ export const getLocalityScore = async (req, res, next) => {
         // Analytics fetch failed, continue without it
         console.log('Could not fetch location intelligence for locality score:', error.message);
       }
-      
+
       // Calculate on the fly if not stored, with analytics data if available
       const localityScore = calculateLocalityScore(listing, listing.neighborhood || {}, analyticsData || {});
       return res.json({
@@ -3491,20 +3495,20 @@ export const rejectContractForBooking = async (bookingId, rejectedById, rejectio
       .populate('tenantId', 'username email')
       .populate('landlordId', 'username email')
       .populate('listingId', 'name');
-    
+
     if (!contract) {
       return { success: false, message: "Contract not found for this booking." };
     }
-    
+
     // Only reject if contract is not already active, expired, terminated, or already rejected
     if (['active', 'expired', 'terminated', 'rejected'].includes(contract.status)) {
       return { success: false, message: `Cannot reject contract with status: ${contract.status}` };
     }
-    
+
     // Get user who rejected (could be seller/admin)
     const User = (await import("../models/user.model.js")).default;
     const rejectedByUser = await User.findById(rejectedById);
-    
+
     // Update contract status to rejected
     contract.status = 'rejected';
     contract.rejectedAt = new Date();
@@ -3523,7 +3527,7 @@ export const rejectContractForBooking = async (bookingId, rejectedById, rejectio
     } catch (releaseError) {
       console.error('Failed to release listing after contract rejection:', releaseError);
     }
-    
+
     // Send notification to tenant
     await sendRentalNotification(
       contract.tenantId._id,
@@ -3533,7 +3537,7 @@ export const rejectContractForBooking = async (bookingId, rejectedById, rejectio
       contract.listingId?._id,
       contract._id
     );
-    
+
     // Send email to tenant
     try {
       const { sendContractRejectedEmail } = await import("../utils/emailService.js");
@@ -3547,7 +3551,7 @@ export const rejectContractForBooking = async (bookingId, rejectedById, rejectio
       console.error("Error sending contract rejection email:", emailError);
       // Don't fail the function if email fails
     }
-    
+
     return { success: true, contract };
   } catch (error) {
     console.error("Error rejecting contract for booking:", error);

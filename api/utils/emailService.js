@@ -10990,10 +10990,17 @@ export const sendVerificationRequestedEmail = async (email, verificationDetails)
   try {
     const {
       propertyName,
-      verificationUrl
+      userName,
+      verificationUrl,
+      documents
     } = verificationDetails;
 
-    const subject = `📋 Property Verification Request Submitted - ${propertyName}`;
+    // formatted documents list
+    const ownershipDoc = documents?.ownershipProof ? '✓ Ownership Proof' : '✗ Ownership Proof Missing';
+    const identityDoc = documents?.identityProof ? '✓ Identity Proof' : '✗ Identity Proof Missing';
+    const addressDoc = documents?.addressProof ? '✓ Address Proof' : '✗ Address Proof Missing';
+
+    const subject = `Verification Request Received - ${propertyName}`;
 
     const html = `
       <!DOCTYPE html>
@@ -11011,23 +11018,36 @@ export const sendVerificationRequestedEmail = async (email, verificationDetails)
                 <span style="color: #ffffff; font-size: 36px; font-weight: bold;">📋</span>
               </div>
               <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Verification Request Submitted</h1>
-              <p style="color: #6b7280; margin: 10px 0 0 0;">Under review</p>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Under Review</p>
             </div>
             
             <div style="background-color: #eff6ff; padding: 25px; border-radius: 8px; border-left: 4px solid #3b82f6; margin-bottom: 25px;">
-              <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">Verification Status</h2>
+              <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">Request Details</h2>
+              <p style="color: #1e40af; margin: 0 0 15px 0;">Hello ${userName || 'User'},</p>
               <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
-                <p style="color: #4b5563; margin: 0;"><strong>Status:</strong> <span style="color: #f59e0b; font-weight: 600;">Pending Review</span></p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Status:</strong> <span style="color: #f59e0b; font-weight: 600;">Pending Review</span></p>
               </div>
+              
+              <h3 style="color: #1e40af; margin: 15px 0 10px 0; font-size: 16px;">Documents Submitted:</h3>
+              <ul style="list-style: none; padding: 0; margin: 0; color: #4b5563;">
+                 <li style="margin-bottom: 5px;">${ownershipDoc}</li>
+                 <li style="margin-bottom: 5px;">${identityDoc}</li>
+                 <li style="margin-bottom: 5px;">${addressDoc}</li>
+              </ul>
+
               <p style="color: #1e40af; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                Your property verification request has been submitted successfully. Our team will review your documents and property details. You will be notified once the verification is complete.
+                Our team will review your submitted documents and property details. This process usually takes 24-48 hours. You will be notified once the verification is complete.
               </p>
             </div>
             
             ${verificationUrl ? `<div style="text-align: center; margin-top: 30px;">
-              <a href="${verificationUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Verification Status</a>
+              <a href="${verificationUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">View Request Status</a>
             </div>` : ''}
+
+            <p style="text-align: center; color: #6b7280; font-size: 14px; margin-top: 20px;">
+               <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/sign-in" style="color: #3b82f6; text-decoration: none;">Sign in to your account</a>
+            </p>
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
@@ -11055,6 +11075,7 @@ export const sendVerificationApprovedEmail = async (email, verificationDetails) 
   try {
     const {
       propertyName,
+      userName,
       verificationUrl
     } = verificationDetails;
 
@@ -11075,18 +11096,19 @@ export const sendVerificationApprovedEmail = async (email, verificationDetails) 
               <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
                 <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✅</span>
               </div>
-              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Verification Approved!</h1>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Loan Approved!</h1>
               <p style="color: #6b7280; margin: 10px 0 0 0;">Congratulations</p>
             </div>
             
             <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
               <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Property Verified</h2>
+              <p style="color: #065f46; margin: 0 0 15px 0;">Hello ${userName || 'User'},</p>
               <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
                 <p style="color: #4b5563; margin: 0;"><strong>Status:</strong> <span style="color: #10b981; font-weight: 600;">✓ Verified</span></p>
               </div>
               <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                Congratulations! Your property ${propertyName} has been successfully verified. A verification badge has been added to your listing, which will help build trust with potential tenants.
+                Congratulations! Your property <strong>${propertyName}</strong> has been successfully verified. A verification badge has been added to your listing, which will increase visibility and trust with potential tenants.
               </p>
             </div>
             
@@ -11120,6 +11142,7 @@ export const sendVerificationRejectedEmail = async (email, verificationDetails) 
   try {
     const {
       propertyName,
+      userName,
       rejectionReason,
       verificationUrl
     } = verificationDetails;
@@ -11142,18 +11165,19 @@ export const sendVerificationRejectedEmail = async (email, verificationDetails) 
                 <span style="color: #ffffff; font-size: 36px; font-weight: bold;">❌</span>
               </div>
               <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Verification Rejected</h1>
-              <p style="color: #6b7280; margin: 10px 0 0 0;">Action required</p>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Action Required</p>
             </div>
             
             <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; border-left: 4px solid #ef4444; margin-bottom: 25px;">
-              <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">Verification Status</h2>
+              <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">Request Rejected</h2>
+              <p style="color: #991b1b; margin: 0 0 15px 0;">Hello ${userName || 'User'},</p>
               <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Status:</strong> <span style="color: #ef4444; font-weight: 600;">Rejected</span></p>
                 ${rejectionReason ? `<p style="color: #4b5563; margin: 10px 0 0;"><strong>Reason:</strong> ${rejectionReason}</p>` : ''}
               </div>
               <p style="color: #991b1b; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                Your property verification request has been rejected. Please review the reason provided and resubmit your verification request with corrected information or additional documents.
+                Your property verification request has been rejected. Please review the reason provided above and resubmit your verification request with correct information or documents.
               </p>
             </div>
             
