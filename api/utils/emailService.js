@@ -6278,6 +6278,20 @@ export const sendAppointmentCancelledByAdminEmail = async (email, appointmentDet
   }
 };
 
+// Unified Appointment Cancelled Email
+export const sendAppointmentCancelledEmail = async (email, appointmentDetails, userRole) => {
+  const { cancelledBy } = appointmentDetails;
+
+  if (cancelledBy === 'buyer') {
+    return sendAppointmentCancelledByBuyerEmail(email, appointmentDetails);
+  } else if (cancelledBy === 'seller') {
+    return sendAppointmentCancelledBySellerEmail(email, appointmentDetails);
+  } else {
+    // Default to admin cancellation if not specified or explicit admin
+    return sendAppointmentCancelledByAdminEmail(email, appointmentDetails, userRole);
+  }
+};
+
 // Appointment Reinitiated by Admin Email (to both buyer and seller)
 export const sendAppointmentReinitiatedByAdminEmail = async (email, appointmentDetails, userRole) => {
   try {
