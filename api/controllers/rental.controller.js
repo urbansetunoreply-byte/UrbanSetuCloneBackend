@@ -2941,9 +2941,9 @@ export const getRentalLoan = async (req, res, next) => {
       return res.status(404).json({ message: "Loan not found." });
     }
 
-    // Verify user has access (applicant or admin)
+    // Verify user has access (applicant or rootadmin or admin)
     const user = await User.findById(userId);
-    const isAdmin = user?.role === 'admin';
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
 
     if (loan.userId._id.toString() !== userId && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });
