@@ -18,10 +18,10 @@ const buildPayMonthlyRentUrl = (contractId) => {
 
 export default function RentalContracts() {
   usePageTitle("My Rental Contracts - UrbanSetu");
-  
+
   const { currentUser } = useSelector((state) => state.user);
   const navigate = useNavigate();
-  
+
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filter, setFilter] = useState('all'); // 'all', 'active', 'pending_signature', 'expired', 'terminated', 'rejected'
@@ -150,7 +150,7 @@ export default function RentalContracts() {
     if (!contract || !currentUser) return null;
     const isTenant = contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id;
     const isLandlord = contract.landlordId?._id === currentUser._id || contract.landlordId === currentUser._id;
-    
+
     if (isTenant) return 'tenant';
     if (isLandlord) return 'landlord';
     return null;
@@ -182,7 +182,7 @@ export default function RentalContracts() {
 
     try {
       setActionLoading('signing');
-      
+
       const contractId = signingContract.contractId || signingContract._id;
       if (!contractId) {
         throw new Error("Contract ID not found. Please refresh and try again.");
@@ -204,7 +204,7 @@ export default function RentalContracts() {
 
       // Refresh contracts list
       await fetchContracts();
-      
+
       setShowSignatureModal(false);
       setShowReviewModal(false);
       setSigningContract(null);
@@ -267,7 +267,7 @@ export default function RentalContracts() {
 
     const bookingId = contract.bookingId?._id || contract.bookingId;
     const rejectionReason = prompt("Please provide a reason for rejecting this appointment (optional):");
-    
+
     if (rejectionReason === null) {
       // User cancelled the prompt
       return;
@@ -278,7 +278,7 @@ export default function RentalContracts() {
     try {
       const { data } = await axios.patch(
         `${API_BASE_URL}/api/bookings/${bookingId}/status`,
-        { 
+        {
           status: 'rejected',
           rejectionReason: rejectionReason || 'Booking rejected by seller'
         },
@@ -342,11 +342,10 @@ export default function RentalContracts() {
               <button
                 key={status}
                 onClick={() => setFilter(status)}
-                className={`px-4 py-2 rounded-lg font-medium transition ${
-                  filter === status
+                className={`px-4 py-2 rounded-lg font-medium transition ${filter === status
                     ? 'bg-blue-600 text-white'
                     : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 {status === 'all' ? 'All Contracts' : getStatusLabel(status)}
               </button>
@@ -382,323 +381,325 @@ export default function RentalContracts() {
               const listingName = contract.listingId?.name || 'Property Contract';
 
               return (
-              <div
-                key={contract._id}
-                className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}
-              >
-                <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <FaFileContract className="text-2xl text-blue-600" />
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-800">
-                          {listingId ? (
-                            <Link
-                              to={`/listing/${listingId}`}
-                              className="text-blue-600 hover:text-blue-800 hover:underline"
-                            >
-                              {listingName}
-                            </Link>
-                          ) : (
-                            listingName
-                          )}
-                        </h3>
-                        <p className="text-sm text-gray-600 font-mono">
-                          {contract.contractId}
-                        </p>
-                      </div>
-                    </div>
-
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
-                      <div>
-                        <p className="text-gray-600 mb-1 flex items-center gap-1">
-                          <FaMoneyBillWave className="text-green-600" /> Monthly Rent
-                        </p>
-                        <p className="font-semibold">
-                          ₹{contract.lockedRentAmount?.toLocaleString('en-IN') || contract.rentAmount?.toLocaleString('en-IN') || '0'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 mb-1 flex items-center gap-1">
-                          <FaLock className="text-purple-600" /> Duration
-                        </p>
-                        <p className="font-semibold">{contract.lockDuration} months</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 mb-1 flex items-center gap-1">
-                          <FaCalendarAlt className="text-indigo-600" /> Start Date
-                        </p>
-                        <p className="font-semibold">
-                          {contract.startDate ? new Date(contract.startDate).toLocaleDateString('en-GB') : 'N/A'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 mb-1 flex items-center gap-1">
-                          <FaCalendarAlt className="text-red-600" /> End Date
-                        </p>
-                        <p className="font-semibold">
-                          {contract.endDate ? new Date(contract.endDate).toLocaleDateString('en-GB') : 'N/A'}
-                        </p>
-                      </div>
-                    </div>
-
-                    {/* Signature Status */}
-                    <div className="mt-4 flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Tenant:</span>
-                        {contract.tenantSignature?.signed ? (
-                          <FaCheckCircle className="text-green-600" />
-                        ) : (
-                          <FaTimesCircle className="text-yellow-600" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Landlord:</span>
-                        {contract.landlordSignature?.signed ? (
-                          <FaCheckCircle className="text-green-600" />
-                        ) : (
-                          <FaTimesCircle className="text-yellow-600" />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Payment Status - Show monthly payment status for active contracts */}
-                    {contract.status === 'active' && contract.wallet?.paymentSchedule && contract.wallet.paymentSchedule.length > 0 && (
-                      <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                          <FaMoneyBillWave className="text-green-600" /> Payment Status
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {contract.wallet.paymentSchedule
-                            .sort((a, b) => {
-                              if (a.year !== b.year) return a.year - b.year;
-                              return a.month - b.month;
-                            })
-                            .slice(0, 6) // Show first 6 months
-                            .map((payment, idx) => (
-                              <div
-                                key={idx}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 ${
-                                  payment.status === 'completed'
-                                    ? 'bg-green-100 text-green-700 border border-green-300'
-                                    : payment.status === 'overdue'
-                                    ? 'bg-red-100 text-red-700 border border-red-300'
-                                    : payment.status === 'processing'
-                                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
-                                    : 'bg-gray-100 text-gray-600 border border-gray-300'
-                                }`}
-                                title={`${payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : payment.status === 'processing' ? 'Processing' : 'Pending'} - Month ${payment.month}/${payment.year}`}
+                <div
+                  key={contract._id}
+                  className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}
+                >
+                  <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <FaFileContract className="text-2xl text-blue-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">
+                            {listingId ? (
+                              <Link
+                                to={`/listing/${listingId}`}
+                                className="text-blue-600 hover:text-blue-800 hover:underline"
                               >
-                                {payment.status === 'completed' && <FaCheckCircle className="text-xs" />}
-                                {payment.status === 'overdue' && <FaTimesCircle className="text-xs" />}
-                                {payment.status === 'processing' && <FaSpinner className="text-xs animate-spin" />}
-                                {!payment.status || payment.status === 'pending' ? (
-                                  <>
-                                    <FaClock className="text-xs" />
-                                    Month {idx + 1}
-                                  </>
-                                ) : (
-                                  <>
-                                    {payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : 'Processing'} - Month {idx + 1}
-                                  </>
-                                )}
+                                {listingName}
+                              </Link>
+                            ) : (
+                              listingName
+                            )}
+                          </h3>
+                          <p className="text-sm text-gray-600 font-mono">
+                            {contract.contractId}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
+                        <div>
+                          <p className="text-gray-600 mb-1 flex items-center gap-1">
+                            <FaMoneyBillWave className="text-green-600" /> Monthly Rent
+                          </p>
+                          <p className="font-semibold">
+                            ₹{contract.lockedRentAmount?.toLocaleString('en-IN') || contract.rentAmount?.toLocaleString('en-IN') || '0'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1 flex items-center gap-1">
+                            <FaLock className="text-purple-600" /> Duration
+                          </p>
+                          <p className="font-semibold">{contract.lockDuration} months</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1 flex items-center gap-1">
+                            <FaCalendarAlt className="text-indigo-600" /> Start Date
+                          </p>
+                          <p className="font-semibold">
+                            {contract.startDate ? new Date(contract.startDate).toLocaleDateString('en-GB') : 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1 flex items-center gap-1">
+                            <FaCalendarAlt className="text-red-600" /> End Date
+                          </p>
+                          <p className="font-semibold">
+                            {contract.endDate ? new Date(contract.endDate).toLocaleDateString('en-GB') : 'N/A'}
+                          </p>
+                        </div>
+                      </div>
+
+                      {/* Signature Status */}
+                      <div className="mt-4 flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">Tenant:</span>
+                          {contract.tenantSignature?.signed ? (
+                            <FaCheckCircle className="text-green-600" />
+                          ) : (
+                            <FaTimesCircle className="text-yellow-600" />
+                          )}
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">Landlord:</span>
+                          {contract.landlordSignature?.signed ? (
+                            <FaCheckCircle className="text-green-600" />
+                          ) : (
+                            <FaTimesCircle className="text-yellow-600" />
+                          )}
+                        </div>
+                      </div>
+
+                      {/* Payment Status - Show monthly payment status for active contracts */}
+                      {contract.status === 'active' && contract.wallet?.paymentSchedule && contract.wallet.paymentSchedule.length > 0 && (
+                        <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                          <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                            <FaMoneyBillWave className="text-green-600" /> Payment Status
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {contract.wallet.paymentSchedule
+                              .sort((a, b) => {
+                                if (a.year !== b.year) return a.year - b.year;
+                                return a.month - b.month;
+                              })
+                              .slice(0, 6) // Show first 6 months
+                              .map((payment, idx) => (
+                                <div
+                                  key={idx}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 ${payment.status === 'completed'
+                                      ? 'bg-green-100 text-green-700 border border-green-300'
+                                      : payment.status === 'overdue'
+                                        ? 'bg-red-100 text-red-700 border border-red-300'
+                                        : payment.status === 'processing'
+                                          ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                                          : 'bg-gray-100 text-gray-600 border border-gray-300'
+                                    }`}
+                                  title={`${payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : payment.status === 'processing' ? 'Processing' : 'Pending'} - Month ${payment.month}/${payment.year}`}
+                                >
+                                  {payment.status === 'completed' && <FaCheckCircle className="text-xs" />}
+                                  {payment.status === 'overdue' && <FaTimesCircle className="text-xs" />}
+                                  {payment.status === 'processing' && <FaSpinner className="text-xs animate-spin" />}
+                                  {!payment.status || payment.status === 'pending' ? (
+                                    <>
+                                      <FaClock className="text-xs" />
+                                      Month {idx + 1}
+                                    </>
+                                  ) : (
+                                    <>
+                                      {payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : 'Processing'} - Month {idx + 1}
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            {contract.wallet.paymentSchedule.length > 6 && (
+                              <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300">
+                                +{contract.wallet.paymentSchedule.length - 6} more
                               </div>
-                            ))}
-                          {contract.wallet.paymentSchedule.length > 6 && (
-                            <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300">
-                              +{contract.wallet.paymentSchedule.length - 6} more
+                            )}
+                          </div>
+                          {contract.wallet.totalPaid > 0 && (
+                            <div className="mt-2 text-xs text-gray-600">
+                              Total Paid: <span className="font-semibold text-green-600">₹{contract.wallet.totalPaid.toLocaleString('en-IN')}</span>
+                              {contract.wallet.totalDue > 0 && (
+                                <> | Pending: <span className="font-semibold text-yellow-600">₹{contract.wallet.totalDue.toLocaleString('en-IN')}</span></>
+                              )}
                             </div>
                           )}
                         </div>
-                        {contract.wallet.totalPaid > 0 && (
-                          <div className="mt-2 text-xs text-gray-600">
-                            Total Paid: <span className="font-semibold text-green-600">₹{contract.wallet.totalPaid.toLocaleString('en-IN')}</span>
-                            {contract.wallet.totalDue > 0 && (
-                              <> | Pending: <span className="font-semibold text-yellow-600">₹{contract.wallet.totalDue.toLocaleString('en-IN')}</span></>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
 
-                  <div className="flex flex-col gap-2">
-                    {(() => {
-                      // Buyer/Tenant actions
-                      if (isTenant && (contract.status === 'pending_signature' || contract.status === 'draft')) {
-                        return (
-                          <button
-                            onClick={() => {
-                              const listingId = contract.listingId?._id || contract.listingId;
-                              if (listingId) {
-                                navigate(`/user/rent-property?listingId=${listingId}&contractId=${contract.contractId || contract._id}`);
-                              } else {
-                                toast.error('Unable to continue contract. Listing not found.');
-                              }
-                            }}
-                            className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
-                          >
-                            <FaPlayCircle /> Continue Contract
-                          </button>
-                        );
-                      }
-                      
-                      // Seller/Landlord actions
-                      if (isLandlord && contract.status === 'pending_signature') {
-                        const booking = contract.bookingId;
-                        const appointmentStatus = booking?.status || 'pending';
-                        const paymentConfirmed = !!booking?.paymentConfirmed;
-                        
-                        return (
-                          <>
+                    <div className="flex flex-col gap-2">
+                      {(() => {
+                        // Buyer/Tenant actions
+                        if (isTenant && (contract.status === 'pending_signature' || contract.status === 'draft')) {
+                          return (
                             <button
-                              onClick={() => handleReview(contract)}
-                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-                              disabled={actionLoading !== ''}
+                              onClick={() => {
+                                const listingId = contract.listingId?._id || contract.listingId;
+                                if (listingId) {
+                                  navigate(`/user/rent-property?listingId=${listingId}&contractId=${contract.contractId || contract._id}`);
+                                } else {
+                                  toast.error('Unable to continue contract. Listing not found.');
+                                }
+                              }}
+                              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
                             >
-                              <FaEye /> Review Contract
+                              <FaPlayCircle /> Continue Contract
                             </button>
-                            {appointmentStatus === 'pending' && (
-                              <>
-                                <button
-                                  onClick={() => handleAcceptAppointment(contract)}
-                                  disabled={!paymentConfirmed || actionLoading === `accept-${contract._id}` || actionLoading !== ''}
-                                  className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                  title={!paymentConfirmed ? 'Waiting for tenant to complete payment' : undefined}
-                                >
-                                  {actionLoading === `accept-${contract._id}` ? (
-                                    <>
-                                      <FaSpinner className="animate-spin" /> Accepting...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <FaCheck /> Accept
-                                    </>
+                          );
+                        }
+
+                        // Seller/Landlord actions
+                        if (isLandlord && contract.status === 'pending_signature') {
+                          const booking = contract.bookingId;
+                          const appointmentStatus = booking?.status || 'pending';
+                          const paymentConfirmed = !!booking?.paymentConfirmed;
+
+                          return (
+                            <>
+                              <button
+                                onClick={() => handleReview(contract)}
+                                className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                                disabled={actionLoading !== ''}
+                              >
+                                <FaEye /> Review Contract
+                              </button>
+                              {appointmentStatus === 'pending' && (
+                                <>
+                                  <button
+                                    onClick={() => handleAcceptAppointment(contract)}
+                                    disabled={!paymentConfirmed || actionLoading === `accept-${contract._id}` || actionLoading !== ''}
+                                    className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                    title={!paymentConfirmed ? 'Waiting for tenant to complete payment' : undefined}
+                                  >
+                                    {actionLoading === `accept-${contract._id}` ? (
+                                      <>
+                                        <FaSpinner className="animate-spin" /> Accepting...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <FaCheck /> Accept
+                                      </>
+                                    )}
+                                  </button>
+                                  {!paymentConfirmed && (
+                                    <p className="text-xs text-gray-600 flex items-center gap-1">
+                                      <FaClock className="text-yellow-600" /> Awaiting tenant payment confirmation
+                                    </p>
                                   )}
-                                </button>
-                                {!paymentConfirmed && (
-                                  <p className="text-xs text-gray-600 flex items-center gap-1">
-                                    <FaClock className="text-yellow-600" /> Awaiting tenant payment confirmation
-                                  </p>
-                                )}
-                                <button
-                                  onClick={() => handleRejectAppointment(contract)}
-                                  disabled={actionLoading === `reject-${contract._id}` || actionLoading !== ''}
-                                  className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-                                >
-                                  {actionLoading === `reject-${contract._id}` ? (
-                                    <>
-                                      <FaSpinner className="animate-spin" /> Rejecting...
-                                    </>
-                                  ) : (
-                                    <>
-                                      <FaTimes /> Reject
-                                    </>
-                                  )}
-                                </button>
-                              </>
-                            )}
-                          </>
-                        );
-                      }
-                      
-                      return null;
-                    })()}
-                    <button
-                      onClick={() => handleView(contract)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-                    >
-                      <FaEye /> View Details
-                    </button>
-                    {isTenant && contract.contractId && (
-                      <Link
-                        to={`/user/rent-wallet?contractId=${contractIdentifier}`}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
-                        title="View Rent Wallet"
-                      >
-                        <FaWallet /> Rent Wallet
-                      </Link>
-                    )}
-                    {isTenant && contract.status === 'active' && contract.walletId && (
+                                  <button
+                                    onClick={() => handleRejectAppointment(contract)}
+                                    disabled={actionLoading === `reject-${contract._id}` || actionLoading !== ''}
+                                    className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+                                  >
+                                    {actionLoading === `reject-${contract._id}` ? (
+                                      <>
+                                        <FaSpinner className="animate-spin" /> Rejecting...
+                                      </>
+                                    ) : (
+                                      <>
+                                        <FaTimes /> Reject
+                                      </>
+                                    )}
+                                  </button>
+                                </>
+                              )}
+                            </>
+                          );
+                        }
+
+                        return null;
+                      })()}
                       <button
-                        onClick={() => navigate(`/user/rent-wallet?contractId=${contractIdentifier}`)}
-                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"
+                        onClick={() => handleView(contract)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
                       >
-                        <FaMoneyBillWave /> Rent Wallet
+                        <FaEye /> View Details
                       </button>
-                    )}
-                    {contract.status === 'active' && isTenant && contract.wallet && contract.wallet.paymentSchedule && contract.wallet.paymentSchedule.filter(p => p.status === 'pending' || p.status === 'overdue').length > 0 && (
-                      <button
-                        onClick={() => {
-                          const nextPending = contract.wallet.paymentSchedule.find((p, idx) => p.status === 'pending' || p.status === 'overdue');
-                          const nextIndex = contract.wallet.paymentSchedule.indexOf(nextPending);
-                          navigate(`/user/pay-monthly-rent?contractId=${contractIdentifier}&scheduleIndex=${nextIndex}`);
-                        }}
-                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
-                      >
-                        <FaMoneyBillWave /> Pay Next Rent
-                      </button>
-                    )}
-                    {contract.status === 'active' && isTenant && (
-                      <a
-                        href={payMonthlyRentUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
-                      >
-                        <FaExternalLinkAlt /> Pay Monthly Rent Page
-                      </a>
-                    )}
-                    {contract.status === 'active' && (
-                      <>
-                        {showMoveInChecklist && (
-                          <button
-                            onClick={() => navigate(`/user/services?contractId=${contractIdentifier}&checklist=move_in`)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-                          >
-                            <FaSignInAlt /> Move-In Checklist
-                          </button>
-                        )}
-                        <button
-                          onClick={() => navigate(`/user/services?contractId=${contractIdentifier}&checklist=move_out`)}
-                          className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
+                      {isTenant && contract.contractId && (
+                        <Link
+                          to={`/user/rent-wallet?contractId=${contractIdentifier}`}
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                          title="View Rent Wallet"
                         >
-                          <FaSignOutAlt /> Move-Out Checklist
-                        </button>
+                          <FaWallet /> Rent Wallet
+                        </Link>
+                      )}
+                      {isTenant && contract.status === 'active' && contract.walletId && (
                         <button
-                          onClick={() => navigate(`/user/disputes?contractId=${contractIdentifier}`)}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
+                          onClick={() => navigate(`/user/rent-wallet?contractId=${contractIdentifier}`)}
+                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"
                         >
-                          <FaGavel /> Raise Dispute
+                          <FaMoneyBillWave /> Rent Wallet
                         </button>
+                      )}
+                      {contract.status === 'active' && isTenant && contract.wallet && contract.wallet.paymentSchedule && contract.wallet.paymentSchedule.filter(p => p.status === 'pending' || p.status === 'overdue').length > 0 && (
                         <button
                           onClick={() => {
-                            const isTenant = contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id;
-                            const isLandlord = contract.landlordId?._id === currentUser._id || contract.landlordId === currentUser._id;
-                            if (isTenant) {
-                              navigate(`/user/rental-ratings?contractId=${contractIdentifier}&role=tenant`);
-                            } else if (isLandlord) {
-                              navigate(`/user/rental-ratings?contractId=${contractIdentifier}&role=landlord`);
-                            }
+                            const nextPending = contract.wallet.paymentSchedule.find((p, idx) => p.status === 'pending' || p.status === 'overdue');
+                            const nextIndex = contract.wallet.paymentSchedule.indexOf(nextPending);
+                            navigate(`/user/pay-monthly-rent?contractId=${contractIdentifier}&scheduleIndex=${nextIndex}`);
                           }}
-                          className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 flex items-center justify-center gap-2"
+                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
                         >
-                          <FaStar /> Rate
+                          <FaMoneyBillWave /> Pay Next Rent
                         </button>
-                        {contract.status === 'active' && isTenant && (
+                      )}
+                      {contract.status === 'active' && isTenant && (
+                        <a
+                          href={payMonthlyRentUrl}
+                          target="_blank"
+                          rel="noopener noreferrer"
+                          className="px-4 py-2 bg-emerald-600 text-white rounded-lg hover:bg-emerald-700 flex items-center justify-center gap-2"
+                        >
+                          <FaExternalLinkAlt /> Pay Monthly Rent Page
+                        </a>
+                      )}
+                      {contract.status === 'active' && (
+                        <>
+                          {isTenant && showMoveInChecklist && (
+                            <button
+                              onClick={() => navigate(`/user/services?contractId=${contractIdentifier}&checklist=move_in`)}
+                              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
+                            >
+                              <FaSignInAlt /> Move-In Checklist
+                            </button>
+                          )}
+                          {isTenant && (
+                            <button
+                              onClick={() => navigate(`/user/services?contractId=${contractIdentifier}&checklist=move_out`)}
+                              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
+                            >
+                              <FaSignOutAlt /> Move-Out Checklist
+                            </button>
+                          )}
                           <button
-                            onClick={() => navigate(`/user/rental-loans?contractId=${contractIdentifier}`)}
-                            className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2"
+                            onClick={() => navigate(`/user/disputes?contractId=${contractIdentifier}`)}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
                           >
-                            <FaCreditCard /> Apply for Loan
+                            <FaGavel /> Raise Dispute
                           </button>
-                        )}
-                      </>
-                    )}
+                          <button
+                            onClick={() => {
+                              const isTenant = contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id;
+                              const isLandlord = contract.landlordId?._id === currentUser._id || contract.landlordId === currentUser._id;
+                              if (isTenant) {
+                                navigate(`/user/rental-ratings?contractId=${contractIdentifier}&role=tenant`);
+                              } else if (isLandlord) {
+                                navigate(`/user/rental-ratings?contractId=${contractIdentifier}&role=landlord`);
+                              }
+                            }}
+                            className="px-4 py-2 bg-yellow-600 text-white rounded-lg hover:bg-yellow-700 flex items-center justify-center gap-2"
+                          >
+                            <FaStar /> Rate
+                          </button>
+                          {contract.status === 'active' && isTenant && (
+                            <button
+                              onClick={() => navigate(`/user/rental-loans?contractId=${contractIdentifier}`)}
+                              className="px-4 py-2 bg-indigo-600 text-white rounded-lg hover:bg-indigo-700 flex items-center justify-center gap-2"
+                            >
+                              <FaCreditCard /> Apply for Loan
+                            </button>
+                          )}
+                        </>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            )})}
+              )
+            })}
           </div>
         )}
       </div>
@@ -748,7 +749,7 @@ export default function RentalContracts() {
                 ×
               </button>
             </div>
-            
+
             <ContractPreview
               contract={signingContract}
               listing={signingContract.listingId}
@@ -764,14 +765,14 @@ export default function RentalContracts() {
               const userRole = getUserRole(signingContract);
               const isLandlord = userRole === 'landlord';
               const landlordSigned = signingContract.landlordSignature?.signed;
-              
+
               if (isLandlord && signingContract.status === 'pending_signature') {
                 return (
                   <div className="mt-6 p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
                     <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
                       <FaPen className="text-blue-600" /> Your Signature Required
                     </h3>
-                    
+
                     {landlordSigned ? (
                       <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
                         <div className="flex items-center gap-2 text-green-700">
