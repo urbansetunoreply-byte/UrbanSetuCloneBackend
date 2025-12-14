@@ -835,7 +835,7 @@ export default function RentProperty() {
                   className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${formData.rentLockPlan === plan
                     ? 'border-blue-600 bg-blue-50'
                     : 'border-gray-300 hover:border-blue-400'
-                    }`}
+                    } ${contract ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
                 >
                   <input
                     type="radio"
@@ -843,6 +843,7 @@ export default function RentProperty() {
                     value={plan}
                     checked={formData.rentLockPlan === plan}
                     onChange={(e) => handlePlanChange(e.target.value)}
+                    disabled={!!contract}
                     className="mr-4"
                   />
                   <div className="flex-1">
@@ -878,7 +879,8 @@ export default function RentProperty() {
                   max="60"
                   value={formData.customLockDuration}
                   onChange={(e) => setFormData(prev => ({ ...prev, customLockDuration: parseInt(e.target.value) || 12 }))}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  disabled={!!contract}
+                  className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 />
               </div>
             )}
@@ -895,12 +897,13 @@ export default function RentProperty() {
                 onChange={(e) => setFormData(prev => ({ ...prev, moveInDate: e.target.value }))}
                 min={new Date().toISOString().split('T')[0]}
                 required
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                disabled={!!contract}
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
               />
             </div>
 
             {/* Appointment style inputs */}
-            <div className="mb-6 border border-gray-200 rounded-lg p-4">
+            <div className={`mb-6 border border-gray-200 rounded-lg p-4 ${contract ? 'bg-gray-50 opacity-80' : ''}`}>
               <h3 className="text-lg font-semibold text-gray-800 mb-4">Schedule Your Visit</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
@@ -908,8 +911,9 @@ export default function RentProperty() {
                   <select
                     value={formData.appointmentTime}
                     onChange={(e) => handleAppointmentFieldChange('appointmentTime', e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     required
+                    disabled={!!contract}
                   >
                     <option value="">Select Time (9 AM - 7 PM)</option>
                     {Array.from({ length: 21 }, (_, i) => {
@@ -933,8 +937,9 @@ export default function RentProperty() {
                   <select
                     value={formData.appointmentPurpose}
                     onChange={(e) => handleAppointmentFieldChange('appointmentPurpose', e.target.value)}
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                     required
+                    disabled={!!contract}
                   >
                     <option value="">Select Purpose</option>
                     <option value="rent">Rent Discussion</option>
@@ -950,7 +955,8 @@ export default function RentProperty() {
                   onChange={(e) => handleAppointmentFieldChange('appointmentMessage', e.target.value)}
                   rows="4"
                   placeholder="Tell the owner about your requirements, preferred slots, or anything else they'd need to know before the visit."
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
+                  disabled={!!contract}
+                  className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 ></textarea>
               </div>
             </div>
@@ -967,7 +973,7 @@ export default function RentProperty() {
                   className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'standard'
                     ? 'border-blue-600 bg-blue-50'
                     : 'border-gray-300 hover:border-blue-400'
-                    }`}
+                    } ${contract ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
                 >
                   <input
                     type="radio"
@@ -975,6 +981,7 @@ export default function RentProperty() {
                     value="standard"
                     checked={formData.depositPlan === 'standard'}
                     onChange={(e) => setFormData(prev => ({ ...prev, depositPlan: e.target.value }))}
+                    disabled={!!contract}
                     className="mt-1 mr-3"
                   />
                   <div className="flex-1">
@@ -995,7 +1002,7 @@ export default function RentProperty() {
                   className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'low'
                     ? 'border-blue-600 bg-blue-50'
                     : 'border-gray-300 hover:border-blue-400'
-                    }`}
+                    } ${contract ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
                 >
                   <input
                     type="radio"
@@ -1003,6 +1010,7 @@ export default function RentProperty() {
                     value="low"
                     checked={formData.depositPlan === 'low'}
                     onChange={(e) => setFormData(prev => ({ ...prev, depositPlan: e.target.value }))}
+                    disabled={!!contract}
                     className="mt-1 mr-3"
                   />
                   <div className="flex-1">
@@ -1025,7 +1033,7 @@ export default function RentProperty() {
                   className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'zero'
                     ? 'border-blue-600 bg-blue-50'
                     : 'border-gray-300 hover:border-blue-400'
-                    }`}
+                    } ${contract ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
                 >
                   <input
                     type="radio"
@@ -1033,6 +1041,7 @@ export default function RentProperty() {
                     value="zero"
                     checked={formData.depositPlan === 'zero'}
                     onChange={(e) => setFormData(prev => ({ ...prev, depositPlan: e.target.value }))}
+                    disabled={!!contract}
                     className="mt-1 mr-3"
                   />
                   <div className="flex-1">
@@ -1147,14 +1156,25 @@ export default function RentProperty() {
               </div>
             </div>
 
-            <button
-              onClick={handleNext}
-              disabled={loading || !formData.moveInDate || formData.moveInDate.trim() === ''}
-              className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
-            >
-              {loading ? 'Processing...' : 'Continue to Contract Review'}
-              <FaChevronRight className="ml-2" />
-            </button>
+            <div className="flex gap-4">
+              <button
+                onClick={handleNext}
+                disabled={!!contract || loading || !formData.moveInDate || formData.moveInDate.trim() === ''}
+                className="flex-1 bg-blue-600 text-white py-3 rounded-lg font-semibold hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center"
+              >
+                {loading ? 'Processing...' : 'Continue to Contract Review'}
+                <FaChevronRight className="ml-2" />
+              </button>
+
+              {contract && (
+                <button
+                  onClick={() => setStep(2)}
+                  className="flex-1 bg-green-600 text-white py-3 rounded-lg font-semibold hover:bg-green-700 flex items-center justify-center"
+                >
+                  Proceed to Contract <FaChevronRight className="ml-2" />
+                </button>
+              )}
+            </div>
           </div>
         )}
 
