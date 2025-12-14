@@ -2222,7 +2222,8 @@ export const approveVerification = async (req, res, next) => {
           await sendVerificationApprovedEmail(verificationPopulated.landlordId.email, {
             propertyName: verificationPopulated.listingId.name,
             userName: verificationPopulated.landlordId.username,
-            verificationUrl: `${clientUrl}/user/property-verification?listingId=${verificationPopulated.listingId._id}`
+            verificationUrl: `${clientUrl}/user/property-verification?listingId=${verificationPopulated.listingId._id}`,
+            listingUrl: `${clientUrl}/listing/${verificationPopulated.listingId._id}`
           });
         }
       }
@@ -2305,7 +2306,8 @@ export const rejectVerification = async (req, res, next) => {
           propertyName: verificationPopulated.listingId.name,
           userName: verificationPopulated.landlordId.username,
           rejectionReason: rejectionReason || 'Please check admin notes for details',
-          verificationUrl: `${clientUrl}/user/property-verification?listingId=${verificationPopulated.listingId._id}`
+          verificationUrl: `${clientUrl}/user/property-verification?listingId=${verificationPopulated.listingId._id}`,
+          listingUrl: `${clientUrl}/listing/${verificationPopulated.listingId._id}`
         });
       }
     }

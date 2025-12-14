@@ -11076,7 +11076,8 @@ export const sendVerificationApprovedEmail = async (email, verificationDetails) 
     const {
       propertyName,
       userName,
-      verificationUrl
+      verificationUrl,
+      listingUrl
     } = verificationDetails;
 
     const subject = `✅ Property Verification Approved - ${propertyName}`;
@@ -11096,7 +11097,7 @@ export const sendVerificationApprovedEmail = async (email, verificationDetails) 
               <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #10b981, #059669); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(16, 185, 129, 0.3);">
                 <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✅</span>
               </div>
-              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Loan Approved!</h1>
+              <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Property Verified!</h1>
               <p style="color: #6b7280; margin: 10px 0 0 0;">Congratulations</p>
             </div>
             
@@ -11114,6 +11115,10 @@ export const sendVerificationApprovedEmail = async (email, verificationDetails) 
             
             ${verificationUrl ? `<div style="text-align: center; margin-top: 30px;">
               <a href="${verificationUrl}" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.3);">View Verified Property</a>
+            </div>` : ''}
+
+            ${listingUrl ? `<div style="text-align: center; margin-top: 15px;">
+              <a href="${listingUrl}" style="background-color: white; color: #10b981; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; border: 2px solid #10b981;">View Public Listing</a>
             </div>` : ''}
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
@@ -11144,7 +11149,8 @@ export const sendVerificationRejectedEmail = async (email, verificationDetails) 
       propertyName,
       userName,
       rejectionReason,
-      verificationUrl
+      verificationUrl,
+      listingUrl
     } = verificationDetails;
 
     const subject = `❌ Property Verification Rejected - ${propertyName}`;
@@ -11183,6 +11189,10 @@ export const sendVerificationRejectedEmail = async (email, verificationDetails) 
             
             ${verificationUrl ? `<div style="text-align: center; margin-top: 30px;">
               <a href="${verificationUrl}" style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: white; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; box-shadow: 0 4px 6px rgba(59, 130, 246, 0.3);">Resubmit Verification</a>
+            </div>` : ''}
+
+            ${listingUrl ? `<div style="text-align: center; margin-top: 15px;">
+              <a href="${listingUrl}" style="background-color: white; color: #3b82f6; padding: 15px 25px; text-decoration: none; border-radius: 8px; font-weight: 600; display: inline-block; border: 2px solid #3b82f6;">View Public Listing</a>
             </div>` : ''}
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
