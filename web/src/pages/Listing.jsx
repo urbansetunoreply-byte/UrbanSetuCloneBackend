@@ -1902,7 +1902,7 @@ export default function Listing() {
                   </p>
                 </div>
                 {/* View Count - Only show for admins, rootadmins, and property owners */}
-                {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin' || (listing.userRef === currentUser._id) || (listing.sellerId === currentUser._id)) && (
+                {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin' || (listing.userRef && currentUser._id === listing.userRef)) && (
                   <div className="bg-white p-3 rounded-lg shadow-sm text-center">
                     <FaEye className="mx-auto text-blue-600 mb-1" />
                     <p className="text-xs text-gray-600">Views</p>
@@ -2591,10 +2591,15 @@ export default function Listing() {
                 <p className="font-semibold text-amber-900">{availabilityLabel}</p>
                 <p className="text-sm text-amber-800">{availabilityMessage}</p>
                 {availabilityLockedAt && (
-                  <p className="text-xs text-amber-600 mt-2">
-                    Locked since {new Date(availabilityLockedAt).toLocaleString()}
-                  </p>
-                )}
+                  isAdmin ||
+                  (currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id)) ||
+                  (currentUser && listing.availabilityMeta?.lockedBy === currentUser._id) ||
+                  userActiveContract
+                ) && (
+                    <p className="text-xs text-amber-600 mt-2">
+                      Locked since {new Date(availabilityLockedAt).toLocaleString()}
+                    </p>
+                  )}
               </div>
             </div>
           )}

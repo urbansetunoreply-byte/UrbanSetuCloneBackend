@@ -120,7 +120,7 @@ export default function ViewDocument() {
 
             // Optimization: Use locally fetched blob if available
             if (pdfBlobUrl) {
-                const filename = `${docName || 'document'} -${new Date().getTime()}.pdf`;
+                const filename = `${docName || 'document'}-${new Date().getTime()}.pdf`;
                 const link = document.createElement('a');
                 link.href = pdfBlobUrl;
                 link.download = filename;
@@ -130,9 +130,39 @@ export default function ViewDocument() {
                 return;
             }
 
-            // Fallback: Use backend proxy to ensure correct filename and avoid CORS issues
+            // Fetch from backend proxy to handle Auth headers and Filenames correctly
             const downloadUrl = `${API_BASE_URL}/api/rental/loans/documents/${documentId}/download`;
-            window.location.href = downloadUrl;
+            const response = await fetch(downloadUrl, {
+                method: 'GET',
+                credentials: 'include', // Important: Sends cookies
+            });
+
+            if (!response.ok) {
+                throw new Error(`Download failed: ${response.statusText}`);
+            }
+
+            // Get filename from Content-Disposition header if possible
+            let filename = `${docName || 'document'}-${new Date().getTime()}.pdf`;
+            const disposition = response.headers.get('content-disposition');
+            if (disposition && disposition.includes('filename=')) {
+                const match = disposition.match(/filename="?([^"]+)"?/);
+                if (match && match[1]) {
+                    filename = match[1];
+                }
+            }
+
+            const blob = await response.blob();
+            const blobUrl = window.URL.createObjectURL(blob);
+
+            const link = document.createElement('a');
+            link.href = blobUrl;
+            link.download = filename;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+
+            // Clean up
+            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
 
         } catch (error) {
             console.error('Error downloading document:', error);
