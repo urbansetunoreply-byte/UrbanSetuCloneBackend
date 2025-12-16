@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { FaUpload, FaTrash, FaImage, FaVideo, FaSpinner, FaExpand } from 'react-icons/fa';
+import { FaUpload, FaTrash, FaImage, FaVideo, FaSpinner, FaExpand, FaPlay } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import ImagePreview from '../ImagePreview';
 import VideoPreview from '../VideoPreview';
@@ -22,7 +22,9 @@ export default function ConditionImageUpload({
   existingImages = [],
   existingVideos = [],
   onUpdate,
-  readOnly = false
+  readOnly = false,
+  tenant,
+  landlord
 }) {
   const [images, setImages] = useState(existingImages || []);
   const [videos, setVideos] = useState(existingVideos || []);
@@ -31,6 +33,20 @@ export default function ConditionImageUpload({
   const [previewImages, setPreviewImages] = useState([]);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [showImagePreview, setShowImagePreview] = useState(false);
+
+  const [previewVideos, setPreviewVideos] = useState([]);
+  const [videoPreviewIndex, setVideoPreviewIndex] = useState(0);
+  const [showVideoPreview, setShowVideoPreview] = useState(false);
+
+  const getUploaderLabel = (uploadedBy) => {
+    if (!uploadedBy) return '';
+    const tenantId = tenant?._id || tenant || '';
+    const landlordId = landlord?._id || landlord || '';
+
+    if (uploadedBy === tenantId) return `(Tenant: ${tenant?.username || 'User'})`;
+    if (uploadedBy === landlordId) return `(Landlord: ${landlord?.username || 'User'})`;
+    return '(Admin)';
+  };
 
   const handleImageUpload = async (e) => {
     const files = Array.from(e.target.files);
@@ -229,6 +245,9 @@ export default function ConditionImageUpload({
                   <div className="text-xs">
                     <div className="font-medium">{ROOM_OPTIONS.find(o => o.value === img.room)?.label || img.room}</div>
                     {img.description && <div className="text-gray-600">{img.description}</div>}
+                    {getUploaderLabel(img.uploadedBy) && (
+                      <div className="text-xs text-blue-600 mt-1 italic">{getUploaderLabel(img.uploadedBy)}</div>
+                    )}
                   </div>
                 )}
               </div>
@@ -267,12 +286,22 @@ export default function ConditionImageUpload({
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             {videos.map((vid, index) => (
               <div key={index} className="border rounded-lg p-2 space-y-2">
-                <div className="relative bg-gray-100 rounded">
-                  <VideoPreview videoUrl={vid.url} />
+                <div className="relative bg-gray-100 rounded aspect-video overflow-hidden group">
+                  <video src={vid.url} className="w-full h-full object-cover" />
+                  <div
+                    className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-20 cursor-pointer transition-all"
+                    onClick={() => {
+                      setPreviewVideos(videos.map(v => v.url || v));
+                      setVideoPreviewIndex(index);
+                      setShowVideoPreview(true);
+                    }}
+                  >
+                    <FaPlay className="text-white text-3xl opacity-80 group-hover:opacity-100 scale-100 group-hover:scale-110 transition-all" />
+                  </div>
                   {!readOnly && (
                     <button
                       onClick={() => removeVideo(index)}
-                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600"
+                      className="absolute top-1 right-1 bg-red-500 text-white p-1 rounded-full hover:bg-red-600 z-10"
                     >
                       <FaTrash className="text-xs" />
                     </button>
@@ -301,6 +330,9 @@ export default function ConditionImageUpload({
                   <div className="text-xs">
                     <div className="font-medium">{ROOM_OPTIONS.find(o => o.value === vid.room)?.label || vid.room}</div>
                     {vid.description && <div className="text-gray-600">{vid.description}</div>}
+                    {getUploaderLabel(vid.uploadedBy) && (
+                      <div className="text-xs text-blue-600 mt-1 italic">{getUploaderLabel(vid.uploadedBy)}</div>
+                    )}
                   </div>
                 )}
               </div>
@@ -320,6 +352,19 @@ export default function ConditionImageUpload({
           }}
           images={previewImages}
           initialIndex={previewIndex}
+        />
+      )}
+
+      {showVideoPreview && previewVideos.length > 0 && (
+        <VideoPreview
+          isOpen={showVideoPreview}
+          onClose={() => {
+            setShowVideoPreview(false);
+            setPreviewVideos([]);
+            setVideoPreviewIndex(0);
+          }}
+          videos={previewVideos}
+          initialIndex={videoPreviewIndex}
         />
       )}
     </div>

@@ -95,7 +95,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
       }
 
       // Update checklist
-      const endpoint = checklistType === 'move_in' 
+      const endpoint = checklistType === 'move_in'
         ? `${API_BASE_URL}/api/rental/checklist/move-in/${checklistId}`
         : `${API_BASE_URL}/api/rental/checklist/move-out/${checklistId}`;
 
@@ -162,7 +162,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
   };
 
   const updateRoom = (index, updates) => {
-    const newRooms = rooms.map((room, i) => 
+    const newRooms = rooms.map((room, i) =>
       i === index ? { ...room, ...updates } : room
     );
     setRooms(newRooms);
@@ -263,12 +263,11 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
           {checklist && (
             <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
               <div>
-                <div className="font-semibold">Status: 
-                  <span className={`ml-2 px-2 py-1 rounded text-xs ${
-                    checklist.status === 'approved' || checklist.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    checklist.status === 'pending_approval' ? 'bg-yellow-100 text-yellow-800' :
-                    'bg-gray-100 text-gray-800'
-                  }`}>
+                <div className="font-semibold">Status:
+                  <span className={`ml-2 px-2 py-1 rounded text-xs ${checklist.status === 'approved' || checklist.status === 'completed' ? 'bg-green-100 text-green-800' :
+                      checklist.status === 'pending_approval' ? 'bg-yellow-100 text-yellow-800' :
+                        'bg-gray-100 text-gray-800'
+                    }`}>
                     {checklist.status}
                   </span>
                 </div>
@@ -295,6 +294,8 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
               existingVideos={videos}
               onUpdate={handleImageUpdate}
               readOnly={!canEdit}
+              tenant={contract?.tenantId}
+              landlord={contract?.landlordId}
             />
           </div>
 
@@ -354,13 +355,12 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                     ) : (
                       <>
                         <div className="font-semibold">{room.roomName || 'Unnamed Room'}</div>
-                        <div className={`px-2 py-1 rounded text-sm ${
-                          room.condition === 'excellent' ? 'bg-green-100 text-green-800' :
-                          room.condition === 'good' ? 'bg-blue-100 text-blue-800' :
-                          room.condition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
-                          room.condition === 'poor' ? 'bg-orange-100 text-orange-800' :
-                          'bg-red-100 text-red-800'
-                        }`}>
+                        <div className={`px-2 py-1 rounded text-sm ${room.condition === 'excellent' ? 'bg-green-100 text-green-800' :
+                            room.condition === 'good' ? 'bg-blue-100 text-blue-800' :
+                              room.condition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
+                                room.condition === 'poor' ? 'bg-orange-100 text-orange-800' :
+                                  'bg-red-100 text-red-800'
+                          }`}>
                           {CONDITION_OPTIONS.find(o => o.value === room.condition)?.label || room.condition}
                         </div>
                         <div className="text-sm text-gray-600">{room.notes || 'No notes'}</div>
@@ -492,16 +492,14 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                   ) : (
                     <>
                       <div className="font-medium">{amenity.name || 'Unnamed'}</div>
-                      <div className={`px-2 py-1 rounded text-sm ${
-                        amenity.condition === 'excellent' ? 'bg-green-100 text-green-800' :
-                        amenity.condition === 'good' ? 'bg-blue-100 text-blue-800' :
-                        'bg-yellow-100 text-yellow-800'
-                      }`}>
+                      <div className={`px-2 py-1 rounded text-sm ${amenity.condition === 'excellent' ? 'bg-green-100 text-green-800' :
+                          amenity.condition === 'good' ? 'bg-blue-100 text-blue-800' :
+                            'bg-yellow-100 text-yellow-800'
+                        }`}>
                         {CONDITION_OPTIONS.find(o => o.value === amenity.condition)?.label || amenity.condition}
                       </div>
-                      <div className={`px-2 py-1 rounded text-sm ${
-                        amenity.working ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
-                      }`}>
+                      <div className={`px-2 py-1 rounded text-sm ${amenity.working ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                        }`}>
                         {amenity.working ? 'Working' : 'Not Working'}
                       </div>
                       <div className="text-sm text-gray-600">{amenity.notes || 'No notes'}</div>
