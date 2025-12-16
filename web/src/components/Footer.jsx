@@ -45,21 +45,21 @@ const Footer = () => {
 
   return (
     <footer className="bg-gray-900 text-white">
-      <div className="max-w-7xl mx-auto px-4 py-6 md:py-12">
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+      <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
+        <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-8">
           {/* Company Info */}
-          <div className="space-y-4">
+          <div className="col-span-2 md:col-span-1 space-y-3">
             <div className="flex items-center gap-2">
               <div className="p-2 bg-yellow-400 rounded-lg">
                 <FaHome className="text-xl text-gray-900" />
               </div>
               <h3 className="text-xl font-bold">UrbanSetu</h3>
             </div>
-            <p className="text-gray-300 text-sm">
+            <p className="text-gray-400 text-xs md:text-sm leading-relaxed max-w-sm">
               Your trusted partner in finding the perfect property.
               We make real estate simple, smart, and secure.
             </p>
-            <div className="space-y-2 text-sm text-gray-300">
+            <div className="space-y-2 text-xs md:text-sm text-gray-300">
               <div className="flex items-center gap-2">
                 <FaPhone className="text-yellow-400" />
                 <span>+1 (555) 123-4567</span>
@@ -76,7 +76,7 @@ const Footer = () => {
           </div>
 
           {/* Quick Links */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h4 className="text-lg font-semibold">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
@@ -103,7 +103,7 @@ const Footer = () => {
           </div>
 
           {/* Services */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h4 className="text-lg font-semibold">Services</h4>
             <ul className="space-y-2 text-sm">
               <li>
@@ -130,7 +130,7 @@ const Footer = () => {
           </div>
 
           {/* Legal & Privacy */}
-          <div className="space-y-4">
+          <div className="space-y-3">
             <h4 className="text-lg font-semibold">Legal & Privacy</h4>
             <ul className="space-y-2 text-sm">
               <li>
