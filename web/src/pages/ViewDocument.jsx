@@ -132,17 +132,11 @@ export default function ViewDocument() {
 
             // Fetch from backend proxy to handle Auth headers and Filenames correctly
             const downloadUrl = `${API_BASE_URL}/api/rental/loans/documents/${documentId}/download`;
-            const response = await fetch(downloadUrl, {
-                method: 'GET',
-                credentials: 'include', // Important: Sends cookies
-            });
+            // Use _blank to avoid disrupting current page, browser will render it as download if header is set
+            window.open(downloadUrl, '_blank');
+            return;
 
-            if (!response.ok) {
-                throw new Error(`Download failed: ${response.statusText}`);
-            }
-
-            // Get filename from Content-Disposition header if possible
-            let filename = `${docName || 'document'}-${new Date().getTime()}.pdf`;
+            /*
             const disposition = response.headers.get('content-disposition');
             if (disposition && disposition.includes('filename=')) {
                 const match = disposition.match(/filename="?([^"]+)"?/);
@@ -161,8 +155,7 @@ export default function ViewDocument() {
             link.click();
             document.body.removeChild(link);
 
-            // Clean up
-            setTimeout(() => window.URL.revokeObjectURL(blobUrl), 100);
+            */
 
         } catch (error) {
             console.error('Error downloading document:', error);
@@ -273,6 +266,6 @@ export default function ViewDocument() {
                     )}
                 </div>
             </div>
-        </div>
+        </div >
     );
 }
