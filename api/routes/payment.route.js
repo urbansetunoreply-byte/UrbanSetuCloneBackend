@@ -877,6 +877,22 @@ router.post("/verify", verifyToken, async (req, res) => {
       }
     }
 
+    // Emit socket event for real-time payment status update (Moved to end ensures DB consistency)
+    if (io) {
+      io.emit('paymentStatusUpdated', {
+        appointmentId: payment.appointmentId,
+        paymentId: payment.paymentId,
+        contractId: payment.contractId,
+        paymentConfirmed: true
+      });
+      io.to(`user_${user._id}`).emit('paymentStatusUpdated', {
+        appointmentId: payment.appointmentId,
+        paymentId: payment.paymentId,
+        contractId: payment.contractId,
+        paymentConfirmed: true
+      });
+    }
+
     res.status(200).json({
       message: "Payment verified successfully",
       payment: payment,
