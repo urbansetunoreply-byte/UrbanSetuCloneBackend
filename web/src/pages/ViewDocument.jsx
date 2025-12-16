@@ -131,7 +131,7 @@ export default function ViewDocument() {
                         <FaLock className="text-2xl text-blue-600" />
                     </div>
                     <h2 className="text-2xl font-bold text-gray-800 mb-2">Restricted Access</h2>
-                    <p className="text-gray-600 mb-6">You must be signed in to view this document.</p>
+                    <p className="text-gray-600 mb-6">You must be signed with authorized user account to view this document.</p>
                     <button
                         onClick={() => navigate('/sign-in')}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
