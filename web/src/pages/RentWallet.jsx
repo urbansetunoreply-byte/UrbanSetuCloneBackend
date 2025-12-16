@@ -30,7 +30,7 @@ export default function RentWallet() {
 
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'schedule', 'history', 'settings'
 
-  const fetchWalletDetails = useCallback(async () => {
+  const fetchWalletDetails = useCallback(async (showLoading = true) => {
     if (!contractId) {
       toast.error("Contract ID is required.");
       navigate("/user/my-appointments");
@@ -44,7 +44,9 @@ export default function RentWallet() {
     }
 
     try {
-      setLoading(true);
+      if (showLoading) {
+        setLoading(true);
+      }
 
       // Fetch wallet
       const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contractId}`, {
@@ -82,14 +84,25 @@ export default function RentWallet() {
       toast.error("Failed to load wallet details.");
       navigate("/user/my-appointments");
     } finally {
-      setLoading(false);
+      if (showLoading) {
+        setLoading(false);
+      }
     }
   }, [contractId, currentUser, navigate]);
 
   // Fetch wallet details
   useEffect(() => {
-    fetchWalletDetails();
+    fetchWalletDetails(true); // Show loading initially
   }, [fetchWalletDetails]);
+
+  // Handle navigation state from payment page
+  useEffect(() => {
+    if (location.state?.refresh) {
+      fetchWalletDetails(false); // Silent refresh
+      // Clear state to prevent loop
+      navigate(location.pathname + location.search, { replace: true, state: {} });
+    }
+  }, [location, fetchWalletDetails, navigate]);
 
   useEffect(() => {
     const normalizedId = contractId?.toString();
@@ -97,7 +110,7 @@ export default function RentWallet() {
       const updatedId = event.detail?.contractId;
       if (!updatedId || !normalizedId || updatedId.toString() === normalizedId) {
         // Add a small delay to allow backend to process
-        setTimeout(fetchWalletDetails, 1000);
+        setTimeout(() => fetchWalletDetails(false), 1000); // Silent refresh
       }
     };
 
@@ -113,7 +126,7 @@ export default function RentWallet() {
 
     const hasProcessing = wallet.paymentSchedule.some(p => p.status === 'processing');
     if (hasProcessing) {
-      const interval = setInterval(fetchWalletDetails, 3000);
+      const interval = setInterval(() => fetchWalletDetails(false), 3000); // Silent polling
       return () => clearInterval(interval);
     }
   }, [wallet, fetchWalletDetails]);

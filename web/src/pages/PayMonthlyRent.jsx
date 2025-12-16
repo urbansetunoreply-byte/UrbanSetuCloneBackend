@@ -560,7 +560,7 @@ export default function PayMonthlyRent() {
                   Go to Contracts
                 </button>
                 <button
-                  onClick={() => navigate(`/user/rent-wallet?contractId=${contract._id}`)}
+                  onClick={() => navigate(`/user/rent-wallet?contractId=${contract._id}`, { state: { refresh: true } })}
                   className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
                 >
                   View Wallet
