@@ -1233,13 +1233,18 @@ export const approveMoveInOutChecklist = async (req, res, next) => {
 
     const isTenant = contract.tenantId.toString() === userId;
     const isLandlord = contract.landlordId.toString() === userId;
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'rootadmin';
 
-    if (!isTenant && !isLandlord) {
+    if (!isTenant && !isLandlord && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });
     }
 
     // Update approval
-    if (isTenant) {
+    if (isAdmin) {
+      checklist.tenantApproved = true;
+      checklist.landlordApproved = true;
+      if (notes) checklist.adminNotes = notes;
+    } else if (isTenant) {
       checklist.tenantApproved = true;
       checklist.tenantApprovedAt = new Date();
       checklist.tenantNotes = notes || checklist.tenantNotes;
@@ -1249,8 +1254,8 @@ export const approveMoveInOutChecklist = async (req, res, next) => {
       checklist.landlordNotes = notes || checklist.landlordNotes;
     }
 
-    // If both approved, mark as approved/completed
-    if (checklist.tenantApproved && checklist.landlordApproved) {
+    // If approved by admin or both parties, mark as approved/completed
+    if (isAdmin || (checklist.tenantApproved && checklist.landlordApproved)) {
       checklist.status = 'approved';
       checklist.completedAt = new Date();
 

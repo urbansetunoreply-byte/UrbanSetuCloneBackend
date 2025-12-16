@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { FaUpload, FaTrash, FaImage, FaVideo, FaSpinner, FaExpand, FaPlay } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import ImagePreview from '../ImagePreview';
@@ -37,6 +37,14 @@ export default function ConditionImageUpload({
   const [previewVideos, setPreviewVideos] = useState([]);
   const [videoPreviewIndex, setVideoPreviewIndex] = useState(0);
   const [showVideoPreview, setShowVideoPreview] = useState(false);
+
+  useEffect(() => {
+    setImages(existingImages || []);
+  }, [existingImages]);
+
+  useEffect(() => {
+    setVideos(existingVideos || []);
+  }, [existingVideos]);
 
   const getUploaderLabel = (uploadedBy) => {
     if (!uploadedBy) return '';

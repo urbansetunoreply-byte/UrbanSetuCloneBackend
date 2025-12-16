@@ -55,7 +55,12 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
       setVideos(checklist.videos || []);
       setRooms(checklist.rooms || []);
       setAmenities(checklist.amenities || []);
-      setNotes(isTenant ? (checklist.tenantNotes || '') : (checklist.landlordNotes || ''));
+      const adminRole = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
+      if (adminRole) {
+        setNotes(checklist.adminNotes || '');
+      } else {
+        setNotes(isTenant ? (checklist.tenantNotes || '') : (checklist.landlordNotes || ''));
+      }
     } else {
       // Initialize with default rooms if new checklist
       const defaultRooms = [
@@ -232,9 +237,9 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
   };
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
-  const canEdit = !isAdmin && (!checklist || checklist.status === 'in_progress' || (checklistType === 'move_in' && checklist.status === 'pending_approval' && ((isTenant && !checklist.tenantApproved) || (isLandlord && !checklist.landlordApproved))));
-  const canApprove = checklist && ((isTenant && !checklist.tenantApproved) || (isLandlord && !checklist.landlordApproved));
-  const showApprovalStatus = checklist && (checklist.tenantApproved || checklist.landlordApproved);
+  const canEdit = isAdmin || (!checklist || checklist.status === 'in_progress' || (checklistType === 'move_in' && checklist.status === 'pending_approval' && ((isTenant && !checklist.tenantApproved) || (isLandlord && !checklist.landlordApproved))));
+  const canApprove = checklist && (checklist.status !== 'approved' && checklist.status !== 'completed') && (isAdmin || (isTenant && !checklist.tenantApproved) || (isLandlord && !checklist.landlordApproved));
+  const showApprovalStatus = checklist && (checklist.tenantApproved || checklist.landlordApproved || checklist.status === 'approved');
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
