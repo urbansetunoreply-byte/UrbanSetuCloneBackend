@@ -30,6 +30,7 @@ export default function PayMonthlyRent() {
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [booking, setBooking] = useState(null);
   const [createdPayment, setCreatedPayment] = useState(null);
+  const [selectedGateway, setSelectedGateway] = useState('razorpay');
 
   useEffect(() => {
     if (!contractId) {
@@ -203,7 +204,8 @@ export default function PayMonthlyRent() {
           amount: selectedPayment.amount || contract.lockedRentAmount,
           month: selectedPayment.month,
           year: selectedPayment.year,
-          isAutoDebit: false
+          isAutoDebit: false,
+          gateway: selectedGateway
         })
       });
 
@@ -536,9 +538,46 @@ export default function PayMonthlyRent() {
               </div>
             </div>
 
-            <p className="text-gray-600 mb-6">
-              Click the button below to proceed with payment. You can pay via Razorpay or PayPal.
-            </p>
+            <div className="bg-white p-4 rounded-lg border border-gray-200 mt-4 mb-6">
+              <h4 className="font-semibold text-gray-800 mb-3">Select Payment Method</h4>
+              <div className="flex flex-col gap-3">
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedGateway === 'razorpay' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <input
+                    type="radio"
+                    name="gateway"
+                    value="razorpay"
+                    checked={selectedGateway === 'razorpay'}
+                    onChange={() => setSelectedGateway('razorpay')}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-gray-800">Razorpay (India)</span>
+                      <span className="font-bold text-gray-800">₹{getTotalAmount().toLocaleString('en-IN')}</span>
+                    </div>
+                    <div className="text-xs text-gray-500">Pay via UPI, Cards, Netbanking (INR)</div>
+                  </div>
+                </label>
+
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedGateway === 'paypal' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                  <input
+                    type="radio"
+                    name="gateway"
+                    value="paypal"
+                    checked={selectedGateway === 'paypal'}
+                    onChange={() => setSelectedGateway('paypal')}
+                    className="w-4 h-4 text-blue-600"
+                  />
+                  <div className="flex-1">
+                    <div className="flex justify-between items-center">
+                      <span className="font-medium text-gray-800">PayPal (International)</span>
+                      <span className="font-bold text-gray-800">$ {((getTotalAmount() / 84).toFixed(2))}</span>
+                    </div>
+                    <div className="text-xs text-gray-500">Pay via PayPal Wallet or Cards (USD)</div>
+                  </div>
+                </label>
+              </div>
+            </div>
 
             <div className="flex gap-4">
               <button

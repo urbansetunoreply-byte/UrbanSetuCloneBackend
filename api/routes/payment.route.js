@@ -690,8 +690,13 @@ router.post("/verify", verifyToken, async (req, res) => {
               scheduleEntry.paymentId = payment._id;
 
               // Update wallet totals
-              wallet.totalPaid = (wallet.totalPaid || 0) + payment.amount;
-              wallet.totalDue = Math.max(0, (wallet.totalDue || 0) - payment.amount);
+              // Use metadata.originalAmount if available (for USD payments converted from INR)
+              const amountToCredit = (payment.metadata && payment.metadata.originalAmount)
+                ? Number(payment.metadata.originalAmount)
+                : payment.amount;
+
+              wallet.totalPaid = (wallet.totalPaid || 0) + amountToCredit;
+              wallet.totalDue = Math.max(0, (wallet.totalDue || 0) - amountToCredit);
 
               await wallet.save();
               console.log(`✅ Rent wallet updated: ${payment.rentMonth}/${payment.rentYear} marked as completed. Total Paid: ${wallet.totalPaid}`);
@@ -1231,7 +1236,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
 // POST: Create monthly rent payment (with escrow)
 router.post("/monthly-rent", verifyToken, async (req, res) => {
   try {
-    const { contractId, walletId, scheduleIndex, amount, month, year, isAutoDebit } = req.body;
+    const { contractId, walletId, scheduleIndex, amount, month, year, isAutoDebit, gateway } = req.body;
     const userId = req.user.id;
 
     // Import required models
@@ -1281,8 +1286,25 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
       return res.status(404).json({ message: "Booking not found." });
     }
 
-    // Calculate total amount (rent + maintenance + penalty)
-    const totalAmount = amount + (scheduleEntry.penaltyAmount || 0) + (contract.maintenanceCharges || 0);
+    // Calculate total amount (rent + maintenance + penalty) in INR (Base currency)
+    const baseAmountInr = amount + (scheduleEntry.penaltyAmount || 0) + (contract.maintenanceCharges || 0);
+
+    // Determine gateway and currency
+    let finalGateway = gateway === 'paypal' ? 'paypal' : 'razorpay';
+    // If auto-debit, override with wallet setting if available
+    if (isAutoDebit && wallet.autoDebitMethod) {
+      finalGateway = wallet.autoDebitMethod;
+    }
+
+    let finalAmount = baseAmountInr;
+    let finalCurrency = 'INR';
+
+    if (finalGateway === 'paypal') {
+      // Convert to USD (approximate rate 84)
+      // Minimum PayPal amount is usually 0.01, but we use 1 as safe floor
+      finalAmount = Math.max(1, Math.round((baseAmountInr / 84) * 100) / 100);
+      finalCurrency = 'USD';
+    }
 
     // Create payment with escrow
     const payment = new Payment({
@@ -1292,10 +1314,11 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
       listingId: contract.listingId._id,
       contractId: contract._id,
       walletId: wallet._id,
-      amount: totalAmount,
+      amount: finalAmount,
+      currency: finalCurrency,
       penaltyAmount: scheduleEntry.penaltyAmount || 0,
       paymentType: 'monthly_rent',
-      gateway: isAutoDebit ? wallet.autoDebitMethod || 'razorpay' : 'razorpay',
+      gateway: finalGateway,
       status: 'pending',
       receiptNumber: generateReceiptNumber(),
       isAutoDebit: isAutoDebit || false,
@@ -1307,7 +1330,9 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
         year: year || scheduleEntry.year,
         rentType: 'monthly',
         contractId: contract._id.toString(),
-        walletId: wallet._id.toString()
+        walletId: wallet._id.toString(),
+        originalAmount: baseAmountInr, // Store INR amount for ledger updates
+        originalCurrency: 'INR'
       }
     });
 
