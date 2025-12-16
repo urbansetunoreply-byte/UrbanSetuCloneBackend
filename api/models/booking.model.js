@@ -191,7 +191,7 @@ const bookingSchema = new mongoose.Schema({
   // Rental Status
   rentalStatus: {
     type: String,
-    enum: ['pending_contract', 'contract_signed', 'move_in_pending', 'active_rental', 'move_out_pending', 'completed', 'terminated'],
+    enum: ['pending_contract', 'contract_signed', 'move_in_pending', 'active_rental', 'move_out_pending', 'completed', 'terminated', 'moved_in'],
     default: null
   },
 
