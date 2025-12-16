@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaCheckCircle, FaClock, FaExclamationTriangle, FaMoneyBillWave } from "react-icons/fa";
+import { FaCalendarAlt, FaCheckCircle, FaClock, FaExclamationTriangle, FaMoneyBillWave, FaDownload } from "react-icons/fa";
 import { toast } from 'react-toastify';
 import PaymentModal from '../PaymentModal';
 
@@ -233,12 +233,18 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
                         )}
                         {(payment.status === 'completed' || payment.status === 'paid') && payment.paymentId && (
                           <button
+
                             onClick={() => {
-                              // Navigate to payment receipt or download
-                              toast.info("Download receipt feature coming soon!");
+                              const receiptId = typeof payment.paymentId === 'object' ? payment.paymentId.paymentId : payment.paymentId;
+                              if (receiptId) {
+                                window.open(`${API_BASE_URL}/api/payments/${receiptId}/receipt`, '_blank');
+                              } else {
+                                toast.error("Receipt ID not found.");
+                              }
                             }}
-                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition"
+                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition flex items-center gap-2"
                           >
+                            <FaDownload />
                             Receipt
                           </button>
                         )}

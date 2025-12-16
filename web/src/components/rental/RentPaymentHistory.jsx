@@ -77,8 +77,17 @@ export default function RentPaymentHistory({ wallet, contract }) {
     }
 
     try {
-      // TODO: Implement receipt download
-      toast.info("Receipt download feature coming soon!");
+      const receiptId = typeof payment.paymentId === 'object'
+        ? payment.paymentId.paymentId
+        : payment.paymentId;
+
+      if (!receiptId) {
+        toast.error("Receipt ID missing.");
+        return;
+      }
+
+      const receiptUrl = `${API_BASE_URL}/api/payments/${receiptId}/receipt`;
+      window.open(receiptUrl, '_blank');
     } catch (error) {
       console.error("Error downloading receipt:", error);
       toast.error("Failed to download receipt.");
