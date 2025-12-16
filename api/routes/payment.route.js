@@ -670,8 +670,10 @@ router.post("/verify", verifyToken, async (req, res) => {
 
           if (wallet) {
             // Find schedule entry using rentMonth/rentYear or metadata as fallback
-            const targetMonth = payment.rentMonth || (payment.metadata && payment.metadata.month);
-            const targetYear = payment.rentYear || (payment.metadata && payment.metadata.year);
+            const getMeta = (key) => payment.metadata instanceof Map ? payment.metadata.get(key) : (payment.metadata ? payment.metadata[key] : undefined);
+
+            const targetMonth = payment.rentMonth || getMeta('month');
+            const targetYear = payment.rentYear || getMeta('year');
 
             const scheduleEntry = wallet.paymentSchedule.find(p => p.month === targetMonth && p.year === targetYear);
             if (scheduleEntry) {
@@ -681,9 +683,8 @@ router.post("/verify", verifyToken, async (req, res) => {
 
               // Update wallet totals
               // Use metadata.originalAmount if available (for USD payments converted from INR)
-              const amountToCredit = (payment.metadata && payment.metadata.originalAmount)
-                ? Number(payment.metadata.originalAmount)
-                : payment.amount;
+              const originalAmount = getMeta('originalAmount');
+              const amountToCredit = originalAmount ? Number(originalAmount) : payment.amount;
 
               wallet.totalPaid = (wallet.totalPaid || 0) + amountToCredit;
               wallet.totalDue = Math.max(0, (wallet.totalDue || 0) - amountToCredit);
