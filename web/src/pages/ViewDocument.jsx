@@ -143,7 +143,7 @@ export default function ViewDocument() {
         );
     }
 
-    const handleDownloadDocument = async (docUrl, docName, providedMimeType) => {
+    const handleDownloadDocument = async (docUrl, docName, providedMimeType, detectedFileType) => {
         try {
             if (!docUrl) return;
 
@@ -154,7 +154,12 @@ export default function ViewDocument() {
 
             // Determine default extension based on provided mime type
             let extension = 'pdf';
-            if (providedMimeType) {
+
+            // Strong override: if the viewer detected it as PDF (e.g. via raw URL check), trust it
+            if (detectedFileType === 'pdf') {
+                extension = 'pdf';
+            }
+            else if (providedMimeType) {
                 if (providedMimeType.includes('image')) extension = 'jpg';
                 else if (providedMimeType.includes('pdf')) extension = 'pdf';
             }
@@ -239,8 +244,9 @@ export default function ViewDocument() {
 
     if (loading) {
         return (
-            <div className="min-h-screen flex items-center justify-center bg-gray-100">
+            <div className="min-h-screen flex flex-col gap-4 items-center justify-center bg-gray-100">
                 <FaSpinner className="animate-spin text-4xl text-blue-600" />
+                <p className="text-gray-600 font-medium">Loading document...</p>
             </div>
         );
     }
@@ -295,7 +301,7 @@ export default function ViewDocument() {
                     </button>
                 ) : (
                     <button
-                        onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType)}
+                        onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType, fileType)}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         <FaDownload />
