@@ -608,15 +608,7 @@ export default function RentalContracts() {
                       >
                         <FaEye /> View Details
                       </button>
-                      {isTenant && contract.contractId && (
-                        <Link
-                          to={`/user/rent-wallet?contractId=${contractIdentifier}`}
-                          className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
-                          title="View Rent Wallet"
-                        >
-                          <FaWallet /> Rent Wallet
-                        </Link>
-                      )}
+
                       {contract.status === 'active' && (
                         <button
                           onClick={() => navigate(`/user/rent-wallet?contractId=${contractIdentifier}`)}

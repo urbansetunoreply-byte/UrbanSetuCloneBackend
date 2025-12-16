@@ -1084,6 +1084,10 @@ export default function MyAppointments() {
             <svg xmlns="http://www.w3.org/2000/svg" className="h-4 w-4" viewBox="0 0 24 24" fill="currentColor"><path d="M2 7a2 2 0 012-2h16a2 2 0 012 2v3H2V7z" /><path d="M2 12h20v5a2 2 0 01-2 2H4a2 2 0 01-2-2v-5zm4 3a1 1 0 100 2h6a1 1 0 100-2H6z" /></svg>
             Go to Payments
           </Link>
+          <Link to="/user/rental-contracts" className="inline-flex items-center gap-2 px-4 py-2 rounded-lg bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-semibold shadow ml-2">
+            <FaFileContract className="h-4 w-4" />
+            Go to Contracts
+          </Link>
         </div>
       )}
 
