@@ -33,15 +33,15 @@ const createPaymentLockManager = (appointmentId) => {
         credentials: 'include',
         body: JSON.stringify({ appointmentId })
       });
-      
+
       const data = await response.json();
-      
+
       // Check if backend lock acquisition failed
       if (response.status === 409) {
         // Another browser/device has the lock
         return { success: false, message: data.message || 'Payment session is already open in another browser/device. Please close that browser/device first before opening a new payment session.' };
       }
-      
+
       if (!response.ok || !data.ok) {
         // Backend error, fall back to localStorage (same-browser only)
         console.warn('Backend lock acquisition failed, falling back to localStorage:', data);
@@ -57,11 +57,11 @@ const createPaymentLockManager = (appointmentId) => {
       console.error('Error acquiring backend lock:', error);
       // If backend fails, fall back to localStorage only (same-browser detection)
     }
-    
+
     // Fallback to localStorage check (same-browser only)
     const lockData = localStorage.getItem(lockKey);
     const now = Date.now();
-    
+
     if (lockData) {
       try {
         const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
@@ -108,7 +108,7 @@ const createPaymentLockManager = (appointmentId) => {
       clearInterval(backendHeartbeatInterval);
       backendHeartbeatInterval = null;
     }
-    
+
     // Release backend lock
     try {
       await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/release`, {
@@ -122,7 +122,7 @@ const createPaymentLockManager = (appointmentId) => {
     } catch (error) {
       console.error('Error releasing backend lock:', error);
     }
-    
+
     // Release localStorage lock
     const lockData = localStorage.getItem(lockKey);
     if (lockData) {
@@ -165,7 +165,7 @@ const createPaymentLockManager = (appointmentId) => {
       }
     }, 2000); // Heartbeat every 2 seconds
   };
-  
+
   // Start backend heartbeat to keep lock alive (cross-browser)
   const startBackendHeartbeat = () => {
     if (backendHeartbeatInterval) {
@@ -181,7 +181,7 @@ const createPaymentLockManager = (appointmentId) => {
           credentials: 'include',
           body: JSON.stringify({ appointmentId })
         });
-        
+
         const data = await response.json();
         if (!response.ok || !data.ok || !data.locked) {
           // Lock was lost, release local resources
@@ -202,7 +202,7 @@ const createPaymentLockManager = (appointmentId) => {
         method: 'GET',
         credentials: 'include'
       });
-      
+
       const data = await response.json();
       if (data.ok && data.locked === true && !data.ownedByUser) {
         // Locked by another browser/device
@@ -212,11 +212,11 @@ const createPaymentLockManager = (appointmentId) => {
       console.error('Error checking backend lock:', error);
       // Continue with localStorage check as fallback
     }
-    
+
     // Fallback to localStorage check (same-browser only)
     const lockData = localStorage.getItem(lockKey);
     if (!lockData) return { locked: false };
-    
+
     try {
       const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
       const now = Date.now();
@@ -235,15 +235,15 @@ const createPaymentLockManager = (appointmentId) => {
 
   // Listen for lock release from other tabs
   const onLockReleased = (callback) => {
-    if (!channel) return () => {};
-    
+    if (!channel) return () => { };
+
     const handler = (event) => {
       if (event.data.type === 'lock_released') {
         callback();
       }
     };
     channel.addEventListener('message', handler);
-    
+
     return () => {
       channel.removeEventListener('message', handler);
     };
@@ -316,28 +316,28 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       }
       return null;
     });
-    
+
     // Release lock when closing
     if (lockManagerRef.current) {
       await lockManagerRef.current.releaseLock();
       lockManagerRef.current.cleanup();
       lockManagerRef.current = null;
     }
-    
+
     // Show message that payment was not completed
     if (paymentData && paymentData.payment) {
       toast.info('Payment not completed. You can try again later.');
     } else {
       toast.info('Payment session closed. You can try again later.');
     }
-    
+
     // Don't cancel payment when modal is closed - let it expire naturally after 10 minutes
     // This allows the user to reopen the modal and create a new payment ID if within 10 minutes
     // Payment will only be cancelled when:
     // 1. Timer expires (10 minutes) - handled by handleExpiry
     // 2. User explicitly cancels - handled separately
     // 3. Payment is completed - handled by onPaymentSuccess
-    
+
     // Reset states (but keep payment data in backend for reuse)
     setTimeRemaining(10 * 60);
     setPaymentData(null);
@@ -345,7 +345,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     setPaymentSuccess(false);
     setPaymentInitiatedTime(null); // Reset initiation time
     setLockAcquired(false); // Reset lock acquired state
-    
+
     onClose();
   };
 
@@ -355,11 +355,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       if (!lockManagerRef.current) {
         lockManagerRef.current = createPaymentLockManager(appointment._id);
       }
-      
+
       // Reset lock acquired state when modal opens
       setLockAcquired(false);
       setLoading(true);
-      
+
       // Try to acquire lock before opening modal (async)
       const acquireLockAsync = async () => {
         try {
@@ -373,19 +373,19 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
             onClose();
             return;
           }
-          
+
           // Lock acquired, mark as acquired and continue with modal initialization
           setLockAcquired(true);
-          
-      // Initialize method from appointment region before creating intent
-      const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
-      setPreferredMethod(methodFromAppt);
-      setPaymentData(null);
+
+          // Initialize method from appointment region before creating intent
+          const methodFromAppt = appointment?.region === 'india' ? 'razorpay' : 'paypal';
+          setPreferredMethod(methodFromAppt);
+          setPaymentData(null);
           paymentDataRef.current = null; // Reset ref
           setPaymentSuccess(false);
           setPaymentInitiatedTime(null); // Reset initiation time
           // Don't reset timeRemaining here - it will be calculated from payment data when received
-      setTimeout(() => createPaymentIntent(methodFromAppt), 0);
+          setTimeout(() => createPaymentIntent(methodFromAppt), 0);
         } catch (error) {
           console.error('Error acquiring lock:', error);
           toast.error('Failed to acquire payment lock. Please try again.');
@@ -394,14 +394,14 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           onClose();
         }
       };
-      
+
       acquireLockAsync();
-      
+
       // Listen for lock release from other tabs
       const removeLockListener = lockManagerRef.current.onLockReleased(() => {
         // Lock was released, but we're already open, so ignore
       });
-      
+
       // Handle page unload to release lock
       const handleBeforeUnload = () => {
         if (lockManagerRef.current) {
@@ -409,7 +409,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         }
       };
       window.addEventListener('beforeunload', handleBeforeUnload);
-      
+
       return () => {
         removeLockListener();
         window.removeEventListener('beforeunload', handleBeforeUnload);
@@ -424,7 +424,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       // Reset lock acquired state when modal closes
       setLockAcquired(false);
     }
-    
+
     // Lock body scroll when modal is open
     if (isOpen) {
       document.body.style.overflow = 'hidden';
@@ -435,7 +435,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       document.body.style.position = '';
       document.body.style.width = '';
     }
-    
+
     return () => {
       // Cleanup on unmount
       if (expiryTimer) {
@@ -492,7 +492,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   // for each new payment initialization. The 10 minutes is the payment window time, NOT payment ID expiry.
   const calculateRemainingTime = useCallback((paymentData) => {
     let expiresAtTime = null;
-    
+
     // Priority 1: Use appointment.lockExpiryTime (appointment payment window - resets to 10 min for each new payment)
     if (paymentData?.appointment?.lockExpiryTime) {
       expiresAtTime = new Date(paymentData.appointment.lockExpiryTime).getTime();
@@ -505,11 +505,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
     else if (paymentData?.payment?.createdAt) {
       expiresAtTime = new Date(paymentData.payment.createdAt).getTime() + 10 * 60 * 1000;
     }
-    
+
     if (!expiresAtTime) {
       return 10 * 60; // Default 10 minutes
     }
-    
+
     const now = Date.now();
     const remaining = Math.max(0, Math.floor((expiresAtTime - now) / 1000));
     return remaining;
@@ -527,7 +527,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       // Since each payment attempt creates a new payment ID, the appointment lock is reset to 10 minutes
       // for each new payment initialization. The 10 minutes is the payment window time, NOT payment ID expiry.
       let expiresAtTime = null;
-      
+
       // Priority 1: Use appointment.lockExpiryTime (appointment payment window - resets to 10 min for each new payment)
       if (paymentData.appointment?.lockExpiryTime) {
         expiresAtTime = new Date(paymentData.appointment.lockExpiryTime).getTime();
@@ -540,35 +540,35 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       else if (paymentData.payment?.createdAt) {
         expiresAtTime = new Date(paymentData.payment.createdAt).getTime() + 10 * 60 * 1000;
       }
-      
+
       if (!expiresAtTime) {
         // Fallback: set default expiry
         expiresAtTime = Date.now() + 10 * 60 * 1000;
       }
-      
+
       expiresAtRef.current = expiresAtTime;
-      
+
       // Calculate initial remaining time
       const remainingSeconds = calculateRemainingTime(paymentData);
-      
+
       // Set the calculated remaining time
       setTimeRemaining(remainingSeconds);
-      
+
       // If already expired, handle expiry immediately
       if (remainingSeconds <= 0) {
         handleExpiry();
         return;
       }
-      
+
       // Reset low time warning flag when timer restarts
       lowTimeWarningShownRef.current = false;
-      
+
       // Show warning immediately if less than 1 minute remaining when timer starts
       if (remainingSeconds <= 60 && remainingSeconds > 0) {
         lowTimeWarningShownRef.current = true;
         toast.warning('Please complete the payment immediately, or wait for this session to expire and initiate a new transaction.');
       }
-      
+
       // Timer function that recalculates remaining time from expiry timestamp
       // This ensures accuracy even when tab is inactive (browsers throttle setInterval)
       let timer = null;
@@ -576,18 +576,18 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         if (!expiresAtRef.current) {
           return;
         }
-        
+
         const now = Date.now();
         const remaining = Math.max(0, Math.floor((expiresAtRef.current - now) / 1000));
-        
+
         setTimeRemaining(remaining);
-        
+
         // Show warning toast when less than 1 minute remaining (only once)
         if (remaining <= 60 && remaining > 0 && !lowTimeWarningShownRef.current) {
           lowTimeWarningShownRef.current = true;
           toast.warning('Please complete the payment immediately, or wait for this session to expire and initiate a new transaction.');
         }
-        
+
         // If expired, handle expiry
         if (remaining <= 0) {
           if (timer) {
@@ -597,19 +597,19 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           handleExpiry();
         }
       };
-      
+
       // Start countdown timer - recalculate from expiry timestamp each second
       // This ensures accuracy even when browser throttles timers in inactive tabs
       timer = setInterval(updateTimer, 1000);
       setExpiryTimer(timer);
-      
+
       // Handle tab visibility changes to re-sync timer when tab becomes visible
       const handleVisibilityChange = () => {
         if (!document.hidden && expiresAtRef.current) {
           // Tab became visible, recalculate remaining time immediately
           const remaining = calculateRemainingTime(paymentData);
           setTimeRemaining(remaining);
-          
+
           // If expired while tab was hidden, handle expiry
           if (remaining <= 0) {
             if (timer) {
@@ -620,7 +620,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           }
         }
       };
-      
+
       document.addEventListener('visibilitychange', handleVisibilityChange);
 
       return () => {
@@ -640,7 +640,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   const createPaymentIntent = async (methodOverride) => {
     try {
       setLoading(true);
-      
+
       // For rental payments, skip appointment status check (contract is the source of truth)
       if (!appointment.isRentalPayment) {
         // Check appointment status before creating payment intent (only for non-rental payments)
@@ -649,7 +649,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           onClose();
           return;
         }
-        
+
         // Allow payment for pending or accepted appointments (not yet paid)
         if (appointment.status !== 'pending' && appointment.status !== 'accepted') {
           toast.error('This appointment is not in a payable status. Payment cannot be processed at this time.');
@@ -657,7 +657,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           return;
         }
       }
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {
         method: 'POST',
         headers: {
@@ -679,12 +679,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         // Store the payment initiation time (use payment createdAt or current time)
         const initiatedAt = data.payment?.createdAt ? new Date(data.payment.createdAt) : new Date();
         setPaymentInitiatedTime(initiatedAt);
-        
+
         // Calculate remaining time based on appointment.lockExpiryTime (appointment slot lock)
         // Timer is tied to appointment slot, NOT payment order ID
         const remaining = calculateRemainingTime(data);
         setTimeRemaining(remaining);
-        
+
         // Note: Timer will be started by the useEffect that watches paymentData
       } else {
         // Handle specific error cases
@@ -716,8 +716,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
             setExpiryTimer(null);
           }
           onClose();
-      } else {
-        toast.error(data.message || 'Failed to create payment intent');
+        } else {
+          toast.error(data.message || 'Failed to create payment intent');
         }
       }
     } catch (error) {
@@ -991,7 +991,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
   };
 
   if (!isOpen) return null;
-  
+
   // Don't render modal content until lock is acquired (prevents flash of modal before lock check)
   if (!lockAcquired && !paymentSuccess) {
     return (
@@ -1032,13 +1032,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                 <div className="mt-4 p-3 rounded-lg border-2 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300 shadow-md">
                   <div className="flex items-center justify-center gap-3">
                     <span className="text-gray-700 font-medium text-base">⏱️ Time remaining:</span>
-                    <span className={`text-2xl font-bold px-4 py-2 rounded-lg ${
-                      timeRemaining < 60 
-                        ? 'bg-red-100 text-red-700 border-2 border-red-400 animate-pulse' 
-                        : timeRemaining < 300 
-                        ? 'bg-orange-100 text-orange-700 border-2 border-orange-400' 
-                        : 'bg-green-100 text-green-700 border-2 border-green-400'
-                    }`}>
+                    <span className={`text-2xl font-bold px-4 py-2 rounded-lg ${timeRemaining < 60
+                        ? 'bg-red-100 text-red-700 border-2 border-red-400 animate-pulse'
+                        : timeRemaining < 300
+                          ? 'bg-orange-100 text-orange-700 border-2 border-orange-400'
+                          : 'bg-green-100 text-green-700 border-2 border-green-400'
+                      }`}>
                       {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
                     </span>
                   </div>
@@ -1073,11 +1072,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <h5 className="font-semibold text-gray-800 mb-2">Select Region</h5>
                     <div className="flex items-center gap-4 text-sm">
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m='razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
+                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m = 'razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
                         <span>India (₹100 via Razorpay)</span>
                       </label>
                       <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m='paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
+                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m = 'paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
                         <span>International ($5 via PayPal)</span>
                       </label>
                     </div>
@@ -1097,32 +1096,32 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-sm text-gray-500">Payment Initiated:</span>
                       <span className="text-sm font-medium">
-                        {paymentInitiatedTime 
-                          ? paymentInitiatedTime.toLocaleString('en-GB', { 
-                              day: '2-digit', 
-                              month: '2-digit', 
-                              year: 'numeric', 
-                              hour: '2-digit', 
-                              minute: '2-digit', 
-                              second: '2-digit' 
+                        {paymentInitiatedTime
+                          ? paymentInitiatedTime.toLocaleString('en-GB', {
+                            day: '2-digit',
+                            month: '2-digit',
+                            year: 'numeric',
+                            hour: '2-digit',
+                            minute: '2-digit',
+                            second: '2-digit'
+                          })
+                          : paymentData.payment?.createdAt
+                            ? new Date(paymentData.payment.createdAt).toLocaleString('en-GB', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit'
                             })
-                          : paymentData.payment?.createdAt 
-                            ? new Date(paymentData.payment.createdAt).toLocaleString('en-GB', { 
-                                day: '2-digit', 
-                                month: '2-digit', 
-                                year: 'numeric', 
-                                hour: '2-digit', 
-                                minute: '2-digit', 
-                                second: '2-digit' 
-                              })
-                            : new Date().toLocaleString('en-GB', { 
-                                day: '2-digit', 
-                                month: '2-digit', 
-                                year: 'numeric', 
-                                hour: '2-digit', 
-                                minute: '2-digit', 
-                                second: '2-digit' 
-                              })
+                            : new Date().toLocaleString('en-GB', {
+                              day: '2-digit',
+                              month: '2-digit',
+                              year: 'numeric',
+                              hour: '2-digit',
+                              minute: '2-digit',
+                              second: '2-digit'
+                            })
                         }
                       </span>
                     </div>
@@ -1192,22 +1191,22 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                     <div className="flex items-start gap-3">
                       <FaShieldAlt className="text-green-600 mt-1" />
                       <div>
-                <h5 className="font-semibold text-green-800 mb-1">Secure Payment via {preferredMethod === 'razorpay' ? 'Razorpay' : 'PayPal'}</h5>
-                <p className="text-sm text-green-700">Your payment is processed securely. You can request a full refund if the appointment is cancelled.</p>
+                        <h5 className="font-semibold text-green-800 mb-1">Secure Payment via {preferredMethod === 'razorpay' ? 'Razorpay' : 'PayPal'}</h5>
+                        <p className="text-sm text-green-700">Your payment is processed securely. You can request a full refund if the appointment is cancelled.</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Payment Button */}
-          <div className="space-y-2">
-            {preferredMethod === 'paypal' && <div id={`paypal-button-container-${appointment._id}`} />}
-            <button
-              onClick={handlePayment}
-              className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 shadow"
-            >
-              {loading ? 'Loading…' : (preferredMethod === 'razorpay' ? 'Pay via Razorpay' : 'Load PayPal Button')}
-            </button>
-          </div>
+                  <div className="space-y-2">
+                    {preferredMethod === 'paypal' && <div id={`paypal-button-container-${appointment._id}`} />}
+                    <button
+                      onClick={handlePayment}
+                      className="w-full bg-gradient-to-r from-blue-600 to-purple-600 text-white py-2 rounded-lg font-semibold hover:from-blue-700 hover:to-purple-700 shadow"
+                    >
+                      {loading ? 'Loading…' : (preferredMethod === 'razorpay' ? 'Pay via Razorpay' : 'Load PayPal Button')}
+                    </button>
+                  </div>
                 </>
               ) : (
                 <div className="text-center py-8">
@@ -1260,7 +1259,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                   <FaDownload />
                   Download Receipt
                 </button>
-                
+
                 <button
                   onClick={() => {
                     onClose();
