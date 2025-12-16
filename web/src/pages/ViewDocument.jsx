@@ -118,6 +118,18 @@ export default function ViewDocument() {
         try {
             if (!docUrl) return;
 
+            // Optimization: Use locally fetched blob if available (prevents CORS/Fallback issues)
+            if (pdfBlobUrl) {
+                const filename = `${docName || 'document'} -${new Date().getTime()}.pdf`;
+                const link = document.createElement('a');
+                link.href = pdfBlobUrl;
+                link.download = filename;
+                document.body.appendChild(link);
+                link.click();
+                document.body.removeChild(link);
+                return;
+            }
+
             const response = await fetch(docUrl, { mode: 'cors' });
             if (!response.ok) throw new Error('Failed to fetch document');
 
