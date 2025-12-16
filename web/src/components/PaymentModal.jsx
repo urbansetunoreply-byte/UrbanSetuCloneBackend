@@ -403,6 +403,11 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
               setMonthlyRentContext(existingPayment.metadata);
             }
 
+            // Sync preferred method with valid existing payment gateway
+            if (existingPayment.gateway === 'razorpay' || existingPayment.gateway === 'paypal') {
+              setPreferredMethod(existingPayment.gateway);
+            }
+
             const paymentWrapper = {
               payment: existingPayment,
               // If it's a Razorpay payment, construct the razorpay object needed for frontend
