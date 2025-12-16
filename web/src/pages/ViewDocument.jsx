@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
-import { FaSpinner, FaDownload, FaArrowLeft, FaFilePdf, FaImage, FaFileAlt } from 'react-icons/fa';
+import { FaSpinner, FaDownload, FaArrowLeft, FaFilePdf, FaImage, FaFileAlt, FaLock } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -123,6 +123,26 @@ export default function ViewDocument() {
         }
     };
 
+    if (isPublic && !currentUser) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FaLock className="text-2xl text-blue-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Restricted Access</h2>
+                    <p className="text-gray-600 mb-6">You must be signed in to view this document.</p>
+                    <button
+                        onClick={() => navigate('/sign-in')}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        Sign In to View
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     const handleDownloadDocument = async (docUrl, docName, providedMimeType) => {
         try {
             if (!docUrl) return;
@@ -132,18 +152,24 @@ export default function ViewDocument() {
 
             const contentType = response.headers.get('content-type') || providedMimeType || '';
 
-            // Determine default extension based on provided mime type if available
+            // Determine default extension based on provided mime type
             let extension = 'pdf';
             if (providedMimeType) {
                 if (providedMimeType.includes('image')) extension = 'jpg';
                 else if (providedMimeType.includes('pdf')) extension = 'pdf';
             }
 
+            // Improve extension detection from URL if possible
             try {
                 const urlPath = docUrl.split('?')[0];
                 const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
                 if (lastSegment.includes('.')) {
-                    extension = lastSegment.split('.').pop();
+                    // Only take the last part after dot
+                    const ext = lastSegment.split('.').pop();
+                    // Validate if it looks like a real extension (3-4 chars)
+                    if (ext && ext.length >= 3 && ext.length <= 4) {
+                        extension = ext;
+                    }
                 }
             } catch (e) {
                 console.warn('URL parsing failed', e);
@@ -160,20 +186,22 @@ export default function ViewDocument() {
                 'text/plain': 'txt'
             };
 
-            // If we have a valid content-type header (not generic), use it to correct the extension
+            // Mime-type overrides URL extension if specific
             if (contentType && !contentType.includes('octet-stream') && mimeMap[contentType.toLowerCase()]) {
                 extension = mimeMap[contentType.toLowerCase()];
             }
-            // If header is generic/missing but we have providedMimeType, use that
             else if (providedMimeType && mimeMap[providedMimeType.toLowerCase()]) {
                 extension = mimeMap[providedMimeType.toLowerCase()];
             }
 
-            const filename = `${docName || 'document'}-${new Date().getTime()}.${extension}`;
+            // Sanitize docName to prevent weird filenames
+            let safeDocName = (docName || 'document').replace(/[^a-zA-Z0-9-_]/g, '_');
+            const filename = `${safeDocName}-${new Date().getTime()}.${extension}`;
+
             const blob = await response.blob();
 
-            // Force PDF type if we think it is a PDF but served as octet-stream
-            const finalBlob = (extension === 'pdf' && contentType.includes('octet-stream'))
+            // Force PDF type if detected
+            const finalBlob = (extension === 'pdf')
                 ? new Blob([blob], { type: 'application/pdf' })
                 : blob;
 
@@ -188,7 +216,6 @@ export default function ViewDocument() {
 
         } catch (error) {
             console.error('Error downloading document:', error);
-            // Fallback
             window.open(docUrl, '_blank');
         }
     };
