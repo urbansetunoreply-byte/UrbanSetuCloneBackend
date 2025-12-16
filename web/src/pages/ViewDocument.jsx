@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FaSpinner, FaDownload, FaArrowLeft, FaFilePdf, FaImage, FaFileAlt } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -13,6 +14,7 @@ export default function ViewDocument() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [fileType, setFileType] = useState(null);
+    const { currentUser } = useSelector((state) => state.user);
 
     const docType = document?.type?.replace(/_/g, ' ') || 'Document';
     usePageTitle(`${docType.charAt(0).toUpperCase() + docType.slice(1)} - UrbanSetu`);
@@ -256,13 +258,23 @@ export default function ViewDocument() {
                         {document.type?.replace(/_/g, ' ') || 'Document View'}
                     </h1>
                 </div>
-                <button
-                    onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                    <FaDownload />
-                    <span className="hidden sm:inline">Download</span>
-                </button>
+                {isPublic ? (
+                    <button
+                        onClick={() => navigate('/sign-in')}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <span className="hidden sm:inline">Sign in to Download</span>
+                        <span className="sm:hidden">Sign in</span>
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <FaDownload />
+                        <span className="hidden sm:inline">Download</span>
+                    </button>
+                )}
             </div>
 
             {/* Content */}
@@ -287,12 +299,21 @@ export default function ViewDocument() {
                             </div>
                             <h3 className="text-xl font-semibold text-gray-800 mb-2">Preview Not Available</h3>
                             <p className="text-gray-600 mb-6">This file type cannot be previewed directly.</p>
-                            <button
-                                onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType)}
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                            >
-                                <FaDownload /> Download to View
-                            </button>
+                            {isPublic ? (
+                                <button
+                                    onClick={() => navigate('/sign-in')}
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    Sign in to Download
+                                </button>
+                            ) : (
+                                <button
+                                    onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType)}
+                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                                >
+                                    <FaDownload /> Download to View
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>
