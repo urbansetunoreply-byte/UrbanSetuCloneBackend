@@ -40,6 +40,7 @@ export default function OnDemandServices() {
   const [showChecklistModal, setShowChecklistModal] = useState(false);
   const [checklistForm, setChecklistForm] = useState({ rooms: [], amenities: [], notes: '' });
   const [checklistFilters, setChecklistFilters] = useState({ q: '', status: 'all' });
+  const [showSelectionModal, setShowSelectionModal] = useState(false);
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchMyRequests = async () => {
@@ -435,20 +436,7 @@ export default function OnDemandServices() {
                                 setSelectedContract(contract);
                                 const result = await fetchChecklists(contract._id);
                                 if (result) {
-                                  if (result.moveIn && result.moveIn.status === 'pending_approval' && !result.moveIn.landlordApproved) {
-                                    setChecklistType('move_in');
-                                    setShowChecklistModal(true);
-                                  } else if (result.moveOut && result.moveOut.status === 'pending_approval' && !result.moveOut.landlordApproved) {
-                                    setChecklistType('move_out');
-                                    setShowChecklistModal(true);
-                                  } else if (result.moveIn) {
-                                    setChecklistType('move_in');
-                                    setShowChecklistModal(true);
-                                  } else {
-                                    navigate(`/user/rental-contracts?contractId=${contract._id}`);
-                                  }
-                                } else {
-                                  navigate(`/user/rental-contracts?contractId=${contract._id}`);
+                                  setShowSelectionModal(true);
                                 }
                               }}
                               className="px-3 py-1.5 bg-blue-50 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-100 flex items-center gap-1"
@@ -492,6 +480,94 @@ export default function OnDemandServices() {
               </div>
             </>
           )}
+        </div>
+      )}
+
+      {/* Checklist Selection Modal (Landlord) */}
+      {showSelectionModal && selectedContract && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
+            <div className="flex items-center justify-between mb-6">
+              <h3 className="text-xl font-bold">Checklist Approvals</h3>
+              <button
+                onClick={() => { setShowSelectionModal(false); setSelectedContract(null); }}
+                className="text-gray-500 hover:text-gray-700 font-bold text-xl"
+              >
+                ×
+              </button>
+            </div>
+
+            <p className="text-gray-600 mb-6">Select a checklist to review and approve.</p>
+
+            <div className="space-y-4">
+              {/* Move-In */}
+              <div className="border rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 text-blue-600 rounded-full"><FaSignInAlt /></div>
+                  <div>
+                    <div className="font-semibold">Move-In Checklist</div>
+                    <div className="text-sm text-gray-500">
+                      {checklists.moveIn
+                        ? (checklists.moveIn.status === 'approved' ? 'Approved' : 'Pending Approval')
+                        : 'Not Started'}
+                    </div>
+                  </div>
+                </div>
+                {checklists.moveIn ? (
+                  <button
+                    onClick={() => {
+                      setShowSelectionModal(false);
+                      setChecklistType('move_in');
+                      setShowChecklistModal(true);
+                    }}
+                    className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                  >
+                    View
+                  </button>
+                ) : (
+                  <span className="text-sm text-gray-400">N/A</span>
+                )}
+              </div>
+
+              {/* Move-Out */}
+              <div className="border rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-orange-100 text-orange-600 rounded-full"><FaSignOutAlt /></div>
+                  <div>
+                    <div className="font-semibold">Move-Out Checklist</div>
+                    <div className="text-sm text-gray-500">
+                      {checklists.moveOut
+                        ? (checklists.moveOut.status === 'approved' ? 'Approved' : 'Pending Approval')
+                        : 'Not Started'}
+                    </div>
+                  </div>
+                </div>
+                {checklists.moveOut ? (
+                  <button
+                    onClick={() => {
+                      setShowSelectionModal(false);
+                      setChecklistType('move_out');
+                      setShowChecklistModal(true);
+                    }}
+                    className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                  >
+                    View
+                  </button>
+                ) : (
+                  <span className="text-sm text-gray-400">N/A</span>
+                )}
+              </div>
+            </div>
+
+            <div className="mt-6 flex justify-end">
+              <button
+                onClick={() => { setShowSelectionModal(false); setSelectedContract(null); }}
+                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+              >
+                Close
+              </button>
+            </div>
+          </div>
         </div>
       )}
 
