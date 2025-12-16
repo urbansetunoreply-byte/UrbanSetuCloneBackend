@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaUpload, FaTimes, FaSpinner, FaImage, FaVideo, FaFile, FaPaperclip, FaDownload } from 'react-icons/fa';
 import ImagePreview from '../ImagePreview';
@@ -26,6 +27,7 @@ const PRIORITY_OPTIONS = [
 
 export default function DisputeForm({ contract, onSuccess, onCancel }) {
   const { currentUser } = useSelector((state) => state.user);
+  const navigate = useNavigate();
   const [contracts, setContracts] = useState([]);
   const [loading, setLoading] = useState(false);
   const [uploading, setUploading] = useState(null);
@@ -395,13 +397,24 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
                     <div className="flex items-center gap-2">
                       <FaFile className="text-blue-600" />
                       <div className="flex flex-col">
-                        <span className="text-sm text-gray-700">Document</span>
+                        <button
+                          type="button"
+                          onClick={(e) => {
+                            e.preventDefault();
+                            // Navigate to ViewDocument in preview mode
+                            const encodedUrl = encodeURIComponent(evidence.url);
+                            navigate(`/user/view-document/preview?url=${encodedUrl}&type=document&name=DisputeEvidence`);
+                          }}
+                          className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium text-left"
+                        >
+                          {evidence.name || 'Document'}
+                        </button>
                         <button
                           onClick={(e) => {
                             e.preventDefault();
                             handleDownloadDocument(evidence.url, 'evidence');
                           }}
-                          className="text-xs text-blue-500 hover:text-blue-700 font-medium flex items-center gap-1 hover:underline text-left"
+                          className="text-xs text-gray-500 hover:text-gray-700 flex items-center gap-1 hover:underline text-left"
                         >
                           <FaDownload className="text-[10px]" /> Download
                         </button>

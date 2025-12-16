@@ -23,6 +23,44 @@ export default function ViewDocument() {
     const isPublic = location.pathname.startsWith('/view/');
 
     useEffect(() => {
+        if (documentId === 'preview') {
+            const params = new URLSearchParams(location.search);
+            const url = params.get('url');
+            const type = params.get('type') || 'document';
+            const name = params.get('name') || 'Document Preview';
+
+            if (url) {
+                setDocument({
+                    url,
+                    type,
+                    mimeType: type === 'document' || url.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
+                    name
+                });
+
+                let derivedType = 'other';
+                if (type === 'image') derivedType = 'image';
+                else derivedType = 'pdf';
+
+                setFileType(derivedType);
+
+                if (derivedType === 'pdf') {
+                    fetch(url, { mode: 'cors' })
+                        .then(r => r.blob())
+                        .then(blob => {
+                            const cleanBlob = new Blob([blob], { type: 'application/pdf' });
+                            setPdfBlobUrl(URL.createObjectURL(cleanBlob));
+                        })
+                        .catch(err => console.error("Preview blob fetch failed", err));
+                }
+
+                setLoading(false);
+            } else {
+                setError("No URL provided for preview");
+                setLoading(false);
+            }
+            return;
+        }
+
         const fetchDocument = async () => {
             try {
                 const endpoint = isPublic
