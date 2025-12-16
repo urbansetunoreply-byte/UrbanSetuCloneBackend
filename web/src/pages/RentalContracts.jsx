@@ -617,7 +617,7 @@ export default function RentalContracts() {
                           <FaWallet /> Rent Wallet
                         </Link>
                       )}
-                      {contract.status === 'active' && contract.walletId && (
+                      {contract.status === 'active' && (
                         <button
                           onClick={() => navigate(`/user/rent-wallet?contractId=${contractIdentifier}`)}
                           className={`px-4 py-2 text-white rounded-lg flex items-center justify-center gap-2 ${isTenant ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'}`}
