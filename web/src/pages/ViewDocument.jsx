@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
 import { FaSpinner, FaDownload, FaArrowLeft, FaFilePdf, FaImage, FaFileAlt } from 'react-icons/fa';
+import { usePageTitle } from '../hooks/usePageTitle';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -12,6 +13,9 @@ export default function ViewDocument() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [fileType, setFileType] = useState(null);
+
+    const docType = document?.type?.replace(/_/g, ' ') || 'Document';
+    usePageTitle(`${docType.charAt(0).toUpperCase() + docType.slice(1)} - UrbanSetu`);
 
     const isPublic = location.pathname.startsWith('/view/');
 
