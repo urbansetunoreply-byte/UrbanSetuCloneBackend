@@ -324,7 +324,7 @@ export default function PayMonthlyRent() {
 
             <div className="space-y-4">
               {wallet.paymentSchedule
-                .filter(p => p.status === 'pending' || p.status === 'overdue')
+                .filter(p => p.status === 'pending' || p.status === 'overdue' || p.status === 'processing')
                 .sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate))
                 .map((payment, idx) => {
                   const originalIdx = wallet.paymentSchedule.indexOf(payment);
@@ -361,6 +361,11 @@ export default function PayMonthlyRent() {
                           {isPayOverdue && (
                             <span className="inline-block mt-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">
                               Overdue
+                            </span>
+                          )}
+                          {payment.status === 'processing' && (
+                            <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded ml-2">
+                              Payment in Progress
                             </span>
                           )}
                         </div>

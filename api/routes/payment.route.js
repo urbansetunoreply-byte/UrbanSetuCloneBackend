@@ -1338,6 +1338,57 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
 
     await payment.save();
 
+    // Generate Razorpay Order if gateway is razorpay
+    let razorpayData = null;
+    if (finalGateway === 'razorpay') {
+      try {
+        const { keyId, authHeader } = getRazorpayAuthHeader();
+        const orderRes = await fetch('https://api.razorpay.com/v1/orders', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'Authorization': authHeader
+          },
+          body: JSON.stringify({
+            amount: Math.round(finalAmount * 100), // Amount in paise
+            currency: 'INR',
+            receipt: payment.receiptNumber,
+            payment_capture: 1,
+            notes: {
+              appointmentId: String(booking._id),
+              paymentId: payment.paymentId,
+              contractId: String(contract._id)
+            }
+          })
+        });
+
+        const orderText = await orderRes.text();
+        let order;
+        try { order = JSON.parse(orderText); } catch (e) {
+          console.error('Razorpay create-order non-JSON:', orderText);
+          throw new Error('Invalid response from Razorpay');
+        }
+
+        if (!orderRes.ok) {
+          console.error('Razorpay create-order error:', order);
+          throw new Error(order.error?.description || 'Error creating Razorpay order');
+        }
+
+        payment.gatewayOrderId = order.id;
+        await payment.save();
+
+        razorpayData = {
+          orderId: order.id,
+          amount: Math.round(finalAmount * 100),
+          currency: 'INR',
+          keyId
+        };
+      } catch (rzpError) {
+        console.error('Error creating Razorpay order for monthly rent:', rzpError);
+        // We don't fail the whole request, but frontend will likely fail to load payment
+      }
+    }
+
     // Update wallet payment schedule status
     scheduleEntry.status = 'processing';
     scheduleEntry.paymentId = payment._id;
@@ -1346,7 +1397,9 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
     res.status(201).json({
       success: true,
       message: "Monthly rent payment created (held in escrow)",
-      payment: payment
+      payment: payment,
+      ...(razorpayData && { razorpay: razorpayData }),
+      ...(finalGateway === 'paypal' && { paypal: { amount: finalAmount, currency: finalCurrency } })
     });
   } catch (err) {
     console.error("Error creating monthly rent payment:", err);
