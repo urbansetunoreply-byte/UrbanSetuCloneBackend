@@ -1197,6 +1197,11 @@ export const updateMoveInCondition = async (req, res, next) => {
     // Update notes
     if (userId === contract.tenantId.toString()) {
       checklist.tenantNotes = notes || checklist.tenantNotes;
+      // Reset approval if tenant updates
+      if (checklist.tenantApproved) {
+        checklist.tenantApproved = false;
+        checklist.tenantApprovedAt = null;
+      }
     } else {
       checklist.landlordNotes = notes || checklist.landlordNotes;
     }
@@ -1335,6 +1340,11 @@ export const updateMoveOutCondition = async (req, res, next) => {
     // Update notes
     if (userId === contract.tenantId.toString()) {
       checklist.tenantNotes = notes || checklist.tenantNotes;
+      // Reset approval if tenant updates
+      if (checklist.tenantApproved) {
+        checklist.tenantApproved = false;
+        checklist.tenantApprovedAt = null;
+      }
     } else {
       checklist.landlordNotes = notes || checklist.landlordNotes;
     }

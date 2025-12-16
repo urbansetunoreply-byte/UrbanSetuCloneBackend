@@ -237,7 +237,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
   };
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
-  const canEdit = isAdmin || (!checklist || checklist.status === 'in_progress' || (checklistType === 'move_in' && checklist.status === 'pending_approval' && ((isTenant && !checklist.tenantApproved) || (isLandlord && !checklist.landlordApproved))));
+  const canEdit = isAdmin || (!checklist || checklist.status === 'in_progress' || (checklist.status === 'pending_approval' && ((isTenant && !checklist.landlordApproved) || (isLandlord && !checklist.landlordApproved))));
   const canApprove = checklist && (checklist.status !== 'approved' && checklist.status !== 'completed') && (isAdmin || (isTenant && !checklist.tenantApproved) || (isLandlord && !checklist.landlordApproved));
   const showApprovalStatus = checklist && (checklist.tenantApproved || checklist.landlordApproved || checklist.status === 'approved');
 
