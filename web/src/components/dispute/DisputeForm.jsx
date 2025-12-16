@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
 import { FaUpload, FaTimes, FaSpinner, FaImage, FaVideo, FaFile, FaPaperclip, FaDownload } from 'react-icons/fa';
 import ImagePreview from '../ImagePreview';
@@ -397,18 +397,14 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
                     <div className="flex items-center gap-2">
                       <FaFile className="text-blue-600" />
                       <div className="flex flex-col">
-                        <button
-                          type="button"
-                          onClick={(e) => {
-                            e.preventDefault();
-                            // Navigate to ViewDocument in preview mode
-                            const encodedUrl = encodeURIComponent(evidence.url);
-                            navigate(`/user/view-document/preview?url=${encodedUrl}&type=document&name=DisputeEvidence`);
-                          }}
+                        <Link
+                          to={`/user/view/preview?url=${encodeURIComponent(evidence.url)}&type=document&name=${evidence.name || 'DisputeEvidence'}`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium text-left"
                         >
                           {evidence.name || 'Document'}
-                        </button>
+                        </Link>
                         <button
                           onClick={(e) => {
                             e.preventDefault();
