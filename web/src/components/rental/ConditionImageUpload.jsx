@@ -18,15 +18,16 @@ const ROOM_OPTIONS = [
   { value: 'other', label: 'Other' }
 ];
 
-export default function ConditionImageUpload({ 
-  existingImages = [], 
+export default function ConditionImageUpload({
+  existingImages = [],
   existingVideos = [],
   onUpdate,
-  readOnly = false 
+  readOnly = false
 }) {
   const [images, setImages] = useState(existingImages || []);
   const [videos, setVideos] = useState(existingVideos || []);
-  const [uploading, setUploading] = useState(false);
+  const [uploadingImage, setUploadingImage] = useState(false);
+  const [uploadingVideo, setUploadingVideo] = useState(false);
   const [previewImages, setPreviewImages] = useState([]);
   const [previewIndex, setPreviewIndex] = useState(0);
   const [showImagePreview, setShowImagePreview] = useState(false);
@@ -35,7 +36,7 @@ export default function ConditionImageUpload({
     const files = Array.from(e.target.files);
     if (files.length === 0) return;
 
-    setUploading(true);
+    setUploadingImage(true);
     try {
       const uploadPromises = files.map(async (file) => {
         const formData = new FormData();
@@ -68,7 +69,7 @@ export default function ConditionImageUpload({
       toast.error('Failed to upload images');
       console.error(error);
     } finally {
-      setUploading(false);
+      setUploadingImage(false);
     }
   };
 
@@ -76,7 +77,7 @@ export default function ConditionImageUpload({
     const file = e.target.files[0];
     if (!file) return;
 
-    setUploading(true);
+    setUploadingVideo(true);
     try {
       const formData = new FormData();
       formData.append('video', file);
@@ -106,7 +107,7 @@ export default function ConditionImageUpload({
       toast.error('Failed to upload video');
       console.error(error);
     } finally {
-      setUploading(false);
+      setUploadingVideo(false);
     }
   };
 
@@ -123,7 +124,7 @@ export default function ConditionImageUpload({
   };
 
   const updateImage = (index, updates) => {
-    const newImages = images.map((img, i) => 
+    const newImages = images.map((img, i) =>
       i === index ? { ...img, ...updates } : img
     );
     setImages(newImages);
@@ -131,7 +132,7 @@ export default function ConditionImageUpload({
   };
 
   const updateVideo = (index, updates) => {
-    const newVideos = videos.map((vid, i) => 
+    const newVideos = videos.map((vid, i) =>
       i === index ? { ...vid, ...updates } : vid
     );
     setVideos(newVideos);
@@ -148,13 +149,13 @@ export default function ConditionImageUpload({
         </label>
         {!readOnly && (
           <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 mb-4">
-            {uploading ? (
+            {uploadingImage ? (
               <FaSpinner className="animate-spin" />
             ) : (
               <FaUpload />
             )}
             <span className="text-sm font-medium text-blue-700">
-              {uploading ? 'Uploading...' : 'Upload Images'}
+              {uploadingImage ? 'Uploading...' : 'Upload Images'}
             </span>
             <input
               type="file"
@@ -162,18 +163,18 @@ export default function ConditionImageUpload({
               multiple
               className="hidden"
               onChange={handleImageUpload}
-              disabled={uploading}
+              disabled={uploadingImage}
             />
           </label>
         )}
-        
+
         {images.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {images.map((img, index) => (
               <div key={index} className="border rounded-lg p-2 space-y-2">
                 <div className="relative aspect-square bg-gray-100 rounded overflow-hidden group">
-                  <img 
-                    src={img.url} 
+                  <img
+                    src={img.url}
                     alt={`Property condition ${index + 1}`}
                     className="w-full h-full object-cover cursor-pointer"
                     onClick={() => {
@@ -244,24 +245,24 @@ export default function ConditionImageUpload({
         </label>
         {!readOnly && (
           <label className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 border border-purple-300 rounded-lg cursor-pointer hover:bg-purple-100 mb-4">
-            {uploading ? (
+            {uploadingVideo ? (
               <FaSpinner className="animate-spin" />
             ) : (
               <FaUpload />
             )}
             <span className="text-sm font-medium text-purple-700">
-              {uploading ? 'Uploading...' : 'Upload Video'}
+              {uploadingVideo ? 'Uploading...' : 'Upload Video'}
             </span>
             <input
               type="file"
               accept="video/*"
               className="hidden"
               onChange={handleVideoUpload}
-              disabled={uploading}
+              disabled={uploadingVideo}
             />
           </label>
         )}
-        
+
         {videos.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             {videos.map((vid, index) => (
