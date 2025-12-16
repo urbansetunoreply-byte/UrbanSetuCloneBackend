@@ -221,7 +221,7 @@ export default function RentWallet() {
               {/* Total Paid */}
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-gray-600 font-medium">Total Paid</h3>
+                  <h3 className="text-gray-600 font-medium">{isTenant ? 'Total Paid' : 'Total Received'}</h3>
                   <FaCheckCircle className="text-green-600 text-xl" />
                 </div>
                 <p className="text-2xl font-bold text-green-600">
@@ -233,7 +233,7 @@ export default function RentWallet() {
               {/* Total Due */}
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-gray-600 font-medium">Total Due</h3>
+                  <h3 className="text-gray-600 font-medium">{isTenant ? 'Total Due' : 'Total Pending'}</h3>
                   <FaMoneyBillWave className="text-blue-600 text-xl" />
                 </div>
                 <p className="text-2xl font-bold text-blue-600">
@@ -357,12 +357,12 @@ export default function RentWallet() {
 
         {/* Payment Schedule Tab */}
         {activeTab === 'schedule' && (
-          <PaymentSchedule wallet={wallet} contract={contract} />
+          <PaymentSchedule wallet={wallet} contract={contract} isTenant={isTenant} />
         )}
 
         {/* Payment History Tab */}
         {activeTab === 'history' && (
-          <RentPaymentHistory wallet={wallet} contract={contract} />
+          <RentPaymentHistory wallet={wallet} contract={contract} isTenant={isTenant} />
         )}
 
         {/* Auto-Debit Settings Tab */}

@@ -6,7 +6,7 @@ import PaymentModal from '../PaymentModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-export default function PaymentSchedule({ wallet, contract }) {
+export default function PaymentSchedule({ wallet, contract, isTenant }) {
   const navigate = useNavigate();
   const [selectedPayment, setSelectedPayment] = useState(null);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
@@ -203,7 +203,7 @@ export default function PaymentSchedule({ wallet, contract }) {
                             </p>
                           )}
                         </div>
-                        {(payment.status === 'pending' || payment.status === 'overdue') && (
+                        {(payment.status === 'pending' || payment.status === 'overdue') && isTenant && (
                           <button
                             onClick={() => handlePayNow(payment)}
                             className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition"
@@ -212,7 +212,7 @@ export default function PaymentSchedule({ wallet, contract }) {
                             Pay Now
                           </button>
                         )}
-                        {payment.status === 'processing' && (
+                        {payment.status === 'processing' && isTenant && (
                           <button
                             onClick={() => {
                               // If stuck in processing, allow retry by navigating to payment page

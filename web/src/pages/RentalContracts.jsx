@@ -622,7 +622,7 @@ export default function RentalContracts() {
                           onClick={() => navigate(`/user/rent-wallet?contractId=${contractIdentifier}`)}
                           className={`px-4 py-2 text-white rounded-lg flex items-center justify-center gap-2 ${isTenant ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'}`}
                         >
-                          <FaMoneyBillWave /> {isTenant ? 'Rent Wallet' : 'Payment Details'}
+                          <FaMoneyBillWave /> {isTenant ? 'Rent Wallet' : 'Monitor Rent'}
                         </button>
                       )}
                       {contract.status === 'active' && isTenant && contract.wallet && contract.wallet.paymentSchedule && contract.wallet.paymentSchedule.filter(p => p.status === 'pending' || p.status === 'overdue').length > 0 && (

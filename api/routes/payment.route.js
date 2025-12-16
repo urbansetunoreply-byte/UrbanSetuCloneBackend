@@ -19,7 +19,8 @@ import {
   sendEscrowReleasedEmail,
   sendRentPaymentReceivedToLandlordEmail,
   sendLoanRepaidEmail,
-  sendRentPaymentConfirmationEmail
+  sendRentPaymentConfirmationEmail,
+  sendRentPaymentReceivedEmail
 } from '../utils/emailService.js';
 import { sendRentalNotification } from '../utils/rentalNotificationService.js';
 import fetch from 'node-fetch';
@@ -717,12 +718,14 @@ router.post("/verify", verifyToken, async (req, res) => {
 
           // Send email to tenant
           try {
-            await sendRentPaymentConfirmationEmail(contract.tenantId.email, {
-              propertyName: listing.name,
-              transactionId: payment.paymentId,
-              month: `${payment.rentMonth}/${payment.rentYear}`,
+            await sendRentPaymentReceivedEmail(contract.tenantId.email, {
+              paymentId: payment.paymentId,
               amount: payment.amount,
-              paymentDate: new Date().toLocaleDateString('en-GB'),
+              propertyName: listing.name,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear,
+              receiptUrl: receiptUrl,
+              contractId: contract._id,
               walletUrl: walletUrl
             });
             console.log(`✅ Rent payment received email sent to tenant ${contract.tenantId.email}`);
