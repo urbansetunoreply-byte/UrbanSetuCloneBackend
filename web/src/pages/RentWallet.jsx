@@ -96,7 +96,8 @@ export default function RentWallet() {
     const handlePaymentUpdate = (event) => {
       const updatedId = event.detail?.contractId;
       if (!updatedId || !normalizedId || updatedId.toString() === normalizedId) {
-        fetchWalletDetails();
+        // Add a small delay to allow backend to process
+        setTimeout(fetchWalletDetails, 1000);
       }
     };
 
@@ -105,6 +106,17 @@ export default function RentWallet() {
       window.removeEventListener('rentalPaymentStatusUpdated', handlePaymentUpdate);
     };
   }, [contractId, fetchWalletDetails]);
+
+  // Poll for updates if any payment is processing
+  useEffect(() => {
+    if (!wallet?.paymentSchedule) return;
+
+    const hasProcessing = wallet.paymentSchedule.some(p => p.status === 'processing');
+    if (hasProcessing) {
+      const interval = setInterval(fetchWalletDetails, 3000);
+      return () => clearInterval(interval);
+    }
+  }, [wallet, fetchWalletDetails]);
 
   if (loading) {
     return (

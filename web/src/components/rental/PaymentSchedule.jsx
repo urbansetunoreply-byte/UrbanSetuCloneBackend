@@ -138,7 +138,7 @@ export default function PaymentSchedule({ wallet, contract }) {
       {/* Payment List by Year */}
       <div className="space-y-6">
         {Object.keys(paymentsByYear)
-          .sort((a, b) => b - a) // Sort years descending
+          .sort((a, b) => a - b) // Sort years ascending
           .map(year => (
             <div key={year}>
               <h3 className="text-lg font-semibold text-gray-700 mb-3">{year}</h3>

@@ -35,7 +35,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
       });
     }
 
-    return filtered.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate));
+    return filtered.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
   }, [wallet, filter, searchTerm]);
 
   const getStatusIcon = (payment) => {
