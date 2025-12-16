@@ -674,10 +674,16 @@ router.post("/verify", verifyToken, async (req, res) => {
     const io = req.app.get('io');
 
     // Send rental payment notifications if this is a monthly rent payment
-    if (payment.paymentType === 'monthly_rent' && payment.contractId) {
+    let contractId = payment.contractId;
+    if (!contractId && payment.metadata) {
+      // Fallback: extract from metadata
+      contractId = payment.metadata instanceof Map ? payment.metadata.get('contractId') : payment.metadata.contractId;
+    }
+
+    if (payment.paymentType === 'monthly_rent' && contractId) {
       try {
         const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
-        const contract = await RentLockContract.findById(payment.contractId)
+        const contract = await RentLockContract.findById(contractId)
           .populate('listingId', 'name address')
           .populate('tenantId', 'username email')
           .populate('landlordId', 'username email');
@@ -1363,6 +1369,8 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
       escrowStatus: 'pending', // Start in escrow
       rentMonth: month || scheduleEntry.month,
       rentYear: year || scheduleEntry.year,
+      contractId: contract._id, // Required for verify endpoint
+      walletId: wallet._id, // Helpful link
       metadata: {
         month: month || scheduleEntry.month,
         year: year || scheduleEntry.year,
