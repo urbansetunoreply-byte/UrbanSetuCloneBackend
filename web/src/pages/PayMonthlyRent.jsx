@@ -651,7 +651,14 @@ export default function PayMonthlyRent() {
               paymentType: 'monthly_rent'
             }}
             existingPayment={createdPayment}
-            onPaymentSuccess={handlePaymentSuccess}
+            onPaymentSuccess={(payment) => {
+              setCreatedPayment(payment);
+              setPaymentCompleted(true);
+              setStep(5);
+              setShowPaymentModal(false);
+              // Refresh wallet data to update UI immediately
+              fetchContractAndWallet();
+            }}
           />
         )}
       </div>

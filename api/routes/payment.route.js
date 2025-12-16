@@ -683,7 +683,11 @@ router.post("/verify", verifyToken, async (req, res) => {
           const wallet = await RentWallet.findOne({ contractId: contract._id }); // Find wallet associated with contract
 
           if (wallet) {
-            const scheduleEntry = wallet.paymentSchedule.find(p => p.month === payment.rentMonth && p.year === payment.rentYear);
+            // Find schedule entry using rentMonth/rentYear or metadata as fallback
+            const targetMonth = payment.rentMonth || (payment.metadata && payment.metadata.month);
+            const targetYear = payment.rentYear || (payment.metadata && payment.metadata.year);
+
+            const scheduleEntry = wallet.paymentSchedule.find(p => p.month === targetMonth && p.year === targetYear);
             if (scheduleEntry) {
               scheduleEntry.status = 'completed'; // Mark as completed (enum: pending, scheduled, processing, completed, failed, overdue)
               scheduleEntry.paidAt = new Date();
