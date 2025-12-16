@@ -14,6 +14,7 @@ export default function ViewDocument() {
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
     const [fileType, setFileType] = useState(null);
+    const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
     const { currentUser } = useSelector((state) => state.user);
 
     const docType = document?.type?.replace(/_/g, ' ') || 'Document';
@@ -36,19 +37,37 @@ export default function ViewDocument() {
                 if (res.ok && data.success) {
                     setDocument(data.document);
 
-                    // Use backend-provided MIME type if available
-                    if (data.document.mimeType) {
-                        if (data.document.mimeType.includes('pdf')) {
-                            setFileType('pdf');
-                        } else if (data.document.mimeType.includes('image')) {
-                            setFileType('image');
-                        } else {
-                            // Backend determined valid type, but not PDF/Image (e.g. DOCX)
-                            setFileType('other');
+                    let mimeType = data.document.mimeType;
+
+                    // Logic to determine type
+                    let type = 'other';
+                    if (mimeType) {
+                        if (mimeType.includes('pdf')) type = 'pdf';
+                        else if (mimeType.includes('image')) type = 'image';
+                    }
+
+                    if (type === 'other') {
+                        // Fallback check logic similar to determineFileType
+                        const url = data.document.url;
+                        if (url.includes('/raw/') || url.includes('.pdf')) {
+                            type = 'pdf';
                         }
-                    } else {
-                        // Fallback checking
-                        await determineFileType(data.document.url);
+                    }
+
+                    setFileType(type);
+
+                    // If PDF, fetch blob immediately to render locally
+                    if (type === 'pdf') {
+                        try {
+                            const fileRes = await fetch(data.document.url, { mode: 'cors' });
+                            const blob = await fileRes.blob();
+                            const cleanBlob = new Blob([blob], { type: 'application/pdf' });
+                            const blobUrl = URL.createObjectURL(cleanBlob);
+                            setPdfBlobUrl(blobUrl);
+                        } catch (blobErr) {
+                            console.error("Failed to load PDF blob", blobErr);
+                            // If blob fails, fallback to direct URL (might download, but better than nothing)
+                        }
                     }
                 } else {
                     setError(data.message || 'Failed to fetch document');
@@ -64,64 +83,16 @@ export default function ViewDocument() {
         if (documentId) {
             fetchDocument();
         }
+
+        return () => {
+            if (pdfBlobUrl) {
+                URL.revokeObjectURL(pdfBlobUrl);
+            }
+        };
     }, [documentId]);
 
-    const determineFileType = async (url) => {
-        if (!url) return;
-
-        // 1. Try to guess from extension first (quickest)
-        const extension = getFileExtension(url);
-        if (extension) {
-            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
-                setFileType('image');
-                return;
-            }
-            if (extension === 'pdf') {
-                setFileType('pdf');
-                return;
-            }
-        }
-
-        // 2. If extension is missing or unknown, check Content-Type header
-        try {
-            // Try HEAD first
-            let response = await fetch(url, { method: 'HEAD' });
-
-            // If HEAD fails (e.g., 405 Method Not Allowed), try GET with AbortController
-            if (!response.ok) {
-                const controller = new AbortController();
-                response = await fetch(url, { signal: controller.signal });
-                controller.abort(); // Cancel immediately after headers
-            }
-
-            const contentType = response.headers.get('content-type');
-
-            if (contentType) {
-                if (contentType.includes('application/pdf')) {
-                    setFileType('pdf');
-                } else if (contentType.includes('image/')) {
-                    setFileType('image');
-                } else if (contentType.includes('application/octet-stream') && url.includes('/raw/')) {
-                    // Cloudinary raw files often return octet-stream but users typically upload PDFs here
-                    // Assume PDF for preview attempts
-                    setFileType('pdf');
-                } else {
-                    setFileType('other');
-                }
-            } else {
-                setFileType('other');
-            }
-        } catch (error) {
-            console.warn('Could not determine file type from headers:', error);
-            // Fallback: Check if Cloudinary raw but might be PDF...
-            if (url.includes('/raw/') || url.includes('cloudinary.com')) {
-                // Assume PDF as best effort for raw/unknown Cloudinary links
-                setFileType('pdf');
-            } else {
-                setFileType('other');
-            }
-        }
-    };
+    // determineFileType removed as it's integrated above or no longer crucial given backend fixes
+    // We keep handleDownloadDocument as is.
 
     if (isPublic && !currentUser) {
         return (
@@ -294,7 +265,7 @@ export default function ViewDocument() {
                         />
                     ) : (
                         <iframe
-                            src={`https://docs.google.com/gview?url=${encodeURIComponent(document.url)}&embedded=true`}
+                            src={pdfBlobUrl || document.url}
                             className="w-full h-full"
                             title="Document Viewer"
                         />
