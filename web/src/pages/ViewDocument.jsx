@@ -29,7 +29,21 @@ export default function ViewDocument() {
 
                 if (res.ok && data.success) {
                     setDocument(data.document);
-                    await determineFileType(data.document.url);
+
+                    // Use backend-provided MIME type if available
+                    if (data.document.mimeType) {
+                        if (data.document.mimeType.includes('pdf')) {
+                            setFileType('pdf');
+                        } else if (data.document.mimeType.includes('image')) {
+                            setFileType('image');
+                        } else {
+                            // Backend determined valid type, but not PDF/Image (e.g. DOCX)
+                            setFileType('other');
+                        }
+                    } else {
+                        // Fallback checking
+                        await determineFileType(data.document.url);
+                    }
                 } else {
                     setError(data.message || 'Failed to fetch document');
                 }

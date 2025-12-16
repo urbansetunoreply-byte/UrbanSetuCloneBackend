@@ -2985,9 +2985,22 @@ export const getRentalLoanDocument = async (req, res, next) => {
       return res.status(404).json({ message: "Document not found." });
     }
 
+    let mimeType = null;
+    try {
+      const response = await fetch(document.url, { method: 'HEAD' });
+      if (response.ok) {
+        mimeType = response.headers.get('content-type');
+      }
+    } catch (e) {
+      console.warn('Failed to fetch HEAD for document:', e.message);
+    }
+
+    const documentObj = document.toObject();
+    documentObj.mimeType = mimeType;
+
     res.json({
       success: true,
-      document
+      document: documentObj
     });
   } catch (error) {
     next(error);
@@ -3012,9 +3025,22 @@ export const getPublicRentalLoanDocument = async (req, res, next) => {
       return res.status(404).json({ message: "Document not found." });
     }
 
+    let mimeType = null;
+    try {
+      const response = await fetch(document.url, { method: 'HEAD' });
+      if (response.ok) {
+        mimeType = response.headers.get('content-type');
+      }
+    } catch (e) {
+      console.warn('Failed to fetch HEAD for document:', e.message);
+    }
+
+    const documentObj = document.toObject();
+    documentObj.mimeType = mimeType;
+
     res.json({
       success: true,
-      document
+      document: documentObj
     });
   } catch (error) {
     next(error);
