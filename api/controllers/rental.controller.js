@@ -30,7 +30,9 @@ import {
   sendLoanApprovedEmail,
   sendLoanRejectedEmail,
   sendLoanDisbursedEmail,
-  sendDisputeRaisedAcknowledgementEmail
+  sendDisputeRaisedAcknowledgementEmail,
+  sendMoveInChecklistApprovedEmail,
+  sendMoveOutChecklistApprovedEmail
 } from "../utils/emailService.js";
 import { markListingUnderContract, markListingAsRented, releaseListingLock } from "../utils/listingAvailability.js";
 
@@ -1272,6 +1274,38 @@ export const approveMoveInOutChecklist = async (req, res, next) => {
           booking.rentalStatus = 'moved_in';
           await booking.save();
         }
+      }
+
+      // Send Email Notification
+      try {
+        const tenant = await User.findById(contract.tenantId);
+        const landlord = await User.findById(contract.landlordId);
+        const listing = await Listing.findById(contract.listingId);
+        const propertyAddress = listing ? listing.address : 'Property Address Not Available';
+
+        if (checklist.type === 'move_in') {
+          await sendMoveInChecklistApprovedEmail(
+            tenant.email,
+            landlord.email,
+            tenant.username,
+            landlord.username,
+            propertyAddress,
+            checklist.checklistId,
+            contract._id
+          );
+        } else {
+          await sendMoveOutChecklistApprovedEmail(
+            tenant.email,
+            landlord.email,
+            tenant.username,
+            landlord.username,
+            propertyAddress,
+            checklist.checklistId,
+            contract._id
+          );
+        }
+      } catch (emailError) {
+        console.error("Failed to send checklist approval email:", emailError);
       }
     } else {
       checklist.status = 'pending_approval';
