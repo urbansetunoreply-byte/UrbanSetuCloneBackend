@@ -1069,7 +1069,8 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     payment.completedAt = new Date();
     payment.clientIp = clientIp || req.ip;
     payment.userAgent = userAgent || req.headers['user-agent'];
-    await payment.save();
+    // DELAYED SAVE
+    // await payment.save();
 
     await Booking.findByIdAndUpdate(payment.appointmentId, {
       paymentConfirmed: true,
@@ -1080,7 +1081,9 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     const base = `${req.protocol}://${req.get('host')}`;
     const receiptUrl = `${base}/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
-    await payment.save();
+
+    // DELAYED SAVE: Do not save here to prevent race condition.
+    // await payment.save();
 
     // Handle rental security deposit payment
     if (payment.paymentType === 'security_deposit' && payment.contractId) {
@@ -1144,6 +1147,156 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
       } catch (rentalError) {
         console.error('Error handling rental security deposit payment:', rentalError);
         // Don't fail the payment verification if rental update fails
+      }
+    }
+
+    // Handle Monthly Rent Payment (Razorpay)
+    // This logic was missing previously, causing Razorpay rent payments to stick in 'processing'
+    let contractId = payment.contractId;
+    if (!contractId && payment.metadata) {
+      // Fallback: extract from metadata
+      contractId = payment.metadata instanceof Map ? payment.metadata.get('contractId') : payment.metadata.contractId;
+    }
+
+    if (payment.paymentType === 'monthly_rent' && contractId) {
+      try {
+        const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
+        const RentWallet = (await import('../models/rentWallet.model.js')).default;
+
+        // 1. Try to get wallet directly from payment (safest) or via contract
+        let wallet;
+        if (payment.walletId) {
+          wallet = await RentWallet.findById(payment.walletId);
+        }
+
+        // 2. Fallback: Get contract then wallet
+        if (!wallet) {
+          // Find contract if not already found (contractId available)
+          const contract = await RentLockContract.findById(contractId);
+          if (contract) {
+            wallet = await RentWallet.findOne({ contractId: contract._id });
+          }
+        }
+
+        if (wallet) {
+          // Find schedule entry using multiple strategies
+          const getMeta = (key) => payment.metadata instanceof Map ? payment.metadata.get(key) : (payment.metadata ? payment.metadata[key] : undefined);
+
+          const targetMonth = Number(payment.rentMonth || getMeta('month'));
+          const targetYear = Number(payment.rentYear || getMeta('year'));
+          const pIdString = payment._id.toString();
+
+          // Strategy 1: Match by exact Payment ID
+          let scheduleEntry = wallet.paymentSchedule.find(p => p.paymentId && p.paymentId.toString() === pIdString);
+
+          // Strategy 2: Match by Month & Year
+          if (!scheduleEntry) {
+            scheduleEntry = wallet.paymentSchedule.find(p => Number(p.month) === targetMonth && Number(p.year) === targetYear);
+          }
+
+          if (scheduleEntry) {
+            scheduleEntry.status = 'completed';
+            scheduleEntry.paidAt = new Date();
+            scheduleEntry.paymentId = payment._id;
+
+            const originalAmount = getMeta('originalAmount');
+            const amountToCredit = originalAmount ? Number(originalAmount) : payment.amount;
+
+            wallet.totalPaid = (wallet.totalPaid || 0) + amountToCredit;
+            wallet.totalDue = Math.max(0, (wallet.totalDue || 0) - amountToCredit);
+
+            wallet.markModified('paymentSchedule');
+            await wallet.save();
+            console.log(`✅ [Razorpay] Rent Wallet Updated: ${targetMonth}/${targetYear} -> Completed`);
+          } else {
+            console.warn(`⚠️ [Razorpay] Schedule entry not found for ${targetMonth}/${targetYear} in wallet ${wallet._id}`);
+          }
+        }
+
+        // Fetch contract for notifications
+        const notificationContract = await RentLockContract.findById(contractId)
+          .populate('listingId', 'name address')
+          .populate('tenantId', 'username email')
+          .populate('landlordId', 'username email');
+
+        if (notificationContract) {
+          const contract = notificationContract;
+          const listing = contract.listingId;
+          const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+          const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
+          const receiptUrl = payment.receiptUrl || `${clientUrl}/api/payments/${payment.paymentId}/receipt`;
+          const io = req.app.get('io');
+
+          // Notify tenant
+          await sendRentalNotification({
+            userId: contract.tenantId._id,
+            type: 'rent_payment_received',
+            title: 'Rent Payment Received',
+            message: `Your rent payment of ₹${payment.amount} for ${listing.name} (${payment.rentMonth}/${payment.rentYear}) has been received.`,
+            meta: {
+              contractId: contract._id,
+              listingId: listing._id,
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear
+            },
+            actionUrl: walletUrl,
+            io
+          });
+
+          // Send email to tenant
+          try {
+            await sendRentPaymentReceivedEmail(contract.tenantId.email, {
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              propertyName: listing.name,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear,
+              receiptUrl: receiptUrl,
+              contractId: contract._id,
+              walletUrl: walletUrl
+            });
+          } catch (emailError) {
+            console.error('Error sending rent payment received email:', emailError);
+          }
+
+          // Notify landlord
+          await sendRentalNotification({
+            userId: contract.landlordId._id,
+            type: 'rent_payment_received',
+            title: 'Rent Payment Received from Tenant',
+            message: `A rent payment of ₹${payment.amount} for ${listing.name} (${payment.rentMonth}/${payment.rentYear}) has been received.`,
+            meta: {
+              contractId: contract._id,
+              listingId: listing._id,
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear
+            },
+            actionUrl: walletUrl,
+            io
+          });
+
+          // Send email to landlord
+          try {
+            await sendRentPaymentReceivedToLandlordEmail(contract.landlordId.email, {
+              paymentId: payment.paymentId,
+              amount: payment.amount,
+              propertyName: listing.name,
+              rentMonth: payment.rentMonth,
+              rentYear: payment.rentYear,
+              tenantName: contract.tenantId.username,
+              contractId: contract._id,
+              walletUrl
+            });
+          } catch (emailError) {
+            console.error('Error sending rent payment received email to landlord:', emailError);
+          }
+        }
+      } catch (rentalError) {
+        console.error('Error handling [Razorpay] monthly rent payment notifications:', rentalError);
       }
     }
 
@@ -1255,6 +1408,9 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
         console.error('Error sending rental payment notifications:', notifError);
       }
     }
+
+    // DELAYED SAVE: Finally save the payment as completed
+    await payment.save();
 
     if (payment.paymentType !== 'monthly_rent') {
       // Send payment success email to buyer (reusing existing appointment, user, listing variables)
