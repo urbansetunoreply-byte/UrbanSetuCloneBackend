@@ -311,7 +311,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
 
     const allPayments = wallet.paymentSchedule;
     const completed = allPayments.filter(p => p.status === 'completed' || p.status === 'paid');
-    const pending = allPayments.filter(p => p.status === 'pending' || p.status === 'overdue');
+    const pending = allPayments.filter(p => p.status === 'pending' || p.status === 'overdue' || p.status === 'processing');
 
     return {
       total: allPayments.length,
