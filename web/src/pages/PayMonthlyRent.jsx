@@ -103,7 +103,7 @@ export default function PayMonthlyRent() {
       setWallet(walletObj);
 
       // Find pending payments
-      const pendingPayments = walletObj.paymentSchedule?.filter(p => p.status === 'pending' || p.status === 'overdue') || [];
+      const pendingPayments = walletObj.paymentSchedule?.filter(p => p.status === 'pending' || p.status === 'overdue' || p.status === 'processing') || [];
 
       if (pendingPayments.length === 0) {
         toast.info("All rent payments are up to date.");
@@ -115,7 +115,7 @@ export default function PayMonthlyRent() {
       if (scheduleIndex !== null) {
         const idx = parseInt(scheduleIndex);
         const payment = walletObj.paymentSchedule?.[idx];
-        if (payment && (payment.status === 'pending' || payment.status === 'overdue')) {
+        if (payment && (payment.status === 'pending' || payment.status === 'overdue' || payment.status === 'processing')) {
           setSelectedPayment({ ...payment, scheduleIndex: idx });
         } else {
           setSelectedPayment({ ...pendingPayments[0], scheduleIndex: walletObj.paymentSchedule.indexOf(pendingPayments[0]) });
