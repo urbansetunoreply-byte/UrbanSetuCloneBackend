@@ -118,7 +118,7 @@ export default function ViewDocument() {
         try {
             if (!docUrl) return;
 
-            // Optimization: Use locally fetched blob if available (prevents CORS/Fallback issues)
+            // Optimization: Use locally fetched blob if available
             if (pdfBlobUrl) {
                 const filename = `${docName || 'document'} -${new Date().getTime()}.pdf`;
                 const link = document.createElement('a');
@@ -130,7 +130,7 @@ export default function ViewDocument() {
                 return;
             }
 
-            const response = await fetch(docUrl, { credentials: 'omit' });
+            const response = await fetch(docUrl, { mode: 'cors' });
             if (!response.ok) throw new Error('Failed to fetch document');
 
             const contentType = response.headers.get('content-type') || '';
@@ -177,24 +177,7 @@ export default function ViewDocument() {
 
         } catch (error) {
             console.error('Error downloading document:', error);
-
-            // Cloudinary "raw" files do not support fl_attachment transformation path injection well (causes 400).
-            // Only use this optimization for standard image uploads or assets if not raw.
-            if (docUrl.includes('cloudinary.com') && docUrl.includes('/upload/') && !docUrl.includes('/raw/')) {
-                const safeName = (docName || 'document').replace(/[^a-zA-Z0-9-_]/g, '_');
-                const parts = docUrl.split('/upload/');
-
-                if (parts.length === 2) {
-                    let ext = 'pdf';
-                    if (docUrl.toLowerCase().includes('jpg') || docUrl.toLowerCase().includes('jpeg')) ext = 'jpg';
-                    else if (docUrl.toLowerCase().includes('png')) ext = 'png';
-
-                    const newUrl = `${parts[0]}/upload/fl_attachment:${safeName}.${ext}/${parts[1]}`;
-                    window.open(newUrl, '_parent');
-                    return;
-                }
-            }
-            window.open(docUrl, '_blank');
+            alert("Download failed. Please try again or contact support.");
         }
     };
 
