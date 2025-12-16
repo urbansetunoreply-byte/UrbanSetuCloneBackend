@@ -590,7 +590,8 @@ router.post("/verify", verifyToken, async (req, res) => {
     payment.clientIp = clientIp || req.ip;
     payment.userAgent = userAgent || req.headers['user-agent'];
 
-    await payment.save();
+    // DELAYED SAVE: We do NOT save payment here. See below.
+    // await payment.save();
 
     // Update appointment status/payment flags
     await Booking.findByIdAndUpdate(payment.appointmentId, {
@@ -603,7 +604,10 @@ router.post("/verify", verifyToken, async (req, res) => {
     const base = `${req.protocol}://${req.get('host')}`;
     const receiptUrl = `${base}/api/payments/${payment.paymentId}/receipt`;
     payment.receiptUrl = receiptUrl;
-    await payment.save();
+
+    // DELAYED SAVE: We do NOT save payment here to prevent the frontend from fetching 
+    // stale wallet data before the wallet update logic (below) completes.
+    // await payment.save();
 
     // Handle rental security deposit payment (PayPal)
     if (payment.paymentType === 'security_deposit' && payment.contractId) {
@@ -940,6 +944,9 @@ router.post("/verify", verifyToken, async (req, res) => {
         console.error('Error sending seller payment notification email:', sellerEmailError);
       }
     }
+
+    // DELAYED SAVE: Finally save the payment as completed, ensures Wallet is already updated first.
+    await payment.save();
 
     // Emit socket event for real-time payment status update (Moved to end ensures DB consistency)
     if (io) {
