@@ -107,6 +107,30 @@ router.post("/lock/initialize", verifyToken, async (req, res) => {
   }
 });
 
+// POST: Extend appointment lock heartbeat
+router.post("/lock/heartbeat", verifyToken, async (req, res) => {
+  try {
+    const { appointmentId } = req.body;
+    const appointment = await Booking.findById(appointmentId);
+
+    if (!appointment) {
+      return res.status(404).json({ message: "Appointment not found" });
+    }
+
+    // Extend lock by 10 minutes from now
+    appointment.lockExpiryTime = new Date(Date.now() + 10 * 60 * 1000);
+    await appointment.save();
+
+    res.status(200).json({
+      success: true,
+      lockExpiryTime: appointment.lockExpiryTime
+    });
+  } catch (err) {
+    console.error('Error in lock heartbeat:', err);
+    res.status(500).json({ message: 'Server error' });
+  }
+});
+
 // POST: Create payment intent (advance payment for booking)
 router.post("/create-intent", verifyToken, async (req, res) => {
   try {
@@ -675,8 +699,13 @@ router.post("/verify", verifyToken, async (req, res) => {
             const targetMonth = Number(payment.rentMonth || getMeta('month'));
             const targetYear = Number(payment.rentYear || getMeta('year'));
 
-            const scheduleEntry = wallet.paymentSchedule.find(p => p.month === targetMonth && p.year === targetYear);
-            console.log(`Payment Verify: Looking for ${targetMonth}/${targetYear} in wallet. Found? ${!!scheduleEntry}`);
+            // Try finding by paymentID first (most reliable), then by Month/Year
+            const scheduleEntry = wallet.paymentSchedule.find(p =>
+              (p.paymentId && p.paymentId.toString() === payment._id.toString()) ||
+              (Number(p.month) === targetMonth && Number(p.year) === targetYear)
+            );
+
+            console.log(`Payment Verify: Schedule Entry Found? ${!!scheduleEntry}. Target: ${targetMonth}/${targetYear}`);
 
             if (scheduleEntry) {
               scheduleEntry.status = 'completed'; // Mark as completed (enum: pending, scheduled, processing, completed, failed, overdue)
