@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
-import { FaMoneyBillWave, FaCheckCircle, FaChevronRight, FaChevronLeft, FaCalendarAlt, FaFileContract, FaCreditCard, FaHome, FaLock, FaSpinner, FaTimesCircle } from "react-icons/fa";
+import { FaMoneyBillWave, FaCheckCircle, FaChevronRight, FaChevronLeft, FaCalendarAlt, FaFileContract, FaCreditCard, FaHome, FaLock, FaSpinner, FaTimesCircle, FaDownload } from "react-icons/fa";
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
@@ -621,6 +621,16 @@ export default function PayMonthlyRent() {
               <p className="text-gray-600 mb-6">
                 Your rent payment has been processed successfully and is being held in escrow.
               </p>
+
+              <div className="flex justify-center mb-6">
+                <button
+                  onClick={() => window.open(`${API_BASE_URL}/api/payments/${createdPayment?.paymentId}/receipt`, '_blank')}
+                  className="flex items-center gap-2 px-6 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 transition-colors shadow-sm"
+                >
+                  <FaDownload /> Download Receipt
+                </button>
+              </div>
+
               <div className="flex gap-4 justify-center">
                 <button
                   onClick={() => navigate("/user/rental-contracts")}
