@@ -1,4 +1,5 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
 import { FaUser, FaClock, FaFileAlt, FaComments, FaCheckCircle, FaTimes, FaPaperPlane, FaSpinner, FaUpload, FaImage, FaVideo, FaFile, FaDownload, FaGavel, FaExclamationTriangle, FaEdit } from 'react-icons/fa';
@@ -22,6 +23,7 @@ export default function DisputeDetail({
   updatingStatus,
   resolving
 }) {
+  const navigate = useNavigate();
   const [newMessage, setNewMessage] = useState('');
   const [uploading, setUploading] = useState({ image: false, video: false, document: false });
   const [sending, setSending] = useState(false);
@@ -367,11 +369,18 @@ export default function DisputeDetail({
                   </div>
                 )}
                 {evidence.type === 'document' && (
-                  <div className="aspect-square flex flex-col items-center justify-center bg-blue-50 rounded mb-2 border border-blue-100">
+                  <div
+                    className="aspect-square flex flex-col items-center justify-center bg-blue-50 rounded mb-2 border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors"
+                    onClick={() => {
+                      const encodedUrl = encodeURIComponent(evidence.url);
+                      navigate(`/user/view-document/preview?url=${encodedUrl}&type=document&name=DisputeEvidence`);
+                    }}
+                  >
                     <FaFile className="text-4xl text-blue-600 mb-2" />
                     <button
                       onClick={(e) => {
                         e.preventDefault();
+                        e.stopPropagation();
                         handleDownloadDocument(evidence.url, 'document');
                       }}
                       className="text-xs text-blue-600 hover:text-blue-800 font-medium flex items-center gap-1 hover:underline cursor-pointer"
