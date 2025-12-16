@@ -519,7 +519,14 @@ export default function DisputeDetail({
                           <FaVideo className="text-white" />
                         </div>
                       ) : (
-                        <div className="w-full h-full bg-gray-100 flex items-center justify-center text-green-600">
+                        <div
+                          className="w-full h-full bg-gray-100 flex items-center justify-center text-green-600 cursor-pointer hover:bg-gray-200 transition-colors"
+                          onClick={() => {
+                            const basePath = isAdmin ? '/admin' : '/user';
+                            const encodedUrl = encodeURIComponent(attachment.url);
+                            window.open(`${basePath}/view/preview?url=${encodedUrl}&type=document&name=PendingAttachment${index + 1}`, '_blank');
+                          }}
+                        >
                           <FaFile size={24} />
                         </div>
                       )}
