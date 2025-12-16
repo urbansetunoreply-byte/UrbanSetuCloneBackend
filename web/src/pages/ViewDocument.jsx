@@ -130,50 +130,9 @@ export default function ViewDocument() {
                 return;
             }
 
-            const response = await fetch(docUrl, { mode: 'cors' });
-            if (!response.ok) throw new Error('Failed to fetch document');
-
-            const contentType = response.headers.get('content-type') || '';
-            let extension = 'pdf';
-
-            try {
-                const urlPath = docUrl.split('?')[0];
-                const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
-                if (lastSegment.includes('.')) {
-                    extension = lastSegment.split('.').pop();
-                }
-            } catch (e) {
-                console.warn('URL parsing failed', e);
-            }
-
-            if ((!extension || extension === 'file') && contentType && !contentType.includes('octet-stream')) {
-                const mimeMap = {
-                    'application/pdf': 'pdf',
-                    'image/jpeg': 'jpg',
-                    'image/jpg': 'jpg',
-                    'image/png': 'png',
-                    'application/msword': 'doc',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-                    'text/plain': 'txt'
-                };
-                extension = mimeMap[contentType.toLowerCase()] || 'pdf';
-            }
-
-            const filename = `${docName || 'document'} -${new Date().getTime()}.${extension}`;
-            const blob = await response.blob();
-
-            const finalBlob = extension === 'pdf' && contentType.includes('octet-stream')
-                ? new Blob([blob], { type: 'application/pdf' })
-                : blob;
-
-            const blobUrl = window.URL.createObjectURL(finalBlob);
-            const link = document.createElement('a');
-            link.href = blobUrl;
-            link.download = filename;
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-            window.URL.revokeObjectURL(blobUrl);
+            // Fallback: Use backend proxy to ensure correct filename and avoid CORS issues
+            const downloadUrl = `${API_BASE_URL}/api/rental/loans/documents/${documentId}/download`;
+            window.location.href = downloadUrl;
 
         } catch (error) {
             console.error('Error downloading document:', error);

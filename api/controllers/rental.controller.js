@@ -3062,6 +3062,82 @@ export const getPublicRentalLoanDocument = async (req, res, next) => {
   }
 };
 
+// Proxy Document Download (Solves CORS/Filename issues)
+export const proxyDocumentDownload = async (req, res, next) => {
+  try {
+    const { documentId } = req.params;
+    const userId = req.user.id;
+
+    // Find loan containing this document
+    const loan = await RentalLoan.findOne({ 'documents._id': documentId });
+
+    if (!loan) {
+      return res.status(404).json({ message: "Document not found." });
+    }
+
+    // Verify access
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
+    if (loan.userId.toString() !== userId && !isAdmin) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    const document = loan.documents.id(documentId);
+    if (!document) {
+      return res.status(404).json({ message: "Document not found." });
+    }
+
+    // Fetch the file from source
+    const response = await fetch(document.url);
+    if (!response.ok) {
+      throw new Error(`Failed to fetch document from source: ${response.statusText}`);
+    }
+
+    const contentType = response.headers.get('content-type');
+    let extension = 'pdf';
+
+    // Determine extension logic similar to frontend to ensure consistency
+    if (contentType) {
+      const mimeMap = {
+        'application/pdf': 'pdf',
+        'image/jpeg': 'jpg',
+        'image/jpg': 'jpg',
+        'image/png': 'png',
+        'application/msword': 'doc',
+        'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+        'text/plain': 'txt'
+      };
+      extension = mimeMap[contentType.toLowerCase()] || 'pdf';
+    }
+
+    // Fallback: if raw file and octet-stream, assume PDF (common usage in this app)
+    if (document.url.includes('/raw/') && (!contentType || contentType.includes('octet-stream'))) {
+      extension = 'pdf';
+    }
+
+    // Handle name
+    let filename = document.type ? document.type.replace(/_/g, ' ') : 'document';
+    // Sanitize
+    filename = filename.replace(/[^a-zA-Z0-9-_ ]/g, '').trim().replace(/\s+/g, '_');
+
+    // Force PDF content type for download if we detected it should be PDF
+    const finalContentType = extension === 'pdf' ? 'application/pdf' : (contentType || 'application/octet-stream');
+
+    res.setHeader('Content-Type', finalContentType);
+    res.setHeader('Content-Disposition', `attachment; filename="${filename}.${extension}"`);
+
+    // Send buffer
+    const arrayBuffer = await response.arrayBuffer();
+    const buffer = Buffer.from(arrayBuffer);
+    res.send(buffer);
+
+  } catch (error) {
+    console.error("Proxy download error:", error);
+    next(error);
+  }
+};
+
+
 // List Rental Loans
 export const listRentalLoans = async (req, res, next) => {
   try {
