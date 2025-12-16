@@ -2997,6 +2997,10 @@ export const getRentalLoanDocument = async (req, res, next) => {
       const response = await fetch(document.url, { method: 'HEAD' });
       if (response.ok) {
         mimeType = response.headers.get('content-type');
+        // Fix for Cloudinary raw files (usually PDFs) served as octet-stream
+        if (mimeType === 'application/octet-stream' && document.url.includes('/raw/')) {
+          mimeType = 'application/pdf';
+        }
       }
     } catch (e) {
       console.warn('Failed to fetch HEAD for document:', e.message);
@@ -3037,6 +3041,10 @@ export const getPublicRentalLoanDocument = async (req, res, next) => {
       const response = await fetch(document.url, { method: 'HEAD' });
       if (response.ok) {
         mimeType = response.headers.get('content-type');
+        // Fix for Cloudinary raw files (usually PDFs) served as octet-stream
+        if (mimeType === 'application/octet-stream' && document.url.includes('/raw/')) {
+          mimeType = 'application/pdf';
+        }
       }
     } catch (e) {
       console.warn('Failed to fetch HEAD for document:', e.message);
