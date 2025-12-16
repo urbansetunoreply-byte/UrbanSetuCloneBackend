@@ -1213,8 +1213,8 @@ export const updateMoveInCondition = async (req, res, next) => {
   }
 };
 
-// Approve Move-In Checklist
-export const approveMoveInChecklist = async (req, res, next) => {
+// Approve Move-In/Move-Out Checklist
+export const approveMoveInOutChecklist = async (req, res, next) => {
   try {
     const { checklistId } = req.params;
     const { notes } = req.body;
@@ -1223,11 +1223,14 @@ export const approveMoveInChecklist = async (req, res, next) => {
     const checklist = await MoveInOutChecklist.findById(checklistId)
       .populate('contractId');
 
-    if (!checklist || checklist.type !== 'move_in') {
-      return res.status(404).json({ message: "Move-in checklist not found." });
+    if (!checklist) {
+      return res.status(404).json({ message: "Checklist not found." });
     }
 
-    const contract = await RentLockContract.findById(checklist.contractId._id);
+    // Populate contract if it wasn't populated deep enough or verify existence
+    const contract = await RentLockContract.findById(checklist.contractId._id || checklist.contractId);
+    if (!contract) return res.status(404).json({ message: "Contract not found." });
+
     const isTenant = contract.tenantId.toString() === userId;
     const isLandlord = contract.landlordId.toString() === userId;
 
@@ -1246,17 +1249,19 @@ export const approveMoveInChecklist = async (req, res, next) => {
       checklist.landlordNotes = notes || checklist.landlordNotes;
     }
 
-    // If both approved, mark as completed
+    // If both approved, mark as approved/completed
     if (checklist.tenantApproved && checklist.landlordApproved) {
       checklist.status = 'approved';
       checklist.completedAt = new Date();
 
-      // Update booking move-in date if available
-      const booking = await Booking.findById(contract.bookingId);
-      if (booking && !booking.moveInDate) {
-        booking.moveInDate = new Date();
-        booking.rentalStatus = 'moved_in';
-        await booking.save();
+      // Update booking move-in date if available and type is move_in
+      if (checklist.type === 'move_in') {
+        const booking = await Booking.findById(contract.bookingId);
+        if (booking && !booking.moveInDate) {
+          booking.moveInDate = new Date();
+          booking.rentalStatus = 'moved_in';
+          await booking.save();
+        }
       }
     } else {
       checklist.status = 'pending_approval';

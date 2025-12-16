@@ -8,11 +8,11 @@ import ChecklistModal from '../components/rental/ChecklistModal';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const services = [
-  { key: 'cleaning', name: 'Cleaning', icon: <FaBroom className="text-blue-600"/> },
-  { key: 'electrician', name: 'Electrician', icon: <FaBolt className="text-yellow-600"/> },
-  { key: 'plumber', name: 'Plumber', icon: <FaWrench className="text-indigo-600"/> },
-  { key: 'pest', name: 'Pest Control', icon: <FaBug className="text-green-700"/> },
-  { key: 'handyman', name: 'Handyman', icon: <FaTools className="text-purple-700"/> },
+  { key: 'cleaning', name: 'Cleaning', icon: <FaBroom className="text-blue-600" /> },
+  { key: 'electrician', name: 'Electrician', icon: <FaBolt className="text-yellow-600" /> },
+  { key: 'plumber', name: 'Plumber', icon: <FaWrench className="text-indigo-600" /> },
+  { key: 'pest', name: 'Pest Control', icon: <FaBug className="text-green-700" /> },
+  { key: 'handyman', name: 'Handyman', icon: <FaTools className="text-purple-700" /> },
 ];
 
 export default function OnDemandServices() {
@@ -48,7 +48,7 @@ export default function OnDemandServices() {
       const res = await fetch(`${API_BASE_URL}/api/requests/services`, { credentials: 'include' });
       const data = await res.json();
       setMyRequests(Array.isArray(data) ? data : []);
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const fetchMyMoverRequests = async () => {
@@ -57,7 +57,7 @@ export default function OnDemandServices() {
       const res = await fetch(`${API_BASE_URL}/api/requests/movers`, { credentials: 'include' });
       const data = await res.json();
       setMyMoverRequests(Array.isArray(data) ? data : []);
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const fetchMyContracts = async () => {
@@ -68,7 +68,7 @@ export default function OnDemandServices() {
       if (data.success) {
         setMyContracts(data.contracts || []);
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const fetchChecklists = async (contractId) => {
@@ -79,14 +79,16 @@ export default function OnDemandServices() {
         const moveIn = data.checklists.find(c => c.type === 'move_in');
         const moveOut = data.checklists.find(c => c.type === 'move_out');
         setChecklists({ moveIn, moveOut });
+        return { moveIn, moveOut };
       }
     } catch (error) {
       toast.error('Failed to fetch checklists');
     }
+    return null;
   };
 
-  useEffect(() => { 
-    fetchMyRequests(); 
+  useEffect(() => {
+    fetchMyRequests();
     fetchMyMoverRequests();
     fetchMyContracts();
   }, [currentUser?._id]);
@@ -96,13 +98,13 @@ export default function OnDemandServices() {
     const searchParams = new URLSearchParams(location.search);
     const contractIdParam = searchParams.get('contractId');
     const checklistParam = searchParams.get('checklist');
-    
+
     if (contractIdParam && (checklistParam === 'move_in' || checklistParam === 'move_out')) {
       // Find the contract
-      const contract = myContracts.find(c => 
+      const contract = myContracts.find(c =>
         (c._id === contractIdParam) || (c.contractId === contractIdParam)
       );
-      
+
       if (contract) {
         const openModal = async () => {
           setSelectedContract(contract);
@@ -149,7 +151,7 @@ export default function OnDemandServices() {
               message: `${currentUser?.username || 'A user'} requested services: ${selected.join(', ')} on ${details.date}.`
             })
           });
-        } catch(_) {}
+        } catch (_) { }
       } else {
         toast.error('Failed to submit request');
       }
@@ -186,7 +188,7 @@ export default function OnDemandServices() {
               message: `${currentUser?.username || 'A user'} requested movers from "${moversForm.from}" to "${moversForm.to}" on ${moversForm.date}.`
             })
           });
-        } catch(_) {}
+        } catch (_) { }
       } else {
         toast.error('Failed to submit movers request');
       }
@@ -205,7 +207,7 @@ export default function OnDemandServices() {
       </div>
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-5 gap-3 sm:gap-4 mb-6 sm:mb-8">
         {services.map(s => (
-          <button key={s.key} onClick={()=>toggleService(s.key)} className={`bg-white rounded-xl shadow p-4 flex flex-col items-center gap-2 hover:shadow-lg ${selected.includes(s.key)?'ring-2 ring-blue-500':''}`}>
+          <button key={s.key} onClick={() => toggleService(s.key)} className={`bg-white rounded-xl shadow p-4 flex flex-col items-center gap-2 hover:shadow-lg ${selected.includes(s.key) ? 'ring-2 ring-blue-500' : ''}`}>
             {s.icon}
             <span className="text-sm font-semibold">{s.name}</span>
           </button>
@@ -216,56 +218,56 @@ export default function OnDemandServices() {
         <div className="grid grid-cols-1 md:grid-cols-2 gap-3 sm:gap-4">
           <div>
             <label className="text-sm text-gray-600">Preferred Date</label>
-            <input type="date" className="w-full border rounded p-2" value={details.date} onChange={e=>setDetails(d=>({...d,date:e.target.value}))} min={new Date().toISOString().split('T')[0]} />
+            <input type="date" className="w-full border rounded p-2" value={details.date} onChange={e => setDetails(d => ({ ...d, date: e.target.value }))} min={new Date().toISOString().split('T')[0]} />
           </div>
           <div>
             <label className="text-sm text-gray-600">Service Address</label>
-            <input className="w-full border rounded p-2" value={details.address} onChange={e=>setDetails(d=>({...d,address:e.target.value}))} placeholder="Address"/>
+            <input className="w-full border rounded p-2" value={details.address} onChange={e => setDetails(d => ({ ...d, address: e.target.value }))} placeholder="Address" />
           </div>
           <div className="md:col-span-2">
             <label className="text-sm text-gray-600">Notes</label>
-            <textarea className="w-full border rounded p-2" rows={3} value={details.notes} onChange={e=>setDetails(d=>({...d,notes:e.target.value}))} placeholder="Describe the issue"/>
+            <textarea className="w-full border rounded p-2" rows={3} value={details.notes} onChange={e => setDetails(d => ({ ...d, notes: e.target.value }))} placeholder="Describe the issue" />
           </div>
         </div>
-        <button onClick={submit} disabled={loading} className="mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded disabled:opacity-60">{loading?'Submitting...':'Submit Request'}</button>
+        <button onClick={submit} disabled={loading} className="mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded disabled:opacity-60">{loading ? 'Submitting...' : 'Submit Request'}</button>
       </div>
 
       {/* Movers section merged below with clear separation */}
       <div className="mt-10 border-t border-gray-200 pt-8">
         <div className="flex items-center justify-between mb-4">
-          <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Packers & Movers</h2>
+          <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600" /> Packers & Movers</h2>
         </div>
         <form onSubmit={submitMovers} className="bg-white rounded-xl shadow p-4 sm:p-5 space-y-4">
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
             <div>
               <label className="text-sm text-gray-600">From Address</label>
-              <input className="w-full border rounded p-2" value={moversForm.from} onChange={e=>setMoversForm(f=>({...f, from:e.target.value}))} placeholder="Pickup address"/>
+              <input className="w-full border rounded p-2" value={moversForm.from} onChange={e => setMoversForm(f => ({ ...f, from: e.target.value }))} placeholder="Pickup address" />
             </div>
             <div>
               <label className="text-sm text-gray-600">To Address</label>
-              <input className="w-full border rounded p-2" value={moversForm.to} onChange={e=>setMoversForm(f=>({...f, to:e.target.value}))} placeholder="Drop address"/>
+              <input className="w-full border rounded p-2" value={moversForm.to} onChange={e => setMoversForm(f => ({ ...f, to: e.target.value }))} placeholder="Drop address" />
             </div>
             <div>
               <label className="text-sm text-gray-600">Move Date</label>
               <div className="flex items-center gap-2">
-                <FaCalendarAlt className="text-gray-500"/>
-                <input type="date" className="w-full border rounded p-2" value={moversForm.date} onChange={e=>setMoversForm(f=>({...f, date:e.target.value}))} min={new Date().toISOString().split('T')[0]} />
+                <FaCalendarAlt className="text-gray-500" />
+                <input type="date" className="w-full border rounded p-2" value={moversForm.date} onChange={e => setMoversForm(f => ({ ...f, date: e.target.value }))} min={new Date().toISOString().split('T')[0]} />
               </div>
             </div>
             <div>
               <label className="text-sm text-gray-600">Home Size</label>
-              <select className="w-full border rounded p-2" value={moversForm.size} onChange={e=>setMoversForm(f=>({...f, size:e.target.value}))}>
-                {['1RK','1BHK','2BHK','3BHK','Villa','Office'].map(s=> <option key={s} value={s}>{s}</option>)}
+              <select className="w-full border rounded p-2" value={moversForm.size} onChange={e => setMoversForm(f => ({ ...f, size: e.target.value }))}>
+                {['1RK', '1BHK', '2BHK', '3BHK', 'Villa', 'Office'].map(s => <option key={s} value={s}>{s}</option>)}
               </select>
             </div>
           </div>
           <div>
             <label className="text-sm text-gray-600">Notes</label>
-            <textarea className="w-full border rounded p-2" rows={3} value={moversForm.notes} onChange={e=>setMoversForm(f=>({...f, notes:e.target.value}))} placeholder="Additional details"/>
+            <textarea className="w-full border rounded p-2" rows={3} value={moversForm.notes} onChange={e => setMoversForm(f => ({ ...f, notes: e.target.value }))} placeholder="Additional details" />
           </div>
           <button disabled={moversSubmitting} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded hover:from-blue-700 hover:to-purple-700 disabled:opacity-50">{moversSubmitting ? 'Submitting...' : 'Request Quote'}</button>
         </form>
-        <div className="mt-6 text-sm text-gray-600 flex items-center gap-2"><FaMapMarkerAlt/> Service available in major cities.</div>
+        <div className="mt-6 text-sm text-gray-600 flex items-center gap-2"><FaMapMarkerAlt /> Service available in major cities.</div>
         {currentUser && (
           <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow p-4">
             <div className="flex items-center justify-between mb-2">
@@ -273,40 +275,40 @@ export default function OnDemandServices() {
               <button onClick={fetchMyMoverRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
             </div>
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-              <input className="border rounded p-2 text-sm" placeholder="Search" value={moversFilters.q} onChange={e=>setMoversFilters(f=>({...f,q:e.target.value}))} />
-              <select className="border rounded p-2 text-sm" value={moversFilters.status} onChange={e=>setMoversFilters(f=>({...f,status:e.target.value}))}>
-                {['all','pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+              <input className="border rounded p-2 text-sm" placeholder="Search" value={moversFilters.q} onChange={e => setMoversFilters(f => ({ ...f, q: e.target.value }))} />
+              <select className="border rounded p-2 text-sm" value={moversFilters.status} onChange={e => setMoversFilters(f => ({ ...f, status: e.target.value }))}>
+                {['all', 'pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
               </select>
-              <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={()=>setMoversFilters({ q:'', status:'all' })}>Clear</button>
+              <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={() => setMoversFilters({ q: '', status: 'all' })}>Clear</button>
             </div>
             {myMoverRequests.length === 0 ? (
               <p className="text-sm text-gray-600">No requests yet.</p>
             ) : (
               <ul className="divide-y">
-                {myMoverRequests.filter(req=>{
+                {myMoverRequests.filter(req => {
                   const matchQ = moversFilters.q.trim() ? (
-                    (req.fromAddress||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
-                    (req.toAddress||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
-                    (req.size||'').toLowerCase().includes(moversFilters.q.toLowerCase())
+                    (req.fromAddress || '').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (req.toAddress || '').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (req.size || '').toLowerCase().includes(moversFilters.q.toLowerCase())
                   ) : true;
-                  const matchStatus = moversFilters.status==='all' ? true : req.status===moversFilters.status;
+                  const matchStatus = moversFilters.status === 'all' ? true : req.status === moversFilters.status;
                   return matchQ && matchStatus;
                 }).map(req => (
                   <li key={req._id} className="py-2">
-                    <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status==='completed'?'bg-green-600':req.status==='in_progress'?'bg-blue-600':req.status==='cancelled'?'bg-gray-500':'bg-orange-500'}`}>{req.status}</span></div>
+                    <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status === 'completed' ? 'bg-green-600' : req.status === 'in_progress' ? 'bg-blue-600' : req.status === 'cancelled' ? 'bg-gray-500' : 'bg-orange-500'}`}>{req.status}</span></div>
                     <div className="text-sm text-gray-800">From: {req.fromAddress}</div>
                     <div className="text-sm text-gray-800">To: {req.toAddress}</div>
                     <div className="text-sm text-gray-800">Date: {req.moveDate}</div>
                     <div className="text-sm text-gray-800">Size: {req.size}</div>
                     {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
                     <div className="mt-2 flex items-center gap-2">
-                      {req.status==='pending' && (
-                        <button onClick={async()=>{ try{ await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method:'PATCH', credentials:'include', headers:{'Content-Type':'application/json'}, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Movers request cancelled'); fetchMyMoverRequests(); } catch(_){ toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
+                      {req.status === 'pending' && (
+                        <button onClick={async () => { try { await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Movers request cancelled'); fetchMyMoverRequests(); } catch (_) { toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
                       )}
-                      {req.status==='cancelled' && (req.reinitiateCount ?? 0) < 2 && (
-                        <button onClick={async()=>{ try{ const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}/reinitiate`, { method:'POST', credentials:'include' }); const data = await r.json(); if(r.ok){ toast.success('Movers request re-initiated'); fetchMyMoverRequests(); } else { toast.error(data.message||'Failed to reinitiate'); } } catch(_){ toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount||0)} left)</button>
+                      {req.status === 'cancelled' && (req.reinitiateCount ?? 0) < 2 && (
+                        <button onClick={async () => { try { const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}/reinitiate`, { method: 'POST', credentials: 'include' }); const data = await r.json(); if (r.ok) { toast.success('Movers request re-initiated'); fetchMyMoverRequests(); } else { toast.error(data.message || 'Failed to reinitiate'); } } catch (_) { toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount || 0)} left)</button>
                       )}
-                      <button onClick={async()=>{ if(!confirm('Delete this request permanently?')) return; try{ const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method:'DELETE', credentials:'include' }); if(r.ok){ toast.success('Deleted'); setMyMoverRequests(prev=>prev.filter(x=>x._id!==req._id)); } else { const d=await r.json(); toast.error(d.message||'Delete failed'); } } catch(_){ toast.error('Delete failed'); } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                      <button onClick={async () => { if (!confirm('Delete this request permanently?')) return; try { const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method: 'DELETE', credentials: 'include' }); if (r.ok) { toast.success('Deleted'); setMyMoverRequests(prev => prev.filter(x => x._id !== req._id)); } else { const d = await r.json(); toast.error(d.message || 'Delete failed'); } } catch (_) { toast.error('Delete failed'); } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                     </div>
                   </li>
                 ))}
@@ -320,7 +322,7 @@ export default function OnDemandServices() {
         <div className="mt-10 border-t border-gray-200 pt-8">
           <div className="flex items-center justify-between mb-4">
             <h2 className="text-xl font-bold flex items-center gap-2">
-              <FaHome className="text-green-600"/> Move-In/Move-Out Checklists
+              <FaHome className="text-green-600" /> Move-In/Move-Out Checklists
             </h2>
           </div>
           <p className="text-sm text-gray-600 mb-4">
@@ -338,23 +340,23 @@ export default function OnDemandServices() {
           ) : (
             <>
               <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-4">
-                <input 
-                  className="border rounded p-2 text-sm" 
-                  placeholder="Search by property name" 
-                  value={checklistFilters.q} 
-                  onChange={(e) => setChecklistFilters(f => ({ ...f, q: e.target.value }))} 
+                <input
+                  className="border rounded p-2 text-sm"
+                  placeholder="Search by property name"
+                  value={checklistFilters.q}
+                  onChange={(e) => setChecklistFilters(f => ({ ...f, q: e.target.value }))}
                 />
-                <select 
-                  className="border rounded p-2 text-sm" 
-                  value={checklistFilters.status} 
+                <select
+                  className="border rounded p-2 text-sm"
+                  value={checklistFilters.status}
                   onChange={(e) => setChecklistFilters(f => ({ ...f, status: e.target.value }))}
                 >
                   <option value="all">All Status</option>
                   <option value="active">Active Contracts</option>
                   <option value="expired">Expired</option>
                 </select>
-                <button 
-                  className="px-3 py-2 bg-gray-100 rounded text-sm" 
+                <button
+                  className="px-3 py-2 bg-gray-100 rounded text-sm"
                   onClick={() => setChecklistFilters({ q: '', status: 'all' })}
                 >
                   Clear
@@ -364,13 +366,13 @@ export default function OnDemandServices() {
               <div className="space-y-3">
                 {myContracts
                   .filter(contract => {
-                    const matchQ = checklistFilters.q.trim() 
+                    const matchQ = checklistFilters.q.trim()
                       ? (contract.listingId?.name || '').toLowerCase().includes(checklistFilters.q.toLowerCase())
                       : true;
-                    const matchStatus = checklistFilters.status === 'all' 
-                      ? true 
-                      : checklistFilters.status === 'active' 
-                        ? contract.status === 'active' 
+                    const matchStatus = checklistFilters.status === 'all'
+                      ? true
+                      : checklistFilters.status === 'active'
+                        ? contract.status === 'active'
                         : contract.status === 'expired';
                     return matchQ && matchStatus;
                   })
@@ -383,11 +385,10 @@ export default function OnDemandServices() {
                             <div>Contract ID: {contract.contractId}</div>
                             <div>Rent: ₹{contract.lockedRentAmount?.toLocaleString()}/month</div>
                             <div>Period: {new Date(contract.startDate).toLocaleDateString()} - {contract.endDate ? new Date(contract.endDate).toLocaleDateString() : 'Ongoing'}</div>
-                            <div className={`inline-block px-2 py-1 rounded text-xs mt-1 ${
-                              contract.status === 'active' ? 'bg-green-100 text-green-800' :
+                            <div className={`inline-block px-2 py-1 rounded text-xs mt-1 ${contract.status === 'active' ? 'bg-green-100 text-green-800' :
                               contract.status === 'expired' ? 'bg-gray-100 text-gray-800' :
-                              'bg-yellow-100 text-yellow-800'
-                            }`}>
+                                'bg-yellow-100 text-yellow-800'
+                              }`}>
                               {contract.status}
                             </div>
                           </div>
@@ -418,42 +419,68 @@ export default function OnDemandServices() {
                               >
                                 <FaSignOutAlt /> Move-Out
                               </button>
+                              <Link
+                                to={`/user/rental-contracts?contractId=${contract._id}`}
+                                className="px-3 py-1.5 bg-gray-50 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-100"
+                              >
+                                View Contract
+                              </Link>
                             </>
                           )}
-                          {/* View button - visible to both tenant and landlord */}
-                          <Link
-                            to={`/user/rental-contracts?contractId=${contract._id}`}
-                            className="px-3 py-1.5 bg-gray-50 border border-gray-300 rounded text-sm text-gray-700 hover:bg-gray-100"
-                          >
-                            View
-                          </Link>
+
+                          {/* Landlord Actions */}
+                          {(contract.landlordId?._id === currentUser?._id || contract.landlordId === currentUser?._id) && (
+                            <button
+                              onClick={async () => {
+                                setSelectedContract(contract);
+                                const result = await fetchChecklists(contract._id);
+                                if (result) {
+                                  if (result.moveIn && result.moveIn.status === 'pending_approval' && !result.moveIn.landlordApproved) {
+                                    setChecklistType('move_in');
+                                    setShowChecklistModal(true);
+                                  } else if (result.moveOut && result.moveOut.status === 'pending_approval' && !result.moveOut.landlordApproved) {
+                                    setChecklistType('move_out');
+                                    setShowChecklistModal(true);
+                                  } else if (result.moveIn) {
+                                    setChecklistType('move_in');
+                                    setShowChecklistModal(true);
+                                  } else {
+                                    navigate(`/user/rental-contracts?contractId=${contract._id}`);
+                                  }
+                                } else {
+                                  navigate(`/user/rental-contracts?contractId=${contract._id}`);
+                                }
+                              }}
+                              className="px-3 py-1.5 bg-blue-50 border border-blue-300 rounded text-sm text-blue-700 hover:bg-blue-100 flex items-center gap-1"
+                            >
+                              View / Approve
+                            </button>
+                          )}
                         </div>
                       </div>
                       {/* Quick status */}
                       <div className="mt-3 flex gap-4 text-xs">
                         {checklists.moveIn ? (
-                          <span className={`flex items-center gap-1 ${
-                            checklists.moveIn.status === 'approved' ? 'text-green-600' :
+                          <span className={`flex items-center gap-1 ${checklists.moveIn.status === 'approved' ? 'text-green-600' :
                             checklists.moveIn.status === 'pending_approval' ? 'text-yellow-600' :
-                            'text-gray-600'
-                          }`}>
-                            {checklists.moveIn.status === 'approved' ? <FaCheckCircle /> : 
-                             checklists.moveIn.status === 'pending_approval' ? <FaClock /> : 
-                             <FaTimesCircle />}
+                              'text-gray-600'
+                            }`}>
+                            {checklists.moveIn.status === 'approved' ? <FaCheckCircle /> :
+                              checklists.moveIn.status === 'pending_approval' ? <FaClock /> :
+                                <FaTimesCircle />}
                             Move-In: {checklists.moveIn.status}
                           </span>
                         ) : (
                           <span className="text-gray-400">Move-In: Not started</span>
                         )}
                         {checklists.moveOut ? (
-                          <span className={`flex items-center gap-1 ${
-                            checklists.moveOut.status === 'completed' ? 'text-green-600' :
+                          <span className={`flex items-center gap-1 ${checklists.moveOut.status === 'completed' ? 'text-green-600' :
                             checklists.moveOut.status === 'pending_approval' ? 'text-yellow-600' :
-                            'text-gray-600'
-                          }`}>
-                            {checklists.moveOut.status === 'completed' ? <FaCheckCircle /> : 
-                             checklists.moveOut.status === 'pending_approval' ? <FaClock /> : 
-                             <FaTimesCircle />}
+                              'text-gray-600'
+                            }`}>
+                            {checklists.moveOut.status === 'completed' ? <FaCheckCircle /> :
+                              checklists.moveOut.status === 'pending_approval' ? <FaClock /> :
+                                <FaTimesCircle />}
                             Move-Out: {checklists.moveOut.status}
                           </span>
                         ) : (
@@ -499,38 +526,38 @@ export default function OnDemandServices() {
             <button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-            <input className="border rounded p-2 text-sm" placeholder="Search" value={serviceFilters.q} onChange={e=>setServiceFilters(f=>({...f,q:e.target.value}))} />
-            <select className="border rounded p-2 text-sm" value={serviceFilters.status} onChange={e=>setServiceFilters(f=>({...f,status:e.target.value}))}>
-              {['all','pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+            <input className="border rounded p-2 text-sm" placeholder="Search" value={serviceFilters.q} onChange={e => setServiceFilters(f => ({ ...f, q: e.target.value }))} />
+            <select className="border rounded p-2 text-sm" value={serviceFilters.status} onChange={e => setServiceFilters(f => ({ ...f, status: e.target.value }))}>
+              {['all', 'pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
             </select>
-            <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={()=>setServiceFilters({ q:'', status:'all' })}>Clear</button>
+            <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={() => setServiceFilters({ q: '', status: 'all' })}>Clear</button>
           </div>
           {myRequests.length === 0 ? (
             <p className="text-sm text-gray-600">No requests yet.</p>
           ) : (
             <ul className="divide-y">
-              {myRequests.filter(req=>{
+              {myRequests.filter(req => {
                 const matchQ = serviceFilters.q.trim() ? (
-                  (req.address||'').toLowerCase().includes(serviceFilters.q.toLowerCase()) ||
-                  (Array.isArray(req.services)? req.services.join(', '):'').toLowerCase().includes(serviceFilters.q.toLowerCase())
+                  (req.address || '').toLowerCase().includes(serviceFilters.q.toLowerCase()) ||
+                  (Array.isArray(req.services) ? req.services.join(', ') : '').toLowerCase().includes(serviceFilters.q.toLowerCase())
                 ) : true;
-                const matchStatus = serviceFilters.status==='all' ? true : req.status===serviceFilters.status;
+                const matchStatus = serviceFilters.status === 'all' ? true : req.status === serviceFilters.status;
                 return matchQ && matchStatus;
               }).map(req => (
                 <li key={req._id} className="py-2">
-                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status==='completed'?'bg-green-600':req.status==='in_progress'?'bg-blue-600':req.status==='cancelled'?'bg-gray-500':'bg-orange-500'}`}>{req.status}</span></div>
+                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status === 'completed' ? 'bg-green-600' : req.status === 'in_progress' ? 'bg-blue-600' : req.status === 'cancelled' ? 'bg-gray-500' : 'bg-orange-500'}`}>{req.status}</span></div>
                   <div className="text-sm text-gray-800">Services: {req.services?.join(', ')}</div>
                   <div className="text-sm text-gray-800">Date: {req.preferredDate}</div>
                   <div className="text-sm text-gray-800">Address: {req.address}</div>
                   {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
                   <div className="mt-2 flex items-center gap-2">
-                    {req.status==='pending' && (
-                      <button onClick={async()=>{try{await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:'cancelled'})}); toast.success('Service request cancelled'); fetchMyRequests();}catch(_){ toast.error('Failed to cancel'); }}} className="text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
+                    {req.status === 'pending' && (
+                      <button onClick={async () => { try { await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Service request cancelled'); fetchMyRequests(); } catch (_) { toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
                     )}
-                    {req.status==='cancelled' && (req.reinitiateCount ?? 0) < 2 && (
-                      <button onClick={async()=>{ try{ const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}/reinitiate`, { method:'POST', credentials:'include' }); const data = await r.json(); if(r.ok){ toast.success('Service request re-initiated'); fetchMyRequests(); } else { toast.error(data.message||'Failed to reinitiate'); } } catch(_){ toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount||0)} left)</button>
+                    {req.status === 'cancelled' && (req.reinitiateCount ?? 0) < 2 && (
+                      <button onClick={async () => { try { const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}/reinitiate`, { method: 'POST', credentials: 'include' }); const data = await r.json(); if (r.ok) { toast.success('Service request re-initiated'); fetchMyRequests(); } else { toast.error(data.message || 'Failed to reinitiate'); } } catch (_) { toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount || 0)} left)</button>
                     )}
-                    <button onClick={async()=>{ if(!confirm('Delete this request permanently?')) return; try{ const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method:'DELETE', credentials:'include' }); if(r.ok){ toast.success('Deleted'); setMyRequests(prev=>prev.filter(x=>x._id!==req._id)); } else { const d=await r.json(); toast.error(d.message||'Delete failed'); } } catch(_){ toast.error('Delete failed'); } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                    <button onClick={async () => { if (!confirm('Delete this request permanently?')) return; try { const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method: 'DELETE', credentials: 'include' }); if (r.ok) { toast.success('Deleted'); setMyRequests(prev => prev.filter(x => x._id !== req._id)); } else { const d = await r.json(); toast.error(d.message || 'Delete failed'); } } catch (_) { toast.error('Delete failed'); } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                   </div>
                 </li>
               ))}

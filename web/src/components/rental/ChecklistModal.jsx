@@ -135,7 +135,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
 
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/checklist/move-in/${checklist._id}/approve`, {
+      const res = await fetch(`${API_BASE_URL}/api/rental/checklist/${checklist._id}/approve`, {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -233,7 +233,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
 
   const isAdmin = currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
   const canEdit = !isAdmin && (!checklist || checklist.status === 'in_progress' || (checklistType === 'move_in' && checklist.status === 'pending_approval' && ((isTenant && !checklist.tenantApproved) || (isLandlord && !checklist.landlordApproved))));
-  const canApprove = checklist && checklistType === 'move_in' && ((isTenant && !checklist.tenantApproved) || (isLandlord && !checklist.landlordApproved));
+  const canApprove = checklist && ((isTenant && !checklist.tenantApproved) || (isLandlord && !checklist.landlordApproved));
   const showApprovalStatus = checklist && (checklist.tenantApproved || checklist.landlordApproved);
 
   return (
