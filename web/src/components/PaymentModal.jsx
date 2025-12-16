@@ -416,7 +416,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                   orderId: existingPayment.gatewayOrderId,
                   amount: existingPayment.amount * 100,
                   currency: existingPayment.currency || 'INR',
-                  keyId: import.meta.env.VITE_RAZORPAY_KEY_ID
+                  keyId: existingPayment.razorpay?.keyId || import.meta.env.VITE_RAZORPAY_KEY_ID
                 }
               }),
               appointment: appointment

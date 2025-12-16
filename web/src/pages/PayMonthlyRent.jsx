@@ -232,7 +232,8 @@ export default function PayMonthlyRent() {
           return;
         }
 
-        setCreatedPayment(data.payment);
+        // Merge payment and razorpay details (containing keyId)
+        setCreatedPayment({ ...data.payment, razorpay: data.razorpay });
         setShowPaymentModal(true);
       } else {
         toast.error("Booking information not available for payment.");
