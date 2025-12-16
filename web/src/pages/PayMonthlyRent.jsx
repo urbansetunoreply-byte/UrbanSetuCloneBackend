@@ -174,6 +174,20 @@ export default function PayMonthlyRent() {
       return;
     }
 
+    // Check if payment is already completed locally
+    if (selectedPayment.status === 'completed' || selectedPayment.status === 'paid') {
+      toast.success("Rent for this month is already paid.");
+      setCreatedPayment({
+        amount: selectedPayment.amount,
+        rentMonth: selectedPayment.month,
+        rentYear: selectedPayment.year,
+        status: 'completed',
+        paymentId: selectedPayment.paymentId
+      });
+      setStep(5);
+      return;
+    }
+
     try {
       setLoading(true);
 
@@ -208,6 +222,14 @@ export default function PayMonthlyRent() {
           paymentId: data.payment.paymentId,
           paymentType: 'monthly_rent'
         };
+
+        // If payment is already completed (idempotency), show success immediately
+        if (data.payment.status === 'completed' || data.payment.status === 'paid') {
+          setCreatedPayment(data.payment);
+          setStep(5);
+          return;
+        }
+
         setCreatedPayment(data.payment);
         setShowPaymentModal(true);
       } else {

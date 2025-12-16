@@ -387,6 +387,16 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
 
           // If an existing payment is provided (e.g., from PayMonthlyRent), use it instead of creating a new intent
           if (existingPayment) {
+            // Check if it's already completed
+            if (existingPayment.status === 'completed' || existingPayment.status === 'paid') {
+              toast.success('Payment already completed!');
+              onPaymentSuccess(existingPayment);
+              setLockAcquired(false);
+              setLoading(false);
+              onClose();
+              return;
+            }
+
             const paymentWrapper = {
               payment: existingPayment,
               // If it's a Razorpay payment, construct the razorpay object needed for frontend
