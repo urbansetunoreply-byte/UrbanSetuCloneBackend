@@ -1102,20 +1102,22 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                 </div>
               ) : paymentData ? (
                 <>
-                  {/* Method Selection */}
-                  <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                    <h5 className="font-semibold text-gray-800 mb-2">Select Region</h5>
-                    <div className="flex items-center gap-4 text-sm">
-                      <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m = 'razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
-                        <span>India (₹100 via Razorpay)</span>
-                      </label>
-                      <label className="inline-flex items-center gap-2">
-                        <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m = 'paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
-                        <span>International ($5 via PayPal)</span>
-                      </label>
+                  {/* Method Selection - Only show if no existing payment (allow changing region for new intents only) */}
+                  {!existingPayment && (
+                    <div className="bg-gray-50 rounded-lg p-4 mb-6">
+                      <h5 className="font-semibold text-gray-800 mb-2">Select Region</h5>
+                      <div className="flex items-center gap-4 text-sm">
+                        <label className="inline-flex items-center gap-2">
+                          <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m = 'razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
+                          <span>India (₹{appointment.paymentType === 'monthly_rent' ? (paymentData?.payment?.amount || '...') : '100'} via Razorpay)</span>
+                        </label>
+                        <label className="inline-flex items-center gap-2">
+                          <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m = 'paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
+                          <span>International (${appointment.paymentType === 'monthly_rent' ? (paymentData?.payment?.amount || '...') : '5'} via PayPal)</span>
+                        </label>
+                      </div>
                     </div>
-                  </div>
+                  )}
                   {/* Property Info */}
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
                     <h3 className="font-semibold text-gray-800 mb-2">{appointment.propertyName}</h3>
@@ -1167,20 +1169,26 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                     <h4 className="font-semibold text-blue-800 mb-3">Payment Summary</h4>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Advance Payment (Flat)</span>
+                        <span className="text-gray-600">
+                          {appointment.paymentType === 'monthly_rent' ? 'Monthly Rent Payment' : 'Advance Payment (Flat)'}
+                        </span>
                         <span className="font-medium">
-                          {preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.currency === 'INR' ? paymentData?.payment?.amount : 100)).toFixed(2)}` : `$ ${Number((paymentData?.payment?.currency === 'USD' ? paymentData?.payment?.amount : 5)).toFixed(2)}`}
+                          {preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'INR' ? 100 : 0))).toFixed(2)}` : `$ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'USD' ? 5 : 0))).toFixed(2)}`}
                         </span>
                       </div>
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>Note</span>
-                        <span>{preferredMethod === 'razorpay' ? '₹100 advance to confirm booking' : '$5 advance to confirm booking'}</span>
+                        <span>
+                          {appointment.paymentType === 'monthly_rent'
+                            ? (preferredMethod === 'razorpay' ? 'Rent payment via Razorpay' : 'Rent payment via PayPal')
+                            : (preferredMethod === 'razorpay' ? '₹100 advance to confirm booking' : '$5 advance to confirm booking')}
+                        </span>
                       </div>
                     </div>
                     <div className="border-t border-blue-200 mt-3 pt-3">
                       <div className="flex justify-between font-semibold text-blue-800">
                         <span>Total Amount</span>
-                        <span>{preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.currency === 'INR' ? paymentData?.payment?.amount : 100)).toFixed(2)}` : `$ ${Number((paymentData?.payment?.currency === 'USD' ? paymentData?.payment?.amount : 5)).toFixed(2)}`}</span>
+                        <span>{preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'INR' ? 100 : 0))).toFixed(2)}` : `$ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'USD' ? 5 : 0))).toFixed(2)}`}</span>
                       </div>
                     </div>
                   </div>
@@ -1264,7 +1272,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                 <FaCheckCircle className="text-6xl text-green-500 mx-auto mb-4" />
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h2>
                 <p className="text-gray-600">
-                  Your advance payment has been processed successfully.
+                  Your {appointment.paymentType === 'monthly_rent' ? 'rent payment' : 'advance payment'} has been processed successfully.
                 </p>
               </div>
 
