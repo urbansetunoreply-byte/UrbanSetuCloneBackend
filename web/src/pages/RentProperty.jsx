@@ -134,7 +134,14 @@ export default function RentProperty() {
           }
         }
 
-        // 3. If a contract is found (either way), resume it
+        // 3. Check if property is already booked by someone else
+        if ((listingData.availabilityStatus === 'booked' || listingData.availabilityStatus === 'rented') && !existingContract) {
+          toast.error("This property is already booked by another user.");
+          navigate(`/listing/${listingId}`);
+          return;
+        }
+
+        // 4. If a contract is found (either way), resume it
         if (existingContract && existingContract._id) {
           // Check if contract is rejected or terminated (double check for safety)
           if (existingContract.status === 'rejected' || existingContract.status === 'terminated') {
