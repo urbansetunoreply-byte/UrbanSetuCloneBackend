@@ -143,70 +143,43 @@ export default function ViewDocument() {
         );
     }
 
-    const handleDownloadDocument = async (docUrl, docName, providedMimeType, detectedFileType) => {
+    const handleDownloadDocument = async (docUrl, docName) => {
         try {
             if (!docUrl) return;
 
             const response = await fetch(docUrl, { mode: 'cors' });
             if (!response.ok) throw new Error('Failed to fetch document');
 
-            const contentType = response.headers.get('content-type') || providedMimeType || '';
-
-            // Determine default extension based on provided mime type
+            const contentType = response.headers.get('content-type') || '';
             let extension = 'pdf';
 
-            // Strong override: if the viewer detected it as PDF (e.g. via raw URL check), trust it
-            if (detectedFileType === 'pdf') {
-                extension = 'pdf';
-            }
-            else if (providedMimeType) {
-                if (providedMimeType.includes('image')) extension = 'jpg';
-                else if (providedMimeType.includes('pdf')) extension = 'pdf';
-            }
-
-            // Improve extension detection from URL if possible
             try {
                 const urlPath = docUrl.split('?')[0];
                 const lastSegment = urlPath.substring(urlPath.lastIndexOf('/') + 1);
                 if (lastSegment.includes('.')) {
-                    // Only take the last part after dot
-                    const ext = lastSegment.split('.').pop();
-                    // Validate if it looks like a real extension (3-4 chars)
-                    if (ext && ext.length >= 3 && ext.length <= 4) {
-                        extension = ext;
-                    }
+                    extension = lastSegment.split('.').pop();
                 }
             } catch (e) {
                 console.warn('URL parsing failed', e);
             }
 
-            const mimeMap = {
-                'application/pdf': 'pdf',
-                'image/jpeg': 'jpg',
-                'image/jpg': 'jpg',
-                'image/png': 'png',
-                'image/webp': 'webp',
-                'application/msword': 'doc',
-                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-                'text/plain': 'txt'
-            };
-
-            // Mime-type overrides URL extension if specific
-            if (contentType && !contentType.includes('octet-stream') && mimeMap[contentType.toLowerCase()]) {
-                extension = mimeMap[contentType.toLowerCase()];
-            }
-            else if (providedMimeType && mimeMap[providedMimeType.toLowerCase()]) {
-                extension = mimeMap[providedMimeType.toLowerCase()];
+            if ((!extension || extension === 'file') && contentType && !contentType.includes('octet-stream')) {
+                const mimeMap = {
+                    'application/pdf': 'pdf',
+                    'image/jpeg': 'jpg',
+                    'image/jpg': 'jpg',
+                    'image/png': 'png',
+                    'application/msword': 'doc',
+                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+                    'text/plain': 'txt'
+                };
+                extension = mimeMap[contentType.toLowerCase()] || 'pdf';
             }
 
-            // Sanitize docName to prevent weird filenames
-            let safeDocName = (docName || 'document').replace(/[^a-zA-Z0-9-_]/g, '_');
-            const filename = `${safeDocName}-${new Date().getTime()}.${extension}`;
-
+            const filename = `${docName || 'document'} -${new Date().getTime()}.${extension}`;
             const blob = await response.blob();
 
-            // Force PDF type if detected
-            const finalBlob = (extension === 'pdf')
+            const finalBlob = extension === 'pdf' && contentType.includes('octet-stream')
                 ? new Blob([blob], { type: 'application/pdf' })
                 : blob;
 
@@ -301,7 +274,7 @@ export default function ViewDocument() {
                     </button>
                 ) : (
                     <button
-                        onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType, fileType)}
+                        onClick={() => handleDownloadDocument(document.url, document.type)}
                         className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                     >
                         <FaDownload />
