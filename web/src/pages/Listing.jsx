@@ -48,7 +48,7 @@ const LOCK_REASON_MESSAGES = {
 
 export default function Listing() {
   // Set page title
-  usePageTitle("Property Details - View Listing");
+  usePageTitle(listing ? `${listing.name} - UrbanSetu` : "Property Details - UrbanSetu");
 
   const params = useParams();
   const navigate = useNavigate();
@@ -1735,8 +1735,8 @@ export default function Listing() {
                     onClick={toggleWatchlist}
                     disabled={watchlistLoading}
                     className={`ml-2 p-2 rounded-full transition z-20 focus:outline-none ${isInWatchlist
-                        ? 'bg-blue-600 text-white hover:bg-blue-700'
-                        : 'bg-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-100'
+                      ? 'bg-blue-600 text-white hover:bg-blue-700'
+                      : 'bg-gray-200 text-blue-500 hover:text-blue-600 hover:bg-blue-100'
                       } ${watchlistLoading ? 'opacity-50 cursor-not-allowed' : ''}`}
                     title={isInWatchlist ? 'Remove from watchlist' : 'Add to watchlist'}
                     style={{ lineHeight: 0 }}
@@ -2978,8 +2978,8 @@ export default function Listing() {
                                     onClick={() => handleFAQReaction(faq._id, 'like')}
                                     disabled={faqReactionLoading[faq._id]}
                                     className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'like'
-                                        ? 'text-green-700 bg-green-100 border-green-300'
-                                        : 'text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 border-green-200'
+                                      ? 'text-green-700 bg-green-100 border-green-300'
+                                      : 'text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 border-green-200'
                                       } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   >
                                     {userFAQReactions[faq._id] === 'like' ? <FaThumbsUp /> : <FaRegThumbsUp />}
@@ -2991,8 +2991,8 @@ export default function Listing() {
                                     onClick={() => handleFAQReaction(faq._id, 'dislike')}
                                     disabled={faqReactionLoading[faq._id]}
                                     className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'dislike'
-                                        ? 'text-red-700 bg-red-100 border-red-300'
-                                        : 'text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200'
+                                      ? 'text-red-700 bg-red-100 border-red-300'
+                                      : 'text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200'
                                       } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   >
                                     {userFAQReactions[faq._id] === 'dislike' ? <FaThumbsDown /> : <FaRegThumbsDown />}
@@ -3934,10 +3934,10 @@ export default function Listing() {
                                         onClick={() => addPropertyFromSearch(property)}
                                         disabled={!canAdd}
                                         className={`px-4 py-2 text-sm rounded-lg font-medium transition-colors w-full sm:w-auto ${isAlreadyAdded
-                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                            : canAdd
-                                              ? 'bg-purple-600 text-white hover:bg-purple-700'
-                                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                          : canAdd
+                                            ? 'bg-purple-600 text-white hover:bg-purple-700'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                           }`}
                                       >
                                         {isAlreadyAdded ? 'Added' : canAdd ? 'Add to Compare' : 'Max Reached'}
@@ -4055,10 +4055,10 @@ export default function Listing() {
                                         }}
                                         disabled={!canAdd}
                                         className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors ${isAlreadyAdded
-                                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                            : canAdd
-                                              ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                              : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                          : canAdd
+                                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
                                           }`}
                                       >
                                         {isAlreadyAdded ? 'Added' : canAdd ? 'Add' : 'Max'}
