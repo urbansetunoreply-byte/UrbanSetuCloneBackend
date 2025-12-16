@@ -579,6 +579,7 @@ export default function PayMonthlyRent() {
             onClose={() => setShowPaymentModal(false)}
             appointment={{
               ...booking,
+              lockExpiryTime: null,
               contractId: contract._id,
               isRentalPayment: true,
               paymentType: 'monthly_rent'
