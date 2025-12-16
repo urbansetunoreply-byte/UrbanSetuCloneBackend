@@ -286,6 +286,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
   const lockManagerRef = useRef(null); // Ref for payment lock manager
   const lowTimeWarningShownRef = useRef(false); // Ref to track if low time warning has been shown
   const expiresAtRef = useRef(null); // Ref to store the expiry timestamp for accurate time calculation
+  const [monthlyRentContext, setMonthlyRentContext] = useState(null); // Store context to recreate monthly rent payments
+
 
   // Cancel payment when modal is closed without completing
   const cancelPayment = async () => {
@@ -395,6 +397,10 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
               setLoading(false);
               onClose();
               return;
+            }
+
+            if (existingPayment.paymentType === 'monthly_rent' && existingPayment.metadata) {
+              setMonthlyRentContext(existingPayment.metadata);
             }
 
             const paymentWrapper = {
@@ -693,19 +699,39 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
         }
       }
 
-      const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        credentials: 'include',
-        body: JSON.stringify({
-          appointmentId: appointment._id,
-          paymentType: appointment.paymentType || (appointment.isRentalPayment ? 'security_deposit' : 'advance'),
-          gateway: (methodOverride || preferredMethod) === 'razorpay' ? 'razorpay' : 'paypal',
-          ...(appointment.contractId && { contractId: appointment.contractId })
-        })
-      });
+      let response;
+      const targetGateway = (methodOverride || preferredMethod) === 'razorpay' ? 'razorpay' : 'paypal';
+
+      // Special handling for Monthly Rent: Use /monthly-rent endpoint to recreate payment
+      if (monthlyRentContext) {
+        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/monthly-rent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            contractId: monthlyRentContext.contractId,
+            walletId: monthlyRentContext.walletId,
+            month: monthlyRentContext.month,
+            year: monthlyRentContext.year,
+            amount: monthlyRentContext.originalAmount, // Always use original INR amount
+            gateway: targetGateway,
+            isAutoDebit: false
+          })
+        });
+      } else {
+        // Standard flow for Advance/Security Deposit
+        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/create-intent`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            appointmentId: appointment._id,
+            paymentType: appointment.paymentType || (appointment.isRentalPayment ? 'security_deposit' : 'advance'),
+            gateway: targetGateway,
+            ...(appointment.contractId && { contractId: appointment.contractId })
+          })
+        });
+      }
 
       const data = await response.json();
       if (response.ok) {
@@ -1103,17 +1129,18 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
               ) : paymentData ? (
                 <>
                   {/* Method Selection - Only show if no existing payment (allow changing region for new intents only) */}
-                  {!existingPayment && (
+                  {/* Method Selection - Show for all new intents, OR if we have monthly rent context to recreate */}
+                  {(!existingPayment || monthlyRentContext) && (
                     <div className="bg-gray-50 rounded-lg p-4 mb-6">
                       <h5 className="font-semibold text-gray-800 mb-2">Select Region</h5>
                       <div className="flex items-center gap-4 text-sm">
-                        <label className="inline-flex items-center gap-2">
+                        <label className="inline-flex items-center gap-2 cursor-pointer">
                           <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m = 'razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
-                          <span>India (₹{appointment.paymentType === 'monthly_rent' ? (paymentData?.payment?.amount || '...') : '100'} via Razorpay)</span>
+                          <span>India (Razorpay - INR)</span>
                         </label>
-                        <label className="inline-flex items-center gap-2">
+                        <label className="inline-flex items-center gap-2 cursor-pointer">
                           <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m = 'paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
-                          <span>International (${appointment.paymentType === 'monthly_rent' ? (paymentData?.payment?.amount || '...') : '5'} via PayPal)</span>
+                          <span>International (PayPal - USD)</span>
                         </label>
                       </div>
                     </div>
