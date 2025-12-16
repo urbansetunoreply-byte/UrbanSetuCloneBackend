@@ -271,7 +271,7 @@ const createPaymentLockManager = (appointmentId) => {
   };
 };
 
-const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
+const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existingPayment }) => {
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -384,8 +384,33 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
           paymentDataRef.current = null; // Reset ref
           setPaymentSuccess(false);
           setPaymentInitiatedTime(null); // Reset initiation time
-          // Don't reset timeRemaining here - it will be calculated from payment data when received
-          setTimeout(() => createPaymentIntent(methodFromAppt), 0);
+
+          // If an existing payment is provided (e.g., from PayMonthlyRent), use it instead of creating a new intent
+          if (existingPayment) {
+            const paymentWrapper = {
+              payment: existingPayment,
+              // If it's a Razorpay payment, construct the razorpay object needed for frontend
+              ...(existingPayment.gateway === 'razorpay' && {
+                razorpay: {
+                  orderId: existingPayment.gatewayOrderId,
+                  amount: existingPayment.amount * 100,
+                  currency: existingPayment.currency || 'INR',
+                  keyId: import.meta.env.VITE_RAZORPAY_KEY_ID
+                }
+              }),
+              appointment: appointment
+            };
+
+            setPaymentData(paymentWrapper);
+            paymentDataRef.current = paymentWrapper;
+
+            const initiatedAt = existingPayment.createdAt ? new Date(existingPayment.createdAt) : new Date();
+            setPaymentInitiatedTime(initiatedAt);
+            setLoading(false);
+          } else {
+            // Don't reset timeRemaining here - it will be calculated from payment data when received
+            setTimeout(() => createPaymentIntent(methodFromAppt), 0);
+          }
         } catch (error) {
           console.error('Error acquiring lock:', error);
           toast.error('Failed to acquire payment lock. Please try again.');
@@ -450,7 +475,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
       document.body.style.position = '';
       document.body.style.width = '';
     };
-  }, [isOpen, appointment, onClose]);
+  }, [isOpen, appointment, onClose, existingPayment]);
 
   // Handle payment expiry
   const handleExpiry = useCallback(async () => {
@@ -666,7 +691,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
         credentials: 'include',
         body: JSON.stringify({
           appointmentId: appointment._id,
-          paymentType: appointment.isRentalPayment ? 'security_deposit' : 'advance',
+          paymentType: appointment.paymentType || (appointment.isRentalPayment ? 'security_deposit' : 'advance'),
           gateway: (methodOverride || preferredMethod) === 'razorpay' ? 'razorpay' : 'paypal',
           ...(appointment.contractId && { contractId: appointment.contractId })
         })
@@ -1033,10 +1058,10 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess }) => {
                   <div className="flex items-center justify-center gap-3">
                     <span className="text-gray-700 font-medium text-base">⏱️ Time remaining:</span>
                     <span className={`text-2xl font-bold px-4 py-2 rounded-lg ${timeRemaining < 60
-                        ? 'bg-red-100 text-red-700 border-2 border-red-400 animate-pulse'
-                        : timeRemaining < 300
-                          ? 'bg-orange-100 text-orange-700 border-2 border-orange-400'
-                          : 'bg-green-100 text-green-700 border-2 border-green-400'
+                      ? 'bg-red-100 text-red-700 border-2 border-red-400 animate-pulse'
+                      : timeRemaining < 300
+                        ? 'bg-orange-100 text-orange-700 border-2 border-orange-400'
+                        : 'bg-green-100 text-green-700 border-2 border-green-400'
                       }`}>
                       {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
                     </span>

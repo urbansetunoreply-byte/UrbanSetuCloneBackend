@@ -29,6 +29,7 @@ export default function PayMonthlyRent() {
   const [showContractPreview, setShowContractPreview] = useState(false);
   const [paymentCompleted, setPaymentCompleted] = useState(false);
   const [booking, setBooking] = useState(null);
+  const [createdPayment, setCreatedPayment] = useState(null);
 
   useEffect(() => {
     if (!contractId) {
@@ -207,6 +208,7 @@ export default function PayMonthlyRent() {
           paymentId: data.payment.paymentId,
           paymentType: 'monthly_rent'
         };
+        setCreatedPayment(data.payment);
         setShowPaymentModal(true);
       } else {
         toast.error("Booking information not available for payment.");
@@ -581,6 +583,7 @@ export default function PayMonthlyRent() {
               isRentalPayment: true,
               paymentType: 'monthly_rent'
             }}
+            existingPayment={createdPayment}
             onPaymentSuccess={handlePaymentSuccess}
           />
         )}
