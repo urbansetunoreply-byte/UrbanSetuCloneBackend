@@ -258,17 +258,29 @@ export default function DisputeDetail({
     }
 
     return (
-      <div key={idx} className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200">
-        <FaFile className="text-blue-500" />
+      <div
+        key={idx}
+        className="flex items-center gap-2 p-2 bg-white rounded border border-gray-200 cursor-pointer hover:bg-gray-50 transition-colors"
+        onClick={() => {
+          const basePath = isAdmin ? '/admin' : '/user';
+          const encodedUrl = encodeURIComponent(url);
+          window.open(`${basePath}/view/preview?url=${encodedUrl}&type=document&name=Attachment${idx + 1}`, '_blank');
+        }}
+      >
+        <FaFile className="text-blue-500 shrink-0" />
+        <span className="text-xs text-gray-700 truncate max-w-[150px] flex-1">
+          Attachment {idx + 1}
+        </span>
         <button
           onClick={(e) => {
             e.preventDefault();
+            e.stopPropagation();
             handleDownloadDocument(url, 'attachment');
           }}
-          className="text-xs text-blue-600 hover:underline truncate max-w-[150px]"
+          className="text-xs text-blue-600 hover:text-blue-800 hover:underline shrink-0 flex items-center gap-1"
           title="Download"
         >
-          Attachment {idx + 1}
+          <FaDownload className="text-[10px]" />
         </button>
       </div>
     );
