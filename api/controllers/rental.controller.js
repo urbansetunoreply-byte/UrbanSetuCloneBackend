@@ -2958,6 +2958,69 @@ export const getRentalLoan = async (req, res, next) => {
   }
 };
 
+// Get Rental Loan Document
+export const getRentalLoanDocument = async (req, res, next) => {
+  try {
+    const { documentId } = req.params;
+    const userId = req.user.id;
+
+    // Find loan containing this document
+    const loan = await RentalLoan.findOne({ 'documents._id': documentId });
+
+    if (!loan) {
+      return res.status(404).json({ message: "Document not found." });
+    }
+
+    // Verify user has access
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
+
+    if (loan.userId.toString() !== userId && !isAdmin) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    const document = loan.documents.id(documentId);
+
+    if (!document) {
+      return res.status(404).json({ message: "Document not found." });
+    }
+
+    res.json({
+      success: true,
+      document
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
+// Get Public Rental Loan Document (No Auth)
+export const getPublicRentalLoanDocument = async (req, res, next) => {
+  try {
+    const { documentId } = req.params;
+
+    // Find loan containing this document
+    const loan = await RentalLoan.findOne({ 'documents._id': documentId });
+
+    if (!loan) {
+      return res.status(404).json({ message: "Document not found." });
+    }
+
+    const document = loan.documents.id(documentId);
+
+    if (!document) {
+      return res.status(404).json({ message: "Document not found." });
+    }
+
+    res.json({
+      success: true,
+      document
+    });
+  } catch (error) {
+    next(error);
+  }
+};
+
 // List Rental Loans
 export const listRentalLoans = async (req, res, next) => {
   try {

@@ -42,7 +42,9 @@ import {
   getLocalityScore,
   listAllRatings,
   listAllContracts,
-  updateContractStatus
+  updateContractStatus,
+  getRentalLoanDocument,
+  getPublicRentalLoanDocument
 } from '../controllers/rental.controller.js';
 
 const router = express.Router();
@@ -115,7 +117,9 @@ router.get("/ratings/:contractId", verifyToken, getRentalRating);
 router.get("/ratings", verifyToken, listRentalRatings);
 
 // Rental Loans Routes
+router.get("/public/documents/:documentId", getPublicRentalLoanDocument);
 router.post("/loans/:contractId", verifyToken, applyForRentalLoan);
+router.get("/loans/documents/:documentId", verifyToken, getRentalLoanDocument);
 router.get("/loans/:loanId", verifyToken, getRentalLoan);
 router.get("/loans", verifyToken, listRentalLoans);
 router.post("/loans/:loanId/approve", verifyToken, approveRentalLoan);

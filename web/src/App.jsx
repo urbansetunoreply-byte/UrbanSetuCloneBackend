@@ -121,6 +121,7 @@ const AdminRentalContracts = lazy(() => import('./pages/AdminRentalContracts'));
 const AdminRentalLoans = lazy(() => import('./pages/AdminRentalLoans'));
 const RentalLoans = lazy(() => import('./pages/RentalLoans'));
 const SharedChatView = lazy(() => import('./pages/SharedChatView'));
+const ViewDocument = lazy(() => import('./pages/ViewDocument'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -639,6 +640,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/restore-property" element={<RestoreProperty />} />
             <Route path="/offers" element={<Offers />} />
             <Route path="/ai/share/:shareToken" element={<SharedChatView />} />
+            <Route path="/view/:documentId" element={<ViewDocument />} />
 
             {/* User Routes (Protected) */}
             <Route element={<Private bootstrapped={bootstrapped} />}>
@@ -682,6 +684,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/ai/share/:shareToken" element={<SharedChatView />} />
               <Route path="/user/investment-tools" element={<InvestmentTools />} />
               <Route path="/user/settings" element={<Settings />} />
+              <Route path="/user/view/:documentId" element={<ViewDocument />} />
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/ai" element={<Navigate to="/user/ai" />} />
@@ -732,6 +735,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/rental-loans" element={<AdminRentalLoans />} />
               <Route path="/admin/disputes" element={<AdminDisputeResolution />} />
               <Route path="/admin/settings" element={<Settings />} />
+              <Route path="/admin/view/:documentId" element={<ViewDocument />} />
               <Route path="/contact" element={<Navigate to="/admin/support" />} />
               <Route path="/support" element={<Navigate to="/admin/support" />} />
               <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
