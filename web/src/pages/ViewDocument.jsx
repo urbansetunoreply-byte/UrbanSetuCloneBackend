@@ -121,15 +121,21 @@ export default function ViewDocument() {
         }
     };
 
-    const handleDownloadDocument = async (docUrl, docName) => {
+    const handleDownloadDocument = async (docUrl, docName, providedMimeType) => {
         try {
             if (!docUrl) return;
 
             const response = await fetch(docUrl, { mode: 'cors' });
             if (!response.ok) throw new Error('Failed to fetch document');
 
-            const contentType = response.headers.get('content-type') || '';
+            const contentType = response.headers.get('content-type') || providedMimeType || '';
+
+            // Determine default extension based on provided mime type if available
             let extension = 'pdf';
+            if (providedMimeType) {
+                if (providedMimeType.includes('image')) extension = 'jpg';
+                else if (providedMimeType.includes('pdf')) extension = 'pdf';
+            }
 
             try {
                 const urlPath = docUrl.split('?')[0];
@@ -141,23 +147,31 @@ export default function ViewDocument() {
                 console.warn('URL parsing failed', e);
             }
 
-            if ((!extension || extension === 'file') && contentType && !contentType.includes('octet-stream')) {
-                const mimeMap = {
-                    'application/pdf': 'pdf',
-                    'image/jpeg': 'jpg',
-                    'image/jpg': 'jpg',
-                    'image/png': 'png',
-                    'application/msword': 'doc',
-                    'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
-                    'text/plain': 'txt'
-                };
-                extension = mimeMap[contentType.toLowerCase()] || 'pdf';
+            const mimeMap = {
+                'application/pdf': 'pdf',
+                'image/jpeg': 'jpg',
+                'image/jpg': 'jpg',
+                'image/png': 'png',
+                'image/webp': 'webp',
+                'application/msword': 'doc',
+                'application/vnd.openxmlformats-officedocument.wordprocessingml.document': 'docx',
+                'text/plain': 'txt'
+            };
+
+            // If we have a valid content-type header (not generic), use it to correct the extension
+            if (contentType && !contentType.includes('octet-stream') && mimeMap[contentType.toLowerCase()]) {
+                extension = mimeMap[contentType.toLowerCase()];
+            }
+            // If header is generic/missing but we have providedMimeType, use that
+            else if (providedMimeType && mimeMap[providedMimeType.toLowerCase()]) {
+                extension = mimeMap[providedMimeType.toLowerCase()];
             }
 
-            const filename = `${docName || 'document'} -${new Date().getTime()}.${extension}`;
+            const filename = `${docName || 'document'}-${new Date().getTime()}.${extension}`;
             const blob = await response.blob();
 
-            const finalBlob = extension === 'pdf' && contentType.includes('octet-stream')
+            // Force PDF type if we think it is a PDF but served as octet-stream
+            const finalBlob = (extension === 'pdf' && contentType.includes('octet-stream'))
                 ? new Blob([blob], { type: 'application/pdf' })
                 : blob;
 
@@ -172,6 +186,7 @@ export default function ViewDocument() {
 
         } catch (error) {
             console.error('Error downloading document:', error);
+            // Fallback
             window.open(docUrl, '_blank');
         }
     };
@@ -242,7 +257,7 @@ export default function ViewDocument() {
                     </h1>
                 </div>
                 <button
-                    onClick={() => handleDownloadDocument(document.url, document.type)}
+                    onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType)}
                     className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                 >
                     <FaDownload />
@@ -273,7 +288,7 @@ export default function ViewDocument() {
                             <h3 className="text-xl font-semibold text-gray-800 mb-2">Preview Not Available</h3>
                             <p className="text-gray-600 mb-6">This file type cannot be previewed directly.</p>
                             <button
-                                onClick={() => handleDownloadDocument(document.url, document.type)}
+                                onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType)}
                                 className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                             >
                                 <FaDownload /> Download to View
