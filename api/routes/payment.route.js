@@ -672,10 +672,12 @@ router.post("/verify", verifyToken, async (req, res) => {
             // Find schedule entry using rentMonth/rentYear or metadata as fallback
             const getMeta = (key) => payment.metadata instanceof Map ? payment.metadata.get(key) : (payment.metadata ? payment.metadata[key] : undefined);
 
-            const targetMonth = payment.rentMonth || getMeta('month');
-            const targetYear = payment.rentYear || getMeta('year');
+            const targetMonth = Number(payment.rentMonth || getMeta('month'));
+            const targetYear = Number(payment.rentYear || getMeta('year'));
 
             const scheduleEntry = wallet.paymentSchedule.find(p => p.month === targetMonth && p.year === targetYear);
+            console.log(`Payment Verify: Looking for ${targetMonth}/${targetYear} in wallet. Found? ${!!scheduleEntry}`);
+
             if (scheduleEntry) {
               scheduleEntry.status = 'completed'; // Mark as completed (enum: pending, scheduled, processing, completed, failed, overdue)
               scheduleEntry.paidAt = new Date();
