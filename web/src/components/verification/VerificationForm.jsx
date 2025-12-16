@@ -81,12 +81,14 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
       const data = await res.json();
       // Cloudinary returns 'path' for document URL
       const documentUrl = data.documentUrl || data.path || data.url || data.imageUrl;
+      const originalName = data.originalName || 'Document';
 
       setFormData(prev => ({
         ...prev,
         [section]: {
           ...prev[section],
-          documentUrl
+          documentUrl,
+          originalName
         }
       }));
 
@@ -164,7 +166,7 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
     return (
       <div className="border rounded-lg p-4 space-y-3">
         <h4 className="font-semibold text-gray-800">{title} <span className="text-red-500">*</span></h4>
-        
+
         <div>
           <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
           <select
@@ -201,8 +203,18 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
             </label>
           ) : (
             <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <FaCheckCircle className="text-green-600" />
-              <span className="flex-1 text-sm text-green-700">Document uploaded</span>
+              <FaCheckCircle className="text-green-600 shrink-0" />
+              <span
+                className="flex-1 text-sm text-green-700 font-medium hover:underline cursor-pointer truncate"
+                onClick={() => {
+                  const encodedUrl = encodeURIComponent(formData[section].documentUrl);
+                  const name = formData[section].originalName || 'Document';
+                  window.open(`/user/view/preview?url=${encodedUrl}&type=document&name=${name}`, '_blank');
+                }}
+                title="Click to preview"
+              >
+                {formData[section].originalName || 'Document uploaded'}
+              </span>
               <button
                 type="button"
                 onClick={() => removeDocument(section)}
@@ -237,7 +249,7 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
 
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
         <p className="text-sm text-yellow-800">
-          <strong>Note:</strong> Please upload clear, legible documents. All documents will be verified by our admin team. 
+          <strong>Note:</strong> Please upload clear, legible documents. All documents will be verified by our admin team.
           Verification typically takes 2-5 business days.
         </p>
       </div>

@@ -253,19 +253,38 @@ export default function VerificationStatus({ verification, listing, currentUser,
             </div>
             {verification.documents.ownershipProof.documentUrl && (
               <div className="mt-2">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDownloadDocument(
-                      verification.documents.ownershipProof.documentUrl,
-                      verification.documents.ownershipProof.documentType,
-                      'ownership-proof'
-                    );
-                  }}
-                  className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <FaDownload /> Download Document
-                </button>
+                <div className="flex items-center gap-4 mt-2">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const basePath = isAdmin ? '/admin' : '/user';
+                      const doc = verification.documents.ownershipProof;
+                      if (doc._id) {
+                        window.open(`${basePath}/view/${doc._id}`, '_blank');
+                      } else {
+                        const encodedUrl = encodeURIComponent(doc.documentUrl);
+                        window.open(`${basePath}/view/preview?url=${encodedUrl}&type=document&name=OwnershipProof`, '_blank');
+                      }
+                    }}
+                    className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                  >
+                    <FaFileAlt /> View
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDownloadDocument(
+                        verification.documents.ownershipProof.documentUrl,
+                        verification.documents.ownershipProof.documentType,
+                        'ownership-proof'
+                      );
+                    }}
+                    className="text-gray-500 hover:text-blue-600 cursor-pointer"
+                    title="Download Document"
+                  >
+                    <FaDownload />
+                  </button>
+                </div>
               </div>
             )}
             {verification.documents.ownershipProof.verifiedAt && (
@@ -295,19 +314,38 @@ export default function VerificationStatus({ verification, listing, currentUser,
             </div>
             {verification.documents.identityProof.documentUrl && (
               <div className="mt-2">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDownloadDocument(
-                      verification.documents.identityProof.documentUrl,
-                      verification.documents.identityProof.documentType,
-                      'identity-proof'
-                    );
-                  }}
-                  className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <FaDownload /> Download Document
-                </button>
+                <div className="flex items-center gap-4 mt-2">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const basePath = isAdmin ? '/admin' : '/user';
+                      const doc = verification.documents.identityProof;
+                      if (doc._id) {
+                        window.open(`${basePath}/view/${doc._id}`, '_blank');
+                      } else {
+                        const encodedUrl = encodeURIComponent(doc.documentUrl);
+                        window.open(`${basePath}/view/preview?url=${encodedUrl}&type=document&name=IdentityProof`, '_blank');
+                      }
+                    }}
+                    className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                  >
+                    <FaFileAlt /> View
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDownloadDocument(
+                        verification.documents.identityProof.documentUrl,
+                        verification.documents.identityProof.documentType,
+                        'identity-proof'
+                      );
+                    }}
+                    className="text-gray-500 hover:text-blue-600 cursor-pointer"
+                    title="Download Document"
+                  >
+                    <FaDownload />
+                  </button>
+                </div>
               </div>
             )}
             {verification.documents.identityProof.verifiedAt && (
@@ -337,19 +375,38 @@ export default function VerificationStatus({ verification, listing, currentUser,
             </div>
             {verification.documents.addressProof.documentUrl && (
               <div className="mt-2">
-                <button
-                  onClick={(e) => {
-                    e.preventDefault();
-                    handleDownloadDocument(
-                      verification.documents.addressProof.documentUrl,
-                      verification.documents.addressProof.documentType,
-                      'address-proof'
-                    );
-                  }}
-                  className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer"
-                >
-                  <FaDownload /> Download Document
-                </button>
+                <div className="flex items-center gap-4 mt-2">
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      const basePath = isAdmin ? '/admin' : '/user';
+                      const doc = verification.documents.addressProof;
+                      if (doc._id) {
+                        window.open(`${basePath}/view/${doc._id}`, '_blank');
+                      } else {
+                        const encodedUrl = encodeURIComponent(doc.documentUrl);
+                        window.open(`${basePath}/view/preview?url=${encodedUrl}&type=document&name=AddressProof`, '_blank');
+                      }
+                    }}
+                    className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                  >
+                    <FaFileAlt /> View
+                  </button>
+                  <button
+                    onClick={(e) => {
+                      e.preventDefault();
+                      handleDownloadDocument(
+                        verification.documents.addressProof.documentUrl,
+                        verification.documents.addressProof.documentType,
+                        'address-proof'
+                      );
+                    }}
+                    className="text-gray-500 hover:text-blue-600 cursor-pointer"
+                    title="Download Document"
+                  >
+                    <FaDownload />
+                  </button>
+                </div>
               </div>
             )}
             {verification.documents.addressProof.verifiedAt && (
