@@ -916,15 +916,22 @@ export const getWallet = async (req, res, next) => {
       return res.status(404).json({ message: "Contract not found." });
     }
 
-    if (contract.tenantId.toString() !== userId) {
-      return res.status(403).json({ message: "Unauthorized. Only tenant can access wallet." });
+    // Verify user has access (tenant or landlord or admin)
+    const user = await User.findById(userId);
+    const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
+    const isTenant = contract.tenantId.toString() === userId;
+    const isLandlord = contract.landlordId.toString() === userId;
+
+    if (!isTenant && !isLandlord && !isAdmin) {
+      return res.status(403).json({ message: "Unauthorized. Access restricted to tenant or landlord." });
     }
 
-    const wallet = await RentWallet.findOne({ contractId: contract._id, userId })
+    // Always fetch the wallet associated with the tenant
+    const wallet = await RentWallet.findOne({ contractId: contract._id, userId: contract.tenantId })
       .populate('paymentSchedule.paymentId');
 
     if (!wallet) {
-      return res.status(404).json({ message: "Wallet not found." });
+      return res.status(404).json({ message: "Wallet not found for this contract." });
     }
 
     res.json({

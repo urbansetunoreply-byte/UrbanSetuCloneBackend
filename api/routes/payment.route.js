@@ -664,7 +664,7 @@ router.post("/verify", verifyToken, async (req, res) => {
     }
 
     // Send rental payment notifications if this is a monthly rent payment
-    if (payment.paymentType === 'monthly_rent' && payment.contractId && io) {
+    if (payment.paymentType === 'monthly_rent' && payment.contractId) {
       try {
         const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
         const contract = await RentLockContract.findById(payment.contractId)
@@ -835,49 +835,51 @@ router.post("/verify", verifyToken, async (req, res) => {
       }
     }
 
-    // Send payment success email to buyer
-    try {
-      await sendPaymentSuccessEmail(user.email, {
-        paymentId: payment.paymentId,
-        amount: payment.amount,
-        currency: payment.currency,
-        propertyName: listing.name,
-        appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
-        receiptUrl: receiptUrl,
-        paymentType: payment.paymentType,
-        gateway: payment.gateway
-      });
-      console.log(`✅ Payment success email sent to buyer: ${user.email}`);
-    } catch (emailError) {
-      console.error('Error sending payment success email:', emailError);
-    }
+    if (payment.paymentType !== 'monthly_rent') {
+      // Send payment success email to buyer
+      try {
+        await sendPaymentSuccessEmail(user.email, {
+          paymentId: payment.paymentId,
+          amount: payment.amount,
+          currency: payment.currency,
+          propertyName: listing.name,
+          appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
+          receiptUrl: receiptUrl,
+          paymentType: payment.paymentType,
+          gateway: payment.gateway
+        });
+        console.log(`✅ Payment success email sent to buyer: ${user.email}`);
+      } catch (emailError) {
+        console.error('Error sending payment success email:', emailError);
+      }
 
-    // Send payment notification email to seller
-    try {
-      // Get seller details
-      await appointment.populate('sellerId', 'email username firstName lastName');
-      const seller = appointment.sellerId;
+      // Send payment notification email to seller
+      try {
+        // Get seller details
+        await appointment.populate('sellerId', 'email username firstName lastName');
+        const seller = appointment.sellerId;
 
-      await sendSellerPaymentNotificationEmail(seller.email, {
-        appointmentId: appointment._id,
-        propertyName: listing.name,
-        propertyDescription: listing.description,
-        propertyAddress: listing.address,
-        propertyPrice: listing.regularPrice || listing.discountPrice,
-        propertyImages: listing.imageUrls || [],
-        date: appointment.date,
-        time: appointment.time,
-        buyerName: user.firstName && user.lastName
-          ? `${user.firstName} ${user.lastName}`
-          : user.username,
-        paymentAmount: payment.amount,
-        paymentCurrency: payment.currency,
-        paymentGateway: payment.gateway,
-        listingId: listing._id
-      });
-      console.log(`✅ Seller payment notification email sent to: ${seller.email}`);
-    } catch (sellerEmailError) {
-      console.error('Error sending seller payment notification email:', sellerEmailError);
+        await sendSellerPaymentNotificationEmail(seller.email, {
+          appointmentId: appointment._id,
+          propertyName: listing.name,
+          propertyDescription: listing.description,
+          propertyAddress: listing.address,
+          propertyPrice: listing.regularPrice || listing.discountPrice,
+          propertyImages: listing.imageUrls || [],
+          date: appointment.date,
+          time: appointment.time,
+          buyerName: user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : user.username,
+          paymentAmount: payment.amount,
+          paymentCurrency: payment.currency,
+          paymentGateway: payment.gateway,
+          listingId: listing._id
+        });
+        console.log(`✅ Seller payment notification email sent to: ${seller.email}`);
+      } catch (sellerEmailError) {
+        console.error('Error sending seller payment notification email:', sellerEmailError);
+      }
     }
 
     res.status(200).json({
@@ -1081,7 +1083,7 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     }
 
     // Send rental payment notifications if this is a monthly rent payment
-    if (payment.paymentType === 'monthly_rent' && payment.contractId && io) {
+    if (payment.paymentType === 'monthly_rent' && payment.contractId) {
       try {
         const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
         const contract = await RentLockContract.findById(payment.contractId)
@@ -1172,49 +1174,51 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
       }
     }
 
-    // Send payment success email to buyer (reusing existing appointment, user, listing variables)
-    try {
-      await sendPaymentSuccessEmail(user.email, {
-        paymentId: payment.paymentId,
-        amount: payment.amount,
-        currency: payment.currency,
-        propertyName: listing.name,
-        appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
-        receiptUrl: receiptUrl,
-        paymentType: payment.paymentType,
-        gateway: payment.gateway
-      });
-      console.log(`✅ Payment success email sent to buyer: ${user.email}`);
-    } catch (emailError) {
-      console.error('Error sending payment success email:', emailError);
-    }
+    if (payment.paymentType !== 'monthly_rent') {
+      // Send payment success email to buyer (reusing existing appointment, user, listing variables)
+      try {
+        await sendPaymentSuccessEmail(user.email, {
+          paymentId: payment.paymentId,
+          amount: payment.amount,
+          currency: payment.currency,
+          propertyName: listing.name,
+          appointmentDate: appointment.date ? new Date(appointment.date).toLocaleDateString() : 'N/A',
+          receiptUrl: receiptUrl,
+          paymentType: payment.paymentType,
+          gateway: payment.gateway
+        });
+        console.log(`✅ Payment success email sent to buyer: ${user.email}`);
+      } catch (emailError) {
+        console.error('Error sending payment success email:', emailError);
+      }
 
-    // Send payment notification email to seller
-    try {
-      // Get seller details
-      await appointment.populate('sellerId', 'email username firstName lastName');
-      const seller = appointment.sellerId;
+      // Send payment notification email to seller
+      try {
+        // Get seller details
+        await appointment.populate('sellerId', 'email username firstName lastName');
+        const seller = appointment.sellerId;
 
-      await sendSellerPaymentNotificationEmail(seller.email, {
-        appointmentId: appointment._id,
-        propertyName: listing.name,
-        propertyDescription: listing.description,
-        propertyAddress: listing.address,
-        propertyPrice: listing.regularPrice || listing.discountPrice,
-        propertyImages: listing.imageUrls || [],
-        date: appointment.date,
-        time: appointment.time,
-        buyerName: user.firstName && user.lastName
-          ? `${user.firstName} ${user.lastName}`
-          : user.username,
-        paymentAmount: payment.amount,
-        paymentCurrency: payment.currency,
-        paymentGateway: payment.gateway,
-        listingId: listing._id
-      });
-      console.log(`✅ Seller payment notification email sent to: ${seller.email}`);
-    } catch (sellerEmailError) {
-      console.error('Error sending seller payment notification email:', sellerEmailError);
+        await sendSellerPaymentNotificationEmail(seller.email, {
+          appointmentId: appointment._id,
+          propertyName: listing.name,
+          propertyDescription: listing.description,
+          propertyAddress: listing.address,
+          propertyPrice: listing.regularPrice || listing.discountPrice,
+          propertyImages: listing.imageUrls || [],
+          date: appointment.date,
+          time: appointment.time,
+          buyerName: user.firstName && user.lastName
+            ? `${user.firstName} ${user.lastName}`
+            : user.username,
+          paymentAmount: payment.amount,
+          paymentCurrency: payment.currency,
+          paymentGateway: payment.gateway,
+          listingId: listing._id
+        });
+        console.log(`✅ Seller payment notification email sent to: ${seller.email}`);
+      } catch (sellerEmailError) {
+        console.error('Error sending seller payment notification email:', sellerEmailError);
+      }
     }
 
     return res.json({ message: 'Payment verified successfully', payment, receiptUrl });
