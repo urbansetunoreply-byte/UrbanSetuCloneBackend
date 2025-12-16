@@ -398,7 +398,7 @@ export default function DisputeForm({ contract, onSuccess, onCancel }) {
                       <FaFile className="text-blue-600" />
                       <div className="flex flex-col">
                         <Link
-                          to={`/user/view/preview?url=${encodeURIComponent(evidence.url)}&type=document&name=${evidence.name || 'DisputeEvidence'}`}
+                          to={evidence._id ? `/user/view/${evidence._id}` : `/user/view/preview?url=${encodeURIComponent(evidence.url)}&type=document&name=${evidence.name || 'DisputeEvidence'}`}
                           target="_blank"
                           rel="noopener noreferrer"
                           className="text-sm text-blue-600 hover:text-blue-800 hover:underline font-medium text-left"

@@ -372,11 +372,12 @@ export default function DisputeDetail({
                   <div
                     className="aspect-square flex flex-col items-center justify-center bg-blue-50 rounded mb-2 border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors"
                     onClick={() => {
+                      const basePath = isAdmin ? '/admin' : '/user';
                       if (evidence._id) {
-                        window.open(`/user/view/${evidence._id}`, '_blank');
+                        window.open(`${basePath}/view/${evidence._id}`, '_blank');
                       } else {
                         const encodedUrl = encodeURIComponent(evidence.url);
-                        window.open(`/user/view/preview?url=${encodedUrl}&type=document&name=DisputeEvidence`, '_blank');
+                        window.open(`${basePath}/view/preview?url=${encodedUrl}&type=document&name=DisputeEvidence`, '_blank');
                       }
                     }}
                   >
