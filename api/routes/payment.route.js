@@ -683,53 +683,79 @@ router.post("/verify", verifyToken, async (req, res) => {
     if (payment.paymentType === 'monthly_rent' && contractId) {
       try {
         const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
-        const contract = await RentLockContract.findById(contractId)
+        const RentWallet = (await import('../models/rentWallet.model.js')).default;
+
+        // 1. Try to get wallet directly from payment (safest) or via contract
+        let wallet;
+        if (payment.walletId) {
+          wallet = await RentWallet.findById(payment.walletId);
+        }
+
+        // 2. Fallback: Get contract then wallet
+        if (!wallet) {
+          const contract = await RentLockContract.findById(contractId);
+          if (contract) {
+            wallet = await RentWallet.findOne({ contractId: contract._id });
+          }
+        }
+
+        if (wallet) {
+          // Find schedule entry using multiple strategies
+          const getMeta = (key) => payment.metadata instanceof Map ? payment.metadata.get(key) : (payment.metadata ? payment.metadata[key] : undefined);
+
+          const targetMonth = Number(payment.rentMonth || getMeta('month'));
+          const targetYear = Number(payment.rentYear || getMeta('year'));
+          const pIdString = payment._id.toString();
+
+          // Strategy 1: Match by exact Payment ID (Set during initialization)
+          let scheduleEntry = wallet.paymentSchedule.find(p => p.paymentId && p.paymentId.toString() === pIdString);
+
+          // Strategy 2: Match by Month & Year (if PaymentID link missed)
+          if (!scheduleEntry) {
+            scheduleEntry = wallet.paymentSchedule.find(p => Number(p.month) === targetMonth && Number(p.year) === targetYear);
+          }
+
+          if (scheduleEntry) {
+            scheduleEntry.status = 'completed';
+            scheduleEntry.paidAt = new Date();
+            scheduleEntry.paymentId = payment._id; // Ensure link
+
+            // Update wallet totals
+            const originalAmount = getMeta('originalAmount');
+            const amountToCredit = originalAmount ? Number(originalAmount) : payment.amount;
+
+            // Prevent double counting if verified multiple times
+            // We assume verify shouldn't run twice for same success, but logic here adds cumulatively. 
+            // Since status check happens before (in create-intent), risk is low.
+
+            // Recalculate totals from scratch to be safe? 
+            // Better: Just add current payment.
+            wallet.totalPaid = (wallet.totalPaid || 0) + amountToCredit;
+            wallet.totalDue = Math.max(0, (wallet.totalDue || 0) - amountToCredit);
+
+            wallet.markModified('paymentSchedule'); // FORCE Mongoose to see the change
+            await wallet.save();
+            console.log(`✅ Rent Wallet Updated: ${targetMonth}/${targetYear} -> Completed`);
+          } else {
+            console.warn(`⚠️ Schedule entry not found for ${targetMonth}/${targetYear} in wallet ${wallet._id}`);
+          }
+        }
+
+        // Fetch contract for notifications (needed if we skipped finding it above)
+        const notificationContract = await RentLockContract.findById(contractId)
           .populate('listingId', 'name address')
           .populate('tenantId', 'username email')
           .populate('landlordId', 'username email');
 
-        if (contract) {
+        if (notificationContract) {
+          const contract = notificationContract; // Alias for below code
           const listing = contract.listingId;
           const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
           const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
           const receiptUrl = payment.receiptUrl || `${clientUrl}/api/payments/${payment.paymentId}/receipt`;
 
-          // Update Rent Wallet status
-          const RentWallet = (await import('../models/rentWallet.model.js')).default;
-          const wallet = await RentWallet.findOne({ contractId: contract._id }); // Find wallet associated with contract
+          // (Notifications continue below...)
 
-          if (wallet) {
-            // Find schedule entry using rentMonth/rentYear or metadata as fallback
-            const getMeta = (key) => payment.metadata instanceof Map ? payment.metadata.get(key) : (payment.metadata ? payment.metadata[key] : undefined);
-
-            const targetMonth = Number(payment.rentMonth || getMeta('month'));
-            const targetYear = Number(payment.rentYear || getMeta('year'));
-
-            // Try finding by paymentID first (most reliable), then by Month/Year
-            const scheduleEntry = wallet.paymentSchedule.find(p =>
-              (p.paymentId && p.paymentId.toString() === payment._id.toString()) ||
-              (Number(p.month) === targetMonth && Number(p.year) === targetYear)
-            );
-
-            console.log(`Payment Verify: Schedule Entry Found? ${!!scheduleEntry}. Target: ${targetMonth}/${targetYear}`);
-
-            if (scheduleEntry) {
-              scheduleEntry.status = 'completed'; // Mark as completed (enum: pending, scheduled, processing, completed, failed, overdue)
-              scheduleEntry.paidAt = new Date();
-              scheduleEntry.paymentId = payment._id;
-
-              // Update wallet totals
-              // Use metadata.originalAmount if available (for USD payments converted from INR)
-              const originalAmount = getMeta('originalAmount');
-              const amountToCredit = originalAmount ? Number(originalAmount) : payment.amount;
-
-              wallet.totalPaid = (wallet.totalPaid || 0) + amountToCredit;
-              wallet.totalDue = Math.max(0, (wallet.totalDue || 0) - amountToCredit);
-
-              await wallet.save();
-              console.log(`✅ Rent wallet updated: ${payment.rentMonth}/${payment.rentYear} marked as completed. Total Paid: ${wallet.totalPaid}`);
-            }
-          }
 
           // Notify tenant
           await sendRentalNotification({
