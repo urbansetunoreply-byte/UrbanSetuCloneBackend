@@ -295,6 +295,11 @@ export default function ViewDocument() {
                             alt="Document"
                             className="max-w-full max-h-full object-contain"
                         />
+                    ) : isPdf && !pdfBlobUrl ? (
+                        <div className="flex flex-col items-center justify-center">
+                            <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+                            <p className="text-gray-600">Loading PDF...</p>
+                        </div>
                     ) : (
                         <iframe
                             src={pdfBlobUrl || document.url}
