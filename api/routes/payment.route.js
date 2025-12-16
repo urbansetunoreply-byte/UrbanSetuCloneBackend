@@ -646,22 +646,8 @@ router.post("/verify", verifyToken, async (req, res) => {
       }
     }
 
-    // Emit socket event for real-time payment status update
+    // Socket emit moved to end of function to ensure DB consistency
     const io = req.app.get('io');
-    if (io) {
-      io.emit('paymentStatusUpdated', {
-        appointmentId: payment.appointmentId,
-        paymentId: payment.paymentId,
-        contractId: payment.contractId,
-        paymentConfirmed: true
-      });
-      io.to(`user_${user._id}`).emit('paymentStatusUpdated', {
-        appointmentId: payment.appointmentId,
-        paymentId: payment.paymentId,
-        contractId: payment.contractId,
-        paymentConfirmed: true
-      });
-    }
 
     // Send rental payment notifications if this is a monthly rent payment
     if (payment.paymentType === 'monthly_rent' && payment.contractId) {
