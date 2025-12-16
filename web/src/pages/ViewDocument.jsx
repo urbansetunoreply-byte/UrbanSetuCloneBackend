@@ -130,7 +130,7 @@ export default function ViewDocument() {
                 return;
             }
 
-            const response = await fetch(docUrl, { mode: 'cors' });
+            const response = await fetch(docUrl, { credentials: 'omit' });
             if (!response.ok) throw new Error('Failed to fetch document');
 
             const contentType = response.headers.get('content-type') || '';
@@ -178,20 +178,19 @@ export default function ViewDocument() {
         } catch (error) {
             console.error('Error downloading document:', error);
 
-            // Improved Fallback for Cloudinary to force filename
-            if (docUrl.includes('cloudinary.com') && docUrl.includes('/upload/')) {
+            // Cloudinary "raw" files do not support fl_attachment transformation path injection well (causes 400).
+            // Only use this optimization for standard image uploads or assets if not raw.
+            if (docUrl.includes('cloudinary.com') && docUrl.includes('/upload/') && !docUrl.includes('/raw/')) {
                 const safeName = (docName || 'document').replace(/[^a-zA-Z0-9-_]/g, '_');
                 const parts = docUrl.split('/upload/');
 
                 if (parts.length === 2) {
-                    // Try to preserve extension or default to pdf
                     let ext = 'pdf';
                     if (docUrl.toLowerCase().includes('jpg') || docUrl.toLowerCase().includes('jpeg')) ext = 'jpg';
                     else if (docUrl.toLowerCase().includes('png')) ext = 'png';
 
-                    // Inject fl_attachment flag
                     const newUrl = `${parts[0]}/upload/fl_attachment:${safeName}.${ext}/${parts[1]}`;
-                    window.open(newUrl, '_parent'); // _parent to avoid popup blocker sometimes
+                    window.open(newUrl, '_parent');
                     return;
                 }
             }
