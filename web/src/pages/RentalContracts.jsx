@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import { toast } from 'react-toastify';
-import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard, FaPlayCircle, FaCheck, FaTimes, FaPen, FaEraser, FaUndo, FaClock, FaWallet, FaExternalLinkAlt } from 'react-icons/fa';
+import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaHome, FaUser, FaChevronRight, FaSignInAlt, FaSignOutAlt, FaGavel, FaStar, FaCreditCard, FaPlayCircle, FaCheck, FaTimes, FaPen, FaEraser, FaUndo, FaClock, FaWallet, FaExternalLinkAlt, FaTools } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
 import DigitalSignature from '../components/rental/DigitalSignature';
@@ -328,11 +328,11 @@ export default function RentalContracts() {
               <p className="text-gray-600 mt-2">View and manage your rent-lock contracts</p>
             </div>
             <button
-              onClick={() => navigate('/user/my-appointments')}
+              onClick={() => navigate('/user/services')}
               className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-semibold flex items-center gap-2"
             >
-              <FaCalendarAlt />
-              My Appointments
+              <FaTools />
+              Services
             </button>
           </div>
 
@@ -343,8 +343,8 @@ export default function RentalContracts() {
                 key={status}
                 onClick={() => setFilter(status)}
                 className={`px-4 py-2 rounded-lg font-medium transition ${filter === status
-                    ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  ? 'bg-blue-600 text-white'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
                   }`}
               >
                 {status === 'all' ? 'All Contracts' : getStatusLabel(status)}
@@ -478,12 +478,12 @@ export default function RentalContracts() {
                                 <div
                                   key={idx}
                                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 ${payment.status === 'completed'
-                                      ? 'bg-green-100 text-green-700 border border-green-300'
-                                      : payment.status === 'overdue'
-                                        ? 'bg-red-100 text-red-700 border border-red-300'
-                                        : payment.status === 'processing'
-                                          ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
-                                          : 'bg-gray-100 text-gray-600 border border-gray-300'
+                                    ? 'bg-green-100 text-green-700 border border-green-300'
+                                    : payment.status === 'overdue'
+                                      ? 'bg-red-100 text-red-700 border border-red-300'
+                                      : payment.status === 'processing'
+                                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                                        : 'bg-gray-100 text-gray-600 border border-gray-300'
                                     }`}
                                   title={`${payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : payment.status === 'processing' ? 'Processing' : 'Pending'} - Month ${payment.month}/${payment.year}`}
                                 >
