@@ -2933,7 +2933,14 @@ export const getRentalLoan = async (req, res, next) => {
 
     const loan = await RentalLoan.findById(loanId)
       .populate('userId', 'username email avatar')
-      .populate('contractId', 'contractId listingId')
+      .populate({
+        path: 'contractId',
+        select: 'contractId listingId',
+        populate: {
+          path: 'listingId',
+          select: 'name address imageUrls'
+        }
+      })
       .populate('approvedBy', 'username')
       .populate('rejectedBy', 'username');
 
