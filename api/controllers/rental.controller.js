@@ -2972,25 +2972,40 @@ export const getRentalLoanDocument = async (req, res, next) => {
     const userId = req.user.id;
 
     // Find loan containing this document
-    const loan = await RentalLoan.findOne({ 'documents._id': documentId });
+    let loan = await RentalLoan.findOne({ 'documents._id': documentId });
+    let document = null;
 
-    if (!loan) {
-      return res.status(404).json({ message: "Document not found." });
-    }
-
-    // Verify user has access
     const user = await User.findById(userId);
     const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
 
-    if (loan.userId.toString() !== userId && !isAdmin) {
-      return res.status(403).json({ message: "Unauthorized." });
+    if (loan) {
+      // Verify user has access to loan
+      if (loan.userId.toString() !== userId && !isAdmin) {
+        return res.status(403).json({ message: "Unauthorized." });
+      }
+      document = loan.documents.id(documentId);
+    } else {
+      // Check if it's a dispute evidence
+      const dispute = await Dispute.findOne({ 'evidence._id': documentId });
+
+      if (dispute) {
+        // Verify user has access to dispute
+        const contract = await RentLockContract.findById(dispute.contractId);
+        const isTenant = contract?.tenantId?.toString() === userId;
+        const isLandlord = contract?.landlordId?.toString() === userId;
+        const isRaisedBy = dispute.raisedBy?.toString() === userId;
+        const isRaisedAgainst = dispute.raisedAgainst?.toString() === userId;
+
+        if (!isTenant && !isLandlord && !isRaisedBy && !isRaisedAgainst && !isAdmin) {
+          return res.status(403).json({ message: "Unauthorized." });
+        }
+        document = dispute.evidence.id(documentId);
+      } else {
+        return res.status(404).json({ message: "Document not found." });
+      }
     }
 
-    const document = loan.documents.id(documentId);
 
-    if (!document) {
-      return res.status(404).json({ message: "Document not found." });
-    }
 
     let mimeType = null;
     try {
@@ -3069,20 +3084,36 @@ export const proxyDocumentDownload = async (req, res, next) => {
     const userId = req.user.id;
 
     // Find loan containing this document
-    const loan = await RentalLoan.findOne({ 'documents._id': documentId });
+    // Find loan containing this document
+    let loan = await RentalLoan.findOne({ 'documents._id': documentId });
+    let document = null;
 
-    if (!loan) {
-      return res.status(404).json({ message: "Document not found." });
-    }
-
-    // Verify access
     const user = await User.findById(userId);
     const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
-    if (loan.userId.toString() !== userId && !isAdmin) {
-      return res.status(403).json({ message: "Unauthorized." });
+
+    if (loan) {
+      if (loan.userId.toString() !== userId && !isAdmin) {
+        return res.status(403).json({ message: "Unauthorized." });
+      }
+      document = loan.documents.id(documentId);
+    } else {
+      const dispute = await Dispute.findOne({ 'evidence._id': documentId });
+      if (dispute) {
+        const contract = await RentLockContract.findById(dispute.contractId);
+        const isTenant = contract?.tenantId?.toString() === userId;
+        const isLandlord = contract?.landlordId?.toString() === userId;
+        const isRaisedBy = dispute.raisedBy?.toString() === userId;
+        const isRaisedAgainst = dispute.raisedAgainst?.toString() === userId;
+
+        if (!isTenant && !isLandlord && !isRaisedBy && !isRaisedAgainst && !isAdmin) {
+          return res.status(403).json({ message: "Unauthorized." });
+        }
+        document = dispute.evidence.id(documentId);
+      } else {
+        return res.status(404).json({ message: "Document not found." });
+      }
     }
 
-    const document = loan.documents.id(documentId);
     if (!document) {
       return res.status(404).json({ message: "Document not found." });
     }

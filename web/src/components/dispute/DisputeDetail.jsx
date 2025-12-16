@@ -372,8 +372,12 @@ export default function DisputeDetail({
                   <div
                     className="aspect-square flex flex-col items-center justify-center bg-blue-50 rounded mb-2 border border-blue-100 cursor-pointer hover:bg-blue-100 transition-colors"
                     onClick={() => {
-                      const encodedUrl = encodeURIComponent(evidence.url);
-                      window.open(`/user/view/preview?url=${encodedUrl}&type=document&name=DisputeEvidence`, '_blank');
+                      if (evidence._id) {
+                        window.open(`/user/view/${evidence._id}`, '_blank');
+                      } else {
+                        const encodedUrl = encodeURIComponent(evidence.url);
+                        window.open(`/user/view/preview?url=${encodedUrl}&type=document&name=DisputeEvidence`, '_blank');
+                      }
                     }}
                   >
                     <FaFile className="text-4xl text-blue-600 mb-2" />
