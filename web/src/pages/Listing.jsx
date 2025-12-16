@@ -47,14 +47,14 @@ const LOCK_REASON_MESSAGES = {
 };
 
 export default function Listing() {
-  // Set page title
-  usePageTitle(listing ? `${listing.name} - UrbanSetu` : "Property Details - UrbanSetu");
-
   const params = useParams();
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser } = useSelector((state) => state.user);
   const [listing, setListing] = useState(null);
+
+  // Set page title
+  usePageTitle(listing ? `${listing.name} - UrbanSetu` : "Property Details - UrbanSetu");
   const [copied, setCopied] = useState(false);
   const [loading, setLoading] = useState(true);
   const [showReasonModal, setShowReasonModal] = useState(false);
