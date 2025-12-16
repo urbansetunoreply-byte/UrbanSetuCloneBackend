@@ -99,19 +99,25 @@ export default function ViewDocument() {
                     setFileType('pdf');
                 } else if (contentType.includes('image/')) {
                     setFileType('image');
+                } else if (contentType.includes('application/octet-stream') && url.includes('/raw/')) {
+                    // Cloudinary raw files often return octet-stream but users typically upload PDFs here
+                    // Assume PDF for preview attempts
+                    setFileType('pdf');
                 } else {
                     setFileType('other');
                 }
             } else {
-                // If no content type, default to 'other' or try generic fallback
                 setFileType('other');
             }
         } catch (error) {
             console.warn('Could not determine file type from headers:', error);
             // Fallback: Check if Cloudinary raw but might be PDF...
-            // If we can't determine, verify if it's likely a PDF or Image by other means, 
-            // or just default to 'other' (download view).
-            setFileType('other');
+            if (url.includes('/raw/') || url.includes('cloudinary.com')) {
+                // Assume PDF as best effort for raw/unknown Cloudinary links
+                setFileType('pdf');
+            } else {
+                setFileType('other');
+            }
         }
     };
 
