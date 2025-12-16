@@ -307,41 +307,18 @@ export default function ViewDocument() {
             {/* Content */}
             <div className="flex-1 p-4 md:p-8 flex items-center justify-center overflow-auto">
                 <div className="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-6xl h-[80vh] flex items-center justify-center relative">
-                    {isPdf ? (
-                        <iframe
-                            src={document.url}
-                            className="w-full h-full"
-                            title="Document Viewer"
-                        />
-                    ) : isImage ? (
+                    {isImage ? (
                         <img
                             src={document.url}
                             alt="Document"
                             className="max-w-full max-h-full object-contain"
                         />
                     ) : (
-                        <div className="text-center p-8">
-                            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <FaFileAlt className="text-4xl text-gray-500" />
-                            </div>
-                            <h3 className="text-xl font-semibold text-gray-800 mb-2">Preview Not Available</h3>
-                            <p className="text-gray-600 mb-6">This file type cannot be previewed directly.</p>
-                            {isPublic ? (
-                                <button
-                                    onClick={() => navigate('/sign-in')}
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                    Sign in to Download
-                                </button>
-                            ) : (
-                                <button
-                                    onClick={() => handleDownloadDocument(document.url, document.type, document.mimeType)}
-                                    className="inline-flex items-center gap-2 px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                                >
-                                    <FaDownload /> Download to View
-                                </button>
-                            )}
-                        </div>
+                        <iframe
+                            src={`https://docs.google.com/gview?url=${encodeURIComponent(document.url)}&embedded=true`}
+                            className="w-full h-full"
+                            title="Document Viewer"
+                        />
                     )}
                 </div>
             </div>
