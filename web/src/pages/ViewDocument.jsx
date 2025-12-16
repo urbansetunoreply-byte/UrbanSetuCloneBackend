@@ -11,6 +11,7 @@ export default function ViewDocument() {
     const [document, setDocument] = useState(null);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState('');
+    const [fileType, setFileType] = useState(null);
 
     const isPublic = location.pathname.startsWith('/view/');
 
@@ -28,6 +29,7 @@ export default function ViewDocument() {
 
                 if (res.ok && data.success) {
                     setDocument(data.document);
+                    await determineFileType(data.document.url);
                 } else {
                     setError(data.message || 'Failed to fetch document');
                 }
@@ -44,11 +46,69 @@ export default function ViewDocument() {
         }
     }, [documentId]);
 
+    const determineFileType = async (url) => {
+        if (!url) return;
+
+        // 1. Try to guess from extension first (quickest)
+        const extension = getFileExtension(url);
+        if (extension) {
+            if (['jpg', 'jpeg', 'png', 'gif', 'webp', 'svg'].includes(extension)) {
+                setFileType('image');
+                return;
+            }
+            if (extension === 'pdf') {
+                setFileType('pdf');
+                return;
+            }
+        }
+
+        // 2. If extension is missing or unknown, check Content-Type header
+        try {
+            // Try HEAD first
+            let response = await fetch(url, { method: 'HEAD' });
+
+            // If HEAD fails (e.g., 405 Method Not Allowed), try GET with AbortController
+            if (!response.ok) {
+                const controller = new AbortController();
+                response = await fetch(url, { signal: controller.signal });
+                controller.abort(); // Cancel immediately after headers
+            }
+
+            const contentType = response.headers.get('content-type');
+
+            if (contentType) {
+                if (contentType.includes('application/pdf')) {
+                    setFileType('pdf');
+                } else if (contentType.includes('image/')) {
+                    setFileType('image');
+                } else {
+                    setFileType('other');
+                }
+            } else {
+                // If no content type, default to 'other' or try generic fallback
+                setFileType('other');
+            }
+        } catch (error) {
+            console.warn('Could not determine file type from headers:', error);
+            // Fallback: Check if Cloudinary raw but might be PDF...
+            // If we can't determine, verify if it's likely a PDF or Image by other means, 
+            // or just default to 'other' (download view).
+            setFileType('other');
+        }
+    };
+
     const getFileExtension = (url) => {
         if (!url) return '';
         try {
             const urlPath = url.split('?')[0];
-            return urlPath.substring(urlPath.lastIndexOf('.') + 1).toLowerCase();
+            // Fix: Check if there is even a dot in the filename part
+            const lastSlashIndex = urlPath.lastIndexOf('/');
+            const filename = urlPath.substring(lastSlashIndex + 1);
+
+            if (filename.includes('.')) {
+                return filename.split('.').pop().toLowerCase();
+            }
+            return '';
         } catch (e) {
             return '';
         }
@@ -84,9 +144,8 @@ export default function ViewDocument() {
 
     if (!document) return null;
 
-    const extension = getFileExtension(document.url);
-    const isImage = ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(extension);
-    const isPdf = extension === 'pdf';
+    const isImage = fileType === 'image';
+    const isPdf = fileType === 'pdf';
 
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
@@ -136,7 +195,7 @@ export default function ViewDocument() {
                                 <FaFileAlt className="text-4xl text-gray-500" />
                             </div>
                             <h3 className="text-xl font-semibold text-gray-800 mb-2">Preview Not Available</h3>
-                            <p className="text-gray-600 mb-6">This file type ({extension}) cannot be previewed directly.</p>
+                            <p className="text-gray-600 mb-6">This file type cannot be previewed directly.</p>
                             <a
                                 href={document.url}
                                 target="_blank"
