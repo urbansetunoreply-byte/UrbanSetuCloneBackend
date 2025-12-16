@@ -25,6 +25,9 @@ export default function RentWallet() {
   const [loading, setLoading] = useState(true);
   const [wallet, setWallet] = useState(null);
   const [contract, setContract] = useState(null);
+  const [isTenant, setIsTenant] = useState(false);
+  const [isLandlord, setIsLandlord] = useState(false);
+
   const [activeTab, setActiveTab] = useState('overview'); // 'overview', 'schedule', 'history', 'settings'
 
   const fetchWalletDetails = useCallback(async () => {
@@ -66,6 +69,12 @@ export default function RentWallet() {
         const contractData = await contractRes.json();
         if (contractData.success && contractData.contract) {
           setContract(contractData.contract);
+          // Set role
+          const c = contractData.contract;
+          if (currentUser) {
+            setIsTenant(c.tenantId?._id === currentUser._id || c.tenantId === currentUser._id);
+            setIsLandlord(c.landlordId?._id === currentUser._id || c.landlordId === currentUser._id);
+          }
         }
       }
     } catch (error) {
@@ -175,14 +184,14 @@ export default function RentWallet() {
               { id: 'overview', label: 'Overview', icon: FaWallet },
               { id: 'schedule', label: 'Payment Schedule', icon: FaCalendarAlt },
               { id: 'history', label: 'Payment History', icon: FaHistory },
-              { id: 'settings', label: 'Auto-Debit Settings', icon: FaCog }
+              ...(isTenant ? [{ id: 'settings', label: 'Auto-Debit Settings', icon: FaCog }] : [])
             ].map(tab => (
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 font-semibold transition ${activeTab === tab.id
-                    ? 'text-blue-600 border-b-2 border-blue-600'
-                    : 'text-gray-600 hover:text-blue-600'
+                  ? 'text-blue-600 border-b-2 border-blue-600'
+                  : 'text-gray-600 hover:text-blue-600'
                   }`}
               >
                 <tab.icon />

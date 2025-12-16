@@ -617,12 +617,12 @@ export default function RentalContracts() {
                           <FaWallet /> Rent Wallet
                         </Link>
                       )}
-                      {isTenant && contract.status === 'active' && contract.walletId && (
+                      {contract.status === 'active' && contract.walletId && (
                         <button
                           onClick={() => navigate(`/user/rent-wallet?contractId=${contractIdentifier}`)}
-                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"
+                          className={`px-4 py-2 text-white rounded-lg flex items-center justify-center gap-2 ${isTenant ? 'bg-purple-600 hover:bg-purple-700' : 'bg-blue-600 hover:bg-blue-700'}`}
                         >
-                          <FaMoneyBillWave /> Rent Wallet
+                          <FaMoneyBillWave /> {isTenant ? 'Rent Wallet' : 'Payment Details'}
                         </button>
                       )}
                       {contract.status === 'active' && isTenant && contract.wallet && contract.wallet.paymentSchedule && contract.wallet.paymentSchedule.filter(p => p.status === 'pending' || p.status === 'overdue').length > 0 && (
