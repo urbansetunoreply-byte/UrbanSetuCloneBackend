@@ -10367,8 +10367,16 @@ export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
       dueDate,
       receiptUrl,
       contractId,
-      walletUrl
+      walletUrl,
+      receiptBuffer,
+      paymentMethod,
+      transactionDate
     } = paymentDetails;
+
+    // Format transaction date if provided, else use current time
+    const txDate = transactionDate
+      ? new Date(transactionDate).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' })
+      : new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
 
     const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
     const subject = `✅ Rent Payment Received - ${propertyName}`;
@@ -10389,20 +10397,22 @@ export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
                 <span style="color: #ffffff; font-size: 36px; font-weight: bold;">✓</span>
               </div>
               <h1 style="color: #1f2937; margin: 0; font-size: 28px;">Rent Payment Received</h1>
-              <p style="color: #6b7280; margin: 10px 0 0 0;">Your payment is being held in escrow</p>
+              <p style="color: #6b7280; margin: 10px 0 0 0;">Your payment is successful</p>
             </div>
             
             <div style="background-color: #f0fdf4; padding: 25px; border-radius: 8px; border-left: 4px solid #10b981; margin-bottom: 25px;">
               <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Payment Details</h2>
               <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
-                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Amount:</strong> ₹${amount}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Amount Paid:</strong> <span style="font-weight: bold; color: #10b981;">₹${amount}</span></p>
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Period:</strong> ${rentMonth}/${rentYear}</p>
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Payment ID:</strong> ${paymentId}</p>
-                ${dueDate ? `<p style="color: #4b5563; margin: 0;"><strong>Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>` : ''}
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Transaction Date:</strong> ${txDate}</p>
+                ${paymentMethod ? `<p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Payment Mode:</strong> ${paymentMethod}</p>` : ''}
+                ${dueDate ? `<p style="color: #4b5563; margin: 0;"><strong>Scheduled Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>` : ''}
               </div>
               <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                Your rent payment has been received and is being held in escrow for 3 days. It will be automatically released to your landlord after this period, unless a dispute is raised.
+                Your rent payment has been received and is being held in escrow for 3 days. It will be automatically released to your landlord after this period. A receipt is attached to this email.
               </p>
             </div>
             
@@ -10413,7 +10423,7 @@ export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -10421,10 +10431,21 @@ export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
       </html>
     `;
 
+    // Construct attachments array
+    const attachments = [];
+    if (receiptBuffer) {
+      attachments.push({
+        filename: `Rent_Receipt_${rentMonth}_${rentYear}.pdf`,
+        content: receiptBuffer,
+        contentType: 'application/pdf'
+      });
+    }
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
-      html: html
+      html: html,
+      attachments // Pass attachments here
     });
   } catch (error) {
     console.error('Error sending rent payment received email:', error);
@@ -10443,8 +10464,16 @@ export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetai
       rentYear,
       tenantName,
       contractId,
-      walletUrl
+      walletUrl,
+      receiptBuffer,
+      paymentMethod, // New detail
+      transactionDate // New detail
     } = paymentDetails;
+
+    // Format transaction date if provided, else use current time
+    const txDate = transactionDate
+      ? new Date(transactionDate).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' })
+      : new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
 
     const subject = `💰 Rent Payment Received from ${tenantName} - ${propertyName}`;
 
@@ -10472,12 +10501,14 @@ export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetai
               <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Property:</strong> ${propertyName}</p>
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Tenant:</strong> ${tenantName}</p>
-                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Amount:</strong> ₹${amount}</p>
-                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Period:</strong> ${rentMonth}/${rentYear}</p>
-                <p style="color: #4b5563; margin: 0;"><strong>Payment ID:</strong> ${paymentId}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Amount Received:</strong> <span style="font-weight: bold; color: #10b981;">₹${amount}</span></p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Period:</strong> ${rentMonth} ${rentYear}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Payment ID:</strong> ${paymentId}</p>
+                <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Transaction Date:</strong> ${txDate}</p>
+                ${paymentMethod ? `<p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Payment Mode:</strong> ${paymentMethod}</p>` : ''}
               </div>
               <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
-                The rent payment has been received from your tenant and is being held in escrow for 3 days. It will be automatically released to your account after this period, unless a dispute is raised.
+                The rent payment has been received from your tenant and is being held in escrow for 3 days. It will be automatically released to your account after this period, unless a dispute is raised. A receipt copy is attached.
               </p>
             </div>
             
@@ -10487,7 +10518,7 @@ export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetai
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -10495,10 +10526,21 @@ export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetai
       </html>
     `;
 
+    // Construct attachments array
+    const attachments = [];
+    if (receiptBuffer) {
+      attachments.push({
+        filename: `Rent_Receipt_${rentMonth}_${rentYear}.pdf`,
+        content: receiptBuffer,
+        contentType: 'application/pdf'
+      });
+    }
+
     return await sendEmailWithRetry({
       to: email,
       subject: subject,
-      html: html
+      html: html,
+      attachments: attachments // Pass attachments here
     });
   } catch (error) {
     console.error('Error sending rent payment received to landlord email:', error);

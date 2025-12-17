@@ -9,6 +9,7 @@ import Notification from "../models/notification.model.js";
 import { verifyToken } from '../utils/verify.js';
 import crypto from 'crypto';
 import { createPayPalOrder, capturePayPalOrder, getPayPalAccessToken } from '../controllers/paypalController.js';
+import { generateReceiptPdf } from '../utils/pdfGenerator.js';
 import {
   sendPaymentSuccessEmail,
   sendPaymentFailedEmail,
@@ -323,210 +324,23 @@ router.get('/:paymentId/receipt', async (req, res) => {
     const payment = await Payment.findOne({ paymentId })
       .populate('appointmentId', 'propertyName date time status buyerId sellerId')
       .populate('listingId', 'name address')
-      .populate('userId', 'username email');
+      .populate('contractId')
+      .populate({ path: 'contractId', populate: { path: 'tenantId listingId' } })
+      .populate('userId', 'username email firstName');
+
     if (!payment) return res.status(404).json({ message: 'Payment not found' });
 
     res.status(200);
     res.setHeader('Content-Type', 'application/pdf');
     res.setHeader('Content-Disposition', `attachment; filename="receipt_${payment.paymentId}.pdf"`);
-    const doc = new PDFDocument({ size: 'A4', margin: 50, bufferPages: true });
-    doc.on('error', (e) => {
-      try { res.end(); } catch { }
-    });
-    const stream = doc.pipe(res);
-    stream.on('error', () => { try { res.end(); } catch { } });
 
-    // Header with enhanced styling
-    doc.fontSize(28).fillColor('#1f2937').text('Payment Receipt', { align: 'center' });
-    doc.moveDown(0.3);
-    doc.fontSize(16).fillColor('#6b7280').text('UrbanSetu', { align: 'center' });
-    doc.moveDown(0.8);
-
-    // Success indicator with checkmark
-    const headerY = doc.y;
-    doc.save();
-    doc.circle(doc.page.width / 2, headerY + 15, 20).fill('#10b981');
-    doc.fillColor('#ffffff').fontSize(24).text('✓', doc.page.width / 2 - 8, headerY + 3);
-    doc.restore();
-    doc.moveDown(1.2);
-
-    // Status and date
-    doc.fontSize(14).fillColor('#10b981').text('Payment Successful', { align: 'center' });
-    doc.moveDown(0.3);
-    doc.fontSize(10).fillColor('#6b7280').text(`Generated on ${new Date().toLocaleString('en-GB')}`, { align: 'center' });
-    doc.moveDown(1);
-
-    // Payment summary box with enhanced styling
-    doc.moveDown();
-    const boxWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-    const boxHeight = 120;
-    const boxX = doc.page.margins.left;
-    const boxY = doc.y;
-
-    // Background with gradient effect
-    doc.save();
-    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 8).fill('#f3f4f6');
-    doc.restore();
-
-    // Border
-    doc.roundedRect(boxX, boxY, boxWidth, boxHeight, 8).stroke('#e5e7eb');
-
-    // Header
-    doc.moveDown(0.3);
-    doc.fontSize(16).fillColor('#1f2937').text('Payment Details', boxX + 15, doc.y);
-    doc.moveDown(0.8);
-
-    const currencySymbol = (payment.currency || 'USD') === 'INR' ? '₹' : '$';
-    const amountText = `${currencySymbol} ${Number(payment.amount).toFixed(2)}`;
-
-    // Payment info in two columns
-    const leftX = boxX + 15;
-    const rightX = boxX + boxWidth / 2;
-    const lineHeight = 15;
-
-    doc.fontSize(11).fillColor('#6b7280').text('Payment ID:', leftX, doc.y);
-    doc.fillColor('#1f2937').text(payment.paymentId, leftX + 60, doc.y);
-    doc.y += lineHeight;
-
-    doc.fillColor('#6b7280').text('Status:', leftX, doc.y);
-    doc.fillColor('#10b981').text(payment.status === 'completed' ? 'Completed' : 'Pending', leftX + 60, doc.y);
-    doc.y += lineHeight;
-
-    doc.fillColor('#6b7280').text('Gateway:', leftX, doc.y);
-    doc.fillColor('#1f2937').text(payment.gateway?.toUpperCase() || 'N/A', leftX + 60, doc.y);
-    doc.y += lineHeight;
-
-    doc.fillColor('#6b7280').text('Amount:', leftX, doc.y);
-    doc.fontSize(12).fillColor('#1f2937').text(amountText, leftX + 60, doc.y);
-    doc.fontSize(11);
-
-    if (payment.refundAmount > 0) {
-      doc.y += lineHeight;
-      doc.fillColor('#6b7280').text('Refunded:', leftX, doc.y);
-      doc.fillColor('#ef4444').text(`${currencySymbol} ${Number(payment.refundAmount).toFixed(2)}`, leftX + 60, doc.y);
-      if (payment.refundedAt) {
-        doc.y += lineHeight;
-        const refundedAt = new Date(payment.refundedAt);
-        doc.fillColor('#6b7280').text('Refund Date:', leftX, doc.y);
-        doc.fillColor('#1f2937').text(`${refundedAt.toLocaleDateString('en-GB')} ${refundedAt.toLocaleTimeString('en-GB')}`, leftX + 60, doc.y);
-      }
+    try {
+      const pdfBuffer = await generateReceiptPdf(payment);
+      res.end(pdfBuffer);
+    } catch (e) {
+      console.error('PDF generation error:', e);
+      res.status(500).json({ message: 'Error generating PDF' });
     }
-
-    doc.moveDown(1.2);
-
-    // Appointment/listing info with enhanced styling
-    const infoBoxY = doc.y;
-    const infoBoxHeight = 100;
-
-    // Background
-    doc.save();
-    doc.roundedRect(boxX, infoBoxY, boxWidth, infoBoxHeight, 8).fill('#f9fafb');
-    doc.restore();
-    doc.roundedRect(boxX, infoBoxY, boxWidth, infoBoxHeight, 8).stroke('#e5e7eb');
-
-    doc.moveDown(0.3);
-    doc.fontSize(16).fillColor('#1f2937').text('Appointment Details', boxX + 15, doc.y);
-    doc.moveDown(0.8);
-
-    doc.fontSize(11).fillColor('#6b7280').text('Property:', leftX, doc.y);
-    doc.fillColor('#1f2937').text(payment.appointmentId?.propertyName || payment.listingId?.name || 'N/A', leftX + 60, doc.y);
-    doc.y += lineHeight;
-
-    if (payment.appointmentId?.date) {
-      doc.fillColor('#6b7280').text('Appointment Date:', leftX, doc.y);
-      doc.fillColor('#1f2937').text(new Date(payment.appointmentId.date).toLocaleDateString('en-GB'), leftX + 60, doc.y);
-      doc.y += lineHeight;
-    }
-
-    if (payment.appointmentId?.time) {
-      doc.fillColor('#6b7280').text('Appointment Time:', leftX, doc.y);
-      doc.fillColor('#1f2937').text(payment.appointmentId.time, leftX + 60, doc.y);
-      doc.y += lineHeight;
-    }
-
-    if (payment.completedAt) {
-      const paidAt = new Date(payment.completedAt);
-      doc.fillColor('#6b7280').text('Payment Date:', leftX, doc.y);
-      doc.fillColor('#1f2937').text(`${paidAt.toLocaleDateString('en-GB')} ${paidAt.toLocaleTimeString('en-GB')}`, leftX + 60, doc.y);
-      doc.y += lineHeight;
-    }
-
-    doc.fillColor('#6b7280').text('Buyer:', leftX, doc.y);
-    doc.fillColor('#1f2937').text(payment.userId?.username || payment.userId?.email || 'N/A', leftX + 60, doc.y);
-    doc.y += lineHeight;
-
-    // Show different "Generated For" text based on admin access
-    if (admin === 'true') {
-      doc.fillColor('#6b7280').text('Generated For:', leftX, doc.y);
-      doc.fillColor('#ef4444').text('Admin (Administrative Access)', leftX + 60, doc.y);
-    } else {
-      doc.fillColor('#6b7280').text('Generated For:', leftX, doc.y);
-      doc.fillColor('#10b981').text('User (Trusted Access)', leftX + 60, doc.y);
-    }
-
-    doc.moveDown(1.5);
-
-    // Trust/verification note with enhanced styling
-    const noteBoxY = doc.y;
-    const noteBoxHeight = 40;
-
-    // Background for note
-    doc.save();
-    doc.roundedRect(boxX, noteBoxY, boxWidth, noteBoxHeight, 8).fill('#eff6ff');
-    doc.restore();
-    doc.roundedRect(boxX, noteBoxY, boxWidth, noteBoxHeight, 8).stroke('#3b82f6');
-
-    doc.moveDown(0.2);
-    doc.fontSize(12).fillColor('#1e40af').text('Verification Status', boxX + 15, doc.y);
-    doc.moveDown(0.3);
-
-    let note = '';
-    if (payment.gateway === 'razorpay') {
-      note = payment.status === 'completed' ? '✓ Paid via Razorpay (verified)' : '⏳ Pending via Razorpay';
-    } else if (payment.gateway === 'paypal') {
-      note = payment.status === 'completed' ? '✓ Paid via PayPal (verified)' : '⏳ Pending via PayPal';
-    } else {
-      note = payment.status === 'completed' ? '✓ Marked paid by Admin (approved)' : '⏳ Marked pending by Admin';
-    }
-    doc.fontSize(11).fillColor('#1e40af').text(note, boxX + 15, doc.y);
-
-    // Gateway badge with enhanced styling
-    doc.moveDown(1.5);
-    const badge = payment.gateway === 'razorpay' ? 'Razorpay' : (payment.gateway === 'paypal' ? 'PayPal' : 'Admin Approved');
-    const badgeColor = payment.gateway === 'razorpay' ? '#0ea5e9' : (payment.gateway === 'paypal' ? '#2563eb' : '#10b981');
-    const x = doc.page.margins.left;
-    const y = doc.y;
-    const badgeWidth = 140;
-    const badgeHeight = 25;
-
-    doc.save();
-    doc.roundedRect(x, y, badgeWidth, badgeHeight, 12).fill(badgeColor);
-    doc.fillColor('#ffffff').fontSize(11).text(`Platform: ${badge}`, x + 8, y + 7);
-    doc.restore();
-
-    // Amount highlight on right
-    const amt = `${currencySymbol} ${Number(payment.amount).toFixed(2)}`;
-    doc.fontSize(14).fillColor('#1f2937').text(amt, doc.page.width - doc.page.margins.right - 100, y + 5, { width: 100, align: 'right' });
-
-    // Enhanced footer
-    doc.moveDown(2.5);
-    const footerY = doc.y;
-    const footerHeight = 30;
-
-    // Footer background
-    doc.save();
-    doc.rect(doc.page.margins.left, footerY, boxWidth, footerHeight).fill('#f9fafb');
-    doc.restore();
-    doc.rect(doc.page.margins.left, footerY, boxWidth, footerHeight).stroke('#e5e7eb');
-
-    doc.moveDown(0.3);
-    const footerText = 'This is a system-generated receipt from UrbanSetu.';
-    const contentWidth = doc.page.width - doc.page.margins.left - doc.page.margins.right;
-    doc.fontSize(10).fillColor('#6b7280').text(footerText, doc.page.margins.left, doc.y, { width: contentWidth, align: 'center' });
-    doc.moveDown(0.2);
-    doc.fontSize(9).fillColor('#9ca3af').text(`© ${new Date().getFullYear()} UrbanSetu. All rights reserved.`, doc.page.margins.left, doc.y, { width: contentWidth, align: 'center' });
-
-    doc.end();
   } catch (e) {
     console.error('Receipt PDF error:', e);
     return res.status(500).json({ message: 'Server error' });
@@ -1227,6 +1041,14 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
           const receiptUrl = payment.receiptUrl || `${clientUrl}/api/payments/${payment.paymentId}/receipt`;
           const io = req.app.get('io');
 
+          // Generate PDF Receipt Buffer
+          let receiptBuffer = null;
+          try {
+            receiptBuffer = await generateReceiptPdf(payment);
+          } catch (pdfError) {
+            console.error("Failed to generate PDF for email attachment:", pdfError);
+          }
+
           // Notify tenant
           await sendRentalNotification({
             userId: contract.tenantId._id,
@@ -1255,7 +1077,10 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
               rentYear: payment.rentYear,
               receiptUrl: receiptUrl,
               contractId: contract._id,
-              walletUrl: walletUrl
+              walletUrl: walletUrl,
+              receiptBuffer,
+              paymentMethod: payment.gateway,
+              transactionDate: payment.completedAt || new Date()
             });
           } catch (emailError) {
             console.error('Error sending rent payment received email:', emailError);
@@ -1289,7 +1114,10 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
               rentYear: payment.rentYear,
               tenantName: contract.tenantId.username,
               contractId: contract._id,
-              walletUrl
+              walletUrl,
+              receiptBuffer,
+              paymentMethod: payment.gateway,
+              transactionDate: payment.completedAt || new Date()
             });
           } catch (emailError) {
             console.error('Error sending rent payment received email to landlord:', emailError);
@@ -1332,6 +1160,14 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
           const walletUrl = `${clientUrl}/user/rent-wallet?contractId=${contract._id}`;
           const receiptUrl = payment.receiptUrl || `${clientUrl}/api/payments/${payment.paymentId}/receipt`;
 
+          // Generate PDF Receipt Buffer
+          let receiptBuffer = null;
+          try {
+            receiptBuffer = await generateReceiptPdf(payment);
+          } catch (pdfError) {
+            console.error("Failed to generate PDF for email attachment:", pdfError);
+          }
+
           // Notify tenant
           await sendRentalNotification({
             userId: contract.tenantId._id,
@@ -1361,7 +1197,11 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
               dueDate: payment.rentMonth && payment.rentYear ? new Date(payment.rentYear, payment.rentMonth - 1, 1) : null,
               receiptUrl,
               contractId: contract._id,
-              walletUrl
+              walletUrl,
+              // Pass the buffer to the service
+              receiptBuffer,
+              paymentMethod: payment.gateway,
+              transactionDate: payment.completedAt || new Date()
             });
             console.log(`✅ Rent payment received email sent to tenant ${contract.tenantId.email}`);
           } catch (emailError) {
@@ -1397,7 +1237,11 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
               rentYear: payment.rentYear,
               tenantName: contract.tenantId.username,
               contractId: contract._id,
-              walletUrl
+              walletUrl,
+              // Pass the buffer to the service
+              receiptBuffer,
+              paymentMethod: payment.gateway,
+              transactionDate: payment.completedAt || new Date()
             });
             console.log(`✅ Rent payment received email sent to landlord ${contract.landlordId.email}`);
           } catch (emailError) {
