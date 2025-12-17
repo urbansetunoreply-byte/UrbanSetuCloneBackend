@@ -2046,8 +2046,20 @@ export const sendAppointmentReminderEmail = async (email, appointmentDetails, us
     const isBuyer = userRole === 'buyer';
     const otherPartyName = isBuyer ? sellerName : buyerName;
     const otherPartyEmail = isBuyer ? sellerEmail : buyerEmail;
+    const isRent = purpose === 'rent';
 
-    const subject = `Appointment Reminder - ${propertyName} - Tomorrow at ${time}`;
+    const headerTitle = isRent ? "Check-in Reminder" : "Property Visit Reminder";
+    const headerSubtitle = isRent ? "Your check-in is tomorrow!" : "Your property visit is tomorrow!";
+    const bodyTitle = isRent ? "Check-in Tomorrow!" : "Visit Tomorrow!";
+    const bodyText = isRent
+      ? `This is a friendly reminder about your upcoming check-in for the property.`
+      : `This is a friendly reminder about your upcoming property ${isBuyer ? 'viewing' : 'showing'} appointment.`;
+    const dateLabel = isRent ? "Check-in Date:" : "Visit Date:";
+    const contextEmoji = isRent ? "🔑" : "🏠";
+
+    const subject = isRent
+      ? `Check-in Reminder - ${propertyName} - Tomorrow at ${time}`
+      : `Visit Reminder - ${propertyName} - Tomorrow at ${time}`;
 
     const html = `
       <!DOCTYPE html>
@@ -2055,15 +2067,15 @@ export const sendAppointmentReminderEmail = async (email, appointmentDetails, us
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Appointment Reminder - UrbanSetu</title>
+        <title>${headerTitle} - UrbanSetu</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           
           <!-- Header -->
           <div style="background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); padding: 40px 30px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">⏰ Appointment Reminder</h1>
-            <p style="color: #fef3c7; margin: 10px 0 0; font-size: 16px;">Your appointment is tomorrow!</p>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">⏰ ${headerTitle}</h1>
+            <p style="color: #fef3c7; margin: 10px 0 0; font-size: 16px;">${headerSubtitle}</p>
           </div>
           
           <!-- Content -->
@@ -2071,11 +2083,11 @@ export const sendAppointmentReminderEmail = async (email, appointmentDetails, us
             <div style="text-align: center; margin-bottom: 30px;">
               <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(245, 158, 11, 0.3); position: relative;">
                 <div style="position: absolute; top: -2px; left: -2px; right: -2px; bottom: -2px; background: linear-gradient(135deg, #f59e0b, #d97706); border-radius: 50%; opacity: 0.2;"></div>
-                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">⏰</span>
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">${contextEmoji}</span>
               </div>
-              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Appointment Tomorrow!</h2>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">${bodyTitle}</h2>
               <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">
-                This is a friendly reminder about your upcoming property ${isBuyer ? 'viewing' : 'showing'} appointment.
+                ${bodyText}
               </p>
             </div>
             
@@ -2088,7 +2100,7 @@ export const sendAppointmentReminderEmail = async (email, appointmentDetails, us
                   <span style="color: #1f2937; font-weight: 600;">${propertyName}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
-                  <span style="color: #6b7280; font-weight: 500;">Date:</span>
+                  <span style="color: #6b7280; font-weight: 500;">${dateLabel}</span>
                   <span style="color: #1f2937; font-weight: 600;">${formattedDate}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #e5e7eb;">
@@ -3343,8 +3355,20 @@ export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, us
     const otherPartyName = isBuyer ? sellerName : buyerName;
     const otherPartyEmail = isBuyer ? sellerEmail : buyerEmail;
     const userName = isBuyer ? buyerName : sellerName;
+    const isRent = purpose === 'rent';
 
-    const subject = `Appointment Expired - ${propertyName} - Book New Appointment`;
+    // Dynamic headers and labels based on purpose
+    const headerTitle = isRent ? "Check-in Date Passed" : "Missed Property Visit";
+    const headerSubtitle = isRent
+      ? "The scheduled check-in date has passed."
+      : "The scheduled time for your property visit has passed.";
+    const dateLabel = isRent ? "Check-in Date:" : "Visit Date:";
+    const statusLabel = isRent ? "Check-in Missed" : "Visit Missed";
+    const sectionTitle = isRent ? "❌ Missed Check-in Details" : "❌ Missed Visit Details";
+
+    const subject = isRent
+      ? `Check-in Date Passed - ${propertyName} - UrbanSetu`
+      : `Missed Property Visit - ${propertyName} - UrbanSetu`;
 
     const html = `
       <!DOCTYPE html>
@@ -3352,15 +3376,15 @@ export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, us
       <head>
         <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Appointment Expired - UrbanSetu</title>
+        <title>${headerTitle} - UrbanSetu</title>
       </head>
       <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
         <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
           
           <!-- Header -->
           <div style="background: linear-gradient(135deg, #ef4444 0%, #dc2626 100%); padding: 40px 30px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">⏰ Appointment Expired</h1>
-            <p style="color: #fecaca; margin: 10px 0 0; font-size: 16px;">Your appointment has passed - Book a new one!</p>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">⏰ ${headerTitle}</h1>
+            <p style="color: #fecaca; margin: 10px 0 0; font-size: 16px;">${headerSubtitle}</p>
           </div>
           
           <!-- Content -->
@@ -3370,7 +3394,13 @@ export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, us
                 <span style="color: #ffffff; font-size: 32px;">📅</span>
               </div>
               <h2 style="color: #1f2937; margin: 0 0 10px; font-size: 24px; font-weight: 700;">Hello ${userName}!</h2>
-              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">Your appointment for <strong>${propertyName}</strong> has expired and is no longer valid.</p>
+              <p style="color: #6b7280; margin: 0; font-size: 16px; line-height: 1.6;">
+                ${isRent
+        ? `Your scheduled check-in for <strong>${propertyName}</strong> has passed.`
+        : `Your scheduled visit for <strong>${propertyName}</strong> has passed.`
+      }
+                If you still wish to proceed, please book a new appointment or contact support.
+              </p>
             </div>
             
             <!-- Property Details -->
@@ -3388,7 +3418,7 @@ export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, us
                   <span style="color: #64748b; font-size: 18px;">💰</span>
                   <div>
                     <div style="color: #1e293b; font-weight: 600; font-size: 16px;">₹${propertyPrice?.toLocaleString() || 'Price not available'}</div>
-                    <div style="color: #64748b; font-size: 14px;">${purpose === 'buy' ? 'For Sale' : 'For Rent'}</div>
+                    <div style="color: #64748b; font-size: 14px;">${isRent ? 'For Rent' : 'For Sale'}</div>
                   </div>
                 </div>
                 <div style="display: flex; align-items: center; gap: 12px;">
@@ -3401,12 +3431,12 @@ export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, us
               </div>
             </div>
             
-            <!-- Expired Appointment Details -->
+            <!-- Missed Appointment/Check-in Details -->
             <div style="background-color: #fef2f2; padding: 25px; border-radius: 12px; margin-bottom: 30px; border-left: 4px solid #ef4444;">
-              <h3 style="color: #991b1b; margin: 0 0 20px; font-size: 18px; font-weight: 600;">❌ Expired Appointment</h3>
+              <h3 style="color: #991b1b; margin: 0 0 20px; font-size: 18px; font-weight: 600;">${sectionTitle}</h3>
               <div style="display: grid; gap: 12px;">
                 <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
-                  <span style="color: #991b1b; font-weight: 500; font-size: 14px;">Date:</span>
+                  <span style="color: #991b1b; font-weight: 500; font-size: 14px;">${dateLabel}</span>
                   <span style="color: #991b1b; font-weight: 600; font-size: 14px;">${formattedDate}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
@@ -3415,7 +3445,7 @@ export const sendOutdatedAppointmentEmail = async (email, appointmentDetails, us
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid #fecaca;">
                   <span style="color: #991b1b; font-weight: 500; font-size: 14px;">Status:</span>
-                  <span style="color: #991b1b; font-weight: 600; font-size: 14px;">Expired</span>
+                  <span style="color: #991b1b; font-weight: 600; font-size: 14px;">${statusLabel}</span>
                 </div>
                 <div style="display: flex; justify-content: space-between; padding: 8px 0;">
                   <span style="color: #991b1b; font-weight: 500; font-size: 14px;">Other Party:</span>
