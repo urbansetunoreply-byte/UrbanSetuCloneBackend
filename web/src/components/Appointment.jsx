@@ -11,14 +11,21 @@ export default function Appointment() {
   const { currentUser } = useSelector((state) => state.user);
   const location = useLocation();
   const navigate = useNavigate();
-  
+
   // Get listing information from URL params or state
   const searchParams = new URLSearchParams(location.search);
   const listingId = searchParams.get('listingId');
   const listingName = searchParams.get('propertyName');
   const listingDescription = searchParams.get('propertyDescription');
   const listingType = searchParams.get('listingType');
-  
+
+  useEffect(() => {
+    if (listingType === 'rent' && listingId) {
+      toast.info("For rental properties, please continue to the Rent Property page.");
+      navigate(`/user/rent-property?listingId=${listingId}`, { replace: true });
+    }
+  }, [listingType, listingId, navigate]);
+
   const [formData, setFormData] = useState({
     date: "",
     time: "",
@@ -62,15 +69,15 @@ export default function Appointment() {
           const found = data.find(appt => {
             // Only check appointments where the current user is the buyer (not seller)
             if (!appt.buyerId || (appt.buyerId._id !== currentUser._id && appt.buyerId !== currentUser._id)) return false;
-            
+
             if (!appt.listingId || (appt.listingId._id !== listingId && appt.listingId !== listingId)) return false;
-            
+
             // Check if appointment is outdated (past date/time)
             const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
-            
+
             // Don't block if appointment is outdated
             if (isOutdated) return false;
-            
+
             if (activeStatuses.includes(appt.status)) return true;
             // Only block if reinitiation is still possible for the current user (as buyer)
             if (appt.status === "cancelledByBuyer" && (appt.buyerReinitiationCount || 0) < 2) return true;
@@ -226,8 +233,8 @@ export default function Appointment() {
             <div className="text-gray-700 mt-1">The property owner will review your request.</div>
             <div className="text-sm text-gray-500 mt-1">Redirecting to your appointments...</div>
             <div className="mt-6 flex items-center justify-center gap-3">
-              <button onClick={()=>navigate('/user/movers')} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm">Book Packers & Movers</button>
-              <button onClick={()=>navigate('/user/services')} className="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700 text-sm">On-Demand Services</button>
+              <button onClick={() => navigate('/user/movers')} className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700 text-sm">Book Packers & Movers</button>
+              <button onClick={() => navigate('/user/services')} className="px-4 py-2 rounded bg-purple-600 text-white hover:bg-purple-700 text-sm">On-Demand Services</button>
             </div>
           </div>
         ) : (
@@ -272,7 +279,7 @@ export default function Appointment() {
                 </select>
               </div>
             </div>
-            
+
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <select
                 name="purpose"
@@ -282,7 +289,7 @@ export default function Appointment() {
                 required
               >
                 <option value="">Select Purpose</option>
-                {listingType === 'rent' && <option value="rent">Rent</option>}
+                {/* Rent option removed - redirects to Rent Property page */}
                 {(listingType === 'sale' || listingType === 'buy') && <option value="buy">Buy</option>}
               </select>
             </div>
@@ -298,7 +305,7 @@ export default function Appointment() {
               disabled
               required
             />
-            
+
             <textarea
               name="propertyDescription"
               value={formData.propertyDescription}
@@ -310,7 +317,7 @@ export default function Appointment() {
               disabled
               required
             ></textarea>
-            
+
             <textarea
               name="message"
               value={formData.message}
@@ -319,7 +326,7 @@ export default function Appointment() {
               className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none"
               rows="4"
             ></textarea>
-            
+
             {/* Agreement Checkbox */}
             <div className="flex items-center gap-2 mt-2">
               <input
@@ -333,7 +340,7 @@ export default function Appointment() {
                 I understand that <span className="font-semibold text-blue-700">my contact information and details will be shared with the seller</span> for this appointment.
               </label>
             </div>
-            
+
             {/* Region Selection */}
             <div className="bg-gray-50 rounded-lg p-3">
               <div className="text-sm font-semibold text-gray-700 mb-2">Select Region</div>
@@ -366,7 +373,7 @@ export default function Appointment() {
           </form>
         )}
       </div>
-      
+
       {/* Payment Modal */}
       {showPaymentModal && appointmentData && (
         <PaymentModal
@@ -376,7 +383,7 @@ export default function Appointment() {
           onPaymentSuccess={handlePaymentSuccess}
         />
       )}
-      
+
       <ContactSupportWrapper />
     </div>
   );

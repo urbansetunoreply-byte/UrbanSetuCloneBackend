@@ -295,10 +295,15 @@ export default function MyListings() {
                           <span>No Image</span>
                         </div>
                       )}
-                      <div className="absolute top-2 right-2">
+                      <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                        {listing.isRentLocked && (
+                          <span className="px-2 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
+                            <FaLock size={10} /> Rent-Locked
+                          </span>
+                        )}
                         <span className={`px-2 py-1 rounded-full text-xs font-bold ${listing.type === 'sale'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-blue-100 text-blue-700'
+                          ? 'bg-green-100 text-green-700'
+                          : 'bg-blue-100 text-blue-700'
                           }`}>
                           {listing.type === 'sale' ? 'For Sale' : 'For Rent'}
                         </span>
@@ -372,8 +377,13 @@ export default function MyListings() {
                           </Link>
                         )}
                         <button
-                          onClick={() => handleDelete(listing._id)}
-                          className="flex-1 bg-red-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-red-600 transition flex items-center justify-center gap-1"
+                          onClick={() => !listing.isRentLocked && handleDelete(listing._id)}
+                          disabled={listing.isRentLocked}
+                          title={listing.isRentLocked ? `Cannot delete. Rent-Locked until ${new Date(listing.rentLockEndDate || Date.now()).toLocaleDateString()}` : "Delete Property"}
+                          className={`flex-1 px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center gap-1 ${listing.isRentLocked
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-red-500 text-white hover:bg-red-600'
+                            }`}
                         >
                           <FaTrash /> Delete
                         </button>

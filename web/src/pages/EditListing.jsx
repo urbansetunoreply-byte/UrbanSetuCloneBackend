@@ -86,6 +86,7 @@ export default function EditListing() {
   const location = useLocation();
   const [consent, setConsent] = useState(false);
   const [locationState, setLocationState] = useState({ state: "", district: "", city: "", cities: [] });
+  const [isLocked, setIsLocked] = useState(false);
 
   // Get the previous path for redirection
   const getPreviousPath = () => {
@@ -114,6 +115,7 @@ export default function EditListing() {
         ...formData,
         ...data,
       });
+      if (data.isRentLocked && currentUser.role !== 'admin' && currentUser.role !== 'rootadmin') setIsLocked(true);
       setLocationState({
         state: data.state || "",
         district: data.district || "",
@@ -409,6 +411,25 @@ export default function EditListing() {
         <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
           Edit Listing
         </h3>
+        {isLocked && (
+          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 rounded shadow-sm">
+            <div className="flex items-start">
+              <div className="flex-shrink-0">
+                <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                  <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                </svg>
+              </div>
+              <div className="ml-3">
+                <p className="text-sm text-amber-700 font-medium">
+                  Active Rent-Lock Plan
+                </p>
+                <p className="text-sm text-amber-600 mt-1">
+                  This property is currently under an active Rent-Lock contract. Critical details like address, price, and property type cannot be modified until the contract ends.
+                </p>
+              </div>
+            </div>
+          </div>
+        )}
         <form onSubmit={onSubmitForm} className="space-y-6">
           {/* Basic Information */}
           <div className="bg-gray-50 p-4 rounded-lg">
@@ -436,84 +457,92 @@ export default function EditListing() {
           </div>
 
           {/* Address Information */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3">Address Information</h4>
-            <div className="mb-4">
-              <LocationSelector value={locationState} onChange={setLocationState} mode="form" />
+          <fieldset disabled={isLocked} className="contents">
+            <div className="bg-gray-50 p-4 rounded-lg relative">
+              {isLocked && <div className="absolute inset-0 bg-gray-100/50 z-10 rounded-lg cursor-not-allowed" title="Address cannot be changed during active Rent-Lock"></div>}
+              <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                Address Information {isLocked && <span className="text-xs font-normal text-amber-600 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">Locked</span>}
+              </h4>
+              <div className="mb-4">
+                <LocationSelector value={locationState} onChange={setLocationState} mode="form" />
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <input
+                  type="text"
+                  id="propertyNumber"
+                  placeholder="Property Number/Flat Number"
+                  required
+                  onChange={onHandleChanges}
+                  value={formData.propertyNumber}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="text"
+                  id="landmark"
+                  placeholder="Landmark (optional)"
+                  onChange={onHandleChanges}
+                  value={formData.landmark}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+                <input
+                  type="text"
+                  id="pincode"
+                  placeholder="Pincode"
+                  required
+                  onChange={onHandleChanges}
+                  value={formData.pincode}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  pattern="[0-9]*"
+                  inputMode="numeric"
+                  maxLength="6"
+                  onKeyPress={(e) => {
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+                <input
+                  type="text"
+                  id="locationLink"
+                  placeholder="Google Maps Location Link (Optional)"
+                  onChange={onHandleChanges}
+                  value={formData.locationLink}
+                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                />
+              </div>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-              <input
-                type="text"
-                id="propertyNumber"
-                placeholder="Property Number/Flat Number"
-                required
-                onChange={onHandleChanges}
-                value={formData.propertyNumber}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                id="landmark"
-                placeholder="Landmark (optional)"
-                onChange={onHandleChanges}
-                value={formData.landmark}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-              <input
-                type="text"
-                id="pincode"
-                placeholder="Pincode"
-                required
-                onChange={onHandleChanges}
-                value={formData.pincode}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                pattern="[0-9]*"
-                inputMode="numeric"
-                maxLength="6"
-                onKeyPress={(e) => {
-                  if (!/[0-9]/.test(e.key)) {
-                    e.preventDefault();
-                  }
-                }}
-              />
-              <input
-                type="text"
-                id="locationLink"
-                placeholder="Google Maps Location Link (Optional)"
-                onChange={onHandleChanges}
-                value={formData.locationLink}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-              />
-            </div>
-          </div>
+          </fieldset>
 
           {/* Property Type */}
           <div className="bg-gray-50 p-4 rounded-lg">
             <h4 className="font-semibold text-gray-800 mb-3">Property Type</h4>
-            <div className="flex gap-6">
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
-                <input
-                  type="radio"
-                  name="type"
-                  value="sale"
-                  onChange={onHandleChanges}
-                  checked={formData.type === "sale"}
-                  className="text-blue-600"
-                />
-                <span className="font-medium">For Sale</span>
-              </label>
-              <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
-                <input
-                  type="radio"
-                  name="type"
-                  value="rent"
-                  onChange={onHandleChanges}
-                  checked={formData.type === "rent"}
-                  className="text-blue-600"
-                />
-                <span className="font-medium">For Rent</span>
-              </label>
-            </div>
+            <fieldset disabled={isLocked} className="contents">
+              <div className="flex gap-6 relative">
+                {isLocked && <div className="absolute inset-0 bg-gray-100/50 z-10 rounded-lg cursor-not-allowed" title="Property Type cannot be changed during active Rent-Lock"></div>}
+                <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="sale"
+                    onChange={onHandleChanges}
+                    checked={formData.type === "sale"}
+                    className="text-blue-600"
+                  />
+                  <span className="font-medium">For Sale</span>
+                </label>
+                <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
+                  <input
+                    type="radio"
+                    name="type"
+                    value="rent"
+                    onChange={onHandleChanges}
+                    checked={formData.type === "rent"}
+                    className="text-blue-600"
+                  />
+                  <span className="font-medium">For Rent</span>
+                </label>
+              </div>
+            </fieldset>
             <div className="mt-4">
               <div className="flex flex-col">
                 <span className="text-gray-700 font-medium mb-1">Area (sq ft) *</span>
@@ -572,168 +601,173 @@ export default function EditListing() {
 
             {/* Rent-Lock Plan Configuration (only for rental properties) */}
             {formData.type === "rent" && (
-              <div className="mt-6 border-t pt-4">
-                <h5 className="font-semibold text-gray-800 mb-3">Rent-Lock Plan Configuration</h5>
-                <div className="space-y-4">
-                  {/* Rent-Lock Plan Selection */}
-                  <div className="flex flex-col">
-                    <span className="text-gray-700 font-medium mb-2">Rent-Lock Plan *</span>
-                    <select
-                      id="rentLockPlan"
-                      name="defaultPlan"
-                      onChange={(e) => {
-                        const selectedPlan = e.target.value;
-                        setFormData(prev => ({
-                          ...prev,
-                          rentLockPlans: {
-                            ...prev.rentLockPlans,
-                            defaultPlan: selectedPlan,
-                            availablePlans: prev.rentLockPlans.availablePlans.includes(selectedPlan)
-                              ? prev.rentLockPlans.availablePlans
-                              : [...prev.rentLockPlans.availablePlans, selectedPlan]
-                          }
-                        }));
-                      }}
-                      value={formData.rentLockPlans?.defaultPlan || '1_year'}
-                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    >
-                      <option value="1_year">1 Year Rent-Lock</option>
-                      <option value="3_year">3 Year Rent-Lock</option>
-                      <option value="5_year">5 Year Rent-Lock</option>
-                      <option value="custom">Custom Duration</option>
-                    </select>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Select the rent-lock plan duration. Rent will remain fixed for this period.
-                    </p>
-                  </div>
-
-                  {/* Custom Lock Duration (if custom plan selected) */}
-                  {formData.rentLockPlans?.defaultPlan === "custom" && (
+              <fieldset disabled={isLocked} className="contents">
+                <div className="mt-6 border-t pt-4 relative">
+                  {isLocked && <div className="absolute inset-0 bg-gray-100/50 z-10 rounded-lg cursor-not-allowed" title="Rent-Lock Plan cannot be changed during active Rent-Lock"></div>}
+                  <h5 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                    Rent-Lock Plan Configuration {isLocked && <span className="text-xs font-normal text-amber-600 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">Locked</span>}
+                  </h5>
+                  <div className="space-y-4">
+                    {/* Rent-Lock Plan Selection */}
                     <div className="flex flex-col">
-                      <span className="text-gray-700 font-medium mb-2">Custom Lock Duration (months) *</span>
+                      <span className="text-gray-700 font-medium mb-2">Rent-Lock Plan *</span>
+                      <select
+                        id="rentLockPlan"
+                        name="defaultPlan"
+                        onChange={(e) => {
+                          const selectedPlan = e.target.value;
+                          setFormData(prev => ({
+                            ...prev,
+                            rentLockPlans: {
+                              ...prev.rentLockPlans,
+                              defaultPlan: selectedPlan,
+                              availablePlans: prev.rentLockPlans.availablePlans.includes(selectedPlan)
+                                ? prev.rentLockPlans.availablePlans
+                                : [...prev.rentLockPlans.availablePlans, selectedPlan]
+                            }
+                          }));
+                        }}
+                        value={formData.rentLockPlans?.defaultPlan || '1_year'}
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      >
+                        <option value="1_year">1 Year Rent-Lock</option>
+                        <option value="3_year">3 Year Rent-Lock</option>
+                        <option value="5_year">5 Year Rent-Lock</option>
+                        <option value="custom">Custom Duration</option>
+                      </select>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Select the rent-lock plan duration. Rent will remain fixed for this period.
+                      </p>
+                    </div>
+
+                    {/* Custom Lock Duration (if custom plan selected) */}
+                    {formData.rentLockPlans?.defaultPlan === "custom" && (
+                      <div className="flex flex-col">
+                        <span className="text-gray-700 font-medium mb-2">Custom Lock Duration (months) *</span>
+                        <input
+                          type="number"
+                          id="customLockDuration"
+                          min="1"
+                          max="60"
+                          onChange={onHandleChanges}
+                          value={formData.customLockDuration}
+                          placeholder="Enter duration in months (1-60)"
+                          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        />
+                        <p className="text-xs text-gray-500 mt-1">
+                          Enter the lock duration in months (minimum 1 month, maximum 60 months).
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Monthly Rent */}
+                    <div className="flex flex-col">
+                      <span className="text-gray-700 font-medium mb-2">Monthly Rent (₹) *</span>
                       <input
                         type="number"
-                        id="customLockDuration"
-                        min="1"
-                        max="60"
+                        id="monthlyRent"
+                        min="0"
                         onChange={onHandleChanges}
-                        value={formData.customLockDuration}
-                        placeholder="Enter duration in months (1-60)"
+                        value={formData.monthlyRent}
+                        placeholder="Enter monthly rent amount"
                         className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                       />
                       <p className="text-xs text-gray-500 mt-1">
-                        Enter the lock duration in months (minimum 1 month, maximum 60 months).
+                        The fixed monthly rent amount that will remain unchanged during the rent-lock period.
                       </p>
                     </div>
-                  )}
 
-                  {/* Monthly Rent */}
-                  <div className="flex flex-col">
-                    <span className="text-gray-700 font-medium mb-2">Monthly Rent (₹) *</span>
-                    <input
-                      type="number"
-                      id="monthlyRent"
-                      min="0"
-                      onChange={onHandleChanges}
-                      value={formData.monthlyRent}
-                      placeholder="Enter monthly rent amount"
-                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      The fixed monthly rent amount that will remain unchanged during the rent-lock period.
-                    </p>
-                  </div>
-
-                  {/* Security Deposit */}
-                  <div className="flex flex-col">
-                    <span className="text-gray-700 font-medium mb-2">Security Deposit (months of rent) *</span>
-                    <input
-                      type="number"
-                      id="securityDepositMonths"
-                      min="0"
-                      max="12"
-                      onChange={onHandleChanges}
-                      value={formData.securityDepositMonths}
-                      placeholder="Enter months (typically 2-3 months)"
-                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Number of months of rent as security deposit (typically 2-3 months).
-                    </p>
-                  </div>
-
-                  {/* Maintenance Charges */}
-                  <div className="flex flex-col">
-                    <span className="text-gray-700 font-medium mb-2">Maintenance Charges (₹/month) (Optional)</span>
-                    <input
-                      type="number"
-                      id="maintenanceCharges"
-                      min="0"
-                      onChange={onHandleChanges}
-                      value={formData.maintenanceCharges}
-                      placeholder="Enter monthly maintenance charges (0 if none)"
-                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Monthly maintenance charges, if applicable. Leave 0 if no maintenance charges.
-                    </p>
-                  </div>
-
-                  {/* Advance Rent */}
-                  <div className="flex flex-col">
-                    <span className="text-gray-700 font-medium mb-2">Advance Rent (months) (Optional)</span>
-                    <input
-                      type="number"
-                      id="advanceRentMonths"
-                      min="0"
-                      max="12"
-                      onChange={onHandleChanges}
-                      value={formData.advanceRentMonths}
-                      placeholder="Enter months of advance rent (0 if none)"
-                      className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Number of months of rent to be paid in advance, if required. Leave 0 if no advance rent.
-                    </p>
-                  </div>
-
-                  {/* Available Plans (multi-select) */}
-                  <div className="flex flex-col">
-                    <span className="text-gray-700 font-medium mb-2">Available Plans (Select all that apply)</span>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                      {['1_year', '3_year', '5_year', 'custom'].map((plan) => (
-                        <label key={plan} className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm cursor-pointer">
-                          <input
-                            type="checkbox"
-                            checked={formData.rentLockPlans?.availablePlans.includes(plan)}
-                            onChange={(e) => {
-                              const checked = e.target.checked;
-                              setFormData(prev => ({
-                                ...prev,
-                                rentLockPlans: {
-                                  ...prev.rentLockPlans,
-                                  availablePlans: checked
-                                    ? [...(prev.rentLockPlans?.availablePlans || []), plan]
-                                    : (prev.rentLockPlans?.availablePlans || []).filter(p => p !== plan)
-                                }
-                              }));
-                            }}
-                            className="text-blue-600"
-                          />
-                          <span className="text-gray-700 text-sm font-medium">
-                            {plan === '1_year' ? '1 Year' :
-                              plan === '3_year' ? '3 Years' :
-                                plan === '5_year' ? '5 Years' : 'Custom'}
-                          </span>
-                        </label>
-                      ))}
+                    {/* Security Deposit */}
+                    <div className="flex flex-col">
+                      <span className="text-gray-700 font-medium mb-2">Security Deposit (months of rent) *</span>
+                      <input
+                        type="number"
+                        id="securityDepositMonths"
+                        min="0"
+                        max="12"
+                        onChange={onHandleChanges}
+                        value={formData.securityDepositMonths}
+                        placeholder="Enter months (typically 2-3 months)"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Number of months of rent as security deposit (typically 2-3 months).
+                      </p>
                     </div>
-                    <p className="text-xs text-gray-500 mt-1">
-                      Select all rent-lock plans you want to offer to tenants. At least one plan should be selected.
-                    </p>
+
+                    {/* Maintenance Charges */}
+                    <div className="flex flex-col">
+                      <span className="text-gray-700 font-medium mb-2">Maintenance Charges (₹/month) (Optional)</span>
+                      <input
+                        type="number"
+                        id="maintenanceCharges"
+                        min="0"
+                        onChange={onHandleChanges}
+                        value={formData.maintenanceCharges}
+                        placeholder="Enter monthly maintenance charges (0 if none)"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Monthly maintenance charges, if applicable. Leave 0 if no maintenance charges.
+                      </p>
+                    </div>
+
+                    {/* Advance Rent */}
+                    <div className="flex flex-col">
+                      <span className="text-gray-700 font-medium mb-2">Advance Rent (months) (Optional)</span>
+                      <input
+                        type="number"
+                        id="advanceRentMonths"
+                        min="0"
+                        max="12"
+                        onChange={onHandleChanges}
+                        value={formData.advanceRentMonths}
+                        placeholder="Enter months of advance rent (0 if none)"
+                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Number of months of rent to be paid in advance, if required. Leave 0 if no advance rent.
+                      </p>
+                    </div>
+
+                    {/* Available Plans (multi-select) */}
+                    <div className="flex flex-col">
+                      <span className="text-gray-700 font-medium mb-2">Available Plans (Select all that apply)</span>
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+                        {['1_year', '3_year', '5_year', 'custom'].map((plan) => (
+                          <label key={plan} className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm cursor-pointer">
+                            <input
+                              type="checkbox"
+                              checked={formData.rentLockPlans?.availablePlans.includes(plan)}
+                              onChange={(e) => {
+                                const checked = e.target.checked;
+                                setFormData(prev => ({
+                                  ...prev,
+                                  rentLockPlans: {
+                                    ...prev.rentLockPlans,
+                                    availablePlans: checked
+                                      ? [...(prev.rentLockPlans?.availablePlans || []), plan]
+                                      : (prev.rentLockPlans?.availablePlans || []).filter(p => p !== plan)
+                                  }
+                                }));
+                              }}
+                              className="text-blue-600"
+                            />
+                            <span className="text-gray-700 text-sm font-medium">
+                              {plan === '1_year' ? '1 Year' :
+                                plan === '3_year' ? '3 Years' :
+                                  plan === '5_year' ? '5 Years' : 'Custom'}
+                            </span>
+                          </label>
+                        ))}
+                      </div>
+                      <p className="text-xs text-gray-500 mt-1">
+                        Select all rent-lock plans you want to offer to tenants. At least one plan should be selected.
+                      </p>
+                    </div>
                   </div>
                 </div>
-              </div>
+              </fieldset>
             )}
           </div>
 
@@ -774,16 +808,32 @@ export default function EditListing() {
                 />
               </div>
               <div className="flex flex-col">
+                <span className="text-gray-700 font-medium mb-1">Regular Price (₹)</span>
+                <fieldset disabled={isLocked || formData.type === 'rent'} className="contents">
+                  <input
+                    type="number"
+                    id="regularPrice"
+                    disabled={formData.type === 'rent' || isLocked}
+                    onChange={onHandleChanges}
+                    value={formData.type === 'rent' ? formData.monthlyRent : formData.regularPrice}
+                    placeholder="Enter price"
+                    className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' || isLocked ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  />
+                </fieldset>
+              </div>
+              <div className="flex flex-col">
                 <span className="text-gray-700 font-medium mb-1">Discount Price (₹)</span>
-                <input
-                  type="number"
-                  id="discountPrice"
-                  disabled={formData.type === 'rent'}
-                  onChange={onHandleChanges}
-                  value={formData.type === 'rent' ? 0 : formData.discountPrice}
-                  placeholder="Enter discount"
-                  className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                />
+                <fieldset disabled={isLocked || formData.type === 'rent'} className="contents">
+                  <input
+                    type="number"
+                    id="discountPrice"
+                    disabled={formData.type === 'rent' || isLocked}
+                    onChange={onHandleChanges}
+                    value={formData.type === 'rent' ? 0 : formData.discountPrice}
+                    placeholder="Enter discount"
+                    className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' || isLocked ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  />
+                </fieldset>
               </div>
             </div>
           </div>

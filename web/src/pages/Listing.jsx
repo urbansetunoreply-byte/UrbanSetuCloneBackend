@@ -1364,17 +1364,30 @@ export default function Listing() {
               </div>
               {currentUser && !isAdminContext && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) && (
                 <div className="flex items-center gap-2">
-                  <Link
-                    to={`/user/update-listing/${listing._id}`}
-                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2 text-sm rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
-                  >
-                    <FaEdit /> Edit Property
-                  </Link>
+                  {listing.isRentLocked ? (
+                    <button
+                      disabled
+                      className="bg-gray-400 text-white px-3 py-2 text-sm rounded-lg cursor-not-allowed shadow-lg font-semibold flex items-center gap-2"
+                      title="Edit Disabled due to active Rent-Lock"
+                    >
+                      <FaLock /> Edit Locked
+                    </button>
+                  ) : (
+                    <Link
+                      to={`/user/update-listing/${listing._id}`}
+                      className="bg-gradient-to-r from-green-500 to-green-600 text-white px-3 py-2 text-sm rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                    >
+                      <FaEdit /> Edit Property
+                    </Link>
+                  )}
                   <button
-                    onClick={handleOwnerDeleteClick}
-                    className="bg-gradient-to-r from-red-500 to-red-600 text-white px-3 py-2 text-sm rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2"
+                    onClick={!listing.isRentLocked ? handleOwnerDeleteClick : undefined}
+                    disabled={listing.isRentLocked}
+                    title={listing.isRentLocked ? "Delete Disabled due to active Rent-Lock" : "Delete Property"}
+                    className={`${listing.isRentLocked ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'} text-white px-3 py-2 text-sm rounded-lg transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2`}
                   >
-                    <FaTrash /> Delete Property
+                    {listing.isRentLocked ? <FaLock /> : <FaTrash />}
+                    {listing.isRentLocked ? "Locked" : "Delete"}
                   </button>
                 </div>
               )}
@@ -1422,23 +1435,36 @@ export default function Listing() {
                   )}
                 </div>
                 {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
-                  <Link
-                    to={`/user/update-listing/${listing._id}`}
-                    className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
-                  >
-                    <FaEdit className="text-sm" />
-                    <span className="hidden sm:inline">Edit Property</span>
-                  </Link>
+                  listing.isRentLocked ? (
+                    <button
+                      disabled
+                      className="bg-gray-400 text-white px-4 py-3 rounded-lg cursor-not-allowed shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                      title="Edit Disabled due to active Rent-Lock"
+                    >
+                      <FaLock className="text-sm" />
+                      <span className="hidden sm:inline">Edit Locked</span>
+                    </button>
+                  ) : (
+                    <Link
+                      to={`/user/update-listing/${listing._id}`}
+                      className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-3 rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                    >
+                      <FaEdit className="text-sm" />
+                      <span className="hidden sm:inline">Edit Property</span>
+                    </Link>
+                  )
                 ) : (
                   <div className="hidden lg:block" />
                 )}
                 {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
                   <button
-                    onClick={handleOwnerDeleteClick}
-                    className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-3 rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
+                    onClick={!listing.isRentLocked ? handleOwnerDeleteClick : undefined}
+                    disabled={listing.isRentLocked}
+                    title={listing.isRentLocked ? "Delete Disabled due to active Rent-Lock" : "Delete Property"}
+                    className={`${listing.isRentLocked ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'} text-white px-4 py-3 rounded-lg transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base`}
                   >
-                    <FaTrash className="text-sm" />
-                    <span className="hidden sm:inline">Delete Property</span>
+                    {listing.isRentLocked ? <FaLock className="text-sm" /> : <FaTrash className="text-sm" />}
+                    <span className="hidden sm:inline">{listing.isRentLocked ? "Delete Locked" : "Delete Property"}</span>
                   </button>
                 ) : (
                   <div className="hidden lg:block" />
