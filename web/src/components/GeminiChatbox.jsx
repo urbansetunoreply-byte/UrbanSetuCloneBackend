@@ -156,6 +156,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [showConfirmClear, setShowConfirmClear] = useState(false);
     const abortControllerRef = useRef(null);
     const audioUploadAbortControllerRef = useRef(null);
+    const rateLimitBroadcastRef = useRef(null); // For cross-tab rate limit sync
     const [unreadCount, setUnreadCount] = useState(0);
     const [isExpanded, setIsExpanded] = useState(false);
     const lastUserMessageRef = useRef('');
@@ -501,6 +502,49 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         };
     }, []);
 
+    // Set up BroadcastChannel for cross-tab rate limit sync
+    useEffect(() => {
+        // Initialize BroadcastChannel (supported in modern browsers)
+        if (typeof BroadcastChannel !== 'undefined') {
+            rateLimitBroadcastRef.current = new BroadcastChannel('gemini_rate_limit_channel');
+
+            // Listen for rate limit updates from other tabs
+            rateLimitBroadcastRef.current.onmessage = (event) => {
+                if (event.data.type === 'RATE_LIMIT_UPDATE') {
+                    console.log('Received rate limit update from another tab:', event.data.data);
+                    setRateLimitInfo(event.data.data);
+                }
+            };
+        }
+
+        // Also listen to localStorage changes (fallback for older browsers)
+        const handleStorageChange = (e) => {
+            if (e.key === 'gemini_rate_limit_sync' && e.newValue) {
+                try {
+                    const syncData = JSON.parse(e.newValue);
+                    // Only update if the data is recent (within last 5 seconds)
+                    if (Date.now() - syncData.timestamp < 5000) {
+                        console.log('Received rate limit update via localStorage:', syncData);
+                        const { timestamp, ...rateLimitData } = syncData;
+                        setRateLimitInfo(rateLimitData);
+                    }
+                } catch (error) {
+                    console.error('Error parsing rate limit sync data:', error);
+                }
+            }
+        };
+
+        window.addEventListener('storage', handleStorageChange);
+
+        // Cleanup
+        return () => {
+            if (rateLimitBroadcastRef.current) {
+                rateLimitBroadcastRef.current.close();
+            }
+            window.removeEventListener('storage', handleStorageChange);
+        };
+    }, []);
+
     const REPORT_OPTIONS = {
         "Violence & self-harm": [
             "Threats or incitement to violence", "Gender-based violence", "Sexual violence", "Weapons", "Suicide & self-harm", "Eating disorders", "Human trafficking", "Terrorism"
@@ -618,6 +662,20 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 if (data.success && data.rateLimit) {
                     console.log('Frontend - Setting rate limit info:', data.rateLimit);
                     setRateLimitInfo(data.rateLimit);
+
+                    // Broadcast to other tabs using BroadcastChannel
+                    if (rateLimitBroadcastRef.current) {
+                        rateLimitBroadcastRef.current.postMessage({
+                            type: 'RATE_LIMIT_UPDATE',
+                            data: data.rateLimit
+                        });
+                    }
+
+                    // Also use localStorage for cross-tab sync (fallback for older browsers)
+                    localStorage.setItem('gemini_rate_limit_sync', JSON.stringify({
+                        ...data.rateLimit,
+                        timestamp: Date.now()
+                    }));
 
                     // Show appropriate modal if rate limit is exceeded
                     if (data.rateLimit.remaining <= 0 && data.rateLimit.role !== 'rootadmin') {
