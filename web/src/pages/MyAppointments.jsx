@@ -134,8 +134,8 @@ export default function MyAppointments() {
   const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useState(null);
 
   // Sale Confirmation Modals State
-  const [showTokenPaidModal, setShowTokenPaidModal] = useState(false);
-  const [showSaleCompleteModal, setShowSaleCompleteModal] = useState(false);
+  const [isTokenPaidModalOpen, setIsTokenPaidModalOpen] = useState(false);
+  const [isSaleCompleteModalOpen, setIsSaleCompleteModalOpen] = useState(false);
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [apptIdForAction, setApptIdForAction] = useState(null);
 
@@ -749,7 +749,7 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleTokenPaid = useCallback((id) => {
     setApptIdForAction(id);
-    setShowTokenPaidModal(true);
+    setIsTokenPaidModalOpen(true);
   }, []);
 
   // Actual API call for Token Paid
@@ -758,7 +758,7 @@ export default function MyAppointments() {
     if (!id) return;
 
     setActionLoading(id + 'token_paid');
-    setShowTokenPaidModal(false);
+    setIsTokenPaidModalOpen(false);
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/token-paid`,
@@ -792,7 +792,7 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleSaleComplete = useCallback((id) => {
     setApptIdForAction(id);
-    setShowSaleCompleteModal(true);
+    setIsSaleCompleteModalOpen(true);
   }, []);
 
   // Actual API call for Sale Complete
@@ -801,7 +801,7 @@ export default function MyAppointments() {
     if (!id) return;
 
     setActionLoading(id + 'sold');
-    setShowSaleCompleteModal(false);
+    setIsSaleCompleteModalOpen(false);
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/complete`,
@@ -13307,7 +13307,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
       {/* <GeminiAIWrapper /> */}
       {/* Token Received Confirmation Modal */}
-      {showTokenPaidModal && (
+      {isTokenPaidModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
             <div className="flex flex-col items-center mb-4 text-center">
@@ -13333,7 +13333,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
             <div className="flex gap-4">
               <button
-                onClick={() => { setShowTokenPaidModal(false); setApptIdForAction(null); }}
+                onClick={() => { setIsTokenPaidModalOpen(false); setApptIdForAction(null); }}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
                 Cancel
@@ -13350,7 +13350,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       )}
 
       {/* Sale Complete Confirmation Modal */}
-      {showSaleCompleteModal && (
+      {isSaleCompleteModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
             <div className="flex flex-col items-center mb-4 text-center">
@@ -13376,7 +13376,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
             <div className="flex gap-4">
               <button
-                onClick={() => { setShowSaleCompleteModal(false); setApptIdForAction(null); }}
+                onClick={() => { setIsSaleCompleteModalOpen(false); setApptIdForAction(null); }}
                 className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
               >
                 Cancel
