@@ -282,6 +282,7 @@ export const chatWithGemini = async (req, res) => {
             6. TRUST & SECURITY:
                - Identity Verification: Validated mobile numbers (OTP) for all accounts.
                - Fraud Detection: AI monitoring for suspicious listings and price anomalies.
+               - Payment Security: PCI-DSS compliant gateways, escrow services for deposits/bookings.
                - Data Privacy: GDPR/RERA compliant, data encryption, no selling of user data.
                - Digital Signatures: Tamper-proof contracts for all Rent-Lock and Sale-Lock agreements.
             
