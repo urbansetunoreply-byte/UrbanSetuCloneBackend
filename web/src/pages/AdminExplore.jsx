@@ -81,7 +81,7 @@ export default function AdminExplore() {
     const fetchListings = async () => {
       setLoading(true);
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`, { credentials: 'include' });
         const data = await res.json();
         setListings(data);
         setShowMoreListing(data.length > 8);
@@ -676,7 +676,7 @@ export default function AdminExplore() {
   const showMoreListingClick = async () => {
     const urlParams = new URLSearchParams(location.search);
     urlParams.set("startIndex", listings.length);
-    const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
+    const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`, { credentials: 'include' });
     const data = await res.json();
     setListings((prev) => [...prev, ...data]);
     setShowMoreListing(data.length >= 8);
@@ -1053,8 +1053,8 @@ export default function AdminExplore() {
                     type="button"
                     onClick={() => setFormData(prev => ({ ...prev, type: t }))}
                     className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
-                        ? 'bg-white text-blue-600 shadow-sm'
-                        : 'text-gray-500 hover:text-gray-700'
+                      ? 'bg-white text-blue-600 shadow-sm'
+                      : 'text-gray-500 hover:text-gray-700'
                       }`}
                   >
                     {t}

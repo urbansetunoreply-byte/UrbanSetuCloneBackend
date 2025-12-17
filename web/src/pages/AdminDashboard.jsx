@@ -2,12 +2,12 @@ import React, { useEffect, useState } from "react";
 import ListingItem from "../components/ListingItem";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { 
-  FaCalendarAlt, 
-  FaUsers, 
-  FaHome, 
-  FaStar, 
-  FaChartLine, 
+import {
+  FaCalendarAlt,
+  FaUsers,
+  FaHome,
+  FaStar,
+  FaChartLine,
   FaEye,
   FaHeart,
   FaClock,
@@ -37,8 +37,8 @@ export default function AdminDashboard() {
   const [rentListings, setRentListings] = useState([]);
   const [appointmentCount, setAppointmentCount] = useState(0);
   const [loading, setLoading] = useState(true);
-  const [sentimentSummary, setSentimentSummary] = useState({ positive:0, negative:0, neutral:0, topWords: [] });
-  
+  const [sentimentSummary, setSentimentSummary] = useState({ positive: 0, negative: 0, neutral: 0, topWords: [] });
+
   // Enhanced analytics state
   const [analytics, setAnalytics] = useState({
     totalUsers: 0,
@@ -154,12 +154,12 @@ export default function AdminDashboard() {
         const res = await axios.get(`${API_BASE_URL}/api/ai/sentiment/summary`);
         const data = res.data;
         if (data && typeof data === 'object') setSentimentSummary({
-          positive: data.positive||0,
-          negative: data.negative||0,
-          neutral: data.neutral||0,
-          topWords: Array.isArray(data.topWords)? data.topWords.slice(0,10) : []
+          positive: data.positive || 0,
+          negative: data.negative || 0,
+          neutral: data.neutral || 0,
+          topWords: Array.isArray(data.topWords) ? data.topWords.slice(0, 10) : []
         });
-      } catch (e) {}
+      } catch (e) { }
     };
     fetchSentiment();
   }, []);
@@ -241,7 +241,7 @@ export default function AdminDashboard() {
 
   const fetchOfferListings = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/listing/get?offer=true&limit=6`);
+      const res = await axios.get(`${API_BASE_URL}/api/listing/get?offer=true&limit=6`, { withCredentials: true });
       setOfferListings(res.data);
     } catch (error) {
       console.error("Error fetching offer listings", error);
@@ -250,7 +250,7 @@ export default function AdminDashboard() {
 
   const fetchRentListings = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/listing/get?type=rent&limit=6`);
+      const res = await axios.get(`${API_BASE_URL}/api/listing/get?type=rent&limit=6`, { withCredentials: true });
       setRentListings(res.data);
     } catch (error) {
       console.error("Error fetching rent listings", error);
@@ -259,7 +259,7 @@ export default function AdminDashboard() {
 
   const fetchSaleListings = async () => {
     try {
-      const res = await axios.get(`${API_BASE_URL}/api/listing/get?type=sale&limit=6`);
+      const res = await axios.get(`${API_BASE_URL}/api/listing/get?type=sale&limit=6`, { withCredentials: true });
       setSaleListings(res.data);
     } catch (error) {
       console.error("Error fetching sale listings", error);
@@ -297,7 +297,7 @@ export default function AdminDashboard() {
         const recent = res.data.recent || [];
         const totalOtpRequests = recent.reduce((sum, r) => sum + (r.otpRequestCount || 0), 0);
         const totalFailedAttempts = recent.reduce((sum, r) => sum + (r.failedOtpAttempts || 0), 0);
-        
+
         setSecurityStats({
           activeOtpLockouts: res.data.activeLockouts || 0,
           passwordLockouts: res.data.passwordLockouts || 0,
@@ -348,37 +348,37 @@ export default function AdminDashboard() {
 
       try {
         usersData = usersRes.data;
-      } catch (e) {}
-      
+      } catch (e) { }
+
       try {
         adminsData = adminsRes.data;
-      } catch (e) {}
-      
+      } catch (e) { }
+
       try {
         reviewsData = reviewsRes.data;
-      } catch (e) {}
-      
+      } catch (e) { }
+
       try {
         const temp = reviewsAllRes.data;
         allApprovedReviews = temp.reviews || temp; // depending on API shape
-      } catch (e) {}
-      
+      } catch (e) { }
+
       try {
         listingsData = listingsRes.data;
-      } catch (e) {}
-      
+      } catch (e) { }
+
       try {
         watchlistStats = watchlistStatsRes.data;
-      } catch (e) {}
-      
+      } catch (e) { }
+
       try {
         topWatchedProperties = topWatchedRes.data;
-      } catch (e) {}
-      
+      } catch (e) { }
+
       let fraudData = { suspiciousListings: 0, suspectedFakeReviews: 0, lastScan: null };
       try {
         fraudData = fraudRes.data;
-      } catch (e) {}
+      } catch (e) { }
 
       const listingStats = {
         sale: listingsData.filter(l => l.type === 'sale').length,
@@ -415,8 +415,8 @@ export default function AdminDashboard() {
         .slice(0, 5)
         .map(([city, count]) => ({ city, count }));
       // Engagement: average views per listing
-      const views = listingsData.map(l => Number(l.viewCount||0));
-      const avgViewsPerListing = views.length ? Math.round(views.reduce((a,b)=>a+b,0) / views.length) : 0;
+      const views = listingsData.map(l => Number(l.viewCount || 0));
+      const avgViewsPerListing = views.length ? Math.round(views.reduce((a, b) => a + b, 0) / views.length) : 0;
 
       // Recent listings by createdAt (fallback to id ordering)
       const recentListings = [...listingsData]
@@ -427,7 +427,7 @@ export default function AdminDashboard() {
       const monthlyMap = {};
       listingsData.forEach(l => {
         const dt = new Date(l.createdAt || l.updatedAt || Date.now());
-        const key = `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+        const key = `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
         const price = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
         if (!price) return;
         if (!monthlyMap[key]) monthlyMap[key] = { sum: 0, count: 0 };
@@ -435,12 +435,12 @@ export default function AdminDashboard() {
         monthlyMap[key].count += 1;
       });
       const monthlyAvgPrices = Object.entries(monthlyMap)
-        .sort(([a],[b]) => a.localeCompare(b))
+        .sort(([a], [b]) => a.localeCompare(b))
         .map(([month, v]) => ({ month, avg: Math.round(v.sum / v.count) }));
 
       const demandByCity = Object.entries(cityCounts)
         .map(([city, count]) => ({ city, count }))
-        .sort((a,b) => b.count - a.count)
+        .sort((a, b) => b.count - a.count)
         .slice(0, 10);
 
       // Performance: top owners by average rating across their listings
@@ -462,17 +462,17 @@ export default function AdminDashboard() {
 
       const topOwnersByRating = Object.values(ownerMap)
         .filter(o => o.count > 0)
-        .map(o => ({ 
-          ...o, 
+        .map(o => ({
+          ...o,
           avgRating: Math.round((o.totalRating / o.count) * 10) / 10,
           ownerName: userIdToName[o.ownerId] || o.ownerId
         }))
-        .sort((a,b) => b.avgRating - a.avgRating)
+        .sort((a, b) => b.avgRating - a.avgRating)
         .slice(0, 5);
 
       // Sentiment Analysis: simple rule-based scoring over review comments
-      const positiveWords = ['good','great','excellent','amazing','love','nice','helpful','fast','clean','spacious','recommended','recommend'];
-      const negativeWords = ['bad','poor','terrible','awful','hate','dirty','small','slow','rude','noisy','not recommended','worst'];
+      const positiveWords = ['good', 'great', 'excellent', 'amazing', 'love', 'nice', 'helpful', 'fast', 'clean', 'spacious', 'recommended', 'recommend'];
+      const negativeWords = ['bad', 'poor', 'terrible', 'awful', 'hate', 'dirty', 'small', 'slow', 'rude', 'noisy', 'not recommended', 'worst'];
       let pos = 0, neg = 0, neu = 0;
       const wordFreq = {};
       (allApprovedReviews || []).forEach(r => {
@@ -484,7 +484,7 @@ export default function AdminDashboard() {
         if (score > 0) pos++; else if (score < 0) neg++; else neu++;
         text.split(/[^a-zA-Z]+/).forEach(t => { if (t.length > 3) wordFreq[t] = (wordFreq[t] || 0) + 1; });
       });
-      const topWords = Object.entries(wordFreq).sort((a,b) => b[1]-a[1]).slice(0,10).map(([word,count]) => ({ word, count }));
+      const topWords = Object.entries(wordFreq).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([word, count]) => ({ word, count }));
 
       // User Behavior (lightweight): read optional localStorage keys if present
       let popularFilters = [];
@@ -494,7 +494,7 @@ export default function AdminDashboard() {
         popularFilters = Array.isArray(filterData) ? filterData : [];
         const dropData = JSON.parse(localStorage.getItem('funnel_dropoffs') || '[]');
         dropoffs = Array.isArray(dropData) ? dropData : [];
-      } catch(_) {}
+      } catch (_) { }
 
       // Price stats and distributions
       const prices = listingsData.map(l => (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice).filter(Boolean);
@@ -518,11 +518,11 @@ export default function AdminDashboard() {
         const textCount = new Map();
         reviewsArr.forEach(r => {
           const t = (r.comment || '').trim().toLowerCase();
-          if (!t) return; textCount.set(t, (textCount.get(t)||0)+1);
+          if (!t) return; textCount.set(t, (textCount.get(t) || 0) + 1);
         });
-        const repetitiveSet = new Set(Array.from(textCount.entries()).filter(([,c]) => c >= 2).map(([t]) => t));
-        const suspiciousReviewPhrases = ['scam','fraud',"don't book",'best deal','don\'t miss','very cheap'];
-        const threeDaysAgo = Date.now() - 3*24*60*60*1000;
+        const repetitiveSet = new Set(Array.from(textCount.entries()).filter(([, c]) => c >= 2).map(([t]) => t));
+        const suspiciousReviewPhrases = ['scam', 'fraud', "don't book", 'best deal', 'don\'t miss', 'very cheap'];
+        const threeDaysAgo = Date.now() - 3 * 24 * 60 * 60 * 1000;
         const byListing = new Map();
         reviewsArr.forEach(r => {
           const lid = (r.listingId && (r.listingId._id || r.listingId)) || r.listingId;
@@ -538,21 +538,21 @@ export default function AdminDashboard() {
           const oneStar = recent.filter(x => x.rating <= 1).length;
           if (fiveStar >= 6 || oneStar >= 6) floodCount += Math.max(fiveStar, oneStar);
         });
-        const repetitiveReviews = reviewsArr.filter(r => repetitiveSet.has((r.comment||'').trim().toLowerCase()));
-        const suspiciousLang = reviewsArr.filter(r => suspiciousReviewPhrases.some(p => ((r.comment||'').toLowerCase().includes(p))));
+        const repetitiveReviews = reviewsArr.filter(r => repetitiveSet.has((r.comment || '').trim().toLowerCase()));
+        const suspiciousLang = reviewsArr.filter(r => suspiciousReviewPhrases.some(p => ((r.comment || '').toLowerCase().includes(p))));
         const computedFakeReviews = Math.max(repetitiveReviews.length + suspiciousLang.length, floodCount);
         if (computedFakeReviews > (fraudData.suspectedFakeReviews || 0)) {
           fraudData = { ...fraudData, suspectedFakeReviews: computedFakeReviews };
         }
-      } catch (_) {}
+      } catch (_) { }
 
       // Compute suspicious listings locally (strict low-price proxy)
       try {
         const pricesAll = listingsData.map(l => (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice).filter(Boolean);
-        const meanAll = pricesAll.length ? pricesAll.reduce((a,b)=>a+b,0)/pricesAll.length : 0;
-        const varianceAll = pricesAll.length ? pricesAll.reduce((a,b)=>a+Math.pow(b-meanAll,2),0)/pricesAll.length : 0;
+        const meanAll = pricesAll.length ? pricesAll.reduce((a, b) => a + b, 0) / pricesAll.length : 0;
+        const varianceAll = pricesAll.length ? pricesAll.reduce((a, b) => a + Math.pow(b - meanAll, 2), 0) / pricesAll.length : 0;
         const stdAll = Math.sqrt(varianceAll) || 1;
-        const upperAll = meanAll + 3*stdAll; const lowerAll = Math.max(0, meanAll - 3*stdAll);
+        const upperAll = meanAll + 3 * stdAll; const lowerAll = Math.max(0, meanAll - 3 * stdAll);
         const localSuspicious = listingsData.filter(l => {
           const p = (l.offer && l.discountPrice) ? l.discountPrice : l.regularPrice;
           if (!p) return false;
@@ -564,27 +564,27 @@ export default function AdminDashboard() {
         if (localSuspicious > (fraudData.suspiciousListings || 0)) {
           fraudData = { ...fraudData, suspiciousListings: localSuspicious };
         }
-      } catch(_) {}
+      } catch (_) { }
 
       // Build simple monthly fraud timeline using review floods and duplicates as proxies
       try {
         const monthKey = (d) => {
-          const dt = new Date(d||Date.now());
-          return `${dt.getFullYear()}-${String(dt.getMonth()+1).padStart(2,'0')}`;
+          const dt = new Date(d || Date.now());
+          return `${dt.getFullYear()}-${String(dt.getMonth() + 1).padStart(2, '0')}`;
         };
         const timeline = {};
         (allApprovedReviews || []).forEach(r => {
           const key = monthKey(r.createdAt);
-          const t = (r.comment||'').toLowerCase();
+          const t = (r.comment || '').toLowerCase();
           const suspicious = t.includes('scam') || t.includes('fraud');
-          if (suspicious) timeline[key] = (timeline[key]||0)+1;
+          if (suspicious) timeline[key] = (timeline[key] || 0) + 1;
         });
-        const series = Object.entries(timeline).sort(([a],[b])=>a.localeCompare(b)).map(([month,count])=>({ month, count }));
+        const series = Object.entries(timeline).sort(([a], [b]) => a.localeCompare(b)).map(([month, count]) => ({ month, count }));
         setFraudTimeline(series);
-      } catch(_) {}
+      } catch (_) { }
 
       // Enhanced analytics calculations
-      
+
       // Revenue Analytics
       const totalRevenue = 0; // Placeholder - would need payment data
       const monthlyRevenue = []; // Placeholder
@@ -601,16 +601,16 @@ export default function AdminDashboard() {
       const topViewedProperties = listingsData
         .sort((a, b) => (b.viewCount || 0) - (a.viewCount || 0))
         .slice(0, 5);
-      
+
       const topFavoritedProperties = listingsData
         .sort((a, b) => (b.favoriteCount || 0) - (a.favoriteCount || 0))
         .slice(0, 5);
-      
+
       const conversionRates = {
         viewToContact: 0, // Placeholder
         contactToBooking: 0 // Placeholder
       };
-      
+
       const averageTimeOnPage = 0; // Placeholder
 
       // Geographic Analytics
@@ -677,13 +677,13 @@ export default function AdminDashboard() {
       }));
 
       // Enhanced Review Quality Score calculation
-      const reviewQuality = allApprovedReviews.length > 0 ? 
+      const reviewQuality = allApprovedReviews.length > 0 ?
         Math.round((allApprovedReviews.filter(r => {
           const comment = r.comment || '';
           return comment.length > 30 && comment.trim().split(' ').length > 5;
-        }).length / allApprovedReviews.length) * 100) : 
+        }).length / allApprovedReviews.length) * 100) :
         (totalReviews > 0 ? Math.round(60 + Math.random() * 30) : 0); // Fallback for demo data
-      
+
 
       // Property Types Analytics
       const propertyTypes = listingsData.reduce((acc, l) => {
@@ -712,10 +712,10 @@ export default function AdminDashboard() {
         performance: { topOwnersByRating },
         sentiment: { positive: pos, negative: neg, neutral: neu, topWords },
         userBehavior: { popularFilters, dropoffs },
-        watchlist: { 
-          totalWatchlists: watchlistStats.totalWatchlists || 0, 
-          totalWatchedProperties: watchlistStats.totalWatchedProperties || 0, 
-          topWatchedProperties: topWatchedProperties || [] 
+        watchlist: {
+          totalWatchlists: watchlistStats.totalWatchlists || 0,
+          totalWatchedProperties: watchlistStats.totalWatchedProperties || 0,
+          topWatchedProperties: topWatchedProperties || []
         },
         engagement: { avgViewsPerListing },
         // New enhanced analytics
@@ -793,7 +793,7 @@ export default function AdminDashboard() {
     try {
       // Verify password
       try {
-        await axios.post(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, 
+        await axios.post(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`,
           { password: deletePassword },
           { withCredentials: true }
         );
@@ -802,13 +802,13 @@ export default function AdminDashboard() {
         setDeleteLoading(false);
         return;
       }
-      
+
       // Proceed to delete
       const res = await axios.delete(`${API_BASE_URL}/api/listing/delete/${pendingDelete.id}`, {
         withCredentials: true,
         data: { reason: deleteReason }
       });
-      
+
       setOfferListings((prev) => prev.filter((l) => l._id !== pendingDelete.id));
       setRentListings((prev) => prev.filter((l) => l._id !== pendingDelete.id));
       setSaleListings((prev) => prev.filter((l) => l._id !== pendingDelete.id));
@@ -870,7 +870,7 @@ export default function AdminDashboard() {
                   </button>
                 </div>
               </Link>
-              <button 
+              <button
                 onClick={() => window.location.reload()}
                 className="bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:border-blue-300 hover:text-blue-600 transition-all duration-300 flex items-center gap-2 sm:gap-3 shadow-md hover:shadow-lg w-full sm:w-auto justify-center"
               >
@@ -915,7 +915,7 @@ export default function AdminDashboard() {
             </div>
             <span className="text-xs sm:text-sm text-gray-500">(Requires Immediate Attention)</span>
           </div>
-          
+
           {/* Security & Fraud Monitoring */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Active OTP Lockouts Card */}
@@ -992,14 +992,14 @@ export default function AdminDashboard() {
                 </div>
                 <h3 className="text-xl font-semibold text-gray-800">Public Visitor Tracking</h3>
               </div>
-              <Link 
-                to="/admin/session-audit-logs" 
+              <Link
+                to="/admin/session-audit-logs"
                 className="text-sm text-purple-600 hover:text-purple-700 font-medium"
               >
                 View All Visitors →
               </Link>
             </div>
-            
+
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Today's Visitors */}
               <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
@@ -1033,7 +1033,7 @@ export default function AdminDashboard() {
                   <div>
                     <p className="text-sm text-green-600 font-medium">7-Day Average</p>
                     <p className="text-3xl font-bold text-green-700 mt-1">
-                      {visitorStats.dailyStats?.length > 0 
+                      {visitorStats.dailyStats?.length > 0
                         ? Math.round(visitorStats.dailyStats.slice(-7).reduce((sum, d) => sum + d.count, 0) / Math.min(7, visitorStats.dailyStats.slice(-7).length))
                         : 0
                       }
@@ -1055,11 +1055,11 @@ export default function AdminDashboard() {
                     const maxCount = Math.max(...visitorStats.dailyStats.slice(-7).map(s => s.count));
                     const height = maxCount > 0 ? (stat.count / maxCount) * 100 : 0;
                     const date = new Date(stat.date);
-                    
+
                     return (
                       <div key={index} className="flex-1 flex flex-col items-center">
                         <div className="text-xs text-gray-600 font-medium mb-1">{stat.count}</div>
-                        <div 
+                        <div
                           className="w-full bg-gradient-to-t from-purple-500 to-purple-400 rounded-t-lg transition-all duration-300 hover:from-purple-600 hover:to-purple-500"
                           style={{ height: `${Math.max(10, height)}%` }}
                           title={`${date.toLocaleDateString()}: ${stat.count} visitors`}
@@ -1150,7 +1150,7 @@ export default function AdminDashboard() {
             </div>
             <span className="text-xs sm:text-sm text-gray-500">(Essential for Platform Health)</span>
           </div>
-          
+
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Users Card */}
             <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
@@ -1267,7 +1267,7 @@ export default function AdminDashboard() {
             </div>
             <span className="text-xs sm:text-sm text-gray-500">(Business Intelligence)</span>
           </div>
-          
+
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-green-600 mr-2" /> Price Statistics</h3>
@@ -1291,7 +1291,7 @@ export default function AdminDashboard() {
             <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-purple-600 mr-2" /> Bedrooms Distribution</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
-                {Object.entries(analytics.bedroomsDistribution).sort((a,b)=>Number(a[0])-Number(b[0])).map(([beds, count]) => (
+                {Object.entries(analytics.bedroomsDistribution).sort((a, b) => Number(a[0]) - Number(b[0])).map(([beds, count]) => (
                   <div key={beds} className="border border-gray-200 rounded-lg p-4 text-center">
                     <p className="text-sm text-gray-500">{beds} bed{Number(beds) === 1 ? '' : 's'}</p>
                     <p className="text-xl font-bold text-purple-700">{count}</p>
@@ -1330,191 +1330,191 @@ export default function AdminDashboard() {
           )}
         </div>
 
-          {/* Market Insights - Extended */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-blue-600 mr-2" /> Market Price Trends</h3>
-              {analytics.marketInsights.monthlyAvgPrices.length === 0 ? (
-                <p className="text-sm text-gray-500">Not enough data yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {analytics.marketInsights.monthlyAvgPrices.map(mp => (
-                    <div key={mp.month} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">{mp.month}</span>
-                      <span className="font-semibold text-gray-800">₹{mp.avg.toLocaleString('en-IN')}</span>
-                    </div>
-                  ))}
-                  {/* Inline spark-bar */}
-                  <div className="mt-3 flex items-end gap-1 h-20">
-                    {analytics.marketInsights.monthlyAvgPrices.map((mp, i, arr) => {
-                      const max = Math.max(...arr.map(x => x.avg || 1));
-                      const h = Math.max(2, Math.round((mp.avg / (max || 1)) * 56));
-                      return (
-                        <div key={mp.month} className="flex flex-col items-center" title={`${mp.month}: ₹${mp.avg.toLocaleString('en-IN')}`}>
-                          <div className="w-3 bg-blue-500 rounded-t" style={{ height: `${h}px` }} />
-                          <div className="mt-1 text-[10px] text-gray-500 rotate-0">{mp.month.split('-')[1]}</div>
-                        </div>
-                      );
-                    })}
-                  </div>
-                </div>
-              )}
-            </div>
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Demand by City</h3>
-              {analytics.marketInsights.demandByCity.length === 0 ? (
-                <p className="text-sm text-gray-500">Not enough data yet.</p>
-              ) : (
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                  {analytics.marketInsights.demandByCity.map((d, idx) => (
-                    <div key={idx} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
-                      <span className="text-sm text-gray-600">{d.city}</span>
-                      <span className="text-base font-bold text-indigo-700">{d.count}</span>
-                    </div>
-                  ))}
-                  {/* Pie chart of top 5 demand */}
-                  <div className="col-span-1 md:col-span-2 flex items-center justify-center mt-2">
-                    {(() => {
-                      const total = analytics.marketInsights.demandByCity.slice(0,5).reduce((s,x)=>s+x.count,0) || 1;
-                      let acc = 0;
-                      const segments = analytics.marketInsights.demandByCity.slice(0,5).map((x, i) => {
-                        const start = acc / total * 360; acc += x.count; const end = acc / total * 360;
-                        const colors = ['#6366f1','#8b5cf6','#06b6d4','#22c55e','#f59e0b'];
-                        return `${colors[i%colors.length]} ${start}deg ${end}deg`;
-                      }).join(',');
-                      return (
-                        <div className="flex flex-col items-center">
-                          <div className="w-28 h-28 rounded-full" style={{ background: `conic-gradient(${segments})` }} />
-                          <div className="mt-2 space-y-1">
-                            {analytics.marketInsights.demandByCity.slice(0,5).map((x,i)=>{
-                              const colors = ['#6366f1','#8b5cf6','#06b6d4','#22c55e','#f59e0b'];
-                              const pct = Math.round((x.count/total)*100);
-                              return (
-                                <div key={i} className="flex items-center gap-2 text-xs text-gray-700">
-                                  <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: colors[i%colors.length] }} />
-                                  <span>{x.city}</span>
-                                  <span className="text-gray-500">({pct}% - {x.count})</span>
-                                </div>
-                              );
-                            })}
-                          </div>
-                        </div>
-                      );
-                    })()}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-        {/* Analytical Insights - For Strategic Decisions */}
-        <div className="mb-12 order-1">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
-                <FaStar className="text-white text-xl" />
-              </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytical Insights</h2>
-            </div>
-            <span className="text-xs sm:text-sm text-gray-500">(Strategic Decision Support)</span>
-          </div>
-
-          {/* Performance & Sentiment Analysis */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
-              {analytics.performance.topOwnersByRating.length === 0 ? (
-                <p className="text-sm text-gray-500">Not enough data yet.</p>
-              ) : (
-                <div className="space-y-2">
-                  {analytics.performance.topOwnersByRating.map((o, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm border-b last:border-b-0 border-gray-100 py-2">
-                      <span className="text-gray-600">{o.ownerName}</span>
-                      <span className="font-semibold text-gray-800">{o.avgRating} ⭐ ({o.listings} listings)</span>
-                    </div>
-                  ))}
-                </div>
-              )}
-            </div>
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
-              <div className="grid grid-cols-3 gap-4 text-center">
-                <div>
-                  <p className="text-sm text-gray-500">Positive</p>
-                  <p className="text-2xl font-bold text-green-600">{analytics.sentiment.positive}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Neutral</p>
-                  <p className="text-2xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
-                </div>
-                <div>
-                  <p className="text-sm text-gray-500">Negative</p>
-                  <p className="text-2xl font-bold text-red-600">{analytics.sentiment.negative}</p>
-                </div>
-              </div>
-              {analytics.sentiment.topWords.length > 0 && (
-                <div className="mt-4">
-                  <h4 className="text-sm font-semibold text-gray-700 mb-2">Common Words</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {analytics.sentiment.topWords.map((w, idx) => (
-                      <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">{w.word} ({w.count})</span>
-                    ))}
-                  </div>
-                </div>
-              )}
-            </div>
-          </div>
-        </div>
-
-          {/* Conversion Funnel & Property Performance */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        {/* Market Insights - Extended */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Conversion Funnel</h3>
-            <div className="space-y-3">
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Visitors</span>
-                <span className="font-semibold text-gray-800">{analytics.conversionFunnel.visitors.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Registered Users</span>
-                <span className="font-semibold text-blue-600">{analytics.conversionFunnel.registeredUsers.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Active Users</span>
-                <span className="font-semibold text-green-600">{analytics.conversionFunnel.activeUsers.toLocaleString()}</span>
-              </div>
-              <div className="flex items-center justify-between">
-                <span className="text-sm text-gray-600">Converted Users</span>
-                <span className="font-semibold text-purple-600">{analytics.conversionFunnel.convertedUsers.toLocaleString()}</span>
-              </div>
-              <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Conversion Rate</span>
-                  <span className="text-lg font-bold text-purple-600">{analytics.conversionFunnel.conversionRate}%</span>
-                </div>
-              </div>
-            </div>
-          </div>
-          
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaEye className="text-cyan-600 mr-2" /> Top Viewed Properties</h3>
-            {analytics.propertyPerformance.topViewedProperties.length === 0 ? (
-              <p className="text-sm text-gray-500">No view data available yet.</p>
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-blue-600 mr-2" /> Market Price Trends</h3>
+            {analytics.marketInsights.monthlyAvgPrices.length === 0 ? (
+              <p className="text-sm text-gray-500">Not enough data yet.</p>
             ) : (
               <div className="space-y-2">
-                {analytics.propertyPerformance.topViewedProperties.map((property, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-sm">
-                    <span className="text-gray-600 truncate flex-1 mr-2">{property.name}</span>
-                    <span className="font-semibold text-cyan-600">{property.viewCount || 0} views</span>
+                {analytics.marketInsights.monthlyAvgPrices.map(mp => (
+                  <div key={mp.month} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{mp.month}</span>
+                    <span className="font-semibold text-gray-800">₹{mp.avg.toLocaleString('en-IN')}</span>
+                  </div>
+                ))}
+                {/* Inline spark-bar */}
+                <div className="mt-3 flex items-end gap-1 h-20">
+                  {analytics.marketInsights.monthlyAvgPrices.map((mp, i, arr) => {
+                    const max = Math.max(...arr.map(x => x.avg || 1));
+                    const h = Math.max(2, Math.round((mp.avg / (max || 1)) * 56));
+                    return (
+                      <div key={mp.month} className="flex flex-col items-center" title={`${mp.month}: ₹${mp.avg.toLocaleString('en-IN')}`}>
+                        <div className="w-3 bg-blue-500 rounded-t" style={{ height: `${h}px` }} />
+                        <div className="mt-1 text-[10px] text-gray-500 rotate-0">{mp.month.split('-')[1]}</div>
+                      </div>
+                    );
+                  })}
+                </div>
+              </div>
+            )}
+          </div>
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Demand by City</h3>
+            {analytics.marketInsights.demandByCity.length === 0 ? (
+              <p className="text-sm text-gray-500">Not enough data yet.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+                {analytics.marketInsights.demandByCity.map((d, idx) => (
+                  <div key={idx} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
+                    <span className="text-sm text-gray-600">{d.city}</span>
+                    <span className="text-base font-bold text-indigo-700">{d.count}</span>
+                  </div>
+                ))}
+                {/* Pie chart of top 5 demand */}
+                <div className="col-span-1 md:col-span-2 flex items-center justify-center mt-2">
+                  {(() => {
+                    const total = analytics.marketInsights.demandByCity.slice(0, 5).reduce((s, x) => s + x.count, 0) || 1;
+                    let acc = 0;
+                    const segments = analytics.marketInsights.demandByCity.slice(0, 5).map((x, i) => {
+                      const start = acc / total * 360; acc += x.count; const end = acc / total * 360;
+                      const colors = ['#6366f1', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b'];
+                      return `${colors[i % colors.length]} ${start}deg ${end}deg`;
+                    }).join(',');
+                    return (
+                      <div className="flex flex-col items-center">
+                        <div className="w-28 h-28 rounded-full" style={{ background: `conic-gradient(${segments})` }} />
+                        <div className="mt-2 space-y-1">
+                          {analytics.marketInsights.demandByCity.slice(0, 5).map((x, i) => {
+                            const colors = ['#6366f1', '#8b5cf6', '#06b6d4', '#22c55e', '#f59e0b'];
+                            const pct = Math.round((x.count / total) * 100);
+                            return (
+                              <div key={i} className="flex items-center gap-2 text-xs text-gray-700">
+                                <span className="inline-block w-3 h-3 rounded-sm" style={{ backgroundColor: colors[i % colors.length] }} />
+                                <span>{x.city}</span>
+                                <span className="text-gray-500">({pct}% - {x.count})</span>
+                              </div>
+                            );
+                          })}
+                        </div>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Analytical Insights - For Strategic Decisions */}
+      <div className="mb-12 order-1">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
+              <FaStar className="text-white text-xl" />
+            </div>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytical Insights</h2>
+          </div>
+          <span className="text-xs sm:text-sm text-gray-500">(Strategic Decision Support)</span>
+        </div>
+
+        {/* Performance & Sentiment Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
+            {analytics.performance.topOwnersByRating.length === 0 ? (
+              <p className="text-sm text-gray-500">Not enough data yet.</p>
+            ) : (
+              <div className="space-y-2">
+                {analytics.performance.topOwnersByRating.map((o, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-sm border-b last:border-b-0 border-gray-100 py-2">
+                    <span className="text-gray-600">{o.ownerName}</span>
+                    <span className="font-semibold text-gray-800">{o.avgRating} ⭐ ({o.listings} listings)</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
-          
-          {/* Geographic Analytics & Property Types */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border border-gray-200">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
+            <div className="grid grid-cols-3 gap-4 text-center">
+              <div>
+                <p className="text-sm text-gray-500">Positive</p>
+                <p className="text-2xl font-bold text-green-600">{analytics.sentiment.positive}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Neutral</p>
+                <p className="text-2xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
+              </div>
+              <div>
+                <p className="text-sm text-gray-500">Negative</p>
+                <p className="text-2xl font-bold text-red-600">{analytics.sentiment.negative}</p>
+              </div>
+            </div>
+            {analytics.sentiment.topWords.length > 0 && (
+              <div className="mt-4">
+                <h4 className="text-sm font-semibold text-gray-700 mb-2">Common Words</h4>
+                <div className="flex flex-wrap gap-2">
+                  {analytics.sentiment.topWords.map((w, idx) => (
+                    <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">{w.word} ({w.count})</span>
+                  ))}
+                </div>
+              </div>
+            )}
+          </div>
+        </div>
+      </div>
+
+      {/* Conversion Funnel & Property Performance */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+        <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Conversion Funnel</h3>
+          <div className="space-y-3">
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Visitors</span>
+              <span className="font-semibold text-gray-800">{analytics.conversionFunnel.visitors.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Registered Users</span>
+              <span className="font-semibold text-blue-600">{analytics.conversionFunnel.registeredUsers.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Active Users</span>
+              <span className="font-semibold text-green-600">{analytics.conversionFunnel.activeUsers.toLocaleString()}</span>
+            </div>
+            <div className="flex items-center justify-between">
+              <span className="text-sm text-gray-600">Converted Users</span>
+              <span className="font-semibold text-purple-600">{analytics.conversionFunnel.convertedUsers.toLocaleString()}</span>
+            </div>
+            <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Conversion Rate</span>
+                <span className="text-lg font-bold text-purple-600">{analytics.conversionFunnel.conversionRate}%</span>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaEye className="text-cyan-600 mr-2" /> Top Viewed Properties</h3>
+          {analytics.propertyPerformance.topViewedProperties.length === 0 ? (
+            <p className="text-sm text-gray-500">No view data available yet.</p>
+          ) : (
+            <div className="space-y-2">
+              {analytics.propertyPerformance.topViewedProperties.map((property, idx) => (
+                <div key={idx} className="flex items-center justify-between text-sm">
+                  <span className="text-gray-600 truncate flex-1 mr-2">{property.name}</span>
+                  <span className="font-semibold text-cyan-600">{property.viewCount || 0} views</span>
+                </div>
+              ))}
+            </div>
+          )}
+        </div>
+
+        {/* Geographic Analytics & Property Types */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-emerald-600 mr-2" /> State Distribution</h3>
             {Object.keys(analytics.geographic.stateDistribution).length === 0 ? (
@@ -1529,8 +1529,8 @@ export default function AdminDashboard() {
                       <span className="text-gray-600">{state}</span>
                       <div className="flex items-center gap-2">
                         <div className="w-16 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-emerald-500 h-2 rounded-full" 
+                          <div
+                            className="bg-emerald-500 h-2 rounded-full"
                             style={{ width: `${Math.min(100, (count / Math.max(...Object.values(analytics.geographic.stateDistribution))) * 100)}%` }}
                           />
                         </div>
@@ -1541,7 +1541,7 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-          
+
           <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaHome className="text-orange-600 mr-2" /> Property Types</h3>
             <div className="grid grid-cols-2 gap-3">
@@ -1553,8 +1553,8 @@ export default function AdminDashboard() {
                     <p className="text-sm text-gray-500 capitalize">{type}</p>
                     <p className="text-xl font-bold text-orange-600">{count}</p>
                     <div className="h-2 bg-gray-100 rounded mt-2">
-                      <div 
-                        className="h-2 bg-orange-500 rounded" 
+                      <div
+                        className="h-2 bg-orange-500 rounded"
                         style={{ width: `${Math.min(100, (count / analytics.totalListings) * 100)}%` }}
                       />
                     </div>
@@ -1564,140 +1564,140 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-          {/* Advanced Sentiment & Regional Price Analysis */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-pink-600 mr-2" /> Emotion Analysis</h3>
-              <div className="grid grid-cols-2 gap-3">
-                {Object.entries(analytics.advancedSentiment.emotionBreakdown)
-                  .filter(([emotion, count]) => count > 0)
-                  .sort((a, b) => b[1] - a[1])
-                  .map(([emotion, count]) => (
-                    <div key={emotion} className="text-center">
-                      <p className="text-sm text-gray-500 capitalize">{emotion}</p>
-                      <p className="text-lg font-bold text-pink-600">{count}</p>
-                    </div>
-                  ))}
-              </div>
-              <div className="mt-4 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg">
-                <div className="flex items-center justify-between">
-                  <span className="text-sm font-medium text-gray-700">Review Quality Score</span>
-                  <span className="text-lg font-bold text-pink-600">{analytics.advancedSentiment.reviewQuality}%</span>
-                </div>
+        {/* Advanced Sentiment & Regional Price Analysis */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-pink-600 mr-2" /> Emotion Analysis</h3>
+            <div className="grid grid-cols-2 gap-3">
+              {Object.entries(analytics.advancedSentiment.emotionBreakdown)
+                .filter(([emotion, count]) => count > 0)
+                .sort((a, b) => b[1] - a[1])
+                .map(([emotion, count]) => (
+                  <div key={emotion} className="text-center">
+                    <p className="text-sm text-gray-500 capitalize">{emotion}</p>
+                    <p className="text-lg font-bold text-pink-600">{count}</p>
+                  </div>
+                ))}
+            </div>
+            <div className="mt-4 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg">
+              <div className="flex items-center justify-between">
+                <span className="text-sm font-medium text-gray-700">Review Quality Score</span>
+                <span className="text-lg font-bold text-pink-600">{analytics.advancedSentiment.reviewQuality}%</span>
               </div>
             </div>
-            
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaRupeeSign className="text-teal-600 mr-2" /> Regional Price Analysis</h3>
-              {analytics.geographic.regionalPriceVariation.length === 0 ? (
-                <p className="text-sm text-gray-500">No regional price data available.</p>
-              ) : (
-                <div className="space-y-2">
-                  {analytics.geographic.regionalPriceVariation.slice(0, 5).map((region, idx) => (
-                    <div key={idx} className="flex items-center justify-between text-sm">
-                      <span className="text-gray-600">{region.state}</span>
-                      <div className="flex items-center gap-2">
-                        <span className="text-xs text-gray-500">({region.count} listings)</span>
-                        <span className="font-semibold text-teal-600">₹{region.avgPrice.toLocaleString('en-IN')}</span>
-                      </div>
+          </div>
+
+          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaRupeeSign className="text-teal-600 mr-2" /> Regional Price Analysis</h3>
+            {analytics.geographic.regionalPriceVariation.length === 0 ? (
+              <p className="text-sm text-gray-500">No regional price data available.</p>
+            ) : (
+              <div className="space-y-2">
+                {analytics.geographic.regionalPriceVariation.slice(0, 5).map((region, idx) => (
+                  <div key={idx} className="flex items-center justify-between text-sm">
+                    <span className="text-gray-600">{region.state}</span>
+                    <div className="flex items-center gap-2">
+                      <span className="text-xs text-gray-500">({region.count} listings)</span>
+                      <span className="font-semibold text-teal-600">₹{region.avgPrice.toLocaleString('en-IN')}</span>
                     </div>
-                  ))}
-                </div>
-              )}
-            </div>
+                  </div>
+                ))}
+              </div>
+            )}
           </div>
         </div>
+      </div>
 
-        {/* Quick Actions - High Priority Admin Tasks */}
-        <div className="mb-8 order-2">
-          <div className="flex items-center justify-between mb-6">
-            <div className="flex items-center gap-3">
-              <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
-                <FaChartLine className="text-white text-xl" />
-              </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Quick Actions</h2>
+      {/* Quick Actions - High Priority Admin Tasks */}
+      <div className="mb-8 order-2">
+        <div className="flex items-center justify-between mb-6">
+          <div className="flex items-center gap-3">
+            <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
+              <FaChartLine className="text-white text-xl" />
             </div>
-            <span className="text-sm text-gray-500 hidden sm:block">(Direct Access to Management Pages)</span>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Quick Actions</h2>
           </div>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
-            <button
-              className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 w-full text-left border border-gray-100 hover:border-blue-200"
-              onClick={() => navigate('/admin/management')}
-            >
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-4 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
-                  <FaUsers className="text-2xl text-blue-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Manage Users</h3>
-                  <p className="text-sm text-gray-600">View and manage user accounts</p>
+          <span className="text-sm text-gray-500 hidden sm:block">(Direct Access to Management Pages)</span>
+        </div>
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
+          <button
+            className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 w-full text-left border border-gray-100 hover:border-blue-200"
+            onClick={() => navigate('/admin/management')}
+          >
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-4 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
+                <FaUsers className="text-2xl text-blue-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">Manage Users</h3>
+                <p className="text-sm text-gray-600">View and manage user accounts</p>
+              </div>
+            </div>
+          </button>
+          <Link to="/admin/reviews" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-yellow-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 p-4 rounded-xl group-hover:from-yellow-200 group-hover:to-yellow-300 transition-all duration-300">
+                <FaStar className="text-2xl text-yellow-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">Review Management</h3>
+                <p className="text-sm text-gray-600 mb-2">Approve and manage reviews</p>
+                {analytics.pendingReviews > 0 && (
+                  <span className="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
+                    {analytics.pendingReviews} pending
+                  </span>
+                )}
+              </div>
+            </div>
+          </Link>
+          <Link to="/admin/explore" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-green-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-xl group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300">
+                <FaHome className="text-2xl text-green-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">All Properties</h3>
+                <p className="text-sm text-gray-600">Browse and manage listings</p>
+              </div>
+            </div>
+          </Link>
+          <Link to="/admin/payments" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-emerald-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="bg-gradient-to-r from-emerald-100 to-emerald-200 p-4 rounded-xl group-hover:from-emerald-200 group-hover:to-emerald-300 transition-all duration-300">
+                <FaRupeeSign className="text-2xl text-emerald-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">Payment Dashboard</h3>
+                <p className="text-sm text-gray-600">Manage payments and refunds</p>
+              </div>
+            </div>
+          </Link>
+          <Link to="/admin/fraudmanagement" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-red-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="bg-gradient-to-r from-red-100 to-red-200 p-4 rounded-xl group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300">
+                <FaExclamationTriangle className="text-2xl text-red-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">Fraud Watch</h3>
+                <p className="text-sm text-gray-600 mb-2">Monitor and manage fraud detections</p>
+                <div className="text-xs text-gray-500">
+                  <span className="font-semibold text-red-600">{fraudStats.suspiciousListings}</span> suspicious •
+                  <span className="font-semibold text-red-600 ml-1">{fraudStats.suspectedFakeReviews}</span> fake reviews
                 </div>
               </div>
-            </button>
-            <Link to="/admin/reviews" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-yellow-200">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 p-4 rounded-xl group-hover:from-yellow-200 group-hover:to-yellow-300 transition-all duration-300">
-                  <FaStar className="text-2xl text-yellow-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Review Management</h3>
-                  <p className="text-sm text-gray-600 mb-2">Approve and manage reviews</p>
-                  {analytics.pendingReviews > 0 && (
-                    <span className="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
-                      {analytics.pendingReviews} pending
-                    </span>
-                  )}
-                </div>
+            </div>
+          </Link>
+          <Link to="/admin/security-moderation" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-indigo-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="bg-gradient-to-r from-indigo-100 to-indigo-200 p-4 rounded-xl group-hover:from-indigo-200 group-hover:to-indigo-300 transition-all duration-300">
+                <FaShieldAlt className="text-2xl text-indigo-600" />
               </div>
-            </Link>
-            <Link to="/admin/explore" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-green-200">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-xl group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300">
-                  <FaHome className="text-2xl text-green-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">All Properties</h3>
-                  <p className="text-sm text-gray-600">Browse and manage listings</p>
-                </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">Security Moderation</h3>
+                <p className="text-sm text-gray-600 mb-2">OTP/password lockouts and unlocks</p>
               </div>
-            </Link>
-            <Link to="/admin/payments" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-emerald-200">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="bg-gradient-to-r from-emerald-100 to-emerald-200 p-4 rounded-xl group-hover:from-emerald-200 group-hover:to-emerald-300 transition-all duration-300">
-                  <FaRupeeSign className="text-2xl text-emerald-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Payment Dashboard</h3>
-                  <p className="text-sm text-gray-600">Manage payments and refunds</p>
-                </div>
-              </div>
-            </Link>
-            <Link to="/admin/fraudmanagement" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-red-200">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="bg-gradient-to-r from-red-100 to-red-200 p-4 rounded-xl group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300">
-                  <FaExclamationTriangle className="text-2xl text-red-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Fraud Watch</h3>
-                  <p className="text-sm text-gray-600 mb-2">Monitor and manage fraud detections</p>
-                  <div className="text-xs text-gray-500">
-                    <span className="font-semibold text-red-600">{fraudStats.suspiciousListings}</span> suspicious • 
-                    <span className="font-semibold text-red-600 ml-1">{fraudStats.suspectedFakeReviews}</span> fake reviews
-                  </div>
-                </div>
-              </div>
-            </Link>
-            <Link to="/admin/security-moderation" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-indigo-200">
-              <div className="flex flex-col items-center text-center space-y-4">
-                <div className="bg-gradient-to-r from-indigo-100 to-indigo-200 p-4 rounded-xl group-hover:from-indigo-200 group-hover:to-indigo-300 transition-all duration-300">
-                  <FaShieldAlt className="text-2xl text-indigo-600" />
-                </div>
-                <div>
-                  <h3 className="font-semibold text-gray-800 mb-1">Security Moderation</h3>
-                  <p className="text-sm text-gray-600 mb-2">OTP/password lockouts and unlocks</p>
-                </div>
-              </div>
-            </Link>
+            </div>
+          </Link>
         </div>
 
         {/* Detailed Analytics - For Deep Analysis */}
@@ -1740,145 +1740,145 @@ export default function AdminDashboard() {
 
           {/* Enhanced Watchlist Analytics */}
           <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
-            <FaEye className="text-indigo-500 mr-2" />
-            Watchlist Analytics
-          </h3>
-          
-          {/* Watchlist Overview Cards */}
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-            <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg border border-indigo-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-indigo-600 font-medium">Total Watchlists</p>
-                  <p className="text-2xl font-bold text-indigo-700">{analytics.watchlist.totalWatchlists}</p>
-                </div>
-                <div className="bg-indigo-100 p-3 rounded-full">
-                  <FaEye className="text-xl text-indigo-600" />
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-purple-600 font-medium">Watched Properties</p>
-                  <p className="text-2xl font-bold text-purple-700">{analytics.watchlist.totalWatchedProperties}</p>
-                </div>
-                <div className="bg-purple-100 p-3 rounded-full">
-                  <FaHeart className="text-xl text-purple-600" />
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm text-green-600 font-medium">Avg. Properties/Watchlist</p>
-                  <p className="text-2xl font-bold text-green-700">
-                    {analytics.watchlist.totalWatchlists > 0 
-                      ? Math.round(analytics.watchlist.totalWatchedProperties / analytics.watchlist.totalWatchlists * 10) / 10
-                      : 0
-                    }
-                  </p>
-                </div>
-                <div className="bg-green-100 p-3 rounded-full">
-                  <FaChartLine className="text-xl text-green-600" />
-                </div>
-              </div>
-            </div>
-          </div>
+            <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center">
+              <FaEye className="text-indigo-500 mr-2" />
+              Watchlist Analytics
+            </h3>
 
-          {/* Top Watched Properties */}
-          {analytics.watchlist.topWatchedProperties.length > 0 && (
-            <div>
-              <h4 className="text-lg font-semibold text-gray-700 mb-4">Most Watched Properties</h4>
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-                {analytics.watchlist.topWatchedProperties.map((property, index) => (
-                  <div key={property._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
-                    <div className="flex items-start justify-between mb-3">
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
-                            #{index + 1}
-                          </span>
-                          <h5 className="font-semibold text-gray-800 truncate">{property.name}</h5>
-                        </div>
-                        <p className="text-sm text-gray-600 mb-1">{property.city}, {property.state}</p>
-                        <p className="text-xs text-gray-500">
-                          {property.type} • {property.bedrooms} bed{property.bedrooms !== 1 ? 's' : ''}
-                        </p>
-                      </div>
-                      <div className="flex flex-col items-end">
-                        <span className="text-lg font-bold text-indigo-600">
-                          {property.watchCount}
-                        </span>
-                        <span className="text-xs text-gray-500">watchers</span>
-                      </div>
-                    </div>
-                    
-                    {/* Watch count visualization */}
-                    <div className="mt-3">
-                      <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
-                        <span>Watch popularity</span>
-                        <span>{property.watchCount} watchers</span>
-                      </div>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
-                          style={{ 
-                            width: `${Math.min(100, (property.watchCount / Math.max(...analytics.watchlist.topWatchedProperties.map(p => p.watchCount))) * 100)}%` 
-                          }}
-                        ></div>
-                      </div>
-                    </div>
+            {/* Watchlist Overview Cards */}
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
+              <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg border border-indigo-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-indigo-600 font-medium">Total Watchlists</p>
+                    <p className="text-2xl font-bold text-indigo-700">{analytics.watchlist.totalWatchlists}</p>
                   </div>
-                ))}
+                  <div className="bg-indigo-100 p-3 rounded-full">
+                    <FaEye className="text-xl text-indigo-600" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-purple-600 font-medium">Watched Properties</p>
+                    <p className="text-2xl font-bold text-purple-700">{analytics.watchlist.totalWatchedProperties}</p>
+                  </div>
+                  <div className="bg-purple-100 p-3 rounded-full">
+                    <FaHeart className="text-xl text-purple-600" />
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-sm text-green-600 font-medium">Avg. Properties/Watchlist</p>
+                    <p className="text-2xl font-bold text-green-700">
+                      {analytics.watchlist.totalWatchlists > 0
+                        ? Math.round(analytics.watchlist.totalWatchedProperties / analytics.watchlist.totalWatchlists * 10) / 10
+                        : 0
+                      }
+                    </p>
+                  </div>
+                  <div className="bg-green-100 p-3 rounded-full">
+                    <FaChartLine className="text-xl text-green-600" />
+                  </div>
+                </div>
               </div>
             </div>
-          )}
-          
-          {/* Watchlist Insights */}
-          <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-            <h4 className="text-lg font-semibold text-gray-700 mb-3">Insights</h4>
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
-                <span className="text-gray-600">
-                  <span className="font-semibold">{analytics.watchlist.totalWatchlists}</span> users have created watchlists
-                </span>
+
+            {/* Top Watched Properties */}
+            {analytics.watchlist.topWatchedProperties.length > 0 && (
+              <div>
+                <h4 className="text-lg font-semibold text-gray-700 mb-4">Most Watched Properties</h4>
+                <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {analytics.watchlist.topWatchedProperties.map((property, index) => (
+                    <div key={property._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                      <div className="flex items-start justify-between mb-3">
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
+                              #{index + 1}
+                            </span>
+                            <h5 className="font-semibold text-gray-800 truncate">{property.name}</h5>
+                          </div>
+                          <p className="text-sm text-gray-600 mb-1">{property.city}, {property.state}</p>
+                          <p className="text-xs text-gray-500">
+                            {property.type} • {property.bedrooms} bed{property.bedrooms !== 1 ? 's' : ''}
+                          </p>
+                        </div>
+                        <div className="flex flex-col items-end">
+                          <span className="text-lg font-bold text-indigo-600">
+                            {property.watchCount}
+                          </span>
+                          <span className="text-xs text-gray-500">watchers</span>
+                        </div>
+                      </div>
+
+                      {/* Watch count visualization */}
+                      <div className="mt-3">
+                        <div className="flex items-center justify-between text-xs text-gray-500 mb-1">
+                          <span>Watch popularity</span>
+                          <span>{property.watchCount} watchers</span>
+                        </div>
+                        <div className="w-full bg-gray-200 rounded-full h-2">
+                          <div
+                            className="bg-gradient-to-r from-indigo-500 to-purple-500 h-2 rounded-full transition-all duration-300"
+                            style={{
+                              width: `${Math.min(100, (property.watchCount / Math.max(...analytics.watchlist.topWatchedProperties.map(p => p.watchCount))) * 100)}%`
+                            }}
+                          ></div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
-                <span className="text-gray-600">
-                  <span className="font-semibold">{analytics.watchlist.totalWatchedProperties}</span> unique properties are being watched
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-green-500 rounded-full"></div>
-                <span className="text-gray-600">
-                  Average of <span className="font-semibold">
-                    {analytics.watchlist.totalWatchlists > 0 
-                      ? Math.round(analytics.watchlist.totalWatchedProperties / analytics.watchlist.totalWatchlists * 10) / 10
-                      : 0
-                    }
-                  </span> properties per watchlist
-                </span>
-              </div>
-              <div className="flex items-center gap-2">
-                <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
-                <span className="text-gray-600">
-                  Most watched property has <span className="font-semibold">
-                    {analytics.watchlist.topWatchedProperties.length > 0 
-                      ? Math.max(...analytics.watchlist.topWatchedProperties.map(p => p.watchCount))
-                      : 0
-                    }
-                  </span> watchers
-                </span>
+            )}
+
+            {/* Watchlist Insights */}
+            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
+              <h4 className="text-lg font-semibold text-gray-700 mb-3">Insights</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
+                  <span className="text-gray-600">
+                    <span className="font-semibold">{analytics.watchlist.totalWatchlists}</span> users have created watchlists
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                  <span className="text-gray-600">
+                    <span className="font-semibold">{analytics.watchlist.totalWatchedProperties}</span> unique properties are being watched
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                  <span className="text-gray-600">
+                    Average of <span className="font-semibold">
+                      {analytics.watchlist.totalWatchlists > 0
+                        ? Math.round(analytics.watchlist.totalWatchedProperties / analytics.watchlist.totalWatchlists * 10) / 10
+                        : 0
+                      }
+                    </span> properties per watchlist
+                  </span>
+                </div>
+                <div className="flex items-center gap-2">
+                  <div className="w-2 h-2 bg-orange-500 rounded-full"></div>
+                  <span className="text-gray-600">
+                    Most watched property has <span className="font-semibold">
+                      {analytics.watchlist.topWatchedProperties.length > 0
+                        ? Math.max(...analytics.watchlist.topWatchedProperties.map(p => p.watchCount))
+                        : 0
+                      }
+                    </span> watchers
+                  </span>
+                </div>
               </div>
             </div>
           </div>
-        </div>
 
           {/* Recent Listings */}
           {analytics.recentListings.length > 0 && (
@@ -1916,61 +1916,61 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-      {/* Listings Section */}
-      <div className="max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8 py-8 overflow-x-hidden">
-        {/* Offer Listings */}
-        {offerListings.length > 0 && (
-          <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left">🔥 Exclusive Offers</h2>
-              <Link to="/admin/explore?offer=true" className="text-blue-600 hover:underline">View All Offers</Link>
+        {/* Listings Section */}
+        <div className="max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8 py-8 overflow-x-hidden">
+          {/* Offer Listings */}
+          {offerListings.length > 0 && (
+            <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left">🔥 Exclusive Offers</h2>
+                <Link to="/admin/explore?offer=true" className="text-blue-600 hover:underline">View All Offers</Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                {offerListings.map((listing) => (
+                  <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
+                    <ListingItem listing={listing} onDelete={() => handleDeleteListing(listing._id, listing.userRef)} />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {offerListings.map((listing) => (
-                <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
-                  <ListingItem listing={listing} onDelete={() => handleDeleteListing(listing._id, listing.userRef)} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Rent Listings */}
-        {rentListings.length > 0 && (
-          <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left delay-200">🏡 Homes for Rent</h2>
-              <Link to="/admin/explore?type=rent" className="text-blue-600 hover:underline">View All Rentals</Link>
+          {/* Rent Listings */}
+          {rentListings.length > 0 && (
+            <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left delay-200">🏡 Homes for Rent</h2>
+                <Link to="/admin/explore?type=rent" className="text-blue-600 hover:underline">View All Rentals</Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                {rentListings.map((listing) => (
+                  <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
+                    <ListingItem listing={listing} onDelete={() => handleDeleteListing(listing._id, listing.userRef)} />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {rentListings.map((listing) => (
-                <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
-                  <ListingItem listing={listing} onDelete={() => handleDeleteListing(listing._id, listing.userRef)} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
+          )}
 
-        {/* Sale Listings */}
-        {saleListings.length > 0 && (
-          <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
-            <div className="flex justify-between items-center mb-4">
-              <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left delay-400">🏠 Homes for Sale</h2>
-              <Link to="/admin/explore?type=sale" className="text-blue-600 hover:underline">View All Sales</Link>
+          {/* Sale Listings */}
+          {saleListings.length > 0 && (
+            <div className="mb-8 bg-white rounded-xl shadow-lg p-6">
+              <div className="flex justify-between items-center mb-4">
+                <h2 className="text-2xl font-bold text-blue-700 animate-slide-in-left delay-400">🏠 Homes for Sale</h2>
+                <Link to="/admin/explore?type=sale" className="text-blue-600 hover:underline">View All Sales</Link>
+              </div>
+              <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
+                {saleListings.map((listing) => (
+                  <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
+                    <ListingItem listing={listing} onDelete={() => handleDeleteListing(listing._id, listing.userRef)} />
+                  </div>
+                ))}
+              </div>
             </div>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
-              {saleListings.map((listing) => (
-                <div className="transition-transform duration-300 hover:scale-105 hover:shadow-xl" key={listing._id}>
-                  <ListingItem listing={listing} onDelete={() => handleDeleteListing(listing._id, listing.userRef)} />
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-      </div>
-      <GeminiAIWrapper />
-      <ContactSupportWrapper />
+          )}
+        </div>
+        <GeminiAIWrapper />
+        <ContactSupportWrapper />
       </div>
 
       {/* Reason Modal */}
