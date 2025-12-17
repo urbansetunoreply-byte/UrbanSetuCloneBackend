@@ -7,7 +7,7 @@ import AuditLog from '../models/auditLog.model.js';
 import AccountRevocation from '../models/accountRevocation.model.js';
 import bcryptjs from "bcryptjs"
 import crypto from 'crypto';
-import { sendAccountDeletionEmail, sendDataExportEmail } from '../utils/emailService.js';
+import { sendAccountDeletionEmail, sendDataExportEmail, sendProfileUpdateSuccessEmail } from '../utils/emailService.js';
 import Review from "../models/review.model.js";
 import ReviewReply from "../models/reviewReply.model.js";
 import { validateEmail } from "../utils/emailValidation.js";
@@ -143,6 +143,15 @@ export const updateUser = async (req, res, next) => {
                 gender: updatedUser.gender
             });
         }
+
+        // Send profile update confirmation email
+        try {
+            await sendProfileUpdateSuccessEmail(updatedUser.email, updatedUser.username, updatedUser.role);
+        } catch (emailErr) {
+            console.error('Failed to send profile update email:', emailErr);
+            // Non-blocking error
+        }
+
         res.status(200).json({ status: "success", updatedUser: userObj });
     }
     catch (error) {

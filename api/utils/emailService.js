@@ -13176,3 +13176,97 @@ export const sendDisputeAlertEmail = async (adminEmails, disputeDetails) => {
 
   return createSuccessResponse(null, 'dispute_alert_email');
 };
+// Profile Update Success Email
+export const sendProfileUpdateSuccessEmail = async (email, username, role) => {
+  const profileLink = role === 'admin' ?
+    `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/admin/profile` :
+    `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/profile`;
+
+  const signinLink = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/sign-in`;
+
+  const emailData = {
+    to: email,
+    subject: 'Profile Updated Successfully - UrbanSetu',
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Profile Updated Successfully</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f9f9f9;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Profile Updated!</h1>
+            <p style="color: #bfdbfe; margin: 10px 0 0; font-size: 16px;">Your account information has been updated</p>
+          </div>
+          
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <div style="width: 80px; height: 80px; background: linear-gradient(135deg, #3b82f6, #2563eb); border-radius: 50%; display: inline-flex; align-items: center; justify-content: center; margin-bottom: 20px; box-shadow: 0 8px 16px rgba(37, 99, 235, 0.3); position: relative;">
+                <span style="color: #ffffff; font-size: 36px; font-weight: bold; line-height: 1; text-shadow: 0 2px 4px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; width: 100%; height: 100%;">✓</span>
+              </div>
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Changes Saved Successfully</h2>
+              <p style="color: #4b5563; margin: 0; font-size: 16px; line-height: 1.6;">
+                Hi ${username}, your profile information has been successfully updated on ${new Date().toLocaleDateString('en-IN', {
+      weekday: 'long',
+      year: 'numeric',
+      month: 'long',
+      day: 'numeric',
+      hour: '2-digit',
+      minute: '2-digit',
+      timeZoneName: 'short'
+    })}.
+              </p>
+            </div>
+            
+            <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
+              <div style="display: flex; align-items: center; margin-bottom: 10px;">
+                <span style="color: #2563eb; font-size: 20px; margin-right: 10px;">🛡️</span>
+                <h4 style="color: #1e40af; margin: 0; font-size: 16px; font-weight: 600;">Security Check</h4>
+              </div>
+              <p style="color: #1e40af; margin: 0; font-size: 14px; line-height: 1.5;">
+                If you did not make these changes, please secure your account immediately by resetting your password.
+              </p>
+            </div>
+            
+            <div style="text-align: center; display: flex; flex-direction: column; gap: 15px; align-items: center;">
+              <a href="${signinLink}" 
+                 style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: all 0.3s ease; width: 200px;">
+                Sign In
+              </a>
+              <a href="${profileLink}" 
+                 style="display: inline-block; background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); color: #ffffff; text-decoration: none; padding: 15px 30px; border-radius: 8px; font-weight: 600; font-size: 16px; transition: all 0.3s ease; width: 200px;">
+                View Profile
+              </a>
+            </div>
+          </div>
+          
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #6b7280; margin: 0 0 15px; font-size: 14px;">
+              This email was sent to ${email} regarding recent changes to your UrbanSetu profile.
+            </p>
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+
+  try {
+    await sendEmailWithRetry(emailData);
+    console.log(`✅ Profile update success email sent to: ${email}`);
+  } catch (error) {
+    console.error(`❌ Failed to send profile update success email to ${email}:`, error);
+    // We don't throw here to avoid failing the main request if email fails, 
+    // unless the caller handles it.
+  }
+};
