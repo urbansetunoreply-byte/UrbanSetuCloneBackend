@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { FaArchive, FaBan, FaCalendar, FaCalendarAlt, FaCheck, FaCheckDouble, FaCheckSquare, FaCircle, FaCog, FaCommentDots, FaCopy, FaCreditCard, FaDownload, FaEllipsisV, FaEnvelope, FaExclamationTriangle, FaFileContract, FaFlag, FaHistory, FaInfoCircle, FaLightbulb, FaPaperPlane, FaPen, FaPhone, FaRegStar, FaSearch, FaSpinner, FaStar, FaSync, FaThumbtack, FaTimes, FaTrash, FaUndo, FaUserShield, FaVideo, FaWallet } from 'react-icons/fa';
+import { FaArchive, FaBan, FaCalendar, FaCalendarAlt, FaCheck, FaCheckDouble, FaCheckSquare, FaCircle, FaCog, FaCommentDots, FaCopy, FaCreditCard, FaDownload, FaEllipsisV, FaEnvelope, FaExclamationTriangle, FaFileContract, FaFlag, FaHandshake, FaHistory, FaInfoCircle, FaLightbulb, FaMoneyBillWave, FaPaperPlane, FaPen, FaPhone, FaRegStar, FaSearch, FaSpinner, FaStar, FaSync, FaThumbtack, FaTimes, FaTrash, FaUndo, FaUserShield, FaVideo, FaWallet } from 'react-icons/fa';
 import { EmojiButton } from '../components/EmojiPicker';
 import CustomEmojiPicker from '../components/EmojiPicker';
 import { useSoundEffects, SoundControl } from '../components/SoundEffects';
@@ -736,6 +736,66 @@ export default function MyAppointments() {
     setActionLoading("");
   };
 
+  const handleTokenPaid = async (id) => {
+    setActionLoading(id + 'token_paid');
+    try {
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/token-paid`,
+        {},
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+      setAppointments((prev) =>
+        prev.map((appt) => (appt._id === id ? { ...appt, saleStatus: 'token_paid' } : appt))
+      );
+      toast.success("Property locked! Token payment marked as received.", {
+        autoClose: 5000,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false
+      });
+    } catch (err) {
+      if (err.response?.status === 401) {
+        toast.error("Session expired or unauthorized. Please sign in again.");
+        navigate("/sign-in");
+        return;
+      }
+      toast.error(err.response?.data?.message || "Failed to mark token as paid.");
+    }
+    setActionLoading("");
+  };
+
+  const handleSaleComplete = async (id) => {
+    setActionLoading(id + 'sold');
+    try {
+      const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/complete`,
+        {},
+        {
+          withCredentials: true,
+          headers: { "Content-Type": "application/json" }
+        }
+      );
+      setAppointments((prev) =>
+        prev.map((appt) => (appt._id === id ? { ...appt, saleStatus: 'sold', status: 'completed' } : appt))
+      );
+      toast.success("Congratulations! Property marked as sold.", {
+        autoClose: 5000,
+        closeOnClick: true,
+        pauseOnHover: false,
+        draggable: false
+      });
+    } catch (err) {
+      if (err.response?.status === 401) {
+        toast.error("Session expired or unauthorized. Please sign in again.");
+        navigate("/sign-in");
+        return;
+      }
+      toast.error(err.response?.data?.message || "Failed to complete sale.");
+    }
+    setActionLoading("");
+  };
+
   const handleAdminDelete = async (id) => {
     setAppointmentToHandle(id);
     setDeleteReason('');
@@ -1239,6 +1299,8 @@ export default function MyAppointments() {
                       appt={appt}
                       currentUser={currentUser}
                       handleStatusUpdate={handleStatusUpdate}
+                      handleTokenPaid={handleTokenPaid}
+                      handleSaleComplete={handleSaleComplete}
                       handleAdminDelete={handleAdminDelete}
                       actionLoading={actionLoading}
                       onShowOtherParty={(party, appointment) => { setSelectedOtherParty(party); setSelectedAppointment(appointment); setShowOtherPartyModal(true); }}
@@ -1314,6 +1376,8 @@ export default function MyAppointments() {
                       appt={appt}
                       currentUser={currentUser}
                       handleStatusUpdate={handleStatusUpdate}
+                      handleTokenPaid={handleTokenPaid}
+                      handleSaleComplete={handleSaleComplete}
                       handleAdminDelete={handleAdminDelete}
                       actionLoading={actionLoading}
                       onShowOtherParty={(party, appointment) => { setSelectedOtherParty(party); setSelectedAppointment(appointment); setShowOtherPartyModal(true); }}
@@ -1916,7 +1980,7 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName, setShowCallHistoryModal, setCallHistoryAppointmentId }) {
+function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid, handleSaleComplete, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName, setShowCallHistoryModal, setCallHistoryAppointmentId }) {
   // Camera modal state - moved to main MyAppointments component
   const navigate = useNavigate();
 
@@ -6043,8 +6107,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             <div className="text-sm text-gray-600">{appt.time}</div>
             {!isUpcoming && (
               <div className={`text-xs font-medium mt-1 ${appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
-                  ? 'text-green-600'
-                  : 'text-red-600'
+                ? 'text-green-600'
+                : 'text-red-600'
                 }`}>
                 {appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
                   ? 'Tenants Moved In'
@@ -6161,8 +6225,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         <td className="border p-2 max-w-xs truncate">{appt.message || 'No message provided'}</td>
         <td className="border p-2 text-center">
           <span className={`px-3 py-1 rounded-full text-xs font-bold ${!isUpcoming && appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
-              ? 'bg-green-100 text-green-700'
-              : getStatusColor(appt.status)
+            ? 'bg-green-100 text-green-700'
+            : getStatusColor(appt.status)
             }`}>
             {!isUpcoming && appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
               ? 'Tenants Moved In'
@@ -6246,6 +6310,34 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                       >
                         <FaBan />
                       </button>
+                    )}
+                    {/* Sale Actions for Seller */}
+                    {isSeller && appt.purpose === 'buy' && appt.status === 'accepted' && (
+                      <>
+                        {/* Mark Token Paid */}
+                        {appt.saleStatus === 'negotiation' && (
+                          <button
+                            className="text-blue-500 hover:text-blue-700 text-xl"
+                            onClick={() => handleTokenPaid(appt._id)}
+                            disabled={actionLoading === appt._id + 'token_paid'}
+                            title="Mark Token Received (Lock Property)"
+                          >
+                            {actionLoading === appt._id + 'token_paid' ? <FaSpinner className="animate-spin" /> : <FaMoneyBillWave />}
+                          </button>
+                        )}
+
+                        {/* Mark Sold */}
+                        {(appt.saleStatus === 'negotiation' || appt.saleStatus === 'token_paid') && (
+                          <button
+                            className="text-emerald-500 hover:text-emerald-700 text-xl"
+                            onClick={() => handleSaleComplete(appt._id)}
+                            disabled={actionLoading === appt._id + 'sold'}
+                            title="Mark as Sold"
+                          >
+                            {actionLoading === appt._id + 'sold' ? <FaSpinner className="animate-spin" /> : <FaHandshake />}
+                          </button>
+                        )}
+                      </>
                     )}
                     {/* Seller red delete after cancellation, rejection, admin deletion, or deletedByAdmin */}
                     {isSeller && (appt.status === 'cancelledBySeller' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledByAdmin' || appt.status === 'rejected' || appt.status === 'deletedByAdmin') && (

@@ -6,7 +6,7 @@ import User from "../models/user.model.js";
 import { verifyToken } from '../utils/verify.js';
 import Review from '../models/review.model.js';
 import Notification from '../models/notification.model.js';
-import { 
+import {
   sendAppointmentBookingEmail,
   sendAppointmentRejectedEmail,
   sendAppointmentAcceptedEmail,
@@ -20,11 +20,11 @@ import {
 } from '../utils/emailService.js';
 import { rejectContractForBooking } from '../controllers/rental.controller.js';
 import bcryptjs from 'bcryptjs';
-import { 
-  isListingUnavailable, 
-  getAvailabilityGuardMessage, 
-  lockListingForBooking, 
-  releaseListingLock 
+import {
+  isListingUnavailable,
+  getAvailabilityGuardMessage,
+  lockListingForBooking,
+  releaseListingLock
 } from '../utils/listingAvailability.js';
 
 const router = express.Router();
@@ -34,7 +34,7 @@ router.post("/", verifyToken, async (req, res) => {
   try {
     const { listingId, date, time, message, purpose, propertyName, propertyDescription } = req.body;
     const buyerId = req.user.id;
-    
+
     // Find the listing to get seller information
     const listing = await Listing.findById(listingId);
     if (!listing) {
@@ -69,20 +69,20 @@ router.post("/", verifyToken, async (req, res) => {
     const currentDate = new Date();
     const currentDateString = currentDate.toISOString().split('T')[0];
     const currentTimeString = currentDate.toTimeString().split(' ')[0];
-    
+
     const orConditions = [
-      { 
+      {
         status: { $in: ["pending", "accepted"] },
         $or: [
           { date: { $gt: currentDateString } },
-          { 
+          {
             date: currentDateString,
             time: { $gt: currentTimeString }
           }
         ]
       }
     ];
-    
+
     // Check for existing appointments where the current user is the buyer
     const existing = await booking.findOne({
       listingId,
@@ -108,7 +108,7 @@ router.post("/", verifyToken, async (req, res) => {
       propertyName,
       propertyDescription,
     });
-    
+
     await newBooking.save();
     try {
       await lockListingForBooking({
@@ -153,12 +153,12 @@ router.post("/", verifyToken, async (req, res) => {
         propertyImages: listing.imageUrls || [],
         date: newBooking.date,
         time: newBooking.time,
-        buyerName: buyer.firstName && buyer.lastName 
-          ? `${buyer.firstName} ${buyer.lastName}` 
+        buyerName: buyer.firstName && buyer.lastName
+          ? `${buyer.firstName} ${buyer.lastName}`
           : buyer.username,
         buyerEmail: buyer.email,
-        sellerName: seller.firstName && seller.lastName 
-          ? `${seller.firstName} ${seller.lastName}` 
+        sellerName: seller.firstName && seller.lastName
+          ? `${seller.firstName} ${seller.lastName}`
           : seller.username,
         sellerEmail: seller.email,
         purpose: newBooking.purpose,
@@ -213,8 +213,8 @@ router.patch('/:id/payment-status', verifyToken, async (req, res) => {
       { paymentConfirmed: Boolean(paymentConfirmed) },
       { new: true }
     ).populate('buyerId', 'username email mobileNumber avatar')
-     .populate('sellerId', 'username email mobileNumber avatar')
-     .populate('listingId', '_id name address');
+      .populate('sellerId', 'username email mobileNumber avatar')
+      .populate('listingId', '_id name address');
     if (!appt) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
@@ -251,7 +251,7 @@ router.get("/", async (req, res) => {
 router.get("/my", verifyToken, async (req, res) => {
   try {
     const userId = req.user.id;
-    
+
     // Find all appointments where user is either buyer or seller, excluding archived ones
     const bookings = await booking.find({
       $or: [
@@ -259,20 +259,20 @@ router.get("/my", verifyToken, async (req, res) => {
         { sellerId: userId, archivedBySeller: { $ne: true } }
       ]
     })
-    .populate('buyerId', 'username email mobileNumber avatar')
-    .populate('sellerId', 'username email mobileNumber avatar')
-    .populate('listingId', '_id name address')
-    .sort({ createdAt: -1 });
-    
+      .populate('buyerId', 'username email mobileNumber avatar')
+      .populate('sellerId', 'username email mobileNumber avatar')
+      .populate('listingId', '_id name address')
+      .sort({ createdAt: -1 });
+
     // Add role information to each booking
     const bookingsWithRole = bookings
       .filter(booking => booking.buyerId && booking.buyerId._id && booking.sellerId && booking.sellerId._id) // skip if any is null
       .map(booking => {
-      const bookingObj = booking.toObject();
-      bookingObj.role = booking.buyerId._id.toString() === userId ? 'buyer' : 'seller';
-      return bookingObj;
-    });
-    
+        const bookingObj = booking.toObject();
+        bookingObj.role = booking.buyerId._id.toString() === userId ? 'buyer' : 'seller';
+        return bookingObj;
+      });
+
     res.status(200).json(bookingsWithRole);
   } catch (err) {
     console.error("Error fetching user bookings:", err);
@@ -300,34 +300,34 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
     const { status } = req.body;
     const { id } = req.params;
     const sellerId = req.user.id;
-    
+
     // Get socket.io instance early
     const io = req.app.get('io');
-    
+
     // Find the booking and verify the seller owns it
     const bookingToUpdate = await booking.findById(id);
     if (!bookingToUpdate) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
-    
+
     if (bookingToUpdate.sellerId.toString() !== sellerId) {
       return res.status(403).json({ message: 'You can only update appointments for your own properties.' });
     }
-    
+
     // Prevent rejection of paid appointments
     if (status === 'rejected' && bookingToUpdate.paymentConfirmed) {
-      return res.status(400).json({ 
-        message: 'Cannot reject appointment as payment has been completed by the buyer. Please contact support if you need to cancel this appointment.' 
+      return res.status(400).json({
+        message: 'Cannot reject appointment as payment has been completed by the buyer. Please contact support if you need to cancel this appointment.'
       });
     }
-    
+
     const updated = await booking.findByIdAndUpdate(
       id,
       { status },
       { new: true }
     ).populate('buyerId', 'username email mobileNumber avatar')
-     .populate('sellerId', 'username email mobileNumber avatar')
-     .populate('listingId', 'name description address imageUrls regularPrice');
+      .populate('sellerId', 'username email mobileNumber avatar')
+      .populate('listingId', 'name description address imageUrls regularPrice');
 
     // --- NEW LOGIC: Update review for verified badge if booking is accepted/completed ---
     if (status === 'accepted' || status === 'completed') {
@@ -370,7 +370,7 @@ router.patch('/:id/status', verifyToken, async (req, res) => {
         // Send email notification to buyer
         try {
           console.log(`📧 Preparing to send ${status} email to buyer: ${updated.buyerId.email}`);
-          
+
           const appointmentDetails = {
             appointmentId: updated._id,
             propertyName: updated.listingId.name,
@@ -470,29 +470,29 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
     const { message, replyTo, imageUrl, videoUrl, documentUrl, documentName, documentMimeType, audioUrl, audioName, audioMimeType, type, previewDismissed } = req.body;
     const { id } = req.params;
     const userId = req.user.id;
-    
+
     // Validate ObjectId format
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid appointment ID format.' });
     }
-    
+
     const bookingToComment = await booking.findById(id);
     if (!bookingToComment) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
-    
+
     // Only allow comments if user is the buyer, seller, or admin
     const isBuyer = bookingToComment.buyerId.toString() === userId;
     const isSeller = bookingToComment.sellerId.toString() === userId;
-    
+
     // Check if user is admin or rootadmin
     const user = await User.findById(userId);
     const isAdmin = (user && user.role === 'admin' && user.adminApprovalStatus === 'approved') || (user && user.role === 'rootadmin');
-    
+
     if (!isBuyer && !isSeller && !isAdmin) {
       return res.status(403).json({ message: "You can only comment on your own appointments unless you are an admin or root admin." });
     }
-    
+
     const newComment = {
       sender: userId,
       senderEmail: req.user.email,
@@ -507,45 +507,45 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
       ...(type ? { type } : {}),
       ...(typeof previewDismissed === 'boolean' ? { previewDismissed } : {}),
     };
-    
+
     const updated = await booking.findByIdAndUpdate(
       id,
       { $push: { comments: newComment } },
       { new: true }
     ).populate('buyerId', 'username email mobileNumber')
-     .populate('sellerId', 'username email mobileNumber')
-     .populate('listingId', '_id name address');
-    
+      .populate('sellerId', 'username email mobileNumber')
+      .populate('listingId', '_id name address');
+
     // Emit socket.io event for real-time comment update
     const io = req.app.get('io');
     if (io) {
       // Send only the new comment (last in array)
       const newCommentObj = updated.comments[updated.comments.length - 1];
-      
+
       // Determine the recipient of the message
       const isBuyer = bookingToComment.buyerId.toString() === userId;
 
       const isSeller = bookingToComment.sellerId.toString() === userId;
       const isAdmin = !isBuyer && !isSeller;
-      
+
       // Get populated booking data for email addresses
       const populatedBooking = await booking.findById(id)
         .populate('buyerId', 'email')
         .populate('sellerId', 'email');
-      
+
       // Prepare complete data for emission
-      const emitData = { 
-        appointmentId: id, 
+      const emitData = {
+        appointmentId: id,
         comment: newCommentObj,
         buyerEmail: populatedBooking.buyerId.email,
         sellerEmail: populatedBooking.sellerId.email
       };
-      
+
       if (isAdmin) {
         // If admin is sending, emit to both buyer and seller
         io.to(bookingToComment.buyerId.toString()).emit('commentUpdate', emitData);
         io.to(bookingToComment.sellerId.toString()).emit('commentUpdate', emitData);
-        
+
         // For admin, only emit to appointment room (not personal room) to avoid duplicates
         // Admin will receive the message through appointment room since they're joined to all appointment rooms
         io.to(`appointment_${id}`).emit('commentUpdate', emitData);
@@ -554,33 +554,33 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
         const recipientId = isBuyer ? bookingToComment.sellerId.toString() : bookingToComment.buyerId.toString();
         // Removed excessive logging
         io.to(recipientId).emit('commentUpdate', emitData);
-        
+
         // Also emit to the sender for their own message sync
         io.to(userId).emit('commentUpdate', emitData);
-        
+
         // Emit to appointment room for admin access (so admin sees user messages immediately)
         io.to(`appointment_${id}`).emit('commentUpdate', emitData);
-        
+
         // ADDITIONAL: Explicitly emit to all connected admin sockets to ensure they receive user messages
-        const adminSockets = Array.from(io.sockets.sockets.values()).filter(s => 
+        const adminSockets = Array.from(io.sockets.sockets.values()).filter(s =>
           s.adminId && (s.adminRole === 'admin' || s.adminRole === 'rootadmin')
         );
-        
+
         for (const adminSocket of adminSockets) {
           adminSocket.emit('commentUpdate', emitData);
         }
       }
-      
+
       // Smart email notification to the other party
       try {
         const sender = await User.findById(userId).select('username email firstName lastName');
-        const recipientUser = isBuyer 
+        const recipientUser = isBuyer
           ? await User.findById(bookingToComment.sellerId).select('email firstName lastName _id')
           : await User.findById(bookingToComment.buyerId).select('email firstName lastName _id');
 
         if (sender && recipientUser && recipientUser.email) {
-          const senderName = sender.firstName && sender.lastName 
-            ? `${sender.firstName} ${sender.lastName}` 
+          const senderName = sender.firstName && sender.lastName
+            ? `${sender.firstName} ${sender.lastName}`
             : sender.username;
           const recipientName = recipientUser.firstName && recipientUser.lastName
             ? `${recipientUser.firstName} ${recipientUser.lastName}`
@@ -642,7 +642,7 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
         console.error('Error processing new message notification email:', emailError);
         // Don't fail the request if email fails
       }
-      
+
       // Only mark as delivered if the intended recipient is online
       const onlineUsers = req.app.get('onlineUsers') || new Set();
 
@@ -650,7 +650,7 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
         // If admin is sending, check if both buyer and seller are online
         const buyerOnline = onlineUsers.has(bookingToComment.buyerId.toString());
         const sellerOnline = onlineUsers.has(bookingToComment.sellerId.toString());
-        
+
         if (buyerOnline || sellerOnline) {
           // Mark as delivered if at least one recipient is online
           await booking.findOneAndUpdate(
@@ -665,7 +665,7 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
       } else {
         // If buyer or seller is sending, check if the other party is online
         const recipientId = isBuyer ? bookingToComment.sellerId.toString() : bookingToComment.buyerId.toString();
-        
+
         if (onlineUsers.has(recipientId)) {
           // Recipient is online, mark as delivered immediately
           await booking.findOneAndUpdate(
@@ -681,10 +681,106 @@ router.post('/:id/comment', verifyToken, async (req, res) => {
         }
       }
     }
-    
+
     res.status(200).json(updated);
   } catch (err) {
     res.status(500).json({ message: 'Failed to add comment.' });
+  }
+});
+
+// PATCH: Mark sale as Token Paid (Locks the property)
+router.patch('/:id/sale/token-paid', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const bookingToUpdate = await booking.findById(id);
+    if (!bookingToUpdate) {
+      return res.status(404).json({ message: 'Appointment not found.' });
+    }
+
+    // Only seller can mark token as paid
+    if (bookingToUpdate.sellerId.toString() !== userId) {
+      return res.status(403).json({ message: 'Only the property owner can mark token as received.' });
+    }
+
+    if (bookingToUpdate.purpose !== 'buy') {
+      return res.status(400).json({ message: 'This action is only for property sales.' });
+    }
+
+    // Update Booking
+    const updatedBooking = await booking.findByIdAndUpdate(
+      id,
+      { saleStatus: 'token_paid' },
+      { new: true }
+    );
+
+    // Update Listing - Lock it
+    await Listing.findByIdAndUpdate(bookingToUpdate.listingId, {
+      availabilityStatus: 'under_contract',
+      availabilityMeta: {
+        lockReason: 'sale_in_progress',
+        bookingId: id,
+        lockedAt: new Date()
+      }
+    });
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('appointmentUpdate', { appointmentId: id, updatedAppointment: updatedBooking });
+    }
+
+    res.status(200).json({ message: 'Property locked for sale (Token Paid)', booking: updatedBooking });
+  } catch (err) {
+    console.error('Error marking token paid:', err);
+    res.status(500).json({ message: 'Failed to update sale status.' });
+  }
+});
+
+// PATCH: Compolete Sale (Mark as Sold)
+router.patch('/:id/sale/complete', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const userId = req.user.id;
+
+    const bookingToUpdate = await booking.findById(id);
+    if (!bookingToUpdate) {
+      return res.status(404).json({ message: 'Appointment not found.' });
+    }
+
+    if (bookingToUpdate.sellerId.toString() !== userId) {
+      return res.status(403).json({ message: 'Only the property owner can mark sale as valid.' });
+    }
+
+    // Update Booking
+    const updatedBooking = await booking.findByIdAndUpdate(
+      id,
+      {
+        saleStatus: 'sold',
+        status: 'completed'
+      },
+      { new: true }
+    );
+
+    // Update Listing - Mark Sold
+    await Listing.findByIdAndUpdate(bookingToUpdate.listingId, {
+      availabilityStatus: 'sold',
+      availabilityMeta: {
+        lockReason: 'sold',
+        bookingId: id,
+        lockedAt: new Date() // Date sold
+      }
+    });
+
+    const io = req.app.get('io');
+    if (io) {
+      io.emit('appointmentUpdate', { appointmentId: id, updatedAppointment: updatedBooking });
+    }
+
+    res.status(200).json({ message: 'Property marked as sold!', booking: updatedBooking });
+  } catch (err) {
+    console.error('Error completing sale:', err);
+    res.status(500).json({ message: 'Failed to complete sale.' });
   }
 });
 
@@ -693,7 +789,7 @@ router.delete('/:id/comment/:commentId', verifyToken, async (req, res) => {
   try {
     const { id, commentId } = req.params;
     const userId = req.user.id;
-    
+
     // Validate ObjectId formats
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid appointment ID format.' });
@@ -701,20 +797,20 @@ router.delete('/:id/comment/:commentId', verifyToken, async (req, res) => {
     if (!commentId || !mongoose.Types.ObjectId.isValid(commentId)) {
       return res.status(400).json({ message: 'Invalid comment ID format.' });
     }
-    
+
     const bookingToUpdate = await booking.findById(id);
     if (!bookingToUpdate) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
-    
+
     // Only allow deletion if user is the buyer, seller, or admin
     const isBuyer = bookingToUpdate.buyerId.toString() === userId;
     const isSeller = bookingToUpdate.sellerId.toString() === userId;
-    
+
     // Check if user is admin or rootadmin
     const user = await User.findById(userId);
     const isAdmin = (user && user.role === 'admin' && user.adminApprovalStatus === 'approved') || (user && user.role === 'rootadmin');
-    
+
     if (!isBuyer && !isSeller && !isAdmin) {
       return res.status(403).json({ message: "You can only delete comments on your own appointments unless you are an admin or root admin." });
     }
@@ -731,12 +827,12 @@ router.delete('/:id/comment/:commentId', verifyToken, async (req, res) => {
       messageLength: comment.message ? comment.message.length : 0,
       alreadyDeleted: comment.deleted
     });
-    
+
     // If already deleted but no original message preserved, we can't recover content
     if (comment.deleted && !comment.originalMessage) {
       console.log('Warning: Comment already deleted and no original message preserved');
     }
-    
+
     // Preserve original message before marking as deleted
     if (!comment.originalMessage && comment.message) {
       comment.originalMessage = comment.message; // Only preserve if not already preserved
@@ -746,7 +842,7 @@ router.delete('/:id/comment/:commentId', verifyToken, async (req, res) => {
     } else if (comment.originalMessage) {
       console.log('ℹ️ Original message already preserved:', comment.originalMessage);
     }
-    
+
     // Preserve original image URL before marking as deleted
     if (!comment.originalImageUrl && comment.imageUrl) {
       comment.originalImageUrl = comment.imageUrl; // Only preserve if not already preserved
@@ -756,7 +852,7 @@ router.delete('/:id/comment/:commentId', verifyToken, async (req, res) => {
     } else if (comment.originalImageUrl) {
       console.log('ℹ️ Original image URL already preserved:', comment.originalImageUrl);
     }
-    
+
     console.log('📋 Comment deletion state:', {
       messageLength: comment.message ? comment.message.length : 0,
       hasOriginalMessage: !!comment.originalMessage,
@@ -765,11 +861,11 @@ router.delete('/:id/comment/:commentId', verifyToken, async (req, res) => {
       hasOriginalImageUrl: !!comment.originalImageUrl,
       deletedBy: req.user.email
     });
-    
+
     comment.deleted = true;
     comment.deletedBy = req.user.email; // Track who deleted it
     comment.deletedAt = new Date(); // Track when it was deleted
-    
+
     // Store the comment data for socket emission with proper preserved content (before clearing message)
     const commentForEmission = {
       _id: comment._id,
@@ -787,13 +883,13 @@ router.delete('/:id/comment/:commentId', verifyToken, async (req, res) => {
       edited: comment.edited,
       editedAt: comment.editedAt
     };
-    
+
     comment.message = ''; // Hide for regular users (clear after preserving for socket)
-    
+
     // Mark the comments array as modified to ensure proper save
     bookingToUpdate.markModified('comments');
     await bookingToUpdate.save();
-    
+
     // Verify the save was successful by finding the comment again
     const savedComment = bookingToUpdate.comments.id(commentId);
     console.log('💾 After save - comment state:', {
@@ -805,15 +901,15 @@ router.delete('/:id/comment/:commentId', verifyToken, async (req, res) => {
       originalImageUrl: savedComment.originalImageUrl,
       deletedBy: savedComment.deletedBy
     });
-    
+
     // Emit socket event for real-time update with preserved message content
     const io = req.app.get('io');
     if (io) {
       // Emit to both buyer and seller for comment deletion updates
-              io.to(bookingToUpdate.buyerId.toString()).emit('commentUpdate', { appointmentId: id, comment: commentForEmission });
-        io.to(bookingToUpdate.sellerId.toString()).emit('commentUpdate', { appointmentId: id, comment: commentForEmission });
-        // Emit to appointment room for admin access
-        io.to(`appointment_${id}`).emit('commentUpdate', { appointmentId: id, comment: commentForEmission });
+      io.to(bookingToUpdate.buyerId.toString()).emit('commentUpdate', { appointmentId: id, comment: commentForEmission });
+      io.to(bookingToUpdate.sellerId.toString()).emit('commentUpdate', { appointmentId: id, comment: commentForEmission });
+      // Emit to appointment room for admin access
+      io.to(`appointment_${id}`).emit('commentUpdate', { appointmentId: id, comment: commentForEmission });
       console.log('📡 Socket emitted with preserved content');
     }
     // Return updated comments array
@@ -829,19 +925,19 @@ router.delete('/:id/comments/bulk-delete', verifyToken, async (req, res) => {
     const { id } = req.params;
     const { commentIds } = req.body || {};
     const userId = req.user.id;
-    
+
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid appointment ID format.' });
     }
     if (!Array.isArray(commentIds) || commentIds.length === 0) {
       return res.status(400).json({ message: 'commentIds must be a non-empty array.' });
     }
-    
+
     const bookingToUpdate = await booking.findById(id);
     if (!bookingToUpdate) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
-    
+
     const isBuyer = bookingToUpdate.buyerId.toString() === userId;
     const isSeller = bookingToUpdate.sellerId.toString() === userId;
     const user = await User.findById(userId);
@@ -849,7 +945,7 @@ router.delete('/:id/comments/bulk-delete', verifyToken, async (req, res) => {
     if (!isBuyer && !isSeller && !isAdmin) {
       return res.status(403).json({ message: 'You can only delete comments on your own appointments unless you are an admin or root admin.' });
     }
-    
+
     const io = req.app.get('io');
     const emitted = [];
     for (const commentId of commentIds) {
@@ -858,23 +954,23 @@ router.delete('/:id/comments/bulk-delete', verifyToken, async (req, res) => {
       }
       const comment = bookingToUpdate.comments.id(commentId);
       if (!comment) continue;
-      
+
       // Optional: only allow deleting own messages when not admin
       if (!isAdmin && comment.senderEmail !== req.user.email) {
         continue;
       }
-      
+
       if (!comment.originalMessage && comment.message) {
         comment.originalMessage = comment.message;
       }
       if (!comment.originalImageUrl && comment.imageUrl) {
         comment.originalImageUrl = comment.imageUrl;
       }
-      
+
       comment.deleted = true;
       comment.deletedBy = req.user.email;
       comment.deletedAt = new Date();
-      
+
       const commentForEmission = {
         _id: comment._id,
         senderEmail: comment.senderEmail,
@@ -891,14 +987,14 @@ router.delete('/:id/comments/bulk-delete', verifyToken, async (req, res) => {
         edited: comment.edited,
         editedAt: comment.editedAt
       };
-      
+
       comment.message = '';
       emitted.push(commentForEmission);
     }
-    
+
     bookingToUpdate.markModified('comments');
     await bookingToUpdate.save();
-    
+
     if (io) {
       for (const commentForEmission of emitted) {
         io.to(bookingToUpdate.buyerId.toString()).emit('commentUpdate', { appointmentId: id, comment: commentForEmission });
@@ -906,7 +1002,7 @@ router.delete('/:id/comments/bulk-delete', verifyToken, async (req, res) => {
         io.to(`appointment_${id}`).emit('commentUpdate', { appointmentId: id, comment: commentForEmission });
       }
     }
-    
+
     return res.status(200).json({ comments: bookingToUpdate.comments });
   } catch (err) {
     console.error('Failed to bulk delete comments:', err);
@@ -981,7 +1077,7 @@ router.patch('/:id/comment/:commentId', verifyToken, async (req, res) => {
     const { id, commentId } = req.params;
     const { message } = req.body;
     const userId = req.user.id;
-    
+
     // Validate ObjectId formats
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
       return res.status(400).json({ message: 'Invalid appointment ID format.' });
@@ -989,20 +1085,20 @@ router.patch('/:id/comment/:commentId', verifyToken, async (req, res) => {
     if (!commentId || !mongoose.Types.ObjectId.isValid(commentId)) {
       return res.status(400).json({ message: 'Invalid comment ID format.' });
     }
-    
+
     const appointment = await booking.findById(id);
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
-    
+
     // Only allow editing if user is the buyer, seller, or admin
     const isBuyer = appointment.buyerId.toString() === userId;
     const isSeller = appointment.sellerId.toString() === userId;
-    
+
     // Check if user is admin or rootadmin
     const user = await User.findById(userId);
     const isAdmin = (user && user.role === 'admin' && user.adminApprovalStatus === 'approved') || (user && user.role === 'rootadmin');
-    
+
     if (!isBuyer && !isSeller && !isAdmin) {
       return res.status(403).json({ message: "You can only edit comments on your own appointments unless you are an admin or root admin." });
     }
@@ -1042,21 +1138,21 @@ router.patch('/:id/comment/:commentId', verifyToken, async (req, res) => {
 router.get("/admin/:adminId", verifyToken, async (req, res) => {
   try {
     const { adminId } = req.params;
-    
+
     // Verify the user is requesting their own admin stats
     if (req.user._id.toString() !== adminId) {
       return res.status(403).json({ message: "You can only view your own admin stats" });
     }
-    
+
     // Verify user is an admin
     const user = await User.findById(adminId);
     if (!user || user.role !== 'admin' || user.adminApprovalStatus !== 'approved') {
       return res.status(403).json({ message: "Only approved admins can access admin stats" });
     }
-    
+
     // Count all appointments (admin can see all)
     const count = await booking.countDocuments();
-    
+
     res.status(200).json({ count });
   } catch (err) {
     console.error("Error fetching admin appointment count:", err);
@@ -1079,10 +1175,10 @@ router.get("/user/:userId", verifyToken, async (req, res) => {
     const bookings = await booking.find({
       $or: [{ buyerId: userId }, { sellerId: userId }]
     })
-    .populate('buyerId', 'username email mobileNumber')
-    .populate('sellerId', 'username email mobileNumber')
-    .populate('listingId', '_id name address')
-    .sort({ createdAt: -1 });
+      .populate('buyerId', 'username email mobileNumber')
+      .populate('sellerId', 'username email mobileNumber')
+      .populate('listingId', '_id name address')
+      .sort({ createdAt: -1 });
     res.status(200).json(bookings);
   } catch (err) {
     console.error("Error fetching user appointments:", err);
@@ -1132,7 +1228,7 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         return res.status(400).json({ message: 'Reason is required for buyer cancellation.' });
       }
       bookingToCancel.status = 'cancelledByBuyer';
-      
+
       // Auto-reject contract if purpose is 'rent'
       if (bookingToCancel.purpose === 'rent' && bookingToCancel.contractId) {
         try {
@@ -1177,7 +1273,7 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
             .populate('buyerId', 'username email firstName lastName')
             .populate('sellerId', 'username email firstName lastName')
             .populate('listingId', 'name description address imageUrls regularPrice');
-          
+
           const appointmentDetails = {
             appointmentId: appointment._id,
             propertyName: appointment.listingId.name,
@@ -1222,7 +1318,7 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         return res.status(400).json({ message: 'Reason is required for seller cancellation.' });
       }
       bookingToCancel.status = 'cancelledBySeller';
-      
+
       // Auto-reject contract if purpose is 'rent'
       if (bookingToCancel.purpose === 'rent' && bookingToCancel.contractId) {
         try {
@@ -1267,7 +1363,7 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
             .populate('buyerId', 'username email firstName lastName')
             .populate('sellerId', 'username email firstName lastName')
             .populate('listingId', 'name description address imageUrls regularPrice');
-          
+
           const appointmentDetails = {
             appointmentId: appointment._id,
             propertyName: appointment.listingId.name,
@@ -1309,7 +1405,7 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
         return res.status(400).json({ message: 'Reason is required for admin cancellation.' });
       }
       bookingToCancel.status = 'cancelledByAdmin';
-      
+
       // Auto-reject contract if purpose is 'rent'
       if (bookingToCancel.purpose === 'rent' && bookingToCancel.contractId) {
         try {
@@ -1368,10 +1464,10 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
             .populate('buyerId', 'username email firstName lastName')
             .populate('sellerId', 'username email firstName lastName')
             .populate('listingId', 'name description address imageUrls regularPrice');
-          
+
           const admin = await User.findById(req.user.id);
           const adminName = admin ? admin.username : 'Admin';
-          
+
           const appointmentDetails = {
             appointmentId: appointment._id,
             propertyName: appointment.listingId.name,
@@ -1393,7 +1489,7 @@ router.patch('/:id/cancel', verifyToken, async (req, res) => {
           // Send to buyer
           await sendAppointmentCancelledByAdminEmail(appointment.buyerId.email, appointmentDetails, 'buyer');
           console.log(`❌ Appointment cancelled by admin email sent to buyer: ${appointment.buyerId.email}`);
-          
+
           // Send to seller
           await sendAppointmentCancelledByAdminEmail(appointment.sellerId.email, appointmentDetails, 'seller');
           console.log(`❌ Appointment cancelled by admin email sent to seller: ${appointment.sellerId.email}`);
@@ -1460,7 +1556,7 @@ router.patch('/:id/reinitiate', verifyToken, async (req, res) => {
     bookingToReinitiate.cancelReason = '';
     // Unset the cancelledBy field to remove it from the document
     bookingToReinitiate.cancelledBy = undefined;
-    
+
     await bookingToReinitiate.save();
     try {
       await lockListingForBooking({
@@ -1520,10 +1616,10 @@ router.patch('/:id/reinitiate', verifyToken, async (req, res) => {
           .populate('buyerId', 'username email firstName lastName')
           .populate('sellerId', 'username email firstName lastName')
           .populate('listingId', 'name description address imageUrls regularPrice');
-        
+
         const admin = await User.findById(req.user.id);
         const adminName = admin ? admin.username : 'Admin';
-        
+
         const appointmentDetails = {
           appointmentId: appointment._id,
           propertyName: appointment.listingId.name,
@@ -1544,7 +1640,7 @@ router.patch('/:id/reinitiate', verifyToken, async (req, res) => {
         // Send to buyer
         await sendAppointmentReinitiatedByAdminEmail(appointment.buyerId.email, appointmentDetails, 'buyer');
         console.log(`🔄 Appointment reinitiated by admin email sent to buyer: ${appointment.buyerId.email}`);
-        
+
         // Send to seller
         await sendAppointmentReinitiatedByAdminEmail(appointment.sellerId.email, appointmentDetails, 'seller');
         console.log(`🔄 Appointment reinitiated by admin email sent to seller: ${appointment.sellerId.email}`);
@@ -1595,12 +1691,12 @@ router.patch('/:id/soft-delete', verifyToken, async (req, res) => {
     const userRole = req.user.role;
     const isRootAdmin = req.user.role === 'rootadmin';
     const isAdmin = req.user.role === 'admin' && req.user.adminApprovalStatus === 'approved';
-    
+
     const bookingToHide = await booking.findById(id);
     if (!bookingToHide) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
-    
+
     if (who === 'buyer') {
       if (bookingToHide.buyerId.toString() !== userId) {
         return res.status(403).json({ message: 'You can only hide your own appointments.' });
@@ -1623,7 +1719,7 @@ router.patch('/:id/soft-delete', verifyToken, async (req, res) => {
     } else {
       return res.status(400).json({ message: 'Invalid who parameter. Must be buyer, seller, or admin.' });
     }
-    
+
     await bookingToHide.save();
     res.status(200).json(bookingToHide);
   } catch (err) {
@@ -1647,7 +1743,7 @@ router.patch('/:id/archive', verifyToken, async (req, res) => {
     // Check if user can archive this appointment
     const isBuyer = bookingToArchive.buyerId.toString() === userId;
     const isSeller = bookingToArchive.sellerId.toString() === userId;
-    
+
     if (!isAdmin && !isRootAdmin && !isBuyer && !isSeller) {
       return res.status(403).json({ message: 'You can only archive your own appointments or be an admin.' });
     }
@@ -1665,7 +1761,7 @@ router.patch('/:id/archive', verifyToken, async (req, res) => {
       }
     }
     bookingToArchive.archivedAt = new Date();
-    
+
     await bookingToArchive.save();
 
     // Populate the updated booking for response
@@ -1704,7 +1800,7 @@ router.patch('/:id/unarchive', verifyToken, async (req, res) => {
     // Check if user can unarchive this appointment
     const isBuyer = bookingToUnarchive.buyerId.toString() === userId;
     const isSeller = bookingToUnarchive.sellerId.toString() === userId;
-    
+
     if (!isAdmin && !isRootAdmin && !isBuyer && !isSeller) {
       return res.status(403).json({ message: 'You can only unarchive your own appointments or be an admin.' });
     }
@@ -1722,7 +1818,7 @@ router.patch('/:id/unarchive', verifyToken, async (req, res) => {
       }
     }
     bookingToUnarchive.archivedAt = undefined;
-    
+
     await bookingToUnarchive.save();
 
     // Populate the updated booking for response
@@ -1898,7 +1994,7 @@ router.post('/reinitiate', verifyToken, async (req, res) => {
           .populate('buyerId', 'username email firstName lastName')
           .populate('sellerId', 'username email firstName lastName')
           .populate('listingId', 'name description address imageUrls regularPrice');
-        
+
         const appointmentDetails = {
           appointmentId: appointment._id,
           propertyName: appointment.listingId.name,
@@ -1957,18 +2053,18 @@ router.get('/stats', verifyToken, async (req, res) => {
 
     // Get counts for different statuses
     const [accepted, pending, rejected] = await Promise.all([
-      booking.countDocuments({ 
+      booking.countDocuments({
         status: 'accepted',
         archivedByAdmin: { $ne: true }
       }),
-      booking.countDocuments({ 
+      booking.countDocuments({
         status: 'pending',
         archivedByAdmin: { $ne: true }
       }),
-      booking.countDocuments({ 
-        status: { 
+      booking.countDocuments({
+        status: {
           $in: [
-            'rejected', 'deletedByAdmin', 'cancelledByBuyer', 
+            'rejected', 'deletedByAdmin', 'cancelledByBuyer',
             'cancelledBySeller', 'cancelledByAdmin', 'noShow'
           ]
         },
@@ -1994,7 +2090,7 @@ router.get('/stats', verifyToken, async (req, res) => {
 router.patch('/:id/comments/read', verifyToken, async (req, res) => {
   const { id } = req.params;
   const userId = req.user.id;
-  
+
   try {
     // Validate ObjectId format
     if (!id || !mongoose.Types.ObjectId.isValid(id)) {
@@ -2015,13 +2111,13 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
     const userIdStr = userId.toString();
     const buyerIdStr = bookingDoc.buyerId?.toString();
     const sellerIdStr = bookingDoc.sellerId?.toString();
-    
+
     if (userIdStr !== buyerIdStr && userIdStr !== sellerIdStr && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
       return res.status(403).json({ message: 'Not authorized to read comments for this appointment.' });
     }
 
     let updated = false;
-    
+
     if (bookingDoc.comments && Array.isArray(bookingDoc.comments)) {
       bookingDoc.comments.forEach(comment => {
         try {
@@ -2034,7 +2130,7 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
           if (!comment.readBy || !Array.isArray(comment.readBy)) {
             comment.readBy = [];
           }
-          
+
           // Convert ObjectIds to strings for comparison
           const readByStrings = comment.readBy.map(id => id ? id.toString() : '');
           if (!readByStrings.includes(userIdStr)) {
@@ -2052,7 +2148,7 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
         }
       });
     }
-    
+
     if (updated) {
       // Reset smart email unread counters for this user since they read/opened chat
       try {
@@ -2070,7 +2166,7 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
       // Use retry logic to handle version conflicts
       let retryCount = 0;
       const maxRetries = 3;
-      
+
       while (retryCount < maxRetries) {
         try {
           await bookingDoc.save();
@@ -2078,22 +2174,22 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
         } catch (saveError) {
           if (saveError.name === 'VersionError' && retryCount < maxRetries - 1) {
             // Retry with fresh document
-          retryCount++;
-          // Only log on final retry to reduce log spam
-          if (retryCount === maxRetries - 1) {
-            console.log(`Version conflict, final retry... (${retryCount}/${maxRetries})`);
-          }
-          
-          // Add minimal delay to reduce contention (optimized for speed)
-          const delay = Math.min(20 * Math.pow(2, retryCount - 1), 100); // 20ms, 40ms, 80ms max
-          await new Promise(resolve => setTimeout(resolve, delay));
-          
-          // Refetch the document to get latest version
+            retryCount++;
+            // Only log on final retry to reduce log spam
+            if (retryCount === maxRetries - 1) {
+              console.log(`Version conflict, final retry... (${retryCount}/${maxRetries})`);
+            }
+
+            // Add minimal delay to reduce contention (optimized for speed)
+            const delay = Math.min(20 * Math.pow(2, retryCount - 1), 100); // 20ms, 40ms, 80ms max
+            await new Promise(resolve => setTimeout(resolve, delay));
+
+            // Refetch the document to get latest version
             const freshDoc = await booking.findById(id);
             if (!freshDoc) {
               return res.status(404).json({ message: 'Appointment not found during retry.' });
             }
-            
+
             // Reapply the read status updates to fresh document
             let freshUpdated = false;
             if (freshDoc.comments && Array.isArray(freshDoc.comments)) {
@@ -2102,11 +2198,11 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
                   if (comment.deleted || comment.senderEmail === req.user.email) {
                     return;
                   }
-                  
+
                   if (!comment.readBy || !Array.isArray(comment.readBy)) {
                     comment.readBy = [];
                   }
-                  
+
                   const readByStrings = comment.readBy.map(id => id ? id.toString() : '');
                   if (!readByStrings.includes(userIdStr)) {
                     comment.readBy.push(userId);
@@ -2119,10 +2215,10 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
                 }
               });
             }
-            
+
             bookingDoc = freshDoc;
             updated = freshUpdated;
-            
+
             if (!updated) {
               // No updates needed on fresh document, break out
               break;
@@ -2155,16 +2251,16 @@ router.patch('/:id/comments/read', verifyToken, async (req, res) => {
       error: err.message,
       stack: err.stack
     });
-    
+
     // Provide more specific error messages
     if (err.name === 'CastError') {
       return res.status(400).json({ message: 'Invalid appointment ID format.' });
     }
-    
+
     if (err.name === 'ValidationError') {
       return res.status(400).json({ message: 'Validation error.', error: err.message });
     }
-    
+
     res.status(500).json({ message: 'Failed to mark comments as read.', error: err.message });
   }
 });
@@ -2206,13 +2302,13 @@ router.post("/admin", verifyToken, async (req, res) => {
     const currentDate = new Date();
     const currentDateString = currentDate.toISOString().split('T')[0];
     const currentTimeString = currentDate.toTimeString().split(' ')[0];
-    
+
     const orConditions = [
-      { 
+      {
         status: { $in: ["pending", "accepted"] },
         $or: [
           { date: { $gt: currentDateString } },
-          { 
+          {
             date: currentDateString,
             time: { $gt: currentTimeString }
           }
@@ -2225,7 +2321,7 @@ router.post("/admin", verifyToken, async (req, res) => {
         buyerReinitiationCount: { $lt: 2 },
         $or: [
           { date: { $gt: currentDateString } },
-          { 
+          {
             date: currentDateString,
             time: { $gt: currentTimeString }
           }
@@ -2315,12 +2411,12 @@ router.post("/admin", verifyToken, async (req, res) => {
         propertyImages: listing.imageUrls || [],
         date: newBooking.date,
         time: newBooking.time,
-        buyerName: buyer.firstName && buyer.lastName 
-          ? `${buyer.firstName} ${buyer.lastName}` 
+        buyerName: buyer.firstName && buyer.lastName
+          ? `${buyer.firstName} ${buyer.lastName}`
           : buyer.username,
         buyerEmail: buyer.email,
-        sellerName: seller.firstName && seller.lastName 
-          ? `${seller.firstName} ${seller.lastName}` 
+        sellerName: seller.firstName && seller.lastName
+          ? `${seller.firstName} ${seller.lastName}`
           : seller.username,
         sellerEmail: seller.email,
         purpose: newBooking.purpose,
@@ -2362,7 +2458,7 @@ router.post("/admin", verifyToken, async (req, res) => {
 router.post("/test-booking-email", verifyToken, async (req, res) => {
   try {
     const { email, userRole = 'buyer' } = req.body;
-    
+
     if (!email) {
       return res.status(400).json({ message: "Email is required for testing" });
     }
@@ -2389,17 +2485,17 @@ router.post("/test-booking-email", verifyToken, async (req, res) => {
 
     // Send test email
     const result = await sendAppointmentBookingEmail(email, testAppointmentDetails, userRole);
-    
+
     if (result.success) {
-      res.status(200).json({ 
-        message: "Test booking email sent successfully!", 
+      res.status(200).json({
+        message: "Test booking email sent successfully!",
         email: email,
         userRole: userRole
       });
     } else {
-      res.status(500).json({ 
-        message: "Failed to send test booking email", 
-        error: result.error 
+      res.status(500).json({
+        message: "Failed to send test booking email",
+        error: result.error
       });
     }
   } catch (error) {
@@ -2624,7 +2720,7 @@ router.patch('/:id/comment/:commentId/star', verifyToken, async (req, res) => {
     appointment.markModified('comments');
     await appointment.save();
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: starred ? 'Message starred successfully' : 'Message unstarred successfully',
       starred: starred && comment.starredBy.map(id => id.toString()).includes(userIdStr)
     });
@@ -2720,7 +2816,7 @@ router.patch('/:id/comment/:commentId/pin', verifyToken, async (req, res) => {
       console.warn('Warning: failed to emit pin/unpin commentUpdate event:', emitErr);
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: pinned ? 'Message pinned successfully' : 'Message unpinned successfully',
       pinned: comment.pinned,
       pinExpiresAt: comment.pinExpiresAt
@@ -2784,7 +2880,7 @@ router.patch('/:id/comment/:commentId/react', verifyToken, async (req, res) => {
       comment.reactions = comment.reactions.filter(
         reaction => reaction.userId.toString() !== userId
       );
-      
+
       // Add new reaction
       comment.reactions.push({
         emoji,
@@ -2795,11 +2891,11 @@ router.patch('/:id/comment/:commentId/react', verifyToken, async (req, res) => {
     }
 
     appointment.markModified('comments');
-    
+
     // Use retry logic to handle version conflicts
     let retryCount = 0;
     const maxRetries = 3;
-    
+
     while (retryCount < maxRetries) {
       try {
         await appointment.save();
@@ -2811,27 +2907,27 @@ router.patch('/:id/comment/:commentId/react', verifyToken, async (req, res) => {
           if (retryCount === maxRetries - 1) {
             console.log(`Version conflict in reaction, final retry... (${retryCount}/${maxRetries})`);
           }
-          
+
           // Add minimal delay to reduce contention (optimized for speed)
           const delay = Math.min(20 * Math.pow(2, retryCount - 1), 100); // 20ms, 40ms, 80ms max
           await new Promise(resolve => setTimeout(resolve, delay));
-          
+
           // Refetch the document to get latest version
           const freshDoc = await booking.findById(id);
           if (!freshDoc) {
             return res.status(404).json({ message: 'Appointment not found during retry.' });
           }
-          
+
           const freshComment = freshDoc.comments.id(commentId);
           if (!freshComment) {
             return res.status(404).json({ message: 'Comment not found during retry.' });
           }
-          
+
           // Reapply the reaction logic to fresh document
           const existingReactionIndex = freshComment.reactions.findIndex(
             reaction => reaction.userId.toString() === userId && reaction.emoji === emoji
           );
-          
+
           if (existingReactionIndex !== -1) {
             freshComment.reactions.splice(existingReactionIndex, 1);
           } else {
@@ -2845,7 +2941,7 @@ router.patch('/:id/comment/:commentId/react', verifyToken, async (req, res) => {
               timestamp: new Date()
             });
           }
-          
+
           freshDoc.markModified('comments');
           appointment = freshDoc;
           comment = freshComment;
@@ -2870,7 +2966,7 @@ router.patch('/:id/comment/:commentId/react', verifyToken, async (req, res) => {
       console.warn('Warning: failed to emit reaction commentUpdate event:', emitErr);
     }
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: existingReactionIndex !== -1 ? 'Reaction removed successfully' : 'Reaction added successfully',
       reactions: comment.reactions
     });
@@ -2894,7 +2990,7 @@ router.get('/:id/pinned-messages', verifyToken, async (req, res) => {
       .populate('buyerId', 'username email')
       .populate('sellerId', 'username email')
       .populate('listingId', 'name address');
-    
+
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
@@ -2910,11 +3006,11 @@ router.get('/:id/pinned-messages', verifyToken, async (req, res) => {
 
     // Filter pinned messages and check if they're expired
     const now = new Date();
-    const pinnedMessages = appointment.comments.filter(comment => 
+    const pinnedMessages = appointment.comments.filter(comment =>
       comment.pinned && comment.pinExpiresAt && comment.pinExpiresAt > now
     );
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       pinnedMessages,
       totalPinned: pinnedMessages.length
     });
@@ -2938,7 +3034,7 @@ router.get('/:id/starred-messages', verifyToken, async (req, res) => {
       .populate('buyerId', 'username email')
       .populate('sellerId', 'username email')
       .populate('listingId', 'name address');
-    
+
     if (!appointment) {
       return res.status(404).json({ message: 'Appointment not found.' });
     }
@@ -2953,11 +3049,11 @@ router.get('/:id/starred-messages', verifyToken, async (req, res) => {
     }
 
     // Filter starred messages for this user
-    const starredMessages = appointment.comments.filter(comment => 
+    const starredMessages = appointment.comments.filter(comment =>
       comment.starredBy && comment.starredBy.map(id => id.toString()).includes(userId.toString())
     );
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       starredMessages,
       appointmentInfo: {
         _id: appointment._id,
@@ -3012,7 +3108,7 @@ router.patch('/:id/chat/lock', verifyToken, async (req, res) => {
 
     await appointment.save();
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: 'Chat locked successfully.',
       chatLocked: true
     });
@@ -3048,14 +3144,14 @@ router.patch('/:id/chat/unlock', verifyToken, async (req, res) => {
 
     // Get the stored password hash
     const storedPasswordHash = isBuyer ? appointment.buyerChatPassword : appointment.sellerChatPassword;
-    
+
     if (!storedPasswordHash) {
       return res.status(400).json({ message: 'No password set for this chat.' });
     }
 
     // Verify the password
     const isPasswordValid = bcryptjs.compareSync(password, storedPasswordHash);
-    
+
     if (!isPasswordValid) {
       return res.status(400).json({ message: 'Incorrect password.' });
     }
@@ -3069,7 +3165,7 @@ router.patch('/:id/chat/unlock', verifyToken, async (req, res) => {
 
     await appointment.save();
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: 'Chat access granted.',
       chatLocked: true, // Chat is still locked
       accessGranted: true
@@ -3106,14 +3202,14 @@ router.patch('/:id/chat/remove-lock', verifyToken, async (req, res) => {
 
     // Get the stored password hash
     const storedPasswordHash = isBuyer ? appointment.buyerChatPassword : appointment.sellerChatPassword;
-    
+
     if (!storedPasswordHash) {
       return res.status(400).json({ message: 'No password set for this chat.' });
     }
 
     // Verify the password
     const isPasswordValid = bcryptjs.compareSync(password, storedPasswordHash);
-    
+
     if (!isPasswordValid) {
       return res.status(400).json({ message: 'Incorrect password.' });
     }
@@ -3131,7 +3227,7 @@ router.patch('/:id/chat/remove-lock', verifyToken, async (req, res) => {
 
     await appointment.save();
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: 'Chat lock removed successfully.',
       chatLocked: false,
       accessGranted: false
@@ -3166,7 +3262,7 @@ router.get('/:id/chat/lock-status', verifyToken, async (req, res) => {
     const hasPassword = isBuyer ? !!appointment.buyerChatPassword : !!appointment.sellerChatPassword;
     const accessGranted = isBuyer ? appointment.buyerChatAccessGranted : appointment.sellerChatAccessGranted;
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       chatLocked,
       hasPassword,
       accessGranted
@@ -3205,7 +3301,7 @@ router.patch('/:id/chat/reset-access', verifyToken, async (req, res) => {
 
     await appointment.save();
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: 'Chat access reset.',
       accessGranted: false
     });
@@ -3249,7 +3345,7 @@ router.patch('/:id/chat/forgot-password', verifyToken, async (req, res) => {
 
     // Clear all chat messages using Mongoose methods
     appointment.comments.splice(0, appointment.comments.length);
-    
+
     // Mark the comments field as modified to ensure Mongoose saves it
     appointment.markModified('comments');
 
@@ -3259,7 +3355,7 @@ router.patch('/:id/chat/forgot-password', verifyToken, async (req, res) => {
 
     console.log(`Chat cleared successfully. Comments after clear: ${appointment.comments.length}`);
 
-    return res.status(200).json({ 
+    return res.status(200).json({
       message: 'Chat unlocked and cleared successfully.',
       chatLocked: false,
       accessGranted: false
@@ -3274,7 +3370,7 @@ router.patch('/:id/chat/forgot-password', verifyToken, async (req, res) => {
 router.post("/test-seller-status-emails", verifyToken, async (req, res) => {
   try {
     const { email, status } = req.body;
-    
+
     if (!email || !status) {
       return res.status(400).json({ message: 'Email and status are required for testing.' });
     }
@@ -3306,9 +3402,9 @@ router.post("/test-seller-status-emails", verifyToken, async (req, res) => {
       result = await sendAppointmentRejectedEmail(email, testAppointmentDetails);
     }
 
-    res.status(200).json({ 
-      message: `Test ${status} email sent successfully to ${email}`, 
-      result: result 
+    res.status(200).json({
+      message: `Test ${status} email sent successfully to ${email}`,
+      result: result
     });
   } catch (error) {
     console.error(`Error sending test ${req.body.status} email:`, error);
@@ -3325,7 +3421,7 @@ export function registerUserAppointmentsSocket(io) {
       try {
         // Find all bookings where this user is buyer or seller
         const bookings = await booking.find({
-          $or: [ { buyerId: userId }, { sellerId: userId } ]
+          $or: [{ buyerId: userId }, { sellerId: userId }]
         });
         for (const appt of bookings) {
           let updated = false;
@@ -3334,9 +3430,9 @@ export function registerUserAppointmentsSocket(io) {
             // 1. Comment is not from this user 
             // 2. Comment status is "sent" (meaning it was sent while recipient was offline)
             // 3. Comment is not already delivered or read
-            if (comment.sender.toString() !== userId && 
-                comment.status === 'sent' && 
-                !comment.readBy?.includes(userId)) {
+            if (comment.sender.toString() !== userId &&
+              comment.status === 'sent' &&
+              !comment.readBy?.includes(userId)) {
               comment.status = 'delivered';
               updated = true;
               io.emit('commentDelivered', { appointmentId: appt._id.toString(), commentId: comment._id.toString() });
@@ -3362,9 +3458,9 @@ export function registerUserAppointmentsSocket(io) {
         // 1. Comment is not from this user
         // 2. Comment status is "sent"
         // 3. User is not already in readBy array
-        if (comment.sender.toString() !== userId && 
-            comment.status === 'sent' && 
-            !comment.readBy?.includes(userId)) {
+        if (comment.sender.toString() !== userId &&
+          comment.status === 'sent' &&
+          !comment.readBy?.includes(userId)) {
           comment.status = 'delivered';
           await appt.save();
           io.emit('commentDelivered', { appointmentId: appointmentId.toString(), commentId: commentId.toString() });

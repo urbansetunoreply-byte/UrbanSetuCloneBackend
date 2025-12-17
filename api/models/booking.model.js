@@ -221,6 +221,13 @@ const bookingSchema = new mongoose.Schema({
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RentWallet',
     default: null
+  },
+
+  // Sale Status
+  saleStatus: {
+    type: String,
+    enum: ['negotiation', 'token_paid', 'sold', 'cancelled'],
+    default: 'negotiation'
   }
 });
 
