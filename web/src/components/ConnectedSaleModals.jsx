@@ -5,9 +5,10 @@ import SaleCompleteModal from './SaleCompleteModal';
 
 /**
  * Connected component that listens to the external saleModalStore.
- * This bypasses passing 'isOpen' props from the parent, avoiding closure scope ReferenceErrors.
+ * It triggers actions via the store's registered callbacks, completely decoupling it
+ * from the parent's prop scope.
  */
-const ConnectedSaleModals = ({ onConfirmTokenPaid, onConfirmSaleComplete }) => {
+const ConnectedSaleModals = () => {
     const [state, setState] = useState(saleModalStore.get());
 
     useEffect(() => {
@@ -21,14 +22,14 @@ const ConnectedSaleModals = ({ onConfirmTokenPaid, onConfirmSaleComplete }) => {
     };
 
     const handleConfirmToken = () => {
-        if (state.id && onConfirmTokenPaid) {
-            onConfirmTokenPaid(state.id);
+        if (state.id) {
+            saleModalStore.executeTokenPaid(state.id);
         }
     };
 
     const handleConfirmSale = () => {
-        if (state.id && onConfirmSaleComplete) {
-            onConfirmSaleComplete(state.id);
+        if (state.id) {
+            saleModalStore.executeSaleComplete(state.id);
         }
     };
 

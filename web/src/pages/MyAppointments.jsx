@@ -838,6 +838,14 @@ export default function MyAppointments() {
     // setApptIdForAction(null);
   };
 
+  // Register callbacks for the external store to bypass scope issues
+  useEffect(() => {
+    saleModalStore.registerCallbacks({
+      onToken: confirmTokenPaid,
+      onSale: confirmSaleComplete
+    });
+  }); // Omitted deps to ensure always fresh closures, store handles updates efficiently
+
   // Dispute Handling
   const handleDispute = (id) => {
     setApptIdForAction(id);
@@ -13313,11 +13321,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
       {/* <GeminiAIWrapper /> */}
       {/* Sale Confirmation Modals */}
-      <ConnectedSaleModals
-        // setApptIdForAction removed to avoid ReferenceError
-        onConfirmTokenPaid={confirmTokenPaid}
-        onConfirmSaleComplete={confirmSaleComplete}
-      />
+      <ConnectedSaleModals />
 
       {/* Dispute Reporting Modal */}
       {showDisputeModal && (

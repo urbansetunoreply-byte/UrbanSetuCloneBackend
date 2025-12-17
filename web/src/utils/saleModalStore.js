@@ -3,6 +3,7 @@
 
 const listeners = new Set();
 let currentState = { type: null, id: null };
+let callbacks = { onToken: null, onSale: null };
 
 export const saleModalStore = {
     // Get current value
@@ -28,5 +29,18 @@ export const saleModalStore = {
     close: () => {
         currentState = { type: null, id: null };
         listeners.forEach(l => l(currentState));
+    },
+
+    // Teleportation Logic: Register callbacks from Parent to be used by Child
+    registerCallbacks: ({ onToken, onSale }) => {
+        callbacks = { onToken, onSale };
+    },
+
+    executeTokenPaid: (id) => {
+        if (callbacks.onToken) return callbacks.onToken(id);
+    },
+
+    executeSaleComplete: (id) => {
+        if (callbacks.onSale) return callbacks.onSale(id);
     }
 };
