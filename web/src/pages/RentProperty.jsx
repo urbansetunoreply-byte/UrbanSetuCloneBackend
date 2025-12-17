@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
-import { FaLock, FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaChevronRight, FaHome, FaShieldAlt, FaFileContract, FaTimesCircle, FaCreditCard, FaChevronLeft } from "react-icons/fa";
+import { FaLock, FaCalendarAlt, FaMoneyBillWave, FaCheckCircle, FaCheck, FaChevronRight, FaHome, FaShieldAlt, FaFileContract, FaTimesCircle, FaCreditCard, FaChevronLeft } from "react-icons/fa";
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
@@ -846,34 +846,46 @@ export default function RentProperty() {
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Progress Steps */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-6 overflow-x-auto pb-2">
+        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6">
+          <div className="flex items-center justify-between w-full">
             {[1, 2, 3, 4, 5].map((s) => (
               <React.Fragment key={s}>
                 <div
-                  className="flex flex-col items-center cursor-pointer hover:opacity-80 transition-opacity min-w-[50px]"
+                  className="relative flex flex-col items-center cursor-pointer z-10 group"
                   onClick={() => {
-                    // Allow navigation to step if already completed or current step, or if going back
+                    // Allow navigation if step is completed or current, or if going back
                     if (step >= s || (step > s)) {
                       setStep(s);
                     }
                   }}
-                  title={step > s ? 'Click to go back to this step' : step === s ? 'Current step' : 'Complete previous steps first'}
+                  title={step > s ? 'Click to go back' : ''}
                 >
-                  <div className={`w-8 h-8 md:w-10 md:h-10 rounded-full flex items-center justify-center text-sm md:text-base ${step >= s ? 'bg-blue-600 text-white' : 'bg-gray-300 text-gray-600'
+                  <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-sm md:text-base font-bold transition-all duration-500 border-4 shadow-sm ${step > s
+                    ? 'bg-blue-600 border-blue-600 text-white'
+                    : step === s
+                      ? 'bg-white border-blue-600 text-blue-600 scale-110 shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                      : 'bg-gray-50 border-gray-200 text-gray-400 group-hover:border-blue-300 transition-colors'
                     }`}>
-                    {step > s ? <FaCheckCircle /> : s}
+                    {step > s ? <FaCheck className="text-sm md:text-base" /> : s}
                   </div>
-                  <span className="text-[10px] md:text-xs mt-1 md:mt-2 text-gray-600 text-center whitespace-nowrap">
+                  <span className={`absolute top-12 md:top-14 text-[10px] md:text-xs font-bold whitespace-nowrap transition-colors duration-300 uppercase tracking-wide ${step >= s ? 'text-blue-700' : 'text-gray-400'
+                    }`}>
                     {s === 1 ? 'Select Plan' : s === 2 ? 'Review' : s === 3 ? 'Sign' : s === 4 ? 'Pay' : 'Move-in'}
                   </span>
                 </div>
                 {s < 5 && (
-                  <div className={`flex-1 h-0.5 md:h-1 mx-1 md:mx-2 ${step > s ? 'bg-blue-600' : 'bg-gray-300'}`} />
+                  <div className="flex-1 h-1.5 bg-gray-100 relative mx-2 rounded-full overflow-hidden">
+                    <div
+                      className={`absolute top-0 left-0 h-full bg-blue-600 transition-all duration-700 ease-out rounded-full ${step > s ? 'w-full' : 'w-0'
+                        }`}
+                    />
+                  </div>
                 )}
               </React.Fragment>
             ))}
           </div>
+          {/* Spacer for text labels */}
+          <div className="h-6 md:h-8"></div>
         </div>
 
         {/* Step 1: Plan Selection */}
