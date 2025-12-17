@@ -137,7 +137,8 @@ export default function MyAppointments() {
   // Sale Confirmation Modals State
   // Sale Confirmation Modals State - Renamed to fix RefError
   // Sale Confirmation Modals State - Consolidating to fix RefError
-  const [activeSaleModal, setActiveSaleModal] = useState(null); // 'token' | 'complete' | null
+  // Sale Confirmation Modals State - Object Refactor to fix ReferenceError
+  const [saleModalState, setSaleModalState] = useState({ active: null }); // { active: 'token' | 'complete' | null }
 
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [apptIdForAction, setApptIdForAction] = useState(null);
@@ -752,7 +753,7 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleTokenPaid = useCallback((id) => {
     setApptIdForAction(id);
-    setActiveSaleModal('token');
+    setSaleModalState({ active: 'token' });
   }, []);
 
   // Actual API call for Token Paid
@@ -761,7 +762,7 @@ export default function MyAppointments() {
     if (!id) return;
 
     setActionLoading(id + 'token_paid');
-    setActiveSaleModal(null);
+    setSaleModalState({ active: null });
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/token-paid`,
@@ -795,7 +796,7 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleSaleComplete = useCallback((id) => {
     setApptIdForAction(id);
-    setActiveSaleModal('complete');
+    setSaleModalState({ active: 'complete' });
   }, []);
 
   // Actual API call for Sale Complete
@@ -804,7 +805,7 @@ export default function MyAppointments() {
     if (!id) return;
 
     setActionLoading(id + 'sold');
-    setActiveSaleModal(null);
+    setSaleModalState({ active: null });
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/complete`,
@@ -13311,8 +13312,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* <GeminiAIWrapper /> */}
       {/* Sale Confirmation Modals */}
       <SaleModals
-        activeSaleModal={activeSaleModal}
-        onClose={() => { setActiveSaleModal(null); setApptIdForAction(null); }}
+        activeSaleModal={saleModalState.active}
+        onClose={() => { setSaleModalState({ active: null }); setApptIdForAction(null); }}
         onConfirmTokenPaid={confirmTokenPaid}
         onConfirmSaleComplete={confirmSaleComplete}
       />
