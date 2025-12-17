@@ -175,7 +175,51 @@ export default function PayMonthlyRent() {
       return;
     }
 
-    // Check if payment is already completed locally
+    // Refetch wallet to get the latest status before initiating payment
+    try {
+      setLoading(true);
+      const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contract._id}`, {
+        credentials: 'include'
+      });
+
+      if (walletRes.ok) {
+        const walletData = await walletRes.json();
+        if (walletData.success && walletData.wallet) {
+          const freshWallet = walletData.wallet;
+          setWallet(freshWallet); // Update state
+
+          // Find the current payment in the fresh wallet data
+          const currentPaymentIndex = selectedPayment.scheduleIndex;
+          const freshPayment = freshWallet.paymentSchedule[currentPaymentIndex];
+
+          if (freshPayment) {
+            // Update selectedPayment with fresh data
+            setSelectedPayment({ ...freshPayment, scheduleIndex: currentPaymentIndex });
+
+            // Check status from fresh data
+            if (freshPayment.status === 'completed' || freshPayment.status === 'paid') {
+              toast.success("Rent for this month is already paid.");
+              setCreatedPayment({
+                amount: freshPayment.amount,
+                rentMonth: freshPayment.month,
+                rentYear: freshPayment.year,
+                status: 'completed',
+                paymentId: freshPayment.paymentId
+              });
+              setStep(5);
+              setLoading(false);
+              return;
+            }
+          }
+        }
+      }
+    } catch (err) {
+      console.error("Error refreshing wallet status:", err);
+      // Continue with existing state if refresh fails, but warn? 
+      // Or maybe just proceed, as existing check below handles local state
+    }
+
+    // Check if payment is already completed (double check)
     if (selectedPayment.status === 'completed' || selectedPayment.status === 'paid') {
       toast.success("Rent for this month is already paid.");
       setCreatedPayment({
