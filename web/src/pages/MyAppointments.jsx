@@ -2053,6 +2053,7 @@ function getDateLabel(date) {
 function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid, handleSaleComplete, handleDispute, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName, setShowCallHistoryModal, setCallHistoryAppointmentId }) {
   // Camera modal state - moved to main MyAppointments component
   const navigate = useNavigate();
+  const { playMessageSent, playMessageReceived, playTyping, playNotification, toggleMute, setVolume, isMuted, getCurrentVolume } = useSoundEffects();
 
   const [replyTo, setReplyTo] = useState(null);
   const [comment, setComment] = useState("");
@@ -2515,6 +2516,29 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
   // Chat options menu state
   const [showChatOptionsMenu, setShowChatOptionsMenu] = useState(false);
   const { settings, updateSetting } = useChatSettings('my_appointments_chat_settings');
+
+  // Effect to play sound on new received messages
+  const prevSoundCommentsLengthRef = useRef(comments.length);
+  useEffect(() => {
+    // Update ref if comments length resets (e.g. chat cleared)
+    if (comments.length < prevSoundCommentsLengthRef.current) {
+      prevSoundCommentsLengthRef.current = comments.length;
+      return;
+    }
+
+    // Check for new messages
+    if (comments.length > prevSoundCommentsLengthRef.current) {
+      const lastMessage = comments[comments.length - 1];
+      // Only play if message is from someone else and sound is enabled
+      if (lastMessage && lastMessage.senderEmail !== currentUser.email) {
+        if (settings.soundEnabled) {
+          playMessageReceived();
+        }
+      }
+      prevSoundCommentsLengthRef.current = comments.length;
+    }
+  }, [comments, currentUser.email, playMessageReceived, settings.soundEnabled]);
+
   const [showSettingsModal, setShowSettingsModal] = useState(false);
 
   // Multi-select message states
@@ -2614,7 +2638,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
   // Camera functions - temporarily disabled
 
   // Sound effects
-  const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted, getCurrentVolume } = useSoundEffects();
+  // const { playMessageSent, playMessageReceived, playNotification, toggleMute, setVolume, isMuted, getCurrentVolume } = useSoundEffects();
 
   // Reactive state for volume control UI
   const [currentVolume, setCurrentVolume] = useState(1.0); // Default volume
@@ -4313,7 +4337,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
         ));
 
         // Don't show success toast as it's too verbose for chat
-        playMessageSent(); // Play send sound
+        if (settings.soundEnabled) {
+          playMessageSent(); // Play send sound
+        }
       } catch (err) {
         // Remove the temp message and show error
         setComments(prev => prev.filter(msg => msg._id !== tempId));
@@ -9723,6 +9749,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                       }
                       if (!editingComment) {
                         socket.emit('typing', { toUserId: otherParty._id, fromUserId: currentUser._id, appointmentId: appt._id });
+                        if (settings.soundEnabled) {
+                          playTyping();
+                        }
                       }
 
                       // If cleared entirely, restore to original height

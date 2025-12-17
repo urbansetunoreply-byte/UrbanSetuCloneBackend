@@ -37,6 +37,7 @@ export default function AdminAppointments() {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const { signout } = useSignout();
+  const { playMessageReceived } = useSoundEffects();
 
   // Handle navigation state when coming from direct chat link
   const location = useLocation();
@@ -1027,14 +1028,18 @@ export default function AdminAppointments() {
               if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
                 const updatedComments = [...(appt.comments || [])];
                 updatedComments[existingCommentIndex] = updatedComment;
-                try { playMessageReceived(); } catch (_) { }
+                try {
+                  if (settings.soundEnabled) playMessageReceived();
+                } catch (_) { }
                 return { ...appt, comments: updatedComments };
               }
               return appt; // No changes needed
             } else {
               // Add new comment - this is a new user message
               const updatedComments = [...(appt.comments || []), data.comment];
-              try { playMessageReceived(); } catch (_) { }
+              try {
+                if (settings.soundEnabled) playMessageReceived();
+              } catch (_) { }
               return { ...appt, comments: updatedComments };
             }
           }
@@ -1066,14 +1071,18 @@ export default function AdminAppointments() {
               if (JSON.stringify(existingComment) !== JSON.stringify(updatedComment)) {
                 const updatedComments = [...(appt.comments || [])];
                 updatedComments[existingCommentIndex] = updatedComment;
-                try { playMessageReceived(); } catch (_) { }
+                try {
+                  if (settings.soundEnabled) playMessageReceived();
+                } catch (_) { }
                 return { ...appt, comments: updatedComments };
               }
               return appt; // No changes needed
             } else {
               // Add new comment
               const updatedComments = [...(appt.comments || []), data.comment];
-              try { playMessageReceived(); } catch (_) { }
+              try {
+                if (settings.soundEnabled) playMessageReceived();
+              } catch (_) { }
               return { ...appt, comments: updatedComments };
             }
           }
@@ -2705,6 +2714,8 @@ function AdminAppointmentRow({
 }) {
   const navigate = useNavigate();
   const params = useParams();
+  const { playMessageSent, playTyping } = useSoundEffects();
+
 
   // Use parent comments directly for real-time sync, with local state for UI interactions
   const [localComments, setLocalComments] = React.useState(appt.comments || []);
@@ -5095,7 +5106,9 @@ function AdminAppointmentRow({
 
     // Immediately update UI - this makes the message appear instantly
     setLocalComments(prev => [...prev, tempMessage]);
-    try { playMessageSent(); } catch (_) { }
+    try {
+      if (settings.soundEnabled) playMessageSent();
+    } catch (_) { }
     setNewComment("");
     try {
       const draftKey = `admin_appt_draft_${appt._id}_${currentUser._id}`;
@@ -9036,6 +9049,7 @@ function AdminAppointmentRow({
                     onChange={(e) => {
                       const value = e.target.value;
                       setNewComment(value);
+                      if (settings.soundEnabled) playTyping();
 
                       // Detect URLs in the input
                       const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)/gi;
