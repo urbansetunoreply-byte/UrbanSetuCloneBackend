@@ -26,6 +26,7 @@ import { getThemeColors, getDarkModeContainerClass, getDarkModeInputClass, getDa
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import ConnectedSaleModals from '../components/ConnectedSaleModals';
+import ConnectedDisputeModal from '../components/ConnectedDisputeModal';
 import { saleModalStore } from '../utils/saleModalStore';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -141,13 +142,7 @@ export default function MyAppointments() {
   // Sale Confirmation Modals State - Object Refactor to fix ReferenceError
   // Sale Confirmation Modals State - External Store to fix RefError
   // No local state needed for modals anymore!
-
-  const [showDisputeModal, setShowDisputeModal] = useState(false);
-  const [apptIdForAction, setApptIdForAction] = useState(null);
-
-  // Dispute State
-  const [disputeReason, setDisputeReason] = useState("");
-  const [submittingDispute, setSubmittingDispute] = useState(false);
+  // Dispute state managed by store/ConnectedDisputeModal
 
   // Call functionality - using global context
   const {
@@ -842,34 +837,30 @@ export default function MyAppointments() {
   useEffect(() => {
     saleModalStore.registerCallbacks({
       onToken: confirmTokenPaid,
-      onSale: confirmSaleComplete
+      onSale: confirmSaleComplete,
+      onDispute: confirmDispute
     });
   }); // Omitted deps to ensure always fresh closures, store handles updates efficiently
 
-  // Dispute Handling
+  // Dispute Handling via Store
   const handleDispute = (id) => {
-    setApptIdForAction(id);
-    setDisputeReason("");
-    setShowDisputeModal(true);
+    saleModalStore.openDisputeModal(id);
   };
 
-  const submitDispute = async () => {
-    if (!apptIdForAction || !disputeReason.trim()) return;
+  const confirmDispute = async (id, reason) => {
+    if (!id || !reason.trim()) return;
 
-    setSubmittingDispute(true);
+    // Loading handling is done in ConnectedDisputeModal
     try {
-      await axios.post(`${API_BASE_URL}/api/bookings/${apptIdForAction}/sale/dispute`,
-        { reason: disputeReason },
+      await axios.post(`${API_BASE_URL}/api/bookings/${id}/sale/dispute`,
+        { reason: reason },
         { withCredentials: true }
       );
       toast.success("Dispute reported securely to the administration. We will contact you shortly.");
-      setShowDisputeModal(false);
-      setApptIdForAction(null);
-      setDisputeReason("");
+      saleModalStore.close();
     } catch (err) {
       toast.error(err.response?.data?.message || "Failed to submit dispute.");
-    } finally {
-      setSubmittingDispute(false);
+      throw err; // Re-throw so child knows it failed
     }
   };
 
@@ -13324,44 +13315,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       <ConnectedSaleModals />
 
       {/* Dispute Reporting Modal */}
-      {showDisputeModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 transform transition-all scale-100">
-            <div className="flex items-center gap-3 mb-4 text-red-600">
-              <FaExclamationTriangle className="text-2xl" />
-              <h3 className="text-2xl font-bold text-gray-800">Report a Dispute</h3>
-            </div>
-
-            <p className="text-gray-600 mb-4">
-              If you have an issue with this completed transaction (e.g., payment discrepancy, property condition), please describe it below. Our support team will investigate.
-            </p>
-
-            <textarea
-              value={disputeReason}
-              onChange={(e) => setDisputeReason(e.target.value)}
-              placeholder="Describe the issue in detail..."
-              className="w-full h-32 p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
-            ></textarea>
-
-            <div className="flex gap-4">
-              <button
-                onClick={() => { setShowDisputeModal(false); setApptIdForAction(null); setDisputeReason(""); }}
-                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={submitDispute}
-                disabled={submittingDispute || !disputeReason.trim()}
-                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-md transition-all font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {submittingDispute ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
-                Submit Report
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+      {/* Dispute Reporting Modal */}
+      <ConnectedDisputeModal />
 
       {/* <GeminiAIWrapper /> */}
       <ContactSupportWrapper />
