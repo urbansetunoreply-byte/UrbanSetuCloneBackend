@@ -12,7 +12,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const WishList = () => {
   // Set page title
   usePageTitle("My Wishlist - Saved Properties");
-  
+
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
   const [items, setItems] = useState([]);
@@ -73,7 +73,7 @@ const WishList = () => {
         setWishlistItems(prev => prev.filter(w => (w.listingId?.['_id'] || w.listingIdRaw) !== listingId));
         toast.success('Removed from wishlist');
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   // Receive heart toggle from card to immediately remove without refresh
@@ -94,11 +94,13 @@ const WishList = () => {
     }
     setSearching(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(query)}&limit=20`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(query)}&limit=20`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        setSearchResults(data);
-        setSearchSuggestions(data.slice(0, 5));
+        if (data.success) {
+          setSearchResults(data.suggestions);
+          setSearchSuggestions(data.suggestions.slice(0, 5));
+        }
       }
     } catch (error) {
       console.error('Error searching properties:', error);
@@ -117,11 +119,13 @@ const WishList = () => {
     }
     setSuggestionLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(searchQuery)}&limit=5`, { credentials: 'include' });
+      const res = await fetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(searchQuery)}&limit=8`, { credentials: 'include' });
       if (res.ok) {
         const data = await res.json();
-        setSearchSuggestions(data);
-        setShowSuggestions(true);
+        if (data.success) {
+          setSearchSuggestions(data.suggestions);
+          setShowSuggestions(true);
+        }
       }
     } catch (error) {
       console.error('Error fetching suggestions:', error);
@@ -469,7 +473,7 @@ const WishList = () => {
         {/* AI Recommendations Section */}
         {showAIRecommendations && currentUser && (
           <div className="mb-6">
-            <AdvancedAIRecommendations 
+            <AdvancedAIRecommendations
               userId={currentUser._id}
               limit={8}
               showTitle={true}
@@ -510,7 +514,7 @@ const WishList = () => {
             </div>
           </div>
         )}
-        
+
         {/* Search and Filter Controls */}
         {items.length > 0 && (
           <div className="mb-6 space-y-4">

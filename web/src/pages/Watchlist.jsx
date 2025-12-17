@@ -57,7 +57,7 @@ export default function Watchlist() {
           }
         });
         setBaselineMap(map);
-        
+
         // Note: Price drop detection and email alerts are now handled automatically
         // when sellers update prices via the backend notification system
       }
@@ -123,19 +123,19 @@ export default function Watchlist() {
   };
 
   useEffect(() => { fetchWatchlist(); }, [currentUser?._id]);
-  
+
   // Periodic check for price changes (every 5 minutes)
   useEffect(() => {
     if (!currentUser?._id || items.length === 0) return;
-    
+
     const interval = setInterval(() => {
       // Re-fetch watchlist to get latest prices and check for changes (background refresh)
       fetchWatchlist(false);
     }, 5 * 60 * 1000); // 5 minutes
-    
+
     return () => clearInterval(interval);
   }, [currentUser?._id, items.length]);
-  
+
   // Check for price changes when page becomes visible
   useEffect(() => {
     const handleVisibilityChange = () => {
@@ -144,14 +144,14 @@ export default function Watchlist() {
         fetchWatchlist(false);
       }
     };
-    
+
     document.addEventListener('visibilitychange', handleVisibilityChange);
-    
+
     return () => {
       document.removeEventListener('visibilitychange', handleVisibilityChange);
     };
   }, [currentUser?._id, items.length]);
-  
+
   useEffect(() => {
     calculateWatchlistStats();
   }, [items]);
@@ -164,7 +164,7 @@ export default function Watchlist() {
         setWatchlistItems(prev => prev.filter(w => (w.listingId?.['_id'] || w.listingIdRaw) !== listingId));
         toast.success('Removed from watchlist');
       }
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const searchProperties = async (searchQuery = propertySearchTerm) => {
@@ -172,14 +172,16 @@ export default function Watchlist() {
     if (!q) return;
     setSearching(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(q)}&limit=20`, {
+      const res = await fetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(q)}&limit=20`, {
         credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
-        setSearchResults(data);
-        // Also update suggestions to be the same as search results
-        setSearchSuggestions(data.slice(0, 5));
+        if (data.success) {
+          setSearchResults(data.suggestions);
+          // Also update suggestions to be the same as search results
+          setSearchSuggestions(data.suggestions.slice(0, 5));
+        }
       }
     } catch (error) {
       console.error('Error searching properties:', error);
@@ -199,13 +201,15 @@ export default function Watchlist() {
 
     setSuggestionLoading(true);
     try {
-      const res = await fetch(`${API_BASE_URL}/api/listing/get?search=${encodeURIComponent(q)}&limit=5`, {
+      const res = await fetch(`${API_BASE_URL}/api/search/suggestions?q=${encodeURIComponent(q)}&limit=5`, {
         credentials: 'include'
       });
       if (res.ok) {
         const data = await res.json();
-        setSearchSuggestions(data);
-        setShowSuggestions(true);
+        if (data.success) {
+          setSearchSuggestions(data.suggestions);
+          setShowSuggestions(true);
+        }
       }
     } catch (error) {
       console.error('Error fetching suggestions:', error);
@@ -261,8 +265,8 @@ export default function Watchlist() {
 
   // Bulk actions
   const handleSelectItem = (listingId) => {
-    setSelectedItems(prev => 
-      prev.includes(listingId) 
+    setSelectedItems(prev =>
+      prev.includes(listingId)
         ? prev.filter(id => id !== listingId)
         : [...prev, listingId]
     );
@@ -278,15 +282,15 @@ export default function Watchlist() {
 
   const handleBulkRemove = async () => {
     if (selectedItems.length === 0) return;
-    
+
     try {
-      const promises = selectedItems.map(listingId => 
-        fetch(`${API_BASE_URL}/api/watchlist/remove/${listingId}`, { 
-          method: 'DELETE', 
-          credentials: 'include' 
+      const promises = selectedItems.map(listingId =>
+        fetch(`${API_BASE_URL}/api/watchlist/remove/${listingId}`, {
+          method: 'DELETE',
+          credentials: 'include'
         })
       );
-      
+
       await Promise.all(promises);
       setItems(prev => prev.filter(item => !selectedItems.includes(item._id)));
       setSelectedItems([]);
@@ -338,7 +342,7 @@ export default function Watchlist() {
   const handleShareWatchlist = () => {
     const shareText = `Check out my watchlist with ${items.length} properties!`;
     const shareUrl = window.location.href;
-    
+
     if (navigator.share) {
       navigator.share({
         title: 'My Property Watchlist',
@@ -355,8 +359,8 @@ export default function Watchlist() {
   const filteredAndSortedItems = items
     .filter(item => {
       const matchesSearch = item.name?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           item.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
-                           item.state?.toLowerCase().includes(searchTerm.toLowerCase());
+        item.city?.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        item.state?.toLowerCase().includes(searchTerm.toLowerCase());
       const matchesType = filterType === 'all' || item.type === filterType;
       return matchesSearch && matchesType;
     })
@@ -385,7 +389,7 @@ export default function Watchlist() {
     );
   }
 
-  
+
 
   const isPriceDropped = (l) => {
     const effective = getEffectivePrice(l);
@@ -456,32 +460,30 @@ export default function Watchlist() {
                   <FaBars className="rotate-90 text-sm" />
                 </button>
               </div>
-              
+
               {/* Stats Toggle */}
               <button
                 onClick={() => setShowStats(!showStats)}
-                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
-                  showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 <FaChartLine className="text-xs sm:text-sm" />
                 <span className="hidden sm:inline">Stats</span>
               </button>
-              
+
               {/* Bulk Actions */}
               {items.length > 0 && (
                 <button
                   onClick={() => setBulkActionMode(!bulkActionMode)}
-                  className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
-                    bulkActionMode ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${bulkActionMode ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   <FaCheck className="text-xs sm:text-sm" />
                   <span className="hidden sm:inline">Select</span>
                 </button>
               )}
             </div>
-            
+
             {/* Second row for mobile */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Export */}
@@ -493,7 +495,7 @@ export default function Watchlist() {
                 <FaDownload className="text-xs sm:text-sm" />
                 <span className="hidden sm:inline">Export</span>
               </button>
-              
+
               {/* Share */}
               <button
                 onClick={handleShareWatchlist}
@@ -503,7 +505,7 @@ export default function Watchlist() {
                 <FaShare className="text-xs sm:text-sm" />
                 <span className="hidden sm:inline">Share</span>
               </button>
-              
+
               {/* Add Properties */}
               <button
                 onClick={() => setShowAddProperty(!showAddProperty)}
@@ -542,7 +544,7 @@ export default function Watchlist() {
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                   className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
                 />
-                
+
                 {/* Search Suggestions Dropdown */}
                 {showSuggestions && (searchSuggestions.length > 0 || suggestionLoading) && (
                   <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
@@ -610,7 +612,7 @@ export default function Watchlist() {
                 )}
               </button>
             </div>
-            
+
             {/* Search Results */}
             {searchResults.length > 0 && (
               <div className="space-y-2 max-h-60 overflow-y-auto">
@@ -626,11 +628,10 @@ export default function Watchlist() {
                     <button
                       onClick={() => addToWatchlist(listing)}
                       disabled={isInWatchlist(listing._id)}
-                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${
-                        isInWatchlist(listing._id)
+                      className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isInWatchlist(listing._id)
                           ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
                           : 'bg-purple-600 text-white hover:bg-purple-700'
-                      }`}
+                        }`}
                     >
                       {isInWatchlist(listing._id) ? 'Added' : 'Add to Watchlist'}
                     </button>
@@ -668,7 +669,7 @@ export default function Watchlist() {
                 <p className="text-sm sm:text-2xl font-bold text-indigo-600">₹{watchlistStats.totalValue.toLocaleString('en-IN')}</p>
               </div>
             </div>
-            
+
             {/* Distribution Charts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
               <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -679,8 +680,8 @@ export default function Watchlist() {
                       <span className="text-sm text-gray-600 capitalize">{type}</span>
                       <div className="flex items-center gap-2">
                         <div className="w-20 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-purple-500 h-2 rounded-full" 
+                          <div
+                            className="bg-purple-500 h-2 rounded-full"
                             style={{ width: `${(count / items.length) * 100}%` }}
                           ></div>
                         </div>
@@ -690,7 +691,7 @@ export default function Watchlist() {
                   ))}
                 </div>
               </div>
-              
+
               <div className="bg-white p-4 rounded-lg shadow-sm">
                 <h4 className="font-semibold text-gray-800 mb-3">By City</h4>
                 <div className="space-y-2">
@@ -698,19 +699,19 @@ export default function Watchlist() {
                     .sort((a, b) => b[1] - a[1])
                     .slice(0, 5)
                     .map(([city, count]) => (
-                    <div key={city} className="flex items-center justify-between">
-                      <span className="text-sm text-gray-600">{city}</span>
-                      <div className="flex items-center gap-2">
-                        <div className="w-20 bg-gray-200 rounded-full h-2">
-                          <div 
-                            className="bg-pink-500 h-2 rounded-full" 
-                            style={{ width: `${(count / items.length) * 100}%` }}
-                          ></div>
+                      <div key={city} className="flex items-center justify-between">
+                        <span className="text-sm text-gray-600">{city}</span>
+                        <div className="flex items-center gap-2">
+                          <div className="w-20 bg-gray-200 rounded-full h-2">
+                            <div
+                              className="bg-pink-500 h-2 rounded-full"
+                              style={{ width: `${(count / items.length) * 100}%` }}
+                            ></div>
+                          </div>
+                          <span className="text-sm font-semibold text-gray-800">{count}</span>
                         </div>
-                        <span className="text-sm font-semibold text-gray-800">{count}</span>
                       </div>
-                    </div>
-                  ))}
+                    ))}
                 </div>
               </div>
             </div>
@@ -850,8 +851,8 @@ export default function Watchlist() {
             <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
           </div>
         ) : (
-          <div className={viewMode === 'grid' 
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" 
+          <div className={viewMode === 'grid'
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6"
             : "space-y-4 overflow-x-hidden"
           }>
             {filteredAndSortedItems.map((listing) => {
@@ -859,65 +860,66 @@ export default function Watchlist() {
               const hasChangeInfo = stats && stats.baseline != null && stats.current != null;
               const statusColor = stats.status === 'dropped' ? 'text-green-600' : (stats.status === 'increased' ? 'text-red-600' : 'text-gray-600');
               return (
-              <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
-                {isPriceDropped(listing) && (
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="bg-green-500 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1">
-                      <FaArrowDown className="text-[10px] sm:text-xs" /> Price dropped
-                    </span>
-                  </div>
-                )}
-                {isPriceIncreased(listing) && (
-                  <div className="absolute top-2 left-2 z-10">
-                    <span className="bg-red-500 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1">
-                      <FaArrowUp className="text-[10px] sm:text-xs" /> Price increased
-                    </span>
-                  </div>
-                )}
-                {/* Selection Checkbox */}
-                {bulkActionMode && (
-                  <div className="flex items-center">
-                    <input
-                      type="checkbox"
-                      checked={selectedItems.includes(listing._id)}
-                      onChange={() => handleSelectItem(listing._id)}
-                      className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
-                    />
-                  </div>
-                )}
-                
-                {/* Property Content */}
-                <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                  <ListingItem listing={listing} onDelete={handleRemove} />
-                  {hasChangeInfo && (
-                    <div className="mt-2 px-2 py-2 bg-gray-50 border rounded-md text-xs sm:text-sm flex flex-wrap items-center gap-3">
-                      <div className="flex items-center gap-1 text-gray-600">
-                        <FaCalendarAlt className="text-gray-500" />
-                        <span>Added: {stats.addedAt ? new Date(stats.addedAt).toLocaleDateString() : '-'}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-gray-600">
-                        <FaBookmark className="text-gray-500" />
-                        <span>At add: ₹{Number(stats.baseline).toLocaleString('en-IN')}</span>
-                      </div>
-                      <div className="flex items-center gap-1 text-gray-600">
-                        <FaEye className="text-gray-500" />
-                        <span>Today: ₹{Number(stats.current).toLocaleString('en-IN')}</span>
-                      </div>
-                      <div className={`flex items-center gap-1 font-semibold ${statusColor}`}>
-                        {stats.status === 'dropped' && <FaArrowDown />}
-                        {stats.status === 'increased' && <FaArrowUp />}
-                        {stats.status === 'neutral' && <FaCheckCircle className="text-gray-500" />}
-                        <span>
-                          {stats.status === 'dropped' && `Dropped ₹${Math.abs(stats.change).toLocaleString('en-IN')}`}
-                          {stats.status === 'increased' && `Increased ₹${Math.abs(stats.change).toLocaleString('en-IN')}`}
-                          {stats.status === 'neutral' && 'No change'}
-                        </span>
-                      </div>
+                <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
+                  {isPriceDropped(listing) && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <span className="bg-green-500 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1">
+                        <FaArrowDown className="text-[10px] sm:text-xs" /> Price dropped
+                      </span>
                     </div>
                   )}
+                  {isPriceIncreased(listing) && (
+                    <div className="absolute top-2 left-2 z-10">
+                      <span className="bg-red-500 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1">
+                        <FaArrowUp className="text-[10px] sm:text-xs" /> Price increased
+                      </span>
+                    </div>
+                  )}
+                  {/* Selection Checkbox */}
+                  {bulkActionMode && (
+                    <div className="flex items-center">
+                      <input
+                        type="checkbox"
+                        checked={selectedItems.includes(listing._id)}
+                        onChange={() => handleSelectItem(listing._id)}
+                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                      />
+                    </div>
+                  )}
+
+                  {/* Property Content */}
+                  <div className={viewMode === 'list' ? 'flex-1' : ''}>
+                    <ListingItem listing={listing} onDelete={handleRemove} />
+                    {hasChangeInfo && (
+                      <div className="mt-2 px-2 py-2 bg-gray-50 border rounded-md text-xs sm:text-sm flex flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <FaCalendarAlt className="text-gray-500" />
+                          <span>Added: {stats.addedAt ? new Date(stats.addedAt).toLocaleDateString() : '-'}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <FaBookmark className="text-gray-500" />
+                          <span>At add: ₹{Number(stats.baseline).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className="flex items-center gap-1 text-gray-600">
+                          <FaEye className="text-gray-500" />
+                          <span>Today: ₹{Number(stats.current).toLocaleString('en-IN')}</span>
+                        </div>
+                        <div className={`flex items-center gap-1 font-semibold ${statusColor}`}>
+                          {stats.status === 'dropped' && <FaArrowDown />}
+                          {stats.status === 'increased' && <FaArrowUp />}
+                          {stats.status === 'neutral' && <FaCheckCircle className="text-gray-500" />}
+                          <span>
+                            {stats.status === 'dropped' && `Dropped ₹${Math.abs(stats.change).toLocaleString('en-IN')}`}
+                            {stats.status === 'increased' && `Increased ₹${Math.abs(stats.change).toLocaleString('en-IN')}`}
+                            {stats.status === 'neutral' && 'No change'}
+                          </span>
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
-              </div>
-            );})}
+              );
+            })}
           </div>
         )}
       </div>
