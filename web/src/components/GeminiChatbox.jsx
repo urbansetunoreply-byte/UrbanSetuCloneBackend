@@ -1946,15 +1946,34 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                     return updatedMessages;
                 });
                 autoReportRestrictedContent(lastUserMessageRef.current, "AI Moderated");
+                // Note: For policy violations, we keep the prompt count decremented
             } else {
+                // For technical errors (network, timeout, server), restore the prompt count
+                let shouldRestoreCount = false;
+
                 if (error.message.includes('timeout')) {
                     errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
+                    shouldRestoreCount = true;
                 } else if (error.message.includes('HTTP error')) {
                     errorMessage = 'Server error. Please try again later.';
+                    shouldRestoreCount = true;
                 } else if (error.message.includes('Invalid response structure')) {
                     errorMessage = 'I received an invalid response. Please try again.';
+                    shouldRestoreCount = true;
                 } else if (error.message.includes('Failed to fetch')) {
                     errorMessage = 'Network error. Please check your connection and try again.';
+                    shouldRestoreCount = true;
+                } else {
+                    // Generic error - also restore count
+                    shouldRestoreCount = true;
+                }
+
+                // Restore prompt count for technical failures
+                if (shouldRestoreCount && rateLimitInfo.role !== 'rootadmin') {
+                    setRateLimitInfo(prev => ({
+                        ...prev,
+                        remaining: prev.remaining + 1 // Restore the count
+                    }));
                 }
 
                 setMessages(prev => {
@@ -2102,14 +2121,32 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 return;
             }
 
+            // For technical errors, restore the prompt count
+            let shouldRestoreCount = false;
+
             if (error.message.includes('timeout')) {
                 errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
+                shouldRestoreCount = true;
             } else if (error.message.includes('HTTP error')) {
                 errorMessage = 'Server error. Please try again later.';
+                shouldRestoreCount = true;
             } else if (error.message.includes('Invalid response structure')) {
                 errorMessage = 'I received an invalid response. Please try again.';
+                shouldRestoreCount = true;
             } else if (error.message.includes('Failed to fetch')) {
                 errorMessage = 'Network error. Please check your connection and try again.';
+                shouldRestoreCount = true;
+            } else {
+                // Generic error - also restore count
+                shouldRestoreCount = true;
+            }
+
+            // Restore prompt count for technical failures
+            if (shouldRestoreCount && rateLimitInfo.role !== 'rootadmin') {
+                setRateLimitInfo(prev => ({
+                    ...prev,
+                    remaining: prev.remaining + 1 // Restore the count
+                }));
             }
 
             setMessages(prev => [...prev, {
@@ -2533,14 +2570,32 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
 
+            // For technical errors, restore the prompt count
+            let shouldRestoreCount = false;
+
             if (error.message.includes('timeout')) {
                 errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
+                shouldRestoreCount = true;
             } else if (error.message.includes('HTTP error')) {
                 errorMessage = 'Server error. Please try again later.';
+                shouldRestoreCount = true;
             } else if (error.message.includes('Invalid response structure')) {
                 errorMessage = 'I received an invalid response. Please try again.';
+                shouldRestoreCount = true;
             } else if (error.message.includes('Failed to fetch')) {
                 errorMessage = 'Network error. Please check your connection and try again.';
+                shouldRestoreCount = true;
+            } else {
+                // Generic error - also restore count
+                shouldRestoreCount = true;
+            }
+
+            // Restore prompt count for technical failures
+            if (shouldRestoreCount && rateLimitInfo.role !== 'rootadmin') {
+                setRateLimitInfo(prev => ({
+                    ...prev,
+                    remaining: prev.remaining + 1 // Restore the count
+                }));
             }
 
             setMessages(prev => [...prev, {
