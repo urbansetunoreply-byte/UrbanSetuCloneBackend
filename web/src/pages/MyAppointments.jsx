@@ -6329,19 +6329,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
                         </div>
                       );
                     })()}
-                    {/* View Contract button: show for rental appointments with contract */}
+                    {/* Rent Wallet button: show for rental appointments with contract */}
                     {['rent', 'rent discussion', 'inspection', 'property inspection', 'followup', 'follow-up visit', 'follow-up'].includes(appt.purpose?.toLowerCase()) && appt.contractId && (
-                      <Link
-                        to={`/user/rental-contracts?contractId=${appt.contractId._id || appt.contractId}`}
-                        className="text-xs border rounded px-2 py-1 mt-1 text-indigo-600 hover:text-indigo-700 border-indigo-500 bg-indigo-50 hover:bg-indigo-100 transition"
-                        title="View Rental Contract"
-                      >
-                        <FaFileContract className="inline mr-1" />
-                        View Contract
-                      </Link>
-                    )}
-                    {/* Rent Wallet button: show for rental appointments where user is tenant and contract exists */}
-                    {['rent', 'rent discussion', 'inspection', 'property inspection', 'followup', 'follow-up visit', 'follow-up'].includes(appt.purpose?.toLowerCase()) && isBuyer && appt.contractId && (
                       <Link
                         to={`/user/rent-wallet?contractId=${appt.contractId._id || appt.contractId}`}
                         className="text-xs border rounded px-2 py-1 mt-1 text-green-600 hover:text-green-700 border-green-500 bg-green-50 hover:bg-green-100 transition"
