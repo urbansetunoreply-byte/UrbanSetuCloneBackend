@@ -295,7 +295,24 @@ export default function MyListings() {
                           <span>No Image</span>
                         </div>
                       )}
-                      <div className="absolute top-2 right-2 flex flex-col items-end gap-1">
+                      {/* Sale Status Overlays */}
+                      {listing.availabilityStatus === 'under_contract' && (
+                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center z-10">
+                          <span className="bg-yellow-500 text-white px-4 py-2 font-bold text-lg rounded-lg transform -rotate-12 border-2 border-dashed border-white shadow-xl backdrop-blur-sm">
+                            UNDER CONTRACT
+                          </span>
+                        </div>
+                      )}
+
+                      {listing.availabilityStatus === 'sold' && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-10">
+                          <span className="bg-red-600 text-white px-6 py-2 font-extrabold text-xl rounded-lg transform -rotate-12 border-4 border-double border-white shadow-2xl">
+                            SOLD
+                          </span>
+                        </div>
+                      )}
+
+                      <div className="absolute top-2 right-2 flex flex-col items-end gap-1 z-20">
                         {listing.isRentLocked && (
                           <span className="px-2 py-1 rounded-full text-xs font-bold bg-amber-100 text-amber-800 border border-amber-200 flex items-center gap-1">
                             <FaLock size={10} /> Rent-Locked
@@ -362,9 +379,29 @@ export default function MyListings() {
                         >
                           <FaEye /> View
                         </Link>
+                        {/* Edit Button - Disabled if Under Contract or Sold */}
                         <Link
-                          to={`/user/update-listing/${listing._id}`}
-                          className="flex-1 bg-yellow-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-yellow-600 transition flex items-center justify-center gap-1"
+                          to={
+                            listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract'
+                              ? '#'
+                              : `/user/update-listing/${listing._id}`
+                          }
+                          onClick={(e) => {
+                            if (listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract') {
+                              e.preventDefault();
+                            }
+                          }}
+                          className={`flex-1 px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center gap-1 ${listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract'
+                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                              : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                            }`}
+                          title={
+                            listing.availabilityStatus === 'sold'
+                              ? "Cannot edit sold property"
+                              : listing.availabilityStatus === 'under_contract'
+                                ? "Cannot edit property under contract"
+                                : "Edit Property"
+                          }
                         >
                           <FaEdit /> Edit
                         </Link>
@@ -376,13 +413,26 @@ export default function MyListings() {
                             <FaShieldAlt /> {listing.isVerified ? 'Verify Status' : 'Verify'}
                           </Link>
                         )}
+
+                        {/* Delete Button - Disabled if Rent Locked, Under Contract, or Sold */}
                         <button
-                          onClick={() => !listing.isRentLocked && handleDelete(listing._id)}
-                          disabled={listing.isRentLocked}
-                          title={listing.isRentLocked ? `Cannot delete. Rent-Locked until ${new Date(listing.rentLockEndDate || Date.now()).toLocaleDateString()}` : "Delete Property"}
-                          className={`flex-1 px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center gap-1 ${listing.isRentLocked
-                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            : 'bg-red-500 text-white hover:bg-red-600'
+                          onClick={() => {
+                            if (listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract') return;
+                            if (!listing.isRentLocked) handleDelete(listing._id);
+                          }}
+                          disabled={listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract'}
+                          title={
+                            listing.availabilityStatus === 'sold'
+                              ? "Cannot delete sold property"
+                              : listing.availabilityStatus === 'under_contract'
+                                ? "Cannot delete property under contract"
+                                : listing.isRentLocked
+                                  ? `Cannot delete. Rent-Locked until ${new Date(listing.rentLockEndDate || Date.now()).toLocaleDateString()}`
+                                  : "Delete Property"
+                          }
+                          className={`flex-1 px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center gap-1 ${listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract'
+                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              : 'bg-red-500 text-white hover:bg-red-600'
                             }`}
                         >
                           <FaTrash /> Delete

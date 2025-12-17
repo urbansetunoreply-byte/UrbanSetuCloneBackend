@@ -1364,13 +1364,19 @@ export default function Listing() {
               </div>
               {currentUser && !isAdminContext && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) && (
                 <div className="flex items-center gap-2">
-                  {listing.isRentLocked ? (
+                  {listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract' ? (
                     <button
                       disabled
                       className="bg-gray-400 text-white px-3 py-2 text-sm rounded-lg cursor-not-allowed shadow-lg font-semibold flex items-center gap-2"
-                      title="Edit Disabled due to active Rent-Lock"
+                      title={
+                        listing.availabilityStatus === 'sold'
+                          ? "Cannot edit sold property"
+                          : listing.availabilityStatus === 'under_contract'
+                            ? "Cannot edit property under contract"
+                            : "Edit Disabled due to active Rent-Lock"
+                      }
                     >
-                      <FaLock /> Edit Locked
+                      <FaLock /> {listing.availabilityStatus === 'sold' ? "Sold" : listing.availabilityStatus === 'under_contract' ? "Contract" : "Edit Locked"}
                     </button>
                   ) : (
                     <Link
@@ -1381,13 +1387,21 @@ export default function Listing() {
                     </Link>
                   )}
                   <button
-                    onClick={!listing.isRentLocked ? handleOwnerDeleteClick : undefined}
-                    disabled={listing.isRentLocked}
-                    title={listing.isRentLocked ? "Delete Disabled due to active Rent-Lock" : "Delete Property"}
-                    className={`${listing.isRentLocked ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'} text-white px-3 py-2 text-sm rounded-lg transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2`}
+                    onClick={(!listing.isRentLocked && listing.availabilityStatus !== 'sold' && listing.availabilityStatus !== 'under_contract') ? handleOwnerDeleteClick : undefined}
+                    disabled={listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract'}
+                    title={
+                      listing.availabilityStatus === 'sold'
+                        ? "Cannot delete sold property"
+                        : listing.availabilityStatus === 'under_contract'
+                          ? "Cannot delete property under contract"
+                          : listing.isRentLocked
+                            ? "Delete Disabled due to active Rent-Lock"
+                            : "Delete Property"
+                    }
+                    className={`${listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract' ? 'bg-gray-400 cursor-not-allowed' : 'bg-gradient-to-r from-red-500 to-red-600 hover:from-red-600 hover:to-red-700'} text-white px-3 py-2 text-sm rounded-lg transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2`}
                   >
-                    {listing.isRentLocked ? <FaLock /> : <FaTrash />}
-                    {listing.isRentLocked ? "Locked" : "Delete"}
+                    {(listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract') ? <FaLock /> : <FaTrash />}
+                    {(listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract') ? "Locked" : "Delete"}
                   </button>
                 </div>
               )}
@@ -1615,11 +1629,28 @@ export default function Listing() {
                         />
                       )}
                       {/* Media type badge */}
-                      <div className="absolute top-2 right-2">
+                      <div className="absolute top-2 right-2 z-30">
                         <span className="bg-black bg-opacity-60 text-white text-[10px] sm:text-xs px-2 py-1 rounded-md tracking-wide">
                           {item.type === 'image' ? 'Image' : 'Video'}
                         </span>
                       </div>
+
+                      {/* Sale Status Overlays */}
+                      {listing.availabilityStatus === 'under_contract' && (
+                        <div className="absolute inset-0 bg-black bg-opacity-40 flex items-center justify-center z-20 pointer-events-none">
+                          <span className="bg-yellow-500 text-white px-6 py-3 font-bold text-lg sm:text-2xl rounded-lg transform -rotate-12 border-4 border-dashed border-white shadow-xl backdrop-blur-sm">
+                            UNDER CONTRACT
+                          </span>
+                        </div>
+                      )}
+
+                      {listing.availabilityStatus === 'sold' && (
+                        <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-20 pointer-events-none">
+                          <span className="bg-red-600 text-white px-8 py-4 font-extrabold text-xl sm:text-3xl rounded-lg transform -rotate-12 border-double border-8 border-white shadow-2xl">
+                            SOLD
+                          </span>
+                        </div>
+                      )}
                       {/* Expand Button Overlay */}
                       <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
                         <div className="bg-white bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
@@ -2614,18 +2645,27 @@ export default function Listing() {
             <div className="w-full bg-amber-50 border border-amber-200 rounded-lg p-4 flex gap-3 items-start mb-6">
               <FaLock className="text-amber-600 text-xl mt-1 flex-shrink-0" />
               <div>
-                <p className="font-semibold text-amber-900">{availabilityLabel}</p>
-                <p className="text-sm text-amber-800">{availabilityMessage}</p>
+                <p className="font-semibold text-amber-900">
+                  {listing.availabilityStatus === 'under_contract'
+                    ? (listing.type === 'rent' ? 'Under Rent-Lock Review' : 'Under Sale-Lock Review')
+                    : availabilityLabel}
+                </p>
+                <p className="text-sm text-amber-800">
+                  {listing.availabilityStatus === 'under_contract'
+                    ? (listing.type === 'rent'
+                      ? 'A rent-lock contract is currently being processed for this property.'
+                      : 'A sale transaction for this property is currently being finalized.')
+                    : availabilityMessage}
+                </p>
                 {availabilityLockedAt && (
-                  isAdmin ||
-                  (currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id)) ||
-                  (currentUser && listing.availabilityMeta?.lockedBy === currentUser._id) ||
-                  userActiveContract
-                ) && (
+                  (isAdmin ||
+                    (currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id)) ||
+                    (currentUser && listing.availabilityMeta?.lockedBy === currentUser._id) ||
+                    userActiveContract) && (
                     <p className="text-xs text-amber-600 mt-2">
                       Locked since {new Date(availabilityLockedAt).toLocaleString()}
                     </p>
-                  )}
+                  ))}
               </div>
             </div>
           )}
