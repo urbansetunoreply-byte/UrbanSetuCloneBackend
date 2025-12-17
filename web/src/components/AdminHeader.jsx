@@ -119,7 +119,7 @@ export default function AdminHeader() {
         return 'bg-gradient-to-r from-red-600 to-red-700'; // Red for forgot-password verification step
       case '/change-password':
       case '/admin/change-password':
-        return 'bg-gradient-to-r from-blue-600 to-blue-700'; // Blue for change-password
+        return 'bg-gradient-to-r from-blue-700 to-purple-700'; // Default blue-purple
       default:
         return 'bg-gradient-to-r from-blue-700 to-purple-700'; // Default blue-purple
     }
