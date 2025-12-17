@@ -21,9 +21,9 @@ export const generateReceiptPdf = (payment) => {
             // --- Header ---
             doc.fillColor('#444444')
                 .fontSize(20)
-                .text('UrbanSetu', 110, 57)
+                .text('UrbanSetu', 50, 57)
                 .fontSize(10)
-                .text('Real Estate Excellence', 110, 80)
+                .text('Real Estate Excellence', 50, 80)
                 .text('123, Tech Park, Bangalore, India', 200, 65, { align: 'right' })
                 .text('support@urbansetu.com', 200, 80, { align: 'right' })
                 .moveDown();

@@ -377,7 +377,7 @@ export default function RentProperty() {
           date: formData.moveInDate || new Date().toISOString().split('T')[0],
           time: formData.appointmentTime || '12:00',
           message: formData.appointmentMessage?.trim()
-            ? formData.appointmentMessage
+            ? `${formData.appointmentMessage} (Rent-Lock Plan: ${formData.rentLockPlan})`
             : `Rent-Lock Plan: ${formData.rentLockPlan}`,
           purpose: formData.appointmentPurpose || 'rent',
           propertyName: listing?.name || '',
