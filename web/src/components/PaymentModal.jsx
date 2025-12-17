@@ -1247,18 +1247,37 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                     <h5 className="font-semibold text-gray-800 mb-2">Payment Platform</h5>
                     <div className="text-sm text-gray-700">{preferredMethod === 'razorpay' ? 'Razorpay' : 'PayPal'}</div>
                     <ul className="list-disc pl-5 mt-3 text-sm text-gray-600 space-y-1">
-                      {preferredMethod === 'razorpay' ? (
+                      {appointment.paymentType === 'monthly_rent' ? (
                         <>
-                          <li>Click "Pay via Razorpay" and complete payment in the Razorpay popup.</li>
-                          <li>On approval, we verify and confirm your booking automatically.</li>
+                          {preferredMethod === 'razorpay' ? (
+                            <>
+                              <li>Click "Pay via Razorpay" and complete your rent payment securely.</li>
+                              <li>Once approved, your rent receipt will be generated automatically.</li>
+                            </>
+                          ) : (
+                            <>
+                              <li>Click "Load PayPal Button" and complete your rent payment securely.</li>
+                              <li>Once approved, your rent receipt will be generated automatically.</li>
+                            </>
+                          )}
+                          <li>If you cancel, you can retry from the "Pay Monthly Rent" page or Wallet.</li>
                         </>
                       ) : (
                         <>
-                          <li>Click "Load PayPal Button" and complete payment in the PayPal popup.</li>
-                          <li>On approval, we verify and confirm your booking automatically.</li>
+                          {preferredMethod === 'razorpay' ? (
+                            <>
+                              <li>Click "Pay via Razorpay" and complete payment in the Razorpay popup.</li>
+                              <li>On approval, we verify and confirm your booking automatically.</li>
+                            </>
+                          ) : (
+                            <>
+                              <li>Click "Load PayPal Button" and complete payment in the PayPal popup.</li>
+                              <li>On approval, we verify and confirm your booking automatically.</li>
+                            </>
+                          )}
+                          <li>If you cancel or close PayPal, you can retry from My Appointments.</li>
                         </>
                       )}
-                      <li>If you cancel or close PayPal, you can retry from My Appointments.</li>
                     </ul>
                   </div>
 
