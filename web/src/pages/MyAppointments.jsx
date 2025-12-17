@@ -6042,7 +6042,14 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
             <div>{new Date(appt.date).toLocaleDateString('en-GB')}</div>
             <div className="text-sm text-gray-600">{appt.time}</div>
             {!isUpcoming && (
-              <div className="text-xs text-red-600 font-medium mt-1">Outdated</div>
+              <div className={`text-xs font-medium mt-1 ${appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
+                  ? 'text-green-600'
+                  : 'text-red-600'
+                }`}>
+                {appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
+                  ? 'Tenants Moved In'
+                  : 'Outdated'}
+              </div>
             )}
             {isArchived && appt.archivedAt && (
               <div className="text-xs text-gray-500 mt-1">
@@ -6153,14 +6160,19 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleAdminDele
         </td>
         <td className="border p-2 max-w-xs truncate">{appt.message || 'No message provided'}</td>
         <td className="border p-2 text-center">
-          <span className={`px-3 py-1 rounded-full text-xs font-bold ${getStatusColor(appt.status)}`}>
-            {appt.status === "cancelledByBuyer"
-              ? "Cancelled by Buyer"
-              : appt.status === "cancelledBySeller"
-                ? "Cancelled by Seller"
-                : appt.status === "cancelledByAdmin"
-                  ? "Cancelled by Admin"
-                  : appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
+          <span className={`px-3 py-1 rounded-full text-xs font-bold ${!isUpcoming && appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
+              ? 'bg-green-100 text-green-700'
+              : getStatusColor(appt.status)
+            }`}>
+            {!isUpcoming && appt.purpose === 'rent' && appt.paymentConfirmed && appt.rentalStatus === 'active_rental'
+              ? 'Tenants Moved In'
+              : appt.status === "cancelledByBuyer"
+                ? "Cancelled by Buyer"
+                : appt.status === "cancelledBySeller"
+                  ? "Cancelled by Seller"
+                  : appt.status === "cancelledByAdmin"
+                    ? "Cancelled by Admin"
+                    : appt.status.charAt(0).toUpperCase() + appt.status.slice(1)}
           </span>
         </td>
         <td className="border p-2 text-center">
