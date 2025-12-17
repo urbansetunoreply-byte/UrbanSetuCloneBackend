@@ -20,7 +20,8 @@ export default function PayMonthlyRent() {
   const contractId = searchParams.get('contractId');
   const scheduleIndex = searchParams.get('scheduleIndex');
 
-  const [loading, setLoading] = useState(true);
+  const [pageLoading, setPageLoading] = useState(true);
+  const [creatingPayment, setCreatingPayment] = useState(false);
   const [step, setStep] = useState(1); // 1: Select Month, 2: Review Details, 3: Contract Review, 4: Payment, 5: Confirmation
   const [contract, setContract] = useState(null);
   const [wallet, setWallet] = useState(null);
@@ -50,7 +51,7 @@ export default function PayMonthlyRent() {
 
   const fetchContractAndWallet = async () => {
     try {
-      setLoading(true);
+      setPageLoading(true);
 
       // Fetch contract
       const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
@@ -140,7 +141,7 @@ export default function PayMonthlyRent() {
       toast.error("Failed to load contract details.");
       navigate("/user/rental-contracts");
     } finally {
-      setLoading(false);
+      setPageLoading(false);
     }
   };
 
@@ -232,7 +233,7 @@ export default function PayMonthlyRent() {
 
     // Now proceed to create payment intent if not paid
     try {
-      setLoading(true);
+      setCreatingPayment(true);
 
       // Create monthly rent payment via API
       const res = await fetch(`${API_BASE_URL}/api/payments/monthly-rent`, {
@@ -284,11 +285,11 @@ export default function PayMonthlyRent() {
       console.error("Error creating payment:", error);
       toast.error(error.message || "Failed to create payment");
     } finally {
-      setLoading(false);
+      setCreatingPayment(false);
     }
   };
 
-  if (loading) {
+  if (pageLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center">
@@ -636,10 +637,10 @@ export default function PayMonthlyRent() {
               </button>
               <button
                 onClick={handleCreatePayment}
-                disabled={loading}
+                disabled={creatingPayment}
                 className="flex-1 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 disabled:opacity-50 flex items-center justify-center gap-2"
               >
-                {loading ? (
+                {creatingPayment ? (
                   <>
                     <FaSpinner className="animate-spin" /> Processing...
                   </>
