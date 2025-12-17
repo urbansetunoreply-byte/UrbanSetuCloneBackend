@@ -25,12 +25,12 @@ export default function NotificationBell({ mobile = false }) {
   const [sendingNotification, setSendingNotification] = useState(false);
   const [fetchingUsers, setFetchingUsers] = useState(false);
   const [userSearch, setUserSearch] = useState('');
-  
+
   // Notification filters
   const [notificationSearch, setNotificationSearch] = useState('');
   const [notificationFilter, setNotificationFilter] = useState('all'); // 'all', 'unread', 'read'
   const [showFilters, setShowFilters] = useState(false);
-  
+
   // Separate state for "Send to All Users" form
   const [allUsersTitle, setAllUsersTitle] = useState('');
   const [allUsersMessage, setAllUsersMessage] = useState('');
@@ -43,13 +43,13 @@ export default function NotificationBell({ mobile = false }) {
       const prevOverflow = document.body.style.overflow;
       const prevPosition = document.body.style.position;
       const prevWidth = document.body.style.width;
-      
+
       document.body.style.overflow = 'hidden';
       if (mobile) {
         document.body.style.position = 'fixed';
         document.body.style.width = '100%';
       }
-      
+
       // Clean up: restore previous overflow
       return () => {
         document.body.style.overflow = prevOverflow;
@@ -72,13 +72,13 @@ export default function NotificationBell({ mobile = false }) {
   // Fetch notifications; when showTodayOnly is true, filter to today's notifications and show toast
   const fetchNotifications = async (showTodayOnly = false) => {
     if (!currentUser) return;
-    
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}`, {
         credentials: 'include',
       });
       const data = await res.json();
-      
+
       if (res.ok) {
         if (showTodayOnly) {
           const now = new Date();
@@ -103,13 +103,13 @@ export default function NotificationBell({ mobile = false }) {
   // Fetch unread count
   const fetchUnreadCount = async () => {
     if (!currentUser) return;
-    
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/unread-count`, {
         credentials: 'include',
       });
       const data = await res.json();
-      
+
       if (res.ok) {
         const newCount = data.count;
         // Check if this is a new notification (count increased)
@@ -135,7 +135,7 @@ export default function NotificationBell({ mobile = false }) {
   // Fetch all users for admin notification dropdown
   const fetchUsers = async () => {
     if (!currentUser || !isAdmin()) return;
-    
+
     setFetchingUsers(true);
     try {
 
@@ -143,9 +143,9 @@ export default function NotificationBell({ mobile = false }) {
         credentials: 'include',
       });
       const data = await res.json();
-      
 
-      
+
+
       if (res.ok) {
         setUsers(data);
 
@@ -164,7 +164,7 @@ export default function NotificationBell({ mobile = false }) {
   // Send notification to specific user
   const sendNotificationToUser = async (e) => {
     e.preventDefault();
-    
+
     if (!selectedUser || !title.trim() || !message.trim()) {
       toast.error('Please fill in all fields');
       return;
@@ -187,7 +187,7 @@ export default function NotificationBell({ mobile = false }) {
       });
 
       const data = await res.json();
-      
+
       if (res.ok) {
         toast.success(data.message);
         // Reset form
@@ -210,7 +210,7 @@ export default function NotificationBell({ mobile = false }) {
   // Send notification to all users
   const sendNotificationToAll = async (e) => {
     e.preventDefault();
-    
+
     if (!allUsersTitle.trim() || !allUsersMessage.trim()) {
       toast.error('Please fill in title and message');
       return;
@@ -232,7 +232,7 @@ export default function NotificationBell({ mobile = false }) {
       });
 
       const data = await res.json();
-      
+
       if (res.ok) {
         toast.success(data.message);
         // Reset form
@@ -265,9 +265,9 @@ export default function NotificationBell({ mobile = false }) {
 
       if (res.ok) {
         // Update local state
-        setAllNotifications(prev => 
-          prev.map(notif => 
-            notif._id === notificationId 
+        setAllNotifications(prev =>
+          prev.map(notif =>
+            notif._id === notificationId
               ? { ...notif, isRead: true, readAt: new Date() }
               : notif
           )
@@ -284,7 +284,7 @@ export default function NotificationBell({ mobile = false }) {
     try {
       let endpoint;
       let successMessage;
-      
+
       if (isAdmin()) {
         // For admins, use the sync endpoint to mark all admins' notifications as read
         endpoint = `${API_BASE_URL}/api/notifications/admin/read-all`;
@@ -302,7 +302,7 @@ export default function NotificationBell({ mobile = false }) {
 
       if (res.ok) {
         const data = await res.json();
-        setAllNotifications(prev => 
+        setAllNotifications(prev =>
           prev.map(notif => ({ ...notif, isRead: true, readAt: new Date() }))
         );
         setUnreadCount(0);
@@ -343,7 +343,7 @@ export default function NotificationBell({ mobile = false }) {
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffInMinutes < 1) {
       return 'Just now';
     } else if (diffInMinutes < 60) {
@@ -421,17 +421,17 @@ export default function NotificationBell({ mobile = false }) {
     if (currentUser) {
       fetchNotifications();
       fetchUnreadCount();
-      
+
       // Fetch users if admin (for notification sending)
       if (isAdmin()) {
         fetchUsers();
       }
-      
+
       // Set up polling for new notifications every 10 seconds
       const interval = setInterval(() => {
         fetchUnreadCount();
       }, 10000);
-      
+
       return () => clearInterval(interval);
     }
   }, [currentUser]);
@@ -439,9 +439,9 @@ export default function NotificationBell({ mobile = false }) {
   // Fetch users when send tab is active (admin only)
   useEffect(() => {
 
-    
+
     if (isOpen && activeTab === 'send' && currentUser && isAdmin()) {
-      
+
       fetchUsers();
     }
   }, [isOpen, activeTab, currentUser]);
@@ -453,33 +453,33 @@ export default function NotificationBell({ mobile = false }) {
 
   // Helper function to check if user is admin
   const isAdmin = () => {
-    return currentUser.role === 'admin' || 
-           currentUser.role === 'rootadmin' || 
-           currentUser.isDefaultAdmin ||
-           currentUser.isAdmin;
+    return currentUser.role === 'admin' ||
+      currentUser.role === 'rootadmin' ||
+      currentUser.isDefaultAdmin ||
+      currentUser.isAdmin;
   };
 
   // Filter notifications based on search and filter criteria
   const filteredNotifications = useMemo(() => {
     let filtered = [...allNotifications];
-    
+
     // Filter by read/unread status
     if (notificationFilter === 'unread') {
       filtered = filtered.filter(n => !n.isRead);
     } else if (notificationFilter === 'read') {
       filtered = filtered.filter(n => n.isRead);
     }
-    
+
     // Filter by search query
     if (notificationSearch.trim()) {
       const searchLower = notificationSearch.trim().toLowerCase();
-      filtered = filtered.filter(n => 
+      filtered = filtered.filter(n =>
         n.title?.toLowerCase().includes(searchLower) ||
         n.message?.toLowerCase().includes(searchLower) ||
         n.type?.toLowerCase().includes(searchLower)
       );
     }
-    
+
     return filtered;
   }, [allNotifications, notificationFilter, notificationSearch]);
 
@@ -494,53 +494,53 @@ export default function NotificationBell({ mobile = false }) {
       setUnreadCount((count) => count + 1);
       triggerBellRing(); // Ring bell when new notification arrives
     };
-    
+
     const handleAllNotificationsMarkedAsRead = (data) => {
       if (!currentUser || data.adminId !== currentUser._id) return;
-      
+
       // Update local state to mark all notifications as read
-      setAllNotifications(prev => 
+      setAllNotifications(prev =>
         prev.map(notif => ({ ...notif, isRead: true, readAt: new Date() }))
       );
       setUnreadCount(0);
-      
+
       // Show toast notification about who marked them as read
       const markedBy = data.markedBy === currentUser._id ? 'You' : 'Another admin';
       toast.info(`${markedBy} marked all notifications as read for all admins`);
     };
-    
+
     const handleNotificationMarkedAsRead = (data) => {
       if (!currentUser || data.notificationId) {
         // Update the specific notification as read
-        setAllNotifications(prev => 
-          prev.map(notif => 
-            notif._id === data.notificationId 
+        setAllNotifications(prev =>
+          prev.map(notif =>
+            notif._id === data.notificationId
               ? { ...notif, isRead: true, readAt: new Date() }
               : notif
           )
         );
-        
+
         // Update unread count
         setUnreadCount(prev => Math.max(0, prev - 1));
-        
+
         // Show toast notification about who marked it as read
         const markedBy = data.markedBy === currentUser._id ? 'You' : (data.markedByUsername || data.markedByEmail || 'Another admin');
         toast.info(`${markedBy} marked a notification as read`);
       }
     };
-    
+
     const handleWatchlistNotification = (data) => {
       if (!currentUser || data.userId !== currentUser._id) return;
       setAllNotifications((prev) => [data.notification, ...prev]);
       setUnreadCount((count) => count + 1);
       triggerBellRing(); // Ring bell for watchlist notifications
     };
-    
+
     socket.on('notificationCreated', handleNewNotification);
     socket.on('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
     socket.on('notificationMarkedAsRead', handleNotificationMarkedAsRead);
     socket.on('watchlistNotification', handleWatchlistNotification);
-    
+
     return () => {
       socket.off('notificationCreated', handleNewNotification);
       socket.off('allNotificationsMarkedAsRead', handleAllNotificationsMarkedAsRead);
@@ -555,9 +555,8 @@ export default function NotificationBell({ mobile = false }) {
       <button
         ref={bellRef}
         onClick={() => setIsOpen(!isOpen)}
-        className={`relative p-3 text-yellow-500 hover:text-yellow-400 transition-all duration-300 hover:scale-110 bg-yellow-50 hover:bg-yellow-100 rounded-full ${
-          isRinging ? 'animate-bell-ring' : ''
-        } ${isOpen ? 'bg-yellow-100 text-yellow-600' : ''}`}
+        className={`relative p-3 text-yellow-500 hover:text-yellow-400 transition-all duration-300 hover:scale-110 bg-yellow-50 hover:bg-yellow-100 rounded-full ${isRinging ? 'animate-bell-ring' : ''
+          } ${isOpen ? 'bg-yellow-100 text-yellow-600' : ''}`}
         title="Notifications"
       >
         <FaBell className="w-5 h-5 drop-shadow-lg" />
@@ -573,7 +572,7 @@ export default function NotificationBell({ mobile = false }) {
         mobile ? (
           // Mobile: Fullscreen Modal with Portal
           createPortal(
-            <div 
+            <div
               className="fixed inset-0 z-[99999] flex items-center justify-center bg-black bg-opacity-70 backdrop-blur-md"
               onClick={(e) => {
                 if (e.target === e.currentTarget) {
@@ -582,7 +581,7 @@ export default function NotificationBell({ mobile = false }) {
               }}
             >
               <div className="w-full max-w-md mx-auto bg-gradient-to-br from-white via-blue-50 to-purple-50 rounded-3xl shadow-2xl border border-gray-200 max-h-[85vh] overflow-hidden relative animate-fade-in notification-popup transform transition-all duration-300"
-                   style={{ marginTop: '1rem', marginBottom: '1rem' }}>
+                style={{ marginTop: '1rem', marginBottom: '1rem' }}>
                 {/* Close Button */}
                 <button
                   onClick={() => setIsOpen(false)}
@@ -603,22 +602,20 @@ export default function NotificationBell({ mobile = false }) {
                       <div className="flex border-b border-gray-200 mt-2">
                         <button
                           onClick={() => setActiveTab('notifications')}
-                          className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
-                            activeTab === 'notifications'
+                          className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'notifications'
                               ? 'text-blue-600 border-b-2 border-blue-600'
                               : 'text-gray-500 hover:text-gray-700'
-                          }`}
+                            }`}
                         >
                           <FaBell className="w-4 h-4 inline mr-2" />
                           Notifications
                         </button>
                         <button
                           onClick={() => setActiveTab('send')}
-                          className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
-                            activeTab === 'send'
+                          className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'send'
                               ? 'text-blue-600 border-b-2 border-blue-600'
                               : 'text-gray-500 hover:text-gray-700'
-                          }`}
+                            }`}
                         >
                           <FaEnvelope className="w-4 h-4 inline mr-2" />
                           Send Message
@@ -630,25 +627,85 @@ export default function NotificationBell({ mobile = false }) {
                   {activeTab === 'notifications' ? (
                     <>
                       {/* Notifications Header Actions */}
-                      <div className="flex items-center justify-between p-4 border-b border-gray-100">
+                      <div className="p-4 border-b border-gray-100 space-y-3">
+                        {/* Search and Filter */}
                         <div className="flex items-center gap-2">
-                          {unreadCount > 0 && (
-                            <button
-                              onClick={markAllAsRead}
-                              className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                            >
-                              {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
-                            </button>
-                          )}
+                          <div className="relative flex-1">
+                            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                            <input
+                              type="text"
+                              value={notificationSearch}
+                              onChange={(e) => setNotificationSearch(e.target.value)}
+                              placeholder="Search notifications..."
+                              className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900"
+                            />
+                          </div>
                           <button
-                            onClick={() => fetchNotifications(true)}
-                            className="ml-2 text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
-                            title="Refresh notifications"
+                            onClick={() => setShowFilters(!showFilters)}
+                            className={`px-3 py-2 border rounded-lg text-sm flex items-center gap-2 ${showFilters || notificationFilter !== 'all'
+                                ? 'bg-blue-100 text-blue-700 border-blue-300'
+                                : 'bg-gray-100 text-gray-700 border-gray-300'
+                              }`}
+                            title="Filter notifications"
                           >
-                            <FaRedo className="w-4 h-4" />
-                            Refresh
+                            <FaFilter className="w-4 h-4" />
                           </button>
-                          {notifications.length > 0 && (
+                        </div>
+
+                        {/* Filter Options */}
+                        {showFilters && (
+                          <div className="flex items-center gap-2 flex-wrap">
+                            <button
+                              onClick={() => setNotificationFilter('all')}
+                              className={`px-3 py-1 rounded-lg text-xs ${notificationFilter === 'all'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-200 text-gray-700'
+                                }`}
+                            >
+                              All
+                            </button>
+                            <button
+                              onClick={() => setNotificationFilter('unread')}
+                              className={`px-3 py-1 rounded-lg text-xs ${notificationFilter === 'unread'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-200 text-gray-700'
+                                }`}
+                            >
+                              Unread ({allNotifications.filter(n => !n.isRead).length})
+                            </button>
+                            <button
+                              onClick={() => setNotificationFilter('read')}
+                              className={`px-3 py-1 rounded-lg text-xs ${notificationFilter === 'read'
+                                  ? 'bg-blue-600 text-white'
+                                  : 'bg-gray-200 text-gray-700'
+                                }`}
+                            >
+                              Read ({allNotifications.filter(n => n.isRead).length})
+                            </button>
+                          </div>
+                        )}
+
+                        {/* Action Buttons */}
+                        <div className="flex items-center justify-between flex-wrap gap-2">
+                          <div className="flex items-center gap-3">
+                            {unreadCount > 0 && (
+                              <button
+                                onClick={markAllAsRead}
+                                className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                              >
+                                {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
+                              </button>
+                            )}
+                            <button
+                              onClick={() => fetchNotifications(true)}
+                              className="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
+                              title="Refresh notifications"
+                            >
+                              <FaRedo className="w-4 h-4" />
+                              Refresh
+                            </button>
+                          </div>
+                          {allNotifications.length > 0 && (
                             <button
                               onClick={() => {
                                 // Clear all notifications
@@ -661,7 +718,7 @@ export default function NotificationBell({ mobile = false }) {
                                   toast.success('All notifications cleared');
                                 });
                               }}
-                              className="ml-2 text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
+                              className="text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
                               title="Clear all notifications"
                             >
                               <FaTrash className="w-4 h-4" />
@@ -892,17 +949,17 @@ export default function NotificationBell({ mobile = false }) {
                                   .filter((user) => {
                                     const q = userSearch.trim().toLowerCase();
                                     if (!q) return true;
-                                    
+
                                     const name = (user.username || user.name || "").toLowerCase();
                                     const email = (user.email || "").toLowerCase();
                                     const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
                                     const mobile = mobileRaw.replace(/\D/g, '');
-                                    
+
                                     // If query is exactly a 10-digit number, require exact mobile match
                                     if (/^\d{10}$/.test(q)) {
                                       return mobile === q;
                                     }
-                                    
+
                                     // Otherwise broad matching across fields
                                     return (
                                       name.includes(q) ||
@@ -923,11 +980,11 @@ export default function NotificationBell({ mobile = false }) {
                                       }
                                       return mobile;
                                     };
-                                    
+
                                     const displayName = user.username || user.name || user.email;
                                     const displayEmail = user.email;
                                     const displayMobile = formatMobileNumber(user.mobileNumber || user.mobile);
-                                    
+
                                     return (
                                       <option key={user._id} value={user._id}>
                                         {displayName} ({displayEmail}{displayMobile ? `, ${displayMobile}` : ''})
@@ -946,16 +1003,16 @@ export default function NotificationBell({ mobile = false }) {
                                 {users.filter((user) => {
                                   const q = userSearch.trim().toLowerCase();
                                   if (!q) return true;
-                                  
+
                                   const name = (user.username || user.name || "").toLowerCase();
                                   const email = (user.email || "").toLowerCase();
                                   const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
                                   const mobile = mobileRaw.replace(/\D/g, '');
-                                  
+
                                   if (/^\d{10}$/.test(q)) {
                                     return mobile === q;
                                   }
-                                  
+
                                   return (
                                     name.includes(q) ||
                                     email.includes(q) ||
@@ -1025,7 +1082,7 @@ export default function NotificationBell({ mobile = false }) {
                       </div>
                     </div>
                   )}
-                  
+
 
                 </div>
               </div>
@@ -1035,15 +1092,15 @@ export default function NotificationBell({ mobile = false }) {
         ) : (
           // Desktop: Dropdown
           createPortal(
-            <div 
+            <div
               className="fixed inset-0 z-[9998] bg-black bg-opacity-30 backdrop-blur-sm"
               onClick={() => setIsOpen(false)}
               style={{ pointerEvents: 'auto' }}
             >
-              <div 
-                className="fixed w-96 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border border-gray-200 z-[9999] max-h-96 overflow-hidden notification-popup transform transition-all duration-300" 
+              <div
+                className="fixed w-96 bg-gradient-to-br from-white to-gray-50 rounded-2xl shadow-2xl border border-gray-200 z-[9999] max-h-96 overflow-hidden notification-popup transform transition-all duration-300"
                 onClick={(e) => e.stopPropagation()}
-                style={{ 
+                style={{
                   top: '80px',
                   right: '20px',
                   maxHeight: 'calc(100vh - 120px)',
@@ -1052,523 +1109,516 @@ export default function NotificationBell({ mobile = false }) {
                   zIndex: 9999
                 }}
               >
-          {/* Header with Tabs */}
-          <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
-            <div className="flex items-center justify-between p-5">
-              <div className="flex items-center gap-3">
-                <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
-                  <FaBell className="w-4 h-4 text-white" />
-                </div>
-                <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
-                {unreadCount > 0 && (
-                  <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
-                    {unreadCount}
-                  </span>
-                )}
-              </div>
-              <button
-                onClick={() => setIsOpen(false)}
-                className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
-              >
-                <FaTimes className="w-4 h-4" />
-              </button>
-            </div>
-            
-            {/* Tabs - Show send tab only for admins */}
-            {isAdmin() && (
-              <div className="flex border-b border-gray-200">
-                <button
-                  onClick={() => setActiveTab('notifications')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
-                    activeTab === 'notifications'
-                      ? 'text-blue-600 border-b-2 border-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <FaBell className="w-4 h-4 inline mr-2" />
-                  Notifications
-                </button>
-                <button
-                  onClick={() => setActiveTab('send')}
-                  className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${
-                    activeTab === 'send'
-                      ? 'text-blue-600 border-b-2 border-blue-600'
-                      : 'text-gray-500 hover:text-gray-700'
-                  }`}
-                >
-                  <FaEnvelope className="w-4 h-4 inline mr-2" />
-                  Send Message
-                </button>
-              </div>
-            )}
-          </div>
+                {/* Header with Tabs */}
+                <div className="border-b border-gray-200 bg-gradient-to-r from-gray-50 to-white">
+                  <div className="flex items-center justify-between p-5">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 bg-gradient-to-r from-blue-500 to-purple-500 rounded-full flex items-center justify-center">
+                        <FaBell className="w-4 h-4 text-white" />
+                      </div>
+                      <h3 className="text-lg font-bold text-gray-800">Notifications</h3>
+                      {unreadCount > 0 && (
+                        <span className="bg-red-500 text-white text-xs rounded-full px-2 py-1 font-bold">
+                          {unreadCount}
+                        </span>
+                      )}
+                    </div>
+                    <button
+                      onClick={() => setIsOpen(false)}
+                      className="text-gray-500 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+                    >
+                      <FaTimes className="w-4 h-4" />
+                    </button>
+                  </div>
 
-          {/* Tab Content */}
-          {activeTab === 'notifications' ? (
-            <>
-              {/* Notifications Header Actions */}
-              <div className="p-4 border-b border-gray-100 space-y-3">
-                {/* Search and Filter */}
-                <div className="flex items-center gap-2">
-                  <div className="relative flex-1">
-                    <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
-                    <input
-                      type="text"
-                      value={notificationSearch}
-                      onChange={(e) => setNotificationSearch(e.target.value)}
-                      placeholder="Search notifications..."
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900"
-                    />
-                  </div>
-                  <button
-                    onClick={() => setShowFilters(!showFilters)}
-                    className={`px-3 py-2 border rounded-lg text-sm flex items-center gap-2 ${
-                      showFilters || notificationFilter !== 'all' 
-                        ? 'bg-blue-100 text-blue-700 border-blue-300' 
-                        : 'bg-gray-100 text-gray-700 border-gray-300'
-                    }`}
-                    title="Filter notifications"
-                  >
-                    <FaFilter className="w-4 h-4" />
-                  </button>
-                </div>
-                
-                {/* Filter Options */}
-                {showFilters && (
-                  <div className="flex items-center gap-2 flex-wrap">
-                    <button
-                      onClick={() => setNotificationFilter('all')}
-                      className={`px-3 py-1 rounded-lg text-xs ${
-                        notificationFilter === 'all' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      All
-                    </button>
-                    <button
-                      onClick={() => setNotificationFilter('unread')}
-                      className={`px-3 py-1 rounded-lg text-xs ${
-                        notificationFilter === 'unread' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      Unread ({allNotifications.filter(n => !n.isRead).length})
-                    </button>
-                    <button
-                      onClick={() => setNotificationFilter('read')}
-                      className={`px-3 py-1 rounded-lg text-xs ${
-                        notificationFilter === 'read' 
-                          ? 'bg-blue-600 text-white' 
-                          : 'bg-gray-200 text-gray-700'
-                      }`}
-                    >
-                      Read ({allNotifications.filter(n => n.isRead).length})
-                    </button>
-                  </div>
-                )}
-                
-                {/* Action Buttons */}
-                <div className="flex items-center gap-2 flex-wrap">
-                  {unreadCount > 0 && (
-                    <button
-                      onClick={markAllAsRead}
-                      className="text-sm text-blue-600 hover:text-blue-800 font-medium"
-                    >
-                      {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
-                    </button>
-                  )}
-                  <button
-                    onClick={() => fetchNotifications(true)}
-                    className="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
-                    title="Refresh notifications"
-                  >
-                    <FaRedo className="w-4 h-4" />
-                    Refresh
-                  </button>
-                  {allNotifications.length > 0 && (
-                    <button
-                      onClick={() => {
-                        // Clear all notifications
-                        fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
-                          method: 'DELETE',
-                          credentials: 'include',
-                        }).then(() => {
-                          setAllNotifications([]);
-                          setUnreadCount(0);
-                          toast.success('All notifications cleared');
-                        });
-                      }}
-                      className="text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
-                      title="Clear all notifications"
-                    >
-                      <FaTrash className="w-4 h-4" />
-                      Clear all
-                    </button>
-                  )}
-                </div>
-              </div>
-
-              {/* Notifications List */}
-              <div className="notification-scroll-area-desktop">
-                {notifications.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500">
-                    <FaBell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
-                    <p>No notifications yet</p>
-                  </div>
-                ) : (
-                  <div className="divide-y divide-gray-100">
-                    {notifications.map((notification) => (
-                      <div
-                        key={notification._id}
-                        className={`p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 border-l-4 ${
-                          !notification.isRead ? 'bg-blue-50 border-blue-500' : 'border-transparent hover:border-gray-200'
-                        }`}
+                  {/* Tabs - Show send tab only for admins */}
+                  {isAdmin() && (
+                    <div className="flex border-b border-gray-200">
+                      <button
+                        onClick={() => setActiveTab('notifications')}
+                        className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'notifications'
+                            ? 'text-blue-600 border-b-2 border-blue-600'
+                            : 'text-gray-500 hover:text-gray-700'
+                          }`}
                       >
-                        <div className="flex items-start gap-3">
-                          <div className="flex-shrink-0 mt-1">
-                            {getNotificationIcon(notification.type)}
-                          </div>
-                          <div className="flex-1 min-w-0">
-                            <div className="flex items-start justify-between">
-                              <div className="flex-1">
-                                <h4 className="text-sm font-medium text-gray-900">
-                                  {notification.title}
-                                </h4>
-                                <p className="text-sm text-gray-600 mt-1 whitespace-pre-line break-words max-w-xs md:max-w-md lg:max-w-lg">
-                                  {notification.link ? (
-                                    <span
-                                      className="text-blue-600 hover:underline cursor-pointer"
-                                      onClick={() => {
-                                        markAsRead(notification._id);
-                                
-                                        if (notification.link.startsWith('http')) {
-                                          window.open(notification.link, '_blank');
-                                        } else {
-                                          setIsOpen(false);
-                                          setTimeout(() => navigate(notification.link), 0);
-                                        }
-                                      }}
-                                    >
-                                      {notification.message}
-                                    </span>
-                                  ) : (
-                                    <span
-                                      className="text-blue-600 hover:underline cursor-pointer"
-                                      onClick={() => {
-                                        markAsRead(notification._id);
-                                        setIsOpen(false);
-                                      }}
-                                    >
-                                      {notification.message}
-                                    </span>
-                                  )}
-                                </p>
-                                <div className="flex items-center gap-2 mt-2">
-                                  <span className="text-xs text-gray-500">
-                                    {formatDate(notification.createdAt)}
-                                  </span>
-                                  {/* Show 'by Organization' for admin notifications on user side */}
-                                  {notification.adminId && !isAdmin() && (
-                                    <span className="text-xs text-blue-600">
-                                      by Organization
-                                    </span>
-                                  )}
-                                  {/* Optionally, for admins, still show admin name/email */}
-                                  {notification.adminId && isAdmin() && (
-                                    <span className="text-xs text-blue-600">
-                                      by {notification.adminId.username || notification.adminId.email}
-                                    </span>
-                                  )}
+                        <FaBell className="w-4 h-4 inline mr-2" />
+                        Notifications
+                      </button>
+                      <button
+                        onClick={() => setActiveTab('send')}
+                        className={`flex-1 py-2 px-4 text-sm font-medium transition-colors ${activeTab === 'send'
+                            ? 'text-blue-600 border-b-2 border-blue-600'
+                            : 'text-gray-500 hover:text-gray-700'
+                          }`}
+                      >
+                        <FaEnvelope className="w-4 h-4 inline mr-2" />
+                        Send Message
+                      </button>
+                    </div>
+                  )}
+                </div>
+
+                {/* Tab Content */}
+                {activeTab === 'notifications' ? (
+                  <>
+                    {/* Notifications Header Actions */}
+                    <div className="p-4 border-b border-gray-100 space-y-3">
+                      {/* Search and Filter */}
+                      <div className="flex items-center gap-2">
+                        <div className="relative flex-1">
+                          <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4" />
+                          <input
+                            type="text"
+                            value={notificationSearch}
+                            onChange={(e) => setNotificationSearch(e.target.value)}
+                            placeholder="Search notifications..."
+                            className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900"
+                          />
+                        </div>
+                        <button
+                          onClick={() => setShowFilters(!showFilters)}
+                          className={`px-3 py-2 border rounded-lg text-sm flex items-center gap-2 ${showFilters || notificationFilter !== 'all'
+                              ? 'bg-blue-100 text-blue-700 border-blue-300'
+                              : 'bg-gray-100 text-gray-700 border-gray-300'
+                            }`}
+                          title="Filter notifications"
+                        >
+                          <FaFilter className="w-4 h-4" />
+                        </button>
+                      </div>
+
+                      {/* Filter Options */}
+                      {showFilters && (
+                        <div className="flex items-center gap-2 flex-wrap">
+                          <button
+                            onClick={() => setNotificationFilter('all')}
+                            className={`px-3 py-1 rounded-lg text-xs ${notificationFilter === 'all'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-200 text-gray-700'
+                              }`}
+                          >
+                            All
+                          </button>
+                          <button
+                            onClick={() => setNotificationFilter('unread')}
+                            className={`px-3 py-1 rounded-lg text-xs ${notificationFilter === 'unread'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-200 text-gray-700'
+                              }`}
+                          >
+                            Unread ({allNotifications.filter(n => !n.isRead).length})
+                          </button>
+                          <button
+                            onClick={() => setNotificationFilter('read')}
+                            className={`px-3 py-1 rounded-lg text-xs ${notificationFilter === 'read'
+                                ? 'bg-blue-600 text-white'
+                                : 'bg-gray-200 text-gray-700'
+                              }`}
+                          >
+                            Read ({allNotifications.filter(n => n.isRead).length})
+                          </button>
+                        </div>
+                      )}
+
+                      {/* Action Buttons */}
+                      <div className="flex items-center gap-2 flex-wrap">
+                        {unreadCount > 0 && (
+                          <button
+                            onClick={markAllAsRead}
+                            className="text-sm text-blue-600 hover:text-blue-800 font-medium"
+                          >
+                            {isAdmin() ? 'Mark all resolved' : 'Mark all read'}
+                          </button>
+                        )}
+                        <button
+                          onClick={() => fetchNotifications(true)}
+                          className="text-sm text-gray-500 hover:text-blue-600 flex items-center gap-1"
+                          title="Refresh notifications"
+                        >
+                          <FaRedo className="w-4 h-4" />
+                          Refresh
+                        </button>
+                        {allNotifications.length > 0 && (
+                          <button
+                            onClick={() => {
+                              // Clear all notifications
+                              fetch(`${API_BASE_URL}/api/notifications/user/${currentUser._id}/all`, {
+                                method: 'DELETE',
+                                credentials: 'include',
+                              }).then(() => {
+                                setAllNotifications([]);
+                                setUnreadCount(0);
+                                toast.success('All notifications cleared');
+                              });
+                            }}
+                            className="text-sm text-red-600 hover:text-red-800 font-medium flex items-center gap-1"
+                            title="Clear all notifications"
+                          >
+                            <FaTrash className="w-4 h-4" />
+                            Clear all
+                          </button>
+                        )}
+                      </div>
+                    </div>
+
+                    {/* Notifications List */}
+                    <div className="notification-scroll-area-desktop">
+                      {notifications.length === 0 ? (
+                        <div className="p-6 text-center text-gray-500">
+                          <FaBell className="w-8 h-8 mx-auto mb-2 text-gray-300" />
+                          <p>No notifications yet</p>
+                        </div>
+                      ) : (
+                        <div className="divide-y divide-gray-100">
+                          {notifications.map((notification) => (
+                            <div
+                              key={notification._id}
+                              className={`p-4 hover:bg-gradient-to-r hover:from-blue-50 hover:to-purple-50 transition-all duration-200 border-l-4 ${!notification.isRead ? 'bg-blue-50 border-blue-500' : 'border-transparent hover:border-gray-200'
+                                }`}
+                            >
+                              <div className="flex items-start gap-3">
+                                <div className="flex-shrink-0 mt-1">
+                                  {getNotificationIcon(notification.type)}
+                                </div>
+                                <div className="flex-1 min-w-0">
+                                  <div className="flex items-start justify-between">
+                                    <div className="flex-1">
+                                      <h4 className="text-sm font-medium text-gray-900">
+                                        {notification.title}
+                                      </h4>
+                                      <p className="text-sm text-gray-600 mt-1 whitespace-pre-line break-words max-w-xs md:max-w-md lg:max-w-lg">
+                                        {notification.link ? (
+                                          <span
+                                            className="text-blue-600 hover:underline cursor-pointer"
+                                            onClick={() => {
+                                              markAsRead(notification._id);
+
+                                              if (notification.link.startsWith('http')) {
+                                                window.open(notification.link, '_blank');
+                                              } else {
+                                                setIsOpen(false);
+                                                setTimeout(() => navigate(notification.link), 0);
+                                              }
+                                            }}
+                                          >
+                                            {notification.message}
+                                          </span>
+                                        ) : (
+                                          <span
+                                            className="text-blue-600 hover:underline cursor-pointer"
+                                            onClick={() => {
+                                              markAsRead(notification._id);
+                                              setIsOpen(false);
+                                            }}
+                                          >
+                                            {notification.message}
+                                          </span>
+                                        )}
+                                      </p>
+                                      <div className="flex items-center gap-2 mt-2">
+                                        <span className="text-xs text-gray-500">
+                                          {formatDate(notification.createdAt)}
+                                        </span>
+                                        {/* Show 'by Organization' for admin notifications on user side */}
+                                        {notification.adminId && !isAdmin() && (
+                                          <span className="text-xs text-blue-600">
+                                            by Organization
+                                          </span>
+                                        )}
+                                        {/* Optionally, for admins, still show admin name/email */}
+                                        {notification.adminId && isAdmin() && (
+                                          <span className="text-xs text-blue-600">
+                                            by {notification.adminId.username || notification.adminId.email}
+                                          </span>
+                                        )}
+                                      </div>
+                                    </div>
+                                    <div className="flex items-center gap-1 ml-2">
+                                      <button
+                                        onClick={() => {
+                                          const text = `${notification.title}\n${notification.message}`;
+                                          navigator.clipboard.writeText(text).then(() => {
+                                            toast.success('Notification copied to clipboard');
+                                          }).catch(() => {
+                                            toast.error('Failed to copy notification');
+                                          });
+                                        }}
+                                        className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
+                                        title="Copy notification"
+                                      >
+                                        <FaCopy className="w-3 h-3" />
+                                      </button>
+                                      {!notification.isRead && (
+                                        <button
+                                          onClick={() => markAsRead(notification._id)}
+                                          className="p-1 text-green-600 hover:text-green-800 transition-colors"
+                                          title="Mark as read"
+                                        >
+                                          <FaCheck className="w-3 h-3" />
+                                        </button>
+                                      )}
+                                      <button
+                                        onClick={() => deleteNotification(notification._id)}
+                                        className="p-1 text-red-600 hover:text-red-800 transition-colors"
+                                        title="Delete notification"
+                                      >
+                                        <FaTrash className="w-3 h-3" />
+                                      </button>
+                                    </div>
+                                  </div>
                                 </div>
                               </div>
-                              <div className="flex items-center gap-1 ml-2">
-                                <button
-                                  onClick={() => {
-                                    const text = `${notification.title}\n${notification.message}`;
-                                    navigator.clipboard.writeText(text).then(() => {
-                                      toast.success('Notification copied to clipboard');
-                                    }).catch(() => {
-                                      toast.error('Failed to copy notification');
-                                    });
-                                  }}
-                                  className="p-1 text-blue-600 hover:text-blue-800 transition-colors"
-                                  title="Copy notification"
-                                >
-                                  <FaCopy className="w-3 h-3" />
-                                </button>
-                                {!notification.isRead && (
-                                  <button
-                                    onClick={() => markAsRead(notification._id)}
-                                    className="p-1 text-green-600 hover:text-green-800 transition-colors"
-                                    title="Mark as read"
-                                  >
-                                    <FaCheck className="w-3 h-3" />
-                                  </button>
-                                )}
-                                <button
-                                  onClick={() => deleteNotification(notification._id)}
-                                  className="p-1 text-red-600 hover:text-red-800 transition-colors"
-                                  title="Delete notification"
-                                >
-                                  <FaTrash className="w-3 h-3" />
-                                </button>
-                              </div>
                             </div>
-                          </div>
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-                )}
-              </div>
-
-
-            </>
-          ) : (
-            /* Send Notification Tab */
-            <div className="p-4 space-y-4 max-h-80 overflow-y-auto">
-              {/* Send to All Users */}
-              <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-                <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
-                  <FaUsers className="w-4 h-4" />
-                  Send to All Users
-                </h4>
-                <form onSubmit={sendNotificationToAll} className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      value={allUsersTitle}
-                      onChange={(e) => setAllUsersTitle(e.target.value)}
-                      placeholder="Enter title..."
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
-                      required
-                      maxLength={100}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Message
-                    </label>
-                    <textarea
-                      value={allUsersMessage}
-                      onChange={(e) => setAllUsersMessage(e.target.value)}
-                      placeholder="Enter message..."
-                      rows={3}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none text-gray-900"
-                      required
-                      maxLength={500}
-                    />
-                    <div className="text-xs text-gray-500 mt-1 text-right">
-                      {allUsersMessage.length}/500
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={sendingNotification || !allUsersTitle.trim() || !allUsersMessage.trim()}
-                    className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {sendingNotification ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <FaUsers className="w-3 h-3" />
-                        Send to All Users
-                      </>
-                    )}
-                  </button>
-                </form>
-              </div>
-
-              {/* Send to Specific User */}
-              <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-                <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                  <FaUser className="w-4 h-4" />
-                  Send to Specific User
-                </h4>
-                <form onSubmit={sendNotificationToUser} className="space-y-3">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Select User
-                    </label>
-                    <input
-                      type="text"
-                      value={userSearch}
-                      onChange={(e) => {
-                        const value = e.target.value;
-                        setUserSearch(value);
-                        // Clear selected user if search changes
-                        if (selectedUser && value.trim()) {
-                          setSelectedUser('');
-                        }
-                      }}
-                      placeholder="Search users by name, email, or mobile number"
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 mb-2"
-                      disabled={fetchingUsers}
-                    />
-                    <div className="relative">
-                      <select
-                        value={selectedUser}
-                        onChange={(e) => setSelectedUser(e.target.value)}
-                        className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
-                        required
-                        disabled={fetchingUsers}
-                      >
-                        <option value="" disabled>
-                          -- Select a user --
-                        </option>
-                        {users.length === 0 && !fetchingUsers && (
-                          <option value="" disabled>No users found. Click "Refresh Users" to load.</option>
-                        )}
-                        {users
-                          .filter((user) => {
-                            const q = userSearch.trim().toLowerCase();
-                            if (!q) return true;
-                            
-                            const name = (user.username || user.name || "").toLowerCase();
-                            const email = (user.email || "").toLowerCase();
-                            const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
-                            const mobile = mobileRaw.replace(/\D/g, '');
-                            
-                            // If query is exactly a 10-digit number, require exact mobile match
-                            if (/^\d{10}$/.test(q)) {
-                              return mobile === q;
-                            }
-                            
-                            // Otherwise broad matching across fields
-                            return (
-                              name.includes(q) ||
-                              email.includes(q) ||
-                              mobileRaw.toLowerCase().includes(q)
-                            );
-                          })
-                          .map((user) => {
-                            const formatMobileNumber = (mobile) => {
-                              if (!mobile) return '';
-                              const cleanMobile = mobile.toString().replace(/[\s\-\(\)]/g, '');
-                              if (cleanMobile.length === 10) {
-                                return `+91-${cleanMobile}`;
-                              } else if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
-                                return `+${cleanMobile}`;
-                              } else if (cleanMobile.length === 13 && cleanMobile.startsWith('+91')) {
-                                return cleanMobile;
-                              }
-                              return mobile;
-                            };
-                            
-                            const displayName = user.username || user.name || user.email;
-                            const displayEmail = user.email;
-                            const displayMobile = formatMobileNumber(user.mobileNumber || user.mobile);
-                            
-                            return (
-                              <option key={user._id} value={user._id}>
-                                {displayName} ({displayEmail}{displayMobile ? `, ${displayMobile}` : ''})
-                              </option>
-                            );
-                          })}
-                      </select>
-                      {fetchingUsers && (
-                        <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
-                          <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                          ))}
                         </div>
                       )}
                     </div>
-                    <div className="flex items-center justify-between mt-1">
-                      <span className="text-xs text-gray-500">
-                        {users.filter((user) => {
-                          const q = userSearch.trim().toLowerCase();
-                          if (!q) return true;
-                          
-                          const name = (user.username || user.name || "").toLowerCase();
-                          const email = (user.email || "").toLowerCase();
-                          const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
-                          const mobile = mobileRaw.replace(/\D/g, '');
-                          
-                          if (/^\d{10}$/.test(q)) {
-                            return mobile === q;
-                          }
-                          
-                          return (
-                            name.includes(q) ||
-                            email.includes(q) ||
-                            mobileRaw.toLowerCase().includes(q)
-                          );
-                        }).length} users available
-                      </span>
-                      <button
-                        type="button"
-                        onClick={fetchUsers}
-                        disabled={fetchingUsers}
-                        className="text-xs text-blue-600 hover:text-blue-800 font-medium"
-                      >
-                        {fetchingUsers ? 'Loading...' : 'Refresh Users'}
-                      </button>
+
+
+                  </>
+                ) : (
+                  /* Send Notification Tab */
+                  <div className="p-4 space-y-4 max-h-80 overflow-y-auto">
+                    {/* Send to All Users */}
+                    <div className="bg-green-50 p-4 rounded-lg border border-green-200">
+                      <h4 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
+                        <FaUsers className="w-4 h-4" />
+                        Send to All Users
+                      </h4>
+                      <form onSubmit={sendNotificationToAll} className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Title
+                          </label>
+                          <input
+                            type="text"
+                            value={allUsersTitle}
+                            onChange={(e) => setAllUsersTitle(e.target.value)}
+                            placeholder="Enter title..."
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900"
+                            required
+                            maxLength={100}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Message
+                          </label>
+                          <textarea
+                            value={allUsersMessage}
+                            onChange={(e) => setAllUsersMessage(e.target.value)}
+                            placeholder="Enter message..."
+                            rows={3}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent resize-none text-gray-900"
+                            required
+                            maxLength={500}
+                          />
+                          <div className="text-xs text-gray-500 mt-1 text-right">
+                            {allUsersMessage.length}/500
+                          </div>
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={sendingNotification || !allUsersTitle.trim() || !allUsersMessage.trim()}
+                          className="w-full bg-green-500 hover:bg-green-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {sendingNotification ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                              Sending...
+                            </>
+                          ) : (
+                            <>
+                              <FaUsers className="w-3 h-3" />
+                              Send to All Users
+                            </>
+                          )}
+                        </button>
+                      </form>
+                    </div>
+
+                    {/* Send to Specific User */}
+                    <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
+                      <h4 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
+                        <FaUser className="w-4 h-4" />
+                        Send to Specific User
+                      </h4>
+                      <form onSubmit={sendNotificationToUser} className="space-y-3">
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Select User
+                          </label>
+                          <input
+                            type="text"
+                            value={userSearch}
+                            onChange={(e) => {
+                              const value = e.target.value;
+                              setUserSearch(value);
+                              // Clear selected user if search changes
+                              if (selectedUser && value.trim()) {
+                                setSelectedUser('');
+                              }
+                            }}
+                            placeholder="Search users by name, email, or mobile number"
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900 mb-2"
+                            disabled={fetchingUsers}
+                          />
+                          <div className="relative">
+                            <select
+                              value={selectedUser}
+                              onChange={(e) => setSelectedUser(e.target.value)}
+                              className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white text-gray-900"
+                              required
+                              disabled={fetchingUsers}
+                            >
+                              <option value="" disabled>
+                                -- Select a user --
+                              </option>
+                              {users.length === 0 && !fetchingUsers && (
+                                <option value="" disabled>No users found. Click "Refresh Users" to load.</option>
+                              )}
+                              {users
+                                .filter((user) => {
+                                  const q = userSearch.trim().toLowerCase();
+                                  if (!q) return true;
+
+                                  const name = (user.username || user.name || "").toLowerCase();
+                                  const email = (user.email || "").toLowerCase();
+                                  const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                                  const mobile = mobileRaw.replace(/\D/g, '');
+
+                                  // If query is exactly a 10-digit number, require exact mobile match
+                                  if (/^\d{10}$/.test(q)) {
+                                    return mobile === q;
+                                  }
+
+                                  // Otherwise broad matching across fields
+                                  return (
+                                    name.includes(q) ||
+                                    email.includes(q) ||
+                                    mobileRaw.toLowerCase().includes(q)
+                                  );
+                                })
+                                .map((user) => {
+                                  const formatMobileNumber = (mobile) => {
+                                    if (!mobile) return '';
+                                    const cleanMobile = mobile.toString().replace(/[\s\-\(\)]/g, '');
+                                    if (cleanMobile.length === 10) {
+                                      return `+91-${cleanMobile}`;
+                                    } else if (cleanMobile.length === 12 && cleanMobile.startsWith('91')) {
+                                      return `+${cleanMobile}`;
+                                    } else if (cleanMobile.length === 13 && cleanMobile.startsWith('+91')) {
+                                      return cleanMobile;
+                                    }
+                                    return mobile;
+                                  };
+
+                                  const displayName = user.username || user.name || user.email;
+                                  const displayEmail = user.email;
+                                  const displayMobile = formatMobileNumber(user.mobileNumber || user.mobile);
+
+                                  return (
+                                    <option key={user._id} value={user._id}>
+                                      {displayName} ({displayEmail}{displayMobile ? `, ${displayMobile}` : ''})
+                                    </option>
+                                  );
+                                })}
+                            </select>
+                            {fetchingUsers && (
+                              <div className="absolute right-3 top-1/2 transform -translate-y-1/2">
+                                <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-blue-500"></div>
+                              </div>
+                            )}
+                          </div>
+                          <div className="flex items-center justify-between mt-1">
+                            <span className="text-xs text-gray-500">
+                              {users.filter((user) => {
+                                const q = userSearch.trim().toLowerCase();
+                                if (!q) return true;
+
+                                const name = (user.username || user.name || "").toLowerCase();
+                                const email = (user.email || "").toLowerCase();
+                                const mobileRaw = (user.mobileNumber || user.mobile || "").toString();
+                                const mobile = mobileRaw.replace(/\D/g, '');
+
+                                if (/^\d{10}$/.test(q)) {
+                                  return mobile === q;
+                                }
+
+                                return (
+                                  name.includes(q) ||
+                                  email.includes(q) ||
+                                  mobileRaw.toLowerCase().includes(q)
+                                );
+                              }).length} users available
+                            </span>
+                            <button
+                              type="button"
+                              onClick={fetchUsers}
+                              disabled={fetchingUsers}
+                              className="text-xs text-blue-600 hover:text-blue-800 font-medium"
+                            >
+                              {fetchingUsers ? 'Loading...' : 'Refresh Users'}
+                            </button>
+                          </div>
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Title
+                          </label>
+                          <input
+                            type="text"
+                            value={title}
+                            onChange={(e) => setTitle(e.target.value)}
+                            placeholder="Enter title..."
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
+                            required
+                            maxLength={100}
+                          />
+                        </div>
+                        <div>
+                          <label className="block text-sm font-medium text-gray-700 mb-1">
+                            Message
+                          </label>
+                          <textarea
+                            value={message}
+                            onChange={(e) => setMessage(e.target.value)}
+                            placeholder="Enter message..."
+                            rows={3}
+                            className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900"
+                            required
+                            maxLength={500}
+                          />
+                          <div className="text-xs text-gray-500 mt-1 text-right">
+                            {message.length}/500
+                          </div>
+                        </div>
+                        <button
+                          type="submit"
+                          disabled={sendingNotification || !selectedUser || !title.trim() || !message.trim()}
+                          className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                        >
+                          {sendingNotification ? (
+                            <>
+                              <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                              Sending...
+                            </>
+                          ) : (
+                            <>
+                              <FaPaperPlane className="w-3 h-3" />
+                              Send to User
+                            </>
+                          )}
+                        </button>
+                      </form>
                     </div>
                   </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Title
-                    </label>
-                    <input
-                      type="text"
-                      value={title}
-                      onChange={(e) => setTitle(e.target.value)}
-                      placeholder="Enter title..."
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent text-gray-900"
-                      required
-                      maxLength={100}
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-1">
-                      Message
-                    </label>
-                    <textarea
-                      value={message}
-                      onChange={(e) => setMessage(e.target.value)}
-                      placeholder="Enter message..."
-                      rows={3}
-                      className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent resize-none text-gray-900"
-                      required
-                      maxLength={500}
-                    />
-                    <div className="text-xs text-gray-500 mt-1 text-right">
-                      {message.length}/500
-                    </div>
-                  </div>
-                  <button
-                    type="submit"
-                    disabled={sendingNotification || !selectedUser || !title.trim() || !message.trim()}
-                    className="w-full bg-blue-500 hover:bg-blue-600 text-white font-medium py-2 px-4 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                  >
-                    {sendingNotification ? (
-                      <>
-                        <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
-                        Sending...
-                      </>
-                    ) : (
-                      <>
-                        <FaPaperPlane className="w-3 h-3" />
-                        Send to User
-                      </>
-                    )}
-                  </button>
-                </form>
+                )}
               </div>
-            </div>
-          )}
-        </div>
-              </div>,
-        document.body
+            </div>,
+            document.body
+          )
         )
-      )
       )}
       {/* Enhanced Animations */}
       <style jsx>{`
