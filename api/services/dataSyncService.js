@@ -41,7 +41,7 @@ export const indexAllProperties = async () => {
         console.log('🔄 Indexing all properties for chatbot...');
 
         const properties = await Listing.find({})
-            .select('name city district state regularPrice discountPrice type bedrooms bathrooms area description imageUrls createdAt updatedAt')
+            .select('name city district state regularPrice discountPrice type bedrooms bathrooms area description imageUrls availabilityStatus isVerified esg rentLockPlans monthlyRent securityDepositMonths rentPrediction createdAt updatedAt')
             .lean();
 
         // Clear existing properties cache
@@ -52,7 +52,7 @@ export const indexAllProperties = async () => {
             const propertyData = {
                 id: prop._id.toString(),
                 name: prop.name,
-                location: `${prop.city}, ${prop.state}`,
+                location: `${prop.city}, ${prop.district ? prop.district + ', ' : ''}${prop.state}`,
                 price: prop.discountPrice || prop.regularPrice,
                 originalPrice: prop.regularPrice,
                 type: prop.type,
@@ -61,6 +61,14 @@ export const indexAllProperties = async () => {
                 area: prop.area,
                 description: prop.description,
                 image: prop.imageUrls?.[0] || null,
+                status: prop.availabilityStatus || 'available',
+                isVerified: prop.isVerified || false,
+                esgRating: prop.esg?.esgRating || 'Not Rated',
+                esgScore: prop.esg?.esgScore || 0,
+                rentLockPlans: prop.rentLockPlans?.availablePlans || [],
+                monthlyRent: prop.monthlyRent,
+                securityDepositMonths: prop.securityDepositMonths,
+                rentPrediction: prop.rentPrediction?.priceComparison || 'fair',
                 createdAt: prop.createdAt,
                 updatedAt: prop.updatedAt,
                 indexedAt: new Date()
@@ -72,7 +80,7 @@ export const indexAllProperties = async () => {
         dataCache.totalProperties = properties.length;
         dataCache.lastSync = new Date();
 
-        console.log(`✅ Indexed ${properties.length} properties for chatbot`);
+        console.log(`✅ Indexed ${properties.length} properties (including status & ESG) for chatbot`);
         return { success: true, count: properties.length };
     } catch (error) {
         console.error('❌ Error indexing properties:', error);
@@ -520,28 +528,38 @@ export const getRelevantCachedData = (userMessage, selectedProperties = []) => {
     contextData += `SERVICES: Property Search, Home Buying, Investment Guidance, Property Management, Legal & Documentation Support\n\n`;
 
     // Add selected properties first (if any)
+    const BASE_URL = 'https://urbansetu.vercel.app';
     if (selectedProperties.length > 0) {
         contextData += 'USER-SELECTED PROPERTIES (Referenced in message):\n';
         selectedProperties.forEach((prop, index) => {
-            const link = `/listing/${prop.id}`;
-            contextData += `${index + 1}. [${prop.name}](${link}) - ${prop.location}\n`;
-            contextData += `   Price: ₹${prop.price.toLocaleString()} | Type: ${prop.type}\n`;
-            contextData += `   ${prop.bedrooms}BHK | ${prop.bathrooms} Bath | ${prop.area} sq ft\n`;
+            const link = `${BASE_URL}/listing/${prop.id}`;
+            const statusBadge = prop.status === 'under_contract' ? ' [SALE-LOCKED]' : (prop.status === 'rented' ? ' [RENT-LOCKED]' : '');
+            const verificationBadge = prop.isVerified ? ' (Verified ✓)' : ' (Pending Verification)';
+
+            contextData += `${index + 1}. [${prop.name}](${link})${statusBadge}${verificationBadge}\n`;
+            contextData += `   Location: ${prop.location}\n`;
+            contextData += `   Price: ₹${prop.price.toLocaleString()} | Type: ${prop.type.toUpperCase()}\n`;
+            contextData += `   Details: ${prop.bedrooms}BHK | ${prop.bathrooms} Bath | ${prop.area} sq ft\n`;
+            if (prop.esgRating) contextData += `   ESG: ${prop.esgRating} (Score: ${prop.esgScore})\n`;
             contextData += `   Description: ${prop.description || 'Property details available'}\n`;
             contextData += '\n';
         });
     }
 
     // Add relevant properties from cache
-    const relevantProperties = searchCachedProperties(keywords.join(' '), 5); // Increased limit to 5
+    const relevantProperties = searchCachedProperties(keywords.join(' '), 5);
     if (relevantProperties.length > 0) {
         contextData += 'RELEVANT PROPERTIES:\n';
         relevantProperties.forEach((prop, index) => {
-            const link = `/listing/${prop.id}`;
-            contextData += `${index + 1}. [${prop.name}](${link}) - ${prop.location}\n`;
-            contextData += `   Price: ₹${prop.price.toLocaleString()} | Type: ${prop.type}\n`;
-            contextData += `   ${prop.bedrooms}BHK | ${prop.bathrooms} Bath | ${prop.area} sq ft\n`;
-            contextData += `   Description: ${prop.description?.slice(0, 200)}...\n`;
+            const link = `${BASE_URL}/listing/${prop.id}`;
+            const statusBadge = prop.status === 'under_contract' ? ' [SALE-LOCKED]' : (prop.status === 'rented' ? ' [RENT-LOCKED]' : '');
+            const verificationBadge = prop.isVerified ? ' (Verified ✓)' : ' (Pending Verification)';
+
+            contextData += `${index + 1}. [${prop.name}](${link})${statusBadge}${verificationBadge}\n`;
+            contextData += `   Location: ${prop.location}\n`;
+            contextData += `   Price: ₹${prop.price.toLocaleString()} | Type: ${prop.type.toUpperCase()}\n`;
+            contextData += `   Details: ${prop.bedrooms}BHK | ${prop.bathrooms} Bath | ${prop.area} sq ft\n`;
+            contextData += `   Description: ${prop.description?.slice(0, 160)}...\n`;
             contextData += '\n';
         });
     }

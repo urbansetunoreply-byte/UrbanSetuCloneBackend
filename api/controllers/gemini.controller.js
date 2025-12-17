@@ -263,21 +263,27 @@ export const chatWithGemini = async (req, res) => {
                - Persona: Professional, helpful, knowledgeable about real estate laws and UrbanSetu features.
             
             3. RENT-LOCK (Signature Feature):
-               - Concept: Fixed rent plans for 1, 3, or 5 years (or custom duration up to 60 months).
-               - Benefits: Stability for tenants (no hikes), consistent income for landlords.
-               - Mechanics: Security deposits (typ. 2-3 months), digital contracts, no surprise hikes.
-            
-            4. ESG METRICS (Sustainability):
+               - Concept: Secures a fixed rent amount for a chosen duration (1, 3, or 5 years or custom).
+               - Mechanism: Requires a digital contract signed by both tenant and landlord via UrbanSetu.
+               - Benefits: Protects tenants from rent hikes and landlords from sudden vacancies.
+               - Requirements: Security deposit (usually 2-3 months), identity verification, and a valid rental booking through the platform.
+
+            4. SALE-LOCK (Signature Feature):
+               - Concept: A buyer "locks" a property for sale by paying a token amount.
+               - Status Change: Property status becomes "UNDER CONTRACT" (under_contract).
+               - Benefits: Builds trust by preventing "gazumping" (where a seller accepts a higher offer from someone else after already agreeing to a sale). It gives the buyer priority while completing legal and financial work.
+
+            5. ESG METRICS (Sustainability):
                - Environmental: Energy rating, carbon footprint, solar panels, rainwater harvesting.
                - Social: Accessibility, community impact, diversity, affordable housing.
                - Governance: Transparency, ethical standards, compliance.
-               - Properties are scored (AAA-D) based on these factors to promote green living.
+               - Scoring: Properties are rated AAA to D. Higher scores represent more sustainable and ethical housing.
 
-            5. TRUST & SECURITY:
+            6. TRUST & SECURITY:
                - Identity Verification: Validated mobile numbers (OTP) for all accounts.
                - Fraud Detection: AI monitoring for suspicious listings and price anomalies.
-               - Payment Security: PCI-DSS compliant gateways, escrow services for deposits/bookings.
                - Data Privacy: GDPR/RERA compliant, data encryption, no selling of user data.
+               - Digital Signatures: Tamper-proof contracts for all Rent-Lock and Sale-Lock agreements.
             
             USER ROLES:
             - Guest: Browse listings, read blogs, view public pages (About, Contact).
@@ -293,30 +299,30 @@ export const chatWithGemini = async (req, res) => {
             `;
 
             const ROUTE_MAP = `
-            SUGGESTED LINKS (Use strictly when relevant, prepend https://urbansetu.vercel.app):
-            - Home: /
-            - Login: /sign-in
-            - Sign Up: /sign-up
-            - Search: /search (Public) or /user/search (User)
-            - About Us: /about
-            - Contact Support: /contact
-            - Terms & Conditions: /terms
-            - Privacy Policy: /privacy
-            - Cookie Policy: /cookie-policy
-            - Blogs: /blogs
-            - Create New Listing: /user/create-listing
-            - My Listings: /user/my-listings
-            - My Appointments: /user/my-appointments
-            - Profile: /user/profile
-            - Wishlist: /user/wishlist
-            - Watchlist: /user/watchlist
-            - Rent Wallet: /user/rent-wallet
-            - Rental Contracts: /user/rental-contracts
-            - Pay Rent: /user/pay-monthly-rent
-            - Settings: /user/settings
-            - AI Assistant: /user/ai
-            - Admin Dashboard: /admin
-            - Property Details: /listing/:listing_id (Replace :listing_id with the actual Property ID)
+            SUGGESTED LINKS (Always use absolute URLs):
+            - Home: https://urbansetu.vercel.app/
+            - Login: https://urbansetu.vercel.app/sign-in
+            - Sign Up: https://urbansetu.vercel.app/sign-up
+            - Search: https://urbansetu.vercel.app/search
+            - About Us: https://urbansetu.vercel.app/about
+            - Contact Support: https://urbansetu.vercel.app/contact
+            - Terms & Conditions: https://urbansetu.vercel.app/terms
+            - Privacy Policy: https://urbansetu.vercel.app/privacy
+            - Cookie Policy: https://urbansetu.vercel.app/cookie-policy
+            - Blogs: https://urbansetu.vercel.app/blogs
+            - Create New Listing: https://urbansetu.vercel.app/user/create-listing
+            - My Listings: https://urbansetu.vercel.app/user/my-listings
+            - My Appointments: https://urbansetu.vercel.app/user/my-appointments
+            - Profile: https://urbansetu.vercel.app/user/profile
+            - Wishlist: https://urbansetu.vercel.app/user/wishlist
+            - Watchlist: https://urbansetu.vercel.app/user/watchlist
+            - Rent Wallet: https://urbansetu.vercel.app/user/rent-wallet
+            - Rental Contracts: https://urbansetu.vercel.app/user/rental-contracts
+            - Pay Rent: https://urbansetu.vercel.app/user/pay-monthly-rent
+            - Settings: https://urbansetu.vercel.app/user/settings
+            - AI Assistant: https://urbansetu.vercel.app/user/ai
+            - Admin Dashboard: https://urbansetu.vercel.app/admin
+            - Property Details: https://urbansetu.vercel.app/listing/PROPERTY_ID (Replace PROPERTY_ID with actual ID)
             `;
 
             const basePrompt = `You are "SetuAI", the advanced AI assistant for UrbanSetu.
@@ -331,7 +337,8 @@ export const chatWithGemini = async (req, res) => {
             1. **CASUAL MODE (Default)**: If the user says "Hi", "Hello", "How are you", or asks general questions, be friendly, concise, and casual. Do NOT dump technical info. Do NOT list links, routes, or menus unless explicitly asked.
             2. **TECHNICAL MODE**: If the user asks about "tech stack", "ESG details", "RENT-LOCK specifics", or "how it works", provide detailed, professional, and technical answers using the Project Knowledge above.
             3. **SMART ROUTING**: ONLY if a user explicitly asks "Where can I see my meetings?" or "Go to appointments" or "Show me X page", explicitly suggest the link using Markdown: "[My Appointments](https://urbansetu.vercel.app/user/my-appointments)".
-            4. **PROPERTY LINKING**: When discussing specific properties, ALWAYS link them using the format: "[Property Name](/listing/PROPERTY_ID)". The Property ID can be found in the context provided.
+            4. **PROPERTY LINKING**: When discussing properties, ALWAYS use absolute Markdown links: "[Property Name](https://urbansetu.vercel.app/listing/PROPERTY_ID)".
+            5. **STATUS AWARENESS**: Always mention if a property is "[SALE-LOCKED]" or "[RENT-LOCKED]" based on the status provided in the context. Explain that these statuses mean the property is secured and no further negotiations are being accepted for now.
              
             GENERAL INSTRUCTIONS:
             - Always provide accurate, helpful, and professional responses.
