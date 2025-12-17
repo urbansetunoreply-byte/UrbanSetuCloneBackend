@@ -111,6 +111,16 @@ export default function EditListing() {
         setError(data.message);
         return;
       }
+
+      // Check if property is sold or under contract (non-admins cannot edit)
+      if ((data.availabilityStatus === 'sold' || data.availabilityStatus === 'under_contract') &&
+        currentUser.role !== 'admin' &&
+        currentUser.role !== 'rootadmin') {
+        toast.error(`Cannot edit property that is ${data.availabilityStatus === 'sold' ? 'sold' : 'under contract'}.`);
+        navigate(getPreviousPath());
+        return;
+      }
+
       setFormData({
         ...formData,
         ...data,

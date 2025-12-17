@@ -169,6 +169,14 @@ export const deleteListing = async (req, res, next) => {
     return next(errorHandler(404, "Listing not found"))
   }
 
+  // Check if property is sold or under contract (non-admins cannot delete)
+  if ((listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract') &&
+    req.user.role !== 'admin' &&
+    req.user.role !== 'rootadmin' &&
+    !req.user.isDefaultAdmin) {
+    return next(errorHandler(403, `Cannot delete property that is ${listing.availabilityStatus === 'sold' ? 'sold' : 'under contract'}.`));
+  }
+
   // Check for active Rent-Lock
   const activeContract = await RentLockContract.findOne({
     listingId: listing._id,
@@ -366,6 +374,14 @@ export const updateListing = async (req, res, next) => {
     req.user.id !== listing.userRef.toString()
   ) {
     return next(errorHandler(401, 'You can only edit your own listing (unless you are admin/rootadmin)'))
+  }
+
+  // Check if property is sold or under contract (non-admins cannot edit)
+  if ((listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract') &&
+    req.user.role !== 'admin' &&
+    req.user.role !== 'rootadmin' &&
+    !req.user.isDefaultAdmin) {
+    return next(errorHandler(403, `Cannot edit property that is ${listing.availabilityStatus === 'sold' ? 'sold' : 'under contract'}.`));
   }
 
   // Check for active Rent-Lock

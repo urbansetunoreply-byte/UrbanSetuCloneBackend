@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { FaArchive, FaBan, FaCalendar, FaCalendarAlt, FaCheck, FaCheckDouble, FaCheckSquare, FaCircle, FaCog, FaCommentDots, FaCopy, FaCreditCard, FaDownload, FaEllipsisV, FaEnvelope, FaExclamationTriangle, FaFileContract, FaFlag, FaHandshake, FaHistory, FaInfoCircle, FaLightbulb, FaMoneyBillWave, FaPaperPlane, FaPen, FaPhone, FaRegStar, FaSearch, FaSpinner, FaStar, FaSync, FaThumbtack, FaTimes, FaTrash, FaUndo, FaUserShield, FaVideo, FaWallet } from 'react-icons/fa';
+import { FaArchive, FaBan, FaCalendar, FaCalendarAlt, FaCheck, FaCheckDouble, FaCheckSquare, FaCircle, FaCheckCircle, FaCog, FaCommentDots, FaCopy, FaCreditCard, FaDownload, FaEllipsisV, FaEnvelope, FaExclamationTriangle, FaFileContract, FaFlag, FaHandshake, FaHistory, FaInfoCircle, FaLightbulb, FaMoneyBillWave, FaPaperPlane, FaPen, FaPhone, FaRegStar, FaSearch, FaSpinner, FaStar, FaSync, FaThumbtack, FaTimes, FaTrash, FaUndo, FaUserShield, FaVideo, FaWallet } from 'react-icons/fa';
 import { EmojiButton } from '../components/EmojiPicker';
 import CustomEmojiPicker from '../components/EmojiPicker';
 import { useSoundEffects, SoundControl } from '../components/SoundEffects';
@@ -132,6 +132,16 @@ export default function MyAppointments() {
   // Call History modal state
   const [showCallHistoryModal, setShowCallHistoryModal] = useState(false);
   const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useState(null);
+
+  // Sale Confirmation Modals State
+  const [showTokenPaidModal, setShowTokenPaidModal] = useState(false);
+  const [showSaleCompleteModal, setShowSaleCompleteModal] = useState(false);
+  const [showDisputeModal, setShowDisputeModal] = useState(false);
+  const [apptIdForAction, setApptIdForAction] = useState(null);
+
+  // Dispute State
+  const [disputeReason, setDisputeReason] = useState("");
+  const [submittingDispute, setSubmittingDispute] = useState(false);
 
   // Call functionality - using global context
   const {
@@ -736,8 +746,20 @@ export default function MyAppointments() {
     setActionLoading("");
   };
 
-  const handleTokenPaid = async (id) => {
+  // Wrapper to open modal
+  const handleTokenPaid = (id) => {
+    setApptIdForAction(id);
+    setShowTokenPaidModal(true);
+  };
+
+  // Actual API call for Token Paid
+  const confirmTokenPaid = async () => {
+    const id = apptIdForAction;
+    if (!id) return;
+
     setActionLoading(id + 'token_paid');
+    setShowTokenPaidModal(false);
+
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/token-paid`,
         {},
@@ -749,7 +771,7 @@ export default function MyAppointments() {
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === id ? { ...appt, saleStatus: 'token_paid' } : appt))
       );
-      toast.success("Property locked! Token payment marked as received.", {
+      toast.success("Property locked! Token payment marked as received. Emails have been sent.", {
         autoClose: 5000,
         closeOnClick: true,
         pauseOnHover: false,
@@ -764,10 +786,23 @@ export default function MyAppointments() {
       toast.error(err.response?.data?.message || "Failed to mark token as paid.");
     }
     setActionLoading("");
+    setApptIdForAction(null);
   };
 
-  const handleSaleComplete = async (id) => {
+  // Wrapper to open modal
+  const handleSaleComplete = (id) => {
+    setApptIdForAction(id);
+    setShowSaleCompleteModal(true);
+  };
+
+  // Actual API call for Sale Complete
+  const confirmSaleComplete = async () => {
+    const id = apptIdForAction;
+    if (!id) return;
+
     setActionLoading(id + 'sold');
+    setShowSaleCompleteModal(false);
+
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/complete`,
         {},
@@ -779,7 +814,7 @@ export default function MyAppointments() {
       setAppointments((prev) =>
         prev.map((appt) => (appt._id === id ? { ...appt, saleStatus: 'sold', status: 'completed' } : appt))
       );
-      toast.success("Congratulations! Property marked as sold.", {
+      toast.success("Congratulations! Property marked as sold. Emails have been sent to both parties.", {
         autoClose: 5000,
         closeOnClick: true,
         pauseOnHover: false,
@@ -794,6 +829,34 @@ export default function MyAppointments() {
       toast.error(err.response?.data?.message || "Failed to complete sale.");
     }
     setActionLoading("");
+    setApptIdForAction(null);
+  };
+
+  // Dispute Handling
+  const handleDispute = (id) => {
+    setApptIdForAction(id);
+    setDisputeReason("");
+    setShowDisputeModal(true);
+  };
+
+  const submitDispute = async () => {
+    if (!apptIdForAction || !disputeReason.trim()) return;
+
+    setSubmittingDispute(true);
+    try {
+      await axios.post(`${API_BASE_URL}/api/bookings/${apptIdForAction}/sale/dispute`,
+        { reason: disputeReason },
+        { withCredentials: true }
+      );
+      toast.success("Dispute reported securely to the administration. We will contact you shortly.");
+      setShowDisputeModal(false);
+      setApptIdForAction(null);
+      setDisputeReason("");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Failed to submit dispute.");
+    } finally {
+      setSubmittingDispute(false);
+    }
   };
 
   const handleAdminDelete = async (id) => {
@@ -1301,6 +1364,7 @@ export default function MyAppointments() {
                       handleStatusUpdate={handleStatusUpdate}
                       handleTokenPaid={handleTokenPaid}
                       handleSaleComplete={handleSaleComplete}
+                      handleDispute={handleDispute}
                       handleAdminDelete={handleAdminDelete}
                       actionLoading={actionLoading}
                       onShowOtherParty={(party, appointment) => { setSelectedOtherParty(party); setSelectedAppointment(appointment); setShowOtherPartyModal(true); }}
@@ -1378,6 +1442,7 @@ export default function MyAppointments() {
                       handleStatusUpdate={handleStatusUpdate}
                       handleTokenPaid={handleTokenPaid}
                       handleSaleComplete={handleSaleComplete}
+                      handleDispute={handleDispute}
                       handleAdminDelete={handleAdminDelete}
                       actionLoading={actionLoading}
                       onShowOtherParty={(party, appointment) => { setSelectedOtherParty(party); setSelectedAppointment(appointment); setShowOtherPartyModal(true); }}
@@ -1980,7 +2045,7 @@ function getDateLabel(date) {
   if (date.toDateString() === yesterday.toDateString()) return 'Yesterday';
   return date.toLocaleDateString('en-GB', { day: '2-digit', month: 'short', year: 'numeric' });
 }
-function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid, handleSaleComplete, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName, setShowCallHistoryModal, setCallHistoryAppointmentId }) {
+function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid, handleSaleComplete, handleDispute, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName, setShowCallHistoryModal, setCallHistoryAppointmentId }) {
   // Camera modal state - moved to main MyAppointments component
   const navigate = useNavigate();
 
@@ -6338,6 +6403,17 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           </button>
                         )}
                       </>
+                    )}
+
+                    {/* Dispute Action (For both Buyer and Seller on Sold/Completed items) */}
+                    {(appt.saleStatus === 'sold' || appt.status === 'completed') && appt.purpose === 'buy' && (
+                      <button
+                        className="text-amber-500 hover:text-amber-700 text-xl"
+                        onClick={() => handleDispute(appt._id)}
+                        title="Report a Dispute"
+                      >
+                        <FaExclamationTriangle />
+                      </button>
                     )}
                     {/* Seller red delete after cancellation, rejection, admin deletion, or deletedByAdmin */}
                     {isSeller && (appt.status === 'cancelledBySeller' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledByAdmin' || appt.status === 'rejected' || appt.status === 'deletedByAdmin') && (
@@ -13228,6 +13304,133 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
       {/* Chat Settings Modal */}
 
+
+      {/* <GeminiAIWrapper /> */}
+      {/* Token Received Confirmation Modal */}
+      {showTokenPaidModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
+            <div className="flex flex-col items-center mb-4 text-center">
+              <div className="bg-blue-100 p-4 rounded-full mb-3">
+                <FaMoneyBillWave className="text-3xl text-blue-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800">Confirm Token Receipt</h3>
+              <p className="text-gray-600 mt-2">
+                Are you sure you want to mark the token payment as received?
+              </p>
+            </div>
+
+            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-6">
+              <p className="text-sm text-yellow-700">
+                <span className="font-bold">Note:</span> This action will:
+                <ul className="list-disc ml-4 mt-1">
+                  <li>Mark the property as "Under Contract" (Sale-Lock)</li>
+                  <li>Notify the buyer via email</li>
+                  <li>Restrict other bookings for this property</li>
+                </ul>
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => { setShowTokenPaidModal(false); setApptIdForAction(null); }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmTokenPaid}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-blue-600 to-blue-700 text-white rounded-lg hover:from-blue-700 hover:to-blue-800 shadow-md transition-all transform hover:scale-105 font-bold flex items-center justify-center gap-2"
+              >
+                <FaCheckCircle /> Confirm Received
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Sale Complete Confirmation Modal */}
+      {showSaleCompleteModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-md p-6 transform transition-all scale-100">
+            <div className="flex flex-col items-center mb-4 text-center">
+              <div className="bg-green-100 p-4 rounded-full mb-3">
+                <FaHandshake className="text-3xl text-green-600" />
+              </div>
+              <h3 className="text-2xl font-bold text-gray-800">Confirm Sale Completion</h3>
+              <p className="text-gray-600 mt-2">
+                Are you sure you want to mark this property as <strong>SOLD</strong>?
+              </p>
+            </div>
+
+            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-6">
+              <p className="text-sm text-red-700">
+                <span className="font-bold">Warning:</span> This action is irreversible and will:
+                <ul className="list-disc ml-4 mt-1">
+                  <li>Permanently mark the property as "Sold"</li>
+                  <li>Disable all further edits and bookings</li>
+                  <li>Send confirmation emails to both parties</li>
+                </ul>
+              </p>
+            </div>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => { setShowSaleCompleteModal(false); setApptIdForAction(null); }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={confirmSaleComplete}
+                className="flex-1 px-4 py-2 bg-gradient-to-r from-green-600 to-green-700 text-white rounded-lg hover:from-green-700 hover:to-green-800 shadow-md transition-all transform hover:scale-105 font-bold flex items-center justify-center gap-2"
+              >
+                <FaCheckDouble /> Mark as Sold
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Dispute Reporting Modal */}
+      {showDisputeModal && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+          <div className="bg-white rounded-xl shadow-2xl w-full max-w-lg p-6 transform transition-all scale-100">
+            <div className="flex items-center gap-3 mb-4 text-red-600">
+              <FaExclamationTriangle className="text-2xl" />
+              <h3 className="text-2xl font-bold text-gray-800">Report a Dispute</h3>
+            </div>
+
+            <p className="text-gray-600 mb-4">
+              If you have an issue with this completed transaction (e.g., payment discrepancy, property condition), please describe it below. Our support team will investigate.
+            </p>
+
+            <textarea
+              value={disputeReason}
+              onChange={(e) => setDisputeReason(e.target.value)}
+              placeholder="Describe the issue in detail..."
+              className="w-full h-32 p-3 border border-gray-300 rounded-lg mb-4 focus:ring-2 focus:ring-red-500 focus:border-transparent resize-none"
+            ></textarea>
+
+            <div className="flex gap-4">
+              <button
+                onClick={() => { setShowDisputeModal(false); setApptIdForAction(null); setDisputeReason(""); }}
+                className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors font-medium"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={submitDispute}
+                disabled={submittingDispute || !disputeReason.trim()}
+                className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 shadow-md transition-all font-bold flex items-center justify-center gap-2 disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {submittingDispute ? <FaSpinner className="animate-spin" /> : <FaPaperPlane />}
+                Submit Report
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* <GeminiAIWrapper /> */}
       <ContactSupportWrapper />

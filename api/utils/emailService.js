@@ -12529,3 +12529,193 @@ export const sendRentPaymentConfirmationEmail = async (email, details) => {
 
 // Export the current transporter (will be set during initialization)
 export default currentTransporter;
+
+// Send Token Received Email
+export const sendTokenReceivedEmail = async (buyerEmail, buyerName, sellerEmail, sellerName, propertyName, amount) => {
+  const buyerMailOptions = {
+    from: process.env.EMAIL_USER,
+    to: buyerEmail,
+    subject: 'Token Payment Confirmation - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Token Payment Received</p>
+          </div>
+          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #059669;">
+            <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Payment Successful!</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Dear ${buyerName},<br><br>
+              This is to confirm that your token payment for <strong>${propertyName}</strong> has been successfully marked as received by the seller, <strong>${sellerName}</strong>.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              The property status has been updated to <strong>Under Contract</strong> (Sale-Lock).
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  const sellerMailOptions = {
+    from: process.env.EMAIL_USER,
+    to: sellerEmail,
+    subject: 'Token Marked as Received - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Action Confirmed</p>
+          </div>
+          <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2563eb;">
+            <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">Successfully Updated</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Dear ${sellerName},<br><br>
+              You have successfully marked the token payment as received for <strong>${propertyName}</strong> from buyer <strong>${buyerName}</strong>.
+            </p>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              The property is now locked for this sale processing.
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const buyerResult = await sendEmailWithRetry(buyerMailOptions);
+    const sellerResult = await sendEmailWithRetry(sellerMailOptions);
+    return {
+      success: buyerResult.success && sellerResult.success,
+      buyerMessageId: buyerResult.messageId,
+      sellerMessageId: sellerResult.messageId
+    };
+  } catch (error) {
+    return createErrorResponse(error, 'token_received_email');
+  }
+};
+
+// Send Property Sold Email
+export const sendPropertySoldEmail = async (buyerEmail, buyerName, sellerEmail, sellerName, propertyName) => {
+  const buyerMailOptions = {
+    from: process.env.EMAIL_USER,
+    to: buyerEmail,
+    subject: 'Congratulations! Property Purchase Completed - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Property Sold!</p>
+          </div>
+          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #059669;">
+            <h2 style="color: #065f46; margin: 0 0 15px 0; font-size: 20px;">Congratulations!</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Dear ${buyerName},<br><br>
+              Congratulations on your new property! The sale for <strong>${propertyName}</strong> has been marked as completed by seller <strong>${sellerName}</strong>.
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  const sellerMailOptions = {
+    from: process.env.EMAIL_USER,
+    to: sellerEmail,
+    subject: 'Property Sale Marked as Completed - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Sale Completed</p>
+          </div>
+          <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2563eb;">
+            <h2 style="color: #1e40af; margin: 0 0 15px 0; font-size: 20px;">Marked as Sold</h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              Dear ${sellerName},<br><br>
+              You have successfully marked the property <strong>${propertyName}</strong> as SOLD to buyer <strong>${buyerName}</strong>.
+            </p>
+          </div>
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const buyerResult = await sendEmailWithRetry(buyerMailOptions);
+    const sellerResult = await sendEmailWithRetry(sellerMailOptions);
+    return {
+      success: buyerResult.success && sellerResult.success,
+      buyerMessageId: buyerResult.messageId,
+      sellerMessageId: sellerResult.messageId
+    };
+  } catch (error) {
+    return createErrorResponse(error, 'sale_completed_email');
+  }
+};
+
+// Send Dispute Alert Email
+export const sendDisputeAlertEmail = async (adminEmails, disputeDetails) => {
+  // Ensure adminEmails is an array or single string
+  const recipients = Array.isArray(adminEmails) ? adminEmails : [adminEmails];
+
+  // We send individual emails or one email with cc. Loops are safer/simpler here.
+  const results = [];
+
+  for (const email of recipients) {
+    const mailOptions = {
+      from: process.env.EMAIL_USER,
+      to: email,
+      subject: 'Action Required: Property Sale Dispute Reported - UrbanSetu',
+      html: `
+          <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+            <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h1 style="color: #dc2626; margin: 0; font-size: 28px;">UrbanSetu</h1>
+                <p style="color: #6b7280; margin: 10px 0 0 0;">Dispute Alert</p>
+              </div>
+              <div style="background-color: #fef2f2; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #dc2626;">
+                <h2 style="color: #991b1b; margin: 0 0 15px 0; font-size: 20px;">Dispute Reported</h2>
+                <p style="color: #4b5563; margin: 0 0 10px 0;">A dispute has been reported for a completed sale.</p>
+                <ul style="color: #4b5563; margin: 0 0 15px 0; padding-left: 20px;">
+                   <li><strong>Listing:</strong> ${disputeDetails.propertyName}</li>
+                   <li><strong>Booking ID:</strong> ${disputeDetails.bookingId}</li>
+                   <li><strong>Reported By:</strong> ${disputeDetails.reporterName} (${disputeDetails.reporterRole})</li>
+                   <li><strong>Reason:</strong> ${disputeDetails.reason}</li>
+                </ul>
+                <p style="color: #4b5563;">Please investigate via the Admin Panel.</p>
+              </div>
+              <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+                <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              </div>
+            </div>
+          </div>
+        `
+    };
+
+    try {
+      const res = await sendEmailWithRetry(mailOptions);
+      results.push(res);
+    } catch (e) {
+      console.error('Failed to send dispute email to ' + email, e);
+    }
+  }
+
+  return createSuccessResponse(null, 'dispute_alert_email');
+};

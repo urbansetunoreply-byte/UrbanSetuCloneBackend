@@ -16,7 +16,11 @@ import {
   sendAppointmentReinitiatedByAdminEmail,
   sendAppointmentReinitiatedBySellerEmail,
   sendAppointmentReinitiatedByBuyerEmail,
-  sendNewMessageNotificationEmail
+  sendAppointmentReinitiatedByBuyerEmail,
+  sendNewMessageNotificationEmail,
+  sendTokenReceivedEmail,
+  sendPropertySoldEmail,
+  sendDisputeAlertEmail
 } from '../utils/emailService.js';
 import { rejectContractForBooking } from '../controllers/rental.controller.js';
 import bcryptjs from 'bcryptjs';
@@ -730,6 +734,32 @@ router.patch('/:id/sale/token-paid', verifyToken, async (req, res) => {
       io.emit('appointmentUpdate', { appointmentId: id, updatedAppointment: updatedBooking });
     }
 
+    // --- Send Email Notifications ---
+    try {
+      // Fetch full details for email
+      const fullBooking = await booking.findById(id)
+        .populate('buyerId', 'email username firstName lastName')
+        .populate('sellerId', 'email username firstName lastName')
+        .populate('listingId', 'name');
+
+      if (fullBooking && fullBooking.buyerId && fullBooking.sellerId) {
+        const buyerName = fullBooking.buyerId.firstName ? `${fullBooking.buyerId.firstName} ${fullBooking.buyerId.lastName}` : fullBooking.buyerId.username;
+        const sellerName = fullBooking.sellerId.firstName ? `${fullBooking.sellerId.firstName} ${fullBooking.sellerId.lastName}` : fullBooking.sellerId.username;
+
+        await sendTokenReceivedEmail(
+          fullBooking.buyerId.email,
+          buyerName,
+          fullBooking.sellerId.email,
+          sellerName,
+          fullBooking.listingId.name,
+          0 // Amount not tracked in this simplified flow
+        );
+      }
+    } catch (emailErr) {
+      console.error("Error sending token received emails:", emailErr);
+      // Do not fail the request
+    }
+
     res.status(200).json({ message: 'Property locked for sale (Token Paid)', booking: updatedBooking });
   } catch (err) {
     console.error('Error marking token paid:', err);
@@ -777,10 +807,81 @@ router.patch('/:id/sale/complete', verifyToken, async (req, res) => {
       io.emit('appointmentUpdate', { appointmentId: id, updatedAppointment: updatedBooking });
     }
 
+    // --- Send Email Notifications ---
+    try {
+      const fullBooking = await booking.findById(id)
+        .populate('buyerId', 'email username firstName lastName')
+        .populate('sellerId', 'email username firstName lastName')
+        .populate('listingId', 'name');
+
+      if (fullBooking && fullBooking.buyerId && fullBooking.sellerId) {
+        const buyerName = fullBooking.buyerId.firstName ? `${fullBooking.buyerId.firstName} ${fullBooking.buyerId.lastName}` : fullBooking.buyerId.username;
+        const sellerName = fullBooking.sellerId.firstName ? `${fullBooking.sellerId.firstName} ${fullBooking.sellerId.lastName}` : fullBooking.sellerId.username;
+
+        await sendPropertySoldEmail(
+          fullBooking.buyerId.email,
+          buyerName,
+          fullBooking.sellerId.email,
+          sellerName,
+          fullBooking.listingId.name
+        );
+      }
+    } catch (emailErr) {
+      console.error("Error sending property sold emails:", emailErr);
+    }
+
     res.status(200).json({ message: 'Property marked as sold!', booking: updatedBooking });
   } catch (err) {
     console.error('Error completing sale:', err);
     res.status(500).json({ message: 'Failed to complete sale.' });
+  }
+});
+
+// POST: Report a dispute for a sold property
+router.post('/:id/sale/dispute', verifyToken, async (req, res) => {
+  try {
+    const { id } = req.params;
+    const { reason } = req.body;
+    const userId = req.user.id;
+
+    if (!reason) return res.status(400).json({ message: 'Dispute reason is required.' });
+
+    const appt = await booking.findById(id)
+      .populate('listingId', 'name')
+      .populate('buyerId', 'username email')
+      .populate('sellerId', 'username email');
+
+    if (!appt) return res.status(404).json({ message: 'Booking not found.' });
+
+    // Verify user involvement
+    const isBuyer = appt.buyerId._id.toString() === userId;
+    const isSeller = appt.sellerId._id.toString() === userId;
+
+    if (!isBuyer && !isSeller) {
+      return res.status(403).json({ message: 'Unauthorized to report dispute on this booking.' });
+    }
+
+    // Send email to admin
+    // Assuming a fixed admin email or searching for ROOT ADMIN
+    const rootAdmin = await User.findOne({ role: 'rootadmin' });
+    const adminEmail = rootAdmin ? rootAdmin.email : process.env.EMAIL_USER; // Fallback
+
+    await sendDisputeAlertEmail(adminEmail, {
+      propertyName: appt.listingId.name,
+      bookingId: id,
+      reporterName: isBuyer ? appt.buyerId.username : appt.sellerId.username,
+      reporterRole: isBuyer ? 'Buyer' : 'Seller',
+      reason: reason
+    });
+
+    // Optionally update booking status or add a flag
+    // For now we just notify admin
+
+    return res.status(200).json({ message: 'Dispute reported to admin successfully.' });
+
+  } catch (err) {
+    console.error('Error reporting dispute:', err);
+    res.status(500).json({ message: 'Failed to report dispute.' });
   }
 });
 
