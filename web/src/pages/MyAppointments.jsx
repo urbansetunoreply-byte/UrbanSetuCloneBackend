@@ -747,10 +747,10 @@ export default function MyAppointments() {
   };
 
   // Wrapper to open modal
-  const handleTokenPaid = (id) => {
+  const handleTokenPaid = useCallback((id) => {
     setApptIdForAction(id);
     setShowTokenPaidModal(true);
-  };
+  }, []);
 
   // Actual API call for Token Paid
   const confirmTokenPaid = async () => {
@@ -790,10 +790,10 @@ export default function MyAppointments() {
   };
 
   // Wrapper to open modal
-  const handleSaleComplete = (id) => {
+  const handleSaleComplete = useCallback((id) => {
     setApptIdForAction(id);
     setShowSaleCompleteModal(true);
-  };
+  }, []);
 
   // Actual API call for Sale Complete
   const confirmSaleComplete = async () => {
