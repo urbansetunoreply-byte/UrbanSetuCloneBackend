@@ -389,7 +389,7 @@ export default function Home() {
                   Recommended for You
                 </h2>
                 <Link to={`${linkPrefix}/search`} className="flex items-center gap-2 text-blue-600 font-medium hover:text-blue-800 transition-colors text-sm sm:text-base whitespace-nowrap">
-                  See More <span className="hidden sm:inline">Recommendations</span> <FaArrowRight />
+                  See More<span className="hidden sm:inline">Recommendations</span> <FaArrowRight />
                 </Link>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">

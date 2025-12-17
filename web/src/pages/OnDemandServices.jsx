@@ -379,7 +379,7 @@ export default function OnDemandServices() {
                   })
                   .map(contract => (
                     <div key={contract._id} className="bg-white rounded-xl shadow p-4">
-                      <div className="flex items-start justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div className="flex-1">
                           <h3 className="font-semibold text-lg">{contract.listingId?.name || 'Property'}</h3>
                           <div className="text-sm text-gray-600 mt-1">
@@ -394,7 +394,7 @@ export default function OnDemandServices() {
                             </div>
                           </div>
                         </div>
-                        <div className="flex gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                           {/* Only show Move-In/Move-Out buttons for tenants */}
                           {(contract.tenantId?._id === currentUser?._id || contract.tenantId === currentUser?._id) && (
                             <>
@@ -485,87 +485,89 @@ export default function OnDemandServices() {
 
       {/* Checklist Selection Modal (Landlord) */}
       {showSelectionModal && selectedContract && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6">
-            <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold">Checklist Approvals</h3>
-              <button
-                onClick={() => { setShowSelectionModal(false); setSelectedContract(null); }}
-                className="text-gray-500 hover:text-gray-700 font-bold text-xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <p className="text-gray-600 mb-6">Select a checklist to review and approve.</p>
-
-            <div className="space-y-4">
-              {/* Move-In */}
-              <div className="border rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-blue-100 text-blue-600 rounded-full"><FaSignInAlt /></div>
-                  <div>
-                    <div className="font-semibold">Move-In Checklist</div>
-                    <div className="text-sm text-gray-500">
-                      {checklists.moveIn
-                        ? (checklists.moveIn.status === 'approved' ? 'Approved' : 'Pending Approval')
-                        : 'Not Started'}
-                    </div>
-                  </div>
-                </div>
-                {checklists.moveIn ? (
-                  <button
-                    onClick={() => {
-                      setShowSelectionModal(false);
-                      setChecklistType('move_in');
-                      setShowChecklistModal(true);
-                    }}
-                    className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                  >
-                    View
-                  </button>
-                ) : (
-                  <span className="text-sm text-gray-400">N/A</span>
-                )}
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-6 relative">
+              <div className="flex items-center justify-between mb-6">
+                <h3 className="text-xl font-bold">Checklist Approvals</h3>
+                <button
+                  onClick={() => { setShowSelectionModal(false); setSelectedContract(null); }}
+                  className="text-gray-500 hover:text-gray-700 font-bold text-xl"
+                >
+                  ×
+                </button>
               </div>
 
-              {/* Move-Out */}
-              <div className="border rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition">
-                <div className="flex items-center gap-3">
-                  <div className="p-2 bg-orange-100 text-orange-600 rounded-full"><FaSignOutAlt /></div>
-                  <div>
-                    <div className="font-semibold">Move-Out Checklist</div>
-                    <div className="text-sm text-gray-500">
-                      {checklists.moveOut
-                        ? (checklists.moveOut.status === 'approved' ? 'Approved' : 'Pending Approval')
-                        : 'Not Started'}
+              <p className="text-gray-600 mb-6">Select a checklist to review and approve.</p>
+
+              <div className="space-y-4">
+                {/* Move-In */}
+                <div className="border rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-blue-100 text-blue-600 rounded-full"><FaSignInAlt /></div>
+                    <div>
+                      <div className="font-semibold">Move-In Checklist</div>
+                      <div className="text-sm text-gray-500">
+                        {checklists.moveIn
+                          ? (checklists.moveIn.status === 'approved' ? 'Approved' : 'Pending Approval')
+                          : 'Not Started'}
+                      </div>
                     </div>
                   </div>
+                  {checklists.moveIn ? (
+                    <button
+                      onClick={() => {
+                        setShowSelectionModal(false);
+                        setChecklistType('move_in');
+                        setShowChecklistModal(true);
+                      }}
+                      className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                    >
+                      View
+                    </button>
+                  ) : (
+                    <span className="text-sm text-gray-400">N/A</span>
+                  )}
                 </div>
-                {checklists.moveOut ? (
-                  <button
-                    onClick={() => {
-                      setShowSelectionModal(false);
-                      setChecklistType('move_out');
-                      setShowChecklistModal(true);
-                    }}
-                    className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
-                  >
-                    View
-                  </button>
-                ) : (
-                  <span className="text-sm text-gray-400">N/A</span>
-                )}
-              </div>
-            </div>
 
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => { setShowSelectionModal(false); setSelectedContract(null); }}
-                className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
-              >
-                Close
-              </button>
+                {/* Move-Out */}
+                <div className="border rounded-lg p-4 flex items-center justify-between hover:bg-gray-50 transition">
+                  <div className="flex items-center gap-3">
+                    <div className="p-2 bg-orange-100 text-orange-600 rounded-full"><FaSignOutAlt /></div>
+                    <div>
+                      <div className="font-semibold">Move-Out Checklist</div>
+                      <div className="text-sm text-gray-500">
+                        {checklists.moveOut
+                          ? (checklists.moveOut.status === 'approved' ? 'Approved' : 'Pending Approval')
+                          : 'Not Started'}
+                      </div>
+                    </div>
+                  </div>
+                  {checklists.moveOut ? (
+                    <button
+                      onClick={() => {
+                        setShowSelectionModal(false);
+                        setChecklistType('move_out');
+                        setShowChecklistModal(true);
+                      }}
+                      className="px-3 py-1.5 bg-blue-600 text-white rounded text-sm hover:bg-blue-700"
+                    >
+                      View
+                    </button>
+                  ) : (
+                    <span className="text-sm text-gray-400">N/A</span>
+                  )}
+                </div>
+              </div>
+
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => { setShowSelectionModal(false); setSelectedContract(null); }}
+                  className="px-4 py-2 bg-gray-200 text-gray-800 rounded hover:bg-gray-300"
+                >
+                  Close
+                </button>
+              </div>
             </div>
           </div>
         </div>

@@ -274,7 +274,7 @@ export default function PropertyVerification() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       {verification ? (
                         <button
                           onClick={() => handleViewVerification(listing)}
@@ -307,30 +307,33 @@ export default function PropertyVerification() {
         {/* Verification Form Modal */}
         {showVerificationForm && selectedListing && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            style={{ overflow: 'hidden' }}
+            className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setShowVerificationForm(false);
                 setSelectedListing(null);
+                // Update URL to remove listingId param
+                window.history.pushState({}, '', '/user/property-verification');
               }
             }}
           >
-            <div
-              className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                <VerificationForm
-                  listing={selectedListing}
-                  onSuccess={handleVerificationCreated}
-                  onCancel={() => {
-                    setShowVerificationForm(false);
-                    setSelectedListing(null);
-                    // Update URL to remove listingId param
-                    window.history.pushState({}, '', '/user/property-verification');
-                  }}
-                />
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div
+                className="bg-white rounded-xl shadow-2xl max-w-3xl w-full relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  <VerificationForm
+                    listing={selectedListing}
+                    onSuccess={handleVerificationCreated}
+                    onCancel={() => {
+                      setShowVerificationForm(false);
+                      setSelectedListing(null);
+                      // Update URL to remove listingId param
+                      window.history.pushState({}, '', '/user/property-verification');
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -339,8 +342,7 @@ export default function PropertyVerification() {
         {/* Verification Status Modal */}
         {showVerificationStatus && selectedListing && selectedVerification && (
           <div
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            style={{ overflow: 'hidden' }}
+            className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setShowVerificationStatus(false);
@@ -351,26 +353,28 @@ export default function PropertyVerification() {
               }
             }}
           >
-            <div
-              className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="p-6">
-                <VerificationStatus
-                  verification={selectedVerification}
-                  listing={selectedListing}
-                  currentUser={currentUser}
-                  onUpdate={handleVerificationUpdated}
-                  STATUS_COLORS={STATUS_COLORS}
-                  STATUS_LABELS={STATUS_LABELS}
-                  onClose={() => {
-                    setShowVerificationStatus(false);
-                    setSelectedVerification(null);
-                    setSelectedListing(null);
-                    // Update URL to remove listingId param
-                    window.history.pushState({}, '', '/user/property-verification');
-                  }}
-                />
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div
+                className="bg-white rounded-xl shadow-2xl max-w-4xl w-full relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="p-6">
+                  <VerificationStatus
+                    verification={selectedVerification}
+                    listing={selectedListing}
+                    currentUser={currentUser}
+                    onUpdate={handleVerificationUpdated}
+                    STATUS_COLORS={STATUS_COLORS}
+                    STATUS_LABELS={STATUS_LABELS}
+                    onClose={() => {
+                      setShowVerificationStatus(false);
+                      setSelectedVerification(null);
+                      setSelectedListing(null);
+                      // Update URL to remove listingId param
+                      window.history.pushState({}, '', '/user/property-verification');
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>

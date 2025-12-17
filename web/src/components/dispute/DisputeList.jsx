@@ -15,7 +15,7 @@ export default function DisputeList({ disputes, onViewDispute, getStatusColor, D
   return (
     <div className="space-y-4">
       {disputes.map((dispute) => {
-        const unreadCount = dispute.messages?.filter(msg => 
+        const unreadCount = dispute.messages?.filter(msg =>
           !msg.readBy?.includes(dispute.raisedBy?._id || dispute.raisedBy)
         ).length || 0;
 
@@ -27,7 +27,7 @@ export default function DisputeList({ disputes, onViewDispute, getStatusColor, D
           >
             <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
               <div className="flex-1">
-                <div className="flex items-start justify-between mb-2">
+                <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-2 mb-2">
                   <div>
                     <h3 className="text-xl font-bold text-gray-800 mb-1">
                       {dispute.title}

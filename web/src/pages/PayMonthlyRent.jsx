@@ -386,7 +386,7 @@ export default function PayMonthlyRent() {
                         : 'border-gray-200 hover:border-blue-300'
                         } ${isPayOverdue ? 'bg-red-50 border-red-300' : ''}`}
                     >
-                      <div className="flex items-center justify-between">
+                      <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
                           <h3 className="font-semibold text-lg text-gray-800">
                             {payDueDate.toLocaleDateString('en-GB', {
@@ -412,7 +412,7 @@ export default function PayMonthlyRent() {
                             </span>
                           )}
                         </div>
-                        <div className="text-right">
+                        <div className="text-left sm:text-right">
                           <p className="text-xl font-bold text-gray-800">
                             ₹{(payment.amount || contract.lockedRentAmount || 0).toLocaleString('en-IN')}
                           </p>
@@ -429,7 +429,7 @@ export default function PayMonthlyRent() {
             </div>
 
             {selectedPayment && (
-              <div className="mt-6 flex gap-4">
+              <div className="mt-6 flex flex-col-reverse sm:flex-row gap-4">
                 <button
                   onClick={() => navigate("/user/rental-contracts")}
                   className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
@@ -599,7 +599,7 @@ export default function PayMonthlyRent() {
                     className="w-4 h-4 text-blue-600"
                   />
                   <div className="flex-1">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center">
                       <span className="font-medium text-gray-800">Razorpay (India)</span>
                       <span className="font-bold text-gray-800">₹{getTotalAmount().toLocaleString('en-IN')}</span>
                     </div>
@@ -617,7 +617,7 @@ export default function PayMonthlyRent() {
                     className="w-4 h-4 text-blue-600"
                   />
                   <div className="flex-1">
-                    <div className="flex justify-between items-center">
+                    <div className="flex flex-col sm:flex-row justify-between sm:items-center">
                       <span className="font-medium text-gray-800">PayPal (International)</span>
                       <span className="font-bold text-gray-800">$ {((getTotalAmount() / 84).toFixed(2))}</span>
                     </div>
@@ -627,10 +627,10 @@ export default function PayMonthlyRent() {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-4">
               <button
                 onClick={() => setStep(3)}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
               >
                 <FaChevronLeft /> Back
               </button>

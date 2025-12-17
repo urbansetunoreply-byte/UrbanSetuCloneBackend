@@ -71,10 +71,10 @@ export default function RentalLoans() {
     const contractIdParam = searchParams.get('contractId');
 
     if (contractIdParam) {
-      const contract = contracts.find(c => 
+      const contract = contracts.find(c =>
         c._id === contractIdParam || c.contractId === contractIdParam
       );
-      
+
       if (contract) {
         handleApplyForLoan(contract);
         navigate('/user/rental-loans', { replace: true });
@@ -111,17 +111,17 @@ export default function RentalLoans() {
   // Client-side filtering
   const memoizedFilteredLoans = React.useMemo(() => {
     let filtered = loans;
-    
+
     // Filter by status
     if (filters.status !== 'all') {
       filtered = filtered.filter(loan => loan.status === filters.status);
     }
-    
+
     // Filter by loanType
     if (filters.loanType !== 'all') {
       filtered = filtered.filter(loan => loan.loanType === filters.loanType);
     }
-    
+
     // Filter by search query
     if (filters.search) {
       const query = filters.search.toLowerCase();
@@ -132,7 +132,7 @@ export default function RentalLoans() {
         loan.contractId?.listingId?.address?.toLowerCase().includes(query)
       );
     }
-    
+
     return filtered;
   }, [loans, filters]);
   const filteredLoans = memoizedFilteredLoans;
@@ -146,7 +146,7 @@ export default function RentalLoans() {
       const data = await res.json();
       if (res.ok && data.success) {
         // Filter only contracts where user is tenant
-        const tenantContracts = (data.contracts || []).filter(contract => 
+        const tenantContracts = (data.contracts || []).filter(contract =>
           contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id
         );
         setContracts(tenantContracts);
@@ -212,7 +212,7 @@ export default function RentalLoans() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 <FaCreditCard className="text-blue-600" />
@@ -270,7 +270,7 @@ export default function RentalLoans() {
               {contracts
                 .filter(contract => {
                   // Check if any active loans exist for this contract
-                  const hasActiveLoan = loans.some(loan => 
+                  const hasActiveLoan = loans.some(loan =>
                     (loan.contractId?._id?.toString() === contract._id || loan.contractId?.toString() === contract._id) &&
                     ['pending', 'approved', 'disbursed'].includes(loan.status)
                   );
@@ -281,7 +281,7 @@ export default function RentalLoans() {
                   const listingId = contract.listingId?._id || contract.listingId;
                   const listingName = contract.listingId?.name || 'Property';
                   return (
-                    <div key={contract._id} className="border rounded-lg p-4 flex items-center justify-between">
+                    <div key={contract._id} className="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
                       <div className="flex-1">
                         <h3 className="font-semibold text-gray-800">
                           {listingId ? (
@@ -297,7 +297,7 @@ export default function RentalLoans() {
                       </div>
                       <button
                         onClick={() => handleApplyForLoan(contract)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                        className="w-full sm:w-auto px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
                       >
                         <FaCreditCard /> Apply for Loan
                       </button>
@@ -431,21 +431,22 @@ export default function RentalLoans() {
           </div>
         )}
 
-        {/* Loan Application Form Modal */}
         {showLoanForm && selectedContract && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Apply for Rental Loan</h2>
-                <button
-                  onClick={() => {
-                    setShowLoanForm(false);
-                    setSelectedContract(null);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  <FaTimes />
-                </button>
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 relative">
+                <div className="flex items-center justify-between mb-4 border-b pb-2">
+                  <h2 className="text-2xl font-bold text-gray-800">Apply for Rental Loan</h2>
+                  <button
+                    onClick={() => {
+                      setShowLoanForm(false);
+                      setSelectedContract(null);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
               </div>
               <LoanApplicationForm
                 contract={selectedContract}
@@ -462,28 +463,30 @@ export default function RentalLoans() {
 
         {/* Loan Status Display Modal */}
         {showLoanDisplay && selectedLoan && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Loan Details</h2>
-                <button
-                  onClick={() => {
-                    setShowLoanDisplay(false);
-                    setSelectedLoan(null);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  <FaTimes />
-                </button>
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+                <div className="flex items-center justify-between mb-4 border-b pb-2">
+                  <h2 className="text-2xl font-bold text-gray-800">Loan Details</h2>
+                  <button
+                    onClick={() => {
+                      setShowLoanDisplay(false);
+                      setSelectedLoan(null);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                <LoanStatusDisplay
+                  loan={selectedLoan}
+                  currentUser={currentUser}
+                  onUpdate={handleLoanUpdated}
+                  STATUS_COLORS={STATUS_COLORS}
+                  STATUS_LABELS={STATUS_LABELS}
+                  LOAN_TYPE_LABELS={LOAN_TYPE_LABELS}
+                />
               </div>
-              <LoanStatusDisplay
-                loan={selectedLoan}
-                currentUser={currentUser}
-                onUpdate={handleLoanUpdated}
-                STATUS_COLORS={STATUS_COLORS}
-                STATUS_LABELS={STATUS_LABELS}
-                LOAN_TYPE_LABELS={LOAN_TYPE_LABELS}
-              />
             </div>
           </div>
         )}

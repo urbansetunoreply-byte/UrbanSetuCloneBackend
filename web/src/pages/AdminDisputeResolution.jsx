@@ -238,7 +238,7 @@ export default function AdminDisputeResolution() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 <FaGavel className="text-blue-600" />
@@ -248,7 +248,7 @@ export default function AdminDisputeResolution() {
             </div>
             <button
               onClick={() => fetchDisputes(true)}
-              className="p-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-colors duration-200"
+              className="p-3 bg-blue-50 text-blue-600 hover:bg-blue-100 rounded-full transition-colors duration-200 self-end md:self-auto"
               title="Refresh Disputes"
             >
               <FaSync className={loading ? 'animate-spin' : ''} />
@@ -416,34 +416,36 @@ export default function AdminDisputeResolution() {
 
         {/* Dispute Detail Modal */}
         {showDisputeDetail && selectedDispute && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Dispute Details (Admin View)</h2>
-                <button
-                  onClick={() => {
-                    setShowDisputeDetail(false);
-                    setSelectedDispute(null);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  <FaTimes />
-                </button>
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+                <div className="flex items-center justify-between mb-4">
+                  <h2 className="text-2xl font-bold text-gray-800">Dispute Details (Admin View)</h2>
+                  <button
+                    onClick={() => {
+                      setShowDisputeDetail(false);
+                      setSelectedDispute(null);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                <DisputeDetail
+                  dispute={selectedDispute}
+                  currentUser={currentUser}
+                  onUpdate={handleDisputeUpdated}
+                  getStatusColor={getStatusColor}
+                  DISPUTE_CATEGORIES={DISPUTE_CATEGORIES}
+                  DISPUTE_STATUS={DISPUTE_STATUS}
+                  PRIORITY_COLORS={PRIORITY_COLORS}
+                  isAdmin={true}
+                  onUpdateStatus={handleUpdateStatus}
+                  onResolve={handleResolveDispute}
+                  updatingStatus={updatingStatus}
+                  resolving={resolving}
+                />
               </div>
-              <DisputeDetail
-                dispute={selectedDispute}
-                currentUser={currentUser}
-                onUpdate={handleDisputeUpdated}
-                getStatusColor={getStatusColor}
-                DISPUTE_CATEGORIES={DISPUTE_CATEGORIES}
-                DISPUTE_STATUS={DISPUTE_STATUS}
-                PRIORITY_COLORS={PRIORITY_COLORS}
-                isAdmin={true}
-                onUpdateStatus={handleUpdateStatus}
-                onResolve={handleResolveDispute}
-                updatingStatus={updatingStatus}
-                resolving={resolving}
-              />
             </div>
           </div>
         )}

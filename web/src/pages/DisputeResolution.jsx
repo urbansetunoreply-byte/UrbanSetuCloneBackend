@@ -121,15 +121,15 @@ export default function DisputeResolution() {
   // Client-side filtering
   const filteredDisputes = React.useMemo(() => {
     return disputes.filter(dispute => {
-      const matchesSearch = filters.search === '' || 
+      const matchesSearch = filters.search === '' ||
         dispute.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
         dispute.disputeId?.toLowerCase().includes(filters.search.toLowerCase()) ||
         dispute.raisedBy?.username?.toLowerCase().includes(filters.search.toLowerCase()) ||
         dispute.raisedAgainst?.username?.toLowerCase().includes(filters.search.toLowerCase());
-      
+
       const matchesStatus = filters.status === 'all' || dispute.status === filters.status;
       const matchesCategory = filters.category === 'all' || dispute.category === filters.category;
-      
+
       return matchesSearch && matchesStatus && matchesCategory;
     });
   }, [disputes, filters]);
@@ -231,7 +231,7 @@ export default function DisputeResolution() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 <FaGavel className="text-blue-600" />
@@ -241,7 +241,7 @@ export default function DisputeResolution() {
             </div>
             <button
               onClick={handleCreateDispute}
-              className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 shadow-lg"
+              className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 shadow-lg"
             >
               <FaPlus /> Raise New Dispute
             </button>
@@ -310,59 +310,61 @@ export default function DisputeResolution() {
           />
         )}
 
-        {/* Dispute Form Modal */}
         {showDisputeForm && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Raise New Dispute</h2>
-                <button
-                  onClick={() => {
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 relative">
+                <div className="flex items-center justify-between mb-4 border-b pb-2">
+                  <h2 className="text-2xl font-bold text-gray-800">Raise New Dispute</h2>
+                  <button
+                    onClick={() => {
+                      setShowDisputeForm(false);
+                      setSelectedContract(null);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                <DisputeForm
+                  contract={selectedContract}
+                  onSuccess={handleDisputeCreated}
+                  onCancel={() => {
                     setShowDisputeForm(false);
                     setSelectedContract(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  <FaTimes />
-                </button>
+                />
               </div>
-              <DisputeForm
-                contract={selectedContract}
-                onSuccess={handleDisputeCreated}
-                onCancel={() => {
-                  setShowDisputeForm(false);
-                  setSelectedContract(null);
-                }}
-              />
             </div>
           </div>
         )}
 
-        {/* Dispute Detail Modal */}
         {showDisputeDetail && selectedDispute && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Dispute Details</h2>
-                <button
-                  onClick={() => {
-                    setShowDisputeDetail(false);
-                    setSelectedDispute(null);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  <FaTimes />
-                </button>
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+                <div className="flex items-center justify-between mb-4 border-b pb-2">
+                  <h2 className="text-2xl font-bold text-gray-800">Dispute Details</h2>
+                  <button
+                    onClick={() => {
+                      setShowDisputeDetail(false);
+                      setSelectedDispute(null);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                <DisputeDetail
+                  dispute={selectedDispute}
+                  currentUser={currentUser}
+                  onUpdate={handleDisputeUpdated}
+                  getStatusColor={getStatusColor}
+                  DISPUTE_CATEGORIES={DISPUTE_CATEGORIES}
+                  DISPUTE_STATUS={DISPUTE_STATUS}
+                  PRIORITY_COLORS={PRIORITY_COLORS}
+                />
               </div>
-              <DisputeDetail
-                dispute={selectedDispute}
-                currentUser={currentUser}
-                onUpdate={handleDisputeUpdated}
-                getStatusColor={getStatusColor}
-                DISPUTE_CATEGORIES={DISPUTE_CATEGORIES}
-                DISPUTE_STATUS={DISPUTE_STATUS}
-                PRIORITY_COLORS={PRIORITY_COLORS}
-              />
             </div>
           </div>
         )}

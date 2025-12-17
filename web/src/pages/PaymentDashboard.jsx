@@ -15,11 +15,11 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const PaymentDashboard = () => {
   // Set page title
   usePageTitle("Payment Dashboard - Financial Management");
-  
+
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const [activeTab, setActiveTab] = useState('overview');
   const [stats, setStats] = useState({
     totalPayments: 0,
@@ -39,17 +39,17 @@ const PaymentDashboard = () => {
   const [inrPayments, setInrPayments] = useState([]);
   const [allUsdPayments, setAllUsdPayments] = useState([]);
   const [allInrPayments, setAllInrPayments] = useState([]);
-  
+
   // Pagination states for payment history
   const [usdPaymentsPage, setUsdPaymentsPage] = useState(1);
   const [usdPaymentsTotalPages, setUsdPaymentsTotalPages] = useState(1);
   const [inrPaymentsPage, setInrPaymentsPage] = useState(1);
   const [inrPaymentsTotalPages, setInrPaymentsTotalPages] = useState(1);
-  
+
   // Preview modal states
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
-  
+
   // Export password modal states
   const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
   const [exportPassword, setExportPassword] = useState('');
@@ -66,7 +66,7 @@ const PaymentDashboard = () => {
     const itemsPerPage = 10;
     const totalPages = Math.ceil(allUsdPayments.length / itemsPerPage);
     setUsdPaymentsTotalPages(totalPages);
-    
+
     const startIndex = (usdPaymentsPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPageUsdPayments = allUsdPayments.slice(startIndex, endIndex);
@@ -78,7 +78,7 @@ const PaymentDashboard = () => {
     const itemsPerPage = 10;
     const totalPages = Math.ceil(allInrPayments.length / itemsPerPage);
     setInrPaymentsTotalPages(totalPages);
-    
+
     const startIndex = (inrPaymentsPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPageInrPayments = allInrPayments.slice(startIndex, endIndex);
@@ -110,7 +110,7 @@ const PaymentDashboard = () => {
       socket.on('paymentStatusUpdated', handlePaymentStatusUpdate);
       socket.on('rentalPaymentStatusUpdated', handleRentalPaymentStatusUpdate);
     }
-    
+
     // Also listen for window custom events
     window.addEventListener('paymentStatusUpdated', handlePaymentStatusUpdate);
     window.addEventListener('rentalPaymentStatusUpdated', handleRentalPaymentStatusUpdate);
@@ -210,7 +210,7 @@ const PaymentDashboard = () => {
   const sharePayment = async (payment) => {
     const shareText = `Payment Details:\nProperty: ${payment.appointmentId?.propertyName || 'N/A'}\nBuyer: ${payment.userId?.username || 'N/A'}\nAmount: ${payment.currency === 'INR' ? '₹' : '$'}${Number(payment.amount).toFixed(2)}\nStatus: ${payment.status}\nPayment ID: ${payment.paymentId}`;
     const shareUrl = window.location.origin + `/admin/payments?paymentId=${payment.paymentId}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -289,11 +289,10 @@ const PaymentDashboard = () => {
                   <button
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
-                    className={`shrink-0 py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-2 ${
-                      activeTab === tab.id
+                    className={`shrink-0 py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-2 ${activeTab === tab.id
                         ? 'border-blue-500 text-blue-600'
                         : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
-                    }`}
+                      }`}
                   >
                     <Icon />
                     {tab.label}
@@ -309,7 +308,7 @@ const PaymentDashboard = () => {
           {activeTab === 'overview' && (
             <div>
               {/* Stats Cards */}
-              <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-8">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-6 mb-8">
                 <div className="bg-gradient-to-r from-green-500 to-green-600 text-white rounded-lg p-6">
                   <div className="flex items-center justify-between">
                     <div>
@@ -434,7 +433,7 @@ const PaymentDashboard = () => {
                       <div className="text-xs sm:text-sm">Browse all payments</div>
                     </div>
                   </button>
-                  
+
                   <button
                     onClick={() => setActiveTab('refunds')}
                     className="bg-red-100 text-red-800 p-3 sm:p-4 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-2 sm:gap-3"
@@ -445,7 +444,7 @@ const PaymentDashboard = () => {
                       <div className="text-xs sm:text-sm">Process refunds</div>
                     </div>
                   </button>
-                  
+
                   <button
                     onClick={() => {
                       setShowExportPasswordModal(true);
@@ -468,13 +467,19 @@ const PaymentDashboard = () => {
 
           {activeTab === 'history' && (
             <div className="space-y-6">
-              <div className="flex items-center gap-3 mb-2 flex-wrap">
-                <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
-                <label className="text-sm text-gray-600">From:</label>
-                <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
-                <label className="text-sm text-gray-600">To:</label>
-                <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm" onChange={async ()=>{ setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
-                <select id="admin-pay-status" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
+                <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                <div className="flex gap-2">
+                  <div className="flex-1">
+                    <label className="text-xs text-gray-500 block mb-1">From</label>
+                    <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                  </div>
+                  <div className="flex-1">
+                    <label className="text-xs text-gray-500 block mb-1">To</label>
+                    <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                  </div>
+                </div>
+                <select id="admin-pay-status" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm w-full">
                   <option value="">All Status</option>
                   <option value="completed">Completed</option>
                   <option value="pending">Pending</option>
@@ -482,12 +487,12 @@ const PaymentDashboard = () => {
                   <option value="refunded">Refunded</option>
                   <option value="partially_refunded">Partially Refunded</option>
                 </select>
-                <select id="admin-pay-gateway" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
+                <select id="admin-pay-gateway" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm w-full">
                   <option value="">All Gateways</option>
                   <option value="paypal">PayPal</option>
                   <option value="razorpay">Razorpay</option>
                 </select>
-                <select id="admin-pay-paymentType" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm">
+                <select id="admin-pay-paymentType" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm w-full">
                   <option value="">All Types</option>
                   <option value="advance">Advance Payment</option>
                   <option value="monthly_rent">Monthly Rent</option>
@@ -505,27 +510,25 @@ const PaymentDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {usdPayments.map((p) => (
-                      <div key={p._id} className={`border rounded-lg p-4 cursor-pointer ${
-                        p.status === 'completed' ? 'border-green-200 bg-green-50' : 
-                        p.status === 'failed' ? 'border-red-200 bg-red-50' : 
-                        p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
-                        'border-yellow-200 bg-yellow-50'
-                      } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
+                      <div key={p._id} className={`border rounded-lg p-4 cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-green-50' :
+                          p.status === 'failed' ? 'border-red-200 bg-red-50' :
+                            p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
+                              'border-yellow-200 bg-yellow-50'
+                        } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
                             <div className="font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
                               {p.appointmentId?.propertyName || 'Property Payment'}
                               {p.paymentType && (
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                                  p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                                  p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                                  p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-gray-100 text-gray-700'
-                                }`}>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                                    p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                                      p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-gray-100 text-gray-700'
+                                  }`}>
                                   {p.paymentType === 'monthly_rent' ? 'Rent' :
-                                   p.paymentType === 'advance' ? 'Advance' :
-                                   p.paymentType === 'security_deposit' ? 'Security Deposit' :
-                                   p.paymentType?.replace('_', ' ')}
+                                    p.paymentType === 'advance' ? 'Advance' :
+                                      p.paymentType === 'security_deposit' ? 'Security Deposit' :
+                                        p.paymentType?.replace('_', ' ')}
                                 </span>
                               )}
                             </div>
@@ -537,11 +540,10 @@ const PaymentDashboard = () => {
                                 </span>
                               )}
                               {p.escrowStatus && (
-                                <span className={`px-2 py-0.5 rounded-full ${
-                                  p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
-                                  p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
-                                  'bg-gray-100 text-gray-700'
-                                }`}>
+                                <span className={`px-2 py-0.5 rounded-full ${p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
+                                    p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
+                                      'bg-gray-100 text-gray-700'
+                                  }`}>
                                   Escrow: {p.escrowStatus}
                                 </span>
                               )}
@@ -606,7 +608,7 @@ const PaymentDashboard = () => {
                     ))}
                   </div>
                 )}
-                
+
                 {/* USD Payments Pagination */}
                 {allUsdPayments.length > 10 && usdPaymentsTotalPages > 1 && (
                   <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
@@ -648,27 +650,25 @@ const PaymentDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {inrPayments.map((p) => (
-                      <div key={p._id} className={`border rounded-lg p-4 cursor-pointer ${
-                        p.status === 'completed' ? 'border-green-200 bg-green-50' : 
-                        p.status === 'failed' ? 'border-red-200 bg-red-50' : 
-                        p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
-                        'border-yellow-200 bg-yellow-50'
-                      } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
+                      <div key={p._id} className={`border rounded-lg p-4 cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-green-50' :
+                          p.status === 'failed' ? 'border-red-200 bg-red-50' :
+                            p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
+                              'border-yellow-200 bg-yellow-50'
+                        } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
                             <div className="font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
                               {p.appointmentId?.propertyName || 'Property Payment'}
                               {p.paymentType && (
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                                  p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                                  p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                                  p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                                  'bg-gray-100 text-gray-700'
-                                }`}>
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                                    p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                                      p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                                        'bg-gray-100 text-gray-700'
+                                  }`}>
                                   {p.paymentType === 'monthly_rent' ? 'Rent' :
-                                   p.paymentType === 'advance' ? 'Advance' :
-                                   p.paymentType === 'security_deposit' ? 'Security Deposit' :
-                                   p.paymentType?.replace('_', ' ')}
+                                    p.paymentType === 'advance' ? 'Advance' :
+                                      p.paymentType === 'security_deposit' ? 'Security Deposit' :
+                                        p.paymentType?.replace('_', ' ')}
                                 </span>
                               )}
                             </div>
@@ -680,11 +680,10 @@ const PaymentDashboard = () => {
                                 </span>
                               )}
                               {p.escrowStatus && (
-                                <span className={`px-2 py-0.5 rounded-full ${
-                                  p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
-                                  p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
-                                  'bg-gray-100 text-gray-700'
-                                }`}>
+                                <span className={`px-2 py-0.5 rounded-full ${p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
+                                    p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
+                                      'bg-gray-100 text-gray-700'
+                                  }`}>
                                   Escrow: {p.escrowStatus}
                                 </span>
                               )}
@@ -749,7 +748,7 @@ const PaymentDashboard = () => {
                     ))}
                   </div>
                 )}
-                
+
                 {/* INR Payments Pagination */}
                 {allInrPayments.length > 10 && inrPaymentsTotalPages > 1 && (
                   <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
@@ -789,208 +788,206 @@ const PaymentDashboard = () => {
           )}
         </div>
       </div>
-      
+
       {/* Payment Preview Modal */}
       {showPreviewModal && selectedPayment && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4" onClick={() => setShowPreviewModal(false)}>
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b border-gray-200 z-10 p-4 sm:p-6 pb-3 sm:pb-4 rounded-t-xl">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
-                  <FaEye className="text-blue-600" />
-                  Payment Details
-                </h3>
-                <button
-                  onClick={() => setShowPreviewModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <FaTimes className="text-xl" />
-                </button>
-              </div>
-            </div>
-            
-            <div className="p-4 sm:p-6 space-y-6">
-              {/* Payment Overview */}
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 sm:p-6 border border-blue-200">
-                <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                  <div className="flex-1 min-w-0">
-                    <h4 className="text-lg sm:text-xl font-bold text-gray-800 break-words">{selectedPayment.appointmentId?.propertyName || 'Property Payment'}</h4>
-                    <p className="text-sm text-gray-600 mt-1">Buyer: {selectedPayment.userId?.username || 'N/A'}</p>
-                    <p className="text-sm text-gray-600 mt-1 break-all">Payment ID: <span className="font-mono text-xs">{selectedPayment.paymentId}</span></p>
-                  </div>
-                  <div className="text-left sm:text-right flex-shrink-0">
-                    <div className="text-2xl sm:text-3xl font-bold text-gray-800 break-words">
-                      {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.amount).toFixed(2)}
-                    </div>
-                    <div className="mt-2">{statusBadge(selectedPayment.status)}</div>
-                  </div>
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50" onClick={() => setShowPreviewModal(false)}>
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full relative" onClick={(e) => e.stopPropagation()}>
+              <div className="sticky top-0 bg-white border-b border-gray-200 z-10 p-4 sm:p-6 pb-3 sm:pb-4 rounded-t-xl">
+                <div className="flex items-center justify-between">
+                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
+                    <FaEye className="text-blue-600" />
+                    Payment Details
+                  </h3>
+                  <button
+                    onClick={() => setShowPreviewModal(false)}
+                    className="text-gray-400 hover:text-gray-600 transition-colors"
+                  >
+                    <FaTimes className="text-xl" />
+                  </button>
                 </div>
               </div>
 
-              {/* Payment Information Grid */}
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-1">Payment Type</div>
-                  <div className="font-semibold text-gray-800">
-                    {selectedPayment.paymentType ? (
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                        selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                        selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
-                        {selectedPayment.paymentType === 'monthly_rent' ? 'Monthly Rent' :
-                         selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
-                         selectedPayment.paymentType === 'security_deposit' ? 'Security Deposit' :
-                         selectedPayment.paymentType?.replace('_', ' ')}
-                      </span>
-                    ) : 'N/A'}
-                  </div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-1">Gateway</div>
-                  <div className="font-semibold text-gray-800">{selectedPayment.gateway?.toUpperCase() || 'N/A'}</div>
-                </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-1">Currency</div>
-                  <div className="font-semibold text-gray-800">{selectedPayment.currency || 'N/A'}</div>
-                </div>
-                {selectedPayment.paymentType === 'monthly_rent' && selectedPayment.rentMonth && selectedPayment.rentYear && (
-                  <div className="bg-indigo-50 rounded-lg p-4">
-                    <div className="text-sm text-indigo-600 mb-1">Rent Period</div>
-                    <div className="font-semibold text-indigo-800">
-                      {new Date(selectedPayment.rentYear, selectedPayment.rentMonth - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+              <div className="p-4 sm:p-6 space-y-6">
+                {/* Payment Overview */}
+                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 sm:p-6 border border-blue-200">
+                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                    <div className="flex-1 min-w-0">
+                      <h4 className="text-lg sm:text-xl font-bold text-gray-800 break-words">{selectedPayment.appointmentId?.propertyName || 'Property Payment'}</h4>
+                      <p className="text-sm text-gray-600 mt-1">Buyer: {selectedPayment.userId?.username || 'N/A'}</p>
+                      <p className="text-sm text-gray-600 mt-1 break-all">Payment ID: <span className="font-mono text-xs">{selectedPayment.paymentId}</span></p>
+                    </div>
+                    <div className="text-left sm:text-right flex-shrink-0">
+                      <div className="text-2xl sm:text-3xl font-bold text-gray-800 break-words">
+                        {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.amount).toFixed(2)}
+                      </div>
+                      <div className="mt-2">{statusBadge(selectedPayment.status)}</div>
                     </div>
                   </div>
-                )}
-                {selectedPayment.escrowStatus && (
-                  <div className={`rounded-lg p-4 ${
-                    selectedPayment.escrowStatus === 'released' ? 'bg-green-50' :
-                    selectedPayment.escrowStatus === 'held' ? 'bg-orange-50' :
-                    'bg-gray-50'
-                  }`}>
-                    <div className={`text-sm mb-1 ${
-                      selectedPayment.escrowStatus === 'released' ? 'text-green-600' :
-                      selectedPayment.escrowStatus === 'held' ? 'text-orange-600' :
-                      'text-gray-600'
-                    }`}>Escrow Status</div>
-                    <div className={`font-semibold ${
-                      selectedPayment.escrowStatus === 'released' ? 'text-green-800' :
-                      selectedPayment.escrowStatus === 'held' ? 'text-orange-800' :
-                      'text-gray-800'
-                    }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
-                    {selectedPayment.escrowReleasedAt && (
-                      <div className="text-xs text-gray-500 mt-1">
-                        Released: {new Date(selectedPayment.escrowReleasedAt).toLocaleDateString('en-GB')}
-                      </div>
-                    )}
-                  </div>
-                )}
-                {selectedPayment.completedAt && (
+                </div>
+
+                {/* Payment Information Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600 mb-1">Paid Date</div>
+                    <div className="text-sm text-gray-600 mb-1">Payment Type</div>
                     <div className="font-semibold text-gray-800">
-                      {new Date(selectedPayment.completedAt).toLocaleDateString('en-GB', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                      {selectedPayment.paymentType ? (
+                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                            selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                              selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-700'
+                          }`}>
+                          {selectedPayment.paymentType === 'monthly_rent' ? 'Monthly Rent' :
+                            selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
+                              selectedPayment.paymentType === 'security_deposit' ? 'Security Deposit' :
+                                selectedPayment.paymentType?.replace('_', ' ')}
+                        </span>
+                      ) : 'N/A'}
+                    </div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-1">Gateway</div>
+                    <div className="font-semibold text-gray-800">{selectedPayment.gateway?.toUpperCase() || 'N/A'}</div>
+                  </div>
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-1">Currency</div>
+                    <div className="font-semibold text-gray-800">{selectedPayment.currency || 'N/A'}</div>
+                  </div>
+                  {selectedPayment.paymentType === 'monthly_rent' && selectedPayment.rentMonth && selectedPayment.rentYear && (
+                    <div className="bg-indigo-50 rounded-lg p-4">
+                      <div className="text-sm text-indigo-600 mb-1">Rent Period</div>
+                      <div className="font-semibold text-indigo-800">
+                        {new Date(selectedPayment.rentYear, selectedPayment.rentMonth - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                      </div>
+                    </div>
+                  )}
+                  {selectedPayment.escrowStatus && (
+                    <div className={`rounded-lg p-4 ${selectedPayment.escrowStatus === 'released' ? 'bg-green-50' :
+                        selectedPayment.escrowStatus === 'held' ? 'bg-orange-50' :
+                          'bg-gray-50'
+                      }`}>
+                      <div className={`text-sm mb-1 ${selectedPayment.escrowStatus === 'released' ? 'text-green-600' :
+                          selectedPayment.escrowStatus === 'held' ? 'text-orange-600' :
+                            'text-gray-600'
+                        }`}>Escrow Status</div>
+                      <div className={`font-semibold ${selectedPayment.escrowStatus === 'released' ? 'text-green-800' :
+                          selectedPayment.escrowStatus === 'held' ? 'text-orange-800' :
+                            'text-gray-800'
+                        }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
+                      {selectedPayment.escrowReleasedAt && (
+                        <div className="text-xs text-gray-500 mt-1">
+                          Released: {new Date(selectedPayment.escrowReleasedAt).toLocaleDateString('en-GB')}
+                        </div>
+                      )}
+                    </div>
+                  )}
+                  {selectedPayment.completedAt && (
+                    <div className="bg-gray-50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600 mb-1">Paid Date</div>
+                      <div className="font-semibold text-gray-800">
+                        {new Date(selectedPayment.completedAt).toLocaleDateString('en-GB', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </div>
+                      <div className="text-xs text-gray-500 mt-1">
+                        {new Date(selectedPayment.completedAt).toLocaleTimeString('en-GB')}
+                      </div>
+                    </div>
+                  )}
+                  <div className="bg-gray-50 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 mb-1">Created Date</div>
+                    <div className="font-semibold text-gray-800">
+                      {new Date(selectedPayment.createdAt).toLocaleDateString('en-GB', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                       })}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
-                      {new Date(selectedPayment.completedAt).toLocaleTimeString('en-GB')}
+                      {new Date(selectedPayment.createdAt).toLocaleTimeString('en-GB')}
                     </div>
                   </div>
-                )}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-1">Created Date</div>
-                  <div className="font-semibold text-gray-800">
-                    {new Date(selectedPayment.createdAt).toLocaleDateString('en-GB', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
-                    })}
-                  </div>
-                  <div className="text-xs text-gray-500 mt-1">
-                    {new Date(selectedPayment.createdAt).toLocaleTimeString('en-GB')}
-                  </div>
+                  {selectedPayment.refundedAt && (
+                    <div className="bg-red-50 rounded-lg p-4">
+                      <div className="text-sm text-red-600 mb-1">Refunded Date</div>
+                      <div className="font-semibold text-red-800">
+                        {new Date(selectedPayment.refundedAt).toLocaleDateString('en-GB', {
+                          year: 'numeric',
+                          month: 'long',
+                          day: 'numeric'
+                        })}
+                      </div>
+                      <div className="text-xs text-red-500 mt-1">
+                        {new Date(selectedPayment.refundedAt).toLocaleTimeString('en-GB')}
+                      </div>
+                    </div>
+                  )}
+                  {selectedPayment.refundAmount > 0 && (
+                    <div className="bg-red-50 rounded-lg p-4">
+                      <div className="text-sm text-red-600 mb-1">Refund Amount</div>
+                      <div className="font-semibold text-red-800">
+                        {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.refundAmount).toFixed(2)}
+                      </div>
+                    </div>
+                  )}
                 </div>
-                {selectedPayment.refundedAt && (
-                  <div className="bg-red-50 rounded-lg p-4">
-                    <div className="text-sm text-red-600 mb-1">Refunded Date</div>
-                    <div className="font-semibold text-red-800">
-                      {new Date(selectedPayment.refundedAt).toLocaleDateString('en-GB', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
-                      })}
-                    </div>
-                    <div className="text-xs text-red-500 mt-1">
-                      {new Date(selectedPayment.refundedAt).toLocaleTimeString('en-GB')}
-                    </div>
-                  </div>
-                )}
-                {selectedPayment.refundAmount > 0 && (
-                  <div className="bg-red-50 rounded-lg p-4">
-                    <div className="text-sm text-red-600 mb-1">Refund Amount</div>
-                    <div className="font-semibold text-red-800">
-                      {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.refundAmount).toFixed(2)}
-                    </div>
-                  </div>
-                )}
-              </div>
 
-              {/* Actions */}
-              <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
-                {selectedPayment.receiptUrl && (
+                {/* Actions */}
+                <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
+                  {selectedPayment.receiptUrl && (
+                    <button
+                      onClick={() => {
+                        downloadReceipt(selectedPayment.receiptUrl);
+                        setShowPreviewModal(false);
+                      }}
+                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    >
+                      <FaDownload /> Download Receipt
+                    </button>
+                  )}
                   <button
                     onClick={() => {
-                      downloadReceipt(selectedPayment.receiptUrl);
+                      sharePayment(selectedPayment);
                       setShowPreviewModal(false);
                     }}
-                    className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
                   >
-                    <FaDownload /> Download Receipt
+                    <FaShare /> Share Payment
                   </button>
-                )}
-                <button
-                  onClick={() => {
-                    sharePayment(selectedPayment);
-                    setShowPreviewModal(false);
-                  }}
-                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
-                >
-                  <FaShare /> Share Payment
-                </button>
-                <button
-                  onClick={() => {
-                    copyPaymentLink(
-                      window.location.origin + `/admin/payments?paymentId=${selectedPayment.paymentId}`,
-                      `Payment Details:\nProperty: ${selectedPayment.appointmentId?.propertyName || 'N/A'}\nBuyer: ${selectedPayment.userId?.username || 'N/A'}\nAmount: ${selectedPayment.currency === 'INR' ? '₹' : '$'}${Number(selectedPayment.amount).toFixed(2)}\nStatus: ${selectedPayment.status}\nPayment ID: ${selectedPayment.paymentId}`
-                    );
-                  }}
-                  className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
-                >
-                  <FaCopy /> Copy Details
-                </button>
+                  <button
+                    onClick={() => {
+                      copyPaymentLink(
+                        window.location.origin + `/admin/payments?paymentId=${selectedPayment.paymentId}`,
+                        `Payment Details:\nProperty: ${selectedPayment.appointmentId?.propertyName || 'N/A'}\nBuyer: ${selectedPayment.userId?.username || 'N/A'}\nAmount: ${selectedPayment.currency === 'INR' ? '₹' : '$'}${Number(selectedPayment.amount).toFixed(2)}\nStatus: ${selectedPayment.status}\nPayment ID: ${selectedPayment.paymentId}`
+                      );
+                    }}
+                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+                  >
+                    <FaCopy /> Copy Details
+                  </button>
+                </div>
               </div>
             </div>
           </div>
         </div>
       )}
-      
+
       {/* Export Password Modal */}
       {showExportPasswordModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form 
-            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4" 
+          <form
+            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4"
             onSubmit={async (e) => {
               e.preventDefault();
               setExportPasswordLoading(true);
               setExportPasswordError("");
               try {
-                const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`, 
+                const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`,
                   { password: exportPassword },
-                  { 
+                  {
                     withCredentials: true,
                     headers: { "Content-Type": "application/json" }
                   }
@@ -1001,7 +998,7 @@ const PaymentDashboard = () => {
                   setShowExportPasswordModal(false);
                   setExportPassword("");
                   setExportPasswordError("");
-                  
+
                   // Download export file
                   try {
                     const res = await fetch(`${API_BASE_URL}/api/payments/admin/export`, { credentials: 'include' });
@@ -1076,9 +1073,9 @@ const PaymentDashboard = () => {
             />
             {exportPasswordError && <div className="text-red-600 text-sm">{exportPasswordError}</div>}
             <div className="flex gap-2 justify-end">
-              <button 
-                type="button" 
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold" 
+              <button
+                type="button"
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
                 onClick={() => {
                   setShowExportPasswordModal(false);
                   setExportPassword("");
@@ -1087,9 +1084,9 @@ const PaymentDashboard = () => {
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
-                className="px-4 py-2 rounded bg-blue-700 text-white font-semibold" 
+              <button
+                type="submit"
+                className="px-4 py-2 rounded bg-blue-700 text-white font-semibold"
                 disabled={exportPasswordLoading}
               >
                 {exportPasswordLoading ? 'Verifying...' : 'Confirm'}

@@ -698,158 +698,164 @@ export default function RentalContracts() {
 
       {/* Contract Preview Modal */}
       {showPreviewModal && selectedContract && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Contract Details</h2>
-              <button
-                onClick={() => {
-                  setShowPreviewModal(false);
-                  setSelectedContract(null);
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Contract Details</h2>
+                <button
+                  onClick={() => {
+                    setShowPreviewModal(false);
+                    setSelectedContract(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+              <ContractPreview
+                contract={selectedContract}
+                listing={selectedContract.listingId}
+                tenant={selectedContract.tenantId}
+                landlord={selectedContract.landlordId}
+                onDownload={() => {
+                  handleDownload(selectedContract);
                 }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
+              />
             </div>
-            <ContractPreview
-              contract={selectedContract}
-              listing={selectedContract.listingId}
-              tenant={selectedContract.tenantId}
-              landlord={selectedContract.landlordId}
-              onDownload={() => {
-                handleDownload(selectedContract);
-              }}
-            />
           </div>
         </div>
       )}
 
       {/* Contract Review Modal (for seller/landlord) */}
       {showReviewModal && signingContract && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Review Contract</h2>
-              <button
-                onClick={() => {
-                  setShowReviewModal(false);
-                  setSigningContract(null);
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Review Contract</h2>
+                <button
+                  onClick={() => {
+                    setShowReviewModal(false);
+                    setSigningContract(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+
+              <ContractPreview
+                contract={signingContract}
+                listing={signingContract.listingId}
+                tenant={signingContract.tenantId}
+                landlord={signingContract.landlordId}
+                onDownload={() => {
+                  handleDownload(signingContract);
                 }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
-            </div>
+              />
 
-            <ContractPreview
-              contract={signingContract}
-              listing={signingContract.listingId}
-              tenant={signingContract.tenantId}
-              landlord={signingContract.landlordId}
-              onDownload={() => {
-                handleDownload(signingContract);
-              }}
-            />
+              {/* Signature Section for Landlord */}
+              {(() => {
+                const userRole = getUserRole(signingContract);
+                const isLandlord = userRole === 'landlord';
+                const landlordSigned = signingContract.landlordSignature?.signed;
 
-            {/* Signature Section for Landlord */}
-            {(() => {
-              const userRole = getUserRole(signingContract);
-              const isLandlord = userRole === 'landlord';
-              const landlordSigned = signingContract.landlordSignature?.signed;
+                if (isLandlord && signingContract.status === 'pending_signature') {
+                  return (
+                    <div className="mt-6 p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
+                      <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                        <FaPen className="text-blue-600" /> Your Signature Required
+                      </h3>
 
-              if (isLandlord && signingContract.status === 'pending_signature') {
-                return (
-                  <div className="mt-6 p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
-                    <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                      <FaPen className="text-blue-600" /> Your Signature Required
-                    </h3>
-
-                    {landlordSigned ? (
-                      <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                        <div className="flex items-center gap-2 text-green-700">
-                          <FaCheckCircle /> You have already signed this contract.
+                      {landlordSigned ? (
+                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
+                          <div className="flex items-center gap-2 text-green-700">
+                            <FaCheckCircle /> You have already signed this contract.
+                          </div>
+                          {signingContract.landlordSignature?.signedAt && (
+                            <p className="text-sm text-green-600 mt-2">
+                              Signed on: {new Date(signingContract.landlordSignature.signedAt).toLocaleString('en-GB')}
+                            </p>
+                          )}
                         </div>
-                        {signingContract.landlordSignature?.signedAt && (
-                          <p className="text-sm text-green-600 mt-2">
-                            Signed on: {new Date(signingContract.landlordSignature.signedAt).toLocaleString('en-GB')}
+                      ) : (
+                        <div>
+                          <p className="text-gray-600 mb-4">
+                            Please review the contract above. If you agree to the terms, please sign below to proceed.
                           </p>
-                        )}
-                      </div>
-                    ) : (
-                      <div>
-                        <p className="text-gray-600 mb-4">
-                          Please review the contract above. If you agree to the terms, please sign below to proceed.
-                        </p>
-                        <button
-                          onClick={() => handleSignatureClick(signingContract)}
-                          className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold"
-                        >
-                          <FaPen /> Sign Contract
-                        </button>
-                      </div>
-                    )}
-
-                    {/* Signature Status */}
-                    <div className="mt-4 pt-4 border-t border-gray-200">
-                      <div className="grid grid-cols-2 gap-4 text-sm">
-                        <div>
-                          <span className="text-gray-600">Tenant Signature:</span>
-                          <span className={`ml-2 ${signingContract.tenantSignature?.signed ? 'text-green-600' : 'text-yellow-600'}`}>
-                            {signingContract.tenantSignature?.signed ? (
-                              <><FaCheckCircle /> Signed</>
-                            ) : (
-                              <><FaTimesCircle /> Pending</>
-                            )}
-                          </span>
+                          <button
+                            onClick={() => handleSignatureClick(signingContract)}
+                            className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 font-semibold"
+                          >
+                            <FaPen /> Sign Contract
+                          </button>
                         </div>
-                        <div>
-                          <span className="text-gray-600">Your Signature:</span>
-                          <span className={`ml-2 ${landlordSigned ? 'text-green-600' : 'text-yellow-600'}`}>
-                            {landlordSigned ? (
-                              <><FaCheckCircle /> Signed</>
-                            ) : (
-                              <><FaTimesCircle /> Pending</>
-                            )}
-                          </span>
+                      )}
+
+                      {/* Signature Status */}
+                      <div className="mt-4 pt-4 border-t border-gray-200">
+                        <div className="grid grid-cols-2 gap-4 text-sm">
+                          <div>
+                            <span className="text-gray-600">Tenant Signature:</span>
+                            <span className={`ml-2 ${signingContract.tenantSignature?.signed ? 'text-green-600' : 'text-yellow-600'}`}>
+                              {signingContract.tenantSignature?.signed ? (
+                                <><FaCheckCircle /> Signed</>
+                              ) : (
+                                <><FaTimesCircle /> Pending</>
+                              )}
+                            </span>
+                          </div>
+                          <div>
+                            <span className="text-gray-600">Your Signature:</span>
+                            <span className={`ml-2 ${landlordSigned ? 'text-green-600' : 'text-yellow-600'}`}>
+                              {landlordSigned ? (
+                                <><FaCheckCircle /> Signed</>
+                              ) : (
+                                <><FaTimesCircle /> Pending</>
+                              )}
+                            </span>
+                          </div>
                         </div>
                       </div>
                     </div>
-                  </div>
-                );
-              }
-              return null;
-            })()}
+                  );
+                }
+                return null;
+              })()}
+            </div>
           </div>
         </div>
       )}
 
       {/* Digital Signature Modal */}
       {showSignatureModal && signingContract && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Sign Contract</h2>
-              <button
-                onClick={() => {
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Sign Contract</h2>
+                <button
+                  onClick={() => {
+                    setShowSignatureModal(false);
+                    setSigningContract(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+              <DigitalSignature
+                onSign={handleSignatureConfirm}
+                onCancel={() => {
                   setShowSignatureModal(false);
                   setSigningContract(null);
                 }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
+                title="Sign as Landlord"
+                userName={currentUser?.username || 'Landlord'}
+                disabled={actionLoading === 'signing'}
+              />
             </div>
-            <DigitalSignature
-              onSign={handleSignatureConfirm}
-              onCancel={() => {
-                setShowSignatureModal(false);
-                setSigningContract(null);
-              }}
-              title="Sign as Landlord"
-              userName={currentUser?.username || 'Landlord'}
-              disabled={actionLoading === 'signing'}
-            />
           </div>
         </div>
       )}

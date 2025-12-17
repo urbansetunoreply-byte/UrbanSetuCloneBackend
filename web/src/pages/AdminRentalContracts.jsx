@@ -18,7 +18,7 @@ const ContractModalWrapper = ({ children, onClose }) => {
   }, []);
 
   return (
-    <div 
+    <div
       className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
       style={{ overflow: 'hidden' }}
       onClick={(e) => {
@@ -115,12 +115,12 @@ export default function AdminRentalContracts() {
   // Client-side filtering for search and status
   const filteredContracts = React.useMemo(() => {
     let filtered = contracts;
-    
+
     // Filter by status
     if (statusFilter !== 'all') {
       filtered = filtered.filter(contract => contract.status === statusFilter);
     }
-    
+
     // Filter by search query
     if (searchQuery) {
       const query = searchQuery.toLowerCase();
@@ -134,7 +134,7 @@ export default function AdminRentalContracts() {
         contract.landlordId?.email?.toLowerCase().includes(query)
       );
     }
-    
+
     return filtered;
   }, [contracts, statusFilter, searchQuery]);
 
@@ -274,7 +274,7 @@ export default function AdminRentalContracts() {
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 <FaFileContract className="text-blue-600" />
@@ -341,11 +341,10 @@ export default function AdminRentalContracts() {
                 <button
                   key={status}
                   onClick={() => setStatusFilter(status)}
-                  className={`px-4 py-2 rounded-lg font-medium transition ${
-                    statusFilter === status
-                      ? 'bg-blue-600 text-white'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium transition ${statusFilter === status
+                    ? 'bg-blue-600 text-white'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   {status === 'all' ? 'All Contracts' : getStatusLabel(status)}
                 </button>
@@ -366,194 +365,193 @@ export default function AdminRentalContracts() {
               const listingId = contract.listingId?._id || contract.listingId;
               const listingName = contract.listingId?.name || 'Property Contract';
               return (
-              <div
-                key={contract._id}
-                className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}
-              >
-                <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
-                  <div className="flex-1">
-                    <div className="flex items-center gap-3 mb-2">
-                      <FaFileContract className="text-2xl text-blue-600" />
-                      <div>
-                        <h3 className="text-xl font-bold text-gray-800">
-                          {listingId ? (
-                            <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
-                              {listingName}
-                            </Link>
+                <div
+                  key={contract._id}
+                  className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}
+                >
+                  <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-3 mb-2">
+                        <FaFileContract className="text-2xl text-blue-600" />
+                        <div>
+                          <h3 className="text-xl font-bold text-gray-800">
+                            {listingId ? (
+                              <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                                {listingName}
+                              </Link>
+                            ) : (
+                              listingName
+                            )}
+                          </h3>
+                          <p className="text-sm text-gray-600 font-mono">
+                            {contract.contractId}
+                          </p>
+                        </div>
+                      </div>
+
+                      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
+                        <div>
+                          <p className="text-gray-600 mb-1 flex items-center gap-1">
+                            <FaMoneyBillWave className="text-green-600" /> Monthly Rent
+                          </p>
+                          <p className="font-semibold">
+                            ₹{contract.lockedRentAmount?.toLocaleString('en-IN') || '0'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1 flex items-center gap-1">
+                            <FaLock className="text-purple-600" /> Duration
+                          </p>
+                          <p className="font-semibold">{contract.lockDuration} months</p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1 flex items-center gap-1">
+                            <FaCalendarAlt className="text-indigo-600" /> Start Date
+                          </p>
+                          <p className="font-semibold">
+                            {contract.startDate ? new Date(contract.startDate).toLocaleDateString('en-GB') : 'N/A'}
+                          </p>
+                        </div>
+                        <div>
+                          <p className="text-gray-600 mb-1 flex items-center gap-1">
+                            <FaUser className="text-blue-600" /> Tenant
+                          </p>
+                          <p className="font-semibold">{contract.tenantId?.username || contract.tenantId?.email || 'N/A'}</p>
+                        </div>
+                      </div>
+
+                      {/* Signature Status */}
+                      <div className="mt-4 flex items-center gap-4">
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">Tenant:</span>
+                          {contract.tenantSignature?.signed ? (
+                            <FaCheckCircle className="text-green-600" title="Signed" />
                           ) : (
-                            listingName
+                            <FaTimesCircle className="text-yellow-600" title="Pending" />
                           )}
-                        </h3>
-                        <p className="text-sm text-gray-600 font-mono">
-                          {contract.contractId}
-                        </p>
+                        </div>
+                        <div className="flex items-center gap-2">
+                          <span className="text-sm text-gray-600">Landlord:</span>
+                          {contract.landlordSignature?.signed ? (
+                            <FaCheckCircle className="text-green-600" title="Signed" />
+                          ) : (
+                            <FaTimesCircle className="text-yellow-600" title="Pending" />
+                          )}
+                        </div>
                       </div>
-                    </div>
 
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
-                      <div>
-                        <p className="text-gray-600 mb-1 flex items-center gap-1">
-                          <FaMoneyBillWave className="text-green-600" /> Monthly Rent
-                        </p>
-                        <p className="font-semibold">
-                          ₹{contract.lockedRentAmount?.toLocaleString('en-IN') || '0'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 mb-1 flex items-center gap-1">
-                          <FaLock className="text-purple-600" /> Duration
-                        </p>
-                        <p className="font-semibold">{contract.lockDuration} months</p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 mb-1 flex items-center gap-1">
-                          <FaCalendarAlt className="text-indigo-600" /> Start Date
-                        </p>
-                        <p className="font-semibold">
-                          {contract.startDate ? new Date(contract.startDate).toLocaleDateString('en-GB') : 'N/A'}
-                        </p>
-                      </div>
-                      <div>
-                        <p className="text-gray-600 mb-1 flex items-center gap-1">
-                          <FaUser className="text-blue-600" /> Tenant
-                        </p>
-                        <p className="font-semibold">{contract.tenantId?.username || contract.tenantId?.email || 'N/A'}</p>
-                      </div>
-                    </div>
-
-                    {/* Signature Status */}
-                    <div className="mt-4 flex items-center gap-4">
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Tenant:</span>
-                        {contract.tenantSignature?.signed ? (
-                          <FaCheckCircle className="text-green-600" title="Signed" />
-                        ) : (
-                          <FaTimesCircle className="text-yellow-600" title="Pending" />
-                        )}
-                      </div>
-                      <div className="flex items-center gap-2">
-                        <span className="text-sm text-gray-600">Landlord:</span>
-                        {contract.landlordSignature?.signed ? (
-                          <FaCheckCircle className="text-green-600" title="Signed" />
-                        ) : (
-                          <FaTimesCircle className="text-yellow-600" title="Pending" />
-                        )}
-                      </div>
-                    </div>
-
-                    {/* Payment Status - Show monthly payment status for active contracts */}
-                    {contract.status === 'active' && contract.wallet?.paymentSchedule && contract.wallet.paymentSchedule.length > 0 && (
-                      <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                        <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                          <FaMoneyBillWave className="text-green-600" /> Payment Status
-                        </h4>
-                        <div className="flex flex-wrap gap-2">
-                          {contract.wallet.paymentSchedule
-                            .sort((a, b) => {
-                              if (a.year !== b.year) return a.year - b.year;
-                              return a.month - b.month;
-                            })
-                            .slice(0, 6) // Show first 6 months
-                            .map((payment, idx) => (
-                              <div
-                                key={idx}
-                                className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 ${
-                                  payment.status === 'completed'
+                      {/* Payment Status - Show monthly payment status for active contracts */}
+                      {contract.status === 'active' && contract.wallet?.paymentSchedule && contract.wallet.paymentSchedule.length > 0 && (
+                        <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
+                          <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
+                            <FaMoneyBillWave className="text-green-600" /> Payment Status
+                          </h4>
+                          <div className="flex flex-wrap gap-2">
+                            {contract.wallet.paymentSchedule
+                              .sort((a, b) => {
+                                if (a.year !== b.year) return a.year - b.year;
+                                return a.month - b.month;
+                              })
+                              .slice(0, 6) // Show first 6 months
+                              .map((payment, idx) => (
+                                <div
+                                  key={idx}
+                                  className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 ${payment.status === 'completed'
                                     ? 'bg-green-100 text-green-700 border border-green-300'
                                     : payment.status === 'overdue'
-                                    ? 'bg-red-100 text-red-700 border border-red-300'
-                                    : payment.status === 'processing'
-                                    ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
-                                    : 'bg-gray-100 text-gray-600 border border-gray-300'
-                                }`}
-                                title={`${payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : payment.status === 'processing' ? 'Processing' : 'Pending'} - Month ${payment.month}/${payment.year}`}
-                              >
-                                {payment.status === 'completed' && <FaCheckCircle className="text-xs" />}
-                                {payment.status === 'overdue' && <FaTimesCircle className="text-xs" />}
-                                {payment.status === 'processing' && <FaSpinner className="text-xs animate-spin" />}
-                                {!payment.status || payment.status === 'pending' ? (
-                                  <>
-                                    <FaClock className="text-xs" />
-                                    Month {idx + 1}
-                                  </>
-                                ) : (
-                                  <>
-                                    {payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : 'Processing'} - Month {idx + 1}
-                                  </>
-                                )}
+                                      ? 'bg-red-100 text-red-700 border border-red-300'
+                                      : payment.status === 'processing'
+                                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
+                                        : 'bg-gray-100 text-gray-600 border border-gray-300'
+                                    }`}
+                                  title={`${payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : payment.status === 'processing' ? 'Processing' : 'Pending'} - Month ${payment.month}/${payment.year}`}
+                                >
+                                  {payment.status === 'completed' && <FaCheckCircle className="text-xs" />}
+                                  {payment.status === 'overdue' && <FaTimesCircle className="text-xs" />}
+                                  {payment.status === 'processing' && <FaSpinner className="text-xs animate-spin" />}
+                                  {!payment.status || payment.status === 'pending' ? (
+                                    <>
+                                      <FaClock className="text-xs" />
+                                      Month {idx + 1}
+                                    </>
+                                  ) : (
+                                    <>
+                                      {payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : 'Processing'} - Month {idx + 1}
+                                    </>
+                                  )}
+                                </div>
+                              ))}
+                            {contract.wallet.paymentSchedule.length > 6 && (
+                              <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300">
+                                +{contract.wallet.paymentSchedule.length - 6} more
                               </div>
-                            ))}
-                          {contract.wallet.paymentSchedule.length > 6 && (
-                            <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300">
-                              +{contract.wallet.paymentSchedule.length - 6} more
+                            )}
+                          </div>
+                          {contract.wallet.totalPaid > 0 && (
+                            <div className="mt-2 text-xs text-gray-600">
+                              Total Paid: <span className="font-semibold text-green-600">₹{contract.wallet.totalPaid.toLocaleString('en-IN')}</span>
+                              {contract.wallet.totalDue > 0 && (
+                                <> | Pending: <span className="font-semibold text-yellow-600">₹{contract.wallet.totalDue.toLocaleString('en-IN')}</span></>
+                              )}
                             </div>
                           )}
                         </div>
-                        {contract.wallet.totalPaid > 0 && (
-                          <div className="mt-2 text-xs text-gray-600">
-                            Total Paid: <span className="font-semibold text-green-600">₹{contract.wallet.totalPaid.toLocaleString('en-IN')}</span>
-                            {contract.wallet.totalDue > 0 && (
-                              <> | Pending: <span className="font-semibold text-yellow-600">₹{contract.wallet.totalDue.toLocaleString('en-IN')}</span></>
-                            )}
-                          </div>
-                        )}
-                      </div>
-                    )}
-                  </div>
+                      )}
+                    </div>
 
-                  <div className="flex flex-col gap-2">
-                    <button
-                      onClick={() => handleView(contract)}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
-                    >
-                      <FaEye /> View Details
-                    </button>
-                    <button
-                      onClick={() => handleDownload(contract)}
-                      className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
-                    >
-                      <FaDownload /> Download PDF
-                    </button>
-                    
-                    {/* Admin Actions */}
-                    {contract.status === 'active' && (
+                    <div className="flex flex-col gap-2">
                       <button
-                        onClick={() => openStatusModal(contract, 'terminate')}
-                        className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
+                        onClick={() => handleView(contract)}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
                       >
-                        <FaBan /> Terminate
+                        <FaEye /> View Details
                       </button>
-                    )}
-                    {(contract.status === 'pending_signature' || contract.status === 'draft') && (
-                      <>
+                      <button
+                        onClick={() => handleDownload(contract)}
+                        className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                      >
+                        <FaDownload /> Download PDF
+                      </button>
+
+                      {/* Admin Actions */}
+                      {contract.status === 'active' && (
                         <button
-                          onClick={() => openStatusModal(contract, 'reject')}
-                          className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
+                          onClick={() => openStatusModal(contract, 'terminate')}
+                          className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center justify-center gap-2"
                         >
-                          <FaTimesCircle /> Reject
+                          <FaBan /> Terminate
                         </button>
-                        {contract.tenantSignature?.signed && contract.landlordSignature?.signed && (
+                      )}
+                      {(contract.status === 'pending_signature' || contract.status === 'draft') && (
+                        <>
                           <button
-                            onClick={() => openStatusModal(contract, 'activate')}
-                            className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                            onClick={() => openStatusModal(contract, 'reject')}
+                            className="px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 flex items-center justify-center gap-2"
                           >
-                            <FaCheck /> Activate
+                            <FaTimesCircle /> Reject
                           </button>
-                        )}
-                      </>
-                    )}
-                    {contract.status === 'active' && contract.walletId && (
-                      <button
-                        onClick={() => navigate(`/admin/payments?contractId=${contract._id}`)}
-                        className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"
-                      >
-                        <FaWallet /> View Payments
-                      </button>
-                    )}
+                          {contract.tenantSignature?.signed && contract.landlordSignature?.signed && (
+                            <button
+                              onClick={() => openStatusModal(contract, 'activate')}
+                              className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center justify-center gap-2"
+                            >
+                              <FaCheck /> Activate
+                            </button>
+                          )}
+                        </>
+                      )}
+                      {contract.status === 'active' && contract.walletId && (
+                        <button
+                          onClick={() => navigate(`/admin/payments?contractId=${contract._id}`)}
+                          className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 flex items-center justify-center gap-2"
+                        >
+                          <FaWallet /> View Payments
+                        </button>
+                      )}
+                    </div>
                   </div>
                 </div>
-              </div>
-            );
+              );
             })}
           </div>
         )}
@@ -593,97 +591,98 @@ export default function AdminRentalContracts() {
 
       {/* Status Update Modal */}
       {showStatusModal && selectedContract && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">
-                {statusAction === 'terminate' ? 'Terminate Contract' : 
-                 statusAction === 'reject' ? 'Reject Contract' : 
-                 'Activate Contract'}
-              </h2>
-              <button
-                onClick={() => {
-                  setShowStatusModal(false);
-                  setStatusReason('');
-                  setSelectedContract(null);
-                  setStatusAction(null);
-                }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-            
-            <div className="mb-4">
-              <p className="text-gray-600 mb-2">
-                Contract ID: <span className="font-mono font-semibold">{selectedContract.contractId}</span>
-              </p>
-              <p className="text-gray-600">
-                Property: <span className="font-semibold">{selectedContract.listingId?.name || 'N/A'}</span>
-              </p>
-            </div>
-
-            {(statusAction === 'terminate' || statusAction === 'reject') && (
-              <div className="mb-4">
-                <label className="block text-gray-700 font-semibold mb-2">
-                  Reason * <FaExclamationTriangle className="inline text-red-500" />
-                </label>
-                <textarea
-                  value={statusReason}
-                  onChange={(e) => setStatusReason(e.target.value)}
-                  placeholder={`Enter reason for ${statusAction === 'terminate' ? 'termination' : 'rejection'}...`}
-                  rows={4}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                  required
-                />
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">
+                  {statusAction === 'terminate' ? 'Terminate Contract' :
+                    statusAction === 'reject' ? 'Reject Contract' :
+                      'Activate Contract'}
+                </h2>
+                <button
+                  onClick={() => {
+                    setShowStatusModal(false);
+                    setStatusReason('');
+                    setSelectedContract(null);
+                    setStatusAction(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
               </div>
-            )}
 
-            {statusAction === 'activate' && (
-              <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                <p className="text-yellow-800 flex items-center gap-2">
-                  <FaExclamationTriangle /> This will activate the contract. Make sure both parties have signed.
+              <div className="mb-4">
+                <p className="text-gray-600 mb-2">
+                  Contract ID: <span className="font-mono font-semibold">{selectedContract.contractId}</span>
+                </p>
+                <p className="text-gray-600">
+                  Property: <span className="font-semibold">{selectedContract.listingId?.name || 'N/A'}</span>
                 </p>
               </div>
-            )}
 
-            <div className="flex gap-3">
-              <button
-                onClick={() => {
-                  setShowStatusModal(false);
-                  setStatusReason('');
-                  setSelectedContract(null);
-                  setStatusAction(null);
-                }}
-                className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={() => handleUpdateStatus(statusAction)}
-                disabled={actionLoading !== '' || ((statusAction === 'terminate' || statusAction === 'reject') && !statusReason.trim())}
-                className={`flex-1 px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 ${
-                  statusAction === 'terminate' || statusAction === 'reject'
+              {(statusAction === 'terminate' || statusAction === 'reject') && (
+                <div className="mb-4">
+                  <label className="block text-gray-700 font-semibold mb-2">
+                    Reason * <FaExclamationTriangle className="inline text-red-500" />
+                  </label>
+                  <textarea
+                    value={statusReason}
+                    onChange={(e) => setStatusReason(e.target.value)}
+                    placeholder={`Enter reason for ${statusAction === 'terminate' ? 'termination' : 'rejection'}...`}
+                    rows={4}
+                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    required
+                  />
+                </div>
+              )}
+
+              {statusAction === 'activate' && (
+                <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
+                  <p className="text-yellow-800 flex items-center gap-2">
+                    <FaExclamationTriangle /> This will activate the contract. Make sure both parties have signed.
+                  </p>
+                </div>
+              )}
+
+              <div className="flex gap-3">
+                <button
+                  onClick={() => {
+                    setShowStatusModal(false);
+                    setStatusReason('');
+                    setSelectedContract(null);
+                    setStatusAction(null);
+                  }}
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => handleUpdateStatus(statusAction)}
+                  disabled={actionLoading !== '' || ((statusAction === 'terminate' || statusAction === 'reject') && !statusReason.trim())}
+                  className={`flex-1 px-4 py-2 rounded-lg font-semibold flex items-center justify-center gap-2 ${statusAction === 'terminate' || statusAction === 'reject'
                     ? 'bg-red-600 text-white hover:bg-red-700'
                     : 'bg-green-600 text-white hover:bg-green-700'
-                } disabled:opacity-50 disabled:cursor-not-allowed`}
-              >
-                {actionLoading === statusAction ? (
-                  <>
-                    <FaSpinner className="animate-spin" /> Processing...
-                  </>
-                ) : (
-                  <>
-                    {statusAction === 'terminate' ? (
-                      <> <FaBan /> Terminate Contract </>
-                    ) : statusAction === 'reject' ? (
-                      <> <FaTimesCircle /> Reject Contract </>
-                    ) : (
-                      <> <FaCheck /> Activate Contract </>
-                    )}
-                  </>
-                )}
-              </button>
+                    } disabled:opacity-50 disabled:cursor-not-allowed`}
+                >
+                  {actionLoading === statusAction ? (
+                    <>
+                      <FaSpinner className="animate-spin" /> Processing...
+                    </>
+                  ) : (
+                    <>
+                      {statusAction === 'terminate' ? (
+                        <> <FaBan /> Terminate Contract </>
+                      ) : statusAction === 'reject' ? (
+                        <> <FaTimesCircle /> Reject Contract </>
+                      ) : (
+                        <> <FaCheck /> Activate Contract </>
+                      )}
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
         </div>

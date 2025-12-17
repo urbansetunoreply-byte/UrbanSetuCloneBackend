@@ -35,7 +35,7 @@ export default function AdminServices() {
       const res = await fetch(`${API_BASE_URL}/api/requests/services`, { credentials: 'include' });
       const data = await res.json();
       setItems(Array.isArray(data) ? data : []);
-    } catch (_) {}
+    } catch (_) { }
     setLoadingServices(false);
   };
   const fetchMoverRequests = async () => {
@@ -45,7 +45,7 @@ export default function AdminServices() {
       const mres = await fetch(`${API_BASE_URL}/api/requests/movers`, { credentials: 'include' });
       const mdata = await mres.json();
       setMovers(Array.isArray(mdata) ? mdata : []);
-    } catch (_) {}
+    } catch (_) { }
     setLoadingMovers(false);
   };
 
@@ -65,8 +65,8 @@ export default function AdminServices() {
     setLoadingChecklists(false);
   };
 
-  useEffect(() => { 
-    fetchServiceRequests(); 
+  useEffect(() => {
+    fetchServiceRequests();
     fetchMoverRequests();
     fetchChecklists();
   }, [currentUser?._id]);
@@ -74,11 +74,11 @@ export default function AdminServices() {
   const filtered = useMemo(() => {
     return items.filter(n => {
       const matchQ = serviceFilters.q.trim() ? (
-        (n.requesterName||'').toLowerCase().includes(serviceFilters.q.toLowerCase()) ||
-        (n.requesterEmail||'').toLowerCase().includes(serviceFilters.q.toLowerCase()) ||
-        (Array.isArray(n.services)? n.services.join(', '):'').toLowerCase().includes(serviceFilters.q.toLowerCase())
+        (n.requesterName || '').toLowerCase().includes(serviceFilters.q.toLowerCase()) ||
+        (n.requesterEmail || '').toLowerCase().includes(serviceFilters.q.toLowerCase()) ||
+        (Array.isArray(n.services) ? n.services.join(', ') : '').toLowerCase().includes(serviceFilters.q.toLowerCase())
       ) : true;
-      const matchStatus = serviceFilters.status==='all' ? true : n.status===serviceFilters.status;
+      const matchStatus = serviceFilters.status === 'all' ? true : n.status === serviceFilters.status;
       return matchQ && matchStatus;
     });
   }, [items, serviceFilters]);
@@ -92,13 +92,13 @@ export default function AdminServices() {
         body: JSON.stringify({ userId: currentUser._id })
       });
       setItems(prev => prev.map(i => i._id === id ? { ...i, isRead: true, readAt: new Date().toISOString() } : i));
-    } catch (_) {}
+    } catch (_) { }
   };
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
-      <div className="flex items-center justify-between mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><FaTools className="text-purple-700"/> Service Requests</h1>
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+        <h1 className="text-2xl font-bold flex items-center gap-2"><FaTools className="text-purple-700" /> Service Requests</h1>
         <div className="flex items-center gap-3">
           <button onClick={fetchServiceRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
@@ -112,24 +112,24 @@ export default function AdminServices() {
         </div>
         <div className="bg-white rounded shadow p-3 text-center">
           <p className="text-xs text-gray-500">Unread</p>
-          <p className="text-xl font-bold text-red-600">{items.filter(i=>!i.isRead).length}</p>
+          <p className="text-xl font-bold text-red-600">{items.filter(i => !i.isRead).length}</p>
         </div>
         <div className="bg-white rounded shadow p-3 text-center">
           <p className="text-xs text-gray-500">Read</p>
-          <p className="text-xl font-bold text-green-600">{items.filter(i=>i.isRead).length}</p>
+          <p className="text-xl font-bold text-green-600">{items.filter(i => i.isRead).length}</p>
         </div>
         <div className="bg-white rounded shadow p-3 text-center">
           <p className="text-xs text-gray-500">Today</p>
-          <p className="text-xl font-bold">{items.filter(i=>new Date(i.createdAt).toDateString()===new Date().toDateString()).length}</p>
+          <p className="text-xl font-bold">{items.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).length}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-        <input className="border rounded p-2 text-sm" placeholder="Search" value={serviceFilters.q} onChange={e=>setServiceFilters(f=>({...f,q:e.target.value}))} />
-        <select className="border rounded p-2 text-sm" value={serviceFilters.status} onChange={e=>setServiceFilters(f=>({...f,status:e.target.value}))}>
-          {['all','pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+        <input className="border rounded p-2 text-sm" placeholder="Search" value={serviceFilters.q} onChange={e => setServiceFilters(f => ({ ...f, q: e.target.value }))} />
+        <select className="border rounded p-2 text-sm" value={serviceFilters.status} onChange={e => setServiceFilters(f => ({ ...f, status: e.target.value }))}>
+          {['all', 'pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={()=>setServiceFilters({ q:'', status:'all' })}>Clear</button>
+        <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={() => setServiceFilters({ q: '', status: 'all' })}>Clear</button>
       </div>
       {loadingServices ? (
         <div className="text-gray-600">Loading...</div>
@@ -160,12 +160,12 @@ export default function AdminServices() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {email && (
-                          <a href={`mailto:${email}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope/> Email</a>
+                          <a href={`mailto:${email}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope /> Email</a>
                         )}
-                        <select value={n.status} onChange={async(e)=>{const newStatus=e.target.value; try{setItems(prev=>prev.map(it=>it._id===n._id?{...it,status:newStatus}:it)); await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus})});}catch(_){ setItems(prev=>prev.map(it=>it._id===n._id?{...it,status:n.status}:it)); }} } className="text-xs border rounded px-2 py-1">
-                          {['pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1">
+                          {['pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
-                        <button onClick={async()=>{ if(!confirm('Delete this service request?')) return; try{ const r= await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method:'DELETE', credentials:'include' }); if(r.ok){ setItems(prev=>prev.filter(x=>x._id!==n._id)); } } catch(_){} }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                        <button onClick={async () => { if (!confirm('Delete this service request?')) return; try { const r = await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'DELETE', credentials: 'include' }); if (r.ok) { setItems(prev => prev.filter(x => x._id !== n._id)); } } catch (_) { } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -178,16 +178,16 @@ export default function AdminServices() {
 
       {/* Movers Requests Section */}
       <div className="mt-10 border-t border-gray-200 pt-8">
-        <div className="flex items-center justify-between mb-6">
-          <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600"/> Movers Requests</h2>
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
+          <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600" /> Movers Requests</h2>
           <button onClick={fetchMoverRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-          <input className="border rounded p-2 text-sm" placeholder="Search" value={moversFilters.q} onChange={e=>setMoversFilters(f=>({...f,q:e.target.value}))} />
-          <select className="border rounded p-2 text-sm" value={moversFilters.status} onChange={e=>setMoversFilters(f=>({...f,status:e.target.value}))}>
-            {['all','pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+          <input className="border rounded p-2 text-sm" placeholder="Search" value={moversFilters.q} onChange={e => setMoversFilters(f => ({ ...f, q: e.target.value }))} />
+          <select className="border rounded p-2 text-sm" value={moversFilters.status} onChange={e => setMoversFilters(f => ({ ...f, status: e.target.value }))}>
+            {['all', 'pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
           </select>
-          <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={()=>setMoversFilters({ q:'', status:'all' })}>Clear</button>
+          <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={() => setMoversFilters({ q: '', status: 'all' })}>Clear</button>
         </div>
         {loadingMovers ? (
           <div className="text-gray-600">Loading...</div>
@@ -205,14 +205,14 @@ export default function AdminServices() {
                 </tr>
               </thead>
               <tbody>
-                {movers.filter(n=>{
+                {movers.filter(n => {
                   const matchQ = moversFilters.q.trim() ? (
-                    (n.requesterName||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
-                    (n.requesterEmail||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
-                    (n.fromAddress||'').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
-                    (n.toAddress||'').toLowerCase().includes(moversFilters.q.toLowerCase())
+                    (n.requesterName || '').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (n.requesterEmail || '').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (n.fromAddress || '').toLowerCase().includes(moversFilters.q.toLowerCase()) ||
+                    (n.toAddress || '').toLowerCase().includes(moversFilters.q.toLowerCase())
                   ) : true;
-                  const matchStatus = moversFilters.status==='all' ? true : n.status===moversFilters.status;
+                  const matchStatus = moversFilters.status === 'all' ? true : n.status === moversFilters.status;
                   return matchQ && matchStatus;
                 }).map(n => (
                   <tr key={n._id} className="border-t">
@@ -228,12 +228,12 @@ export default function AdminServices() {
                     <td className="px-4 py-3">
                       <div className="flex items-center gap-2">
                         {n.requesterEmail && (
-                          <a href={`mailto:${n.requesterEmail}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope/> Email</a>
+                          <a href={`mailto:${n.requesterEmail}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope /> Email</a>
                         )}
-                        <select value={n.status} onChange={async(e)=>{const newStatus=e.target.value; try{setMovers(prev=>prev.map(it=>it._id===n._id?{...it,status:newStatus}:it)); await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`,{method:'PATCH',credentials:'include',headers:{'Content-Type':'application/json'},body:JSON.stringify({status:newStatus})});}catch(_){ setMovers(prev=>prev.map(it=>it._id===n._id?{...it,status:n.status}:it)); }} } className="text-xs border rounded px-2 py-1">
-                          {['pending','in_progress','completed','cancelled'].map(s=> <option key={s} value={s}>{s}</option>)}
+                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1">
+                          {['pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
-                        <button onClick={async()=>{ if(!confirm('Delete this movers request?')) return; try{ const r= await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method:'DELETE', credentials:'include' }); if(r.ok){ setMovers(prev=>prev.filter(x=>x._id!==n._id)); } } catch(_){} }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                        <button onClick={async () => { if (!confirm('Delete this movers request?')) return; try { const r = await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'DELETE', credentials: 'include' }); if (r.ok) { setMovers(prev => prev.filter(x => x._id !== n._id)); } } catch (_) { } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -246,9 +246,9 @@ export default function AdminServices() {
 
       {/* Move-In/Move-Out Checklists Section */}
       <div className="mt-10 border-t border-gray-200 pt-8">
-        <div className="flex items-center justify-between mb-6">
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <h2 className="text-xl font-bold flex items-center gap-2">
-            <FaHome className="text-green-600"/> Move-In/Move-Out Checklists
+            <FaHome className="text-green-600" /> Move-In/Move-Out Checklists
           </h2>
           <button onClick={fetchChecklists} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
         </div>
@@ -258,24 +258,24 @@ export default function AdminServices() {
 
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
-          <input 
-            className="border rounded p-2 text-sm" 
-            placeholder="Search by property, tenant, landlord, contract ID" 
-            value={checklistFilters.q} 
-            onChange={(e) => setChecklistFilters(f => ({ ...f, q: e.target.value }))} 
+          <input
+            className="border rounded p-2 text-sm"
+            placeholder="Search by property, tenant, landlord, contract ID"
+            value={checklistFilters.q}
+            onChange={(e) => setChecklistFilters(f => ({ ...f, q: e.target.value }))}
           />
-          <select 
-            className="border rounded p-2 text-sm" 
-            value={checklistFilters.type} 
+          <select
+            className="border rounded p-2 text-sm"
+            value={checklistFilters.type}
             onChange={(e) => setChecklistFilters(f => ({ ...f, type: e.target.value }))}
           >
             <option value="all">All Types</option>
             <option value="move_in">Move-In</option>
             <option value="move_out">Move-Out</option>
           </select>
-          <select 
-            className="border rounded p-2 text-sm" 
-            value={checklistFilters.status} 
+          <select
+            className="border rounded p-2 text-sm"
+            value={checklistFilters.status}
             onChange={(e) => setChecklistFilters(f => ({ ...f, status: e.target.value }))}
           >
             <option value="all">All Status</option>
@@ -284,8 +284,8 @@ export default function AdminServices() {
             <option value="approved">Approved</option>
             <option value="completed">Completed</option>
           </select>
-          <button 
-            className="px-3 py-2 bg-gray-100 rounded text-sm" 
+          <button
+            className="px-3 py-2 bg-gray-100 rounded text-sm"
             onClick={() => setChecklistFilters({ q: '', type: 'all', status: 'all' })}
           >
             Clear
@@ -338,7 +338,7 @@ export default function AdminServices() {
               <tbody>
                 {checklists
                   .filter(checklist => {
-                    const matchQ = checklistFilters.q.trim() 
+                    const matchQ = checklistFilters.q.trim()
                       ? (
                         (checklist.listingId?.name || '').toLowerCase().includes(checklistFilters.q.toLowerCase()) ||
                         (checklist.tenantId?.username || '').toLowerCase().includes(checklistFilters.q.toLowerCase()) ||
@@ -347,11 +347,11 @@ export default function AdminServices() {
                         (checklist.checklistId || '').toLowerCase().includes(checklistFilters.q.toLowerCase())
                       )
                       : true;
-                    const matchType = checklistFilters.type === 'all' 
-                      ? true 
+                    const matchType = checklistFilters.type === 'all'
+                      ? true
                       : checklist.type === checklistFilters.type;
-                    const matchStatus = checklistFilters.status === 'all' 
-                      ? true 
+                    const matchStatus = checklistFilters.status === 'all'
+                      ? true
                       : checklist.status === checklistFilters.status;
                     return matchQ && matchType && matchStatus;
                   })
@@ -361,11 +361,10 @@ export default function AdminServices() {
                         <span className="font-mono text-xs">{checklist.checklistId}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${
-                          checklist.type === 'move_in' 
-                            ? 'bg-blue-100 text-blue-800' 
+                        <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${checklist.type === 'move_in'
+                            ? 'bg-blue-100 text-blue-800'
                             : 'bg-orange-100 text-orange-800'
-                        }`}>
+                          }`}>
                           {checklist.type === 'move_in' ? <FaSignInAlt /> : <FaSignOutAlt />}
                           {checklist.type === 'move_in' ? 'Move-In' : 'Move-Out'}
                         </span>
@@ -386,13 +385,12 @@ export default function AdminServices() {
                         <span className="font-mono text-xs">{checklist.contractId?.contractId || 'N/A'}</span>
                       </td>
                       <td className="px-4 py-3">
-                        <span className={`inline-block px-2 py-1 rounded text-xs ${
-                          checklist.status === 'approved' || checklist.status === 'completed' 
-                            ? 'bg-green-100 text-green-800' 
-                            : checklist.status === 'pending_approval' 
-                            ? 'bg-yellow-100 text-yellow-800' 
-                            : 'bg-gray-100 text-gray-800'
-                        }`}>
+                        <span className={`inline-block px-2 py-1 rounded text-xs ${checklist.status === 'approved' || checklist.status === 'completed'
+                            ? 'bg-green-100 text-green-800'
+                            : checklist.status === 'pending_approval'
+                              ? 'bg-yellow-100 text-yellow-800'
+                              : 'bg-gray-100 text-gray-800'
+                          }`}>
                           {checklist.status}
                         </span>
                       </td>
@@ -449,27 +447,29 @@ export default function AdminServices() {
 
       {/* Checklist Modal */}
       {showChecklistModal && selectedChecklist && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden">
-            <ChecklistModal
-              contract={{
-                _id: selectedChecklist.contractId?._id || selectedChecklist.contractId,
-                contractId: selectedChecklist.contractId?.contractId,
-                listingId: selectedChecklist.listingId,
-                tenantId: selectedChecklist.tenantId,
-                landlordId: selectedChecklist.landlordId,
-                lockedRentAmount: selectedChecklist.contractId?.lockedRentAmount
-              }}
-              checklist={selectedChecklist}
-              checklistType={checklistType}
-              onClose={() => {
-                setShowChecklistModal(false);
-                setSelectedChecklist(null);
-              }}
-              onUpdate={() => {
-                fetchChecklists();
-              }}
-            />
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full relative">
+              <ChecklistModal
+                contract={{
+                  _id: selectedChecklist.contractId?._id || selectedChecklist.contractId,
+                  contractId: selectedChecklist.contractId?.contractId,
+                  listingId: selectedChecklist.listingId,
+                  tenantId: selectedChecklist.tenantId,
+                  landlordId: selectedChecklist.landlordId,
+                  lockedRentAmount: selectedChecklist.contractId?.lockedRentAmount
+                }}
+                checklist={selectedChecklist}
+                checklistType={checklistType}
+                onClose={() => {
+                  setShowChecklistModal(false);
+                  setSelectedChecklist(null);
+                }}
+                onUpdate={() => {
+                  fetchChecklists();
+                }}
+              />
+            </div>
           </div>
         </div>
       )}

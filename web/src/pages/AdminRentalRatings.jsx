@@ -108,7 +108,7 @@ export default function AdminRentalRatings() {
     if (!rating || rating === 0) return <span className="text-gray-400">No rating</span>;
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-    
+
     return (
       <div className="flex items-center gap-1">
         {[...Array(5)].map((_, i) => (
@@ -138,7 +138,7 @@ export default function AdminRentalRatings() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 <FaStar className="text-yellow-600" />
@@ -209,8 +209,8 @@ export default function AdminRentalRatings() {
             <FaStar className="text-6xl text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No Ratings Found</h3>
             <p className="text-gray-500">
-              {searchQuery || roleFilter !== 'all' 
-                ? 'No ratings match your filters' 
+              {searchQuery || roleFilter !== 'all'
+                ? 'No ratings match your filters'
                 : 'No rental ratings have been submitted yet'}
             </p>
           </div>
@@ -308,17 +308,17 @@ export default function AdminRentalRatings() {
                       )}
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={() => handleViewRating(rating)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
                       >
                         <FaStar /> View Details
                       </button>
                       {contract?.listingId?._id && (
                         <button
                           onClick={() => navigate(`/admin/listing/${contract.listingId._id}`)}
-                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center gap-2"
+                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2"
                         >
                           <FaHome /> View Listing
                         </button>
@@ -333,9 +333,8 @@ export default function AdminRentalRatings() {
 
         {/* Rating Display Modal */}
         {showRatingDisplay && selectedRating && (
-          <div 
-            className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-            style={{ overflow: 'hidden' }}
+          <div
+            className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50"
             onClick={(e) => {
               if (e.target === e.currentTarget) {
                 setShowRatingDisplay(false);
@@ -343,35 +342,37 @@ export default function AdminRentalRatings() {
               }
             }}
           >
-            <div 
-              className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-              onClick={(e) => e.stopPropagation()}
-            >
-              <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
-                  <FaStar className="text-yellow-500" /> Rating Details
-                </h3>
-                <button
-                  onClick={() => {
-                    setShowRatingDisplay(false);
-                    setSelectedRating(null);
-                  }}
-                  className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-              <div className="p-6">
-                <RatingDisplay
-                  rating={selectedRating}
-                  contract={selectedRating.contractId}
-                  currentUser={currentUser}
-                  onUpdate={handleRatingUpdated}
-                  onClose={() => {
-                    setShowRatingDisplay(false);
-                    setSelectedRating(null);
-                  }}
-                />
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div
+                className="bg-white rounded-xl shadow-2xl max-w-4xl w-full relative"
+                onClick={(e) => e.stopPropagation()}
+              >
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
+                  <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                    <FaStar className="text-yellow-500" /> Rating Details
+                  </h3>
+                  <button
+                    onClick={() => {
+                      setShowRatingDisplay(false);
+                      setSelectedRating(null);
+                    }}
+                    className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                <div className="p-6">
+                  <RatingDisplay
+                    rating={selectedRating}
+                    contract={selectedRating.contractId}
+                    currentUser={currentUser}
+                    onUpdate={handleRatingUpdated}
+                    onClose={() => {
+                      setShowRatingDisplay(false);
+                      setSelectedRating(null);
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>

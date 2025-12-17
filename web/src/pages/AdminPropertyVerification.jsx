@@ -17,30 +17,31 @@ const VerificationStatusModal = ({ verification, listing, currentUser, onUpdate,
   }, []);
 
   return (
-    <div 
-      className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
-      style={{ overflow: 'hidden' }}
+    <div
+      className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50"
       onClick={(e) => {
         if (e.target === e.currentTarget) {
           onClose();
         }
       }}
     >
-      <div 
-        className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
-        onClick={(e) => e.stopPropagation()}
-      >
-        <div className="p-6">
-          <VerificationStatus
-            verification={verification}
-            listing={listing}
-            currentUser={currentUser}
-            onUpdate={onUpdate}
-            STATUS_COLORS={STATUS_COLORS}
-            STATUS_LABELS={STATUS_LABELS}
-            onClose={onClose}
-            isAdminView={true}
-          />
+      <div className="flex min-h-full items-center justify-center p-4">
+        <div
+          className="bg-white rounded-xl shadow-2xl max-w-4xl w-full relative"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="p-6">
+            <VerificationStatus
+              verification={verification}
+              listing={listing}
+              currentUser={currentUser}
+              onUpdate={onUpdate}
+              STATUS_COLORS={STATUS_COLORS}
+              STATUS_LABELS={STATUS_LABELS}
+              onClose={onClose}
+              isAdminView={true}
+            />
+          </div>
         </div>
       </div>
     </div>
@@ -169,7 +170,7 @@ export default function AdminPropertyVerification() {
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 <FaShieldAlt className="text-blue-600" />
@@ -217,8 +218,8 @@ export default function AdminPropertyVerification() {
             <FaShieldAlt className="text-6xl text-gray-300 mx-auto mb-4" />
             <h3 className="text-xl font-semibold text-gray-600 mb-2">No Verification Requests Found</h3>
             <p className="text-gray-500">
-              {searchQuery || statusFilter !== 'all' 
-                ? 'No verifications match your filters' 
+              {searchQuery || statusFilter !== 'all'
+                ? 'No verifications match your filters'
                 : 'No property verification requests have been submitted yet'}
             </p>
           </div>
@@ -265,17 +266,17 @@ export default function AdminPropertyVerification() {
                       </div>
                     </div>
 
-                    <div className="flex gap-2">
+                    <div className="flex flex-col sm:flex-row gap-2">
                       <button
                         onClick={() => handleViewVerification(verification)}
-                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2"
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2"
                       >
                         <FaShieldAlt /> Review
                       </button>
                       {verification.listingId?._id && (
                         <button
                           onClick={() => navigate(`/admin/listing/${verification.listingId._id}`)}
-                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center gap-2"
+                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2"
                         >
                           <FaHome /> View Listing
                         </button>

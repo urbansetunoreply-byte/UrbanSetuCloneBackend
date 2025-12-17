@@ -325,7 +325,7 @@ export default function AdminRentalLoans() {
     <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-6">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
               <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
                 <FaCreditCard className="text-blue-600" />
@@ -335,7 +335,7 @@ export default function AdminRentalLoans() {
             </div>
             <button
               onClick={() => fetchAllLoans()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors self-end md:self-auto"
             >
               <FaSync className={loading ? "animate-spin" : ""} />
               Refresh
@@ -557,158 +557,162 @@ export default function AdminRentalLoans() {
 
       {/* Loan Details Modal */}
       {showLoanDisplay && selectedLoan && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Loan Details</h2>
-              <button
-                onClick={() => {
-                  setShowLoanDisplay(false);
-                  setSelectedLoan(null);
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Loan Details</h2>
+                <button
+                  onClick={() => {
+                    setShowLoanDisplay(false);
+                    setSelectedLoan(null);
+                  }}
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                >
+                  ×
+                </button>
+              </div>
+              <LoanStatusDisplay
+                loan={selectedLoan}
+                currentUser={currentUser}
+                onUpdate={() => {
+                  fetchAllLoans();
+                  if (selectedLoan) {
+                    handleViewLoan({ _id: selectedLoan._id });
+                  }
                 }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
+                STATUS_COLORS={STATUS_COLORS}
+                STATUS_LABELS={STATUS_LABELS}
+                LOAN_TYPE_LABELS={LOAN_TYPE_LABELS}
+              />
             </div>
-            <LoanStatusDisplay
-              loan={selectedLoan}
-              currentUser={currentUser}
-              onUpdate={() => {
-                fetchAllLoans();
-                if (selectedLoan) {
-                  handleViewLoan({ _id: selectedLoan._id });
-                }
-              }}
-              STATUS_COLORS={STATUS_COLORS}
-              STATUS_LABELS={STATUS_LABELS}
-              LOAN_TYPE_LABELS={LOAN_TYPE_LABELS}
-            />
           </div>
         </div>
       )}
 
       {/* Approve Modal */}
       {showApproveModal && selectedLoan && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Approve Loan</h2>
-              <button
-                onClick={() => {
-                  setShowApproveModal(false);
-                  resetApproveFields();
-                }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
-                <p className="text-gray-600 font-mono">{selectedLoan.loanId}</p>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Eligibility Check</label>
-                <div className="space-y-2">
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={eligibilityCheck.passed}
-                      onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, passed: e.target.checked })}
-                      className="rounded"
-                    />
-                    <span>Eligibility Passed</span>
-                  </label>
-                  <input
-                    type="number"
-                    placeholder="Credit Score (300-900)"
-                    value={eligibilityCheck.creditScore || ''}
-                    onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, creditScore: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full px-3 py-2 border rounded-lg"
-                    min="300"
-                    max="900"
-                  />
-                  <input
-                    type="number"
-                    placeholder="Eligibility Score (0-100)"
-                    value={eligibilityCheck.eligibilityScore || ''}
-                    onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, eligibilityScore: e.target.value ? parseInt(e.target.value) : null })}
-                    className="w-full px-3 py-2 border rounded-lg"
-                    min="0"
-                    max="100"
-                  />
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={eligibilityCheck.incomeVerified}
-                      onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, incomeVerified: e.target.checked })}
-                      className="rounded"
-                    />
-                    <span>Income Verified</span>
-                  </label>
-                  <label className="flex items-center gap-2">
-                    <input
-                      type="checkbox"
-                      checked={eligibilityCheck.employmentVerified}
-                      onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, employmentVerified: e.target.checked })}
-                      className="rounded"
-                    />
-                    <span>Employment Verified</span>
-                  </label>
-                </div>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Disbursement Date (Optional)</label>
-                <input
-                  type="date"
-                  value={disbursementDate}
-                  onChange={(e) => setDisbursementDate(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                />
-                <p className="text-xs text-gray-500 mt-1">If provided, loan will be marked as disbursed immediately</p>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Admin Notes (Optional)</label>
-                <textarea
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="Add any notes for this approval..."
-                />
-              </div>
-
-              <div className="flex gap-3">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Approve Loan</h2>
                 <button
                   onClick={() => {
                     setShowApproveModal(false);
                     resetApproveFields();
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
                 >
-                  Cancel
+                  ×
                 </button>
-                <button
-                  onClick={handleApprove}
-                  disabled={actionLoading === 'approve'}
-                  className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {actionLoading === 'approve' ? (
-                    <>
-                      <FaSpinner className="animate-spin" /> Approving...
-                    </>
-                  ) : (
-                    <>
-                      <FaCheck /> Approve Loan
-                    </>
-                  )}
-                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
+                  <p className="text-gray-600 font-mono">{selectedLoan.loanId}</p>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Eligibility Check</label>
+                  <div className="space-y-2">
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={eligibilityCheck.passed}
+                        onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, passed: e.target.checked })}
+                        className="rounded"
+                      />
+                      <span>Eligibility Passed</span>
+                    </label>
+                    <input
+                      type="number"
+                      placeholder="Credit Score (300-900)"
+                      value={eligibilityCheck.creditScore || ''}
+                      onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, creditScore: e.target.value ? parseInt(e.target.value) : null })}
+                      className="w-full px-3 py-2 border rounded-lg"
+                      min="300"
+                      max="900"
+                    />
+                    <input
+                      type="number"
+                      placeholder="Eligibility Score (0-100)"
+                      value={eligibilityCheck.eligibilityScore || ''}
+                      onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, eligibilityScore: e.target.value ? parseInt(e.target.value) : null })}
+                      className="w-full px-3 py-2 border rounded-lg"
+                      min="0"
+                      max="100"
+                    />
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={eligibilityCheck.incomeVerified}
+                        onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, incomeVerified: e.target.checked })}
+                        className="rounded"
+                      />
+                      <span>Income Verified</span>
+                    </label>
+                    <label className="flex items-center gap-2">
+                      <input
+                        type="checkbox"
+                        checked={eligibilityCheck.employmentVerified}
+                        onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, employmentVerified: e.target.checked })}
+                        className="rounded"
+                      />
+                      <span>Employment Verified</span>
+                    </label>
+                  </div>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Disbursement Date (Optional)</label>
+                  <input
+                    type="date"
+                    value={disbursementDate}
+                    onChange={(e) => setDisbursementDate(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg"
+                  />
+                  <p className="text-xs text-gray-500 mt-1">If provided, loan will be marked as disbursed immediately</p>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Admin Notes (Optional)</label>
+                  <textarea
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Add any notes for this approval..."
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowApproveModal(false);
+                      resetApproveFields();
+                    }}
+                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleApprove}
+                    disabled={actionLoading === 'approve'}
+                    className="flex-1 px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {actionLoading === 'approve' ? (
+                      <>
+                        <FaSpinner className="animate-spin" /> Approving...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheck /> Approve Loan
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -717,75 +721,77 @@ export default function AdminRentalLoans() {
 
       {/* Reject Modal */}
       {showRejectModal && selectedLoan && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Reject Loan</h2>
-              <button
-                onClick={() => {
-                  setShowRejectModal(false);
-                  resetRejectFields();
-                }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
-                <p className="text-gray-600 font-mono">{selectedLoan.loanId}</p>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Rejection Reason *</label>
-                <textarea
-                  value={rejectionReason}
-                  onChange={(e) => setRejectionReason(e.target.value)}
-                  rows={4}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="Provide a reason for rejection..."
-                  required
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Admin Notes (Optional)</label>
-                <textarea
-                  value={adminNotes}
-                  onChange={(e) => setAdminNotes(e.target.value)}
-                  rows={3}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="Add any internal notes..."
-                />
-              </div>
-
-              <div className="flex gap-3">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Reject Loan</h2>
                 <button
                   onClick={() => {
                     setShowRejectModal(false);
                     resetRejectFields();
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
                 >
-                  Cancel
+                  ×
                 </button>
-                <button
-                  onClick={handleReject}
-                  disabled={actionLoading === 'reject' || !rejectionReason.trim()}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {actionLoading === 'reject' ? (
-                    <>
-                      <FaSpinner className="animate-spin" /> Rejecting...
-                    </>
-                  ) : (
-                    <>
-                      <FaBan /> Reject Loan
-                    </>
-                  )}
-                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
+                  <p className="text-gray-600 font-mono">{selectedLoan.loanId}</p>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Rejection Reason *</label>
+                  <textarea
+                    value={rejectionReason}
+                    onChange={(e) => setRejectionReason(e.target.value)}
+                    rows={4}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Provide a reason for rejection..."
+                    required
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Admin Notes (Optional)</label>
+                  <textarea
+                    value={adminNotes}
+                    onChange={(e) => setAdminNotes(e.target.value)}
+                    rows={3}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Add any internal notes..."
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowRejectModal(false);
+                      resetRejectFields();
+                    }}
+                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleReject}
+                    disabled={actionLoading === 'reject' || !rejectionReason.trim()}
+                    className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {actionLoading === 'reject' ? (
+                      <>
+                        <FaSpinner className="animate-spin" /> Rejecting...
+                      </>
+                    ) : (
+                      <>
+                        <FaBan /> Reject Loan
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -794,80 +800,82 @@ export default function AdminRentalLoans() {
 
       {/* Disburse Modal */}
       {showDisburseModal && selectedLoan && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 max-h-[90vh] overflow-y-auto">
-            <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Disburse Loan</h2>
-              <button
-                onClick={() => {
-                  setShowDisburseModal(false);
-                  resetDisburseFields();
-                }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
-              >
-                ×
-              </button>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
-                <p className="text-gray-600 font-mono">{selectedLoan.loanId}</p>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Approved Amount</label>
-                <p className="text-gray-600 font-semibold">{formatCurrency(selectedLoan.loanAmount)}</p>
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Disbursed Amount</label>
-                <input
-                  type="number"
-                  value={disbursedAmount}
-                  onChange={(e) => setDisbursedAmount(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  placeholder={`Default: ${formatCurrency(selectedLoan.loanAmount)}`}
-                  min="0"
-                />
-              </div>
-
-              <div>
-                <label className="block text-gray-700 font-semibold mb-2">Disbursement Reference (Optional)</label>
-                <input
-                  type="text"
-                  value={disbursementReference}
-                  onChange={(e) => setDisbursementReference(e.target.value)}
-                  className="w-full px-3 py-2 border rounded-lg"
-                  placeholder="Transaction reference number..."
-                />
-              </div>
-
-              <div className="flex gap-3">
+        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+          <div className="flex min-h-full items-center justify-center p-4">
+            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+              <div className="flex items-center justify-between mb-4">
+                <h2 className="text-2xl font-bold text-gray-800">Disburse Loan</h2>
                 <button
                   onClick={() => {
                     setShowDisburseModal(false);
                     resetDisburseFields();
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                  className="text-gray-400 hover:text-gray-600 text-2xl"
                 >
-                  Cancel
+                  ×
                 </button>
-                <button
-                  onClick={handleDisburse}
-                  disabled={actionLoading === 'disburse'}
-                  className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {actionLoading === 'disburse' ? (
-                    <>
-                      <FaSpinner className="animate-spin" /> Disbursing...
-                    </>
-                  ) : (
-                    <>
-                      <FaDownload /> Disburse Loan
-                    </>
-                  )}
-                </button>
+              </div>
+
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
+                  <p className="text-gray-600 font-mono">{selectedLoan.loanId}</p>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Approved Amount</label>
+                  <p className="text-gray-600 font-semibold">{formatCurrency(selectedLoan.loanAmount)}</p>
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Disbursed Amount</label>
+                  <input
+                    type="number"
+                    value={disbursedAmount}
+                    onChange={(e) => setDisbursedAmount(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder={`Default: ${formatCurrency(selectedLoan.loanAmount)}`}
+                    min="0"
+                  />
+                </div>
+
+                <div>
+                  <label className="block text-gray-700 font-semibold mb-2">Disbursement Reference (Optional)</label>
+                  <input
+                    type="text"
+                    value={disbursementReference}
+                    onChange={(e) => setDisbursementReference(e.target.value)}
+                    className="w-full px-3 py-2 border rounded-lg"
+                    placeholder="Transaction reference number..."
+                  />
+                </div>
+
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => {
+                      setShowDisburseModal(false);
+                      resetDisburseFields();
+                    }}
+                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    onClick={handleDisburse}
+                    disabled={actionLoading === 'disburse'}
+                    className="flex-1 px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {actionLoading === 'disburse' ? (
+                      <>
+                        <FaSpinner className="animate-spin" /> Disbursing...
+                      </>
+                    ) : (
+                      <>
+                        <FaDownload /> Disburse Loan
+                      </>
+                    )}
+                  </button>
+                </div>
               </div>
             </div>
           </div>

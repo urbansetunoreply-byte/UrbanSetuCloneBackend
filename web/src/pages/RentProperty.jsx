@@ -1046,7 +1046,7 @@ export default function RentProperty() {
                     className="mt-1 mr-3"
                   />
                   <div className="flex-1">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                       <span className="font-semibold text-lg">Standard Deposit (Default)</span>
                       <span className="text-sm font-semibold text-blue-600">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
                     </div>
@@ -1075,7 +1075,7 @@ export default function RentProperty() {
                     className="mt-1 mr-3"
                   />
                   <div className="flex-1">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                       <span className="font-semibold text-lg">Low Deposit Plan</span>
                       <span className="text-sm font-semibold text-blue-600">₹{depositDetails.depositAmount.toLocaleString('en-IN')} + ₹{depositDetails.extraMonthlyCharge}/month</span>
                     </div>
@@ -1106,7 +1106,7 @@ export default function RentProperty() {
                     className="mt-1 mr-3"
                   />
                   <div className="flex-1">
-                    <div className="flex items-center justify-between">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
                       <span className="font-semibold text-lg">Zero Deposit Plan</span>
                       <span className="text-sm font-semibold text-blue-600">₹0 + ₹{depositDetails.insuranceFee}/month</span>
                     </div>
@@ -1217,7 +1217,7 @@ export default function RentProperty() {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col sm:flex-row gap-4">
               <button
                 onClick={handleNext}
                 disabled={!!contract || loading || !formData.moveInDate || formData.moveInDate.trim() === ''}
@@ -1251,14 +1251,14 @@ export default function RentProperty() {
             />
 
             <div className="bg-white rounded-xl shadow-lg p-6">
-              <div className="flex gap-4">
+              <div className="flex flex-col-reverse sm:flex-row gap-4">
                 <button
                   onClick={() => {
                     if (step > 1) {
                       setStep(step - 1);
                     }
                   }}
-                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
                 >
                   <FaChevronLeft /> Back
                 </button>
@@ -1372,14 +1372,14 @@ export default function RentProperty() {
               </div>
             )}
 
-            <div className="flex gap-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-4">
               <button
                 onClick={() => {
                   if (step > 1) {
                     setStep(step - 1);
                   }
                 }}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
               >
                 <FaChevronLeft /> Back
               </button>
@@ -1404,74 +1404,78 @@ export default function RentProperty() {
 
         {/* Signature Modal (if needed for separate modal flow) */}
         {showSignatureModal && signingAs && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-2xl font-bold text-gray-800 mb-4">
-                {signingAs === 'tenant' ? 'Sign as Tenant' : 'Sign as Landlord'}
-              </h3>
-              <DigitalSignature
-                title={`${signingAs === 'tenant' ? 'Tenant' : 'Landlord'} Signature`}
-                userName={signingAs === 'tenant' ? (currentUser.username || currentUser.email) : 'Property Owner'}
-                onSign={(signatureData) => handleSignatureConfirm(signatureData)}
-                onCancel={() => {
-                  setShowSignatureModal(false);
-                  setSigningAs(null);
-                }}
-                disabled={loading}
-              />
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 relative">
+                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+                  {signingAs === 'tenant' ? 'Sign as Tenant' : 'Sign as Landlord'}
+                </h3>
+                <DigitalSignature
+                  title={`${signingAs === 'tenant' ? 'Tenant' : 'Landlord'} Signature`}
+                  userName={signingAs === 'tenant' ? (currentUser.username || currentUser.email) : 'Property Owner'}
+                  onSign={(signatureData) => handleSignatureConfirm(signatureData)}
+                  onCancel={() => {
+                    setShowSignatureModal(false);
+                    setSigningAs(null);
+                  }}
+                  disabled={loading}
+                />
+              </div>
             </div>
           </div>
         )}
 
         {/* Confirmation Modal for Step 1 */}
         {showInitConfirmation && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-fade-in">
-            <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform scale-100 animate-scale-in border border-gray-100">
-              <div className="flex flex-col items-center text-center mb-6">
-                <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
-                  <FaFileContract className="text-3xl text-blue-600" />
+          <div className="fixed inset-0 z-[60] overflow-y-auto bg-black bg-opacity-60 backdrop-blur-sm animate-fade-in">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-6 transform scale-100 animate-scale-in border border-gray-100">
+                <div className="flex flex-col items-center text-center mb-6">
+                  <div className="w-16 h-16 bg-blue-50 rounded-full flex items-center justify-center mb-4">
+                    <FaFileContract className="text-3xl text-blue-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">Confirm Application Details</h3>
+                  <p className="text-gray-600 leading-relaxed text-sm">
+                    Please review your details carefully. Once you proceed to contract generation, the <span className="font-semibold text-gray-800">rent-lock plan</span>, <span className="font-semibold text-gray-800">deposit plan</span>, and <span className="font-semibold text-gray-800">move-in date</span> will be locked and cannot be edited.
+                  </p>
                 </div>
-                <h3 className="text-2xl font-bold text-gray-800 mb-2">Confirm Application Details</h3>
-                <p className="text-gray-600 leading-relaxed text-sm">
-                  Please review your details carefully. Once you proceed to contract generation, the <span className="font-semibold text-gray-800">rent-lock plan</span>, <span className="font-semibold text-gray-800">deposit plan</span>, and <span className="font-semibold text-gray-800">move-in date</span> will be locked and cannot be edited.
-                </p>
-              </div>
 
-              <div className="bg-gray-50 rounded-lg p-4 mb-6 text-sm border border-gray-100">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-500">Plan:</span>
-                  <span className="font-semibold text-gray-700">
-                    {formData.rentLockPlan === '1_year' ? '1 Year Lock' :
-                      formData.rentLockPlan === '3_year' ? '3 Year Lock' :
-                        formData.rentLockPlan === '5_year' ? '5 Year Lock' :
-                          formData.rentLockPlan === 'custom' ? `Custom (${formData.customLockDuration} months)` : 'Standard Plan'}
-                  </span>
+                <div className="bg-gray-50 rounded-lg p-4 mb-6 text-sm border border-gray-100">
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-500">Plan:</span>
+                    <span className="font-semibold text-gray-700">
+                      {formData.rentLockPlan === '1_year' ? '1 Year Lock' :
+                        formData.rentLockPlan === '3_year' ? '3 Year Lock' :
+                          formData.rentLockPlan === '5_year' ? '5 Year Lock' :
+                            formData.rentLockPlan === 'custom' ? `Custom (${formData.customLockDuration} months)` : 'Standard Plan'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center mb-2">
+                    <span className="text-gray-500">Move-in:</span>
+                    <span className="font-semibold text-gray-700">
+                      {formData.moveInDate ? new Date(formData.moveInDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not selected'}
+                    </span>
+                  </div>
+                  <div className="flex justify-between items-center">
+                    <span className="text-gray-500">Deposit:</span>
+                    <span className="font-semibold text-gray-700 capitalize">{formData.depositPlan} Plan</span>
+                  </div>
                 </div>
-                <div className="flex justify-between items-center mb-2">
-                  <span className="text-gray-500">Move-in:</span>
-                  <span className="font-semibold text-gray-700">
-                    {formData.moveInDate ? new Date(formData.moveInDate).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' }) : 'Not selected'}
-                  </span>
-                </div>
-                <div className="flex justify-between items-center">
-                  <span className="text-gray-500">Deposit:</span>
-                  <span className="font-semibold text-gray-700 capitalize">{formData.depositPlan} Plan</span>
-                </div>
-              </div>
 
-              <div className="flex gap-3">
-                <button
-                  onClick={() => setShowInitConfirmation(false)}
-                  className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
-                >
-                  Edit Details
-                </button>
-                <button
-                  onClick={handleContractGeneration}
-                  className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
-                >
-                  Confirm & Proceed
-                </button>
+                <div className="flex gap-3">
+                  <button
+                    onClick={() => setShowInitConfirmation(false)}
+                    className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-semibold hover:bg-gray-200 transition-colors"
+                  >
+                    Edit Details
+                  </button>
+                  <button
+                    onClick={handleContractGeneration}
+                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+                  >
+                    Confirm & Proceed
+                  </button>
+                </div>
               </div>
             </div>
           </div>
@@ -1556,14 +1560,14 @@ export default function RentProperty() {
               </div>
             </div>
 
-            <div className="flex gap-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-4">
               <button
                 onClick={() => {
                   if (step > 1) {
                     setStep(step - 1);
                   }
                 }}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
               >
                 <FaChevronRight className="rotate-180" /> Back
               </button>
@@ -1628,14 +1632,14 @@ export default function RentProperty() {
                 </ul>
               </div>
             </div>
-            <div className="flex gap-4">
+            <div className="flex flex-col-reverse sm:flex-row gap-4">
               <button
                 onClick={() => {
                   if (step > 1) {
                     setStep(step - 1);
                   }
                 }}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
               >
                 <FaChevronLeft /> Back
               </button>
@@ -1653,7 +1657,7 @@ export default function RentProperty() {
                   toast.success("Booking complete! You can complete the checklist later from your appointments.");
                   navigate("/user/my-appointments");
                 }}
-                className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50"
+                className="px-6 py-3 border border-gray-300 rounded-lg hover:bg-gray-50 flex items-center justify-center"
               >
                 Skip for Now
               </button>
@@ -1661,7 +1665,7 @@ export default function RentProperty() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 }
 
