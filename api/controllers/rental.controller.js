@@ -934,6 +934,59 @@ export const getWallet = async (req, res, next) => {
       return res.status(404).json({ message: "Wallet not found for this contract." });
     }
 
+    // CLEANUP: Check for stuck 'processing' payments
+    let walletUpdated = false;
+    const now = new Date();
+    // Import Payment model to check status
+    const Payment = (await import('../models/payment.model.js')).default;
+
+    for (const entry of wallet.paymentSchedule) {
+      if (entry.status === 'processing' && entry.paymentId) {
+        // If it's a populated object, use ._id, otherwise use it directly
+        const paymentId = entry.paymentId._id || entry.paymentId;
+
+        // Find the payment record
+        const payment = await Payment.findById(paymentId);
+
+        // Criteria to revert:
+        // 1. Payment record doesn't exist
+        // 2. Payment is 'failed' or 'cancelled'
+        // 3. Payment is 'pending' but older than 15 minutes (abandoned checkout)
+        let shouldRevert = false;
+
+        if (!payment) {
+          shouldRevert = true;
+        } else if (payment.status === 'failed' || payment.status === 'cancelled') {
+          shouldRevert = true;
+        } else if (payment.status === 'pending') {
+          const createdAt = new Date(payment.createdAt);
+          const diffMinutes = (now - createdAt) / (1000 * 60);
+          if (diffMinutes > 15) {
+            shouldRevert = true;
+          }
+        }
+
+        if (shouldRevert) {
+          const dueDate = new Date(entry.dueDate);
+          // Restore to overdue if dueDate is past, otherwise pending
+          entry.status = dueDate < now ? 'overdue' : 'pending';
+          // Keep paymentId for reference or clear it? Better to clear to allow fresh retry.
+          // However, if we clear it, we lose history of the attempt. 
+          // But since it's staying in the schedule array, clearing the pointer essentially resets the slot.
+          entry.paymentId = null;
+          walletUpdated = true;
+          console.log(`♻️ Restored stuck processing payment for ${entry.month}/${entry.year} to ${entry.status}`);
+        }
+      }
+    }
+
+    if (walletUpdated) {
+      wallet.markModified('paymentSchedule');
+      await wallet.save();
+      // Re-populate if we saved, to ensure clean response
+      // Optional: could just return the modified wallet object as is
+    }
+
     res.json({
       success: true,
       wallet
