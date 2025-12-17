@@ -447,16 +447,16 @@ export default function RentalLoans() {
                     <FaTimes />
                   </button>
                 </div>
+                <LoanApplicationForm
+                  contract={selectedContract}
+                  currentUser={currentUser}
+                  onSuccess={handleLoanSubmitted}
+                  onCancel={() => {
+                    setShowLoanForm(false);
+                    setSelectedContract(null);
+                  }}
+                />
               </div>
-              <LoanApplicationForm
-                contract={selectedContract}
-                currentUser={currentUser}
-                onSuccess={handleLoanSubmitted}
-                onCancel={() => {
-                  setShowLoanForm(false);
-                  setSelectedContract(null);
-                }}
-              />
             </div>
           </div>
         )}
@@ -491,7 +491,7 @@ export default function RentalLoans() {
           </div>
         )}
       </div>
-    </div>
+    </div >
   );
 }
 
