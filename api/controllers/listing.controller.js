@@ -660,10 +660,22 @@ export const getListings = async (req, res, next) => {
     // Check if user is authenticated and is admin
     const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'rootadmin' || req.user.isDefaultAdmin);
 
+    // DEBUG: Log user info and admin status
+    console.log('🔍 getListings - User Info:', {
+      hasUser: !!req.user,
+      userId: req.user?.id,
+      role: req.user?.role,
+      isDefaultAdmin: req.user?.isDefaultAdmin,
+      isAdmin: isAdmin
+    });
+
     if (!isAdmin) {
       // For public/non-admin users: only show verified and public properties
+      console.log('❌ Non-admin user - Applying verification filters');
       query.isVerified = true;
       query.visibility = 'public';
+    } else {
+      console.log('✅ Admin user - Bypassing all filters');
     }
     // Admins can see all properties (no filter applied)
 
