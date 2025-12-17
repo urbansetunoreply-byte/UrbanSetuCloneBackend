@@ -175,9 +175,23 @@ export default function PayMonthlyRent() {
       return;
     }
 
-    // Refetch wallet to get the latest status before initiating payment
+    // Check if payment is already completed locally first
+    if (selectedPayment.status === 'completed' || selectedPayment.status === 'paid') {
+      toast.success("Rent for this month is already paid.");
+      setCreatedPayment({
+        amount: selectedPayment.amount,
+        rentMonth: selectedPayment.month,
+        rentYear: selectedPayment.year,
+        status: 'completed',
+        paymentId: selectedPayment.paymentId
+      });
+      setStep(5);
+      return;
+    }
+
+    // Refetch wallet silently to get the latest status before initiating payment
     try {
-      setLoading(true);
+      // Don't set global loading yet to avoid UI flicker if already paid
       const walletRes = await fetch(`${API_BASE_URL}/api/rental/wallet/${contract._id}`, {
         credentials: 'include'
       });
@@ -207,32 +221,16 @@ export default function PayMonthlyRent() {
                 paymentId: freshPayment.paymentId
               });
               setStep(5);
-              setLoading(false);
-              return;
+              return; // Stop execution here
             }
           }
         }
       }
     } catch (err) {
       console.error("Error refreshing wallet status:", err);
-      // Continue with existing state if refresh fails, but warn? 
-      // Or maybe just proceed, as existing check below handles local state
     }
 
-    // Check if payment is already completed (double check)
-    if (selectedPayment.status === 'completed' || selectedPayment.status === 'paid') {
-      toast.success("Rent for this month is already paid.");
-      setCreatedPayment({
-        amount: selectedPayment.amount,
-        rentMonth: selectedPayment.month,
-        rentYear: selectedPayment.year,
-        status: 'completed',
-        paymentId: selectedPayment.paymentId
-      });
-      setStep(5);
-      return;
-    }
-
+    // Now proceed to create payment intent if not paid
     try {
       setLoading(true);
 

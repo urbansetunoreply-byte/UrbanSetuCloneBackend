@@ -10409,7 +10409,7 @@ export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Payment ID:</strong> ${paymentId}</p>
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Transaction Date:</strong> ${txDate}</p>
                 ${paymentMethod ? `<p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Payment Mode:</strong> ${paymentMethod}</p>` : ''}
-                ${dueDate ? `<p style="color: #4b5563; margin: 0;"><strong>Scheduled Due Date:</strong> ${new Date(dueDate).toLocaleDateString()}</p>` : ''}
+                ${dueDate ? `<p style="color: #4b5563; margin: 0;"><strong>Scheduled Due Date:</strong> ${new Date(dueDate).toLocaleDateString('en-GB')}</p>` : ''}
               </div>
               <p style="color: #065f46; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
                 Your rent payment has been received and is being held in escrow for 3 days. It will be automatically released to your landlord after this period. A receipt is attached to this email.

@@ -1154,14 +1154,31 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
                     <h3 className="font-semibold text-gray-800 mb-2">{appointment.propertyName}</h3>
                     <p className="text-sm text-gray-600 mb-2">{appointment.propertyDescription}</p>
-                    <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Appointment Date:</span>
-                      <span className="text-sm font-medium">{new Date(appointment.date).toLocaleDateString('en-GB')}</span>
+                    <div className="flex items-center justify-between mb-1">
+                      <span className="text-sm text-gray-500">
+                        Payment Type:
+                      </span>
+                      <span className="text-sm font-medium text-blue-600">
+                        {appointment.paymentType === 'monthly_rent' ? 'Monthly Rent' : 'Appointment Booking'}
+                      </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">Time:</span>
-                      <span className="text-sm font-medium">{appointment.time}</span>
+                      <span className="text-sm text-gray-500">
+                        {appointment.paymentType === 'monthly_rent' ? 'Rent Period:' : 'Appointment Date:'}
+                      </span>
+                      <span className="text-sm font-medium">
+                        {appointment.paymentType === 'monthly_rent' && monthlyRentContext
+                          ? `${new Date(0, monthlyRentContext.month - 1).toLocaleString('default', { month: 'long' })} ${monthlyRentContext.year}`
+                          : new Date(appointment.date).toLocaleDateString('en-GB')
+                        }
+                      </span>
                     </div>
+                    {appointment.paymentType !== 'monthly_rent' && (
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm text-gray-500">Time:</span>
+                        <span className="text-sm font-medium">{appointment.time}</span>
+                      </div>
+                    )}
                     <div className="flex items-center justify-between mt-2">
                       <span className="text-sm text-gray-500">Payment Initiated:</span>
                       <span className="text-sm font-medium">
