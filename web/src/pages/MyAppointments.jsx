@@ -136,8 +136,15 @@ export default function MyAppointments() {
   const [callHistoryAppointmentId, setCallHistoryAppointmentId] = useState(null);
 
   // Sale Confirmation Modals State
-  const [isTokenPaidModalOpen, setIsTokenPaidModalOpen] = useState(false);
-  const [isSaleCompleteModalOpen, setIsSaleCompleteModalOpen] = useState(false);
+  // Sale Confirmation Modals State - Renamed to fix RefError
+  const [tokenReceiptVisible, setTokenReceiptVisible] = useState(false);
+  const [saleCompleteVisible, setSaleCompleteVisible] = useState(false);
+
+  // Debug log to verify scope
+  useEffect(() => {
+    console.log('MyAppointments: Modal state initialized', { tokenReceiptVisible, saleCompleteVisible });
+  }, [tokenReceiptVisible, saleCompleteVisible]);
+
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [apptIdForAction, setApptIdForAction] = useState(null);
 
@@ -751,7 +758,7 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleTokenPaid = useCallback((id) => {
     setApptIdForAction(id);
-    setIsTokenPaidModalOpen(true);
+    setTokenReceiptVisible(true);
   }, []);
 
   // Actual API call for Token Paid
@@ -760,7 +767,7 @@ export default function MyAppointments() {
     if (!id) return;
 
     setActionLoading(id + 'token_paid');
-    setIsTokenPaidModalOpen(false);
+    setTokenReceiptVisible(false);
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/token-paid`,
@@ -794,7 +801,7 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleSaleComplete = useCallback((id) => {
     setApptIdForAction(id);
-    setIsSaleCompleteModalOpen(true);
+    setSaleCompleteVisible(true);
   }, []);
 
   // Actual API call for Sale Complete
@@ -803,7 +810,7 @@ export default function MyAppointments() {
     if (!id) return;
 
     setActionLoading(id + 'sold');
-    setIsSaleCompleteModalOpen(false);
+    setSaleCompleteVisible(false);
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/complete`,
@@ -13310,15 +13317,15 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* <GeminiAIWrapper /> */}
       {/* Token Received Confirmation Modal */}
       <TokenPaidModal
-        isOpen={isTokenPaidModalOpen}
-        onClose={() => { setIsTokenPaidModalOpen(false); setApptIdForAction(null); }}
+        isOpen={tokenReceiptVisible}
+        onClose={() => { setTokenReceiptVisible(false); setApptIdForAction(null); }}
         onConfirm={confirmTokenPaid}
       />
 
       {/* Sale Complete Confirmation Modal */}
       <SaleCompleteModal
-        isOpen={isSaleCompleteModalOpen}
-        onClose={() => { setIsSaleCompleteModalOpen(false); setApptIdForAction(null); }}
+        isOpen={saleCompleteVisible}
+        onClose={() => { setSaleCompleteVisible(false); setApptIdForAction(null); }}
         onConfirm={confirmSaleComplete}
       />
 
