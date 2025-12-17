@@ -11,17 +11,16 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
     if (!rating || rating === 0) return null;
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-    
+
     return (
       <div className="flex items-center gap-1">
         {[...Array(5)].map((_, i) => (
           <FaStar
             key={i}
-            className={`text-lg ${
-              i < fullStars ? 'text-yellow-400 fill-current' : 
-              i === fullStars && hasHalfStar ? 'text-yellow-400 fill-current opacity-50' : 
-              'text-gray-300'
-            }`}
+            className={`text-lg ${i < fullStars ? 'text-yellow-400 fill-current' :
+                i === fullStars && hasHalfStar ? 'text-yellow-400 fill-current opacity-50' :
+                  'text-gray-300'
+              }`}
           />
         ))}
         <span className="ml-2 text-sm font-semibold text-gray-700">{rating.toFixed(1)}/5</span>
@@ -49,7 +48,7 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
         {ratingItems.map((item) => {
           const value = ratingData[item.key];
           if (!value || value === 0) return null;
-          
+
           return (
             <div key={item.key} className="flex items-center justify-between text-sm">
               <span className="text-gray-600">{item.label}:</span>
@@ -57,9 +56,8 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
                 {[...Array(5)].map((_, i) => (
                   <FaStar
                     key={i}
-                    className={`text-sm ${
-                      i < value ? 'text-yellow-400 fill-current' : 'text-gray-300'
-                    }`}
+                    className={`text-sm ${i < value ? 'text-yellow-400 fill-current' : 'text-gray-300'
+                      }`}
                   />
                 ))}
                 <span className="ml-1 text-xs text-gray-600">({value}/5)</span>
@@ -88,7 +86,7 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
         </h3>
         {tenantRating?.overallRating ? (
           <div className="border rounded-lg p-4 bg-blue-50 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <UserAvatar user={rating.tenantId} size="w-8 h-8" textSize="text-sm" />
@@ -129,7 +127,7 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
         </h3>
         {landlordRating?.overallRating ? (
           <div className="border rounded-lg p-4 bg-green-50 space-y-3">
-            <div className="flex items-center justify-between">
+            <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <UserAvatar user={rating.landlordId} size="w-8 h-8" textSize="text-sm" />

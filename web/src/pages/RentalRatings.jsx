@@ -49,11 +49,11 @@ export default function RentalRatings() {
 
     if (contractIdParam && roleParam) {
       // First try to find contract in loaded contracts
-      const contract = contracts.find(c => 
+      const contract = contracts.find(c =>
         (c._id === contractIdParam) || (c.contractId === contractIdParam) ||
         (c._id?.toString() === contractIdParam) || (c.contractId?.toString() === contractIdParam)
       );
-      
+
       if (contract) {
         setSelectedContract(contract);
         setRatingRole(roleParam);
@@ -71,7 +71,7 @@ export default function RentalRatings() {
             fetchContractById(contractIdParam, roleParam);
           }
         }, 1000);
-        
+
         return () => clearTimeout(timer);
       }
     }
@@ -84,9 +84,9 @@ export default function RentalRatings() {
       let res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
         credentials: 'include'
       });
-      
+
       let data = await res.json();
-      
+
       // If not found, try with contractId field instead
       if (!res.ok || !data.success || !data.contract) {
         // The endpoint should handle both _id and contractId, but let's also try the contractId field format
@@ -94,13 +94,13 @@ export default function RentalRatings() {
           credentials: 'include'
         });
         const contractsData = await contracts.json();
-        
+
         if (contractsData.success && contractsData.contracts) {
-          const foundContract = contractsData.contracts.find(c => 
+          const foundContract = contractsData.contracts.find(c =>
             (c._id === contractId) || (c.contractId === contractId) ||
             (c._id?.toString() === contractId) || (c.contractId?.toString() === contractId)
           );
-          
+
           if (foundContract) {
             setSelectedContract(foundContract);
             setRatingRole(role);
@@ -114,7 +114,7 @@ export default function RentalRatings() {
         setShowRatingForm(true);
         return;
       }
-      
+
       toast.error('Contract not found');
       // Clean URL if contract not found
       navigate('/user/rental-ratings', { replace: true });
@@ -224,9 +224,9 @@ export default function RentalRatings() {
         return false;
       }
     }
-    
+
     // Filter by search
-    const matchesSearch = filters.search === '' || 
+    const matchesSearch = filters.search === '' ||
       rating.contractId?.contractId?.toLowerCase().includes(filters.search.toLowerCase()) ||
       rating.contractId?.listingId?.name?.toLowerCase().includes(filters.search.toLowerCase()) ||
       rating.contractId?.listingId?.address?.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -246,7 +246,7 @@ export default function RentalRatings() {
   const renderStarRating = (rating) => {
     const fullStars = Math.floor(rating);
     const hasHalfStar = rating % 1 >= 0.5;
-    
+
     return (
       <div className="flex items-center gap-1">
         {[...Array(5)].map((_, i) => (
@@ -320,32 +320,32 @@ export default function RentalRatings() {
               {contracts
                 .filter(contract => {
                   // Find if rating exists
-                  const existingRating = ratings.find(r => 
-                    r.contractId?._id?.toString() === contract._id || 
+                  const existingRating = ratings.find(r =>
+                    r.contractId?._id?.toString() === contract._id ||
                     r.contractId?.toString() === contract._id
                   );
-                  
+
                   if (!existingRating) return true;
-                  
+
                   // Check if user can still rate
                   const isTenant = contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id;
                   const isLandlord = contract.landlordId?._id === currentUser._id || contract.landlordId === currentUser._id;
-                  
+
                   if (isTenant && !existingRating.tenantToLandlordRating?.overallRating) return true;
                   if (isLandlord && !existingRating.landlordToTenantRating?.overallRating) return true;
-                  
+
                   return false;
                 })
                 .slice(0, 5)
                 .map(contract => {
-                  const existingRating = ratings.find(r => 
-                    r.contractId?._id?.toString() === contract._id || 
+                  const existingRating = ratings.find(r =>
+                    r.contractId?._id?.toString() === contract._id ||
                     r.contractId?.toString() === contract._id
                   );
-                  
+
                   const isTenant = contract.tenantId?._id === currentUser._id || contract.tenantId === currentUser._id;
                   const isLandlord = contract.landlordId?._id === currentUser._id || contract.landlordId === currentUser._id;
-                  
+
                   const canRateAsTenant = isTenant && !existingRating?.tenantToLandlordRating?.overallRating;
                   const canRateAsLandlord = isLandlord && !existingRating?.landlordToTenantRating?.overallRating;
 
@@ -533,39 +533,41 @@ export default function RentalRatings() {
 
         {/* Rating Form Modal */}
         {showRatingForm && selectedContract && ratingRole && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 my-4 max-h-[85vh] overflow-y-auto">
-              <div className="flex items-center justify-between mb-4 sticky top-0 bg-white pb-2 border-b">
-                <h2 className="text-xl font-bold text-gray-800">
-                  {ratingRole === 'tenant' ? 'Rate Landlord' : 'Rate Tenant'}
-                </h2>
-                <button
-                  onClick={() => {
-                    setShowRatingForm(false);
-                    setSelectedContract(null);
-                    setRatingRole(null);
-                    // Clean URL when modal is closed
-                    navigate('/user/rental-ratings', { replace: true });
-                  }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  <FaTimes />
-                </button>
-              </div>
-              <div className="overflow-y-auto max-h-[calc(85vh-100px)]">
-                <RatingForm
-                  contract={selectedContract}
-                  role={ratingRole}
-                  currentUser={currentUser}
-                  onSuccess={handleRatingSubmitted}
-                  onCancel={() => {
-                    setShowRatingForm(false);
-                    setSelectedContract(null);
-                    setRatingRole(null);
-                    // Clean URL when modal is cancelled
-                    navigate('/user/rental-ratings', { replace: true });
-                  }}
-                />
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 relative">
+                <div className="flex items-center justify-between mb-4 border-b pb-2">
+                  <h2 className="text-xl font-bold text-gray-800">
+                    {ratingRole === 'tenant' ? 'Rate Landlord' : 'Rate Tenant'}
+                  </h2>
+                  <button
+                    onClick={() => {
+                      setShowRatingForm(false);
+                      setSelectedContract(null);
+                      setRatingRole(null);
+                      // Clean URL when modal is closed
+                      navigate('/user/rental-ratings', { replace: true });
+                    }}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                <div className="overflow-y-auto max-h-[calc(85vh-100px)]">
+                  <RatingForm
+                    contract={selectedContract}
+                    role={ratingRole}
+                    currentUser={currentUser}
+                    onSuccess={handleRatingSubmitted}
+                    onCancel={() => {
+                      setShowRatingForm(false);
+                      setSelectedContract(null);
+                      setRatingRole(null);
+                      // Clean URL when modal is cancelled
+                      navigate('/user/rental-ratings', { replace: true });
+                    }}
+                  />
+                </div>
               </div>
             </div>
           </div>
@@ -573,27 +575,29 @@ export default function RentalRatings() {
 
         {/* Rating Display Modal */}
         {showRatingDisplay && selectedRating && selectedContract && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4 overflow-y-auto">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Rating Details</h2>
-                <button
-                  onClick={() => {
-                    setShowRatingDisplay(false);
-                    setSelectedRating(null);
-                    setSelectedContract(null);
-                  }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
-                >
-                  <FaTimes />
-                </button>
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+                <div className="flex items-center justify-between mb-4 border-b pb-2">
+                  <h2 className="text-2xl font-bold text-gray-800">Rating Details</h2>
+                  <button
+                    onClick={() => {
+                      setShowRatingDisplay(false);
+                      setSelectedRating(null);
+                      setSelectedContract(null);
+                    }}
+                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                  >
+                    <FaTimes />
+                  </button>
+                </div>
+                <RatingDisplay
+                  rating={selectedRating}
+                  contract={selectedContract}
+                  currentUser={currentUser}
+                  onUpdate={handleRatingUpdated}
+                />
               </div>
-              <RatingDisplay
-                rating={selectedRating}
-                contract={selectedContract}
-                currentUser={currentUser}
-                onUpdate={handleRatingUpdated}
-              />
             </div>
           </div>
         )}
@@ -601,4 +605,5 @@ export default function RentalRatings() {
     </div>
   );
 }
+
 
