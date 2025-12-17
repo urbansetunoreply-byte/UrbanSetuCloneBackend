@@ -25,8 +25,7 @@ import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import { getThemeColors, getDarkModeContainerClass, getDarkModeInputClass, getDarkModeTextClass, getDarkModeSecondaryTextClass, getDarkModeBorderClass, getDarkModeHoverClass } from '../utils/chatTheme';
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
-import TokenPaidModal from '../components/TokenPaidModal';
-import SaleCompleteModal from '../components/SaleCompleteModal';
+import SaleModals from '../components/SaleModals';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -13310,18 +13309,12 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
 
       {/* <GeminiAIWrapper /> */}
-      {/* Token Received Confirmation Modal */}
-      <TokenPaidModal
-        isOpen={activeSaleModal === 'token'}
+      {/* Sale Confirmation Modals */}
+      <SaleModals
+        activeSaleModal={activeSaleModal}
         onClose={() => { setActiveSaleModal(null); setApptIdForAction(null); }}
-        onConfirm={confirmTokenPaid}
-      />
-
-      {/* Sale Complete Confirmation Modal */}
-      <SaleCompleteModal
-        isOpen={activeSaleModal === 'complete'}
-        onClose={() => { setActiveSaleModal(null); setApptIdForAction(null); }}
-        onConfirm={confirmSaleComplete}
+        onConfirmTokenPaid={confirmTokenPaid}
+        onConfirmSaleComplete={confirmSaleComplete}
       />
 
       {/* Dispute Reporting Modal */}
