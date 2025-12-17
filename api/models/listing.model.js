@@ -151,6 +151,27 @@ const listingSchema = new mongoose.Schema({
         required: false,
         default: null
     },
+
+    // Property Verification
+    isVerified: {
+        type: Boolean,
+        default: false,
+        index: true
+    },
+    verificationId: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'PropertyVerification',
+        default: null
+    },
+
+    // Visibility Control (private until verified)
+    visibility: {
+        type: String,
+        enum: ['private', 'public'],
+        default: 'private',
+        index: true
+    },
+
     // Review-related fields
     averageRating: {
         type: Number,
@@ -166,7 +187,7 @@ const listingSchema = new mongoose.Schema({
         type: Number,
         default: 0
     },
-    
+
     // ESG (Environmental, Social, Governance) Fields
     esg: {
         environmental: {
@@ -276,7 +297,7 @@ const listingSchema = new mongoose.Schema({
             default: Date.now
         }
     },
-    
+
     // Rent-Lock Plans (for rental properties)
     rentLockPlans: {
         availablePlans: [{
@@ -289,7 +310,7 @@ const listingSchema = new mongoose.Schema({
             default: '1_year'
         }
     },
-    
+
     // Rent-specific fields
     monthlyRent: {
         type: Number,
@@ -311,7 +332,7 @@ const listingSchema = new mongoose.Schema({
         default: 0,
         min: 0
     },
-    
+
     // Property Verification
     isVerified: {
         type: Boolean,
@@ -323,7 +344,7 @@ const listingSchema = new mongoose.Schema({
         ref: 'PropertyVerification',
         default: null
     },
-    
+
     // Locality Score (pre-computed)
     localityScore: {
         safety: {
@@ -391,7 +412,7 @@ const listingSchema = new mongoose.Schema({
             default: Date.now
         }
     },
-    
+
     // Rent Prediction
     rentPrediction: {
         predictedRent: {

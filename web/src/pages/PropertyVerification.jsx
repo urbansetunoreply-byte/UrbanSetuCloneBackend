@@ -98,12 +98,11 @@ export default function PropertyVerification() {
 
       const data = await res.json();
       if (res.ok && Array.isArray(data)) {
-        // Filter only rental properties
-        const rentalListings = data.filter(listing => listing.type === 'rent');
-        setMyListings(rentalListings);
-        
+        // Show all properties (both sale and rent)
+        setMyListings(data);
+
         // Fetch verification status for each listing
-        for (const listing of rentalListings) {
+        for (const listing of data) {
           await fetchVerificationStatus(listing._id);
         }
       } else {
@@ -178,7 +177,7 @@ export default function PropertyVerification() {
   };
 
   const filteredListings = myListings.filter(listing => {
-    const matchesSearch = searchQuery === '' || 
+    const matchesSearch = searchQuery === '' ||
       listing.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       listing.address?.toLowerCase().includes(searchQuery.toLowerCase());
     return matchesSearch;
@@ -206,7 +205,7 @@ export default function PropertyVerification() {
                 <FaShieldAlt className="text-blue-600" />
                 Property Verification
               </h1>
-              <p className="text-gray-600 mt-2">Get your rental property verified and earn a trusted badge</p>
+              <p className="text-gray-600 mt-2">Get your property verified and earn a trusted badge</p>
             </div>
           </div>
 
@@ -227,9 +226,9 @@ export default function PropertyVerification() {
         {filteredListings.length === 0 ? (
           <div className="bg-white rounded-xl shadow-lg p-12 text-center">
             <FaHome className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Rental Properties Found</h3>
+            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Properties Found</h3>
             <p className="text-gray-500 mb-6">
-              {searchQuery ? 'No properties match your search' : 'You don\'t have any rental properties listed yet'}
+              {searchQuery ? 'No properties match your search' : 'You don\'t have any properties listed yet'}
             </p>
             <button
               onClick={() => navigate('/user/create-listing')}
@@ -307,7 +306,7 @@ export default function PropertyVerification() {
 
         {/* Verification Form Modal */}
         {showVerificationForm && selectedListing && (
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
             style={{ overflow: 'hidden' }}
             onClick={(e) => {
@@ -317,7 +316,7 @@ export default function PropertyVerification() {
               }
             }}
           >
-            <div 
+            <div
               className="bg-white rounded-xl shadow-2xl max-w-3xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >
@@ -339,7 +338,7 @@ export default function PropertyVerification() {
 
         {/* Verification Status Modal */}
         {showVerificationStatus && selectedListing && selectedVerification && (
-          <div 
+          <div
             className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4"
             style={{ overflow: 'hidden' }}
             onClick={(e) => {
@@ -352,7 +351,7 @@ export default function PropertyVerification() {
               }
             }}
           >
-            <div 
+            <div
               className="bg-white rounded-xl shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto"
               onClick={(e) => e.stopPropagation()}
             >

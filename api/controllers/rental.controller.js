@@ -2361,12 +2361,13 @@ export const approveVerification = async (req, res, next) => {
       verification.status = 'verified';
       verification.verifiedBadgeIssued = true;
 
-      // Update listing
+      // Update listing - make it verified AND public
       if (verification.listingId) {
         const listing = await Listing.findById(verification.listingId._id || verification.listingId);
         if (listing) {
           listing.isVerified = true;
           listing.verificationId = verification._id;
+          listing.visibility = 'public'; // Make listing public/published
           await listing.save();
         }
       }
@@ -2380,7 +2381,7 @@ export const approveVerification = async (req, res, next) => {
     if (verification.status === 'verified') {
       const io = req.app.get('io');
       const verificationPopulated = await PropertyVerification.findById(verification._id)
-        .populate('listingId', 'name address')
+        .populate('listingId', 'name address city state imageUrls type bedrooms bathrooms area regularPrice discountPrice offer')
         .populate('landlordId', 'username email');
 
       if (verificationPopulated) {
@@ -2397,7 +2398,7 @@ export const approveVerification = async (req, res, next) => {
           io
         });
 
-        // Send email notification
+        // Send email notification - Verification Approved
         if (verificationPopulated.landlordId?.email) {
           const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
           await sendVerificationApprovedEmail(verificationPopulated.landlordId.email, {
@@ -2406,6 +2407,32 @@ export const approveVerification = async (req, res, next) => {
             verificationUrl: `${clientUrl}/user/property-verification?listingId=${verificationPopulated.listingId._id}`,
             listingUrl: `${clientUrl}/listing/${verificationPopulated.listingId._id}`
           });
+
+          // Send Property Published Email (NEW)
+          const { sendPropertyPublishedAfterVerificationEmail } = await import('../utils/emailService.js');
+          const listingDetails = {
+            listingId: verificationPopulated.listingId._id,
+            propertyName: verificationPopulated.listingId.name,
+            propertyAddress: verificationPopulated.listingId.address,
+            propertyPrice: verificationPopulated.listingId.offer
+              ? verificationPopulated.listingId.discountPrice
+              : verificationPopulated.listingId.regularPrice,
+            propertyType: verificationPopulated.listingId.type,
+            bedrooms: verificationPopulated.listingId.bedrooms,
+            bathrooms: verificationPopulated.listingId.bathrooms,
+            area: verificationPopulated.listingId.area,
+            city: verificationPopulated.listingId.city,
+            state: verificationPopulated.listingId.state,
+            imageUrls: verificationPopulated.listingId.imageUrls,
+            badgeNumber: verification.badgeNumber
+          };
+
+          await sendPropertyPublishedAfterVerificationEmail(
+            verificationPopulated.landlordId.email,
+            listingDetails
+          );
+
+          console.log(`✅ Property published email sent to: ${verificationPopulated.landlordId.email}`);
         }
       }
     }

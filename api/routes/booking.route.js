@@ -16,7 +16,6 @@ import {
   sendAppointmentReinitiatedByAdminEmail,
   sendAppointmentReinitiatedBySellerEmail,
   sendAppointmentReinitiatedByBuyerEmail,
-  sendAppointmentReinitiatedByBuyerEmail,
   sendNewMessageNotificationEmail,
   sendTokenReceivedEmail,
   sendPropertySoldEmail,

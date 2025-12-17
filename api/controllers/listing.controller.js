@@ -6,7 +6,7 @@ import { notifyWatchersOnChange } from "./propertyWatchlist.controller.js"
 import User from "../models/user.model.js"
 import Notification from "../models/notification.model.js"
 import { errorHandler } from "../utils/error.js"
-import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, sendPropertyDeletionConfirmationEmail, sendOwnerDeassignedEmail, sendOwnerAssignedEmail } from "../utils/emailService.js"
+import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, sendPropertyDeletionConfirmationEmail, sendOwnerDeassignedEmail, sendOwnerAssignedEmail, sendPropertyCreatedPendingVerificationEmail, sendPropertyVerificationReminderEmail, sendPropertyPublishedAfterVerificationEmail } from "../utils/emailService.js"
 import DeletedListing from "../models/deletedListing.model.js"
 import crypto from 'crypto'
 
@@ -40,9 +40,12 @@ export const createListing = async (req, res, next) => {
     }
 
     // Create the listing with the determined user reference
+    // New properties are private and unverified by default
     const listing = await Listing.create({
       ...listingData,
-      userRef: userRef
+      userRef: userRef,
+      isVerified: false,
+      visibility: 'private'
     });
 
     // Debug saved ESG data
@@ -52,18 +55,18 @@ export const createListing = async (req, res, next) => {
     const listingOwner = await User.findById(userRef);
 
     // Prepare success message based on assignment
-    let successMessage = "Property Added Successfully";
+    let successMessage = "Property Created Successfully - Verification Required";
     const isAdminCreated = assignToEmail && assignToEmail.trim();
 
     if (isAdminCreated) {
-      successMessage = `Listing assigned to ${assignToEmail}`;
+      successMessage = `Listing assigned to ${assignToEmail} - Verification Required`;
       // Send notification to the user
       try {
         const notification = await Notification.create({
           userId: userRef,
           type: 'admin_created_listing',
-          title: 'Property Added by Admin',
-          message: `A new property "${listing.name}" is added on behalf of you by admin.`,
+          title: 'Property Added by Admin - Verification Required',
+          message: `A new property "${listing.name}" has been created on your behalf by admin. Please complete verification to publish it.`,
           listingId: listing._id,
           adminId: req.user.id
         });
@@ -73,10 +76,10 @@ export const createListing = async (req, res, next) => {
         console.error('Failed to create notification:', notificationError);
       }
     } else {
-      successMessage = "Listing created under admin ownership";
+      successMessage = "Property Created Successfully - Verification Required";
     }
 
-    // Send property listing published email
+    // Send property created pending verification email
     if (listingOwner && listingOwner.email) {
       try {
         const listingDetails = {
@@ -95,10 +98,10 @@ export const createListing = async (req, res, next) => {
           createdBy: isAdminCreated ? 'admin' : 'user'
         };
 
-        await sendPropertyListingPublishedEmail(listingOwner.email, listingDetails, isAdminCreated);
-        console.log(`✅ Property listing published email sent to: ${listingOwner.email}`);
+        await sendPropertyCreatedPendingVerificationEmail(listingOwner.email, listingDetails, isAdminCreated);
+        console.log(`✅ Property created pending verification email sent to: ${listingOwner.email}`);
       } catch (emailError) {
-        console.error(`❌ Failed to send property listing published email to ${listingOwner.email}:`, emailError);
+        console.error(`❌ Failed to send property created pending verification email to ${listingOwner.email}:`, emailError);
         // Don't fail the listing creation if email fails
       }
     }
@@ -652,6 +655,17 @@ export const getListings = async (req, res, next) => {
     if (state) query.state = { $regex: state, $options: 'i' };
     if (bedrooms) query.bedrooms = bedrooms;
     if (bathrooms) query.bathrooms = bathrooms;
+
+    // Verification Filter: Only show verified and public properties to non-admin users
+    // Check if user is authenticated and is admin
+    const isAdmin = req.user && (req.user.role === 'admin' || req.user.role === 'rootadmin' || req.user.isDefaultAdmin);
+
+    if (!isAdmin) {
+      // For public/non-admin users: only show verified and public properties
+      query.isVerified = true;
+      query.visibility = 'public';
+    }
+    // Admins can see all properties (no filter applied)
 
     const visibility = req.query.visibility || 'all';
     const availabilityFilter = req.query.availabilityStatus;

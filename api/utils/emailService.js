@@ -8840,6 +8840,463 @@ export const sendPropertyListingPublishedEmail = async (email, listingDetails, i
   }
 };
 
+// Property Created - Pending Verification Email
+export const sendPropertyCreatedPendingVerificationEmail = async (email, listingDetails, isAdminCreated = false) => {
+  try {
+    const {
+      listingId,
+      propertyName,
+      propertyDescription,
+      propertyAddress,
+      propertyPrice,
+      propertyType,
+      bedrooms,
+      bathrooms,
+      area,
+      city,
+      state,
+      imageUrls
+    } = listingDetails;
+
+    const subject = isAdminCreated
+      ? `🏠 Property Created by Admin - Verification Required`
+      : `✅ Property Created Successfully - Complete Verification to Publish`;
+
+    const verificationUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/property-verification?listingId=${listingId}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+          .header { background: linear-gradient(135deg, #f59e0b 0%, #d97706 100%); color: white; padding: 30px 20px; text-align: center; }
+          .content { padding: 30px 20px; }
+          .property-card { border: 1px solid #e5e7eb; border-radius: 12px; padding: 20px; margin: 20px 0; background-color: #f9fafb; }
+          .property-image { width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 8px; margin: 10px 0; }
+          .price { font-size: 24px; font-weight: bold; color: #059669; margin: 10px 0; }
+          .details { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 15px 0; }
+          .detail-item { background-color: #ffffff; padding: 10px; border-radius: 6px; text-align: center; }
+          .btn { display: inline-block; padding: 14px 28px; background-color: #f59e0b; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; margin: 10px 5px; font-size: 16px; }
+          .btn:hover { background-color: #d97706; }
+          .btn-secondary { background-color: #3b82f6; }
+          .btn-secondary:hover { background-color: #2563eb; }
+          .warning-box { background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0; }
+          .warning-box h3 { color: #92400e; margin: 0 0 10px 0; }
+          .warning-box p { color: #92400e; margin: 5px 0; line-height: 1.6; }
+          .info-box { background-color: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 20px; margin: 20px 0; }
+          .info-box h3 { color: #1e40af; margin: 0 0 10px 0; }
+          .info-box ul { color: #1e40af; margin: 10px 0; padding-left: 20px; }
+          .info-box li { margin: 8px 0; }
+          .footer { background-color: #f3f4f6; padding: 20px; text-align: center; color: #6b7280; }
+          .admin-notice { background-color: #fef3c7; border: 1px solid #f59e0b; border-radius: 8px; padding: 15px; margin: 15px 0; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>🏠 Property Created Successfully!</h1>
+            <p style="font-size: 18px; margin: 10px 0 0;">Complete verification to make it live</p>
+          </div>
+          
+          <div class="content">
+            ${isAdminCreated ? `
+              <div class="admin-notice">
+                <h3>📋 Admin Action</h3>
+                <p>This property was created by an admin on your behalf. Please complete the verification process to publish it.</p>
+              </div>
+            ` : ''}
+            
+            <div class="warning-box">
+              <h3>⚠️ Verification Required</h3>
+              <p><strong>Your property has been created but is NOT yet published.</strong></p>
+              <p>To make your property visible to potential ${propertyType === 'rent' ? 'tenants' : 'buyers'}, you need to complete the verification process.</p>
+              <p style="margin-top: 15px;"><strong>Why verification?</strong> It helps build trust and ensures all listings on UrbanSetu are genuine.</p>
+            </div>
+            
+            <div class="property-card">
+              <h2 style="color: #1f2937; margin: 0 0 15px 0;">${propertyName}</h2>
+              
+              ${imageUrls && imageUrls.length > 0 ? `
+                <img src="${imageUrls[0]}" alt="${propertyName}" class="property-image">
+              ` : ''}
+              
+              <div class="price">₹${new Intl.NumberFormat('en-IN').format(propertyPrice)}</div>
+              
+              <div class="details">
+                <div class="detail-item">
+                  <strong>Type</strong><br>
+                  ${propertyType === 'rent' ? 'For Rent' : 'For Sale'}
+                </div>
+                <div class="detail-item">
+                  <strong>Bedrooms</strong><br>
+                  ${bedrooms || 'N/A'}
+                </div>
+                <div class="detail-item">
+                  <strong>Bathrooms</strong><br>
+                  ${bathrooms || 'N/A'}
+                </div>
+                <div class="detail-item">
+                  <strong>Area</strong><br>
+                  ${area ? `${area} sq ft` : 'N/A'}
+                </div>
+              </div>
+              
+              <p><strong>📍 Location:</strong> ${propertyAddress}, ${city}, ${state}</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${verificationUrl}" class="btn">
+                🛡️ Complete Verification Now
+              </a>
+            </div>
+            
+            <div class="info-box">
+              <h3>📋 Verification Process</h3>
+              <ul>
+                <li><strong>Step 1:</strong> Upload ownership documents (sale deed, lease agreement, etc.)</li>
+                <li><strong>Step 2:</strong> Upload identity proof (Aadhaar, PAN, Passport, etc.)</li>
+                <li><strong>Step 3:</strong> Upload address proof (utility bill, bank statement, etc.)</li>
+                <li><strong>Step 4:</strong> Our team will review within 24-48 hours</li>
+                <li><strong>Step 5:</strong> Once verified, your property goes live! 🎉</li>
+              </ul>
+            </div>
+            
+            <div style="background-color: #f0fdf4; border: 1px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+              <h3 style="color: #065f46; margin: 0 0 10px 0;">✨ Benefits of Verification</h3>
+              <p style="color: #065f46; margin: 5px 0;">✓ Verified badge on your listing</p>
+              <p style="color: #065f46; margin: 5px 0;">✓ Higher visibility in search results</p>
+              <p style="color: #065f46; margin: 5px 0;">✓ Increased trust from potential ${propertyType === 'rent' ? 'tenants' : 'buyers'}</p>
+              <p style="color: #065f46; margin: 5px 0;">✓ Faster inquiries and bookings</p>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Need help with verification?</strong></p>
+            <p>Contact our support team for assistance.</p>
+            <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending property created pending verification email:', error);
+    return createErrorResponse(error, 'property_created_pending_verification_email');
+  }
+};
+
+// Property Verification Reminder Email
+export const sendPropertyVerificationReminderEmail = async (email, listingDetails, daysSinceCreation) => {
+  try {
+    const {
+      listingId,
+      propertyName,
+      propertyType,
+      city,
+      state
+    } = listingDetails;
+
+    const subject = `⏰ Reminder: Verify Your Property "${propertyName}" - Day ${daysSinceCreation}`;
+    const verificationUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/property-verification?listingId=${listingId}`;
+
+    const urgencyLevel = daysSinceCreation >= 7 ? 'high' : daysSinceCreation >= 3 ? 'medium' : 'low';
+    const urgencyColor = urgencyLevel === 'high' ? '#dc2626' : urgencyLevel === 'medium' ? '#f59e0b' : '#3b82f6';
+    const urgencyBg = urgencyLevel === 'high' ? '#fee2e2' : urgencyLevel === 'medium' ? '#fef3c7' : '#dbeafe';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+          .header { background: linear-gradient(135deg, ${urgencyColor} 0%, ${urgencyColor}dd 100%); color: white; padding: 30px 20px; text-align: center; }
+          .content { padding: 30px 20px; }
+          .reminder-box { background-color: ${urgencyBg}; border-left: 4px solid ${urgencyColor}; border-radius: 8px; padding: 20px; margin: 20px 0; }
+          .reminder-box h3 { color: ${urgencyColor}; margin: 0 0 10px 0; }
+          .reminder-box p { color: ${urgencyColor}; margin: 5px 0; line-height: 1.6; }
+          .btn { display: inline-block; padding: 14px 28px; background-color: ${urgencyColor}; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; margin: 10px 5px; font-size: 16px; }
+          .btn:hover { opacity: 0.9; }
+          .stats-box { background-color: #f9fafb; border: 1px solid #e5e7eb; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center; }
+          .stat { display: inline-block; margin: 10px 20px; }
+          .stat-number { font-size: 32px; font-weight: bold; color: ${urgencyColor}; }
+          .stat-label { font-size: 14px; color: #6b7280; margin-top: 5px; }
+          .footer { background-color: #f3f4f6; padding: 20px; text-align: center; color: #6b7280; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1>⏰ Verification Reminder</h1>
+            <p style="font-size: 18px; margin: 10px 0 0;">Your property is waiting to go live!</p>
+          </div>
+          
+          <div class="content">
+            <div class="reminder-box">
+              <h3>${urgencyLevel === 'high' ? '🚨 Urgent' : urgencyLevel === 'medium' ? '⚠️ Important' : '📢 Reminder'}</h3>
+              <p><strong>Your property "${propertyName}" has been created ${daysSinceCreation} day${daysSinceCreation > 1 ? 's' : ''} ago but is still not published.</strong></p>
+              <p>Complete the verification process to make it visible to potential ${propertyType === 'rent' ? 'tenants' : 'buyers'}.</p>
+            </div>
+            
+            <div class="stats-box">
+              <div class="stat">
+                <div class="stat-number">${daysSinceCreation}</div>
+                <div class="stat-label">Days Waiting</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Views</div>
+              </div>
+              <div class="stat">
+                <div class="stat-number">0</div>
+                <div class="stat-label">Inquiries</div>
+              </div>
+            </div>
+            
+            <div style="background-color: #f0fdf4; border: 1px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="color: #065f46; margin: 0 0 15px 0;">💡 Did You Know?</h3>
+              <p style="color: #065f46; margin: 5px 0;">✓ Verified properties get <strong>3x more views</strong></p>
+              <p style="color: #065f46; margin: 5px 0;">✓ Verification takes only <strong>24-48 hours</strong></p>
+              <p style="color: #065f46; margin: 5px 0;">✓ <strong>90% of users</strong> prefer verified listings</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${verificationUrl}" class="btn">
+                🛡️ Complete Verification Now
+              </a>
+            </div>
+            
+            <div style="background-color: #f9fafb; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="color: #1f2937; margin: 0 0 15px 0;">📋 Quick Verification Checklist</h3>
+              <p style="color: #6b7280; margin: 5px 0;">☐ Upload ownership documents</p>
+              <p style="color: #6b7280; margin: 5px 0;">☐ Upload identity proof</p>
+              <p style="color: #6b7280; margin: 5px 0;">☐ Upload address proof</p>
+              <p style="color: #6b7280; margin: 5px 0;">☐ Submit for review</p>
+            </div>
+            
+            <p style="text-align: center; color: #6b7280; margin: 20px 0;">
+              <strong>Property:</strong> ${propertyName}<br>
+              <strong>Location:</strong> ${city}, ${state}
+            </p>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Need help?</strong></p>
+            <p>Our support team is here to assist you with the verification process.</p>
+            <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending property verification reminder email:', error);
+    return createErrorResponse(error, 'property_verification_reminder_email');
+  }
+};
+
+// Property Published After Verification Email
+export const sendPropertyPublishedAfterVerificationEmail = async (email, listingDetails) => {
+  try {
+    const {
+      listingId,
+      propertyName,
+      propertyDescription,
+      propertyAddress,
+      propertyPrice,
+      propertyType,
+      bedrooms,
+      bathrooms,
+      area,
+      city,
+      state,
+      imageUrls,
+      badgeNumber
+    } = listingDetails;
+
+    const subject = `🎉 Your Property "${propertyName}" is Now Live & Verified!`;
+    const listingUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/listing/${listingId}`;
+    const dashboardUrl = `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/my-listings`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>${subject}</title>
+        <style>
+          body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; margin: 0; padding: 0; background-color: #f8fafc; }
+          .container { max-width: 600px; margin: 0 auto; background-color: #ffffff; }
+          .header { background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: white; padding: 40px 20px; text-align: center; }
+          .content { padding: 30px 20px; }
+          .property-card { border: 2px solid #10b981; border-radius: 12px; padding: 20px; margin: 20px 0; background-color: #f0fdf4; position: relative; }
+          .verified-badge { position: absolute; top: -15px; right: 20px; background-color: #10b981; color: white; padding: 8px 16px; border-radius: 20px; font-weight: bold; font-size: 14px; box-shadow: 0 4px 6px rgba(0,0,0,0.1); }
+          .property-image { width: 100%; max-width: 300px; height: 200px; object-fit: cover; border-radius: 8px; margin: 10px 0; }
+          .price { font-size: 28px; font-weight: bold; color: #059669; margin: 10px 0; }
+          .details { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 15px; margin: 15px 0; }
+          .detail-item { background-color: #ffffff; padding: 10px; border-radius: 6px; text-align: center; border: 1px solid #d1fae5; }
+          .btn { display: inline-block; padding: 14px 28px; background-color: #10b981; color: white; text-decoration: none; border-radius: 8px; font-weight: 700; margin: 10px 5px; font-size: 16px; }
+          .btn:hover { background-color: #059669; }
+          .btn-outline { background-color: transparent; color: #10b981; border: 2px solid #10b981; }
+          .btn-outline:hover { background-color: #10b981; color: white; }
+          .success-box { background-color: #d1fae5; border-left: 4px solid #10b981; border-radius: 8px; padding: 20px; margin: 20px 0; }
+          .success-box h3 { color: #065f46; margin: 0 0 10px 0; }
+          .success-box p { color: #065f46; margin: 5px 0; line-height: 1.6; }
+          .info-box { background-color: #dbeafe; border-left: 4px solid #3b82f6; border-radius: 8px; padding: 20px; margin: 20px 0; }
+          .info-box h3 { color: #1e40af; margin: 0 0 10px 0; }
+          .info-box ul { color: #1e40af; margin: 10px 0; padding-left: 20px; }
+          .info-box li { margin: 8px 0; }
+          .footer { background-color: #f3f4f6; padding: 20px; text-align: center; color: #6b7280; }
+          .share-buttons { display: flex; justify-content: center; gap: 10px; margin: 20px 0; flex-wrap: wrap; }
+          .share-btn { display: inline-flex; align-items: center; gap: 5px; padding: 10px 20px; border-radius: 6px; text-decoration: none; font-weight: 600; font-size: 14px; }
+          .share-whatsapp { background-color: #25d366; color: white; }
+          .share-facebook { background-color: #1877f2; color: white; }
+          .share-twitter { background-color: #1da1f2; color: white; }
+        </style>
+      </head>
+      <body>
+        <div class="container">
+          <div class="header">
+            <h1 style="font-size: 32px; margin: 0 0 10px;">🎉 Congratulations!</h1>
+            <p style="font-size: 20px; margin: 0;">Your Property is Now Live & Verified!</p>
+          </div>
+          
+          <div class="content">
+            <div class="success-box">
+              <h3>✅ Verification Complete!</h3>
+              <p><strong>Great news!</strong> Your property has been successfully verified by our team.</p>
+              <p>Your listing is now live and visible to thousands of potential ${propertyType === 'rent' ? 'tenants' : 'buyers'}!</p>
+              ${badgeNumber ? `<p style="margin-top: 10px;"><strong>Verification Badge:</strong> ${badgeNumber}</p>` : ''}
+            </div>
+            
+            <div class="property-card">
+              <div class="verified-badge">✓ VERIFIED</div>
+              <h2 style="color: #1f2937; margin: 0 0 15px 0;">${propertyName}</h2>
+              
+              ${imageUrls && imageUrls.length > 0 ? `
+                <img src="${imageUrls[0]}" alt="${propertyName}" class="property-image">
+              ` : ''}
+              
+              <div class="price">₹${new Intl.NumberFormat('en-IN').format(propertyPrice)}</div>
+              
+              <div class="details">
+                <div class="detail-item">
+                  <strong>Type</strong><br>
+                  ${propertyType === 'rent' ? 'For Rent' : 'For Sale'}
+                </div>
+                <div class="detail-item">
+                  <strong>Bedrooms</strong><br>
+                  ${bedrooms || 'N/A'}
+                </div>
+                <div class="detail-item">
+                  <strong>Bathrooms</strong><br>
+                  ${bathrooms || 'N/A'}
+                </div>
+                <div class="detail-item">
+                  <strong>Area</strong><br>
+                  ${area ? `${area} sq ft` : 'N/A'}
+                </div>
+              </div>
+              
+              <p><strong>📍 Location:</strong> ${propertyAddress}, ${city}, ${state}</p>
+            </div>
+            
+            <div style="text-align: center; margin: 30px 0;">
+              <a href="${listingUrl}" class="btn">
+                🏠 View Your Live Property
+              </a>
+              <a href="${dashboardUrl}" class="btn btn-outline">
+                📋 Go to Dashboard
+              </a>
+            </div>
+            
+            <div style="background-color: #fef3c7; border-left: 4px solid #f59e0b; border-radius: 8px; padding: 20px; margin: 20px 0;">
+              <h3 style="color: #92400e; margin: 0 0 15px 0;">📢 Share Your Property</h3>
+              <p style="color: #92400e; margin: 0 0 15px 0;">Spread the word and get more inquiries!</p>
+              <div class="share-buttons">
+                <a href="https://wa.me/?text=Check%20out%20this%20property%20on%20UrbanSetu%3A%20${encodeURIComponent(listingUrl)}" class="share-btn share-whatsapp" target="_blank">
+                  📱 WhatsApp
+                </a>
+                <a href="https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(listingUrl)}" class="share-btn share-facebook" target="_blank">
+                  👥 Facebook
+                </a>
+                <a href="https://twitter.com/intent/tweet?text=Check%20out%20this%20property&url=${encodeURIComponent(listingUrl)}" class="share-btn share-twitter" target="_blank">
+                  🐦 Twitter
+                </a>
+              </div>
+            </div>
+            
+            <div class="info-box">
+              <h3>🚀 What's Next?</h3>
+              <ul>
+                <li><strong>Monitor Performance:</strong> Track views and inquiries in your dashboard</li>
+                <li><strong>Respond Quickly:</strong> Reply to appointment requests within 24 hours</li>
+                <li><strong>Keep Updated:</strong> Update property details if anything changes</li>
+                <li><strong>Professional Photos:</strong> Add more high-quality images to attract buyers</li>
+                <li><strong>Competitive Pricing:</strong> Review market rates to stay competitive</li>
+              </ul>
+            </div>
+            
+            <div style="background-color: #f0f9ff; border: 1px solid #0ea5e9; border-radius: 8px; padding: 20px; margin: 20px 0; text-align: center;">
+              <h3 style="color: #0c4a6e; margin: 0 0 10px 0;">💎 Premium Features</h3>
+              <p style="color: #0c4a6e; margin: 5px 0;">Want to boost your listing's visibility?</p>
+              <p style="color: #0c4a6e; margin: 5px 0;">Explore our premium features for faster results!</p>
+              <a href="${dashboardUrl}" style="display: inline-block; margin-top: 10px; padding: 10px 20px; background-color: #0ea5e9; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">
+                Explore Premium
+              </a>
+            </div>
+          </div>
+          
+          <div class="footer">
+            <p><strong>Thank you for choosing UrbanSetu!</strong></p>
+            <p>We're here to help you find the perfect ${propertyType === 'rent' ? 'tenant' : 'buyer'}.</p>
+            <p style="color: #9ca3af; margin: 15px 0 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending property published after verification email:', error);
+    return createErrorResponse(error, 'property_published_after_verification_email');
+  }
+};
+
+
+
 export const sendOwnerDeassignedEmail = async (email, details = {}) => {
   const {
     propertyName,

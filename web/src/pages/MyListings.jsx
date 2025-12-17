@@ -362,8 +362,29 @@ export default function MyListings() {
                         )}
                       </div>
 
-                      {/* Verification Badge */}
-                      {listing.type === 'rent' && listing.isVerified && (
+
+                      {/* Verification Status - For All Properties */}
+                      {!listing.isVerified ? (
+                        <div className="mb-3 bg-yellow-50 border-l-4 border-yellow-400 p-3 rounded">
+                          <div className="flex items-start gap-2">
+                            <div className="flex-shrink-0 mt-0.5">
+                              <svg className="w-5 h-5 text-yellow-600" fill="currentColor" viewBox="0 0 20 20">
+                                <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                              </svg>
+                            </div>
+                            <div className="flex-1">
+                              <p className="text-xs font-semibold text-yellow-800 mb-1">Not Published</p>
+                              <p className="text-xs text-yellow-700">Complete verification to make this property visible to buyers</p>
+                              <button
+                                onClick={() => navigate(`/user/property-verification?listingId=${listing._id}`)}
+                                className="mt-2 px-3 py-1.5 bg-yellow-600 text-white rounded text-xs font-semibold hover:bg-yellow-700 transition flex items-center gap-1"
+                              >
+                                <FaShieldAlt /> Verify Property
+                              </button>
+                            </div>
+                          </div>
+                        </div>
+                      ) : (
                         <div className="mb-3">
                           <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold flex items-center gap-1 w-fit">
                             <FaShieldAlt /> Verified
@@ -392,8 +413,8 @@ export default function MyListings() {
                             }
                           }}
                           className={`flex-1 px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center gap-1 ${listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract'
-                              ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                              : 'bg-yellow-500 text-white hover:bg-yellow-600'
+                            ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                            : 'bg-yellow-500 text-white hover:bg-yellow-600'
                             }`}
                           title={
                             listing.availabilityStatus === 'sold'
@@ -431,8 +452,8 @@ export default function MyListings() {
                                   : "Delete Property"
                           }
                           className={`flex-1 px-3 py-2 rounded text-sm font-medium transition flex items-center justify-center gap-1 ${listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract'
-                              ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              : 'bg-red-500 text-white hover:bg-red-600'
+                            ? 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            : 'bg-red-500 text-white hover:bg-red-600'
                             }`}
                         >
                           <FaTrash /> Delete
