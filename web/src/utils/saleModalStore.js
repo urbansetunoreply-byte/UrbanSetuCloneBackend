@@ -2,7 +2,7 @@
 // This allows triggering modals from anywhere without relying on local state scope
 
 const listeners = new Set();
-let currentState = { type: null };
+let currentState = { type: null, id: null };
 
 export const saleModalStore = {
     // Get current value
@@ -15,18 +15,18 @@ export const saleModalStore = {
     },
 
     // Actions
-    openTokenModal: () => {
-        currentState = { type: 'token' };
+    openTokenModal: (id) => {
+        currentState = { type: 'token', id };
         listeners.forEach(l => l(currentState));
     },
 
-    openSaleModal: () => {
-        currentState = { type: 'complete' };
+    openSaleModal: (id) => {
+        currentState = { type: 'complete', id };
         listeners.forEach(l => l(currentState));
     },
 
     close: () => {
-        currentState = { type: null };
+        currentState = { type: null, id: null };
         listeners.forEach(l => l(currentState));
     }
 };

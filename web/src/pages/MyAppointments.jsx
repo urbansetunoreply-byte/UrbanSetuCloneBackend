@@ -754,16 +754,15 @@ export default function MyAppointments() {
 
   // Wrapper to open modal
   const handleTokenPaid = useCallback((id) => {
-    setApptIdForAction(id);
-    saleModalStore.openTokenModal();
+    // Note: We don't set local state apptIdForAction here to avoid ReferenceErrors.
+    // The Store handles the ID.
+    saleModalStore.openTokenModal(id);
   }, []);
 
-  // Actual API call for Token Paid
-  const confirmTokenPaid = async () => {
-    const id = apptIdForAction;
+  // Note: 'id' is passed from the Connected component via the Store
+  const confirmTokenPaid = async (id) => {
     if (!id) return;
 
-    setActionLoading(id + 'token_paid');
     setActionLoading(id + 'token_paid');
     saleModalStore.close();
 
@@ -793,21 +792,20 @@ export default function MyAppointments() {
       toast.error(err.response?.data?.message || "Failed to mark token as paid.");
     }
     setActionLoading("");
-    setApptIdForAction(null);
+    setActionLoading("");
+    // setApptIdForAction(null); // Managed by store 
   };
 
   // Wrapper to open modal
   const handleSaleComplete = useCallback((id) => {
-    setApptIdForAction(id);
-    saleModalStore.openSaleModal();
+    // Note: Store handles ID
+    saleModalStore.openSaleModal(id);
   }, []);
 
-  // Actual API call for Sale Complete
-  const confirmSaleComplete = async () => {
-    const id = apptIdForAction;
+  // Note: 'id' is passed from the Connected component via the Store
+  const confirmSaleComplete = async (id) => {
     if (!id) return;
 
-    setActionLoading(id + 'sold');
     setActionLoading(id + 'sold');
     saleModalStore.close();
 
@@ -837,7 +835,7 @@ export default function MyAppointments() {
       toast.error(err.response?.data?.message || "Failed to complete sale.");
     }
     setActionLoading("");
-    setApptIdForAction(null);
+    // setApptIdForAction(null);
   };
 
   // Dispute Handling
@@ -13316,7 +13314,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* <GeminiAIWrapper /> */}
       {/* Sale Confirmation Modals */}
       <ConnectedSaleModals
-        setApptIdForAction={setApptIdForAction}
+        // setApptIdForAction removed to avoid ReferenceError
         onConfirmTokenPaid={confirmTokenPaid}
         onConfirmSaleComplete={confirmSaleComplete}
       />
