@@ -112,7 +112,7 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
       </h2>
 
       {/* Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-5 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
         <div className="bg-gray-50 p-4 rounded-lg text-center">
           <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
           <p className="text-xs text-gray-600 mt-1">Total</p>
@@ -153,13 +153,13 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
                       key={index}
                       className={`border-2 rounded-lg p-4 transition ${getPaymentStatusColor(payment)}`}
                     >
-                      <div className="flex items-center justify-between">
-                        <div className="flex items-center gap-4 flex-1">
-                          <div className="text-2xl">
+                      <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                        <div className="flex items-start gap-4 flex-1 w-full">
+                          <div className="text-2xl mt-1 md:mt-0">
                             {getPaymentStatusIcon(payment)}
                           </div>
                           <div className="flex-1">
-                            <div className="flex items-center gap-2 mb-1">
+                            <div className="flex flex-wrap items-center gap-2 mb-1">
                               <p className="font-semibold text-gray-800">
                                 {dueDate.toLocaleDateString('en-GB', {
                                   month: 'long',
@@ -188,66 +188,70 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
                             )}
                           </div>
                         </div>
-                        <div className="text-right mr-4">
-                          <p className="text-xl font-bold text-gray-800 mb-1">
-                            ₹{payment.amount.toLocaleString('en-IN')}
-                          </p>
-                          {payment.penaltyAmount > 0 && (
-                            <p className="text-sm text-red-600">
-                              + Penalty: ₹{payment.penaltyAmount.toLocaleString('en-IN')}
+
+                        <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto mt-2 md:mt-0 gap-4">
+                          <div className="text-left md:text-right">
+                            <p className="text-xl font-bold text-gray-800 mb-1">
+                              ₹{payment.amount.toLocaleString('en-IN')}
                             </p>
+                            {payment.penaltyAmount > 0 && (
+                              <p className="text-sm text-red-600">
+                                + Penalty: ₹{payment.penaltyAmount.toLocaleString('en-IN')}
+                              </p>
+                            )}
+                            {payment.status === 'pending' && (
+                              <p className="text-xs text-gray-500 mt-1">
+                                Due: {contract.dueDate} of month
+                              </p>
+                            )}
+                          </div>
+
+                          {(payment.status === 'pending' || payment.status === 'overdue') && isTenant && (
+                            <button
+                              onClick={() => handlePayNow(payment)}
+                              className="w-full md:w-auto px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition"
+                            >
+                              <FaMoneyBillWave className="inline mr-1" />
+                              Pay Now
+                            </button>
                           )}
-                          {payment.status === 'pending' && (
-                            <p className="text-xs text-gray-500 mt-1">
-                              Due: {contract.dueDate} of month
-                            </p>
+
+                          {payment.status === 'processing' && isTenant && (
+                            <button
+                              onClick={() => {
+                                const scheduleIndex = wallet.paymentSchedule.findIndex(p =>
+                                  p.month === payment.month &&
+                                  p.year === payment.year &&
+                                  p.dueDate === payment.dueDate
+                                );
+                                if (scheduleIndex !== -1) {
+                                  navigate(`/user/pay-monthly-rent?contractId=${contract._id}&scheduleIndex=${scheduleIndex}`);
+                                }
+                              }}
+                              className="w-full md:w-auto px-6 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-semibold transition"
+                            >
+                              <FaMoneyBillWave className="inline mr-1" />
+                              Retry
+                            </button>
+                          )}
+
+                          {(payment.status === 'completed' || payment.status === 'paid') && payment.paymentId && (
+                            <button
+                              onClick={() => {
+                                const receiptId = typeof payment.paymentId === 'object' ? payment.paymentId.paymentId : payment.paymentId;
+                                if (receiptId) {
+                                  window.open(`${API_BASE_URL}/api/payments/${receiptId}/receipt`, '_blank');
+                                } else {
+                                  toast.error("Receipt ID not found.");
+                                }
+                              }}
+                              className="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition flex items-center justify-center gap-2"
+                            >
+                              <FaDownload />
+                              Receipt
+                            </button>
                           )}
                         </div>
-                        {(payment.status === 'pending' || payment.status === 'overdue') && isTenant && (
-                          <button
-                            onClick={() => handlePayNow(payment)}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 font-semibold transition"
-                          >
-                            <FaMoneyBillWave className="inline mr-1" />
-                            Pay Now
-                          </button>
-                        )}
-                        {payment.status === 'processing' && isTenant && (
-                          <button
-                            onClick={() => {
-                              // If stuck in processing, allow retry by navigating to payment page
-                              const scheduleIndex = wallet.paymentSchedule.findIndex(p =>
-                                p.month === payment.month &&
-                                p.year === payment.year &&
-                                p.dueDate === payment.dueDate
-                              );
-                              if (scheduleIndex !== -1) {
-                                navigate(`/user/pay-monthly-rent?contractId=${contract._id}&scheduleIndex=${scheduleIndex}`);
-                              }
-                            }}
-                            className="px-4 py-2 bg-amber-600 text-white rounded-lg hover:bg-amber-700 font-semibold transition"
-                          >
-                            <FaMoneyBillWave className="inline mr-1" />
-                            Retry Payment
-                          </button>
-                        )}
-                        {(payment.status === 'completed' || payment.status === 'paid') && payment.paymentId && (
-                          <button
-
-                            onClick={() => {
-                              const receiptId = typeof payment.paymentId === 'object' ? payment.paymentId.paymentId : payment.paymentId;
-                              if (receiptId) {
-                                window.open(`${API_BASE_URL}/api/payments/${receiptId}/receipt`, '_blank');
-                              } else {
-                                toast.error("Receipt ID not found.");
-                              }
-                            }}
-                            className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition flex items-center gap-2"
-                          >
-                            <FaDownload />
-                            Receipt
-                          </button>
-                        )}
                       </div>
                     </div>
                   );

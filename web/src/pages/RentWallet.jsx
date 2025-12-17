@@ -180,14 +180,14 @@ export default function RentWallet() {
       <div className="max-w-6xl mx-auto">
         {/* Header */}
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <div className="flex items-center justify-between mb-4">
+          <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
               <h1 className="text-3xl font-bold text-blue-700 mb-2">
                 <FaWallet className="inline mr-2" />
                 Rent Wallet
               </h1>
               <p className="text-gray-600">
-                Contract ID: <span className="font-semibold">{contract.contractId}</span>
+                Contract ID: <span className="font-semibold break-all">{contract.contractId}</span>
               </p>
               {contract.listingId && typeof contract.listingId === 'object' && (
                 <p className="text-gray-600">
@@ -197,14 +197,15 @@ export default function RentWallet() {
             </div>
             <button
               onClick={() => navigate("/user/rental-contracts")}
-              className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+              className="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
             >
               Back to Contracts
             </button>
           </div>
 
           {/* Tabs */}
-          <div className="flex gap-2 border-b">
+          {/* Tabs - Scrollable on mobile */}
+          <div className="flex gap-2 border-b overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
             {[
               { id: 'overview', label: 'Overview', icon: FaWallet },
               { id: 'schedule', label: 'Payment Schedule', icon: FaCalendarAlt },
@@ -214,7 +215,7 @@ export default function RentWallet() {
               <button
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
-                className={`flex items-center gap-2 px-4 py-2 font-semibold transition ${activeTab === tab.id
+                className={`flex items-center gap-2 px-4 py-2 font-semibold transition whitespace-nowrap flex-shrink-0 ${activeTab === tab.id
                   ? 'text-blue-600 border-b-2 border-blue-600'
                   : 'text-gray-600 hover:text-blue-600'
                   }`}
@@ -230,7 +231,7 @@ export default function RentWallet() {
         {activeTab === 'overview' && (
           <div className="space-y-6">
             {/* Wallet Statistics */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Paid */}
               <div className="bg-white rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between mb-2">

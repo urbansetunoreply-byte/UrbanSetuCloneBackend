@@ -82,26 +82,26 @@ export const getTopWatchedListings = async (req, res, next) => {
       { $limit: limit },
     ]);
     const listingIds = agg.map(a => a._id);
-    
-    // Get complete listing details
-    const listings = await Listing.find({ _id: { $in: listingIds } })
+
+    // Get complete listing details (Verified Only)
+    const listings = await Listing.find({ _id: { $in: listingIds }, isVerified: true })
       .select('-__v -createdAt -updatedAt -userRef');
-    
+
     const listingsById = new Map(listings.map(l => [l._id.toString(), l]));
-    
+
     // Return complete listing objects with watch count
     const result = agg
       .map(a => {
         const listing = listingsById.get(a._id.toString());
         if (!listing) return null;
-        
+
         return {
           ...listing.toObject(),
           watchCount: a.count
         };
       })
       .filter(x => x !== null);
-    
+
     res.status(200).json(result);
   } catch (error) {
     next(error);
@@ -125,7 +125,7 @@ export const getWatchlistStats = async (req, res, next) => {
   try {
     const totalWatchlists = await PropertyWatchlist.countDocuments();
     const totalWatchedProperties = await PropertyWatchlist.distinct('listingId').then(ids => ids.length);
-    
+
     res.status(200).json({
       totalWatchlists,
       totalWatchedProperties
@@ -142,7 +142,7 @@ export const notifyWatchersOnChange = async (app, { listing, changeType, oldPric
     if (!watchers.length) return;
     const io = app.get('io');
     const notifications = [];
-    
+
     for (const w of watchers) {
       const data = {
         userId: w.userId,
@@ -158,21 +158,21 @@ export const notifyWatchersOnChange = async (app, { listing, changeType, oldPric
       const n = await Notification.create(data);
       notifications.push(n);
       if (io) io.to(w.userId.toString()).emit('notificationCreated', n);
-      
+
       // Send email alert for price drops
       if (changeType === 'price_drop' && oldPrice && newPrice) {
         try {
           const { sendPriceDropAlert } = await import('../services/priceDropAlertService.js');
           const dropAmount = oldPrice - newPrice;
           const dropPercentage = Math.round((dropAmount / oldPrice) * 100);
-          
+
           const priceDropDetails = {
             originalPrice: oldPrice,
             currentPrice: newPrice,
             dropAmount: dropAmount,
             dropPercentage: dropPercentage
           };
-          
+
           console.log(`📧 Sending price drop email alert for listing ${listing._id} to user ${w.userId}`);
           await sendPriceDropAlert(w.userId, listing._id, priceDropDetails);
         } catch (emailError) {

@@ -330,7 +330,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
       </h2>
 
       {/* Statistics */}
-      <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
+      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
         <div className="bg-gray-50 p-4 rounded-lg">
           <p className="text-sm text-gray-600 mb-1">Total Payments</p>
           <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
@@ -403,13 +403,13 @@ export default function RentPaymentHistory({ wallet, contract }) {
                 key={index}
                 className={`border-2 rounded-lg p-4 transition ${getStatusColor(payment)}`}
               >
-                <div className="flex items-center justify-between">
-                  <div className="flex items-center gap-4 flex-1">
-                    <div className="text-2xl">
+                <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+                  <div className="flex items-center gap-4 flex-1 w-full">
+                    <div className="text-2xl flex-shrink-0">
                       {getStatusIcon(payment)}
                     </div>
                     <div className="flex-1">
-                      <div className="flex items-center gap-2 mb-1">
+                      <div className="flex flex-wrap items-center gap-2 mb-1">
                         <p className="font-semibold text-lg">
                           {dueDate.toLocaleDateString('en-GB', {
                             month: 'long',
@@ -451,28 +451,31 @@ export default function RentPaymentHistory({ wallet, contract }) {
                       </div>
                     </div>
                   </div>
-                  <div className="text-right mr-4">
-                    <p className="text-xl font-bold mb-1">
-                      ₹{payment.amount.toLocaleString('en-IN')}
-                    </p>
-                    {payment.penaltyAmount > 0 && (
-                      <p className="text-sm text-red-600 mb-1">
-                        Penalty: ₹{payment.penaltyAmount.toLocaleString('en-IN')}
+
+                  <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4">
+                    <div className="text-left md:text-right">
+                      <p className="text-xl font-bold mb-1">
+                        ₹{payment.amount.toLocaleString('en-IN')}
                       </p>
+                      {payment.penaltyAmount > 0 && (
+                        <p className="text-sm text-red-600 mb-1">
+                          Penalty: ₹{payment.penaltyAmount.toLocaleString('en-IN')}
+                        </p>
+                      )}
+                      <p className="text-lg font-semibold">
+                        Total: ₹{(payment.amount + (payment.penaltyAmount || 0)).toLocaleString('en-IN')}
+                      </p>
+                    </div>
+                    {payment.status === 'completed' && (
+                      <button
+                        onClick={() => handleDownloadReceipt(payment)}
+                        className="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition flex items-center justify-center gap-2"
+                      >
+                        <FaDownload />
+                        Receipt
+                      </button>
                     )}
-                    <p className="text-lg font-semibold">
-                      Total: ₹{(payment.amount + (payment.penaltyAmount || 0)).toLocaleString('en-IN')}
-                    </p>
                   </div>
-                  {payment.status === 'completed' && (
-                    <button
-                      onClick={() => handleDownloadReceipt(payment)}
-                      className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition flex items-center gap-2"
-                    >
-                      <FaDownload />
-                      Receipt
-                    </button>
-                  )}
                 </div>
               </div>
             );
