@@ -13244,6 +13244,12 @@ export const sendProfileUpdateSuccessEmail = async (email, username, role) => {
                 View Profile
               </a>
             </div>
+            
+            <div style="text-align: center; margin-top: 20px;">
+              <p style="color: #6b7280; font-size: 14px;">
+                Forgot your password? <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/forgot-password" style="color: #3b82f6; text-decoration: none; font-weight: 500;">Reset it here</a>
+              </p>
+            </div>
           </div>
           
           <!-- Footer -->
