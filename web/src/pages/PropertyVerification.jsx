@@ -38,6 +38,8 @@ export default function PropertyVerification() {
   const [showVerificationStatus, setShowVerificationStatus] = useState(false);
   const [selectedVerification, setSelectedVerification] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [activeTab, setActiveTab] = useState('rent');
+
 
   useEffect(() => {
     if (!currentUser) {
@@ -177,6 +179,10 @@ export default function PropertyVerification() {
   };
 
   const filteredListings = myListings.filter(listing => {
+    // Tab Filter
+    if (activeTab === 'rent' && listing.type !== 'rent') return false;
+    if (activeTab === 'sale' && listing.type !== 'sale') return false;
+
     const matchesSearch = searchQuery === '' ||
       listing.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
       listing.address?.toLowerCase().includes(searchQuery.toLowerCase());
@@ -207,6 +213,36 @@ export default function PropertyVerification() {
               </h1>
               <p className="text-gray-600 mt-2">Get your property verified and earn a trusted badge</p>
             </div>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200 mb-6">
+            <button
+              onClick={() => setActiveTab('rent')}
+              className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'rent'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+            >
+              <FaHome className={activeTab === 'rent' ? 'text-blue-600' : 'text-gray-400'} />
+              Rent Properties
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}>
+                {myListings.filter(l => l.type === 'rent').length}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('sale')}
+              className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'sale'
+                  ? 'border-b-2 border-green-600 text-green-600'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+            >
+              <FaCheckCircle className={activeTab === 'sale' ? 'text-green-600' : 'text-gray-400'} />
+              Sale Properties
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'sale' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                {myListings.filter(l => l.type === 'sale').length}
+              </span>
+            </button>
           </div>
 
           {/* Search */}
