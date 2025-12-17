@@ -137,13 +137,8 @@ export default function MyAppointments() {
 
   // Sale Confirmation Modals State
   // Sale Confirmation Modals State - Renamed to fix RefError
-  const [tokenReceiptVisible, setTokenReceiptVisible] = useState(false);
-  const [saleCompleteVisible, setSaleCompleteVisible] = useState(false);
-
-  // Debug log to verify scope
-  useEffect(() => {
-    console.log('MyAppointments: Modal state initialized', { tokenReceiptVisible, saleCompleteVisible });
-  }, [tokenReceiptVisible, saleCompleteVisible]);
+  // Sale Confirmation Modals State - Consolidating to fix RefError
+  const [activeSaleModal, setActiveSaleModal] = useState(null); // 'token' | 'complete' | null
 
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [apptIdForAction, setApptIdForAction] = useState(null);
@@ -758,7 +753,7 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleTokenPaid = useCallback((id) => {
     setApptIdForAction(id);
-    setTokenReceiptVisible(true);
+    setActiveSaleModal('token');
   }, []);
 
   // Actual API call for Token Paid
@@ -767,7 +762,7 @@ export default function MyAppointments() {
     if (!id) return;
 
     setActionLoading(id + 'token_paid');
-    setTokenReceiptVisible(false);
+    setActiveSaleModal(null);
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/token-paid`,
@@ -801,7 +796,7 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleSaleComplete = useCallback((id) => {
     setApptIdForAction(id);
-    setSaleCompleteVisible(true);
+    setActiveSaleModal('complete');
   }, []);
 
   // Actual API call for Sale Complete
@@ -810,7 +805,7 @@ export default function MyAppointments() {
     if (!id) return;
 
     setActionLoading(id + 'sold');
-    setSaleCompleteVisible(false);
+    setActiveSaleModal(null);
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/complete`,
@@ -13317,15 +13312,15 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       {/* <GeminiAIWrapper /> */}
       {/* Token Received Confirmation Modal */}
       <TokenPaidModal
-        isOpen={tokenReceiptVisible}
-        onClose={() => { setTokenReceiptVisible(false); setApptIdForAction(null); }}
+        isOpen={activeSaleModal === 'token'}
+        onClose={() => { setActiveSaleModal(null); setApptIdForAction(null); }}
         onConfirm={confirmTokenPaid}
       />
 
       {/* Sale Complete Confirmation Modal */}
       <SaleCompleteModal
-        isOpen={saleCompleteVisible}
-        onClose={() => { setSaleCompleteVisible(false); setApptIdForAction(null); }}
+        isOpen={activeSaleModal === 'complete'}
+        onClose={() => { setActiveSaleModal(null); setApptIdForAction(null); }}
         onConfirm={confirmSaleComplete}
       />
 
