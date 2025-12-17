@@ -38,6 +38,7 @@ export default function PropertyVerification() {
   const [showVerificationStatus, setShowVerificationStatus] = useState(false);
   const [selectedVerification, setSelectedVerification] = useState(null);
   const [searchQuery, setSearchQuery] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all');
   const [activeTab, setActiveTab] = useState('rent');
 
 
@@ -179,14 +180,32 @@ export default function PropertyVerification() {
   };
 
   const filteredListings = myListings.filter(listing => {
-    // Tab Filter
+    // 1. Tab Filter
     if (activeTab === 'rent' && listing.type !== 'rent') return false;
     if (activeTab === 'sale' && listing.type !== 'sale') return false;
 
-    const matchesSearch = searchQuery === '' ||
-      listing.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-      listing.address?.toLowerCase().includes(searchQuery.toLowerCase());
-    return matchesSearch;
+    const verification = verifications[listing._id];
+    const status = verification ? verification.status : (listing.isVerified ? 'verified' : 'unverified');
+
+    // 2. Status Filter
+    if (statusFilter !== 'all') {
+      if (statusFilter === 'unverified') {
+        if (status !== 'unverified') return false;
+      } else {
+        if (status !== statusFilter) return false;
+      }
+    }
+
+    // 3. Search Filter
+    if (searchQuery) {
+      const query = searchQuery.toLowerCase();
+      return (
+        listing.name.toLowerCase().includes(query) ||
+        listing.address?.toLowerCase().includes(query) ||
+        listing.city?.toLowerCase().includes(query)
+      );
+    }
+    return true;
   });
 
   if (loading) {
@@ -220,8 +239,8 @@ export default function PropertyVerification() {
             <button
               onClick={() => setActiveTab('rent')}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'rent'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
             >
               <FaHome className={activeTab === 'rent' ? 'text-blue-600' : 'text-gray-400'} />
@@ -233,8 +252,8 @@ export default function PropertyVerification() {
             <button
               onClick={() => setActiveTab('sale')}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'sale'
-                  ? 'border-b-2 border-green-600 text-green-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-b-2 border-green-600 text-green-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
             >
               <FaCheckCircle className={activeTab === 'sale' ? 'text-green-600' : 'text-gray-400'} />
@@ -245,16 +264,31 @@ export default function PropertyVerification() {
             </button>
           </div>
 
-          {/* Search */}
-          <div className="relative">
-            <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search properties..."
-              value={searchQuery}
-              onChange={(e) => setSearchQuery(e.target.value)}
-              className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-            />
+          {/* Search and Filters */}
+          <div className="flex flex-col md:flex-row gap-4 mb-6">
+            <div className="relative flex-1">
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search by property name, address, or city..."
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+              />
+            </div>
+
+            <select
+              value={statusFilter}
+              onChange={(e) => setStatusFilter(e.target.value)}
+              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
+            >
+              <option value="all">All Status</option>
+              <option value="unverified">Unverified/Not Requested</option>
+              <option value="pending">Pending</option>
+              <option value="in_progress">In Progress</option>
+              <option value="verified">Verified</option>
+              <option value="rejected">Rejected</option>
+            </select>
           </div>
         </div>
 
