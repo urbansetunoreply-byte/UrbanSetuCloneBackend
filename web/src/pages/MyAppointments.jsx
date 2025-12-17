@@ -25,8 +25,8 @@ import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
 import { getThemeColors, getDarkModeContainerClass, getDarkModeInputClass, getDarkModeTextClass, getDarkModeSecondaryTextClass, getDarkModeBorderClass, getDarkModeHoverClass } from '../utils/chatTheme';
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
-import SaleModals from '../components/SaleModals';
-import { useSaleModal } from '../hooks/useSaleModal';
+import ConnectedSaleModals from '../components/ConnectedSaleModals';
+import { saleModalStore } from '../utils/saleModalStore';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -139,8 +139,8 @@ export default function MyAppointments() {
   // Sale Confirmation Modals State - Renamed to fix RefError
   // Sale Confirmation Modals State - Consolidating to fix RefError
   // Sale Confirmation Modals State - Object Refactor to fix ReferenceError
-  // Sale Confirmation Modals State - Custom Hook to fix RefError
-  const { modalType, openTokenModal, openSaleModal, closeModals } = useSaleModal();
+  // Sale Confirmation Modals State - External Store to fix RefError
+  // No local state needed for modals anymore!
 
   const [showDisputeModal, setShowDisputeModal] = useState(false);
   const [apptIdForAction, setApptIdForAction] = useState(null);
@@ -755,8 +755,8 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleTokenPaid = useCallback((id) => {
     setApptIdForAction(id);
-    openTokenModal();
-  }, [openTokenModal]);
+    saleModalStore.openTokenModal();
+  }, []);
 
   // Actual API call for Token Paid
   const confirmTokenPaid = async () => {
@@ -765,7 +765,7 @@ export default function MyAppointments() {
 
     setActionLoading(id + 'token_paid');
     setActionLoading(id + 'token_paid');
-    closeModals();
+    saleModalStore.close();
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/token-paid`,
@@ -799,8 +799,8 @@ export default function MyAppointments() {
   // Wrapper to open modal
   const handleSaleComplete = useCallback((id) => {
     setApptIdForAction(id);
-    openSaleModal();
-  }, [openSaleModal]);
+    saleModalStore.openSaleModal();
+  }, []);
 
   // Actual API call for Sale Complete
   const confirmSaleComplete = async () => {
@@ -809,7 +809,7 @@ export default function MyAppointments() {
 
     setActionLoading(id + 'sold');
     setActionLoading(id + 'sold');
-    closeModals();
+    saleModalStore.close();
 
     try {
       const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${id}/sale/complete`,
@@ -13315,9 +13315,8 @@ function PaymentStatusCell({ appointment, isBuyer }) {
 
       {/* <GeminiAIWrapper /> */}
       {/* Sale Confirmation Modals */}
-      <SaleModals
-        activeSaleModal={modalType}
-        onClose={() => { closeModals(); setApptIdForAction(null); }}
+      <ConnectedSaleModals
+        setApptIdForAction={setApptIdForAction}
         onConfirmTokenPaid={confirmTokenPaid}
         onConfirmSaleComplete={confirmSaleComplete}
       />
