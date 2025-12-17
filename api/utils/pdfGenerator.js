@@ -53,8 +53,8 @@ export const generateReceiptPdf = (payment) => {
 
             addRow('Receipt Number:', payment.receiptNumber || payment._id.toString().slice(-8).toUpperCase());
             addRow('Payment ID:', payment.paymentId || invalid);
-            addRow('Payment Date:', new Date(payment.createdAt).toLocaleDateString('en-IN', {
-                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit'
+            addRow('Payment Date:', new Date(payment.createdAt).toLocaleString('en-IN', {
+                weekday: 'long', year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Asia/Kolkata'
             }));
             addRow('Payment Status:', (payment.status || 'Completed').toUpperCase());
 
@@ -66,9 +66,14 @@ export const generateReceiptPdf = (payment) => {
             const propertyName = payment.listingId?.name || payment.appointmentId?.propertyName || payment.contractId?.listingId?.name || 'Property';
             addRow('Property:', propertyName);
 
-            // Rent Period
+            // Purpose (Added)
             if (payment.rentMonth && payment.rentYear) {
-                addRow('Rent Period:', `${payment.rentMonth} ${payment.rentYear}`);
+                addRow('Purpose:', 'Monthly Rent');
+            }
+
+            // Rent Period (Fixed format)
+            if (payment.rentMonth && payment.rentYear) {
+                addRow('Rent Period:', `${payment.rentMonth}/${payment.rentYear}`);
             }
 
             // Payment Method
@@ -81,7 +86,7 @@ export const generateReceiptPdf = (payment) => {
                 .text('Total Amount Paid', 70, y + 37)
                 .fontSize(16)
                 .font('Helvetica-Bold')
-                .text(`₹ ${payment.amount?.toLocaleString('en-IN') || '0.00'}`, 300, y + 36, { align: 'right', width: 220 });
+                .text(`INR ${payment.amount?.toLocaleString('en-IN') || '0.00'}`, 300, y + 36, { align: 'right', width: 220 });
 
             // --- Footer ---
             doc.fontSize(10)
