@@ -178,7 +178,7 @@ export default function PayMonthlyRent() {
 
     // Check if payment is already completed locally first
     if (selectedPayment.status === 'completed' || selectedPayment.status === 'paid') {
-      toast.success("Rent for this month is already paid.");
+      toast.info("Rent for this month is already paid.");
       setCreatedPayment({
         amount: selectedPayment.amount,
         rentMonth: selectedPayment.month,
@@ -186,6 +186,7 @@ export default function PayMonthlyRent() {
         status: 'completed',
         paymentId: selectedPayment.paymentId
       });
+      setPaymentCompleted(true);
       setStep(5);
       return;
     }
@@ -213,7 +214,7 @@ export default function PayMonthlyRent() {
 
             // Check status from fresh data
             if (freshPayment.status === 'completed' || freshPayment.status === 'paid') {
-              toast.success("Rent for this month is already paid.");
+              toast.info("Rent for this month is already paid.");
               setCreatedPayment({
                 amount: freshPayment.amount,
                 rentMonth: freshPayment.month,
@@ -221,6 +222,7 @@ export default function PayMonthlyRent() {
                 status: 'completed',
                 paymentId: freshPayment.paymentId
               });
+              setPaymentCompleted(true);
               setStep(5);
               return; // Stop execution here
             }
