@@ -1905,7 +1905,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
 
             if (error.name === 'AbortError') {
-                // Do not append error message on cancel
+                // Request was cancelled - restore the optimistic decrement
+                if (rateLimitInfo.role !== 'rootadmin') {
+                    setRateLimitInfo(prev => ({
+                        ...prev,
+                        remaining: prev.remaining + 1 // Restore the count
+                    }));
+                }
                 setIsLoading(false);
                 return;
             }
@@ -2085,6 +2091,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
 
             if (error.name === 'AbortError') {
+                // Request was cancelled - restore the optimistic decrement
+                if (rateLimitInfo.role !== 'rootadmin') {
+                    setRateLimitInfo(prev => ({
+                        ...prev,
+                        remaining: prev.remaining + 1 // Restore the count
+                    }));
+                }
                 setIsLoading(false);
                 return;
             }
@@ -2506,6 +2519,13 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
         } catch (error) {
             if (error.name === 'AbortError') {
+                // Request was cancelled - restore the optimistic decrement
+                if (rateLimitInfo.role !== 'rootadmin') {
+                    setRateLimitInfo(prev => ({
+                        ...prev,
+                        remaining: prev.remaining + 1 // Restore the count
+                    }));
+                }
                 console.log('Edited message request was aborted');
                 return;
             }
