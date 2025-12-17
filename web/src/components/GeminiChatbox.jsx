@@ -1677,14 +1677,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         // Set loading state to show cancel button
         setIsLoading(true);
 
-        // Optimistically decrement rate limit
-        if (rateLimitInfo.role !== 'rootadmin') {
-            setRateLimitInfo(prev => ({
-                ...prev,
-                remaining: Math.max(0, prev.remaining - 1)
-            }));
-        }
-
         // Play sound when message is sent
         playSound('message-sent.mp3');
 
@@ -1918,14 +1910,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
 
             if (error.name === 'AbortError') {
-                // Request was cancelled - restore the optimistic decrement
-                if (rateLimitInfo.role !== 'rootadmin') {
-                    setRateLimitInfo(prev => ({
-                        ...prev,
-                        remaining: prev.remaining + 1 // Restore the count
-                    }));
-                }
+                // Request was cancelled - backend won't count it
                 setIsLoading(false);
+                // Refresh rate limit to get accurate count
+                fetchRateLimitStatus();
                 return;
             }
 
@@ -1961,33 +1949,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 autoReportRestrictedContent(lastUserMessageRef.current, "AI Moderated");
                 // Note: For policy violations, we keep the prompt count decremented
             } else {
-                // For technical errors (network, timeout, server), restore the prompt count
-                let shouldRestoreCount = false;
+                // For technical errors, backend won't count them either
+                // Just set appropriate error messages
 
                 if (error.message.includes('timeout')) {
                     errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
-                    shouldRestoreCount = true;
                 } else if (error.message.includes('HTTP error')) {
                     errorMessage = 'Server error. Please try again later.';
-                    shouldRestoreCount = true;
                 } else if (error.message.includes('Invalid response structure')) {
                     errorMessage = 'I received an invalid response. Please try again.';
-                    shouldRestoreCount = true;
                 } else if (error.message.includes('Failed to fetch')) {
                     errorMessage = 'Network error. Please check your connection and try again.';
-                    shouldRestoreCount = true;
-                } else {
-                    // Generic error - also restore count
-                    shouldRestoreCount = true;
                 }
 
-                // Restore prompt count for technical failures
-                if (shouldRestoreCount && rateLimitInfo.role !== 'rootadmin') {
-                    setRateLimitInfo(prev => ({
-                        ...prev,
-                        remaining: prev.remaining + 1 // Restore the count
-                    }));
-                }
+                // Refresh rate limit to get accurate count after error
+                fetchRateLimitStatus();
 
                 setMessages(prev => {
                     const currentMessages = Array.isArray(prev) ? prev : [];
@@ -2047,14 +2023,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
 
         setIsLoading(true);
-
-        // Optimistically decrement rate limit
-        if (rateLimitInfo.role !== 'rootadmin') {
-            setRateLimitInfo(prev => ({
-                ...prev,
-                remaining: Math.max(0, prev.remaining - 1)
-            }));
-        }
 
         // Remove the error message
         setMessages(prev => prev.filter((_, index) => index !== messageIndex));
@@ -2123,44 +2091,28 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
 
             if (error.name === 'AbortError') {
-                // Request was cancelled - restore the optimistic decrement
-                if (rateLimitInfo.role !== 'rootadmin') {
-                    setRateLimitInfo(prev => ({
-                        ...prev,
-                        remaining: prev.remaining + 1 // Restore the count
-                    }));
-                }
+                // Request was cancelled - backend won't count it
                 setIsLoading(false);
+                // Refresh rate limit to get accurate count
+                fetchRateLimitStatus();
                 return;
             }
 
-            // For technical errors, restore the prompt count
-            let shouldRestoreCount = false;
+            // For technical errors, backend won't count them either
+            // Just set appropriate error messages
 
             if (error.message.includes('timeout')) {
                 errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
-                shouldRestoreCount = true;
             } else if (error.message.includes('HTTP error')) {
                 errorMessage = 'Server error. Please try again later.';
-                shouldRestoreCount = true;
             } else if (error.message.includes('Invalid response structure')) {
                 errorMessage = 'I received an invalid response. Please try again.';
-                shouldRestoreCount = true;
             } else if (error.message.includes('Failed to fetch')) {
                 errorMessage = 'Network error. Please check your connection and try again.';
-                shouldRestoreCount = true;
-            } else {
-                // Generic error - also restore count
-                shouldRestoreCount = true;
             }
 
-            // Restore prompt count for technical failures
-            if (shouldRestoreCount && rateLimitInfo.role !== 'rootadmin') {
-                setRateLimitInfo(prev => ({
-                    ...prev,
-                    remaining: prev.remaining + 1 // Restore the count
-                }));
-            }
+            // Refresh rate limit to get accurate count after error
+            fetchRateLimitStatus();
 
             setMessages(prev => [...prev, {
                 role: 'assistant',
@@ -2488,14 +2440,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         setIsLoading(true);
 
-        // Optimistically decrement rate limit
-        if (rateLimitInfo.role !== 'rootadmin') {
-            setRateLimitInfo(prev => ({
-                ...prev,
-                remaining: Math.max(0, prev.remaining - 1)
-            }));
-        }
-
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
             const currentSessionId = getOrCreateSessionId();
@@ -2569,47 +2513,31 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
         } catch (error) {
             if (error.name === 'AbortError') {
-                // Request was cancelled - restore the optimistic decrement
-                if (rateLimitInfo.role !== 'rootadmin') {
-                    setRateLimitInfo(prev => ({
-                        ...prev,
-                        remaining: prev.remaining + 1 // Restore the count
-                    }));
-                }
+                // Request was cancelled - backend won't count it
                 console.log('Edited message request was aborted');
+                // Refresh rate limit to get accurate count
+                fetchRateLimitStatus();
                 return;
             }
             console.error('Error in sendEditedMessageToAPI:', error);
 
             let errorMessage = 'Sorry, I\'m having trouble connecting right now. Please try again later.';
 
-            // For technical errors, restore the prompt count
-            let shouldRestoreCount = false;
+            // For technical errors, backend won't count them either
+            // Just set appropriate error messages
 
             if (error.message.includes('timeout')) {
                 errorMessage = 'Request timed out. The response is taking longer than expected. Please try again.';
-                shouldRestoreCount = true;
             } else if (error.message.includes('HTTP error')) {
                 errorMessage = 'Server error. Please try again later.';
-                shouldRestoreCount = true;
             } else if (error.message.includes('Invalid response structure')) {
                 errorMessage = 'I received an invalid response. Please try again.';
-                shouldRestoreCount = true;
             } else if (error.message.includes('Failed to fetch')) {
                 errorMessage = 'Network error. Please check your connection and try again.';
-                shouldRestoreCount = true;
-            } else {
-                // Generic error - also restore count
-                shouldRestoreCount = true;
             }
 
-            // Restore prompt count for technical failures
-            if (shouldRestoreCount && rateLimitInfo.role !== 'rootadmin') {
-                setRateLimitInfo(prev => ({
-                    ...prev,
-                    remaining: prev.remaining + 1 // Restore the count
-                }));
-            }
+            // Refresh rate limit to get accurate count after error
+            fetchRateLimitStatus();
 
             setMessages(prev => [...prev, {
                 role: 'assistant',

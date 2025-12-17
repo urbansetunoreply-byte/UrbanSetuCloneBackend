@@ -46,13 +46,13 @@ const RATE_LIMITS = {
 const getUserRole = (req) => {
     // Debug logging
     console.log('Rate limiter - req.user:', req.user ? { id: req.user._id, role: req.user.role, email: req.user.email } : 'null');
-    
+
     // If user is authenticated, use their role
     if (req.user && req.user.role) {
         console.log('Rate limiter - Using authenticated user role:', req.user.role);
         return req.user.role;
     }
-    
+
     // Default to public for non-authenticated users
     console.log('Rate limiter - Using public role (no authenticated user)');
     return 'public';
@@ -69,7 +69,7 @@ const getIdentifier = (req, role) => {
     if (req.user && req.user.id) {
         return `user:${req.user.id}:${role}`;
     }
-    
+
     // For public users, use IP address
     const ip = req.ip || req.connection.remoteAddress || req.socket.remoteAddress;
     return `ip:${ip}:${role}`;
@@ -85,7 +85,7 @@ export const aiChatRateLimit = (req, res, next) => {
     try {
         const role = getUserRole(req);
         const config = RATE_LIMITS[role];
-        
+
         // Root admins bypass rate limiting
         if (role === 'rootadmin') {
             console.log('Rate limiter - Root admin detected, bypassing rate limiting');
@@ -98,58 +98,80 @@ export const aiChatRateLimit = (req, res, next) => {
             });
             return next();
         }
-        
+
         const identifier = getIdentifier(req, role);
         const key = `ai_chat:${identifier}`;
         const now = Date.now();
-        
+
         const existing = rateLimitStore.get(key);
-        
+
         if (!existing) {
-            // First request in the window
-            rateLimitStore.set(key, {
-                count: 1,
+            // First request in the window - don't increment yet
+            const newEntry = {
+                count: 0, // Start at 0, will increment on successful completion
                 firstRequest: now,
                 expiresAt: now + config.windowMs,
                 role: role
-            });
-            
+            };
+            rateLimitStore.set(key, newEntry);
+
             // Add rate limit headers
             res.set({
                 'X-RateLimit-Limit': config.maxPrompts,
-                'X-RateLimit-Remaining': config.maxPrompts - 1,
+                'X-RateLimit-Remaining': config.maxPrompts,
                 'X-RateLimit-Reset': new Date(now + config.windowMs).toISOString(),
                 'X-RateLimit-Role': role
             });
-            
+
+            // Increment count only after successful response
+            res.on('finish', () => {
+                const entry = rateLimitStore.get(key);
+                if (entry && res.statusCode < 400) { // Only count successful responses
+                    entry.count += 1;
+                    rateLimitStore.set(key, entry);
+                    console.log(`Rate limiter - Incremented count for ${identifier} to ${entry.count}`);
+                }
+            });
+
             return next();
         }
-        
+
         // Check if window has expired
         if (now > existing.expiresAt) {
             // Reset the window
-            rateLimitStore.set(key, {
-                count: 1,
+            const newEntry = {
+                count: 0, // Start at 0, will increment on successful completion
                 firstRequest: now,
                 expiresAt: now + config.windowMs,
                 role: role
-            });
-            
+            };
+            rateLimitStore.set(key, newEntry);
+
             // Add rate limit headers
             res.set({
                 'X-RateLimit-Limit': config.maxPrompts,
-                'X-RateLimit-Remaining': config.maxPrompts - 1,
+                'X-RateLimit-Remaining': config.maxPrompts,
                 'X-RateLimit-Reset': new Date(now + config.windowMs).toISOString(),
                 'X-RateLimit-Role': role
             });
-            
+
+            // Increment count only after successful response
+            res.on('finish', () => {
+                const entry = rateLimitStore.get(key);
+                if (entry && res.statusCode < 400) { // Only count successful responses
+                    entry.count += 1;
+                    rateLimitStore.set(key, entry);
+                    console.log(`Rate limiter - Incremented count for ${identifier} to ${entry.count}`);
+                }
+            });
+
             return next();
         }
-        
+
         // Check if max prompts exceeded
         if (existing.count >= config.maxPrompts) {
             const resetTime = new Date(existing.expiresAt).toISOString();
-            
+
             // Add rate limit headers
             res.set({
                 'X-RateLimit-Limit': config.maxPrompts,
@@ -157,7 +179,7 @@ export const aiChatRateLimit = (req, res, next) => {
                 'X-RateLimit-Reset': resetTime,
                 'X-RateLimit-Role': role
             });
-            
+
             return next(errorHandler(429, config.message, {
                 rateLimitInfo: {
                     role: role,
@@ -168,21 +190,28 @@ export const aiChatRateLimit = (req, res, next) => {
                 }
             }));
         }
-        
-        // Increment count
-        existing.count += 1;
-        rateLimitStore.set(key, existing);
-        
-        // Add rate limit headers
+
+        // Don't increment count yet - wait for successful completion
+        // Add rate limit headers (showing what will be remaining after this request)
         res.set({
             'X-RateLimit-Limit': config.maxPrompts,
-            'X-RateLimit-Remaining': config.maxPrompts - existing.count,
+            'X-RateLimit-Remaining': config.maxPrompts - existing.count - 1, // -1 for this pending request
             'X-RateLimit-Reset': new Date(existing.expiresAt).toISOString(),
             'X-RateLimit-Role': role
         });
-        
+
+        // Increment count only after successful response
+        res.on('finish', () => {
+            const entry = rateLimitStore.get(key);
+            if (entry && res.statusCode < 400) { // Only count successful responses
+                entry.count += 1;
+                rateLimitStore.set(key, entry);
+                console.log(`Rate limiter - Incremented count for ${identifier} to ${entry.count}`);
+            }
+        });
+
         next();
-        
+
     } catch (error) {
         console.error('Rate limiter error:', error);
         // If rate limiter fails, allow the request to proceed
@@ -199,9 +228,9 @@ export const getRateLimitStatus = (req) => {
     try {
         const role = getUserRole(req);
         const config = RATE_LIMITS[role];
-        
+
         console.log('getRateLimitStatus - role:', role, 'config:', config);
-        
+
         if (role === 'rootadmin') {
             console.log('getRateLimitStatus - Root admin detected, returning unlimited status');
             return {
@@ -212,11 +241,11 @@ export const getRateLimitStatus = (req) => {
                 windowMs: 0
             };
         }
-        
+
         const identifier = getIdentifier(req, role);
         const key = `ai_chat:${identifier}`;
         const existing = rateLimitStore.get(key);
-        
+
         if (!existing) {
             return {
                 role: role,
@@ -226,7 +255,7 @@ export const getRateLimitStatus = (req) => {
                 windowMs: config.windowMs
             };
         }
-        
+
         const now = Date.now();
         if (now > existing.expiresAt) {
             return {
@@ -237,7 +266,7 @@ export const getRateLimitStatus = (req) => {
                 windowMs: config.windowMs
             };
         }
-        
+
         return {
             role: role,
             limit: config.maxPrompts,
@@ -245,7 +274,7 @@ export const getRateLimitStatus = (req) => {
             resetTime: new Date(existing.expiresAt).toISOString(),
             windowMs: config.windowMs
         };
-        
+
     } catch (error) {
         console.error('Rate limit status error:', error);
         return {
@@ -268,7 +297,7 @@ export const clearRateLimit = (req) => {
         const role = getUserRole(req);
         const identifier = getIdentifier(req, role);
         const key = `ai_chat:${identifier}`;
-        
+
         return rateLimitStore.delete(key);
     } catch (error) {
         console.error('Clear rate limit error:', error);
