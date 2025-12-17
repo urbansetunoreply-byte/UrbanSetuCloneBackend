@@ -1664,6 +1664,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         // Set loading state to show cancel button
         setIsLoading(true);
 
+        // Optimistically decrement rate limit
+        if (rateLimitInfo.role !== 'rootadmin') {
+            setRateLimitInfo(prev => ({
+                ...prev,
+                remaining: Math.max(0, prev.remaining - 1)
+            }));
+        }
+
         // Play sound when message is sent
         playSound('message-sent.mp3');
 
@@ -2001,6 +2009,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
 
         setIsLoading(true);
+
+        // Optimistically decrement rate limit
+        if (rateLimitInfo.role !== 'rootadmin') {
+            setRateLimitInfo(prev => ({
+                ...prev,
+                remaining: Math.max(0, prev.remaining - 1)
+            }));
+        }
 
         // Remove the error message
         setMessages(prev => prev.filter((_, index) => index !== messageIndex));
@@ -2408,6 +2424,14 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
 
         setIsLoading(true);
+
+        // Optimistically decrement rate limit
+        if (rateLimitInfo.role !== 'rootadmin') {
+            setRateLimitInfo(prev => ({
+                ...prev,
+                remaining: Math.max(0, prev.remaining - 1)
+            }));
+        }
 
         try {
             const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
