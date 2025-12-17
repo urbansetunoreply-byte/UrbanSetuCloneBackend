@@ -45,7 +45,7 @@ export default function Home() {
   useEffect(() => {
     const fetchOfferListings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`);
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`, { credentials: 'include' });
         const data = await res.json();
         setOfferListings(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -56,7 +56,7 @@ export default function Home() {
 
     const fetchRentListings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`);
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`, { credentials: 'include' });
         const data = await res.json();
         setRentListings(Array.isArray(data) ? data : []);
       } catch (error) {
@@ -67,7 +67,7 @@ export default function Home() {
 
     const fetchSaleListings = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`);
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`, { credentials: 'include' });
         const data = await res.json();
         setSaleListings(Array.isArray(data) ? data : []);
       } catch (error) {
