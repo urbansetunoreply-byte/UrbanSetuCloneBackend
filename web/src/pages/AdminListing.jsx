@@ -4,7 +4,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaHeart, FaExpand, FaRocket } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaHeart, FaExpand, FaRocket, FaCheckCircle, FaEye } from "react-icons/fa";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
@@ -18,7 +18,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 export default function AdminListing() {
   // Set page title
   usePageTitle("Admin Property Details - Property Management");
-  
+
   const params = useParams();
   const navigate = useNavigate();
   const [listing, setListing] = useState(null);
@@ -60,13 +60,13 @@ export default function AdminListing() {
 
   const handleDelete = async () => {
     if (!window.confirm('Are you sure you want to delete this property?')) return;
-    
+
     try {
-      const res = await fetch(`/api/listing/delete/${listing._id}`, { 
+      const res = await fetch(`/api/listing/delete/${listing._id}`, {
         method: 'DELETE',
         credentials: 'include'
       });
-      
+
       if (res.ok) {
         toast.success('Property deleted successfully!');
         navigate('/admin/listings');
@@ -105,7 +105,7 @@ export default function AdminListing() {
     }
     setDeassignLoading(true);
     setDeassignError('');
-    
+
     try {
       // Verify password first
       const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
@@ -114,13 +114,13 @@ export default function AdminListing() {
         credentials: 'include',
         body: JSON.stringify({ password: deassignPassword }),
       });
-      
+
       if (!verifyRes.ok) {
         setDeassignError('Incorrect password. Owner not deassigned.');
         setDeassignLoading(false);
         return;
       }
-      
+
       // Proceed to deassign owner
       const res = await fetch(`${API_BASE_URL}/api/listing/deassign-owner/${listing._id}`, {
         method: 'POST',
@@ -128,7 +128,7 @@ export default function AdminListing() {
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ reason: deassignReason }),
       });
-      
+
       const data = await res.json();
       if (res.ok) {
         setShowPasswordModal(false);
@@ -157,7 +157,7 @@ export default function AdminListing() {
           return;
         }
         setListing(data);
-        
+
         // Fetch watchlist count
         await refreshWatchlistCount();
       } catch (error) {
@@ -170,7 +170,7 @@ export default function AdminListing() {
 
     // Set up periodic refresh of watchlist count every 30 seconds
     const interval = setInterval(refreshWatchlistCount, 30000);
-    
+
     return () => clearInterval(interval);
   }, [params.listingId]);
 
@@ -194,7 +194,7 @@ export default function AdminListing() {
           <div className="text-center">
             <h3 className="text-2xl font-bold text-red-600 mb-4">Property Not Found</h3>
             <p className="text-gray-600 mb-6">The property you're looking for doesn't exist or has been removed.</p>
-            <Link 
+            <Link
               to="/admin"
               className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
             >
@@ -216,7 +216,7 @@ export default function AdminListing() {
         <div className="mb-6 w-full">
           {/* Mobile Layout - Stack buttons vertically for better mobile experience */}
           <div className="block sm:hidden space-y-2 px-1">
-            <Link 
+            <Link
               to="/admin"
               className="w-full bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 py-2 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-xs"
             >
@@ -250,10 +250,10 @@ export default function AdminListing() {
               Share Property
             </button>
           </div>
-          
+
           {/* Desktop Layout - Original grid layout */}
           <div className="hidden sm:grid sm:grid-cols-2 lg:grid-cols-4 gap-2 sm:gap-3 w-full">
-            <Link 
+            <Link
               to="/admin"
               className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
             >
@@ -297,9 +297,9 @@ export default function AdminListing() {
 
         {/* Swiper Section */}
         <div className="relative mb-6">
-          <Swiper 
-            navigation 
-            modules={[Navigation]} 
+          <Swiper
+            navigation
+            modules={[Navigation]}
             className="rounded-lg overflow-hidden relative"
             onSlideChange={(swiper) => {
               // Update selected image index when swiper changes
@@ -378,6 +378,16 @@ export default function AdminListing() {
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
             <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 break-words flex items-center gap-2">
               {listing.name}
+              {listing.isVerified && (
+                <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                  <FaCheckCircle /> Verified
+                </span>
+              )}
+              {!listing.isVerified && (
+                <span className="ml-3 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                  ⚠️ Not Verified
+                </span>
+              )}
               {/* Wishlist Heart Icon - match ListingItem style */}
               <button
                 onClick={async () => {
@@ -427,7 +437,7 @@ export default function AdminListing() {
           </div>
 
           <p className="flex items-center text-gray-600 mb-4">
-            <FaMapMarkerAlt className="mr-2 text-red-500" /> 
+            <FaMapMarkerAlt className="mr-2 text-red-500" />
             {maskAddress(
               // Create address object if structured fields exist, otherwise use legacy address
               listing.propertyNumber || listing.city ? {
@@ -553,15 +563,29 @@ export default function AdminListing() {
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Property Status</p>
-              <p className="font-semibold text-gray-800">
-                {listing.offer ? 'Special Offer' : 'Regular Listing'}
+              <p className="text-sm text-gray-600">Verification Status</p>
+              <p className={`font-semibold flex items-center gap-1 ${listing.isVerified ? 'text-green-700' : 'text-yellow-700'}`}>
+                {listing.isVerified ? (
+                  <>
+                    <FaCheckCircle className="text-sm" /> Verified
+                  </>
+                ) : (
+                  <>
+                    ⚠️ Not Verified
+                  </>
+                )}
+              </p>
+            </div>
+            <div>
+              <p className="text-sm text-gray-600">Visibility</p>
+              <p className={`font-semibold ${listing.visibility === 'public' ? 'text-blue-700' : 'text-gray-700'}`}>
+                {listing.visibility === 'public' ? '🌐 Public' : '🔒 Private'}
               </p>
             </div>
           </div>
         </div>
       </div>
-      
+
       {/* Image Preview Modal */}
       {listing && listing.imageUrls && listing.imageUrls.length > 0 && (
         <ImagePreview
@@ -598,15 +622,15 @@ export default function AdminListing() {
             />
             {deassignError && <div className="text-red-600 text-sm">{deassignError}</div>}
             <div className="flex gap-2 justify-end">
-              <button 
-                type="button" 
-                onClick={() => setShowDeassignModal(false)} 
+              <button
+                type="button"
+                onClick={() => setShowDeassignModal(false)}
                 className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
+              <button
+                type="submit"
                 className="px-4 py-2 rounded bg-red-600 text-white font-semibold"
               >
                 Next
@@ -636,16 +660,16 @@ export default function AdminListing() {
             />
             {deassignError && <div className="text-red-600 text-sm">{deassignError}</div>}
             <div className="flex gap-2 justify-end">
-              <button 
-                type="button" 
-                onClick={() => setShowPasswordModal(false)} 
+              <button
+                type="button"
+                onClick={() => setShowPasswordModal(false)}
                 className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold" 
+              <button
+                type="submit"
+                className="px-4 py-2 rounded bg-red-600 text-white font-semibold"
                 disabled={deassignLoading}
               >
                 {deassignLoading ? 'Deassigning...' : 'Confirm & Deassign'}

@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
-import { FaEdit, FaTrash, FaEye, FaPlus, FaLock, FaFlag, FaTimes, FaSync } from "react-icons/fa";
+import { FaEdit, FaTrash, FaEye, FaPlus, FaLock, FaFlag, FaTimes, FaSync, FaCheckCircle } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { maskAddress } from '../utils/addressMasking';
 import { useSelector, useDispatch } from "react-redux";
@@ -510,6 +510,20 @@ export default function AdminListings() {
                       {/* Content */}
                       <div className="p-4">
                         <h4 className="font-semibold text-lg text-gray-800 mb-2 truncate">{listing.name}</h4>
+
+                        {/* Verification Status Badge */}
+                        <div className="mb-2">
+                          {listing.isVerified ? (
+                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold flex items-center gap-1 w-fit">
+                              <FaCheckCircle className="text-xs" /> Verified
+                            </span>
+                          ) : (
+                            <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-semibold flex items-center gap-1 w-fit">
+                              ⚠️ Not Verified
+                            </span>
+                          )}
+                        </div>
+
                         <p className="text-gray-600 text-sm mb-2 truncate">
                           {maskAddress(
                             // Create address object if structured fields exist, otherwise use legacy address

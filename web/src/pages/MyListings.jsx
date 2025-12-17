@@ -426,14 +426,6 @@ export default function MyListings() {
                         >
                           <FaEdit /> Edit
                         </Link>
-                        {listing.type === 'rent' && (
-                          <Link
-                            to={`/user/property-verification?listingId=${listing._id}`}
-                            className="flex-1 bg-green-500 text-white px-3 py-2 rounded text-sm font-medium hover:bg-green-600 transition flex items-center justify-center gap-1"
-                          >
-                            <FaShieldAlt /> {listing.isVerified ? 'Verify Status' : 'Verify'}
-                          </Link>
-                        )}
 
                         {/* Delete Button - Disabled if Rent Locked, Under Contract, or Sold */}
                         <button
