@@ -1763,6 +1763,16 @@ export const getDispute = async (req, res, next) => {
         }],
         strictPopulate: false
       })
+      .populate({
+        path: 'bookingId',
+        select: 'propertyName status listingId',
+        populate: {
+          path: 'listingId',
+          select: 'name address city state imageUrls',
+          strictPopulate: false
+        },
+        strictPopulate: false
+      })
       .populate('raisedBy', 'username email avatar firstName lastName')
       .populate('raisedAgainst', 'username email avatar firstName lastName')
       .populate('messages.sender', 'username email avatar')
@@ -1773,22 +1783,39 @@ export const getDispute = async (req, res, next) => {
     }
 
     // Verify user has access (tenant, landlord, or admin)
-    const contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId);
-    if (!contract) {
-      return res.status(404).json({ message: "Contract not found." });
+    let contract = null;
+    let booking = null;
+
+    if (dispute.contractId) {
+      contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId);
+    } else if (dispute.bookingId) {
+      booking = await Booking.findById(dispute.bookingId._id || dispute.bookingId);
     }
 
-    const contractTenantId = contract?.tenantId?._id?.toString() || contract?.tenantId?.toString();
-    const contractLandlordId = contract?.landlordId?._id?.toString() || contract?.landlordId?.toString();
+    if (!contract && !booking) {
+      // If neither is found, but dispute exists, it might be orphaned or data issue
+      // However, if admin, proceed. If user, check raisedBy/Against
+    }
+
     const raisedById = dispute.raisedBy?._id?.toString() || dispute.raisedBy?.toString();
     const raisedAgainstId = dispute.raisedAgainst?._id?.toString() || dispute.raisedAgainst?.toString();
 
-    const isTenant = contractTenantId === userId.toString();
-    const isLandlord = contractLandlordId === userId.toString();
     const isRaisedBy = raisedById === userId.toString();
     const isRaisedAgainst = raisedAgainstId === userId.toString();
     const user = await User.findById(userId);
     const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
+
+    // tenant/landlord specific checks (only if contract exists)
+    let isTenant = false;
+    let isLandlord = false;
+    if (contract) {
+      const contractTenantId = contract.tenantId?._id?.toString() || contract.tenantId?.toString();
+      const contractLandlordId = contract.landlordId?._id?.toString() || contract.landlordId?.toString();
+      isTenant = contractTenantId === userId.toString();
+      isLandlord = contractLandlordId === userId.toString();
+    }
+
+    // For bookings, we also trust raisedBy/raisedAgainst which are set at creation
 
     if (!isTenant && !isLandlord && !isRaisedBy && !isRaisedAgainst && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });
@@ -1845,10 +1872,20 @@ export const listDisputes = async (req, res, next) => {
         select: 'contractId listingId',
         populate: {
           path: 'listingId',
-          select: 'name address city state imageUrls',
-          strictPopulate: false // Don't fail if listingId is missing
+          select: 'name address city state imageUrls availabilityStatus',
+          strictPopulate: false
         },
-        strictPopulate: false // Don't fail if contractId is invalid
+        strictPopulate: false
+      })
+      .populate({
+        path: 'bookingId',
+        select: 'propertyName status listingId',
+        populate: {
+          path: 'listingId',
+          select: 'name address city state imageUrls availabilityStatus',
+          strictPopulate: false
+        },
+        strictPopulate: false
       })
       .populate('raisedBy', 'username email avatar')
       .populate('raisedAgainst', 'username email avatar')
@@ -1897,12 +1934,18 @@ export const updateDisputeStatus = async (req, res, next) => {
         // Send email if closed manually
         if (status === 'closed') {
           try {
-            const contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId)
-              .populate('listingId');
+            let listing = null;
+            if (dispute.contractId) {
+              const contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId).populate('listingId');
+              listing = contract?.listingId;
+            } else if (dispute.bookingId) {
+              const booking = await Booking.findById(dispute.bookingId._id || dispute.bookingId).populate('listingId');
+              listing = booking?.listingId;
+            }
 
-            if (contract) {
+            if (listing) {
               const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
-              const listing = contract.listingId;
+              // const listing = contract.listingId; // Removed, listing is now defined above
 
               // Get the parties involved
               const raisedByUser = await User.findById(dispute.raisedBy);
@@ -1973,15 +2016,32 @@ export const addDisputeComment = async (req, res, next) => {
     }
 
     // Verify user has access
-    const contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId);
-    const isTenant = contract.tenantId.toString() === userId;
-    const isLandlord = contract.landlordId.toString() === userId;
+    // Verify user has access
+    let contract = null;
+    let booking = null;
+
+    if (dispute.contractId) {
+      contract = await RentLockContract.findById(dispute.contractId._id || dispute.contractId);
+    } else if (dispute.bookingId) {
+      booking = await Booking.findById(dispute.bookingId._id || dispute.bookingId);
+    }
+
+    let isTenant = false;
+    let isLandlord = false;
+
+    if (contract) {
+      isTenant = contract.tenantId.toString() === userId;
+      isLandlord = contract.landlordId.toString() === userId;
+    }
+    // For bookings, we rely on raisedBy/raisedAgainst checked below
+
     const isRaisedBy = dispute.raisedBy.toString() === userId;
     const isRaisedAgainst = dispute.raisedAgainst.toString() === userId;
+
     const user = await User.findById(userId);
     const isAdmin = user?.role === 'admin' || user?.role === 'rootadmin';
 
-    if (!isTenant && !isLandlord && !isAdmin) {
+    if (!isTenant && !isLandlord && !isRaisedBy && !isRaisedAgainst && !isAdmin) {
       return res.status(403).json({ message: "Unauthorized." });
     }
 
@@ -2039,15 +2099,27 @@ export const resolveDispute = async (req, res, next) => {
     const io = req.app.get('io');
     const disputePopulated = await Dispute.findById(dispute._id)
       .populate('contractId')
+      .populate('bookingId')
       .populate('raisedBy', 'username')
       .populate('raisedAgainst', 'username');
 
     if (disputePopulated) {
-      const contract = await RentLockContract.findById(disputePopulated.contractId._id || disputePopulated.contractId)
-        .populate('listingId', 'name address');
+      let contract = null;
+      let booking = null;
+      let listing = null;
 
-      if (contract) {
-        const listing = contract.listingId;
+      if (disputePopulated.contractId) {
+        contract = await RentLockContract.findById(disputePopulated.contractId._id || disputePopulated.contractId)
+          .populate('listingId', 'name address');
+        listing = contract?.listingId;
+      } else if (disputePopulated.bookingId) {
+        booking = await Booking.findById(disputePopulated.bookingId._id || disputePopulated.bookingId)
+          .populate('listingId', 'name address');
+        listing = booking?.listingId;
+      }
+
+      if (listing) {
+        // const listing = contract.listingId; // listing is defined above
         const raisedByUser = await User.findById(disputePopulated.raisedBy._id);
         const raisedAgainstUser = await User.findById(disputePopulated.raisedAgainst._id);
         const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';

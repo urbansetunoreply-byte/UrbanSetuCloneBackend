@@ -1,5 +1,5 @@
 import express from 'express'
-import { createListing, deleteListing, updateListing, getListing, getListings, getUserListings, reassignPropertyOwner, deassignPropertyOwner } from '../controllers/listing.controller.js'
+import { createListing, deleteListing, updateListing, getListing, getListings, getUserListings, reassignPropertyOwner, deassignPropertyOwner, republishListing } from '../controllers/listing.controller.js'
 import { verifyToken, optionalAuth } from '../utils/verify.js'
 import User from '../models/user.model.js'
 import Listing from '../models/listing.model.js'
@@ -8,6 +8,7 @@ import { errorHandler } from '../utils/error.js'
 
 const router = express.Router()
 
+router.post("/republish/:id", verifyToken, republishListing)
 router.post("/create", verifyToken, createListing)
 router.get("/user", verifyToken, getUserListings)
 router.get("/user/:userId", verifyToken, async (req, res, next) => {

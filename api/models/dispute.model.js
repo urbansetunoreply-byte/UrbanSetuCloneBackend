@@ -11,7 +11,12 @@ const disputeSchema = new mongoose.Schema({
   contractId: {
     type: mongoose.Schema.Types.ObjectId,
     ref: 'RentLockContract',
-    required: true
+    required: false // Optional, can be linked to booking instead
+  },
+  bookingId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: 'Booking',
+    required: false // Optional, can be linked to contract instead
   },
   raisedBy: {
     type: mongoose.Schema.Types.ObjectId,
@@ -25,7 +30,7 @@ const disputeSchema = new mongoose.Schema({
     required: true,
     index: true
   },
-  
+
   // Dispute Details
   category: {
     type: String,
@@ -51,7 +56,7 @@ const disputeSchema = new mongoose.Schema({
     required: true,
     trim: true
   },
-  
+
   // Evidence
   evidence: [{
     type: {
@@ -74,7 +79,7 @@ const disputeSchema = new mongoose.Schema({
       required: true
     }
   }],
-  
+
   // Status
   status: {
     type: String,
@@ -82,7 +87,7 @@ const disputeSchema = new mongoose.Schema({
     default: 'open',
     index: true
   },
-  
+
   // Resolution
   resolution: {
     decidedBy: {
@@ -105,7 +110,7 @@ const disputeSchema = new mongoose.Schema({
     notes: String,
     resolutionDocumentUrl: String // PDF resolution document
   },
-  
+
   // Communication
   messages: [{
     sender: {
@@ -127,14 +132,14 @@ const disputeSchema = new mongoose.Schema({
       ref: 'User'
     }]
   }],
-  
+
   // Priority
   priority: {
     type: String,
     enum: ['low', 'medium', 'high', 'urgent'],
     default: 'medium'
   },
-  
+
   // Escalation
   escalatedAt: Date,
   escalatedBy: {
@@ -143,7 +148,7 @@ const disputeSchema = new mongoose.Schema({
     default: null
   },
   escalationReason: String,
-  
+
   createdAt: {
     type: Date,
     default: Date.now
@@ -164,7 +169,7 @@ disputeSchema.index({ status: 1, priority: 1, createdAt: -1 }); // For admin das
 disputeSchema.index({ category: 1, status: 1 });
 
 // Generate disputeId before saving
-disputeSchema.pre('save', async function(next) {
+disputeSchema.pre('save', async function (next) {
   if (!this.disputeId) {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 9).toUpperCase();
@@ -175,15 +180,15 @@ disputeSchema.pre('save', async function(next) {
 });
 
 // Virtual for unread messages count (for a specific user)
-disputeSchema.methods.getUnreadCount = function(userId) {
-  return this.messages.filter(msg => 
-    !msg.readBy.includes(userId) && 
+disputeSchema.methods.getUnreadCount = function (userId) {
+  return this.messages.filter(msg =>
+    !msg.readBy.includes(userId) &&
     msg.sender.toString() !== userId.toString()
   ).length;
 };
 
 // Method to add message
-disputeSchema.methods.addMessage = function(senderId, message, attachments = []) {
+disputeSchema.methods.addMessage = function (senderId, message, attachments = []) {
   this.messages.push({
     sender: senderId,
     message,
@@ -195,7 +200,7 @@ disputeSchema.methods.addMessage = function(senderId, message, attachments = [])
 };
 
 // Method to mark messages as read
-disputeSchema.methods.markAsRead = function(userId) {
+disputeSchema.methods.markAsRead = function (userId) {
   this.messages.forEach(msg => {
     if (!msg.readBy.includes(userId)) {
       msg.readBy.push(userId);

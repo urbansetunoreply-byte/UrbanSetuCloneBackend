@@ -59,11 +59,11 @@ export default function DisputeList({ disputes, onViewDispute, getStatusColor, D
                     <span className="text-gray-400">against</span>
                     <span>{dispute.raisedAgainst?.username || 'Unknown'}</span>
                   </div>
-                  {dispute.contractId?.listingId?.name && (
+                  {(dispute.contractId?.listingId?.name || dispute.bookingId?.listingId?.name) && (
                     <div className="flex items-center gap-2 text-sm text-gray-600">
                       <FaGavel className="text-purple-600" />
                       <span className="font-medium">Property:</span>
-                      <span>{dispute.contractId.listingId.name}</span>
+                      <span>{dispute.contractId?.listingId?.name || dispute.bookingId?.listingId?.name}</span>
                     </div>
                   )}
                   <div className="flex items-center gap-2 text-sm text-gray-600">

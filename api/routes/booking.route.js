@@ -6,6 +6,7 @@ import User from "../models/user.model.js";
 import { verifyToken } from '../utils/verify.js';
 import Review from '../models/review.model.js';
 import Notification from '../models/notification.model.js';
+import Dispute from '../models/dispute.model.js';
 import {
   sendAppointmentBookingEmail,
   sendAppointmentRejectedEmail,
@@ -860,10 +861,37 @@ router.post('/:id/sale/dispute', verifyToken, async (req, res) => {
       return res.status(403).json({ message: 'Unauthorized to report dispute on this booking.' });
     }
 
+    // Check for existing active dispute for this booking
+    const ongoingDispute = await Dispute.findOne({
+      bookingId: id,
+      status: { $nin: ['resolved', 'closed'] }
+    });
+
+    if (ongoingDispute) {
+      return res.status(400).json({
+        message: "An active dispute already exists for this transaction. Please wait for the admin to resolve it."
+      });
+    }
+
+    // Create Dispute Record
+    const raisedAgainst = isBuyer ? appt.sellerId._id : appt.buyerId._id;
+
+    const dispute = new Dispute({
+      bookingId: id,
+      raisedBy: userId,
+      raisedAgainst: raisedAgainst,
+      category: 'other', // Default to other since we only have reason text
+      title: `Dispute for ${appt.listingId.name}`,
+      description: reason,
+      priority: 'medium',
+      status: 'open'
+    });
+
+    await dispute.save();
+
     // Send email to admin
-    // Assuming a fixed admin email or searching for ROOT ADMIN
     const rootAdmin = await User.findOne({ role: 'rootadmin' });
-    const adminEmail = rootAdmin ? rootAdmin.email : process.env.EMAIL_USER; // Fallback
+    const adminEmail = rootAdmin ? rootAdmin.email : process.env.EMAIL_USER;
 
     await sendDisputeAlertEmail(adminEmail, {
       propertyName: appt.listingId.name,
@@ -873,10 +901,7 @@ router.post('/:id/sale/dispute', verifyToken, async (req, res) => {
       reason: reason
     });
 
-    // Optionally update booking status or add a flag
-    // For now we just notify admin
-
-    return res.status(200).json({ message: 'Dispute reported to admin successfully.' });
+    return res.status(200).json({ message: 'Dispute reported successfully. Our team will review it shortly.', dispute });
 
   } catch (err) {
     console.error('Error reporting dispute:', err);

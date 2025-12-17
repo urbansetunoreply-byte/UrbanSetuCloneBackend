@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useSelector } from 'react-redux';
 import { toast } from 'react-toastify';
-import { FaUser, FaClock, FaFileAlt, FaComments, FaCheckCircle, FaTimes, FaPaperPlane, FaSpinner, FaUpload, FaImage, FaVideo, FaFile, FaDownload, FaGavel, FaExclamationTriangle, FaEdit } from 'react-icons/fa';
+import { FaUser, FaClock, FaFileAlt, FaComments, FaCheckCircle, FaTimes, FaPaperPlane, FaSpinner, FaUpload, FaImage, FaVideo, FaFile, FaDownload, FaGavel, FaExclamationTriangle, FaEdit, FaSync } from 'react-icons/fa';
 import ImagePreview from '../ImagePreview';
 import VideoPreview from '../VideoPreview';
 import UserAvatar from '../UserAvatar';
@@ -45,6 +45,38 @@ export default function DisputeDetail({
   const [selectedVideo, setSelectedVideo] = useState(null);
   const [showImagePreview, setShowImagePreview] = useState(false);
   const [showVideoPreview, setShowVideoPreview] = useState(false);
+  const [republishing, setRepublishing] = useState(false);
+
+  const handleRepublish = async () => {
+    if (!window.confirm('Are you sure you want to republish this property? This will mark it as available.')) return;
+
+    try {
+      setRepublishing(true);
+      const listingId = dispute.bookingId?.listingId?._id;
+      if (!listingId) {
+        toast.error("Listing ID not found");
+        return;
+      }
+
+      const res = await fetch(`${API_BASE_URL}/api/listing/republish/${listingId}`, {
+        method: 'POST',
+        credentials: 'include'
+      });
+
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Property republished successfully!');
+        if (onUpdate) onUpdate();
+      } else {
+        toast.error(data.message || 'Failed to republish property');
+      }
+    } catch (error) {
+      console.error(error);
+      toast.error('Error republishing property');
+    } finally {
+      setRepublishing(false);
+    }
+  };
 
   const isAdmin = propIsAdmin || currentUser?.role === 'admin' || currentUser?.role === 'rootadmin';
   const isRaisedBy = dispute.raisedBy?._id === currentUser?._id || dispute.raisedBy === currentUser?._id;
@@ -317,10 +349,12 @@ export default function DisputeDetail({
             <span className="text-gray-600 font-medium">Against:</span>{' '}
             <span className="text-gray-800">{dispute.raisedAgainst?.username || 'Unknown'}</span>
           </div>
-          {dispute.contractId?.listingId?.name && (
+          {(dispute.contractId?.listingId?.name || dispute.bookingId?.listingId?.name) && (
             <div>
               <span className="text-gray-600 font-medium">Property:</span>{' '}
-              <span className="text-gray-800">{dispute.contractId.listingId.name}</span>
+              <span className="text-gray-800">
+                {dispute.contractId?.listingId?.name || dispute.bookingId?.listingId?.name}
+              </span>
             </div>
           )}
           <div>
@@ -614,6 +648,23 @@ export default function DisputeDetail({
               className="px-4 py-2 bg-green-600 text-white rounded-lg hover:bg-green-700 flex items-center gap-2"
             >
               <FaCheckCircle /> Resolve Dispute
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Property Management Actions */}
+      {isAdmin && dispute.bookingId && dispute.bookingId.listingId?.availabilityStatus !== 'available' && (
+        <div className="border-t pt-4 mt-6">
+          <h4 className="font-semibold text-gray-800 mb-3">Property Management</h4>
+          <div className="flex gap-3 flex-wrap">
+            <button
+              onClick={handleRepublish}
+              disabled={republishing}
+              className="px-4 py-2 bg-orange-600 text-white rounded-lg hover:bg-orange-700 flex items-center gap-2 disabled:opacity-50"
+            >
+              {republishing ? <FaSpinner className="animate-spin" /> : <FaSync />}
+              Republish Property
             </button>
           </div>
         </div>

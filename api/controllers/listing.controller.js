@@ -903,3 +903,36 @@ export const deassignPropertyOwner = async (req, res, next) => {
     return next(errorHandler(500, 'Failed to deassign property owner'));
   }
 };
+
+// Republish Listing (Reset to available)
+export const republishListing = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+    const listing = await Listing.findById(id);
+
+    if (!listing) {
+      return next(errorHandler(404, 'Listing not found'));
+    }
+
+    // Only Admin or Owner can republish
+    if (req.user.id !== listing.userRef.toString() && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+      return next(errorHandler(401, 'You can only republish your own listings!'));
+    }
+
+    // Update status to available
+    listing.availabilityStatus = 'available';
+    // Reset meta
+    listing.availabilityMeta = {
+      lockReason: null,
+      lockDescription: null,
+      lockedAt: null,
+      bookingId: null,
+      contractId: null
+    };
+
+    const updatedListing = await listing.save();
+    res.status(200).json(updatedListing);
+  } catch (error) {
+    next(error);
+  }
+};
