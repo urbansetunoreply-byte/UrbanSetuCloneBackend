@@ -37,6 +37,17 @@ export default function DisputeList({ disputes, onViewDispute, getStatusColor, D
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
+                    {/* Type Badge */}
+                    {dispute.contractId ? (
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-indigo-100 text-indigo-700 border border-indigo-200">
+                        RENTAL
+                      </span>
+                    ) : dispute.bookingId ? (
+                      <span className="px-3 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700 border border-emerald-200">
+                        SALE
+                      </span>
+                    ) : null}
+
                     <span className={`px-3 py-1 rounded-full text-xs font-semibold ${PRIORITY_COLORS[dispute.priority] || PRIORITY_COLORS.medium}`}>
                       {dispute.priority?.toUpperCase() || 'MEDIUM'}
                     </span>

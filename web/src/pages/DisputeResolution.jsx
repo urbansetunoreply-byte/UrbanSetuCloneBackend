@@ -53,6 +53,7 @@ export default function DisputeResolution() {
     category: 'all',
     search: ''
   });
+  const [activeTab, setActiveTab] = useState('rental'); // 'rental' or 'sales'
 
   useEffect(() => {
     if (!currentUser) {
@@ -121,6 +122,10 @@ export default function DisputeResolution() {
   // Client-side filtering
   const filteredDisputes = React.useMemo(() => {
     return disputes.filter(dispute => {
+      // Tab Filter
+      if (activeTab === 'rental' && !dispute.contractId) return false;
+      if (activeTab === 'sales' && !dispute.bookingId) return false;
+
       const matchesSearch = filters.search === '' ||
         dispute.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
         dispute.disputeId?.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -132,7 +137,7 @@ export default function DisputeResolution() {
 
       return matchesSearch && matchesStatus && matchesCategory;
     });
-  }, [disputes, filters]);
+  }, [disputes, filters, activeTab]);
 
   const fetchContract = async (contractId) => {
     try {
@@ -237,13 +242,43 @@ export default function DisputeResolution() {
                 <FaGavel className="text-blue-600" />
                 Dispute Resolution
               </h1>
-              <p className="text-gray-600 mt-2">Raise and manage disputes for your rental contracts</p>
+              <p className="text-gray-600 mt-2">Manage and resolve your property disputes efficiently</p>
             </div>
             <button
               onClick={handleCreateDispute}
               className="w-full md:w-auto px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center justify-center gap-2 shadow-lg"
             >
               <FaPlus /> Raise New Dispute
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200 mb-6">
+            <button
+              onClick={() => setActiveTab('rental')}
+              className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'rental'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+            >
+              <FaFileAlt className={activeTab === 'rental' ? 'text-blue-600' : 'text-gray-400'} />
+              Rental Disputes
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'rental' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}>
+                {disputes.filter(d => d.contractId).length}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('sales')}
+              className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'sales'
+                  ? 'border-b-2 border-green-600 text-green-600'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+            >
+              <FaCheckCircle className={activeTab === 'sales' ? 'text-green-600' : 'text-gray-400'} />
+              Sales Disputes
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'sales' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                {disputes.filter(d => d.bookingId).length}
+              </span>
             </button>
           </div>
 

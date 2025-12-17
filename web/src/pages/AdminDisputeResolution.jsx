@@ -49,6 +49,7 @@ export default function AdminDisputeResolution() {
     priority: 'all',
     search: ''
   });
+  const [activeTab, setActiveTab] = useState('rental'); // 'rental' or 'sales'
   const [updatingStatus, setUpdatingStatus] = useState(false);
   const [resolving, setResolving] = useState(false);
 
@@ -190,6 +191,10 @@ export default function AdminDisputeResolution() {
   };
 
   const filteredDisputes = disputes.filter(dispute => {
+    // Tab Filter
+    if (activeTab === 'rental' && !dispute.contractId) return false;
+    if (activeTab === 'sales' && !dispute.bookingId) return false;
+
     const matchesSearch = filters.search === '' ||
       dispute.title?.toLowerCase().includes(filters.search.toLowerCase()) ||
       dispute.disputeId?.toLowerCase().includes(filters.search.toLowerCase()) ||
@@ -197,8 +202,10 @@ export default function AdminDisputeResolution() {
       dispute.raisedAgainst?.username?.toLowerCase().includes(filters.search.toLowerCase());
 
     const matchesPriority = filters.priority === 'all' || dispute.priority === filters.priority;
+    const matchesStatus = filters.status === 'all' || dispute.status === filters.status;
+    const matchesCategory = filters.category === 'all' || dispute.category === filters.category;
 
-    return matchesSearch && matchesPriority;
+    return matchesSearch && matchesPriority && matchesStatus && matchesCategory;
   });
 
   const getStatusColor = (status) => {
@@ -244,7 +251,7 @@ export default function AdminDisputeResolution() {
                 <FaGavel className="text-blue-600" />
                 Admin - Dispute Resolution
               </h1>
-              <p className="text-gray-600 mt-2">Manage and resolve all rental disputes</p>
+              <p className="text-gray-600 mt-2">Manage and resolve all rental and sales disputes</p>
             </div>
             <button
               onClick={() => fetchDisputes(true)}
@@ -252,6 +259,36 @@ export default function AdminDisputeResolution() {
               title="Refresh Disputes"
             >
               <FaSync className={loading ? 'animate-spin' : ''} />
+            </button>
+          </div>
+
+          {/* Tabs */}
+          <div className="flex border-b border-gray-200 mb-6">
+            <button
+              onClick={() => setActiveTab('rental')}
+              className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'rental'
+                  ? 'border-b-2 border-blue-600 text-blue-600'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+            >
+              <FaFileAlt className={activeTab === 'rental' ? 'text-blue-600' : 'text-gray-400'} />
+              Rental Disputes
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'rental' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}>
+                {disputes.filter(d => d.contractId).length}
+              </span>
+            </button>
+            <button
+              onClick={() => setActiveTab('sales')}
+              className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'sales'
+                  ? 'border-b-2 border-green-600 text-green-600'
+                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                }`}
+            >
+              <FaCheckCircle className={activeTab === 'sales' ? 'text-green-600' : 'text-gray-400'} />
+              Sales Disputes
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'sales' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+                {disputes.filter(d => d.bookingId).length}
+              </span>
             </button>
           </div>
 
