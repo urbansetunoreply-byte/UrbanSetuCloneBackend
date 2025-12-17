@@ -123,13 +123,15 @@ export const aiChatRateLimit = (req, res, next) => {
                 'X-RateLimit-Role': role
             });
 
-            // Increment count only after successful response
+            // Increment count only after successful response OR policy violation (403)
             res.on('finish', () => {
                 const entry = rateLimitStore.get(key);
-                if (entry && res.statusCode < 400) { // Only count successful responses
+                // Count successful responses (< 400) AND policy violations (403)
+                // Don't count technical errors (5xx) or other client errors (4xx except 403)
+                if (entry && (res.statusCode < 400 || res.statusCode === 403)) {
                     entry.count += 1;
                     rateLimitStore.set(key, entry);
-                    console.log(`Rate limiter - Incremented count for ${identifier} to ${entry.count}`);
+                    console.log(`Rate limiter - Incremented count for ${identifier} to ${entry.count} (status: ${res.statusCode})`);
                 }
             });
 
@@ -155,13 +157,15 @@ export const aiChatRateLimit = (req, res, next) => {
                 'X-RateLimit-Role': role
             });
 
-            // Increment count only after successful response
+            // Increment count only after successful response OR policy violation (403)
             res.on('finish', () => {
                 const entry = rateLimitStore.get(key);
-                if (entry && res.statusCode < 400) { // Only count successful responses
+                // Count successful responses (< 400) AND policy violations (403)
+                // Don't count technical errors (5xx) or other client errors (4xx except 403)
+                if (entry && (res.statusCode < 400 || res.statusCode === 403)) {
                     entry.count += 1;
                     rateLimitStore.set(key, entry);
-                    console.log(`Rate limiter - Incremented count for ${identifier} to ${entry.count}`);
+                    console.log(`Rate limiter - Incremented count for ${identifier} to ${entry.count} (status: ${res.statusCode})`);
                 }
             });
 
@@ -200,13 +204,15 @@ export const aiChatRateLimit = (req, res, next) => {
             'X-RateLimit-Role': role
         });
 
-        // Increment count only after successful response
+        // Increment count only after successful response OR policy violation (403)
         res.on('finish', () => {
             const entry = rateLimitStore.get(key);
-            if (entry && res.statusCode < 400) { // Only count successful responses
+            // Count successful responses (< 400) AND policy violations (403)
+            // Don't count technical errors (5xx) or other client errors (4xx except 403)
+            if (entry && (res.statusCode < 400 || res.statusCode === 403)) {
                 entry.count += 1;
                 rateLimitStore.set(key, entry);
-                console.log(`Rate limiter - Incremented count for ${identifier} to ${entry.count}`);
+                console.log(`Rate limiter - Incremented count for ${identifier} to ${entry.count} (status: ${res.statusCode})`);
             }
         });
 
