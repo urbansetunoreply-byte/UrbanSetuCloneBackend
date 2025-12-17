@@ -667,44 +667,48 @@ export const getListings = async (req, res, next) => {
     }
     // Admins can see all properties (no filter applied)
 
-    const visibility = req.query.visibility || 'all';
-    const availabilityFilter = req.query.availabilityStatus;
-    const excludeAvailabilityFilter = req.query.excludeAvailabilityStatus;
-    const availabilityConditions = [];
+    // Visibility and availability filters - ONLY apply to non-admin users
+    if (!isAdmin) {
+      const visibility = req.query.visibility || 'all';
+      const availabilityFilter = req.query.availabilityStatus;
+      const excludeAvailabilityFilter = req.query.excludeAvailabilityStatus;
+      const availabilityConditions = [];
 
-    if (visibility === 'public') {
-      availabilityConditions.push({
-        $or: [
-          { availabilityStatus: { $exists: false } },
-          { availabilityStatus: 'available' }
-        ]
-      });
-    } else if (availabilityFilter) {
-      const statuses = availabilityFilter.split(',').map((s) => s.trim()).filter(Boolean);
-      if (statuses.length) {
-        const orConditions = [
-          { availabilityStatus: { $in: statuses } }
-        ];
-        if (statuses.includes('available')) {
-          orConditions.push({ availabilityStatus: { $exists: false } });
-        }
-        availabilityConditions.push({ $or: orConditions });
-      }
-    } else if (excludeAvailabilityFilter) {
-      const statuses = excludeAvailabilityFilter.split(',').map((s) => s.trim()).filter(Boolean);
-      if (statuses.length) {
+      if (visibility === 'public') {
         availabilityConditions.push({
           $or: [
             { availabilityStatus: { $exists: false } },
-            { availabilityStatus: { $nin: statuses } }
+            { availabilityStatus: 'available' }
           ]
         });
+      } else if (availabilityFilter) {
+        const statuses = availabilityFilter.split(',').map((s) => s.trim()).filter(Boolean);
+        if (statuses.length) {
+          const orConditions = [
+            { availabilityStatus: { $in: statuses } }
+          ];
+          if (statuses.includes('available')) {
+            orConditions.push({ availabilityStatus: { $exists: false } });
+          }
+          availabilityConditions.push({ $or: orConditions });
+        }
+      } else if (excludeAvailabilityFilter) {
+        const statuses = excludeAvailabilityFilter.split(',').map((s) => s.trim()).filter(Boolean);
+        if (statuses.length) {
+          availabilityConditions.push({
+            $or: [
+              { availabilityStatus: { $exists: false } },
+              { availabilityStatus: { $nin: statuses } }
+            ]
+          });
+        }
+      }
+
+      if (availabilityConditions.length) {
+        query.$and = [...(query.$and || []), ...availabilityConditions];
       }
     }
-
-    if (availabilityConditions.length) {
-      query.$and = [...(query.$and || []), ...availabilityConditions];
-    }
+    // Admins bypass all visibility and availability filters
 
     const listings = await Listing.find(query)
       .sort({ [sortField]: sortOrder })
