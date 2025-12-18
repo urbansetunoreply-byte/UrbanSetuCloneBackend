@@ -7737,34 +7737,17 @@ function AdminAppointmentRow({
                                                 </div>
                                                 <button
                                                   className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
-                                                  onClick={async (e) => {
+                                                  onClick={(e) => {
                                                     e.stopPropagation();
-                                                    try {
-                                                      const response = await fetch(c.documentUrl, { mode: 'cors' });
-                                                      if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                      const blob = await response.blob();
-                                                      const blobUrl = window.URL.createObjectURL(blob);
-                                                      const a = document.createElement('a');
-                                                      a.href = blobUrl;
-                                                      a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                                      document.body.appendChild(a);
-                                                      a.click();
-                                                      a.remove();
-                                                      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                                      toast.success('Document downloaded successfully');
-                                                    } catch (error) {
-                                                      const a = document.createElement('a');
-                                                      a.href = c.documentUrl;
-                                                      a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                                      a.target = '_blank';
-                                                      document.body.appendChild(a);
-                                                      a.click();
-                                                      a.remove();
-                                                      toast.success('Document download started');
-                                                    }
+                                                    const ext = c.documentUrl.split('.').pop().toLowerCase();
+                                                    let type = 'document';
+                                                    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) type = 'image';
+                                                    else if (ext === 'pdf') type = 'pdf';
+                                                    const previewUrl = `/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                                    window.open(previewUrl, '_blank');
                                                   }}
                                                 >
-                                                  Download
+                                                  View Document
                                                 </button>
                                               </div>
                                             </div>
@@ -8286,7 +8269,7 @@ function AdminAppointmentRow({
                                               else if (ext === 'pdf') type = 'pdf';
 
                                               // Open preview in new tab
-                                              const previewUrl = `/admin/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                              const previewUrl = `/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
                                               window.open(previewUrl, '_blank');
                                             }}
                                             title="Click to view document"

@@ -137,33 +137,9 @@ export default function ViewChatDocument() {
 
     const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
     const isParticipant = currentUser && participants.includes(currentUser.email);
-    // Allow if admin, or if user is a valid participant. 
-    // Strict Mode: If not admin, require participant match.
     const isAuthorized = isAdmin || isParticipant;
-
-    if (!currentUser || !isAuthorized) {
-        return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
-                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaLock className="text-2xl text-blue-600" />
-                    </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Restricted Access</h2>
-                    <p className="text-gray-600 mb-6">
-                        {!currentUser
-                            ? "You must be signed in to view this document."
-                            : "You are not authorized to view this document."}
-                    </p>
-                    <button
-                        onClick={() => navigate(currentUser ? -1 : '/sign-in')}
-                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                    >
-                        {currentUser ? "Go Back" : "Sign In"}
-                    </button>
-                </div>
-            </div>
-        );
-    }
+    const isRestricted = !currentUser || !isAuthorized;
+    // We do NOT return early anymore, we render the layout with restricted content.
 
     if (loading) {
         return (
@@ -214,19 +190,47 @@ export default function ViewChatDocument() {
                         {document.name || 'Document View'}
                     </h1>
                 </div>
-                <button
-                    onClick={() => handleDownloadDocument(document.url, document.name)}
-                    className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
-                >
-                    <FaDownload />
-                    <span className="hidden sm:inline">Download</span>
-                </button>
+                {isRestricted ? (
+                    <button
+                        onClick={() => navigate('/sign-in')}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <span className="hidden sm:inline">Sign in to Download</span>
+                        <span className="sm:hidden">Sign in</span>
+                    </button>
+                ) : (
+                    <button
+                        onClick={() => handleDownloadDocument(document.url, document.name)}
+                        className="flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        <FaDownload />
+                        <span className="hidden sm:inline">Download</span>
+                    </button>
+                )}
             </div>
 
             {/* Content */}
             <div className="flex-1 p-4 md:p-8 flex items-center justify-center overflow-auto">
                 <div className="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-6xl h-[80vh] flex items-center justify-center relative">
-                    {isImage ? (
+                    {isRestricted ? (
+                        <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50/50 w-full h-full">
+                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
+                                <FaLock className="text-2xl text-blue-600" />
+                            </div>
+                            <h2 className="text-2xl font-bold text-gray-800 mb-2">Restricted Access</h2>
+                            <p className="text-gray-600 mb-6 max-w-md">
+                                {!currentUser
+                                    ? "This document is private. Please sign in to view and download."
+                                    : "You are not authorized to view or download this document."}
+                            </p>
+                            <button
+                                onClick={() => navigate(currentUser ? -1 : '/sign-in')}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                            >
+                                {currentUser ? "Go Back" : "Sign In"}
+                            </button>
+                        </div>
+                    ) : isImage ? (
                         <img
                             src={document.url}
                             alt="Document"

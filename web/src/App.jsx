@@ -642,6 +642,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/offers" element={<Offers />} />
             <Route path="/ai/share/:shareToken" element={<SharedChatView />} />
             <Route path="/view/:documentId" element={<ViewDocument />} />
+            <Route path="/view-chat/preview" element={<ViewChatDocument />} />
 
             {/* User Routes (Protected) */}
             <Route element={<Private bootstrapped={bootstrapped} />}>
