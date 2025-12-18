@@ -17,7 +17,11 @@ export default function ViewDocument() {
     const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
     const { currentUser } = useSelector((state) => state.user);
 
+    const docType = document?.type?.replace(/_/g, ' ') || 'Document';
+    usePageTitle(`${docType.charAt(0).toUpperCase() + docType.slice(1)} - UrbanSetu`);
+
     const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
+    const isPublic = location.pathname.startsWith('/view/');
 
     useEffect(() => {
         if (documentId === 'preview') {
