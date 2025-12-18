@@ -1208,8 +1208,11 @@ export default function Community() {
                                                                     {/* Actions */}
                                                                     <div className="flex items-center gap-4 mt-2">
                                                                         <button
-                                                                            onClick={() => setReplyingTo({ postId: post._id, commentId: comment._id })}
-                                                                            className="text-xs font-bold text-gray-500 hover:text-blue-600"
+                                                                            onClick={() => {
+                                                                                setActiveReplyInput(comment._id);
+                                                                                setReplyingTo({ postId: post._id, commentId: comment._id });
+                                                                            }}
+                                                                            className="text-xs font-bold text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
                                                                         >
                                                                             Reply
                                                                         </button>

@@ -1320,8 +1320,11 @@ export default function AdminCommunity() {
                                                                             </button>
                                                                         </div>
                                                                         <button
-                                                                            onClick={() => setReplyingTo({ postId: post._id, commentId: comment._id })}
-                                                                            className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+                                                                            onClick={() => {
+                                                                                setActiveReplyInput(comment._id);
+                                                                                setReplyingTo({ postId: post._id, commentId: comment._id });
+                                                                            }}
+                                                                            className="text-xs font-semibold text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
                                                                         >
                                                                             Reply
                                                                         </button>
