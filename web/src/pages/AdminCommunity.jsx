@@ -1476,7 +1476,7 @@ export default function AdminCommunity() {
                                                                                                                     setReplyingTo({ postId: post._id, commentId: comment._id, userId: reply.user._id, username: reply.user.username });
                                                                                                                 }
                                                                                                             }}
-                                                                                                            className="text-[10px] font-semibold text-gray-500 hover:text-blue-600"
+                                                                                                            className="text-[10px] font-semibold text-gray-500 hover:text-blue-600 bg-gray-100/80 hover:bg-blue-50 px-1.5 py-0.5 rounded transition-colors"
                                                                                                         >
                                                                                                             Reply
                                                                                                         </button>
