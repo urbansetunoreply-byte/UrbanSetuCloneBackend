@@ -12,6 +12,10 @@ const forumCommentSchema = new mongoose.Schema({
         trim: true,
         maxLength: 1000
     },
+    isEdited: {
+        type: Boolean,
+        default: false
+    },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -32,7 +36,8 @@ const forumCommentSchema = new mongoose.Schema({
             reason: { type: String, required: true },
             createdAt: { type: Date, default: Date.now }
         }],
-        createdAt: { type: Date, default: Date.now }
+        createdAt: { type: Date, default: Date.now },
+        isEdited: { type: Boolean, default: false }
     }],
     reports: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
@@ -57,6 +62,10 @@ const forumPostSchema = new mongoose.Schema({
         type: String,
         required: true,
         maxLength: 5000
+    },
+    isEdited: {
+        type: Boolean,
+        default: false
     },
     category: {
         type: String,

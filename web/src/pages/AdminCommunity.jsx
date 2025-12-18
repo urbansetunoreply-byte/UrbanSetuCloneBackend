@@ -455,7 +455,7 @@ export default function AdminCommunity() {
 
             if (res.ok) {
                 const updatedPost = await res.json();
-                setPosts(posts.map(p => p._id === postId ? { ...p, content: updatedPost.content } : p));
+                setPosts(posts.map(p => p._id === postId ? { ...p, ...updatedPost } : p));
                 setEditingPost(null);
                 toast.success('Post updated');
             } else {
@@ -737,7 +737,7 @@ export default function AdminCommunity() {
                     if (post._id === postId) {
                         return {
                             ...post,
-                            comments: post.comments.map(c => c._id === commentId ? { ...c, content: updatedComment.content } : c)
+                            comments: post.comments.map(c => c._id === commentId ? { ...c, ...updatedComment } : c)
                         };
                     }
                     return post;
@@ -774,7 +774,7 @@ export default function AdminCommunity() {
                                 if (c._id === commentId) {
                                     return {
                                         ...c,
-                                        replies: c.replies.map(r => r._id === replyId ? { ...r, content: updatedReply.content } : r)
+                                        replies: c.replies.map(r => r._id === replyId ? { ...r, ...updatedReply } : r)
                                     };
                                 }
                                 return c;
@@ -1152,7 +1152,10 @@ export default function AdminCommunity() {
                                                 </div>
                                             </form>
                                         ) : (
-                                            <p className="text-gray-600 whitespace-pre-line leading-relaxed">{formatContent(post.content)}</p>
+                                            <p className="text-gray-600 whitespace-pre-line leading-relaxed">
+                                                {formatContent(post.content)}
+                                                {post.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                            </p>
                                         )}
                                         {/* Placeholder for optional post image if any */}
                                         {/* {post.images && post.images.length > 0 && (...)} */}
@@ -1270,7 +1273,10 @@ export default function AdminCommunity() {
                                                                             </div>
                                                                         </form>
                                                                     ) : (
-                                                                        <p className="text-sm text-gray-700">{formatContent(comment.content)}</p>
+                                                                        <p className="text-sm text-gray-700">
+                                                                            {formatContent(comment.content)}
+                                                                            {comment.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                        </p>
                                                                     )}
 
                                                                     {/* Report Indicator */}
@@ -1422,7 +1428,10 @@ export default function AdminCommunity() {
                                                                                                             </div>
                                                                                                         </form>
                                                                                                     ) : (
-                                                                                                        <p className="text-xs text-gray-700">{formatContent(reply.content)}</p>
+                                                                                                        <p className="text-xs text-gray-700">
+                                                                                                            {formatContent(reply.content)}
+                                                                                                            {reply.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                                                        </p>
                                                                                                     )}
 
                                                                                                     {/* Report Indicator */}

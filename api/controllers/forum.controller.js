@@ -249,6 +249,7 @@ export const updateComment = async (req, res, next) => {
         }
 
         comment.content = req.body.content;
+        comment.isEdited = true;
         await post.save();
 
         // Re-fetch to populate user (and ensure fresh data)
@@ -340,6 +341,7 @@ export const updateReply = async (req, res, next) => {
         }
 
         reply.content = req.body.content;
+        reply.isEdited = true;
         await post.save();
 
         const updatedPost = await ForumPost.findById(req.params.id)
@@ -639,6 +641,7 @@ export const updatePost = async (req, res, next) => {
         const { title, content } = req.body;
         if (title) post.title = title;
         if (content) post.content = content;
+        post.isEdited = true;
 
         await post.save();
 
