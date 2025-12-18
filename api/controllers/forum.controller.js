@@ -153,3 +153,38 @@ export const deleteComment = async (req, res, next) => {
         next(error);
     }
 };
+
+export const getCommunityStats = async (req, res, next) => {
+    try {
+        const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+        const dailyPosts = await ForumPost.countDocuments({ createdAt: { $gte: oneDayAgo } });
+
+        const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
+        const eventsThisWeek = await ForumPost.countDocuments({ category: 'Events', createdAt: { $gte: sevenDaysAgo } });
+
+        res.status(200).json({
+            activeMembers: 1245,
+            dailyPosts,
+            eventsThisWeek
+        });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const togglePin = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'You are not allowed to pin posts'));
+        }
+
+        post.isPinned = !post.isPinned;
+        await post.save();
+        res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};

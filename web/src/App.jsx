@@ -122,6 +122,7 @@ const DisputeResolution = lazy(() => import('./pages/DisputeResolution'));
 const AdminDisputeResolution = lazy(() => import('./pages/AdminDisputeResolution'));
 const RentWallet = lazy(() => import('./pages/RentWallet'));
 const Community = lazy(() => import('./pages/Community'));
+const AdminCommunity = lazy(() => import('./pages/AdminCommunity'));
 const Contact = lazy(() => import('./pages/Contact'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const PayMonthlyRent = lazy(() => import('./pages/PayMonthlyRent'));
@@ -787,7 +788,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/view/:documentId" element={<ViewDocument />} />
               <Route path="/admin/view/preview" element={<ViewDocument />} />
               <Route path="/admin/view-chat/preview" element={<ViewChatDocument />} />
-              <Route path="/admin/community" element={<Community />} />
+              <Route path="/admin/community" element={<AdminCommunity />} />
               <Route path="/contact" element={<Navigate to="/admin/support" />} />
               <Route path="/support" element={<Navigate to="/admin/support" />} />
               <Route path="/user/contact" element={<Navigate to="/admin/support" />} />
