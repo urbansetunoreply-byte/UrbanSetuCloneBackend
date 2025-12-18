@@ -555,12 +555,7 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
         </li>
       </Link>
 
-      <Link to="/about" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
-          <FaInfoCircle className={`${mobile ? 'text-lg text-green-500' : 'text-base text-green-500'}`} />
-          <span>About</span>
-        </li>
-      </Link>
+
 
       {/* Public-only navigation links */}
       {!currentUser && (
@@ -588,17 +583,18 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
         </li>
       </Link>
 
-      <Link to="/user/community" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
-          <FaUsers className={`${mobile ? 'text-lg text-pink-500' : 'text-base text-pink-500'}`} />
-          <span>Community</span>
-        </li>
-      </Link>
+
 
       {/* Movers, Services and Route Planner removed */}
 
       {currentUser && (
         <>
+          <Link to="/user/community" onClick={onNavigate}>
+            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+              <FaUsers className={`${mobile ? 'text-lg text-pink-500' : 'text-base text-pink-500'}`} />
+              <span>Community</span>
+            </li>
+          </Link>
           <Link to="/user/create-listing" onClick={onNavigate}>
             <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
               <FaPlus className={`${mobile ? 'text-lg text-orange-500' : 'text-base text-orange-500'}`} />

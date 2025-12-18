@@ -2,7 +2,7 @@ import React, { useState, useEffect, useRef } from "react";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
-import { FaHome, FaCalendarAlt, FaPlus, FaSignOutAlt, FaSearch, FaUserCheck, FaList, FaInfoCircle, FaCompass, FaBars, FaTimes, FaUser, FaTools } from "react-icons/fa";
+import { FaHome, FaCalendarAlt, FaPlus, FaSignOutAlt, FaSearch, FaUserCheck, FaList, FaInfoCircle, FaCompass, FaBars, FaTimes, FaUser, FaTools, FaUsers } from "react-icons/fa";
 import UserAvatar from "./UserAvatar";
 import NotificationBell from "./NotificationBell.jsx";
 import { persistor } from '../redux/store';
@@ -493,10 +493,10 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
         </Link>
       )}
 
-      <Link to="/admin/about" onClick={onNavigate}>
+      <Link to="/admin/community" onClick={onNavigate}>
         <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
-          <FaInfoCircle className={`${mobile ? 'text-lg text-indigo-500' : 'text-base text-indigo-500'}`} />
-          <span>About</span>
+          <FaUsers className={`${mobile ? 'text-lg text-pink-500' : 'text-base text-pink-500'}`} />
+          <span>Community</span>
         </li>
       </Link>
 
