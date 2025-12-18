@@ -1,4 +1,4 @@
-import ForumPost from '../models/forumPost.model.js';
+﻿import ForumPost from '../models/forumPost.model.js';
 import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
 
@@ -626,31 +626,31 @@ export const getSuggestions = async (req, res, next) => {
         next(error);
     }
 };
-e x p o r t   c o n s t   u p d a t e P o s t   =   a s y n c   ( r e q ,   r e s ,   n e x t )   = >   {  
-         t r y   {  
-                 c o n s t   p o s t   =   a w a i t   F o r u m P o s t . f i n d B y I d ( r e q . p a r a m s . i d ) ;  
-                 i f   ( ! p o s t )   r e t u r n   n e x t ( e r r o r H a n d l e r ( 4 0 4 ,   ' P o s t   n o t   f o u n d ' ) ) ;  
-  
-                 i f   ( r e q . u s e r . i d   ! = =   p o s t . a u t h o r . t o S t r i n g ( )   & &   r e q . u s e r . r o l e   ! = =   ' a d m i n '   & &   r e q . u s e r . r o l e   ! = =   ' r o o t a d m i n ' )   {  
-                         r e t u r n   n e x t ( e r r o r H a n d l e r ( 4 0 3 ,   ' Y o u   a r e   n o t   a l l o w e d   t o   u p d a t e   t h i s   p o s t ' ) ) ;  
-                 }  
-  
-                 c o n s t   {   t i t l e ,   c o n t e n t   }   =   r e q . b o d y ;  
-                 i f   ( t i t l e )   p o s t . t i t l e   =   t i t l e ;  
-                 i f   ( c o n t e n t )   p o s t . c o n t e n t   =   c o n t e n t ;  
-  
-                 a w a i t   p o s t . s a v e ( ) ;  
-  
-                 / /   F u l l y   p o p u l a t e   t o   p r e v e n t   d a t a   l o s s   o n   f r o n t e n d  
-                 a w a i t   p o s t . p o p u l a t e ( ' a u t h o r ' ,   ' u s e r n a m e   a v a t a r   e m a i l   t y p e   i s V e r i f i e d ' ) ;  
-                 a w a i t   p o s t . p o p u l a t e ( ' c o m m e n t s . u s e r ' ,   ' u s e r n a m e   a v a t a r ' ) ;  
-                 a w a i t   p o s t . p o p u l a t e ( ' c o m m e n t s . r e p l i e s . u s e r ' ,   ' u s e r n a m e   a v a t a r ' ) ;  
-                 a w a i t   p o s t . p o p u l a t e ( ' c o m m e n t s . r e p l i e s . r e p l y T o U s e r ' ,   ' u s e r n a m e ' ) ;  
-  
-                 r e q . a p p . g e t ( ' i o ' ) . e m i t ( ' f o r u m : p o s t U p d a t e d ' ,   p o s t ) ;  
-                 r e s . s t a t u s ( 2 0 0 ) . j s o n ( p o s t ) ;  
-         }   c a t c h   ( e r r o r )   {  
-                 n e x t ( e r r o r ) ;  
-         }  
- } ;  
- 
+
+export const updatePost = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        if (req.user.id !== post.author.toString() && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'You are not allowed to update this post'));
+        }
+
+        const { title, content } = req.body;
+        if (title) post.title = title;
+        if (content) post.content = content;
+
+        await post.save();
+
+        // Fully populate to prevent data loss on frontend
+        await post.populate('author', 'username avatar email type isVerified');
+        await post.populate('comments.user', 'username avatar');
+        await post.populate('comments.replies.user', 'username avatar');
+        await post.populate('comments.replies.replyToUser', 'username');
+
+        req.app.get('io').emit('forum:postUpdated', post);
+        res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};
