@@ -115,7 +115,8 @@ export default function AdminCommunity() {
 
             if (res.ok) {
                 const updatedPost = await res.json();
-                setPosts(posts.map(post => post._id === postId ? updatedPost : post));
+                // Merge with existing author/comments to prevent data loss
+                setPosts(posts.map(post => post._id === postId ? { ...updatedPost, author: post.author, comments: post.comments } : post));
             }
         } catch (error) {
             console.error(error);
@@ -230,6 +231,45 @@ export default function AdminCommunity() {
         } catch (error) {
             console.error(error);
             toast.error('Failed to add comment');
+        }
+    };
+
+    const handleDeleteComment = async (postId, commentId) => {
+        if (!confirm('Delete this comment?')) return;
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}`, {
+                method: 'DELETE',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                setPosts(posts.map(post => {
+                    if (post._id === postId) {
+                        return {
+                            ...post,
+                            comments: post.comments.filter(c => c._id !== commentId)
+                        };
+                    }
+                    return post;
+                }));
+                toast.success('Comment deleted');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to delete comment');
+        }
+    };
+
+    const handleShare = (post) => {
+        const shareData = {
+            title: post.title,
+            text: `${post.title}\n${post.content}\n\nJoin the discussion (${post.comments?.length || 0} comments) at UrbanSetu!`,
+            url: window.location.href,
+        };
+        if (navigator.share) {
+            navigator.share(shareData).catch(console.error);
+        } else {
+            navigator.clipboard.writeText(`${shareData.text}\n${shareData.url}`);
+            toast.success('Link copied to clipboard!');
         }
     };
 
@@ -423,7 +463,7 @@ export default function AdminCommunity() {
                                             <div className="space-y-4 mb-4">
                                                 {post.comments && post.comments.length > 0 ? (
                                                     post.comments.map((comment, idx) => (
-                                                        <div key={idx} className="flex gap-3">
+                                                        <div key={idx} className="flex gap-3 relative group/comment">
                                                             <img
                                                                 src={comment.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                                                                 alt="User"
@@ -436,6 +476,14 @@ export default function AdminCommunity() {
                                                                 </div>
                                                                 <p className="text-sm text-gray-700">{comment.content}</p>
                                                             </div>
+                                                            {/* Admin Delete Comment Button */}
+                                                            <button
+                                                                onClick={() => handleDeleteComment(post._id, comment._id)}
+                                                                className="absolute right-2 top-2 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                                                title="Delete Comment (Admin)"
+                                                            >
+                                                                <FaTimes className="text-xs" />
+                                                            </button>
                                                         </div>
                                                     ))
                                                 ) : (

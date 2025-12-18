@@ -102,6 +102,7 @@ export const likePost = async (req, res, next) => {
         }
 
         await post.save();
+        await post.populate('author', 'username avatar type');
         res.status(200).json(post);
     } catch (error) {
         next(error);
