@@ -263,15 +263,15 @@ export default function ViewChatDocument() {
     return (
         <div className="min-h-screen bg-gray-100 flex flex-col">
             {/* Header */}
-            <div className="bg-white shadow px-6 py-4 flex items-center justify-between z-10">
-                <div className="flex items-center gap-4">
+            <div className="bg-white shadow px-4 sm:px-6 py-4 flex items-center justify-between z-10 gap-2">
+                <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors"
+                        className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors shrink-0"
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 className="text-xl font-semibold text-gray-800">
+                    <h1 className="text-lg sm:text-xl font-semibold text-gray-800 truncate pr-2">
                         {document.name || 'Document View'}
                     </h1>
                 </div>
