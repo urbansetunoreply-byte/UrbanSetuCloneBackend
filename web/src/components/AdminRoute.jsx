@@ -1,10 +1,11 @@
 import React from 'react';
-import { Navigate, Outlet } from "react-router-dom";
+import { Navigate, Outlet, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import NotFound from '../pages/NotFound';
 
 export default function AdminRoute({ bootstrapped }) {
   const { currentUser, loading } = useSelector((state) => state.user);
+  const location = useLocation();
 
   // Show loading state while Redux persist is bootstrapping or authentication is being processed
   if (!bootstrapped || loading) {
@@ -26,6 +27,12 @@ export default function AdminRoute({ bootstrapped }) {
     }
   }
 
-  // If user or not logged in, show 404
+  // If not logged in, redirect to login with callback
+  if (!currentUser) {
+    const redirectUrl = location.pathname + location.search;
+    return <Navigate to={`/sign-in?redirect=${encodeURIComponent(redirectUrl)}`} replace />;
+  }
+
+  // If logged in but not admin (or not approved), show 404
   return <NotFound />;
 }

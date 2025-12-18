@@ -469,15 +469,23 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             // Reconnect socket with new token
             reconnectSocket();
 
-            if (data.role === "admin" || data.role === "rootadmin") {
-                // Special handling for root admin
-                if (data.isDefaultAdmin) {
-                    navigate("/admin");
-                } else {
-                    navigate("/admin");
-                }
+            // Check for redirect URL in query params
+            const searchParams = new URLSearchParams(location.search);
+            const redirectUrl = searchParams.get('redirect');
+
+            if (redirectUrl && redirectUrl.startsWith('/')) {
+                navigate(redirectUrl, { replace: true });
             } else {
-                navigate("/user");
+                if (data.role === "admin" || data.role === "rootadmin") {
+                    // Special handling for root admin
+                    if (data.isDefaultAdmin) {
+                        navigate("/admin");
+                    } else {
+                        navigate("/admin");
+                    }
+                } else {
+                    navigate("/user");
+                }
             }
 
         } catch (error) {
@@ -593,15 +601,23 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             // Reconnect socket with new token
             reconnectSocket();
 
-            if (data.role === "admin" || data.role === "rootadmin") {
-                // Special handling for root admin
-                if (data.isDefaultAdmin) {
-                    navigate("/admin");
-                } else {
-                    navigate("/admin");
-                }
+            // Check for redirect URL in query params
+            const searchParams = new URLSearchParams(location.search);
+            const redirectUrl = searchParams.get('redirect');
+
+            if (redirectUrl && redirectUrl.startsWith('/')) {
+                navigate(redirectUrl, { replace: true });
             } else {
-                navigate("/user");
+                if (data.role === "admin" || data.role === "rootadmin") {
+                    // Special handling for root admin
+                    if (data.isDefaultAdmin) {
+                        navigate("/admin");
+                    } else {
+                        navigate("/admin");
+                    }
+                } else {
+                    navigate("/user");
+                }
             }
 
         } catch (error) {

@@ -222,7 +222,12 @@ function NormalizeRoute({ children }) {
   const normalized = useMemo(() => normalizeRoute(location.pathname, role), [location.pathname, role]);
 
   if (normalized === null) {
-    // Show 404
+    // If public user tries to access restricted pages, redirect to login with callback
+    if (role === 'public') {
+      const redirectUrl = location.pathname + location.search;
+      return <Navigate to={`/sign-in?redirect=${encodeURIComponent(redirectUrl)}`} replace />;
+    }
+    // Otherwise show 404 (e.g. user trying to access admin pages)
     return <NotFound />;
   }
   if (normalized !== location.pathname) {
