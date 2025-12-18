@@ -834,7 +834,7 @@ export default function App() {
 
   // MAINTENANCE MODE TOGGLE
   // Set this to true to halt all services and show the maintenance page
-  const MAINTENANCE_MODE = true;
+  const MAINTENANCE_MODE = false;
 
   useEffect(() => {
     const checkAuth = async () => {
