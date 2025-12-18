@@ -277,7 +277,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
                 </PrimaryButton>
                 {showAppointmentTooltip && (
                   <div className="absolute bottom-full mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-xs whitespace-nowrap shadow-lg">
-                    Please login to book appointments
+                    Please login to book appointment
                     <div className="absolute top-full left-1/2 -translate-x-1/2 w-2 h-2 bg-red-600 transform rotate-45"></div>
                   </div>
                 )}

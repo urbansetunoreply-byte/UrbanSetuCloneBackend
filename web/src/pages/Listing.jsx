@@ -197,7 +197,7 @@ export default function Listing() {
       </button>
       {showReviewsTooltip && (
         <div className="absolute bottom-full left-0 mb-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-          Please sign in to view reviews
+          Please login to view reviews
           <div className="absolute -bottom-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
         </div>
       )}
@@ -1356,7 +1356,7 @@ export default function Listing() {
                   </button>
                   {showComparisonTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                      Please sign in to use comparison tool
+                      Please login to use comparison tool
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                     </div>
                   )}
@@ -1443,7 +1443,7 @@ export default function Listing() {
                   </button>
                   {showComparisonTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                      Please sign in to use comparison tool
+                      Please login to use comparison tool
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                     </div>
                   )}
@@ -1524,7 +1524,7 @@ export default function Listing() {
                   </button>
                   {showComparisonTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                      Please sign in to use comparison tool
+                      Please login to use comparison tool
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                     </div>
                   )}
@@ -2071,7 +2071,7 @@ export default function Listing() {
                   </button>
                   {showNearbyTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                      Please sign in to view nearby places
+                      Please login to view nearby places
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                     </div>
                   )}
@@ -2092,7 +2092,7 @@ export default function Listing() {
                   </button>
                   {showPriceAnalysisTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                      Please sign in to view price analysis
+                      Please login to view price analysis
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                     </div>
                   )}
@@ -2113,7 +2113,7 @@ export default function Listing() {
                   </button>
                   {showInsightsTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                      Please sign in to view insights
+                      Please login to view insights
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                     </div>
                   )}
@@ -2134,7 +2134,7 @@ export default function Listing() {
                   </button>
                   {showSmartPriceInsightsTooltip && (
                     <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                      Please sign in to view smart price insights
+                      Please login to view smart price insights
                       <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                     </div>
                   )}
@@ -2916,7 +2916,7 @@ export default function Listing() {
                           </button>
                           {showComparisonTooltip && (
                             <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                              Please sign in to use comparison tool
+                              Please login to use comparison tool
                               <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                             </div>
                           )}
@@ -4198,7 +4198,7 @@ export default function Listing() {
                                       </button>
                                       {showComparisonTooltip && (
                                         <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                                          Please sign in to use comparison tool
+                                          Please login to use comparison tool
                                           <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
                                         </div>
                                       )}
