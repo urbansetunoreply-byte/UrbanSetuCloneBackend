@@ -328,6 +328,9 @@ export default function AdminCommunity() {
                 }));
                 setCommentText(prev => ({ ...prev, [postId]: '' }));
                 toast.success('Comment added');
+            } else {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to add comment');
             }
         } catch (error) {
             console.error(error);
@@ -405,6 +408,9 @@ export default function AdminCommunity() {
                 setReplyingTo(null);
                 setExpandedReplies(prev => ({ ...prev, [commentId]: true }));
                 toast.success('Reply added');
+            } else {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to add reply');
             }
         } catch (error) {
             console.error(error);
