@@ -311,8 +311,40 @@ export default function AdminCommunity() {
                 credentials: 'include'
             });
             if (res.ok) {
-                const updatedPost = await res.json();
-                setPosts(posts.map(post => post._id === postId ? { ...updatedPost, author: post.author } : post));
+                // Optimistic/Manual update to preserve author info
+                setPosts(prevPosts => prevPosts.map(post => {
+                    if (post._id === postId) {
+                        return {
+                            ...post,
+                            comments: post.comments.map(comment => {
+                                if (comment._id === commentId) {
+                                    const userId = currentUser._id;
+                                    let newLikes = [...(comment.likes || [])];
+                                    let newDislikes = [...(comment.dislikes || [])];
+
+                                    if (reactionType === 'like') {
+                                        if (newLikes.includes(userId)) {
+                                            newLikes = newLikes.filter(id => id !== userId);
+                                        } else {
+                                            newLikes.push(userId);
+                                            newDislikes = newDislikes.filter(id => id !== userId);
+                                        }
+                                    } else {
+                                        if (newDislikes.includes(userId)) {
+                                            newDislikes = newDislikes.filter(id => id !== userId);
+                                        } else {
+                                            newDislikes.push(userId);
+                                            newLikes = newLikes.filter(id => id !== userId);
+                                        }
+                                    }
+                                    return { ...comment, likes: newLikes, dislikes: newDislikes };
+                                }
+                                return comment;
+                            })
+                        };
+                    }
+                    return post;
+                }));
             }
         } catch (error) {
             console.error(error);
@@ -327,8 +359,48 @@ export default function AdminCommunity() {
                 credentials: 'include'
             });
             if (res.ok) {
-                const updatedPost = await res.json();
-                setPosts(posts.map(post => post._id === postId ? { ...updatedPost, author: post.author } : post));
+                // Optimistic/Manual update to preserve author info
+                setPosts(prevPosts => prevPosts.map(post => {
+                    if (post._id === postId) {
+                        return {
+                            ...post,
+                            comments: post.comments.map(comment => {
+                                if (comment._id === commentId) {
+                                    return {
+                                        ...comment,
+                                        replies: comment.replies.map(reply => {
+                                            if (reply._id === replyId) {
+                                                const userId = currentUser._id;
+                                                let newLikes = [...(reply.likes || [])];
+                                                let newDislikes = [...(reply.dislikes || [])];
+
+                                                if (reactionType === 'like') {
+                                                    if (newLikes.includes(userId)) {
+                                                        newLikes = newLikes.filter(id => id !== userId);
+                                                    } else {
+                                                        newLikes.push(userId);
+                                                        newDislikes = newDislikes.filter(id => id !== userId);
+                                                    }
+                                                } else {
+                                                    if (newDislikes.includes(userId)) {
+                                                        newDislikes = newDislikes.filter(id => id !== userId);
+                                                    } else {
+                                                        newDislikes.push(userId);
+                                                        newLikes = newLikes.filter(id => id !== userId);
+                                                    }
+                                                }
+                                                return { ...reply, likes: newLikes, dislikes: newDislikes };
+                                            }
+                                            return reply;
+                                        })
+                                    };
+                                }
+                                return comment;
+                            })
+                        };
+                    }
+                    return post;
+                }));
             }
         } catch (error) {
             console.error(error);
@@ -1333,7 +1405,9 @@ export default function AdminCommunity() {
                                                                                                         <button
                                                                                                             onClick={() => {
                                                                                                                 setActiveReplyInput(reply._id);
-                                                                                                                setReplyingTo({ postId: post._id, commentId: comment._id, userId: reply.user._id, username: reply.user.username });
+                                                                                                                if (reply.user) {
+                                                                                                                    setReplyingTo({ postId: post._id, commentId: comment._id, userId: reply.user._id, username: reply.user.username });
+                                                                                                                }
                                                                                                             }}
                                                                                                             className="text-[10px] font-semibold text-gray-500 hover:text-blue-600"
                                                                                                         >
