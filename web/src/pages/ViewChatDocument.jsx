@@ -67,12 +67,8 @@ export default function ViewChatDocument() {
             } else if (['txt', 'json', 'xml', 'md'].includes(ext)) {
                 derivedType = 'text';
             } else {
-                // If type is explicitly 'document' but we couldn't determine ext, assume PDF for safety if it came from chat
-                if (type === 'document' || type === 'file') {
-                    derivedType = 'pdf';
-                } else {
-                    derivedType = 'unsupported';
-                }
+                // For all other types, try Google Viewer
+                derivedType = 'google-viewer';
             }
 
             setFileType(derivedType);
@@ -331,11 +327,11 @@ export default function ViewChatDocument() {
                                 title="Document Viewer"
                             />
                         )
-                    ) : fileType === 'office' ? (
+                    ) : (fileType === 'office' || fileType === 'google-viewer') ? (
                         <iframe
                             src={`https://docs.google.com/gview?url=${encodeURIComponent(document.url)}&embedded=true`}
                             className="w-full h-full"
-                            title="Office Document Viewer"
+                            title="Document Viewer"
                         />
                     ) : (
                         /* Unsupported types - Show placeholder */
