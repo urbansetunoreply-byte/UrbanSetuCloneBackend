@@ -23,7 +23,8 @@ import {
     reportReply,
     getSuggestions,
     updateComment,
-    updateReply
+    updateReply,
+    updatePost
 } from '../controllers/forum.controller.js';
 
 const router = express.Router();
@@ -33,6 +34,7 @@ router.get('/', getPosts);
 router.get('/stats', getCommunityStats);
 router.get('/search/suggestions', getSuggestions);
 router.get('/:id', getPostById);
+router.put('/:id', verifyToken, updatePost);
 router.delete('/:id', verifyToken, deletePost);
 
 // Reactions
