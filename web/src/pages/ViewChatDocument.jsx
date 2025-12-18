@@ -20,8 +20,8 @@ export default function ViewChatDocument() {
     const [verifying, setVerifying] = useState(true);
     const { currentUser } = useSelector((state) => state.user);
 
-    const docType = document?.type?.replace(/_/g, ' ') || 'Document';
-    usePageTitle(`${docType.charAt(0).toUpperCase() + docType.slice(1)} - UrbanSetu`);
+    const pageTitle = document?.name || (document?.type ? `${document.type.charAt(0).toUpperCase() + document.type.slice(1)} Preview` : 'Document Preview');
+    usePageTitle(`${pageTitle} - UrbanSetu`);
 
     const isPublic = location.pathname.startsWith('/view/');
 
