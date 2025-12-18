@@ -1393,7 +1393,7 @@ export default function Community() {
                                                                                                             Reply
                                                                                                         </button>
                                                                                                         {/* Report Reply Button */}
-                                                                                                        {currentUser && (
+                                                                                                        {currentUser && currentUser._id !== reply.user?._id && (
                                                                                                             <button
                                                                                                                 onClick={() => setReportModal({
                                                                                                                     isOpen: true,

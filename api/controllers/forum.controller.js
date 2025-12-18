@@ -376,6 +376,10 @@ export const likeComment = async (req, res, next) => {
         }
 
         await post.save();
+        await post.populate('author', 'username avatar email type isVerified');
+        await post.populate('comments.user', 'username avatar');
+        await post.populate('comments.replies.user', 'username avatar');
+        await post.populate('comments.replies.replyToUser', 'username');
         req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
@@ -404,6 +408,10 @@ export const dislikeComment = async (req, res, next) => {
         }
 
         await post.save();
+        await post.populate('author', 'username avatar email type isVerified');
+        await post.populate('comments.user', 'username avatar');
+        await post.populate('comments.replies.user', 'username avatar');
+        await post.populate('comments.replies.replyToUser', 'username');
         req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
@@ -435,6 +443,10 @@ export const likeReply = async (req, res, next) => {
         }
 
         await post.save();
+        await post.populate('author', 'username avatar email type isVerified');
+        await post.populate('comments.user', 'username avatar');
+        await post.populate('comments.replies.user', 'username avatar');
+        await post.populate('comments.replies.replyToUser', 'username');
         req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
@@ -466,6 +478,10 @@ export const dislikeReply = async (req, res, next) => {
         }
 
         await post.save();
+        await post.populate('author', 'username avatar email type isVerified');
+        await post.populate('comments.user', 'username avatar');
+        await post.populate('comments.replies.user', 'username avatar');
+        await post.populate('comments.replies.replyToUser', 'username');
         req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
