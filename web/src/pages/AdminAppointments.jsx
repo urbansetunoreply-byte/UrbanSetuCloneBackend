@@ -8267,10 +8267,8 @@ function AdminAppointmentRow({
                                               const ext = cleanUrl.split('.').pop().toLowerCase();
                                               let type = 'document';
                                               if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) type = 'image';
-                                              else if (ext === 'pdf') type = 'pdf';
-
                                               // Open preview in new tab
-                                              const previewUrl = `/admin/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                              const previewUrl = `/admin/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}&appointmentId=${appt._id}`;
                                               window.open(previewUrl, '_blank');
                                             }}
                                             title="Click to view document"

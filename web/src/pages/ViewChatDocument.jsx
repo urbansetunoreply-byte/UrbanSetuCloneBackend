@@ -179,10 +179,16 @@ export default function ViewChatDocument() {
             const appointmentId = params.get('appointmentId');
             const url = params.get('url');
 
+            // Admin Bypass: Allow admins to view without appointmentId verification if needed
+            const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
+            if (isAdmin && url && !appointmentId) {
+                setIsRestricted(false);
+                setVerifying(false);
+                return;
+            }
+
             // If no appointmentId, we cannot verify securely -> Restrict
             if (!appointmentId || !url) {
-                // Fallback: If no appointmentId but user is Admin, we might want to allow?
-                // But for now, strict security: require appointmentId.
                 console.warn("Missing appointmentId or url for secure verification");
                 setIsRestricted(true);
                 setVerifying(false);
