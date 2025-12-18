@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
+import ConfirmationModal from '../components/ConfirmationModal';
 
 export default function AdminCommunity() {
     usePageTitle("Admin Dashboard - Community Moderation");
@@ -31,6 +32,15 @@ export default function AdminCommunity() {
     const [activeTab, setActiveTab] = useState('All');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [loading, setLoading] = useState(false);
+
+    // Modal State
+    const [confirmModal, setConfirmModal] = useState({
+        isOpen: false,
+        title: '',
+        message: '',
+        onConfirm: () => { },
+        isDestructive: false
+    });
 
     // New state for suggestions
     const [suggestions, setSuggestions] = useState([]);
@@ -196,25 +206,32 @@ export default function AdminCommunity() {
 
 
 
-    const handleDeletePost = async (postId) => {
-        if (!confirm('Are you sure you want to delete this post?')) return;
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / ${postId} `, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
-            if (res.ok) {
-                setPosts(posts.filter(p => p._id !== postId));
-                toast.success('Post deleted successfully');
-                // Refresh stats as post count changed
-                fetchStats();
-            } else {
-                toast.error('Failed to delete post');
+    const handleDeletePost = (postId) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Delete Discussion',
+            message: 'Are you sure you want to delete this discussion permanently? This action cannot be undone.',
+            confirmText: 'Delete',
+            isDestructive: true,
+            onConfirm: async () => {
+                try {
+                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${postId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+                    if (res.ok) {
+                        setPosts(posts.filter(p => p._id !== postId));
+                        toast.success('Post deleted successfully');
+                        fetchStats();
+                    } else {
+                        toast.error('Failed to delete post');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    toast.error('Error deleting post');
+                }
             }
-        } catch (error) {
-            console.error(error);
-            toast.error('Error deleting post');
-        }
+        });
     };
 
     const handlePinPost = async (postId) => {
@@ -290,35 +307,43 @@ export default function AdminCommunity() {
         }
     };
 
-    const handleDeleteComment = async (postId, commentId) => {
-        if (!confirm('Delete this comment?')) return;
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}`, {
-                method: 'DELETE',
-                credentials: 'include'
-            });
-            if (res.ok) {
-                setPosts(posts.map(post => {
-                    if (post._id === postId) {
-                        return {
-                            ...post,
-                            comments: post.comments.filter(c => c._id !== commentId)
-                        };
+    const handleDeleteComment = (postId, commentId) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Delete Comment',
+            message: 'Are you sure you want to delete this comment?',
+            confirmText: 'Delete',
+            isDestructive: true,
+            onConfirm: async () => {
+                try {
+                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+                    if (res.ok) {
+                        setPosts(posts.map(post => {
+                            if (post._id === postId) {
+                                return {
+                                    ...post,
+                                    comments: post.comments.filter(c => c._id !== commentId)
+                                };
+                            }
+                            return post;
+                        }));
+                        toast.success('Comment deleted');
                     }
-                    return post;
-                }));
-                toast.success('Comment deleted');
+                } catch (error) {
+                    console.error(error);
+                    toast.error('Failed to delete comment');
+                }
             }
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to delete comment');
-        }
+        });
     };
 
     const handleShare = (post) => {
         const shareData = {
             title: post.title,
-            text: `${post.title}\n${post.content}\n\nJoin the discussion (${post.comments?.length || 0} comments) at UrbanSetu!`,
+            text: `Check out this interesting discussion on UrbanSetu!\n\n${post.title}\n"${post.content.substring(0, 100)}${post.content.length > 100 ? '...' : ''}"\n\nJoin the conversation here:`,
             url: window.location.href,
         };
         if (navigator.share) {
@@ -551,23 +576,24 @@ export default function AdminCommunity() {
                                                             <img
                                                                 src={comment.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                                                                 alt="User"
-                                                                className="w-8 h-8 rounded-full object-cover"
+                                                                className="w-8 h-8 rounded-full object-cover mt-1"
                                                             />
-                                                            <div className="bg-gray-50 rounded-2xl rounded-tl-none p-3 flex-1">
+                                                            <div className="bg-gray-50 rounded-2xl rounded-tl-none p-3 flex-1 pr-8 relative">
                                                                 <div className="flex justify-between items-center mb-1">
                                                                     <span className="font-semibold text-sm">{comment.user?.username}</span>
-                                                                    <span className="text-xs text-gray-500">{new Date(comment.createdAt || Date.now()).toLocaleDateString()}</span>
+                                                                    <span className="text-xs text-gray-500 mr-4">{new Date(comment.createdAt || Date.now()).toLocaleDateString()}</span>
                                                                 </div>
                                                                 <p className="text-sm text-gray-700">{comment.content}</p>
+
+                                                                {/* Admin Delete Comment Button */}
+                                                                <button
+                                                                    onClick={() => handleDeleteComment(post._id, comment._id)}
+                                                                    className="absolute right-2 top-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                                                    title="Delete Comment (Admin)"
+                                                                >
+                                                                    <FaTimes className="text-xs" />
+                                                                </button>
                                                             </div>
-                                                            {/* Admin Delete Comment Button */}
-                                                            <button
-                                                                onClick={() => handleDeleteComment(post._id, comment._id)}
-                                                                className="absolute right-2 top-2 p-1 text-gray-400 hover:text-red-500 opacity-0 group-hover/comment:opacity-100 transition-opacity"
-                                                                title="Delete Comment (Admin)"
-                                                            >
-                                                                <FaTimes className="text-xs" />
-                                                            </button>
                                                         </div>
                                                     ))
                                                 ) : (
@@ -748,6 +774,16 @@ export default function AdminCommunity() {
                     </div>
                 </div>
             )}
+            {/* Confirmation Modal */}
+            <ConfirmationModal
+                isOpen={confirmModal.isOpen}
+                onClose={() => setConfirmModal({ ...confirmModal, isOpen: false })}
+                onConfirm={confirmModal.onConfirm}
+                title={confirmModal.title}
+                message={confirmModal.message}
+                confirmText={confirmModal.confirmText}
+                isDestructive={confirmModal.isDestructive}
+            />
         </div>
     );
 }
