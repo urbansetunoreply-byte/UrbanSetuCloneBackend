@@ -12,7 +12,9 @@ import {
     togglePin,
     lockPost,
     reportPost,
-    getSuggestions
+    getSuggestions,
+    addReply,
+    deleteReply
 } from '../controllers/forum.controller.js';
 
 const router = express.Router();
@@ -26,6 +28,8 @@ router.delete('/:id', verifyToken, deletePost);
 router.put('/like/:id', verifyToken, likePost);
 router.post('/comment/:id', verifyToken, addComment);
 router.delete('/comment/:id/:commentId', verifyToken, deleteComment);
+router.post('/comment/:id/:commentId/reply', verifyToken, addReply);
+router.delete('/comment/:id/:commentId/reply/:replyId', verifyToken, deleteReply);
 router.put('/pin/:id', verifyToken, togglePin);
 router.put('/lock/:id', verifyToken, lockPost);
 router.post('/report/:id', verifyToken, reportPost);

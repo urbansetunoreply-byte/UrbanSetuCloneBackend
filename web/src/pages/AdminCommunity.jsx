@@ -53,6 +53,11 @@ export default function AdminCommunity() {
     const [expandedComments, setExpandedComments] = useState({});
     const [commentText, setCommentText] = useState({});
 
+    // Reply State
+    const [replyingTo, setReplyingTo] = useState(null); // { postId, commentId }
+    const [replyText, setReplyText] = useState('');
+    const [expandedReplies, setExpandedReplies] = useState({}); // { commentId: boolean }
+
     // Create Post State
     const [newPost, setNewPost] = useState({
         title: '',
@@ -87,7 +92,7 @@ export default function AdminCommunity() {
             if (activeTab !== 'All') params.append('category', activeTab);
             if (searchTerm) params.append('searchTerm', searchTerm);
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum ? ${params.toString()} `);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${params.toString()}`);
             const data = await res.json();
 
             if (res.ok) {
@@ -111,7 +116,7 @@ export default function AdminCommunity() {
         const delayDebounceFn = setTimeout(async () => {
             if (searchTerm.length > 2) {
                 try {
-                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / search / suggestions ? q = ${searchTerm} `);
+                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/search/suggestions?q=${searchTerm}`);
                     if (res.ok) {
                         const data = await res.json();
                         setSuggestions(data);
@@ -136,7 +141,7 @@ export default function AdminCommunity() {
 
     const fetchStats = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / stats`);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/stats`);
             if (res.ok) {
                 const data = await res.json();
                 setStats(data);
@@ -150,7 +155,7 @@ export default function AdminCommunity() {
         if (!currentUser) return navigate('/sign-in');
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / like / ${postId} `, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/like/${postId}`, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
@@ -177,7 +182,7 @@ export default function AdminCommunity() {
         if (!currentUser) return navigate('/sign-in');
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / create`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -236,7 +241,7 @@ export default function AdminCommunity() {
 
     const handlePinPost = async (postId) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / pin / ${postId} `, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/pin/${postId}`, {
                 method: 'PUT',
                 credentials: 'include'
             });
@@ -252,7 +257,7 @@ export default function AdminCommunity() {
 
     const handleLockPost = async (postId) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / lock / ${postId} `, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/lock/${postId}`, {
                 method: 'PUT',
                 credentials: 'include'
             });
@@ -280,7 +285,7 @@ export default function AdminCommunity() {
         if (!content || !content.trim()) return;
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / comment / ${postId} `, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}`, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -335,6 +340,91 @@ export default function AdminCommunity() {
                 } catch (error) {
                     console.error(error);
                     toast.error('Failed to delete comment');
+                }
+            }
+        });
+    };
+
+
+
+    const handleAddReply = async (e, postId, commentId) => {
+        e.preventDefault();
+        if (!replyText.trim()) return;
+
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ content: replyText })
+            });
+
+            if (res.ok) {
+                const newReply = await res.json();
+                setPosts(posts.map(post => {
+                    if (post._id === postId) {
+                        return {
+                            ...post,
+                            comments: post.comments.map(c => {
+                                if (c._id === commentId) {
+                                    return {
+                                        ...c,
+                                        replies: [...(c.replies || []), newReply]
+                                    };
+                                }
+                                return c;
+                            })
+                        };
+                    }
+                    return post;
+                }));
+                setReplyText('');
+                setReplyingTo(null);
+                setExpandedReplies(prev => ({ ...prev, [commentId]: true }));
+                toast.success('Reply added');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to add reply');
+        }
+    };
+
+    const handleDeleteReply = (postId, commentId, replyId) => {
+        setConfirmModal({
+            isOpen: true,
+            title: 'Delete Reply',
+            message: 'Are you sure you want to delete this reply?',
+            confirmText: 'Delete',
+            isDestructive: true,
+            onConfirm: async () => {
+                try {
+                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}`, {
+                        method: 'DELETE',
+                        credentials: 'include'
+                    });
+                    if (res.ok) {
+                        setPosts(posts.map(post => {
+                            if (post._id === postId) {
+                                return {
+                                    ...post,
+                                    comments: post.comments.map(c => {
+                                        if (c._id === commentId) {
+                                            return {
+                                                ...c,
+                                                replies: c.replies.filter(r => r._id !== replyId)
+                                            };
+                                        }
+                                        return c;
+                                    })
+                                };
+                            }
+                            return post;
+                        }));
+                        toast.success('Reply deleted');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    toast.error('Failed to delete reply');
                 }
             }
         });
@@ -573,31 +663,121 @@ export default function AdminCommunity() {
                                                 {post.comments && post.comments.length > 0 ? (
                                                     post.comments.map((comment, idx) => (
                                                         <div key={idx} className="flex gap-3 relative group/comment">
-                                                            <img
-                                                                src={comment.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                                                                alt="User"
-                                                                className="w-8 h-8 rounded-full object-cover mt-1"
-                                                            />
-                                                            <div className="bg-gray-50 rounded-2xl rounded-tl-none p-3 flex-1 pr-8 relative">
-                                                                <div className="flex justify-between items-center mb-1">
-                                                                    <span className="font-semibold text-sm">{comment.user?.username}</span>
-                                                                    <span className="text-xs text-gray-500 mr-4">{new Date(comment.createdAt || Date.now()).toLocaleDateString()}</span>
-                                                                </div>
-                                                                <p className="text-sm text-gray-700">{comment.content}</p>
+                                                            <div className="flex-shrink-0">
+                                                                <img
+                                                                    src={comment.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                                                    alt="User"
+                                                                    className="w-8 h-8 rounded-full object-cover mt-1"
+                                                                />
+                                                            </div>
+                                                            <div className="flex-1">
+                                                                <div className="bg-gray-50 rounded-2xl rounded-tl-none p-3 pr-8 relative">
+                                                                    <div className="flex justify-between items-center mb-1">
+                                                                        <span className="font-semibold text-sm">{comment.user?.username}</span>
+                                                                        <span className="text-xs text-gray-500 mr-4">{new Date(comment.createdAt || Date.now()).toLocaleDateString()}</span>
+                                                                    </div>
+                                                                    <p className="text-sm text-gray-700">{comment.content}</p>
 
-                                                                {/* Admin Delete Comment Button */}
-                                                                <button
-                                                                    onClick={() => handleDeleteComment(post._id, comment._id)}
-                                                                    className="absolute right-2 top-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
-                                                                    title="Delete Comment (Admin)"
-                                                                >
-                                                                    <FaTimes className="text-xs" />
-                                                                </button>
+                                                                    {/* Actions */}
+                                                                    <div className="flex items-center gap-4 mt-2">
+                                                                        <button
+                                                                            onClick={() => setReplyingTo({ postId: post._id, commentId: comment._id })}
+                                                                            className="text-xs font-semibold text-gray-500 hover:text-gray-800"
+                                                                        >
+                                                                            Reply
+                                                                        </button>
+                                                                        {comment.replies && comment.replies.length > 0 && (
+                                                                            <button
+                                                                                onClick={() => setExpandedReplies(prev => ({ ...prev, [comment._id]: !prev[comment._id] }))}
+                                                                                className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                                            >
+                                                                                {expandedReplies[comment._id] ? <FaTimes size={10} /> : <FaComment size={10} />}
+                                                                                {comment.replies.length} Replies
+                                                                            </button>
+                                                                        )}
+                                                                    </div>
+
+                                                                    {/* Admin Delete Comment Button */}
+                                                                    <button
+                                                                        onClick={() => handleDeleteComment(post._id, comment._id)}
+                                                                        className="absolute right-2 top-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                                                        title="Delete Comment (Admin)"
+                                                                    >
+                                                                        <FaTimes className="text-xs" />
+                                                                    </button>
+                                                                </div>
+
+                                                                {/* Reply Input */}
+                                                                {replyingTo?.commentId === comment._id && (
+                                                                    <div className="mt-2 flex gap-2 animate-fade-in pl-2">
+                                                                        <img
+                                                                            src={currentUser?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                                                            className="w-6 h-6 rounded-full object-cover"
+                                                                        />
+                                                                        <form onSubmit={(e) => handleAddReply(e, post._id, comment._id)} className="flex-1 flex gap-2">
+                                                                            <input
+                                                                                type="text"
+                                                                                autoFocus
+                                                                                value={replyText}
+                                                                                onChange={(e) => setReplyText(e.target.value)}
+                                                                                placeholder="Add a reply..."
+                                                                                className="flex-1 bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
+                                                                            />
+                                                                            <div className="flex gap-1">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => { setReplyingTo(null); setReplyText(''); }}
+                                                                                    className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
+                                                                                >
+                                                                                    Cancel
+                                                                                </button>
+                                                                                <button
+                                                                                    type="submit"
+                                                                                    disabled={!replyText.trim()}
+                                                                                    className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full disabled:opacity-50"
+                                                                                >
+                                                                                    Reply
+                                                                                </button>
+                                                                            </div>
+                                                                        </form>
+                                                                    </div>
+                                                                )}
+
+                                                                {/* Nested Replies */}
+                                                                {expandedReplies[comment._id] && comment.replies && (
+                                                                    <div className="mt-2 space-y-3 pl-4 border-l-2 border-gray-100 ml-2">
+                                                                        {comment.replies.map((reply, rIdx) => (
+                                                                            <div key={rIdx} className="flex gap-2 relative group/reply">
+                                                                                <img
+                                                                                    src={reply.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                                                                    className="w-6 h-6 rounded-full object-cover mt-1"
+                                                                                />
+                                                                                <div className="flex-1">
+                                                                                    <div className="bg-gray-50/50 p-2 rounded-lg relative">
+                                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                                            <span className="text-xs font-bold text-gray-800">{reply.user?.username}</span>
+                                                                                            <span className="text-[10px] text-gray-400">{new Date(reply.createdAt).toLocaleDateString()}</span>
+                                                                                        </div>
+                                                                                        <p className="text-xs text-gray-700">{reply.content}</p>
+
+                                                                                        {/* Admin Delete Reply Button */}
+                                                                                        <button
+                                                                                            onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
+                                                                                            className="absolute right-1 top-1 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
+                                                                                        >
+                                                                                            <FaTimes size={10} />
+                                                                                        </button>
+                                                                                    </div>
+                                                                                </div>
+                                                                            </div>
+                                                                        ))}
+                                                                    </div>
+                                                                )}
                                                             </div>
                                                         </div>
                                                     ))
                                                 ) : (
-                                                    <p className="text-center text-gray-500 text-sm py-2">No comments yet. Be the first to share your thoughts!</p>
+                                                    <p className="text-center text-gray-500 text-sm py-2">No comments yet.</p>
                                                 )}
                                             </div>
 

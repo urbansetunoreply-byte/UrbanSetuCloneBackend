@@ -182,6 +182,64 @@ export const deleteComment = async (req, res, next) => {
     }
 };
 
+export const addReply = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        if (post.isLocked && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'This discussion is locked'));
+        }
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        const { content, replyToUser } = req.body;
+        const newReply = {
+            user: req.user.id,
+            replyToUser: replyToUser || null,
+            content
+        };
+
+        comment.replies.push(newReply);
+        await post.save();
+
+        const updatedPost = await ForumPost.findById(req.params.id)
+            .populate('comments.replies.user', 'username avatar')
+            .populate('comments.replies.replyToUser', 'username');
+
+        const updatedComment = updatedPost.comments.id(req.params.commentId);
+        const addedReply = updatedComment.replies[updatedComment.replies.length - 1];
+
+        res.status(200).json(addedReply);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteReply = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        const reply = comment.replies.id(req.params.replyId);
+        if (!reply) return next(errorHandler(404, 'Reply not found'));
+
+        if (req.user.id !== reply.user.toString() && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'Not authorized'));
+        }
+
+        reply.deleteOne();
+        await post.save();
+        res.status(200).json('Reply deleted');
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const getCommunityStats = async (req, res, next) => {
     try {
         const oneDayAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
