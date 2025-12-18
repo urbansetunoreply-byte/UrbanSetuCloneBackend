@@ -97,7 +97,7 @@ export default function Community() {
             if (searchTerm) params.append('searchTerm', searchTerm);
             // Auto-filter by user's location if available (optional enhancement)
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum ? ${params.toString()} `);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${params.toString()}`);
             const data = await res.json();
 
             if (res.ok) {
@@ -115,7 +115,7 @@ export default function Community() {
         const delayDebounceFn = setTimeout(async () => {
             if (searchTerm.length > 2) {
                 try {
-                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / search / suggestions ? q = ${searchTerm} `);
+                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/search/suggestions?q=${searchTerm}`);
                     if (res.ok) {
                         const data = await res.json();
                         setSuggestions(data);
@@ -142,7 +142,7 @@ export default function Community() {
 
     const fetchStats = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / stats`);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/stats`);
             if (res.ok) {
                 const data = await res.json();
                 setStats(data);
@@ -265,7 +265,7 @@ export default function Community() {
     const handleLike = async (postId) => {
         if (!currentUser) return navigate('/sign-in');
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / like / ${postId} `, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/like/${postId}`, {
                 method: 'PUT',
                 credentials: 'include'
             });
@@ -281,7 +281,7 @@ export default function Community() {
     const handleDislike = async (postId) => {
         if (!currentUser) return navigate('/sign-in');
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / dislike / ${postId} `, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/dislike/${postId}`, {
                 method: 'PUT',
                 credentials: 'include'
             });
@@ -297,7 +297,7 @@ export default function Community() {
     const handleCommentReaction = async (postId, commentId, reactionType) => {
         if (!currentUser) return navigate('/sign-in');
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / comment / ${postId} /${commentId}/${reactionType} `, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/${reactionType}`, {
                 method: 'PUT',
                 credentials: 'include'
             });
@@ -313,7 +313,7 @@ export default function Community() {
     const handleReplyReaction = async (postId, commentId, replyId, reactionType) => {
         if (!currentUser) return navigate('/sign-in');
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / comment / ${postId} /${commentId}/reply / ${replyId}/${reactionType}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}/${reactionType}`, {
                 method: 'PUT',
                 credentials: 'include'
             });
