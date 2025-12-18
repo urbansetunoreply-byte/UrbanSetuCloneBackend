@@ -8269,7 +8269,7 @@ function AdminAppointmentRow({
                                               else if (ext === 'pdf') type = 'pdf';
 
                                               // Open preview in new tab
-                                              const previewUrl = `/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                              const previewUrl = `/admin/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
                                               window.open(previewUrl, '_blank');
                                             }}
                                             title="Click to view document"
