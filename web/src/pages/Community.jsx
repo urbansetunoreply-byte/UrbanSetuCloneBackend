@@ -19,6 +19,11 @@ export default function Community() {
     const [activeTab, setActiveTab] = useState('All');
     const [showCreateModal, setShowCreateModal] = useState(false);
     const [searchTerm, setSearchTerm] = useState('');
+    const [stats, setStats] = useState({
+        activeMembers: 0,
+        dailyPosts: 0,
+        eventsThisWeek: 0
+    });
 
     // Create Post State
     const [newPost, setNewPost] = useState({
@@ -42,6 +47,7 @@ export default function Community() {
 
     useEffect(() => {
         fetchPosts();
+        fetchStats();
     }, [activeTab]);
 
     const fetchPosts = async () => {
@@ -65,6 +71,18 @@ export default function Community() {
         }
     };
 
+    const fetchStats = async () => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/stats`);
+            if (res.ok) {
+                const data = await res.json();
+                setStats(data);
+            }
+        } catch (error) {
+            console.error('Failed to fetch stats:', error);
+        }
+    };
+
     const handleLike = async (postId) => {
         if (!currentUser) return navigate('/sign-in');
 
@@ -73,7 +91,12 @@ export default function Community() {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
+                    // Include credentials for authentication if needed (though backend checks verifyToken likely via cookie or header)
+                    // If using Authorization header:
+                    // 'Authorization': `Bearer ${currentUser.token}` 
                 },
+                // If using cookies, ensure credentials: 'include'
+                credentials: 'include'
             });
 
             if (res.ok) {
@@ -95,6 +118,8 @@ export default function Community() {
                 headers: {
                     'Content-Type': 'application/json',
                 },
+                // Important: Include credentials for authentication (cookies)
+                credentials: 'include',
                 body: JSON.stringify(newPost),
             });
 
@@ -108,6 +133,7 @@ export default function Community() {
             setShowCreateModal(false);
             setNewPost({ title: '', content: '', category: 'General', location: { city: '', neighborhood: '' } });
             fetchPosts(); // Refresh feed
+            fetchStats(); // Update stats
         } catch (error) {
             console.error(error);
             toast.error('Something went wrong');
@@ -134,8 +160,8 @@ export default function Community() {
                                 key={cat.id}
                                 onClick={() => setActiveTab(cat.id)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${activeTab === cat.id
-                                        ? 'bg-blue-600 text-white shadow-lg'
-                                        : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                    ? 'bg-blue-600 text-white shadow-lg'
+                                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
                                     }`}
                             >
                                 <cat.icon className="text-sm" />
@@ -215,9 +241,9 @@ export default function Community() {
                                             </div>
                                         </div>
                                         <span className={`px-3 py-1 rounded-full text-xs font-medium ${post.category === 'Safety' ? 'bg-red-100 text-red-700' :
-                                                post.category === 'Events' ? 'bg-purple-100 text-purple-700' :
-                                                    post.category === 'Marketplace' ? 'bg-green-100 text-green-700' :
-                                                        'bg-blue-100 text-blue-700'
+                                            post.category === 'Events' ? 'bg-purple-100 text-purple-700' :
+                                                post.category === 'Marketplace' ? 'bg-green-100 text-green-700' :
+                                                    'bg-blue-100 text-blue-700'
                                             }`}>
                                             {post.category}
                                         </span>
@@ -235,8 +261,8 @@ export default function Community() {
                                             <button
                                                 onClick={() => handleLike(post._id)}
                                                 className={`flex items-center gap-2 transition-colors ${currentUser && post.likes.includes(currentUser._id)
-                                                        ? 'text-red-500'
-                                                        : 'text-gray-500 hover:text-red-500'
+                                                    ? 'text-red-500'
+                                                    : 'text-gray-500 hover:text-red-500'
                                                     }`}
                                             >
                                                 <FaHeart className={currentUser && post.likes.includes(currentUser._id) ? 'fill-current' : ''} />
@@ -265,15 +291,15 @@ export default function Community() {
                             <div className="space-y-4">
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600">Active Members</span>
-                                    <span className="font-semibold text-blue-600">1,245</span>
+                                    <span className="font-semibold text-blue-600">{stats.activeMembers}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600">Daily Posts</span>
-                                    <span className="font-semibold text-green-600">45+</span>
+                                    <span className="font-semibold text-green-600">{stats.dailyPosts}</span>
                                 </div>
                                 <div className="flex justify-between items-center">
                                     <span className="text-gray-600">Events This Week</span>
-                                    <span className="font-semibold text-purple-600">12</span>
+                                    <span className="font-semibold text-purple-600">{stats.eventsThisWeek}</span>
                                 </div>
                             </div>
                         </div>

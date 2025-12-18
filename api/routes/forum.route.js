@@ -7,13 +7,18 @@ import {
     deletePost,
     likePost,
     addComment,
-    deleteComment
+    deletePost,
+    likePost,
+    addComment,
+    deleteComment,
+    getCommunityStats
 } from '../controllers/forum.controller.js';
 
 const router = express.Router();
 
 router.post('/create', verifyToken, createPost);
 router.get('/', getPosts);
+router.get('/stats', getCommunityStats); // Move specific route before generic /:id
 router.get('/:id', getPostById);
 router.delete('/:id', verifyToken, deletePost);
 router.put('/like/:id', verifyToken, likePost);
