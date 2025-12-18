@@ -716,7 +716,7 @@ export default function AdminCommunity() {
                                                 <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
                                                     <span className="flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
                                                         <FaCalendarAlt className="text-gray-400" />
-                                                        {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}
+                                                        {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                                     </span>
                                                     {post.location?.city && (
                                                         <span className="flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
@@ -836,7 +836,9 @@ export default function AdminCommunity() {
                                                                 <div className="bg-gray-50 rounded-2xl rounded-tl-none p-3 pr-8 relative">
                                                                     <div className="flex justify-between items-center mb-1">
                                                                         <span className="font-semibold text-sm">{comment.user?.username}</span>
-                                                                        <span className="text-xs text-gray-500 mr-4">{new Date(comment.createdAt || Date.now()).toLocaleDateString()}</span>
+                                                                        <span className="text-[10px] text-gray-500 mr-4">
+                                                                            {new Date(comment.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                                        </span>
                                                                     </div>
                                                                     <p className="text-sm text-gray-700">{comment.content}</p>
 
@@ -918,7 +920,9 @@ export default function AdminCommunity() {
                                                                                     <div className="bg-gray-50/50 p-2 rounded-lg relative">
                                                                                         <div className="flex items-center gap-2 mb-1">
                                                                                             <span className="text-xs font-bold text-gray-800">{reply.user?.username}</span>
-                                                                                            <span className="text-[10px] text-gray-400">{new Date(reply.createdAt).toLocaleDateString()}</span>
+                                                                                            <span className="text-[10px] text-gray-400">
+                                                                                                {new Date(reply.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                                                            </span>
                                                                                         </div>
                                                                                         <p className="text-xs text-gray-700">{reply.content}</p>
 
