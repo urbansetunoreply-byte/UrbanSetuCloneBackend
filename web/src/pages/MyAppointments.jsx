@@ -8974,20 +8974,21 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                         )}
                                         {/* Document Message */}
                                         {c.documentUrl && (
-                                          <div className="mb-2 group relative flex items-center bg-gray-50/90 hover:bg-white border hover:border-blue-200 text-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all max-w-[280px]">
+                                          <div className="mb-2 group relative flex items-center bg-gray-50/90 hover:bg-white border hover:border-blue-200 text-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all w-fit max-w-[85%] sm:max-w-[320px]">
                                             {/* Clickable Area for View */}
                                             <div
-                                              className="flex-1 flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50/30 transition-colors"
+                                              className="flex-1 flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50/30 transition-colors min-w-0"
                                               onClick={(e) => {
                                                 e.stopPropagation();
                                                 // Construct preview URL
-                                                const ext = c.documentUrl.split('.').pop().toLowerCase();
+                                                const cleanUrl = c.documentUrl.split('?')[0];
+                                                const ext = cleanUrl.split('.').pop().toLowerCase();
                                                 let type = 'document';
                                                 if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) type = 'image';
                                                 else if (ext === 'pdf') type = 'pdf';
 
                                                 // Open preview in new tab
-                                                const previewUrl = `/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}&participants=${encodeURIComponent((appt.buyerId?.email || '') + ',' + (appt.sellerId?.email || ''))}`;
+                                                const previewUrl = `/user/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}&participants=${encodeURIComponent((appt.buyerId?.email || '') + ',' + (appt.sellerId?.email || ''))}`;
                                                 window.open(previewUrl, '_blank');
                                               }}
                                               title="Click to view document"
@@ -9001,11 +9002,11 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                             </div>
 
                                             {/* Separator */}
-                                            <div className="w-[1px] h-8 bg-gray-200" />
+                                            <div className="w-[1px] h-8 bg-gray-200 flex-shrink-0" />
 
                                             {/* Download Button */}
                                             <button
-                                              className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex-shrink-0"
+                                              className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex-shrink-0 z-10"
                                               title="Download"
                                               onClick={async (e) => {
                                                 e.stopPropagation();
