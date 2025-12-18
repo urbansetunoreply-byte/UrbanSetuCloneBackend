@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt,
     FaStore, FaComment, FaHeart, FaShare, FaPlus, FaSearch,
-    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight
+    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -16,21 +16,25 @@ export default function AdminCommunity() {
 
     // Keyframes for inline styles
     const styles = `
-    @keyframes fadeInUp {
+@keyframes fadeInUp {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
-    }
-    .animate-fade-in-up {
-        animation: fadeInUp 0.5s ease-out forwards;
-        opacity: 0;
-    }
-    `;
+}
+    .animate - fade -in -up {
+    animation: fadeInUp 0.5s ease - out forwards;
+    opacity: 0;
+}
+`;
 
     const [posts, setPosts] = useState([]);
-    const [loading, setLoading] = useState(true);
+    const [searchTerm, setSearchTerm] = useState('');
     const [activeTab, setActiveTab] = useState('All');
     const [showCreateModal, setShowCreateModal] = useState(false);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [loading, setLoading] = useState(false);
+
+    // New state for suggestions
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
     const [stats, setStats] = useState({
         activeMembers: 0,
         dailyPosts: 0,
@@ -62,16 +66,18 @@ export default function AdminCommunity() {
     useEffect(() => {
         fetchPosts();
         fetchStats();
-    }, [activeTab]);
+    }, [activeTab, searchTerm]); // Added searchTerm to dependencies
 
     const fetchPosts = async () => {
         try {
             setLoading(true);
-            const queryParams = new URLSearchParams();
-            if (activeTab !== 'All') queryParams.append('category', activeTab);
             // Auto-filter by user's location if available (optional enhancement)
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${queryParams.toString()}`);
+            const params = new URLSearchParams();
+            if (activeTab !== 'All') params.append('category', activeTab);
+            if (searchTerm) params.append('searchTerm', searchTerm);
+
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum ? ${params.toString()} `);
             const data = await res.json();
 
             if (res.ok) {
@@ -85,9 +91,42 @@ export default function AdminCommunity() {
         }
     };
 
+    // Auto-fetch when tabs or search changes
+    useEffect(() => {
+        fetchPosts();
+    }, [activeTab, searchTerm]);
+
+    // Search Debounce & Suggestions
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            if (searchTerm.length > 2) {
+                try {
+                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / search / suggestions ? q = ${searchTerm} `);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setSuggestions(data);
+                        setShowSuggestions(true);
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        }, 300);
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm]);
+
+    const handleSearchSelect = (term) => {
+        setSearchTerm(term);
+        setShowSuggestions(false);
+        fetchPosts();
+    };
+
     const fetchStats = async () => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/stats`);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / stats`);
             if (res.ok) {
                 const data = await res.json();
                 setStats(data);
@@ -101,13 +140,13 @@ export default function AdminCommunity() {
         if (!currentUser) return navigate('/sign-in');
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/like/${postId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / like / ${postId} `, {
                 method: 'PUT',
                 headers: {
                     'Content-Type': 'application/json',
                     // Include credentials for authentication if needed (though backend checks verifyToken likely via cookie or header)
                     // If using Authorization header:
-                    // 'Authorization': `Bearer ${currentUser.token}` 
+                    // 'Authorization': `Bearer ${ currentUser.token } ` 
                 },
                 // If using cookies, ensure credentials: 'include'
                 credentials: 'include'
@@ -128,7 +167,7 @@ export default function AdminCommunity() {
         if (!currentUser) return navigate('/sign-in');
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/create`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / create`, {
                 method: 'POST',
                 headers: {
                     'Content-Type': 'application/json',
@@ -160,7 +199,7 @@ export default function AdminCommunity() {
     const handleDeletePost = async (postId) => {
         if (!confirm('Are you sure you want to delete this post?')) return;
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${postId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / ${postId} `, {
                 method: 'DELETE',
                 credentials: 'include'
             });
@@ -180,17 +219,34 @@ export default function AdminCommunity() {
 
     const handlePinPost = async (postId) => {
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/pin/${postId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / pin / ${postId} `, {
                 method: 'PUT',
                 credentials: 'include'
             });
             if (res.ok) {
                 const updatedPost = await res.json();
-                setPosts(posts.map(p => p._id === postId ? updatedPost : p));
+                setPosts(posts.map(p => p._id === postId ? { ...p, isPinned: updatedPost.isPinned } : p));
                 toast.success(updatedPost.isPinned ? 'Post pinned successfully' : 'Post unpinned successfully');
             }
         } catch (error) {
             console.error(error);
+        }
+    };
+
+    const handleLockPost = async (postId) => {
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / lock / ${postId} `, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const updatedPost = await res.json();
+                setPosts(posts.map(p => p._id === postId ? { ...p, isLocked: updatedPost.isLocked } : p));
+                toast.success(updatedPost.isLocked ? 'Post locked' : 'Post unlocked');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update lock status');
         }
     };
 
@@ -207,7 +263,7 @@ export default function AdminCommunity() {
         if (!content || !content.trim()) return;
 
         try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}`, {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL} /api/forum / comment / ${postId} `, {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
@@ -312,11 +368,32 @@ export default function AdminCommunity() {
                             <input
                                 type="text"
                                 placeholder="Search discussions..."
+                                className="pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
-                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                onFocus={() => searchTerm.length > 2 && setShowSuggestions(true)}
+                                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                             />
+                            {showSuggestions && suggestions.length > 0 && (
+                                <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-lg mt-1 z-50 border border-gray-100 overflow-hidden">
+                                    {suggestions.map((s, i) => (
+                                        <div
+                                            key={i}
+                                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 truncate"
+                                            onClick={() => handleSearchSelect(s.title)}
+                                        >
+                                            {s.title}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
+                        <button
+                            onClick={() => fetchPosts()}
+                            className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                        >
+                            Search
+                        </button>
                         <button
                             onClick={() => {
                                 if (!currentUser) {
@@ -406,6 +483,13 @@ export default function AdminCommunity() {
                                                 title={post.isPinned ? "Unpin Post" : "Pin Post"}
                                             >
                                                 <FaMapMarkerAlt className="transform rotate-45" />
+                                            </button>
+                                            <button
+                                                onClick={() => handleLockPost(post._id)}
+                                                className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${post.isLocked ? 'text-orange-500' : 'text-gray-400'}`}
+                                                title={post.isLocked ? "Unlock Post" : "Lock Post"}
+                                            >
+                                                <FaLock />
                                             </button>
                                             <button
                                                 onClick={() => handleDeletePost(post._id)}

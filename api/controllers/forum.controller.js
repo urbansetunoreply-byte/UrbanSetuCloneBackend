@@ -36,6 +36,12 @@ export const getPosts = async (req, res, next) => {
 
         if (city) query['location.city'] = { $regex: city, $options: 'i' };
         if (neighborhood) query['location.neighborhood'] = { $regex: neighborhood, $options: 'i' };
+        if (req.query.searchTerm) {
+            query.$or = [
+                { title: { $regex: req.query.searchTerm, $options: 'i' } },
+                { content: { $regex: req.query.searchTerm, $options: 'i' } }
+            ];
+        }
         if (category && category !== 'All') query.category = category;
 
         const sortOption = sort === 'popular' ? { 'likes': -1, createdAt: -1 } : { createdAt: -1 };
@@ -89,6 +95,23 @@ export const deletePost = async (req, res, next) => {
     }
 };
 
+export const togglePin = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'You are not allowed to pin posts'));
+        }
+
+        post.isPinned = !post.isPinned;
+        await post.save();
+        res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const likePost = async (req, res, next) => {
     try {
         const post = await ForumPost.findById(req.params.id);
@@ -113,6 +136,9 @@ export const addComment = async (req, res, next) => {
     try {
         const post = await ForumPost.findById(req.params.id);
         if (!post) return next(errorHandler(404, 'Post not found'));
+        if (post.isLocked && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'This discussion is locked'));
+        }
 
         const { content } = req.body;
         const newComment = {
@@ -177,18 +203,54 @@ export const getCommunityStats = async (req, res, next) => {
     }
 };
 
-export const togglePin = async (req, res, next) => {
+
+
+export const lockPost = async (req, res, next) => {
     try {
         const post = await ForumPost.findById(req.params.id);
         if (!post) return next(errorHandler(404, 'Post not found'));
 
         if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
-            return next(errorHandler(403, 'You are not allowed to pin posts'));
+            return next(errorHandler(403, 'Not authorized'));
         }
 
-        post.isPinned = !post.isPinned;
+        post.isLocked = !post.isLocked;
         await post.save();
         res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const reportPost = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const existingReport = post.reports.find(r => r.user.toString() === req.user.id);
+        if (existingReport) return next(errorHandler(400, 'You have already reported this post'));
+
+        post.reports.push({
+            user: req.user.id,
+            reason: req.body.reason || 'Spam/Inappropriate'
+        });
+        await post.save();
+        res.status(200).json('Post reported successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getSuggestions = async (req, res, next) => {
+    try {
+        const { q } = req.query;
+        if (!q) return res.status(200).json([]);
+
+        const posts = await ForumPost.find({
+            title: { $regex: q, $options: 'i' }
+        }).select('title').limit(5);
+
+        res.status(200).json(posts);
     } catch (error) {
         next(error);
     }

@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt,
     FaStore, FaComment, FaHeart, FaShare, FaPlus, FaSearch,
-    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight
+    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -49,6 +49,8 @@ export default function Community() {
             neighborhood: ''
         }
     });
+    const [suggestions, setSuggestions] = useState([]);
+    const [showSuggestions, setShowSuggestions] = useState(false);
 
     const categories = [
         { id: 'All', icon: FaUsers, label: 'All Posts' },
@@ -62,27 +64,57 @@ export default function Community() {
     useEffect(() => {
         fetchPosts();
         fetchStats();
-    }, [activeTab]);
+    }, [activeTab, searchTerm]); // Added searchTerm to dependency array
 
     const fetchPosts = async () => {
         try {
             setLoading(true);
-            const queryParams = new URLSearchParams();
-            if (activeTab !== 'All') queryParams.append('category', activeTab);
+            const params = new URLSearchParams();
+            if (activeTab !== 'All') params.append('category', activeTab);
+            if (searchTerm) params.append('searchTerm', searchTerm);
             // Auto-filter by user's location if available (optional enhancement)
 
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${queryParams.toString()}`);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum?${params.toString()}`);
             const data = await res.json();
 
             if (res.ok) {
                 setPosts(data.posts);
             }
         } catch (error) {
-            console.error(error);
+            console.error('Failed to fetch posts:', error);
             toast.error('Failed to load community posts');
         } finally {
             setLoading(false);
         }
+    };
+
+    useEffect(() => {
+        const delayDebounceFn = setTimeout(async () => {
+            if (searchTerm.length > 2) {
+                try {
+                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/search/suggestions?q=${searchTerm}`);
+                    if (res.ok) {
+                        const data = await res.json();
+                        setSuggestions(data);
+                        setShowSuggestions(true);
+                    }
+                } catch (error) {
+                    console.error(error);
+                }
+            } else {
+                setSuggestions([]);
+                setShowSuggestions(false);
+            }
+        }, 300);
+
+        return () => clearTimeout(delayDebounceFn);
+    }, [searchTerm]);
+
+    const handleSearchSelect = (term) => {
+        setSearchTerm(term);
+        setShowSuggestions(false);
+        // Trigger fetch immediately
+        fetchPosts();
     };
 
     const fetchStats = async () => {
@@ -223,6 +255,27 @@ export default function Community() {
         }));
     };
 
+    const handleReportPost = async (postId) => {
+        const reason = prompt("Why are you reporting this post?");
+        if (!reason) return;
+
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/report/${postId}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ reason })
+            });
+            if (res.ok) {
+                toast.success('Post reported');
+            } else {
+                toast.error('Failed to report');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
     const handleAddComment = async (e, postId) => {
         e.preventDefault();
         const content = commentText[postId];
@@ -297,8 +350,23 @@ export default function Community() {
                                 placeholder="Search discussions..."
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
+                                onFocus={() => searchTerm.length > 2 && setShowSuggestions(true)}
+                                onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                                 className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
                             />
+                            {showSuggestions && suggestions.length > 0 && (
+                                <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-lg mt-1 z-50 border border-gray-100 overflow-hidden">
+                                    {suggestions.map((s, i) => (
+                                        <div
+                                            key={i}
+                                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 truncate"
+                                            onClick={() => handleSearchSelect(s.title)}
+                                        >
+                                            {s.title}
+                                        </div>
+                                    ))}
+                                </div>
+                            )}
                         </div>
                         <button
                             onClick={() => {
@@ -376,13 +444,27 @@ export default function Community() {
                                             </div>
                                         </div>
                                         <div className="flex items-center gap-2">
+                                            {post.isLocked && (
+                                                <span className="bg-gray-100 text-gray-500 p-1.5 rounded-full" title="Locked Discussion">
+                                                    <FaLock size={12} />
+                                                </span>
+                                            )}
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${post.category === 'Safety' ? 'bg-red-50 text-red-600 border border-red-100' :
-                                                post.category === 'Events' ? 'bg-purple-50 text-purple-600 border border-purple-100' :
-                                                    post.category === 'Marketplace' ? 'bg-green-50 text-green-600 border border-green-100' :
-                                                        'bg-blue-50 text-blue-600 border border-blue-100'
+                                                    post.category === 'Events' ? 'bg-purple-50 text-purple-600 border border-purple-100' :
+                                                        post.category === 'Marketplace' ? 'bg-green-50 text-green-600 border border-green-100' :
+                                                            'bg-blue-50 text-blue-600 border border-blue-100'
                                                 }`}>
                                                 {post.category}
                                             </span>
+                                            {currentUser && currentUser._id !== post.author?._id && (
+                                                <button
+                                                    onClick={() => handleReportPost(post._id)}
+                                                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                                    title="Report Post"
+                                                >
+                                                    <FaFlag />
+                                                </button>
+                                            )}
                                             {currentUser && currentUser._id === post.author?._id && (
                                                 <button
                                                     onClick={() => handleDeletePost(post._id)}

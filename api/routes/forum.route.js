@@ -9,19 +9,26 @@ import {
     addComment,
     deleteComment,
     getCommunityStats,
-    togglePin
+    togglePin,
+    lockPost,
+    reportPost,
+    getSuggestions
 } from '../controllers/forum.controller.js';
 
 const router = express.Router();
 
 router.post('/create', verifyToken, createPost);
 router.get('/', getPosts);
-router.get('/stats', getCommunityStats); // Move specific route before generic /:id
+router.get('/stats', getCommunityStats);
+router.get('/search/suggestions', getSuggestions);
 router.get('/:id', getPostById);
 router.delete('/:id', verifyToken, deletePost);
 router.put('/like/:id', verifyToken, likePost);
 router.post('/comment/:id', verifyToken, addComment);
 router.delete('/comment/:id/:commentId', verifyToken, deleteComment);
 router.put('/pin/:id', verifyToken, togglePin);
+router.put('/lock/:id', verifyToken, lockPost);
+router.post('/report/:id', verifyToken, reportPost);
+
 
 export default router;
