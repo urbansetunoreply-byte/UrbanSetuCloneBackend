@@ -1690,10 +1690,34 @@ export default function AdminCommunity() {
                                                         <input
                                                             type="text"
                                                             placeholder="Write a comment... (Type @ to mention property)"
-                                                            className="w-full bg-gray-50 border border-gray-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                            className="w-full bg-gray-50 border border-gray-200 rounded-full pl-4 pr-16 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                                             value={commentText[post._id] || ''}
                                                             onChange={(e) => handleInputChange(e, 'comment', post._id)}
                                                         />
+                                                        <div className="absolute right-9 top-1/2 -translate-y-1/2 flex items-center">
+                                                            <button
+                                                                type="button"
+                                                                onClick={() => setShowEmojiPicker(prev => ({
+                                                                    show: prev.type === 'comment' && prev.id === post._id ? !prev.show : true,
+                                                                    type: 'comment',
+                                                                    id: post._id
+                                                                }))}
+                                                                className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                                                                title="Add Emoji"
+                                                            >
+                                                                <FaSmile className="text-base" />
+                                                            </button>
+                                                            {showEmojiPicker.show && showEmojiPicker.type === 'comment' && showEmojiPicker.id === post._id && (
+                                                                <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
+                                                                    <EmojiPicker
+                                                                        onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'comment', post._id)}
+                                                                        width={300}
+                                                                        height={400}
+                                                                        previewConfig={{ showPreview: false }}
+                                                                    />
+                                                                </div>
+                                                            )}
+                                                        </div>
                                                         <button
                                                             type="submit"
                                                             disabled={!commentText[post._id]?.trim()}
