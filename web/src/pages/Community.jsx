@@ -1421,23 +1421,23 @@ export default function Community() {
                                                                                                                 </div>
                                                                                                             </form>
                                                                                                         ) : (
-                                                                                                            <p className="text-xs text-gray-700 leading-relaxed">
+                                                                                                            <p className="text-sm text-gray-700 leading-relaxed">
                                                                                                                 {formatContent(reply.content)}
-                                                                                                                {reply.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                                                                {reply.isEdited && <span className="text-xs text-gray-400 italic font-normal ml-2">(edited)</span>}
                                                                                                             </p>
                                                                                                         )}
                                                                                                         <div className="flex items-center gap-3 mt-1">
                                                                                                             <button
                                                                                                                 onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
-                                                                                                                className={`flex items-center gap-1 text-[9px] font-bold ${currentUser && reply.likes?.includes(currentUser._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+                                                                                                                className={`flex items-center gap-1 text-xs font-bold ${currentUser && reply.likes?.includes(currentUser._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
                                                                                                             >
-                                                                                                                <FaThumbsUp size={8} /> {reply.likes?.length || 0}
+                                                                                                                <FaThumbsUp size={10} /> {reply.likes?.length || 0}
                                                                                                             </button>
                                                                                                             <button
                                                                                                                 onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
-                                                                                                                className={`flex items-center gap-1 text-[9px] font-bold ${currentUser && reply.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                                                                                                className={`flex items-center gap-1 text-xs font-bold ${currentUser && reply.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                                                                                                             >
-                                                                                                                <FaThumbsDown size={8} /> {reply.dislikes?.length || 0}
+                                                                                                                <FaThumbsDown size={10} /> {reply.dislikes?.length || 0}
                                                                                                             </button>
                                                                                                             <button
                                                                                                                 onClick={() => {
@@ -1446,7 +1446,7 @@ export default function Community() {
                                                                                                                         setReplyingTo({ userId: reply.user._id, username: reply.user.username });
                                                                                                                     }
                                                                                                                 }}
-                                                                                                                className="text-[9px] font-bold text-gray-400 hover:text-blue-600 outline-none"
+                                                                                                                className="text-xs font-bold text-gray-400 hover:text-blue-600 outline-none"
                                                                                                             >
                                                                                                                 Reply
                                                                                                             </button>

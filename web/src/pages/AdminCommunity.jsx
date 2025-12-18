@@ -1448,8 +1448,8 @@ export default function AdminCommunity() {
                                                                                                 <div className="flex-1">
                                                                                                     <div className="bg-gray-50/50 p-2 rounded-lg relative">
                                                                                                         <div className="flex items-center gap-2 mb-1">
-                                                                                                            <span className="text-xs font-bold text-gray-800">{reply.user?.username}</span>
-                                                                                                            <span className="text-[10px] text-gray-400">
+                                                                                                            <span className="text-sm font-bold text-gray-800">{reply.user?.username}</span>
+                                                                                                            <span className="text-xs text-gray-400">
                                                                                                                 {new Date(reply.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                                                             </span>
                                                                                                         </div>
@@ -1478,9 +1478,9 @@ export default function AdminCommunity() {
                                                                                                                 </div>
                                                                                                             </form>
                                                                                                         ) : (
-                                                                                                            <p className="text-xs text-gray-700">
+                                                                                                            <p className="text-sm text-gray-700">
                                                                                                                 {formatContent(reply.content)}
-                                                                                                                {reply.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                                                                {reply.isEdited && <span className="text-xs text-gray-400 italic font-normal ml-2">(edited)</span>}
                                                                                                             </p>
                                                                                                         )}
 
@@ -1496,13 +1496,13 @@ export default function AdminCommunity() {
                                                                                                         <div className="flex items-center gap-3 mt-1.5">
                                                                                                             <button
                                                                                                                 onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
-                                                                                                                className={`flex items-center gap-1 text-[10px] font-semibold ${reply.likes?.includes(currentUser?._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+                                                                                                                className={`flex items-center gap-1 text-xs font-semibold ${reply.likes?.includes(currentUser?._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
                                                                                                             >
                                                                                                                 <FaThumbsUp /> {reply.likes?.length || 0}
                                                                                                             </button>
                                                                                                             <button
                                                                                                                 onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
-                                                                                                                className={`flex items-center gap-1 text-[10px] font-semibold ${reply.dislikes?.includes(currentUser?._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                                                                                                className={`flex items-center gap-1 text-xs font-semibold ${reply.dislikes?.includes(currentUser?._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                                                                                                             >
                                                                                                                 <FaThumbsDown /> {reply.dislikes?.length || 0}
                                                                                                             </button>
@@ -1514,7 +1514,7 @@ export default function AdminCommunity() {
                                                                                                                         setReplyingTo({ postId: post._id, commentId: comment._id, userId: reply.user._id, username: reply.user.username });
                                                                                                                     }
                                                                                                                 }}
-                                                                                                                className="text-[10px] font-semibold text-gray-500 hover:text-blue-600 bg-gray-100/80 hover:bg-blue-50 px-1.5 py-0.5 rounded transition-colors outline-none"
+                                                                                                                className="text-xs font-semibold text-gray-500 hover:text-blue-600 bg-gray-100/80 hover:bg-blue-50 px-1.5 py-0.5 rounded transition-colors outline-none"
                                                                                                             >
                                                                                                                 Reply
                                                                                                             </button>
