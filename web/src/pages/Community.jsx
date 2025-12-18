@@ -1253,7 +1253,7 @@ export default function Community() {
                                                                         )}
 
                                                                         {/* Report Comment Button */}
-                                                                        {currentUser && (
+                                                                        {currentUser && currentUser._id !== comment.user?._id && (
                                                                             <button
                                                                                 onClick={() => setReportModal({
                                                                                     isOpen: true,
