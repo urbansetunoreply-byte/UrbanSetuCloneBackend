@@ -19,9 +19,15 @@ export default function Community() {
         from { opacity: 0; transform: translateY(20px); }
         to { opacity: 1; transform: translateY(0); }
 }
-    .animate - fade -in -up {
-    animation: fadeInUp 0.5s ease - out forwards;
-    opacity: 0;
+@keyframes fadeIn {
+        from { opacity: 0; }
+        to { opacity: 1; }
+}
+.animate-fade-in-up {
+    animation: fadeInUp 0.5s ease-out forwards;
+}
+.animate-fade-in {
+    animation: fadeIn 0.3s ease-out forwards;
 }
 `;
 
@@ -1327,162 +1333,175 @@ export default function Community() {
                                                                 {expandedReplies[comment._id] && comment.replies && (
                                                                     <div className="mt-2 space-y-3 pl-4 border-l-2 border-gray-100 ml-2">
                                                                         {(() => {
-                                                                            // Recursive component logic inline
+                                                                            // Small indentation test
                                                                             const renderReplies = (parentId) => {
                                                                                 const currentReplies = comment.replies.filter(r => (r.parentReplyId || null) === (parentId || null));
                                                                                 if (!currentReplies.length) return null;
 
-                                                                                return currentReplies.map(reply => (
-                                                                                    <div key={reply._id} className="flex gap-2 relative group/reply flex-col mb-2">
-                                                                                        <div className="flex gap-2">
-                                                                                            <img
-                                                                                                src={reply.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                                                                                                className="w-6 h-6 rounded-full object-cover mt-1"
-                                                                                            />
-                                                                                            <div className="flex-1">
-                                                                                                <div className="bg-gray-50/50 p-2 rounded-lg relative">
-                                                                                                    <div className="flex items-center gap-2 mb-1">
-                                                                                                        <span className="text-xs font-bold text-gray-800">{reply.user?.username}</span>
-                                                                                                        <span className="text-[10px] text-gray-400">
-                                                                                                            {new Date(reply.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
-                                                                                                        </span>
-                                                                                                    </div>
-                                                                                                    {editingContent.id === reply._id && editingContent.type === 'reply' ? (
-                                                                                                        <form onSubmit={(e) => handleUpdateReply(e, post._id, comment._id, reply._id)} className="w-full mb-2">
-                                                                                                            <textarea
-                                                                                                                value={editingContent.content}
-                                                                                                                onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
-                                                                                                                className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-blue-500 min-h-[50px]"
-                                                                                                                autoFocus
-                                                                                                            />
-                                                                                                            <div className="flex justify-end gap-2 mt-1">
-                                                                                                                <button
-                                                                                                                    type="button"
-                                                                                                                    onClick={() => setEditingContent({ type: null, id: null, content: '' })}
-                                                                                                                    className="text-[10px] text-gray-500 hover:text-gray-700 px-2 py-1"
-                                                                                                                >
-                                                                                                                    Cancel
-                                                                                                                </button>
-                                                                                                                <button
-                                                                                                                    type="submit"
-                                                                                                                    className="text-[10px] bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
-                                                                                                                >
-                                                                                                                    Save
-                                                                                                                </button>
-                                                                                                            </div>
-                                                                                                        </form>
-                                                                                                    ) : (
-                                                                                                        <p className="text-xs text-gray-700 leading-relaxed">
-                                                                                                            {formatContent(reply.content)}
-                                                                                                            {reply.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
-                                                                                                        </p>
-                                                                                                    )}
-                                                                                                    <div className="flex items-center gap-3 mt-1">
-                                                                                                        <button
-                                                                                                            onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
-                                                                                                            className={`flex items-center gap-1 text-[9px] font-bold ${currentUser && reply.likes?.includes(currentUser._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
-                                                                                                        >
-                                                                                                            <FaThumbsUp size={8} /> {reply.likes?.length || 0}
-                                                                                                        </button>
-                                                                                                        <button
-                                                                                                            onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
-                                                                                                            className={`flex items-center gap-1 text-[9px] font-bold ${currentUser && reply.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
-                                                                                                        >
-                                                                                                            <FaThumbsDown size={8} /> {reply.dislikes?.length || 0}
-                                                                                                        </button>
-                                                                                                        <button
-                                                                                                            onClick={() => {
-                                                                                                                setActiveReplyInput(reply._id);
-                                                                                                                if (reply.user) {
-                                                                                                                    setReplyingTo({ userId: reply.user._id, username: reply.user.username });
-                                                                                                                }
-                                                                                                            }}
-                                                                                                            className="text-[9px] font-bold text-gray-400 hover:text-blue-600"
-                                                                                                        >
-                                                                                                            Reply
-                                                                                                        </button>
-                                                                                                        {/* Report Reply Button */}
-                                                                                                        {currentUser && currentUser._id !== reply.user?._id && (
+                                                                                return currentReplies.map(reply => {
+                                                                                    const subReplies = comment.replies.filter(r => r.parentReplyId === reply._id);
+                                                                                    return (
+                                                                                        <div key={reply._id} className="flex gap-2 relative group/reply flex-col mb-2 animate-fade-in">
+                                                                                            <div className="flex gap-2">
+                                                                                                <img
+                                                                                                    src={reply.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                                                                                    className="w-6 h-6 rounded-full object-cover mt-1"
+                                                                                                />
+                                                                                                <div className="flex-1">
+                                                                                                    <div className="bg-gray-50/50 p-2 rounded-lg relative">
+                                                                                                        <div className="flex items-center gap-2 mb-1">
+                                                                                                            <span className="text-xs font-bold text-gray-800">{reply.user?.username}</span>
+                                                                                                            <span className="text-[10px] text-gray-400">
+                                                                                                                {new Date(reply.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                                                                            </span>
+                                                                                                        </div>
+                                                                                                        {editingContent.id === reply._id && editingContent.type === 'reply' ? (
+                                                                                                            <form onSubmit={(e) => handleUpdateReply(e, post._id, comment._id, reply._id)} className="w-full mb-2">
+                                                                                                                <textarea
+                                                                                                                    value={editingContent.content}
+                                                                                                                    onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                                                                                                                    className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-blue-500 min-h-[50px]"
+                                                                                                                    autoFocus
+                                                                                                                />
+                                                                                                                <div className="flex justify-end gap-2 mt-1">
+                                                                                                                    <button
+                                                                                                                        type="button"
+                                                                                                                        onClick={() => setEditingContent({ type: null, id: null, content: '' })}
+                                                                                                                        className="text-[10px] text-gray-500 hover:text-gray-700 px-2 py-1"
+                                                                                                                    >
+                                                                                                                        Cancel
+                                                                                                                    </button>
+                                                                                                                    <button
+                                                                                                                        type="submit"
+                                                                                                                        className="text-[10px] bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                                                                                                                    >
+                                                                                                                        Save
+                                                                                                                    </button>
+                                                                                                                </div>
+                                                                                                            </form>
+                                                                                                        ) : (
+                                                                                                            <p className="text-xs text-gray-700 leading-relaxed">
+                                                                                                                {formatContent(reply.content)}
+                                                                                                                {reply.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                                                            </p>
+                                                                                                        )}
+                                                                                                        <div className="flex items-center gap-3 mt-1">
                                                                                                             <button
-                                                                                                                onClick={() => setReportModal({
-                                                                                                                    isOpen: true,
-                                                                                                                    type: 'reply',
-                                                                                                                    id: post._id,
-                                                                                                                    commentId: comment._id,
-                                                                                                                    replyId: reply._id
-                                                                                                                })}
-                                                                                                                className="text-gray-400 hover:text-red-500 ml-1"
-                                                                                                                title="Report Reply"
+                                                                                                                onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
+                                                                                                                className={`flex items-center gap-1 text-[9px] font-bold ${currentUser && reply.likes?.includes(currentUser._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
                                                                                                             >
-                                                                                                                <FaFlag size={8} />
+                                                                                                                <FaThumbsUp size={8} /> {reply.likes?.length || 0}
+                                                                                                            </button>
+                                                                                                            <button
+                                                                                                                onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
+                                                                                                                className={`flex items-center gap-1 text-[9px] font-bold ${currentUser && reply.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                                                                                            >
+                                                                                                                <FaThumbsDown size={8} /> {reply.dislikes?.length || 0}
+                                                                                                            </button>
+                                                                                                            <button
+                                                                                                                onClick={() => {
+                                                                                                                    setActiveReplyInput(reply._id);
+                                                                                                                    if (reply.user) {
+                                                                                                                        setReplyingTo({ userId: reply.user._id, username: reply.user.username });
+                                                                                                                    }
+                                                                                                                }}
+                                                                                                                className="text-[9px] font-bold text-gray-400 hover:text-blue-600 outline-none"
+                                                                                                            >
+                                                                                                                Reply
+                                                                                                            </button>
+                                                                                                            {subReplies.length > 0 && (
+                                                                                                                <button
+                                                                                                                    onClick={() => setExpandedReplies(prev => ({ ...prev, [reply._id]: !prev[reply._id] }))}
+                                                                                                                    className="text-[9px] font-bold text-blue-600 hover:text-blue-800 outline-none"
+                                                                                                                >
+                                                                                                                    {expandedReplies[reply._id] ? 'Hide' : `View ${subReplies.length} Replies`}
+                                                                                                                </button>
+                                                                                                            )}
+                                                                                                            {/* Report Reply Button */}
+                                                                                                            {currentUser && currentUser._id !== reply.user?._id && (
+                                                                                                                <button
+                                                                                                                    onClick={() => setReportModal({
+                                                                                                                        isOpen: true,
+                                                                                                                        type: 'reply',
+                                                                                                                        id: post._id,
+                                                                                                                        commentId: comment._id,
+                                                                                                                        replyId: reply._id
+                                                                                                                    })}
+                                                                                                                    className="text-gray-400 hover:text-red-500 ml-1"
+                                                                                                                    title="Report Reply"
+                                                                                                                >
+                                                                                                                    <FaFlag size={8} />
+                                                                                                                </button>
+                                                                                                            )}
+                                                                                                        </div>
+
+                                                                                                        {currentUser && currentUser._id === reply.user?._id && (
+                                                                                                            <button
+                                                                                                                onClick={() => setEditingContent({ type: 'reply', id: reply._id, content: reply.content })}
+                                                                                                                className="absolute right-6 top-1 p-1 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
+                                                                                                                title="Edit Reply"
+                                                                                                            >
+                                                                                                                <FaEdit size={10} />
+                                                                                                            </button>
+                                                                                                        )}
+                                                                                                        {currentUser && (currentUser._id === reply.user?._id || currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+                                                                                                            <button
+                                                                                                                onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
+                                                                                                                className="absolute right-1 top-1 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
+                                                                                                            >
+                                                                                                                <FaTimes size={10} />
                                                                                                             </button>
                                                                                                         )}
                                                                                                     </div>
-
-                                                                                                    {currentUser && currentUser._id === reply.user?._id && (
-                                                                                                        <button
-                                                                                                            onClick={() => setEditingContent({ type: 'reply', id: reply._id, content: reply.content })}
-                                                                                                            className="absolute right-6 top-1 p-1 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
-                                                                                                            title="Edit Reply"
-                                                                                                        >
-                                                                                                            <FaEdit size={10} />
-                                                                                                        </button>
+                                                                                                    {/* Reply Input for this specific reply */}
+                                                                                                    {activeReplyInput === reply._id && (
+                                                                                                        <div className="mt-2 flex gap-2 animate-fade-in pl-2">
+                                                                                                            <img
+                                                                                                                src={currentUser?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                                                                                                className="w-6 h-6 rounded-full object-cover"
+                                                                                                            />
+                                                                                                            <form onSubmit={(e) => handleAddReply(e, post._id, comment._id, reply._id)} className="flex-1 flex gap-2">
+                                                                                                                <div className="relative flex-1">
+                                                                                                                    {showMentionSuggestions.show && showMentionSuggestions.id === comment._id && showMentionSuggestions.type === 'reply' && renderMentionsPanel()}
+                                                                                                                    <input
+                                                                                                                        type="text"
+                                                                                                                        autoFocus
+                                                                                                                        value={replyText}
+                                                                                                                        onChange={(e) => handleInputChange(e, 'reply', comment._id)}
+                                                                                                                        placeholder={`Replying to ${reply.user?.username}...`}
+                                                                                                                        className="w-full bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
+                                                                                                                    />
+                                                                                                                </div>
+                                                                                                                <div className="flex gap-1">
+                                                                                                                    <button
+                                                                                                                        type="button"
+                                                                                                                        onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); }}
+                                                                                                                        className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
+                                                                                                                    >
+                                                                                                                        Cancel
+                                                                                                                    </button>
+                                                                                                                    <button
+                                                                                                                        type="submit"
+                                                                                                                        disabled={!replyText.trim()}
+                                                                                                                        className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full disabled:opacity-50"
+                                                                                                                    >
+                                                                                                                        Reply
+                                                                                                                    </button>
+                                                                                                                </div>
+                                                                                                            </form>
+                                                                                                        </div>
                                                                                                     )}
-                                                                                                    {currentUser && (currentUser._id === reply.user?._id || currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
-                                                                                                        <button
-                                                                                                            onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
-                                                                                                            className="absolute right-1 top-1 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
-                                                                                                        >
-                                                                                                            <FaTimes size={10} />
-                                                                                                        </button>
+                                                                                                    {/* Recursion: Render replies to this reply */}
+                                                                                                    {expandedReplies[reply._id] && (
+                                                                                                        <div className="ml-4 border-l-2 border-gray-100 pl-2 mt-2 animate-fade-in">
+                                                                                                            {renderReplies(reply._id)}
+                                                                                                        </div>
                                                                                                     )}
-                                                                                                </div>
-                                                                                                {/* Reply Input for this specific reply */}
-                                                                                                {activeReplyInput === reply._id && (
-                                                                                                    <div className="mt-2 flex gap-2 animate-fade-in pl-2">
-                                                                                                        <img
-                                                                                                            src={currentUser?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                                                                                                            className="w-6 h-6 rounded-full object-cover"
-                                                                                                        />
-                                                                                                        <form onSubmit={(e) => handleAddReply(e, post._id, comment._id, reply._id)} className="flex-1 flex gap-2">
-                                                                                                            <div className="relative flex-1">
-                                                                                                                {showMentionSuggestions.show && showMentionSuggestions.id === comment._id && showMentionSuggestions.type === 'reply' && renderMentionsPanel()}
-                                                                                                                <input
-                                                                                                                    type="text"
-                                                                                                                    autoFocus
-                                                                                                                    value={replyText}
-                                                                                                                    onChange={(e) => handleInputChange(e, 'reply', comment._id)}
-                                                                                                                    placeholder={`Replying to ${reply.user?.username}...`}
-                                                                                                                    className="w-full bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
-                                                                                                                />
-                                                                                                            </div>
-                                                                                                            <div className="flex gap-1">
-                                                                                                                <button
-                                                                                                                    type="button"
-                                                                                                                    onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); }}
-                                                                                                                    className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
-                                                                                                                >
-                                                                                                                    Cancel
-                                                                                                                </button>
-                                                                                                                <button
-                                                                                                                    type="submit"
-                                                                                                                    disabled={!replyText.trim()}
-                                                                                                                    className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full disabled:opacity-50"
-                                                                                                                >
-                                                                                                                    Reply
-                                                                                                                </button>
-                                                                                                            </div>
-                                                                                                        </form>
-                                                                                                    </div>
-                                                                                                )}
-                                                                                                {/* Recursion: Render replies to this reply */}
-                                                                                                <div className="ml-4 border-l-2 border-gray-100 pl-2 mt-2">
-                                                                                                    {renderReplies(reply._id)}
                                                                                                 </div>
                                                                                             </div>
                                                                                         </div>
-                                                                                    </div>
-                                                                                ));
+                                                                                    );
+                                                                                });
                                                                             };
                                                                             // Start rendering with null for root replies (reply directly to comment)
                                                                             return renderReplies(null);
