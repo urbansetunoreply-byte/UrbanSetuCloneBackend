@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt,
     FaStore, FaComment, FaHeart, FaShare, FaPlus, FaSearch,
-    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock
+    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
