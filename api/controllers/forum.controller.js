@@ -1,4 +1,5 @@
 import ForumPost from '../models/forumPost.model.js';
+import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
 
 export const createPost = async (req, res, next) => {
@@ -162,8 +163,11 @@ export const getCommunityStats = async (req, res, next) => {
         const sevenDaysAgo = new Date(Date.now() - 7 * 24 * 60 * 60 * 1000);
         const eventsThisWeek = await ForumPost.countDocuments({ category: 'Events', createdAt: { $gte: sevenDaysAgo } });
 
+        // Get accurate user count from User model as requested
+        const activeMembers = await User.countDocuments();
+
         res.status(200).json({
-            activeMembers: 1245,
+            activeMembers: activeMembers || 0,
             dailyPosts,
             eventsThisWeek
         });
