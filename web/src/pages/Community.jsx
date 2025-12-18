@@ -381,7 +381,7 @@ export default function Community() {
         const beforeAt = content.substring(0, lastAtIndex);
         const afterAt = content.substring(lastAtIndex + query.length + 1);
 
-        const newContent = `${beforeAt}@${property.name} ${afterAt}`;
+        const newContent = `${beforeAt}@[${property.name}](${property.id}) ${afterAt}`;
 
         if (type === 'post') {
             setNewPost(prev => ({ ...prev, content: newContent }));
@@ -423,25 +423,51 @@ export default function Community() {
 
     const formatContent = (content) => {
         if (!content) return null;
-        const parts = content.split(/(@\w+(?:\s\w+)*)/g);
-        return parts.map((part, i) => {
-            if (part.startsWith('@')) {
-                const propertyName = part.substring(1).trim();
-                return (
-                    <Link
-                        key={i}
-                        to={`/listing/${propertyName.toLowerCase().replace(/\s+/g, '-')}`}
-                        className="text-blue-600 font-bold hover:underline bg-blue-50 px-1 rounded transition-colors"
-                        onClick={(e) => {
-                            // Find property ID if possible or just navigate by name
-                        }}
-                    >
-                        {part}
-                    </Link>
-                );
+        // Regex to capture @[Name](ID) format
+        const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = mentionRegex.exec(content)) !== null) {
+            // Push text before the match
+            if (match.index > lastIndex) {
+                parts.push(content.substring(lastIndex, match.index));
             }
-            return part;
-        });
+            // Push the link component
+            parts.push(
+                <Link
+                    key={match.index}
+                    to={`/user/listing/${match[2]}`}
+                    className="text-blue-600 font-bold hover:underline bg-blue-50 px-1 rounded transition-colors"
+                >
+                    @{match[1]}
+                </Link>
+            );
+            lastIndex = mentionRegex.lastIndex;
+        }
+        // Push remaining text
+        if (lastIndex < content.length) {
+            parts.push(content.substring(lastIndex));
+        }
+
+        // If no mentions found, try legacy format (just in case) or return content
+        if (parts.length === 0) {
+            const legacyParts = content.split(/(@\w+(?:\s\w+)*)/g);
+            return legacyParts.map((part, i) => {
+                if (part.startsWith('@')) {
+                    // Legacy handling mostly not needed if we enforce new format, but kept for old posts if any
+                    return (
+                        <span key={i} className="text-blue-600 font-bold">
+                            {part}
+                        </span>
+                    );
+                }
+                return part;
+            });
+        }
+
+        return parts;
     };
 
     const handleDeleteComment = (postId, commentId) => {

@@ -685,7 +685,7 @@ export default function AdminCommunity() {
         const textAfterAt = currentValue.substring(currentValue.lastIndexOf('@' + query) + 1 + query.length);
 
         // Using formatting compatible with FormattedTextWithLinks: @[Name](ID)
-        const newValue = `${textBeforeAt}@[${property.name}](${property._id}) ${textAfterAt}`;
+        const newValue = `${textBeforeAt}@[${property.name}](${property.id}) ${textAfterAt}`;
 
         if (contextType === 'post') {
             setNewPost(prev => ({ ...prev, content: newValue }));
