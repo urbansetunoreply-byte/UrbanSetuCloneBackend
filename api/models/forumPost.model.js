@@ -16,11 +16,16 @@ const forumCommentSchema = new mongoose.Schema({
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],
+    dislikes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
     replies: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         replyToUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
         content: { type: String, required: true },
         likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+        dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         createdAt: { type: Date, default: Date.now }
     }]
 }, { timestamps: true });
@@ -55,6 +60,10 @@ const forumPostSchema = new mongoose.Schema({
         type: String // URLs
     }],
     likes: [{
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    }],
+    dislikes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
     }],

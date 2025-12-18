@@ -126,11 +126,44 @@ export const likePost = async (req, res, next) => {
         const post = await ForumPost.findById(req.params.id);
         if (!post) return next(errorHandler(404, 'Post not found'));
 
-        const index = post.likes.indexOf(req.user.id);
-        if (index === -1) {
+        const likeIndex = post.likes.indexOf(req.user.id);
+        const dislikeIndex = post.dislikes?.indexOf(req.user.id) ?? -1;
+
+        if (likeIndex === -1) {
             post.likes.push(req.user.id);
+            // Remove from dislikes if present
+            if (dislikeIndex !== -1) {
+                post.dislikes.splice(dislikeIndex, 1);
+            }
         } else {
-            post.likes.splice(index, 1);
+            post.likes.splice(likeIndex, 1);
+        }
+
+        await post.save();
+        await post.populate('author', 'username avatar type');
+        req.app.get('io').emit('forum:postUpdated', post);
+        res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const dislikePost = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const dislikeIndex = post.dislikes.indexOf(req.user.id);
+        const likeIndex = post.likes.indexOf(req.user.id);
+
+        if (dislikeIndex === -1) {
+            post.dislikes.push(req.user.id);
+            // Remove from likes if present
+            if (likeIndex !== -1) {
+                post.likes.splice(likeIndex, 1);
+            }
+        } else {
+            post.dislikes.splice(dislikeIndex, 1);
         }
 
         await post.save();
@@ -251,6 +284,124 @@ export const deleteReply = async (req, res, next) => {
         await post.save();
         req.app.get('io').emit('forum:replyDeleted', { postId: req.params.id, commentId: req.params.commentId, replyId: req.params.replyId });
         res.status(200).json('Reply deleted');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const likeComment = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        const likeIndex = comment.likes.indexOf(req.user.id);
+        const dislikeIndex = comment.dislikes?.indexOf(req.user.id) ?? -1;
+
+        if (likeIndex === -1) {
+            comment.likes.push(req.user.id);
+            if (dislikeIndex !== -1) {
+                comment.dislikes.splice(dislikeIndex, 1);
+            }
+        } else {
+            comment.likes.splice(likeIndex, 1);
+        }
+
+        await post.save();
+        req.app.get('io').emit('forum:postUpdated', post);
+        res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const dislikeComment = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        const dislikeIndex = comment.dislikes.indexOf(req.user.id);
+        const likeIndex = comment.likes.indexOf(req.user.id);
+
+        if (dislikeIndex === -1) {
+            comment.dislikes.push(req.user.id);
+            if (likeIndex !== -1) {
+                comment.likes.splice(likeIndex, 1);
+            }
+        } else {
+            comment.dislikes.splice(dislikeIndex, 1);
+        }
+
+        await post.save();
+        req.app.get('io').emit('forum:postUpdated', post);
+        res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const likeReply = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        const reply = comment.replies.id(req.params.replyId);
+        if (!reply) return next(errorHandler(404, 'Reply not found'));
+
+        const likeIndex = reply.likes.indexOf(req.user.id);
+        const dislikeIndex = reply.dislikes?.indexOf(req.user.id) ?? -1;
+
+        if (likeIndex === -1) {
+            reply.likes.push(req.user.id);
+            if (dislikeIndex !== -1) {
+                reply.dislikes.splice(dislikeIndex, 1);
+            }
+        } else {
+            reply.likes.splice(likeIndex, 1);
+        }
+
+        await post.save();
+        req.app.get('io').emit('forum:postUpdated', post);
+        res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const dislikeReply = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        const reply = comment.replies.id(req.params.replyId);
+        if (!reply) return next(errorHandler(404, 'Reply not found'));
+
+        const dislikeIndex = reply.dislikes.indexOf(req.user.id);
+        const likeIndex = reply.likes.indexOf(req.user.id);
+
+        if (dislikeIndex === -1) {
+            reply.dislikes.push(req.user.id);
+            if (likeIndex !== -1) {
+                reply.likes.splice(likeIndex, 1);
+            }
+        } else {
+            reply.dislikes.splice(dislikeIndex, 1);
+        }
+
+        await post.save();
+        req.app.get('io').emit('forum:postUpdated', post);
+        res.status(200).json(post);
     } catch (error) {
         next(error);
     }

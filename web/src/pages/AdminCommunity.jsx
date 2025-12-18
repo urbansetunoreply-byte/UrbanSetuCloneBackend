@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { Link, useNavigate } from 'react-router-dom';
 import {
     FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt,
-    FaStore, FaComment, FaHeart, FaShare, FaPlus, FaSearch,
+    FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch,
     FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
@@ -52,6 +52,13 @@ export default function AdminCommunity() {
         eventsThisWeek: 0,
         trendingTopics: []
     });
+
+    // Property Mention State
+    const [propertySuggestions, setPropertySuggestions] = useState([]);
+    const [showMentionSuggestions, setShowMentionSuggestions] = useState({ show: false, query: '', type: null, id: null }); // type: 'post' | 'comment' | 'reply'
+    const [mentionSearchLoading, setMentionSearchLoading] = useState(false);
+    const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
+
     const [expandedComments, setExpandedComments] = useState({});
     const [commentText, setCommentText] = useState({});
 
@@ -264,24 +271,62 @@ export default function AdminCommunity() {
 
     const handleLike = async (postId) => {
         if (!currentUser) return navigate('/sign-in');
-
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/like/${postId}`, {
                 method: 'PUT',
-                headers: {
-                    'Content-Type': 'application/json',
-                    // Include credentials for authentication if needed (though backend checks verifyToken likely via cookie or header)
-                    // If using Authorization header:
-                    // 'Authorization': `Bearer ${ currentUser.token } ` 
-                },
-                // If using cookies, ensure credentials: 'include'
                 credentials: 'include'
             });
-
             if (res.ok) {
                 const updatedPost = await res.json();
-                // Merge with existing author/comments to prevent data loss
                 setPosts(posts.map(post => post._id === postId ? { ...updatedPost, author: post.author, comments: post.comments } : post));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleDislike = async (postId) => {
+        if (!currentUser) return navigate('/sign-in');
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/dislike/${postId}`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const updatedPost = await res.json();
+                setPosts(posts.map(post => post._id === postId ? { ...updatedPost, author: post.author, comments: post.comments } : post));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleCommentReaction = async (postId, commentId, reactionType) => {
+        if (!currentUser) return navigate('/sign-in');
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/${reactionType}`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const updatedPost = await res.json();
+                setPosts(posts.map(post => post._id === postId ? { ...updatedPost, author: post.author } : post));
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    };
+
+    const handleReplyReaction = async (postId, commentId, replyId, reactionType) => {
+        if (!currentUser) return navigate('/sign-in');
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}/${reactionType}`, {
+                method: 'PUT',
+                credentials: 'include'
+            });
+            if (res.ok) {
+                const updatedPost = await res.json();
+                setPosts(posts.map(post => post._id === postId ? { ...updatedPost, author: post.author } : post));
             }
         } catch (error) {
             console.error(error);
@@ -584,6 +629,134 @@ export default function AdminCommunity() {
         }
     };
 
+    // Property Mention Logic
+    const searchProperties = async (query) => {
+        try {
+            setMentionSearchLoading(true);
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/property-search/search?query=${encodeURIComponent(query)}&limit=5`);
+            if (res.ok) {
+                const data = await res.json();
+                setPropertySuggestions(data.data || []);
+            }
+        } catch (error) {
+            console.error(error);
+        } finally {
+            setMentionSearchLoading(false);
+        }
+    };
+
+    const handleInputChange = (e, type, id = null) => {
+        const value = e.target.value;
+        const cursorPos = e.target.selectionStart;
+        const textBeforeCursor = value.substring(0, cursorPos);
+        const lastAtIndex = textBeforeCursor.lastIndexOf('@');
+
+        // Update state based on input type
+        if (type === 'post') {
+            setNewPost(prev => ({ ...prev, content: value }));
+        } else if (type === 'comment') {
+            setCommentText(prev => ({ ...prev, [id]: value }));
+        } else if (type === 'reply') {
+            setReplyText(value);
+        }
+
+        if (lastAtIndex !== -1) {
+            const textAfterAt = textBeforeCursor.substring(lastAtIndex + 1);
+            // Check if there's no space between @ and cursor (searching for the term)
+            if (!textAfterAt.includes(' ')) {
+                setShowMentionSuggestions({ show: true, query: textAfterAt, type, id });
+                setSelectedMentionIndex(0);
+                searchProperties(textAfterAt);
+                return;
+            }
+        }
+        setShowMentionSuggestions({ show: false, query: '', type: null, id: null });
+    };
+
+    const handleMentionSelect = (property) => {
+        const { query, type: contextType, id: contextId } = showMentionSuggestions;
+        let currentValue = '';
+
+        if (contextType === 'post') currentValue = newPost.content;
+        else if (contextType === 'comment') currentValue = commentText[contextId] || '';
+        else if (contextType === 'reply') currentValue = replyText;
+
+        const textBeforeAt = currentValue.substring(0, currentValue.lastIndexOf('@' + query));
+        const textAfterAt = currentValue.substring(currentValue.lastIndexOf('@' + query) + 1 + query.length);
+
+        // Using formatting compatible with FormattedTextWithLinks: @[Name](ID)
+        const newValue = `${textBeforeAt}@[${property.name}](${property._id}) ${textAfterAt}`;
+
+        if (contextType === 'post') {
+            setNewPost(prev => ({ ...prev, content: newValue }));
+        } else if (contextType === 'comment') {
+            setCommentText(prev => ({ ...prev, [contextId]: newValue }));
+        } else if (contextType === 'reply') {
+            setReplyText(newValue);
+        }
+
+        setShowMentionSuggestions({ show: false, query: '', type: null, id: null });
+    };
+
+    const renderMentionsPanel = (customClass = "") => {
+        if (!showMentionSuggestions.show || propertySuggestions.length === 0) return null;
+        return (
+            <div className={`absolute z-50 w-72 bg-white shadow-2xl rounded-xl border border-gray-100 overflow-hidden animate-fade-in-up ${customClass}`}>
+                <div className="bg-blue-50 px-4 py-2 border-b border-blue-100 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Mention Property</span>
+                    {mentionSearchLoading && <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>}
+                </div>
+                <div className="max-h-48 overflow-y-auto">
+                    {propertySuggestions.map((prop, idx) => (
+                        <div
+                            key={prop._id}
+                            onClick={() => handleMentionSelect(prop)}
+                            className={`px-4 py-3 cursor-pointer transition-all flex items-center gap-3 border-b border-gray-50 last:border-0 ${idx === selectedMentionIndex ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'}`}
+                        >
+                            <img src={prop.coverImage || prop.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3'} className="w-8 h-8 rounded-lg object-cover shadow-sm bg-gray-200" alt="" />
+                            <div className="flex-1 min-w-0">
+                                <p className={`text-sm font-bold truncate ${idx === selectedMentionIndex ? 'text-white' : 'text-gray-800'}`}>{prop.name}</p>
+                                <div className="flex items-center gap-1.5 mt-0.5">
+                                    <FaMapMarkerAlt size={10} className={idx === selectedMentionIndex ? 'text-blue-200' : 'text-blue-500'} />
+                                    <p className={`text-[10px] truncate ${idx === selectedMentionIndex ? 'text-blue-100' : 'text-gray-500'}`}>{prop.location?.city || 'India'}</p>
+                                </div>
+                            </div>
+                        </div>
+                    ))}
+                </div>
+            </div>
+        );
+    };
+
+    const formatContent = (content) => {
+        if (!content) return '';
+        const mentionRegex = /@\[([^\]]+)\]\(([^)]+)\)/g;
+        const parts = [];
+        let lastIndex = 0;
+        let match;
+
+        while ((match = mentionRegex.exec(content)) !== null) {
+            if (match.index > lastIndex) {
+                parts.push(content.substring(lastIndex, match.index));
+            }
+            parts.push(
+                <Link
+                    key={match.index}
+                    to={`/admin/listing/${match[2]}`}
+                    className="text-blue-600 hover:underline font-medium bg-blue-50 px-1 rounded mx-0.5"
+                    onClick={(e) => e.stopPropagation()}
+                >
+                    @{match[1]}
+                </Link>
+            );
+            lastIndex = match.index + match[0].length;
+        }
+        if (lastIndex < content.length) {
+            parts.push(content.substring(lastIndex));
+        }
+        return parts.length > 0 ? parts : content;
+    };
+
     return (
         <div className="min-h-screen bg-gray-50 pt-20 pb-12 font-sans">
             <style>{styles}</style>
@@ -763,7 +936,7 @@ export default function AdminCommunity() {
                                     {/* Post Content */}
                                     <div className="mb-6 pl-2 border-l-4 border-gray-100 hover:border-blue-100 transition-colors">
                                         <h2 className="text-xl font-bold text-gray-900 mb-2 leading-tight">{post.title}</h2>
-                                        <p className="text-gray-600 whitespace-pre-line leading-relaxed">{post.content}</p>
+                                        <p className="text-gray-600 whitespace-pre-line leading-relaxed">{formatContent(post.content)}</p>
                                         {/* Placeholder for optional post image if any */}
                                         {/* {post.images && post.images.length > 0 && (...)} */}
 
@@ -788,17 +961,32 @@ export default function AdminCommunity() {
 
                                     {/* Post Actions */}
                                     <div className="flex items-center justify-between pt-4 border-t border-gray-50">
-                                        <div className="flex items-center gap-6 w-full">
-                                            <button
-                                                onClick={() => handleLike(post._id)}
-                                                className={`group flex items-center gap-2 px-3 py-1.5 rounded-full transition-all ${currentUser && post.likes.includes(currentUser._id)
-                                                    ? 'bg-red-50 text-red-500'
-                                                    : 'text-gray-500 hover:bg-red-50 hover:text-red-500'
-                                                    }`}
-                                            >
-                                                <FaHeart className={`text-lg transform group-hover:scale-110 transition-transform ${currentUser && post.likes.includes(currentUser._id) ? 'fill-current' : ''}`} />
-                                                <span className="font-medium">{post.likes.length || 0}</span>
-                                            </button>
+                                        <div className="flex items-center gap-4 w-full">
+                                            <div className="flex items-center gap-1 bg-gray-50 rounded-full px-1 border border-gray-100">
+                                                <button
+                                                    onClick={() => handleLike(post._id)}
+                                                    className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${currentUser && post.likes?.includes(currentUser._id)
+                                                        ? 'text-blue-600'
+                                                        : 'text-gray-500 hover:text-blue-600'
+                                                        }`}
+                                                    title="Like"
+                                                >
+                                                    <FaThumbsUp className={`text-base transform group-hover:scale-110 transition-transform ${currentUser && post.likes?.includes(currentUser._id) ? 'fill-current' : ''}`} />
+                                                    <span className="font-semibold text-xs">{post.likes?.length || 0}</span>
+                                                </button>
+                                                <div className="w-[1px] h-4 bg-gray-200"></div>
+                                                <button
+                                                    onClick={() => handleDislike(post._id)}
+                                                    className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${currentUser && post.dislikes?.includes(currentUser._id)
+                                                        ? 'text-red-500'
+                                                        : 'text-gray-500 hover:text-red-500'
+                                                        }`}
+                                                    title="Dislike"
+                                                >
+                                                    <FaThumbsDown className={`text-base transform group-hover:scale-110 transition-transform ${currentUser && post.dislikes?.includes(currentUser._id) ? 'fill-current' : ''}`} />
+                                                    <span className="font-semibold text-xs">{post.dislikes?.length || 0}</span>
+                                                </button>
+                                            </div>
 
                                             <button
                                                 onClick={() => toggleComments(post._id)}
@@ -840,10 +1028,24 @@ export default function AdminCommunity() {
                                                                             {new Date(comment.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                         </span>
                                                                     </div>
-                                                                    <p className="text-sm text-gray-700">{comment.content}</p>
+                                                                    <p className="text-sm text-gray-700">{formatContent(comment.content)}</p>
 
                                                                     {/* Actions */}
                                                                     <div className="flex items-center gap-4 mt-2">
+                                                                        <div className="flex items-center gap-3">
+                                                                            <button
+                                                                                onClick={() => handleCommentReaction(post._id, comment._id, 'like')}
+                                                                                className={`flex items-center gap-1 text-xs font-semibold ${comment.likes?.includes(currentUser?._id) ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
+                                                                            >
+                                                                                <FaThumbsUp /> {comment.likes?.length || 0}
+                                                                            </button>
+                                                                            <button
+                                                                                onClick={() => handleCommentReaction(post._id, comment._id, 'dislike')}
+                                                                                className={`flex items-center gap-1 text-xs font-semibold ${comment.dislikes?.includes(currentUser?._id) ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
+                                                                            >
+                                                                                <FaThumbsDown /> {comment.dislikes?.length || 0}
+                                                                            </button>
+                                                                        </div>
                                                                         <button
                                                                             onClick={() => setReplyingTo({ postId: post._id, commentId: comment._id })}
                                                                             className="text-xs font-semibold text-gray-500 hover:text-gray-800"
@@ -878,13 +1080,14 @@ export default function AdminCommunity() {
                                                                             src={currentUser?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                                                                             className="w-6 h-6 rounded-full object-cover"
                                                                         />
-                                                                        <form onSubmit={(e) => handleAddReply(e, post._id, comment._id)} className="flex-1 flex gap-2">
+                                                                        <form onSubmit={(e) => handleAddReply(e, post._id, comment._id)} className="flex-1 flex gap-2 relative">
+                                                                            {showMentionSuggestions.show && showMentionSuggestions.id === comment._id && renderMentionsPanel("bottom-full mb-2")}
                                                                             <input
                                                                                 type="text"
                                                                                 autoFocus
                                                                                 value={replyText}
-                                                                                onChange={(e) => setReplyText(e.target.value)}
-                                                                                placeholder="Add a reply..."
+                                                                                onChange={(e) => handleInputChange(e, 'reply', comment._id)}
+                                                                                placeholder="Add a reply... (Type @ to mention property)"
                                                                                 className="flex-1 bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
                                                                             />
                                                                             <div className="flex gap-1">
@@ -924,7 +1127,21 @@ export default function AdminCommunity() {
                                                                                                 {new Date(reply.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                                             </span>
                                                                                         </div>
-                                                                                        <p className="text-xs text-gray-700">{reply.content}</p>
+                                                                                        <p className="text-xs text-gray-700">{formatContent(reply.content)}</p>
+                                                                                        <div className="flex items-center gap-3 mt-1.5">
+                                                                                            <button
+                                                                                                onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
+                                                                                                className={`flex items-center gap-1 text-[10px] font-semibold ${reply.likes?.includes(currentUser?._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+                                                                                            >
+                                                                                                <FaThumbsUp /> {reply.likes?.length || 0}
+                                                                                            </button>
+                                                                                            <button
+                                                                                                onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
+                                                                                                className={`flex items-center gap-1 text-[10px] font-semibold ${reply.dislikes?.includes(currentUser?._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                                                                            >
+                                                                                                <FaThumbsDown /> {reply.dislikes?.length || 0}
+                                                                                            </button>
+                                                                                        </div>
 
                                                                                         {/* Admin Delete Reply Button */}
                                                                                         <button
@@ -955,12 +1172,13 @@ export default function AdminCommunity() {
                                                         alt="Current User"
                                                     />
                                                     <div className="flex-1 relative">
+                                                        {showMentionSuggestions.show && showMentionSuggestions.id === post._id && renderMentionsPanel("bottom-full mb-2")}
                                                         <input
                                                             type="text"
-                                                            placeholder="Write a comment..."
+                                                            placeholder="Write a comment... (Type @ to mention property)"
                                                             className="w-full bg-gray-50 border border-gray-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                                             value={commentText[post._id] || ''}
-                                                            onChange={(e) => setCommentText({ ...commentText, [post._id]: e.target.value })}
+                                                            onChange={(e) => handleInputChange(e, 'comment', post._id)}
                                                         />
                                                         <button
                                                             type="submit"
@@ -1090,13 +1308,16 @@ export default function AdminCommunity() {
 
                             <div>
                                 <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
-                                <textarea
-                                    value={newPost.content}
-                                    onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none h-32 resize-none"
-                                    placeholder="Share details..."
-                                    required
-                                />
+                                <div className="relative">
+                                    {showMentionSuggestions.show && showMentionSuggestions.type === 'post' && renderMentionsPanel("bottom-full mb-2")}
+                                    <textarea
+                                        value={newPost.content}
+                                        onChange={(e) => handleInputChange(e, 'post')}
+                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none h-32 resize-none"
+                                        placeholder="Share details... (Type @ to mention property)"
+                                        required
+                                    />
+                                </div>
                             </div>
 
                             <div className="flex justify-end pt-4">

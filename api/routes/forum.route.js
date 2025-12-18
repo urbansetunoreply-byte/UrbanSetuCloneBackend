@@ -6,15 +6,20 @@ import {
     getPostById,
     deletePost,
     likePost,
+    dislikePost,
     addComment,
     deleteComment,
+    likeComment,
+    dislikeComment,
+    addReply,
+    deleteReply,
+    likeReply,
+    dislikeReply,
     getCommunityStats,
     togglePin,
     lockPost,
     reportPost,
-    getSuggestions,
-    addReply,
-    deleteReply
+    getSuggestions
 } from '../controllers/forum.controller.js';
 
 const router = express.Router();
@@ -25,7 +30,15 @@ router.get('/stats', getCommunityStats);
 router.get('/search/suggestions', getSuggestions);
 router.get('/:id', getPostById);
 router.delete('/:id', verifyToken, deletePost);
+
+// Reactions
 router.put('/like/:id', verifyToken, likePost);
+router.put('/dislike/:id', verifyToken, dislikePost);
+router.put('/comment/:id/:commentId/like', verifyToken, likeComment);
+router.put('/comment/:id/:commentId/dislike', verifyToken, dislikeComment);
+router.put('/comment/:id/:commentId/reply/:replyId/like', verifyToken, likeReply);
+router.put('/comment/:id/:commentId/reply/:replyId/dislike', verifyToken, dislikeReply);
+
 router.post('/comment/:id', verifyToken, addComment);
 router.delete('/comment/:id/:commentId', verifyToken, deleteComment);
 router.post('/comment/:id/:commentId/reply', verifyToken, addReply);
