@@ -48,7 +48,14 @@ export default function ViewChatDocument() {
             let derivedType = 'other';
             // Fix: Handle URLs with query params (e.g., signed URLs)
             const cleanUrl = url.split('?')[0];
-            const ext = cleanUrl.split('.').pop().toLowerCase();
+            let ext = cleanUrl.split('.').pop().toLowerCase();
+
+            // If extension from URL seems invalid (too long, likely an ID), try getting it from name
+            if (!ext || ext.length > 5) {
+                if (name && name.includes('.')) {
+                    ext = name.split('.').pop().toLowerCase();
+                }
+            }
 
             if (type === 'image' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) derivedType = 'image';
             else if (type === 'pdf' || ext === 'pdf') derivedType = 'pdf';
@@ -57,7 +64,12 @@ export default function ViewChatDocument() {
             } else if (['txt', 'json', 'xml', 'md'].includes(ext)) {
                 derivedType = 'text';
             } else {
-                derivedType = 'unsupported';
+                // If type is explicitly 'document' but we couldn't determine ext, assume PDF for safety if it came from chat
+                if (type === 'document' || type === 'file') {
+                    derivedType = 'pdf';
+                } else {
+                    derivedType = 'unsupported';
+                }
             }
 
             setFileType(derivedType);
@@ -76,6 +88,7 @@ export default function ViewChatDocument() {
                     })
                     .catch(err => {
                         console.error("Preview blob fetch failed", err);
+                        // Don't set error, just stop loading so we can fallback to iframe with URL
                         setLoading(false);
                     });
             } else {
@@ -99,9 +112,23 @@ export default function ViewChatDocument() {
 
             // Ensure filename has extension
             let filename = docName || `document-${Date.now()}`;
-            const ext = docUrl.split('.').pop().toLowerCase();
-            if (ext && !filename.toLowerCase().endsWith(`.${ext}`)) {
-                filename = `${filename}.${ext}`;
+
+            // If filename doesn't have an extension, try to determine it
+            if (!filename.includes('.')) {
+                // Try from URL first
+                const cleanUrl = docUrl.split('?')[0];
+                let ext = cleanUrl.split('.').pop().toLowerCase();
+
+                // If URL ext is invalid, fallback based on fileType
+                if (!ext || ext.length > 5) {
+                    if (fileType === 'pdf') ext = 'pdf';
+                    else if (fileType === 'image') ext = 'jpg'; // Default for image
+                    else if (fileType === 'text') ext = 'txt';
+                }
+
+                if (ext) {
+                    filename = `${filename}.${ext}`;
+                }
             }
 
             // Optimization: Use locally fetched blob if available
@@ -117,10 +144,22 @@ export default function ViewChatDocument() {
 
             // For other files, direct open/download
             // Use fetch to trigger download to avoid browser opening it in tab if possible
-            // But simple window.open is often enough. For robustness we can create a temp link.
-            // For other files, direct open/download
-            // Use window.open which is more robust for cross-origin downloads (Cloudinary etc.)
-            window.open(docUrl, '_blank');
+            try {
+                const response = await fetch(docUrl, { mode: 'cors' });
+                const blob = await response.blob();
+                const blobUrl = window.URL.createObjectURL(blob);
+                const link = window.document.createElement('a');
+                link.href = blobUrl;
+                link.download = filename;
+                window.document.body.appendChild(link);
+                link.click();
+                window.document.body.removeChild(link);
+                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+            } catch (err) {
+                // Fallback to window.open if fetch fails (CORS etc)
+                console.log("Fetch download failed, falling back to window.open", err);
+                window.open(docUrl, '_blank');
+            }
 
         } catch (error) {
             console.error('Error downloading document:', error);
@@ -238,22 +277,24 @@ export default function ViewChatDocument() {
                             alt="Document"
                             className="max-w-full max-h-full object-contain"
                         />
-                    ) : (isPdf || fileType === 'text') && !pdfBlobUrl ? (
-                        <div className="flex flex-col items-center justify-center">
-                            <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
-                            <p className="text-gray-600">Loading Document...</p>
-                        </div>
+                    ) : (isPdf || fileType === 'text') ? (
+                        !pdfBlobUrl && loading ? (
+                            <div className="flex flex-col items-center justify-center">
+                                <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+                                <p className="text-gray-600">Loading Document...</p>
+                            </div>
+                        ) : (
+                            <iframe
+                                src={pdfBlobUrl || document.url}
+                                className="w-full h-full"
+                                title="Document Viewer"
+                            />
+                        )
                     ) : fileType === 'office' ? (
                         <iframe
                             src={`https://docs.google.com/gview?url=${encodeURIComponent(document.url)}&embedded=true`}
                             className="w-full h-full"
                             title="Office Document Viewer"
-                        />
-                    ) : (isPdf || fileType === 'text') && pdfBlobUrl ? (
-                        <iframe
-                            src={pdfBlobUrl}
-                            className="w-full h-full"
-                            title="Document Viewer"
                         />
                     ) : (
                         /* Unsupported types - Show placeholder */
