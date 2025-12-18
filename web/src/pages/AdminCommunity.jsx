@@ -650,34 +650,13 @@ export default function AdminCommunity() {
                 const newReply = await res.json();
                 setPosts(posts.map(post => {
                     if (post._id === postId) {
-                        const updateRepliesRecursively = (replies) => {
-                            if (parentReplyId) {
-                                return replies.map(r => {
-                                    if (r._id === parentReplyId) {
-                                        return {
-                                            ...r,
-                                            replies: [...(r.replies || []), newReply]
-                                        };
-                                    }
-                                    if (r.replies && r.replies.length > 0) {
-                                        return {
-                                            ...r,
-                                            replies: updateRepliesRecursively(r.replies)
-                                        };
-                                    }
-                                    return r;
-                                });
-                            }
-                            return [...(replies || []), newReply];
-                        };
-
                         return {
                             ...post,
                             comments: post.comments.map(c => {
                                 if (c._id === commentId) {
                                     return {
                                         ...c,
-                                        replies: updateRepliesRecursively(c.replies)
+                                        replies: [...(c.replies || []), newReply]
                                     };
                                 }
                                 return c;
