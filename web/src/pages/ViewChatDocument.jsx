@@ -17,48 +17,64 @@ export default function ViewChatDocument() {
     const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
     const { currentUser } = useSelector((state) => state.user);
 
-    usePageTitle(`Document Viewer - UrbanSetu`);
+    const docType = document?.type?.replace(/_/g, ' ') || 'Document';
+    usePageTitle(`${docType.charAt(0).toUpperCase() + docType.slice(1)} - UrbanSetu`);
 
     const isPublic = location.pathname.startsWith('/view/');
 
     useEffect(() => {
-        // Chat documents are primarily viewed via "preview" mode with query params
         const params = new URLSearchParams(location.search);
         const url = params.get('url');
-        const type = params.get('type') || 'document';
-        const name = params.get('name') || 'Document Preview';
+        const typeRaw = params.get('type') || 'document';
+        const type = typeRaw.toLowerCase();
+        let name = params.get('name') || 'Document Preview';
+
+        // Normalize extension to lowercase for display consistency
+        if (name && name.includes('.')) {
+            const lastDotIndex = name.lastIndexOf('.');
+            if (lastDotIndex !== -1) {
+                name = name.substring(0, lastDotIndex) + name.substring(lastDotIndex).toLowerCase();
+            }
+        }
 
         if (url) {
             setDocument({
                 url,
                 type,
-                mimeType: type === 'document' || url.endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
+                mimeType: type === 'document' || url.toLowerCase().endsWith('.pdf') ? 'application/pdf' : 'image/jpeg',
                 name
             });
 
             let derivedType = 'other';
-            if (type === 'image') derivedType = 'image';
-            else if (type === 'pdf' || url.endsWith('.pdf')) derivedType = 'pdf';
-            else {
-                const ext = url.split('.').pop().toLowerCase();
-                if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'].includes(ext)) {
-                    derivedType = 'office';
-                }
+            const ext = url.split('.').pop().toLowerCase();
+
+            if (type === 'image' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) derivedType = 'image';
+            else if (type === 'pdf' || ext === 'pdf') derivedType = 'pdf';
+            else if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'].includes(ext)) {
+                derivedType = 'office';
             }
 
             setFileType(derivedType);
 
-            if (derivedType === 'pdf') {
+            // Fetch blob for PDF or generic 'other' types (like txt, etc) to prevent immediate auto-download
+            // Office docs use Google Viewer so they don't need this pre-fetch
+            if (derivedType === 'pdf' || derivedType === 'other') {
+                setLoading(true);
                 fetch(url, { mode: 'cors' })
                     .then(r => r.blob())
                     .then(blob => {
-                        const cleanBlob = new Blob([blob], { type: 'application/pdf' });
+                        const blobType = derivedType === 'pdf' ? 'application/pdf' : blob.type;
+                        const cleanBlob = new Blob([blob], { type: blobType });
                         setPdfBlobUrl(URL.createObjectURL(cleanBlob));
+                        setLoading(false);
                     })
-                    .catch(err => console.error("Preview blob fetch failed", err));
+                    .catch(err => {
+                        console.error("Preview blob fetch failed", err);
+                        setLoading(false);
+                    });
+            } else {
+                setLoading(false);
             }
-
-            setLoading(false);
         } else {
             setError("No URL provided for preview");
             setLoading(false);
@@ -77,7 +93,7 @@ export default function ViewChatDocument() {
 
             // Optimization: Use locally fetched blob if available
             if (pdfBlobUrl) {
-                const filename = `${docName || 'document'}-${new Date().getTime()}.pdf`;
+                const filename = docName || `document-${Date.now()}`;
                 const link = window.document.createElement('a');
                 link.href = pdfBlobUrl;
                 link.download = filename;
@@ -141,7 +157,7 @@ export default function ViewChatDocument() {
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 className="text-xl font-semibold text-gray-800 capitalize">
+                    <h1 className="text-xl font-semibold text-gray-800">
                         {document.name || 'Document View'}
                     </h1>
                 </div>
@@ -163,10 +179,10 @@ export default function ViewChatDocument() {
                             alt="Document"
                             className="max-w-full max-h-full object-contain"
                         />
-                    ) : isPdf && !pdfBlobUrl ? (
+                    ) : (isPdf || fileType === 'other') && !pdfBlobUrl ? (
                         <div className="flex flex-col items-center justify-center">
                             <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
-                            <p className="text-gray-600">Loading PDF...</p>
+                            <p className="text-gray-600">Loading Document...</p>
                         </div>
                     ) : fileType === 'office' ? (
                         <iframe
