@@ -19,6 +19,7 @@ export default function ViewChatDocument() {
     const [isRestricted, setIsRestricted] = useState(true);
     const [verifying, setVerifying] = useState(true);
     const { currentUser } = useSelector((state) => state.user);
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     const pageTitle = document?.name || (document?.type ? `${document.type.charAt(0).toUpperCase() + document.type.slice(1)} Preview` : 'Document Preview');
     usePageTitle(`${pageTitle} - UrbanSetu`);
@@ -320,7 +321,7 @@ export default function ViewChatDocument() {
                             alt="Document"
                             className="max-w-full max-h-full object-contain"
                         />
-                    ) : (isPdf || fileType === 'text') ? (
+                    ) : ((isPdf && !isMobile) || fileType === 'text') ? (
                         !pdfBlobUrl && loading ? (
                             <div className="flex flex-col items-center justify-center">
                                 <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
@@ -333,7 +334,7 @@ export default function ViewChatDocument() {
                                 title="Document Viewer"
                             />
                         )
-                    ) : (fileType === 'office' || fileType === 'google-viewer') ? (
+                    ) : (fileType === 'office' || fileType === 'google-viewer' || (isPdf && isMobile)) ? (
                         <iframe
                             src={`https://docs.google.com/gview?url=${encodeURIComponent(document.url)}&embedded=true`}
                             className="w-full h-full"

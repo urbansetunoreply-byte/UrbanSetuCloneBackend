@@ -17,13 +17,17 @@ export default function ViewDocument() {
     const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
     const { currentUser } = useSelector((state) => state.user);
 
-    const docType = document?.type?.replace(/_/g, ' ') || 'Document';
-    usePageTitle(`${docType.charAt(0).toUpperCase() + docType.slice(1)} - UrbanSetu`);
-
-    const isPublic = location.pathname.startsWith('/view/');
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
     useEffect(() => {
         if (documentId === 'preview') {
+            // ... (keep existing preview logic)
+            // But also skip blob fetch for PDF if mobile?
+            // Existing preview logic (lines 46-54) handles blob fetching.
+            // Let's leave preview logic as is for now or modify it to respect mobile too?
+            // The prompt "check what may be issue" implies main view.
+            // Let's modify the Main `fetchDocument` logic below. 
+            // ...
             const params = new URLSearchParams(location.search);
             const url = params.get('url');
             const type = params.get('type') || 'document';
@@ -43,7 +47,7 @@ export default function ViewDocument() {
 
                 setFileType(derivedType);
 
-                if (derivedType === 'pdf') {
+                if (derivedType === 'pdf' && !isMobile) {
                     fetch(url, { mode: 'cors' })
                         .then(r => r.blob())
                         .then(blob => {
@@ -94,8 +98,8 @@ export default function ViewDocument() {
 
                     setFileType(type);
 
-                    // If PDF, fetch blob immediately to render locally
-                    if (type === 'pdf') {
+                    // If PDF and NOT mobile, fetch blob immediately to render locally
+                    if (type === 'pdf' && !isMobile) {
                         try {
                             const fileRes = await fetch(data.document.url, { mode: 'cors' });
                             const blob = await fileRes.blob();
@@ -295,11 +299,25 @@ export default function ViewDocument() {
                             alt="Document"
                             className="max-w-full max-h-full object-contain"
                         />
-                    ) : isPdf && !pdfBlobUrl ? (
-                        <div className="flex flex-col items-center justify-center">
-                            <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
-                            <p className="text-gray-600">Loading PDF...</p>
-                        </div>
+                    ) : isPdf ? (
+                        isMobile ? (
+                            <iframe
+                                src={`https://docs.google.com/gview?url=${encodeURIComponent(document.url)}&embedded=true`}
+                                className="w-full h-full"
+                                title="Document Viewer"
+                            />
+                        ) : !pdfBlobUrl ? (
+                            <div className="flex flex-col items-center justify-center">
+                                <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
+                                <p className="text-gray-600">Loading PDF...</p>
+                            </div>
+                        ) : (
+                            <iframe
+                                src={pdfBlobUrl || document.url}
+                                className="w-full h-full"
+                                title="Document Viewer"
+                            />
+                        )
                     ) : (
                         <iframe
                             src={pdfBlobUrl || document.url}
