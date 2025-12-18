@@ -46,7 +46,9 @@ export default function ViewChatDocument() {
             });
 
             let derivedType = 'other';
-            const ext = url.split('.').pop().toLowerCase();
+            // Fix: Handle URLs with query params (e.g., signed URLs)
+            const cleanUrl = url.split('?')[0];
+            const ext = cleanUrl.split('.').pop().toLowerCase();
 
             if (type === 'image' || ['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) derivedType = 'image';
             else if (type === 'pdf' || ext === 'pdf') derivedType = 'pdf';
@@ -116,13 +118,9 @@ export default function ViewChatDocument() {
             // For other files, direct open/download
             // Use fetch to trigger download to avoid browser opening it in tab if possible
             // But simple window.open is often enough. For robustness we can create a temp link.
-            const link = document.createElement('a');
-            link.href = docUrl;
-            link.setAttribute('download', filename);
-            link.setAttribute('target', '_blank');
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
+            // For other files, direct open/download
+            // Use window.open which is more robust for cross-origin downloads (Cloudinary etc.)
+            window.open(docUrl, '_blank');
 
         } catch (error) {
             console.error('Error downloading document:', error);
@@ -133,10 +131,14 @@ export default function ViewChatDocument() {
     // Access Control
     const accessParams = new URLSearchParams(location.search);
     const participantsStr = accessParams.get('participants');
-    const participants = participantsStr ? decodeURIComponent(participantsStr).split(',') : [];
+    // Fix: Normalize emails (trim + lowercase)
+    const participants = participantsStr
+        ? decodeURIComponent(participantsStr).split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
+        : [];
 
     const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
-    const isParticipant = currentUser && participants.includes(currentUser.email);
+    const userEmail = currentUser?.email?.toLowerCase() || '';
+    const isParticipant = currentUser && participants.includes(userEmail);
     const isAuthorized = isAdmin || isParticipant;
     const isRestricted = !currentUser || !isAuthorized;
     // We do NOT return early anymore, we render the layout with restricted content.
