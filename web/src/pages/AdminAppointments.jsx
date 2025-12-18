@@ -1,6 +1,6 @@
 import React, { useEffect, useState, useCallback, useMemo, useRef } from "react";
 import { createPortal } from 'react-dom';
-import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory, FaCircle, FaVolumeUp, FaVolumeMute, FaEye, FaEyeSlash, FaExpand, FaCompress, FaPowerOff, FaCog } from "react-icons/fa";
+import { FaTrash, FaSearch, FaPen, FaPaperPlane, FaUser, FaEnvelope, FaCalendar, FaPhone, FaVideo, FaUserShield, FaArchive, FaUndo, FaCommentDots, FaCheck, FaCheckDouble, FaBan, FaTimes, FaLightbulb, FaCopy, FaEllipsisV, FaInfoCircle, FaSync, FaStar, FaRegStar, FaFlag, FaCalendarAlt, FaCheckSquare, FaDownload, FaSpinner, FaDollarSign, FaHistory, FaCircle, FaVolumeUp, FaVolumeMute, FaEye, FaEyeSlash, FaExpand, FaCompress, FaPowerOff, FaCog, FaFileAlt } from "react-icons/fa";
 import { FormattedTextWithLinks, FormattedTextWithLinksAndSearch, FormattedTextWithReadMore } from '../utils/linkFormatter.jsx';
 import UserAvatar from '../components/UserAvatar';
 import { focusWithoutKeyboard, focusWithKeyboard } from '../utils/mobileUtils';
@@ -7712,13 +7712,27 @@ function AdminAppointmentRow({
                                           <div className="mb-2">
                                             <div className="bg-gray-100 border border-gray-300 rounded-lg p-3">
                                               <div className="flex items-center gap-2 mb-2">
-                                                <span className="text-2xl">📄</span>
-                                                <div className="flex-1">
-                                                  <div className="text-sm font-medium text-gray-800">
-                                                    {c.documentName || 'Document'}
-                                                  </div>
-                                                  <div className="text-xs text-gray-600 italic">
-                                                    Preserved document from deleted message
+                                                <div className="flex-1 flex items-center gap-3 cursor-pointer hover:bg-gray-200 p-2 rounded transition-colors"
+                                                  onClick={() => {
+                                                    // Construct preview URL
+                                                    const ext = c.documentUrl.split('.').pop().toLowerCase();
+                                                    let type = 'document';
+                                                    if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) type = 'image';
+                                                    else if (ext === 'pdf') type = 'pdf';
+
+                                                    // Open preview in new tab
+                                                    const previewUrl = `/admin/view/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                                    window.open(previewUrl, '_blank');
+                                                  }}
+                                                >
+                                                  <span className="text-2xl">📄</span>
+                                                  <div>
+                                                    <div className="text-sm font-medium text-gray-800 hover:text-blue-600 underline">
+                                                      {c.documentName || 'Document'}
+                                                    </div>
+                                                    <div className="text-xs text-gray-600 italic">
+                                                      Preserved document from deleted message
+                                                    </div>
                                                   </div>
                                                 </div>
                                                 <button
@@ -8259,9 +8273,40 @@ function AdminAppointmentRow({
                                       )}
                                       {/* Document Message */}
                                       {c && c.documentUrl && (
-                                        <div className="mb-2">
+                                        <div className="mb-2 group relative flex items-center bg-gray-50/90 hover:bg-white border hover:border-blue-200 text-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all max-w-[280px]">
+                                          {/* Clickable Area for View */}
+                                          <div
+                                            className="flex-1 flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50/30 transition-colors"
+                                            onClick={(e) => {
+                                              e.stopPropagation();
+                                              // Construct preview URL
+                                              const ext = c.documentUrl.split('.').pop().toLowerCase();
+                                              let type = 'document';
+                                              if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) type = 'image';
+                                              else if (ext === 'pdf') type = 'pdf';
+
+                                              // Open preview in new tab
+                                              const previewUrl = `/admin/view/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                              window.open(previewUrl, '_blank');
+                                            }}
+                                            title="Click to view document"
+                                          >
+                                            <div className="bg-blue-100 p-2 rounded-lg text-blue-600 flex-shrink-0">
+                                              <FaFileAlt size={16} />
+                                            </div>
+                                            <div className="flex flex-col min-w-0 overflow-hidden">
+                                              <span className="text-sm font-medium truncate text-gray-900 w-full text-left">{c.documentName || 'Document'}</span>
+                                              <span className="text-[10px] text-gray-500 uppercase text-left">{c.documentUrl.split('.').pop() || 'FILE'}</span>
+                                            </div>
+                                          </div>
+
+                                          {/* Separator */}
+                                          <div className="w-[1px] h-8 bg-gray-200" />
+
+                                          {/* Download Button */}
                                           <button
-                                            className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
+                                            className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex-shrink-0"
+                                            title="Download"
                                             onClick={async (e) => {
                                               e.stopPropagation();
                                               try {
@@ -8279,7 +8324,6 @@ function AdminAppointmentRow({
                                                 toast.success('Document downloaded successfully');
                                               } catch (error) {
                                                 console.error('Download failed:', error);
-                                                // Fallback to direct link
                                                 const a = document.createElement('a');
                                                 a.href = c && c.documentUrl ? c.documentUrl : '';
                                                 a.download = (c && c.documentName) || `document-${(c && c._id) || Date.now()}`;
@@ -8291,8 +8335,7 @@ function AdminAppointmentRow({
                                               }
                                             }}
                                           >
-                                            <span className="text-2xl">📄</span>
-                                            <span className={`text-sm truncate max-w-[200px] ${isMe ? 'text-white' : 'text-blue-700'}`}>{(c && c.documentName) || 'Document'}</span>
+                                            <FaDownload size={14} />
                                           </button>
                                         </div>
                                       )}

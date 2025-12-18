@@ -39,7 +39,13 @@ export default function ViewDocument() {
 
                 let derivedType = 'other';
                 if (type === 'image') derivedType = 'image';
-                else derivedType = 'pdf';
+                else if (type === 'pdf' || url.endsWith('.pdf')) derivedType = 'pdf';
+                else {
+                    const ext = url.split('.').pop().toLowerCase();
+                    if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
+                        derivedType = 'office';
+                    }
+                }
 
                 setFileType(derivedType);
 
@@ -105,6 +111,12 @@ export default function ViewDocument() {
                         } catch (blobErr) {
                             console.error("Failed to load PDF blob", blobErr);
                             // If blob fails, fallback to direct URL (might download, but better than nothing)
+                        }
+                    } else if (type === 'other') {
+                        // Check extension to see if it is an office document
+                        const ext = data.document.url.split('.').pop().toLowerCase();
+                        if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
+                            setFileType('office');
                         }
                     }
                 } else {
@@ -300,6 +312,12 @@ export default function ViewDocument() {
                             <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
                             <p className="text-gray-600">Loading PDF...</p>
                         </div>
+                    ) : fileType === 'office' ? (
+                        <iframe
+                            src={`https://docs.google.com/gview?url=${encodeURIComponent(document.url)}&embedded=true`}
+                            className="w-full h-full"
+                            title="Office Document Viewer"
+                        />
                     ) : (
                         <iframe
                             src={pdfBlobUrl || document.url}

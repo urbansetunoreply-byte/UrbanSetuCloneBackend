@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef, useCallback, useMemo } from 'react';
-import { FaArchive, FaBan, FaCalendar, FaCalendarAlt, FaCheck, FaCheckDouble, FaCheckSquare, FaCircle, FaCheckCircle, FaCog, FaCommentDots, FaCopy, FaCreditCard, FaDownload, FaEllipsisV, FaEnvelope, FaExclamationTriangle, FaFileContract, FaFlag, FaHandshake, FaHistory, FaInfoCircle, FaLightbulb, FaMoneyBillWave, FaPaperPlane, FaPen, FaPhone, FaRegStar, FaSearch, FaSpinner, FaStar, FaSync, FaThumbtack, FaTimes, FaTrash, FaUndo, FaUserShield, FaVideo, FaWallet } from 'react-icons/fa';
+import { FaArchive, FaBan, FaCalendar, FaCalendarAlt, FaCheck, FaCheckDouble, FaCheckSquare, FaCircle, FaCheckCircle, FaCog, FaCommentDots, FaCopy, FaCreditCard, FaDownload, FaEllipsisV, FaEnvelope, FaExclamationTriangle, FaFileContract, FaFileAlt, FaFlag, FaHandshake, FaHistory, FaInfoCircle, FaLightbulb, FaMoneyBillWave, FaPaperPlane, FaPen, FaPhone, FaRegStar, FaSearch, FaSpinner, FaStar, FaSync, FaThumbtack, FaTimes, FaTrash, FaUndo, FaUserShield, FaVideo, FaWallet } from 'react-icons/fa';
 import { EmojiButton } from '../components/EmojiPicker';
 import CustomEmojiPicker from '../components/EmojiPicker';
 import { useSoundEffects, SoundControl } from '../components/SoundEffects';
@@ -8974,9 +8974,40 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                         )}
                                         {/* Document Message */}
                                         {c.documentUrl && (
-                                          <div className="mb-2">
+                                          <div className="mb-2 group relative flex items-center bg-gray-50/90 hover:bg-white border hover:border-blue-200 text-gray-800 rounded-xl overflow-hidden shadow-sm hover:shadow-md transition-all max-w-[280px]">
+                                            {/* Clickable Area for View */}
+                                            <div
+                                              className="flex-1 flex items-center gap-3 px-3 py-2 cursor-pointer hover:bg-blue-50/30 transition-colors"
+                                              onClick={(e) => {
+                                                e.stopPropagation();
+                                                // Construct preview URL
+                                                const ext = c.documentUrl.split('.').pop().toLowerCase();
+                                                let type = 'document';
+                                                if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) type = 'image';
+                                                else if (ext === 'pdf') type = 'pdf';
+
+                                                // Open preview in new tab
+                                                const previewUrl = `/user/view/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                                window.open(previewUrl, '_blank');
+                                              }}
+                                              title="Click to view document"
+                                            >
+                                              <div className="bg-blue-100 p-2 rounded-lg text-blue-600 flex-shrink-0">
+                                                <FaFileAlt size={16} />
+                                              </div>
+                                              <div className="flex flex-col min-w-0 overflow-hidden">
+                                                <span className="text-sm font-medium truncate text-gray-900 w-full text-left">{c.documentName || 'Document'}</span>
+                                                <span className="text-[10px] text-gray-500 uppercase text-left">{c.documentUrl.split('.').pop() || 'FILE'}</span>
+                                              </div>
+                                            </div>
+
+                                            {/* Separator */}
+                                            <div className="w-[1px] h-8 bg-gray-200" />
+
+                                            {/* Download Button */}
                                             <button
-                                              className="flex items-center gap-2 px-3 py-2 rounded-lg border hover:bg-gray-50"
+                                              className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex-shrink-0"
+                                              title="Download"
                                               onClick={async (e) => {
                                                 e.stopPropagation();
                                                 try {
@@ -9006,8 +9037,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                 }
                                               }}
                                             >
-                                              <span className="text-2xl">📄</span>
-                                              <span className={`text-sm truncate max-w-[200px] ${isMe ? 'text-white' : 'text-blue-700'}`}>{c.documentName || 'Document'}</span>
+                                              <FaDownload size={14} />
                                             </button>
                                           </div>
                                         )}
