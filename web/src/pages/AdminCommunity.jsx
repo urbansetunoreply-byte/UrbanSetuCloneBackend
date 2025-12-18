@@ -4,8 +4,9 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt,
     FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch,
-    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaExclamationTriangle, FaEdit
+    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaExclamationTriangle, FaEdit, FaSmile
 } from 'react-icons/fa';
+import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ConfirmationModal from '../components/ConfirmationModal';
@@ -75,6 +76,23 @@ export default function AdminCommunity() {
     const [replyingTo, setReplyingTo] = useState(null); // { postId, commentId }
     const [replyText, setReplyText] = useState('');
     const [expandedReplies, setExpandedReplies] = useState({}); // { commentId: boolean }
+
+    // Emoji Picker State
+    const [showEmojiPicker, setShowEmojiPicker] = useState({ show: false, type: null, id: null });
+
+    const handleEmojiClick = (emojiData, type, id) => {
+        if (type === 'reply') {
+            setReplyText(prev => prev + emojiData.emoji);
+        } else if (type === 'comment') {
+            setCommentText(prev => ({ ...prev, [id]: (prev[id] || '') + emojiData.emoji }));
+        } else if (type === 'post') {
+            setNewPost(prev => ({ ...prev, content: prev.content + emojiData.emoji }));
+        } else if (type === 'edit-post') {
+            setEditingPost(prev => ({ ...prev, content: prev.content + emojiData.emoji }));
+        } else if (type === 'edit-comment' || type === 'edit-reply') {
+            setEditingContent(prev => ({ ...prev, content: prev.content + emojiData.emoji }));
+        }
+    };
 
     // Create Post State
     const [newPost, setNewPost] = useState({
@@ -1366,10 +1384,34 @@ export default function AdminCommunity() {
                                                                                 placeholder="Add a reply... (Type @ to mention property)"
                                                                                 className="flex-1 bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
                                                                             />
-                                                                            <div className="flex gap-1">
+                                                                            <div className="flex gap-1 items-center">
+                                                                                <div className="relative">
+                                                                                    <button
+                                                                                        type="button"
+                                                                                        onClick={() => setShowEmojiPicker(prev => ({
+                                                                                            show: prev.type === 'reply' && prev.id === comment._id ? !prev.show : true,
+                                                                                            type: 'reply',
+                                                                                            id: comment._id
+                                                                                        }))}
+                                                                                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                                                                        title="Add Emoji"
+                                                                                    >
+                                                                                        <FaSmile className="text-sm" />
+                                                                                    </button>
+                                                                                    {showEmojiPicker.show && showEmojiPicker.type === 'reply' && showEmojiPicker.id === comment._id && (
+                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
+                                                                                            <EmojiPicker
+                                                                                                onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'reply', comment._id)}
+                                                                                                width={300}
+                                                                                                height={400}
+                                                                                                previewConfig={{ showPreview: false }}
+                                                                                            />
+                                                                                        </div>
+                                                                                    )}
+                                                                                </div>
                                                                                 <button
                                                                                     type="button"
-                                                                                    onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); }}
+                                                                                    onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); setShowEmojiPicker({ show: false, type: null, id: null }); }}
                                                                                     className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
                                                                                 >
                                                                                     Cancel
@@ -1521,10 +1563,34 @@ export default function AdminCommunity() {
                                                                                                                     placeholder={`Replying to ${reply.user?.username}...`}
                                                                                                                     className="flex-1 bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
                                                                                                                 />
-                                                                                                                <div className="flex gap-1">
+                                                                                                                <div className="flex gap-1 items-center">
+                                                                                                                    <div className="relative">
+                                                                                                                        <button
+                                                                                                                            type="button"
+                                                                                                                            onClick={() => setShowEmojiPicker(prev => ({
+                                                                                                                                show: prev.type === 'reply' && prev.id === reply._id ? !prev.show : true,
+                                                                                                                                type: 'reply',
+                                                                                                                                id: reply._id
+                                                                                                                            }))}
+                                                                                                                            className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                                                                                                            title="Add Emoji"
+                                                                                                                        >
+                                                                                                                            <FaSmile className="text-sm" />
+                                                                                                                        </button>
+                                                                                                                        {showEmojiPicker.show && showEmojiPicker.type === 'reply' && showEmojiPicker.id === reply._id && (
+                                                                                                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
+                                                                                                                                <EmojiPicker
+                                                                                                                                    onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'reply', reply._id)}
+                                                                                                                                    width={300}
+                                                                                                                                    height={400}
+                                                                                                                                    previewConfig={{ showPreview: false }}
+                                                                                                                                />
+                                                                                                                            </div>
+                                                                                                                        )}
+                                                                                                                    </div>
                                                                                                                     <button
                                                                                                                         type="button"
-                                                                                                                        onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); }}
+                                                                                                                        onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); setShowEmojiPicker({ show: false, type: null, id: null }); }}
                                                                                                                         className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
                                                                                                                     >
                                                                                                                         Cancel
