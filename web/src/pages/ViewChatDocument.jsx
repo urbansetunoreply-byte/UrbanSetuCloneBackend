@@ -52,18 +52,22 @@ export default function ViewChatDocument() {
             else if (type === 'pdf' || ext === 'pdf') derivedType = 'pdf';
             else if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'].includes(ext)) {
                 derivedType = 'office';
+            } else if (['txt', 'json', 'xml', 'md'].includes(ext)) {
+                derivedType = 'text';
+            } else {
+                derivedType = 'unsupported';
             }
 
             setFileType(derivedType);
 
-            // Fetch blob for PDF or generic 'other' types (like txt, etc) to prevent immediate auto-download
-            // Office docs use Google Viewer so they don't need this pre-fetch
-            if (derivedType === 'pdf' || derivedType === 'other') {
+            // Fetch blob for PDF or Text to view safely
+            if (derivedType === 'pdf' || derivedType === 'text') {
                 setLoading(true);
                 fetch(url, { mode: 'cors' })
                     .then(r => r.blob())
                     .then(blob => {
-                        const blobType = derivedType === 'pdf' ? 'application/pdf' : blob.type;
+                        // Force correct MIME type for PDF, otherwise trust blob for text
+                        const blobType = derivedType === 'pdf' ? 'application/pdf' : (blob.type || 'text/plain');
                         const cleanBlob = new Blob([blob], { type: blobType });
                         setPdfBlobUrl(URL.createObjectURL(cleanBlob));
                         setLoading(false);
@@ -91,9 +95,15 @@ export default function ViewChatDocument() {
         try {
             if (!docUrl) return;
 
+            // Ensure filename has extension
+            let filename = docName || `document-${Date.now()}`;
+            const ext = docUrl.split('.').pop().toLowerCase();
+            if (ext && !filename.toLowerCase().endsWith(`.${ext}`)) {
+                filename = `${filename}.${ext}`;
+            }
+
             // Optimization: Use locally fetched blob if available
             if (pdfBlobUrl) {
-                const filename = docName || `document-${Date.now()}`;
                 const link = window.document.createElement('a');
                 link.href = pdfBlobUrl;
                 link.download = filename;
@@ -104,7 +114,15 @@ export default function ViewChatDocument() {
             }
 
             // For other files, direct open/download
-            window.open(docUrl, '_blank');
+            // Use fetch to trigger download to avoid browser opening it in tab if possible
+            // But simple window.open is often enough. For robustness we can create a temp link.
+            const link = document.createElement('a');
+            link.href = docUrl;
+            link.setAttribute('download', filename);
+            link.setAttribute('target', '_blank');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
 
         } catch (error) {
             console.error('Error downloading document:', error);
@@ -214,7 +232,7 @@ export default function ViewChatDocument() {
                             alt="Document"
                             className="max-w-full max-h-full object-contain"
                         />
-                    ) : (isPdf || fileType === 'other') && !pdfBlobUrl ? (
+                    ) : (isPdf || fileType === 'text') && !pdfBlobUrl ? (
                         <div className="flex flex-col items-center justify-center">
                             <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
                             <p className="text-gray-600">Loading Document...</p>
@@ -225,12 +243,29 @@ export default function ViewChatDocument() {
                             className="w-full h-full"
                             title="Office Document Viewer"
                         />
-                    ) : (
+                    ) : (isPdf || fileType === 'text') && pdfBlobUrl ? (
                         <iframe
-                            src={pdfBlobUrl || document.url}
+                            src={pdfBlobUrl}
                             className="w-full h-full"
                             title="Document Viewer"
                         />
+                    ) : (
+                        /* Unsupported types - Show placeholder */
+                        <div className="flex flex-col items-center justify-center p-8 text-center">
+                            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
+                                <FaFileAlt className="text-4xl text-gray-400" />
+                            </div>
+                            <h3 className="text-xl font-semibold text-gray-800 mb-2">Preview Not Available</h3>
+                            <p className="text-gray-500 max-w-md mb-6">
+                                This file type cannot be previewed in the browser. Please download the file to view it.
+                            </p>
+                            <button
+                                onClick={() => handleDownloadDocument(document.url, document.name)}
+                                className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                            >
+                                <FaDownload /> Download File
+                            </button>
+                        </div>
                     )}
                 </div>
             </div>
