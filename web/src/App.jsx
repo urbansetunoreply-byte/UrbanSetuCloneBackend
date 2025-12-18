@@ -127,25 +127,63 @@ const ViewChatDocument = lazy(() => import('./pages/ViewChatDocument'));
 
 // Loading component
 const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-blue-100 via-purple-100 to-pink-100 animate-fade-in">
-    <div className="relative flex flex-col items-center">
-      <div className="w-24 h-24 rounded-full bg-gradient-to-tr from-blue-500 via-purple-500 to-pink-500 animate-spin-slow shadow-2xl border-8 border-white/40 flex items-center justify-center">
-        <FaHome className="text-5xl text-yellow-400 drop-shadow-lg animate-bounce-slow" style={{ filter: 'drop-shadow(0 2px 8px #facc15)' }} />
+  <div className="flex items-center justify-center min-h-screen bg-gray-50 relative overflow-hidden">
+    {/* Decorative Background Blobs */}
+    <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
+    <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+
+    <div className="relative flex flex-col items-center z-10">
+      {/* Central Logo with Spinning Rings */}
+      <div className="relative w-32 h-32 flex items-center justify-center mb-8">
+        {/* Outer Ring */}
+        <div className="absolute inset-0 rounded-full border-4 border-transparent border-t-blue-500 border-r-blue-500 animate-spin-slow"></div>
+        {/* Middle Ring */}
+        <div className="absolute inset-3 rounded-full border-4 border-transparent border-t-purple-500 border-l-purple-500 animate-spin-reverse-slower"></div>
+        {/* Inner Circle / Logo Container */}
+        <div className="absolute inset-6 bg-white rounded-full shadow-lg flex items-center justify-center animate-pulse-subtle">
+          <FaHome className="text-3xl text-transparent bg-clip-text bg-gradient-to-br from-blue-600 to-purple-600" />
+        </div>
       </div>
-      <span className="mt-8 text-3xl font-extrabold bg-gradient-to-r from-yellow-400 via-pink-500 to-purple-600 bg-clip-text text-transparent animate-gradient-x drop-shadow">Urban <span className="bg-gradient-to-r from-blue-400 via-purple-500 to-pink-500 bg-clip-text text-transparent">Setu</span></span>
-      <span className="mt-2 text-xl font-bold text-purple-700 drop-shadow animate-fade-in-up">Loading...</span>
+
+      {/* Text Info */}
+      <div className="text-center space-y-4">
+        <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm">
+          UrbanSetu
+        </h1>
+        <div className="flex items-center justify-center gap-2">
+          <span className="text-gray-500 font-medium tracking-[0.2em] text-sm uppercase">Loading</span>
+          <div className="flex gap-1.5 mt-1">
+            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+            <span className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-bounce"></span>
+          </div>
+        </div>
+      </div>
     </div>
+
     <style>{`
-      @keyframes spin-slow { 100% { transform: rotate(360deg); } }
-      .animate-spin-slow { animation: spin-slow 2s linear infinite; }
-      @keyframes fade-in { from { opacity: 0; } to { opacity: 1; } }
-      .animate-fade-in { animation: fade-in 0.7s ease; }
-      @keyframes fade-in-up { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
-      .animate-fade-in-up { animation: fade-in-up 0.8s ease; }
-      @keyframes gradient-x { 0%,100%{background-position:0 50%}50%{background-position:100% 50%} }
-      .animate-gradient-x { background-size: 200% 200%; animation: gradient-x 3s ease-in-out infinite; }
-      @keyframes bounce-slow { 0%, 100% { transform: translateY(0); } 50% { transform: translateY(-12px); } }
-      .animate-bounce-slow { animation: bounce-slow 2s infinite; }
+      @keyframes spin-slow { to { transform: rotate(360deg); } }
+      .animate-spin-slow { animation: spin-slow 3s linear infinite; }
+      
+      @keyframes spin-reverse-slower { to { transform: rotate(-360deg); } }
+      .animate-spin-reverse-slower { animation: spin-reverse-slower 4s linear infinite; }
+      
+      @keyframes blob {
+        0% { transform: translate(0px, 0px) scale(1); }
+        33% { transform: translate(30px, -50px) scale(1.1); }
+        66% { transform: translate(-20px, 20px) scale(0.9); }
+        100% { transform: translate(0px, 0px) scale(1); }
+      }
+      .animate-blob { animation: blob 7s infinite; }
+      .animation-delay-2000 { animation-delay: 2s; }
+      .animation-delay-4000 { animation-delay: 4s; }
+
+      @keyframes pulse-subtle {
+        0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(147, 51, 234, 0.4); }
+        50% { transform: scale(1.05); box-shadow: 0 0 0 10px rgba(147, 51, 234, 0); }
+      }
+      .animate-pulse-subtle { animation: pulse-subtle 2s infinite; }
     `}</style>
   </div>
 );
