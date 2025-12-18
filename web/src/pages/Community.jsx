@@ -49,7 +49,8 @@ export default function Community() {
     const [stats, setStats] = useState({
         activeMembers: 0,
         dailyPosts: 0,
-        eventsThisWeek: 0
+        eventsThisWeek: 0,
+        trendingTopics: []
     });
     const [expandedComments, setExpandedComments] = useState({});
     const [commentText, setCommentText] = useState({});
@@ -829,18 +830,16 @@ export default function Community() {
                                 <FaBullhorn className="text-yellow-300" /> Trending Topics
                             </h3>
                             <ul className="space-y-3 relative z-10">
-                                <li className="flex items-center cursor-pointer hover:bg-white/10 p-2 rounded-lg transition-colors group">
-                                    <span className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-xs mr-3 group-hover:scale-110 transition-transform">#1</span>
-                                    <span className="font-medium">Summer Block Party</span>
-                                </li>
-                                <li className="flex items-center cursor-pointer hover:bg-white/10 p-2 rounded-lg transition-colors group">
-                                    <span className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-xs mr-3 group-hover:scale-110 transition-transform">#2</span>
-                                    <span className="font-medium">New Park Opening</span>
-                                </li>
-                                <li className="flex items-center cursor-pointer hover:bg-white/10 p-2 rounded-lg transition-colors group">
-                                    <span className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-xs mr-3 group-hover:scale-110 transition-transform">#3</span>
-                                    <span className="font-medium">Safety Watch</span>
-                                </li>
+                                {stats.trendingTopics && stats.trendingTopics.length > 0 ? (
+                                    stats.trendingTopics.map((topic, index) => (
+                                        <li key={topic._id} className="flex items-center cursor-pointer hover:bg-white/10 p-2 rounded-lg transition-colors group">
+                                            <span className="w-8 h-8 rounded-full bg-white/20 text-white flex items-center justify-center text-xs mr-3 group-hover:scale-110 transition-transform">#{index + 1}</span>
+                                            <span className="font-medium truncate">{topic.title}</span>
+                                        </li>
+                                    ))
+                                ) : (
+                                    <li className="text-sm opacity-80 pl-2">No trending topics yet.</li>
+                                )}
                             </ul>
                         </div>
                     </div>

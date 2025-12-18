@@ -251,10 +251,25 @@ export const getCommunityStats = async (req, res, next) => {
         // Get accurate user count from User model as requested
         const activeMembers = await User.countDocuments();
 
+        // Get top 3 trending topics based on likes + comments count
+        const trendingTopics = await ForumPost.aggregate([
+            {
+                $addFields: {
+                    interactionCount: {
+                        $add: [{ $size: "$likes" }, { $size: "$comments" }]
+                    }
+                }
+            },
+            { $sort: { interactionCount: -1 } },
+            { $limit: 3 },
+            { $project: { title: 1, _id: 1 } }
+        ]);
+
         res.status(200).json({
             activeMembers: activeMembers || 0,
             dailyPosts,
-            eventsThisWeek
+            eventsThisWeek,
+            trendingTopics
         });
     } catch (error) {
         next(error);
