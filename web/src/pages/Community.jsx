@@ -39,6 +39,7 @@ export default function Community() {
     const [reportModal, setReportModal] = useState({ isOpen: false, type: 'post', id: null, commentId: null, replyId: null });
     const [activeReplyInput, setActiveReplyInput] = useState(null); // ID of comment or reply being replied to
     const [editingContent, setEditingContent] = useState({ type: null, id: null, content: '' });
+    const [editingPost, setEditingPost] = useState(null); // State for editing main post content
 
     // Reply State
     const [replyingTo, setReplyingTo] = useState(null); // { postId, commentId }
@@ -604,6 +605,31 @@ export default function Community() {
             toast.error('Something went wrong');
         }
     };
+
+    const handleUpdatePost = async (e, postId) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/${postId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ content: editingPost.content })
+            });
+
+            if (res.ok) {
+                const updatedPost = await res.json();
+                setPosts(posts.map(p => p._id === postId ? { ...p, content: updatedPost.content } : p));
+                setEditingPost(null);
+                toast.success('Post updated');
+            } else {
+                toast.error('Failed to update post');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update post');
+        }
+    };
+
     const handleDeletePost = (postId) => {
         setConfirmModal({
             isOpen: true,
@@ -1025,13 +1051,22 @@ export default function Community() {
                                                 </button>
                                             )}
                                             {currentUser && currentUser._id === post.author?._id && (
-                                                <button
-                                                    onClick={() => handleDeletePost(post._id)}
-                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
-                                                    title="Delete Post"
-                                                >
-                                                    <FaTimes />
-                                                </button>
+                                                <div className="flex items-center gap-1">
+                                                    <button
+                                                        onClick={() => setEditingPost({ id: post._id, content: post.content })}
+                                                        className="p-2 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                                        title="Edit Post"
+                                                    >
+                                                        <FaEdit />
+                                                    </button>
+                                                    <button
+                                                        onClick={() => handleDeletePost(post._id)}
+                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                                        title="Delete Post"
+                                                    >
+                                                        <FaTimes />
+                                                    </button>
+                                                </div>
                                             )}
                                         </div>
                                     </div>
@@ -1039,7 +1074,34 @@ export default function Community() {
                                     {/* Post Content */}
                                     <div className="mb-6 pl-2 border-l-4 border-gray-100 hover:border-blue-100 transition-colors">
                                         <h2 className="text-xl font-bold text-gray-900 mb-2 leading-tight">{post.title}</h2>
-                                        <p className="text-gray-600 whitespace-pre-line leading-relaxed">{formatContent(post.content)}</p>
+
+                                        {editingPost?.id === post._id ? (
+                                            <form onSubmit={(e) => handleUpdatePost(e, post._id)} className="w-full mb-2">
+                                                <textarea
+                                                    value={editingPost.content}
+                                                    onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
+                                                    className="w-full bg-white border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 min-h-[100px]"
+                                                    autoFocus
+                                                />
+                                                <div className="flex justify-end gap-2 mt-2">
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setEditingPost(null)}
+                                                        className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded bg-gray-100"
+                                                    >
+                                                        Cancel
+                                                    </button>
+                                                    <button
+                                                        type="submit"
+                                                        className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"
+                                                    >
+                                                        Save Changes
+                                                    </button>
+                                                </div>
+                                            </form>
+                                        ) : (
+                                            <p className="text-gray-600 whitespace-pre-line leading-relaxed">{formatContent(post.content)}</p>
+                                        )}
                                         {/* Placeholder for optional post image if any */}
                                         {/* {post.images && post.images.length > 0 && (...)} */}
                                     </div>
