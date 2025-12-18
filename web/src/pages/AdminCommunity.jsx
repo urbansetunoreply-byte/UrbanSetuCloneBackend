@@ -596,7 +596,7 @@ export default function AdminCommunity() {
                 </div>
 
                 {/* Controls & Tabs */}
-                <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
+                <div className="flex flex-col xl:flex-row justify-between items-center mb-8 gap-4">
                     {/* Categories */}
                     <div className="flex overflow-x-auto pb-2 md:pb-0 gap-2 w-full md:w-auto hide-scrollbar">
                         {categories.map((cat) => (
@@ -615,13 +615,13 @@ export default function AdminCommunity() {
                     </div>
 
                     {/* Actions */}
-                    <div className="flex items-center gap-3 w-full md:w-auto">
-                        <div className="relative flex-1 md:w-64">
+                    <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
+                        <div className="relative w-full sm:w-64">
                             <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
                             <input
                                 type="text"
                                 placeholder="Search discussions..."
-                                className="pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-full md:w-64"
+                                className="pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onFocus={() => searchTerm.length > 2 && setShowSuggestions(true)}
@@ -641,24 +641,26 @@ export default function AdminCommunity() {
                                 </div>
                             )}
                         </div>
-                        <button
-                            onClick={() => fetchPosts()}
-                            className="px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
-                        >
-                            Search
-                        </button>
-                        <button
-                            onClick={() => {
-                                if (!currentUser) {
-                                    toast.error("Please sign in to post");
-                                    return navigate('/sign-in');
-                                }
-                                setShowCreateModal(true);
-                            }}
-                            className="flex items-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md whitespace-nowrap"
-                        >
-                            <FaPlus /> Start Discussion
-                        </button>
+                        <div className="flex items-center gap-2 w-full sm:w-auto">
+                            <button
+                                onClick={() => fetchPosts()}
+                                className="flex-1 sm:flex-none px-4 py-2 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-colors"
+                            >
+                                Search
+                            </button>
+                            <button
+                                onClick={() => {
+                                    if (!currentUser) {
+                                        toast.error("Please sign in to post");
+                                        return navigate('/sign-in');
+                                    }
+                                    setShowCreateModal(true);
+                                }}
+                                className="flex-1 sm:flex-none flex items-center justify-center gap-2 px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors shadow-md whitespace-nowrap"
+                            >
+                                <FaPlus /> Start Discussion
+                            </button>
+                        </div>
                     </div>
                 </div>
 
