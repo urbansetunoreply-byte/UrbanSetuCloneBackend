@@ -408,7 +408,7 @@ export default function LoanApplicationForm({ contract, currentUser, onSuccess, 
                       } catch (e) { return 'document'; }
                     };
                     const type = getPreviewType(doc.url);
-                    const previewUrl = `/user/view-chat/preview?url=${encodeURIComponent(doc.url)}&name=${encodeURIComponent((doc.type || 'Document').replace(/_/g, ' '))}&type=${type}`;
+                    const previewUrl = `/user/view/preview?url=${encodeURIComponent(doc.url)}&name=${encodeURIComponent((doc.type || 'Document').replace(/_/g, ' '))}&type=${type}`;
                     window.open(previewUrl, '_blank');
                   }}
                   title="Click to view document"
