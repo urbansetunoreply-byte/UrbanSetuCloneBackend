@@ -59,6 +59,8 @@ export const getPosts = async (req, res, next) => {
         const posts = await ForumPost.find(query)
             .populate('author', 'username avatar email type isVerified')
             .populate('comments.user', 'username avatar')
+            .populate('comments.replies.user', 'username avatar')
+            .populate('comments.replies.replyToUser', 'username')
             .sort(sortOption)
             .limit(parseInt(limit))
             .skip(parseInt(skip));
@@ -75,7 +77,9 @@ export const getPostById = async (req, res, next) => {
     try {
         const post = await ForumPost.findById(req.params.id)
             .populate('author', 'username avatar email type isVerified')
-            .populate('comments.user', 'username avatar');
+            .populate('comments.user', 'username avatar')
+            .populate('comments.replies.user', 'username avatar')
+            .populate('comments.replies.replyToUser', 'username');
 
         if (!post) return next(errorHandler(404, 'Post not found'));
 
