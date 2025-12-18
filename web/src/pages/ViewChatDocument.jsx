@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { useParams, useNavigate, useLocation } from 'react-router-dom';
+import axios from 'axios';
 import { FaSpinner, FaDownload, FaArrowLeft, FaFilePdf, FaImage, FaFileAlt, FaLock } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -15,6 +16,8 @@ export default function ViewChatDocument() {
     const [error, setError] = useState('');
     const [fileType, setFileType] = useState(null);
     const [pdfBlobUrl, setPdfBlobUrl] = useState(null);
+    const [isRestricted, setIsRestricted] = useState(true);
+    const [verifying, setVerifying] = useState(true);
     const { currentUser } = useSelector((state) => state.user);
 
     const docType = document?.type?.replace(/_/g, ' ') || 'Document';
@@ -167,22 +170,60 @@ export default function ViewChatDocument() {
         }
     };
 
-    // Access Control
-    const accessParams = new URLSearchParams(location.search);
-    const participantsStr = accessParams.get('participants');
-    // Fix: Normalize emails (trim + lowercase)
-    const participants = participantsStr
-        ? decodeURIComponent(participantsStr).split(',').map(e => e.trim().toLowerCase()).filter(Boolean)
-        : [];
+    // Access Control with Backend Verification
+    useEffect(() => {
+        const verifyAccess = async () => {
+            if (!currentUser) {
+                setIsRestricted(true);
+                setVerifying(false);
+                return;
+            }
 
-    const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
-    const userEmail = currentUser?.email?.toLowerCase() || '';
-    const isParticipant = currentUser && participants.includes(userEmail);
-    const isAuthorized = isAdmin || isParticipant;
-    const isRestricted = !currentUser || !isAuthorized;
+            const params = new URLSearchParams(location.search);
+            const appointmentId = params.get('appointmentId');
+            const url = params.get('url');
+
+            // If no appointmentId, we cannot verify securely -> Restrict
+            if (!appointmentId || !url) {
+                // Fallback: If no appointmentId but user is Admin, we might want to allow?
+                // But for now, strict security: require appointmentId.
+                console.warn("Missing appointmentId or url for secure verification");
+                setIsRestricted(true);
+                setVerifying(false);
+                return;
+            }
+
+            try {
+                // Verify against backend
+                // Extract clean URL for backend if needed, but passing full URL is safer for logging/matching
+                const response = await axios.post(`${API_BASE_URL}/api/bookings/verify-document-access`,
+                    {
+                        appointmentId,
+                        documentUrl: url
+                    },
+                    { withCredentials: true }
+                );
+
+                if (response.data.allowed) {
+                    setIsRestricted(false);
+                } else {
+                    console.warn("Access denied by backend:", response.data.message);
+                    setIsRestricted(true);
+                }
+            } catch (err) {
+                console.error("Access verification failed:", err);
+                setIsRestricted(true);
+            } finally {
+                setVerifying(false);
+            }
+        };
+
+        verifyAccess();
+    }, [currentUser, location.search]);
+
     // We do NOT return early anymore, we render the layout with restricted content.
 
-    if (loading) {
+    if (loading || verifying) {
         return (
             <div className="min-h-screen flex flex-col gap-4 items-center justify-center bg-gray-100">
                 <FaSpinner className="animate-spin text-4xl text-blue-600" />

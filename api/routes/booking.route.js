@@ -298,6 +298,68 @@ router.get("/pending", async (req, res) => {
   }
 });
 
+// POST: Verify document access
+router.post('/verify-document-access', verifyToken, async (req, res) => {
+  try {
+    const { documentUrl, appointmentId } = req.body;
+    const userId = req.user.id;
+
+    if (!documentUrl) {
+      return res.status(400).json({ allowed: false, message: 'Document URL is required' });
+    }
+
+    // Require appointmentId for robust verification
+    if (!appointmentId) {
+      return res.status(400).json({ allowed: false, message: 'Appointment ID is required for verification' });
+    }
+
+    const appt = await booking.findById(appointmentId);
+    if (!appt) {
+      return res.status(404).json({ allowed: false, message: 'Appointment not found' });
+    }
+
+    // Check user role
+    const user = await User.findById(userId);
+    const isBuyer = appt.buyerId.toString() === userId;
+    const isSeller = appt.sellerId.toString() === userId;
+    const isAdmin = (user && (user.role === 'admin' || user.role === 'rootadmin'));
+
+    if (!isBuyer && !isSeller && !isAdmin) {
+      return res.status(403).json({ allowed: false, message: 'Unauthorized' });
+    }
+
+    // Check if document exists in this appointment's comments
+    // Check all variations of media URLs in comments
+    const hasDocument = appt.comments.some(c =>
+      (c.documentUrl === documentUrl) ||
+      (c.imageUrl === documentUrl) ||
+      (c.videoUrl === documentUrl) ||
+      (c.audioUrl === documentUrl)
+    );
+
+    if (hasDocument) {
+      return res.status(200).json({ allowed: true });
+    } else {
+      // If exact match failed, try checking without query params just in case
+      const cleanDocUrl = documentUrl.split('?')[0];
+      const hasLooseMatch = appt.comments.some(c => {
+        const urls = [c.documentUrl, c.imageUrl, c.videoUrl, c.audioUrl].filter(Boolean);
+        return urls.some(u => u.split('?')[0] === cleanDocUrl);
+      });
+
+      if (hasLooseMatch) {
+        return res.status(200).json({ allowed: true });
+      }
+
+      return res.status(403).json({ allowed: false, message: 'Document not associated with this appointment' });
+    }
+
+  } catch (err) {
+    console.error('Error verifying document access:', err);
+    res.status(500).json({ allowed: false, message: 'Server error' });
+  }
+});
+
 // PATCH: Update appointment status (for sellers only)
 router.patch('/:id/status', verifyToken, async (req, res) => {
   try {
