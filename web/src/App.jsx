@@ -99,31 +99,32 @@ const MyPayments = lazy(() => import('./pages/MyPayments'));
 const DeviceManagement = lazy(() => import('./pages/DeviceManagement'));
 const SessionManagement = lazy(() => import('./pages/SessionManagement'));
 const SessionAuditLogs = lazy(() => import('./pages/SessionAuditLogs'));
-const Contact = lazy(() => import('./pages/Contact'));
 const UserContact = lazy(() => import('./pages/UserContact'));
 const AdminSupport = lazy(() => import('./pages/AdminSupport'));
 const PublicAI = lazy(() => import('./pages/PublicAI'));
 const UserAI = lazy(() => import('./pages/UserAI'));
 const AdminAI = lazy(() => import('./pages/AdminAI'));
-const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
+const SharedChatView = lazy(() => import('./pages/SharedChatView'));
+const ViewDocument = lazy(() => import('./pages/ViewDocument'));
+const ViewChatDocument = lazy(() => import('./pages/ViewChatDocument'));
 const InvestmentTools = lazy(() => import('./pages/InvestmentTools'));
 const Settings = lazy(() => import('./pages/Settings'));
-const RentProperty = lazy(() => import('./pages/RentProperty'));
-const RentWallet = lazy(() => import('./pages/RentWallet'));
-const RentalContracts = lazy(() => import('./pages/RentalContracts'));
-const PayMonthlyRent = lazy(() => import('./pages/PayMonthlyRent'));
-const DisputeResolution = lazy(() => import('./pages/DisputeResolution'));
-const AdminDisputeResolution = lazy(() => import('./pages/AdminDisputeResolution'));
 const PropertyVerification = lazy(() => import('./pages/PropertyVerification'));
 const AdminPropertyVerification = lazy(() => import('./pages/AdminPropertyVerification'));
 const RentalRatings = lazy(() => import('./pages/RentalRatings'));
 const AdminRentalRatings = lazy(() => import('./pages/AdminRentalRatings'));
+const RentalContracts = lazy(() => import('./pages/RentalContracts'));
 const AdminRentalContracts = lazy(() => import('./pages/AdminRentalContracts'));
-const AdminRentalLoans = lazy(() => import('./pages/AdminRentalLoans'));
+const RentProperty = lazy(() => import('./pages/RentProperty'));
 const RentalLoans = lazy(() => import('./pages/RentalLoans'));
-const SharedChatView = lazy(() => import('./pages/SharedChatView'));
-const ViewDocument = lazy(() => import('./pages/ViewDocument'));
-const ViewChatDocument = lazy(() => import('./pages/ViewChatDocument'));
+const AdminRentalLoans = lazy(() => import('./pages/AdminRentalLoans'));
+const DisputeResolution = lazy(() => import('./pages/DisputeResolution'));
+const AdminDisputeResolution = lazy(() => import('./pages/AdminDisputeResolution'));
+const RentWallet = lazy(() => import('./pages/RentWallet'));
+const Community = lazy(() => import('./pages/Community'));
+const Contact = lazy(() => import('./pages/Contact'));
+const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
+const PayMonthlyRent = lazy(() => import('./pages/PayMonthlyRent'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -732,6 +733,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/settings" element={<Settings />} />
               <Route path="/user/view/:documentId" element={<ViewDocument />} />
               <Route path="/user/view-chat/preview" element={<ViewChatDocument />} />
+              <Route path="/user/community" element={<Community />} />
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/ai" element={<Navigate to="/user/ai" />} />
@@ -783,7 +785,9 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/disputes" element={<AdminDisputeResolution />} />
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/admin/view/:documentId" element={<ViewDocument />} />
+              <Route path="/admin/view/preview" element={<ViewDocument />} />
               <Route path="/admin/view-chat/preview" element={<ViewChatDocument />} />
+              <Route path="/admin/community" element={<Community />} />
               <Route path="/contact" element={<Navigate to="/admin/support" />} />
               <Route path="/support" element={<Navigate to="/admin/support" />} />
               <Route path="/user/contact" element={<Navigate to="/admin/support" />} />

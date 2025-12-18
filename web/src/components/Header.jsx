@@ -1,5 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
-import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaMoneyCheckAlt, FaCalendarAlt, FaSignOutAlt, FaStar, FaBars, FaTimes, FaTrash, FaTools, FaRoute, FaDownload, FaMobile, FaBookOpen, FaQuestionCircle } from "react-icons/fa";
+import { FaSearch, FaHome, FaInfoCircle, FaCompass, FaPlus, FaList, FaHeart, FaMoneyCheckAlt, FaCalendarAlt, FaSignOutAlt, FaStar, FaBars, FaTimes, FaTrash, FaTools, FaRoute, FaDownload, FaMobile, FaBookOpen, FaQuestionCircle, FaUsers } from "react-icons/fa";
 import UserAvatar from "./UserAvatar";
 import { Link, useNavigate, useLocation } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
@@ -585,6 +585,13 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
         <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaCompass className={`${mobile ? 'text-lg text-purple-500' : 'text-base text-purple-500'}`} />
           <span>Explore</span>
+        </li>
+      </Link>
+
+      <Link to="/user/community" onClick={onNavigate}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+          <FaUsers className={`${mobile ? 'text-lg text-pink-500' : 'text-base text-pink-500'}`} />
+          <span>Community</span>
         </li>
       </Link>
 

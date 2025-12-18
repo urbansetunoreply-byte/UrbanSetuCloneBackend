@@ -46,6 +46,7 @@ import advancedAIRecommendationRouter from "./routes/advancedAIRecommendation.ro
 import esgAnalyticsRouter from "./routes/esgAnalytics.route.js";
 import esgAIRecommendationRouter from "./routes/esgAIRecommendation.route.js";
 import visitorRouter from "./routes/visitor.route.js";
+import forumRouter from "./routes/forum.route.js";
 import reportMessageRouter from "./routes/reportMessage.route.js";
 import callRouter from "./routes/call.route.js";
 import { generateCallId } from "./routes/call.route.js";
@@ -1164,6 +1165,7 @@ app.use("/api/blogs", blogRouter);
 app.use("/api/advanced-ai", advancedAIRecommendationRouter);
 app.use("/api/rental", rentalRouter);
 app.use("/api/report-message", reportMessageRouter);
+app.use("/api/forum", forumRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes

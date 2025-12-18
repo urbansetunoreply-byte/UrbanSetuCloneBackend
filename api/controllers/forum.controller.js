@@ -1,0 +1,155 @@
+import ForumPost from '../models/forumPost.model.js';
+import { errorHandler } from '../utils/error.js';
+
+export const createPost = async (req, res, next) => {
+    try {
+        const { title, content, category, location, images } = req.body;
+
+        const newPost = new ForumPost({
+            author: req.user.id,
+            title,
+            content,
+            category,
+            location,
+            images
+        });
+
+        const savedPost = await newPost.save();
+
+        // Populate author details
+        const populatedPost = await ForumPost.findById(savedPost._id)
+            .populate('author', 'username avatar email type isVerified')
+            .exec();
+
+        res.status(201).json(populatedPost);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getPosts = async (req, res, next) => {
+    try {
+        const { city, neighborhood, category, sort, limit = 10, skip = 0 } = req.query;
+
+        let query = {};
+
+        if (city) query['location.city'] = { $regex: city, $options: 'i' };
+        if (neighborhood) query['location.neighborhood'] = { $regex: neighborhood, $options: 'i' };
+        if (category && category !== 'All') query.category = category;
+
+        const sortOption = sort === 'popular' ? { 'likes': -1, createdAt: -1 } : { createdAt: -1 };
+
+        const posts = await ForumPost.find(query)
+            .populate('author', 'username avatar email type isVerified')
+            .populate('comments.user', 'username avatar')
+            .sort(sortOption)
+            .limit(parseInt(limit))
+            .skip(parseInt(skip));
+
+        const total = await ForumPost.countDocuments(query);
+
+        res.status(200).json({ posts, total, hasMore: total > parseInt(skip) + posts.length });
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const getPostById = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id)
+            .populate('author', 'username avatar email type isVerified')
+            .populate('comments.user', 'username avatar');
+
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        // Increment view count
+        post.viewCount += 1;
+        await post.save();
+
+        res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deletePost = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        if (req.user.id !== post.author.toString() && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'You are not allowed to delete this post'));
+        }
+
+        await ForumPost.findByIdAndDelete(req.params.id);
+        res.status(200).json('The post has been deleted');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const likePost = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const index = post.likes.indexOf(req.user.id);
+        if (index === -1) {
+            post.likes.push(req.user.id);
+        } else {
+            post.likes.splice(index, 1);
+        }
+
+        await post.save();
+        res.status(200).json(post);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const addComment = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const { content } = req.body;
+        const newComment = {
+            user: req.user.id,
+            content,
+        };
+
+        post.comments.push(newComment);
+        await post.save();
+
+        // Re-fetch to populate user
+        const updatedPost = await ForumPost.findById(req.params.id)
+            .populate('comments.user', 'username avatar');
+
+        // Return the last added comment (which is now populated)
+        const addedComment = updatedPost.comments[updatedPost.comments.length - 1];
+
+        res.status(200).json(addedComment);
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const deleteComment = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        if (req.user.id !== comment.user.toString() && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'You are not allowed to delete this comment'));
+        }
+
+        comment.deleteOne();
+        await post.save();
+        res.status(200).json('Comment has been deleted');
+    } catch (error) {
+        next(error);
+    }
+};
