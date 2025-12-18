@@ -35,7 +35,7 @@ export default function LoanApplicationForm({ contract, currentUser, onSuccess, 
   // Calculate suggested loan amount based on contract
   const getSuggestedAmount = () => {
     if (!contract) return 0;
-    
+
     if (formData.loanType === 'security_deposit') {
       // Security deposit is usually 2-3 months of rent
       const monthlyRent = contract.lockedRentAmount || 0;
@@ -52,18 +52,18 @@ export default function LoanApplicationForm({ contract, currentUser, onSuccess, 
   // Calculate EMI preview
   const calculateEMI = () => {
     if (!formData.loanAmount || !formData.interestRate || !formData.tenure) return 0;
-    
+
     const monthlyRate = formData.interestRate / 100 / 12;
     const months = formData.tenure;
     const principal = formData.loanAmount;
-    
+
     if (monthlyRate === 0) {
       return principal / months;
     }
-    
-    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) / 
-                (Math.pow(1 + monthlyRate, months) - 1);
-    
+
+    const emi = (principal * monthlyRate * Math.pow(1 + monthlyRate, months)) /
+      (Math.pow(1 + monthlyRate, months) - 1);
+
     return Math.round(emi);
   };
 
@@ -193,7 +193,7 @@ export default function LoanApplicationForm({ contract, currentUser, onSuccess, 
       {/* Instructions */}
       <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
         <p className="text-sm text-yellow-800">
-          <strong>Note:</strong> Please provide accurate information and upload required documents. 
+          <strong>Note:</strong> Please provide accurate information and upload required documents.
           Your loan application will be reviewed by our admin team. Approval typically takes 2-5 business days.
         </p>
       </div>
@@ -397,7 +397,24 @@ export default function LoanApplicationForm({ contract, currentUser, onSuccess, 
             {formData.documents.map((doc, index) => (
               <div key={index} className="flex items-center gap-2 p-2 bg-green-50 border border-green-200 rounded">
                 <FaFile className="text-green-600" />
-                <span className="flex-1 text-sm text-green-700 capitalize">{doc.type.replace('_', ' ')}</span>
+                <span
+                  className="flex-1 text-sm text-blue-700 font-medium capitalize cursor-pointer hover:underline"
+                  onClick={() => {
+                    const getPreviewType = (url) => {
+                      try {
+                        const ext = url.split('.').pop().toLowerCase();
+                        if (['jpg', 'jpeg', 'png', 'gif', 'webp'].includes(ext)) return 'image';
+                        return 'document';
+                      } catch (e) { return 'document'; }
+                    };
+                    const type = getPreviewType(doc.url);
+                    const previewUrl = `/user/view-chat/preview?url=${encodeURIComponent(doc.url)}&name=${encodeURIComponent((doc.type || 'Document').replace(/_/g, ' '))}&type=${type}`;
+                    window.open(previewUrl, '_blank');
+                  }}
+                  title="Click to view document"
+                >
+                  {doc.type.replace('_', ' ')}
+                </span>
                 <button
                   type="button"
                   onClick={() => removeDocument(index)}
