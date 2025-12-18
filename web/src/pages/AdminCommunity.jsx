@@ -1153,16 +1153,40 @@ export default function AdminCommunity() {
 
                                         {editingPost?.id === post._id ? (
                                             <form onSubmit={(e) => handleUpdatePost(e, post._id)} className="w-full mb-2">
-                                                <textarea
-                                                    value={editingPost.content}
-                                                    onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
-                                                    className="w-full bg-white border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 min-h-[100px]"
-                                                    autoFocus
-                                                />
+                                                <div className="relative">
+                                                    <textarea
+                                                        value={editingPost.content}
+                                                        onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
+                                                        className="w-full bg-white border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 min-h-[100px]"
+                                                        autoFocus
+                                                    />
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowEmojiPicker(prev => ({
+                                                            show: prev.type === 'edit-post' && prev.id === post._id ? !prev.show : true,
+                                                            type: 'edit-post',
+                                                            id: post._id
+                                                        }))}
+                                                        className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-all"
+                                                        title="Add Emoji"
+                                                    >
+                                                        <FaSmile className="text-base" />
+                                                    </button>
+                                                    {showEmojiPicker.show && showEmojiPicker.type === 'edit-post' && showEmojiPicker.id === post._id && (
+                                                        <div className="absolute top-full right-0 z-[100] mt-2 shadow-xl animate-fade-in">
+                                                            <EmojiPicker
+                                                                onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-post', post._id)}
+                                                                width={300}
+                                                                height={400}
+                                                                previewConfig={{ showPreview: false }}
+                                                            />
+                                                        </div>
+                                                    )}
+                                                </div>
                                                 <div className="flex justify-end gap-2 mt-2">
                                                     <button
                                                         type="button"
-                                                        onClick={() => setEditingPost(null)}
+                                                        onClick={() => { setEditingPost(null); setShowEmojiPicker({ show: false, type: null, id: null }); }}
                                                         className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded bg-gray-100"
                                                     >
                                                         Cancel
