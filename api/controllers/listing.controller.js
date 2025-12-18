@@ -669,7 +669,10 @@ export const getListings = async (req, res, next) => {
       isAdmin: isAdmin
     });
 
-    if (!isAdmin) {
+    // Check for suggestion intent
+    const forSuggestion = req.query.forSuggestion === 'true';
+
+    if (!isAdmin && !forSuggestion) {
       // For public/non-admin users: only show verified and public properties
       console.log('❌ Non-admin user - Applying verification filters');
       query.isVerified = true;
@@ -679,8 +682,8 @@ export const getListings = async (req, res, next) => {
     }
     // Admins can see all properties (no filter applied)
 
-    // Visibility and availability filters - ONLY apply to non-admin users
-    if (!isAdmin) {
+    // Visibility and availability filters - ONLY apply to non-admin users (unless suggesting)
+    if (!isAdmin && !forSuggestion) {
       const visibility = req.query.visibility || 'all';
       const availabilityFilter = req.query.availabilityStatus;
       const excludeAvailabilityFilter = req.query.excludeAvailabilityStatus;

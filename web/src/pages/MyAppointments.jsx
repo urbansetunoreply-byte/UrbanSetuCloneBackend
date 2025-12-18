@@ -2188,7 +2188,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     if (!hasMentionTrigger || propertiesLoaded) return;
     (async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=300`, { credentials: 'include' });
+        const res = await fetch(`${API_BASE_URL}/api/listing/get?limit=300&forSuggestion=true`, { credentials: 'include' });
         const data = await res.json();
         const mapped = Array.isArray(data) ? data.map(l => ({
           id: l._id,
