@@ -7,11 +7,9 @@ import {
     deletePost,
     likePost,
     addComment,
-    deletePost,
-    likePost,
-    addComment,
     deleteComment,
-    getCommunityStats
+    getCommunityStats,
+    togglePin
 } from '../controllers/forum.controller.js';
 
 const router = express.Router();
@@ -24,5 +22,6 @@ router.delete('/:id', verifyToken, deletePost);
 router.put('/like/:id', verifyToken, likePost);
 router.post('/comment/:id', verifyToken, addComment);
 router.delete('/comment/:id/:commentId', verifyToken, deleteComment);
+router.put('/pin/:id', verifyToken, togglePin);
 
 export default router;
