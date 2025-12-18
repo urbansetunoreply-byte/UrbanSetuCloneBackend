@@ -8987,7 +8987,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                 else if (ext === 'pdf') type = 'pdf';
 
                                                 // Open preview in new tab
-                                                const previewUrl = `/user/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                                const previewUrl = `/user/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}&participants=${encodeURIComponent((appt.buyerEmail || '') + ',' + (appt.sellerEmail || ''))}`;
                                                 window.open(previewUrl, '_blank');
                                               }}
                                               title="Click to view document"

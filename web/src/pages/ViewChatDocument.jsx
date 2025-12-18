@@ -112,6 +112,41 @@ export default function ViewChatDocument() {
         }
     };
 
+    // Access Control
+    const accessParams = new URLSearchParams(location.search);
+    const participantsStr = accessParams.get('participants');
+    const participants = participantsStr ? decodeURIComponent(participantsStr).split(',') : [];
+
+    const isAdmin = currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin');
+    const isParticipant = currentUser && participants.includes(currentUser.email);
+    // Allow if admin, or if user is a valid participant. 
+    // Strict Mode: If not admin, require participant match.
+    const isAuthorized = isAdmin || isParticipant;
+
+    if (!currentUser || !isAuthorized) {
+        return (
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
+                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
+                    <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FaLock className="text-2xl text-blue-600" />
+                    </div>
+                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Restricted Access</h2>
+                    <p className="text-gray-600 mb-6">
+                        {!currentUser
+                            ? "You must be signed in to view this document."
+                            : "You are not authorized to view this document."}
+                    </p>
+                    <button
+                        onClick={() => navigate(currentUser ? -1 : '/sign-in')}
+                        className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
+                    >
+                        {currentUser ? "Go Back" : "Sign In"}
+                    </button>
+                </div>
+            </div>
+        );
+    }
+
     if (loading) {
         return (
             <div className="min-h-screen flex flex-col gap-4 items-center justify-center bg-gray-100">
