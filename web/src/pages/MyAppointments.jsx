@@ -9820,14 +9820,39 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     }}
                     onPaste={(e) => {
                       const items = Array.from(e.clipboardData.items);
-                      const imageItems = items.filter(item => item.type.startsWith('image/'));
+                      // Find the first item that is a file
+                      const fileItem = items.find(item => item.kind === 'file');
 
-                      if (imageItems.length > 0) {
+                      if (fileItem) {
                         e.preventDefault();
-                        const imageItem = imageItems[0];
-                        const file = imageItem.getAsFile();
+                        const file = fileItem.getAsFile();
+
                         if (file) {
-                          handleImageFiles([file]);
+                          if (file.type.startsWith('image/')) {
+                            handleImageFiles([file]);
+                          } else if (file.type.startsWith('video/')) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              toast.error('Maximum video size is 5MB');
+                            } else {
+                              setSelectedVideo(file);
+                              setShowVideoPreviewModal(true);
+                            }
+                          } else if (file.type.startsWith('audio/')) {
+                            if (file.size > 5 * 1024 * 1024) {
+                              toast.error('Maximum audio size is 5MB');
+                            } else {
+                              setSelectedAudio(file);
+                              setShowAudioPreviewModal(true);
+                            }
+                          } else {
+                            // Treat as document
+                            if (file.size > 5 * 1024 * 1024) {
+                              toast.error('Maximum document size is 5MB');
+                            } else {
+                              setSelectedDocument(file);
+                              setShowDocumentPreviewModal(true);
+                            }
+                          }
                         }
                       }
                     }}
