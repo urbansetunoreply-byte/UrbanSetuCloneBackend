@@ -1513,10 +1513,34 @@ export default function Community() {
                                                                                                                         className="w-full bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
                                                                                                                     />
                                                                                                                 </div>
-                                                                                                                <div className="flex gap-1">
+                                                                                                                <div className="flex gap-1 items-center">
+                                                                                                                    <div className="relative">
+                                                                                                                        <button
+                                                                                                                            type="button"
+                                                                                                                            onClick={() => setShowEmojiPicker(prev => ({
+                                                                                                                                show: prev.type === 'reply' && prev.id === reply._id ? !prev.show : true,
+                                                                                                                                type: 'reply',
+                                                                                                                                id: reply._id
+                                                                                                                            }))}
+                                                                                                                            className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                                                                                                            title="Add Emoji"
+                                                                                                                        >
+                                                                                                                            <FaSmile className="text-sm" />
+                                                                                                                        </button>
+                                                                                                                        {showEmojiPicker.show && showEmojiPicker.type === 'reply' && showEmojiPicker.id === reply._id && (
+                                                                                                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
+                                                                                                                                <EmojiPicker
+                                                                                                                                    onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'reply', reply._id)}
+                                                                                                                                    width={300}
+                                                                                                                                    height={400}
+                                                                                                                                    previewConfig={{ showPreview: false }}
+                                                                                                                                />
+                                                                                                                            </div>
+                                                                                                                        )}
+                                                                                                                    </div>
                                                                                                                     <button
                                                                                                                         type="button"
-                                                                                                                        onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); }}
+                                                                                                                        onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); setShowEmojiPicker({ show: false, type: null, id: null }); }}
                                                                                                                         className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
                                                                                                                     >
                                                                                                                         Cancel
@@ -1569,7 +1593,7 @@ export default function Community() {
                                                         <input
                                                             type="text"
                                                             placeholder="Write a comment... (use @ to mention property)"
-                                                            className="w-full bg-gray-50 border border-gray-200 rounded-full px-4 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                            className="w-full bg-gray-50 border border-gray-200 rounded-full pl-4 pr-16 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
                                                             value={commentText[post._id] || ''}
                                                             onChange={(e) => handleInputChange(e, 'comment', post._id)}
                                                         />
