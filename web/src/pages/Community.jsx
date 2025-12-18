@@ -10,6 +10,7 @@ import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { socket } from '../utils/socket';
+import ReportModal from '../components/ReportModal';
 
 export default function Community() {
     usePageTitle("Community Hub - Neighborhood Forum");
@@ -39,6 +40,7 @@ export default function Community() {
         onConfirm: () => { },
         isDestructive: false
     });
+    const [reportModal, setReportModal] = useState({ isOpen: false, postId: null });
 
     // Reply State
     const [replyingTo, setReplyingTo] = useState(null); // { postId, commentId }
@@ -482,10 +484,7 @@ export default function Community() {
         }));
     };
 
-    const handleReportPost = async (postId) => {
-        const reason = prompt("Why are you reporting this post?");
-        if (!reason) return;
-
+    const handleReportPost = async (postId, reason) => {
         try {
             const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/report/${postId}`, {
                 method: 'POST',
@@ -496,10 +495,12 @@ export default function Community() {
             if (res.ok) {
                 toast.success('Post reported');
             } else {
-                toast.error('Failed to report');
+                const data = await res.json();
+                toast.error(data.message || 'Failed to report');
             }
         } catch (error) {
             console.error(error);
+            toast.error('Failed to report');
         }
     };
 
@@ -688,8 +689,8 @@ export default function Community() {
                                             </span>
                                             {currentUser && currentUser._id !== post.author?._id && (
                                                 <button
-                                                    onClick={() => handleReportPost(post._id)}
-                                                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                                    onClick={() => setReportModal({ isOpen: true, postId: post._id })}
+                                                    className={`p-2 hover:bg-red-50 rounded-full transition-all ${post.reports?.some(r => r.user === currentUser._id) ? 'text-red-500' : 'text-gray-300 hover:text-red-500'}`}
                                                     title="Report Post"
                                                 >
                                                     <FaFlag />
@@ -1054,6 +1055,11 @@ export default function Community() {
                 message={confirmModal.message}
                 confirmText={confirmModal.confirmText}
                 isDestructive={confirmModal.isDestructive}
+            />
+            <ReportModal
+                isOpen={reportModal.isOpen}
+                onClose={() => setReportModal({ isOpen: false, postId: null })}
+                onReport={(reason) => handleReportPost(reportModal.postId, reason)}
             />
         </div>
     );

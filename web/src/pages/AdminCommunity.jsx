@@ -77,6 +77,7 @@ export default function AdminCommunity() {
         { id: 'Events', icon: FaCalendarAlt, label: 'Events' },
         { id: 'Safety', icon: FaShieldAlt, label: 'Safety' },
         { id: 'Marketplace', icon: FaStore, label: 'Marketplace' },
+        { id: 'Reported', icon: FaFlag, label: 'Reported' },
     ];
 
     useEffect(() => {
@@ -724,7 +725,7 @@ export default function AdminCommunity() {
                                                 </div>
                                             </div>
                                         </div>
-                                        <div className="flex items-center gap-2">
+                                        <div className="flex flex-wrap items-center gap-2 justify-end">
                                             <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${post.category === 'Safety' ? 'bg-red-50 text-red-600 border border-red-100' :
                                                 post.category === 'Events' ? 'bg-purple-50 text-purple-600 border border-purple-100' :
                                                     post.category === 'Marketplace' ? 'bg-green-50 text-green-600 border border-green-100' :
@@ -732,27 +733,29 @@ export default function AdminCommunity() {
                                                 }`}>
                                                 {post.category}
                                             </span>
-                                            <button
-                                                onClick={() => handlePinPost(post._id, post.isPinned)}
-                                                className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${post.isPinned ? 'text-blue-600' : 'text-gray-400'}`}
-                                                title={post.isPinned ? "Unpin Post" : "Pin Post"}
-                                            >
-                                                <FaMapMarkerAlt className="transform rotate-45" />
-                                            </button>
-                                            <button
-                                                onClick={() => handleLockPost(post._id, post.isLocked)}
-                                                className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${post.isLocked ? 'text-orange-500' : 'text-gray-400'}`}
-                                                title={post.isLocked ? "Unlock Post" : "Lock Post"}
-                                            >
-                                                <FaLock />
-                                            </button>
-                                            <button
-                                                onClick={() => handleDeletePost(post._id)}
-                                                className="p-2 text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                                                title="Delete Post"
-                                            >
-                                                <FaTimes />
-                                            </button>
+                                            <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-full border border-gray-100">
+                                                <button
+                                                    onClick={() => handlePinPost(post._id, post.isPinned)}
+                                                    className={`p-2 rounded-full hover:bg-white hover:shadow-sm transition-all ${post.isPinned ? 'text-blue-600' : 'text-gray-400'}`}
+                                                    title={post.isPinned ? "Unpin Post" : "Pin Post"}
+                                                >
+                                                    <FaMapMarkerAlt className="transform rotate-45 text-sm" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleLockPost(post._id, post.isLocked)}
+                                                    className={`p-2 rounded-full hover:bg-white hover:shadow-sm transition-all ${post.isLocked ? 'text-orange-500' : 'text-gray-400'}`}
+                                                    title={post.isLocked ? "Unlock Post" : "Lock Post"}
+                                                >
+                                                    <FaLock className="text-sm" />
+                                                </button>
+                                                <button
+                                                    onClick={() => handleDeletePost(post._id)}
+                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-white hover:shadow-sm rounded-full transition-all"
+                                                    title="Delete Post"
+                                                >
+                                                    <FaTimes className="text-sm" />
+                                                </button>
+                                            </div>
                                         </div>
                                     </div>
 
@@ -762,6 +765,24 @@ export default function AdminCommunity() {
                                         <p className="text-gray-600 whitespace-pre-line leading-relaxed">{post.content}</p>
                                         {/* Placeholder for optional post image if any */}
                                         {/* {post.images && post.images.length > 0 && (...)} */}
+
+                                        {/* Report Details (Admin View) */}
+                                        {post.reports && post.reports.length > 0 && (
+                                            <div className="mt-4 bg-red-50/50 rounded-xl p-4 border border-red-100/50">
+                                                <div className="flex items-center gap-2 text-red-600 font-bold text-sm mb-2">
+                                                    <FaFlag className="text-xs" />
+                                                    <span>User Reports ({post.reports.length})</span>
+                                                </div>
+                                                <div className="space-y-2">
+                                                    {post.reports.map((report, rIdx) => (
+                                                        <div key={rIdx} className="bg-white/80 p-2 rounded-lg text-xs border border-red-50 shadow-sm flex items-start gap-2">
+                                                            <div className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold uppercase text-[10px]">Flag</div>
+                                                            <p className="text-gray-700 leading-normal italic">"{report.reason}"</p>
+                                                        </div>
+                                                    ))}
+                                                </div>
+                                            </div>
+                                        )}
                                     </div>
 
                                     {/* Post Actions */}

@@ -44,7 +44,11 @@ export const getPosts = async (req, res, next) => {
                 { content: { $regex: req.query.searchTerm, $options: 'i' } }
             ];
         }
-        if (category && category !== 'All') query.category = category;
+        if (category === 'Reported') {
+            query.reports = { $exists: true, $not: { $size: 0 } };
+        } else if (category && category !== 'All') {
+            query.category = category;
+        }
 
         const sortOption = sort === 'popular' ? { 'likes': -1, createdAt: -1 } : { createdAt: -1 };
 
@@ -109,6 +113,7 @@ export const togglePin = async (req, res, next) => {
 
         post.isPinned = !post.isPinned;
         await post.save();
+        await post.populate('author', 'username avatar email type isVerified');
         req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
@@ -300,6 +305,7 @@ export const lockPost = async (req, res, next) => {
 
         post.isLocked = !post.isLocked;
         await post.save();
+        await post.populate('author', 'username avatar email type isVerified');
         req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
