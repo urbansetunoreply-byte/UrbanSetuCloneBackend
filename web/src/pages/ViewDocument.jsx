@@ -42,7 +42,7 @@ export default function ViewDocument() {
                 else if (type === 'pdf' || url.endsWith('.pdf')) derivedType = 'pdf';
                 else {
                     const ext = url.split('.').pop().toLowerCase();
-                    if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
+                    if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'].includes(ext)) {
                         derivedType = 'office';
                     }
                 }
@@ -115,7 +115,7 @@ export default function ViewDocument() {
                     } else if (type === 'other') {
                         // Check extension to see if it is an office document
                         const ext = data.document.url.split('.').pop().toLowerCase();
-                        if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx'].includes(ext)) {
+                        if (['doc', 'docx', 'xls', 'xlsx', 'ppt', 'pptx', 'csv'].includes(ext)) {
                             setFileType('office');
                         }
                     }

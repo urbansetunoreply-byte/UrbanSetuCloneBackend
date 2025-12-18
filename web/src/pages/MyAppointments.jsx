@@ -8997,48 +8997,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                               </div>
                                               <div className="flex flex-col min-w-0 overflow-hidden">
                                                 <span className="text-sm font-medium truncate text-gray-900 w-full text-left">{c.documentName || 'Document'}</span>
-                                                <span className="text-[10px] text-gray-500 uppercase text-left">{c.documentUrl.split('.').pop() || 'FILE'}</span>
                                               </div>
                                             </div>
-
-                                            {/* Separator */}
-                                            <div className="w-[1px] h-8 bg-gray-200" />
-
-                                            {/* Download Button */}
-                                            <button
-                                              className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex-shrink-0"
-                                              title="Download"
-                                              onClick={async (e) => {
-                                                e.stopPropagation();
-                                                try {
-                                                  const response = await fetch(c.documentUrl, { mode: 'cors' });
-                                                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
-                                                  const blob = await response.blob();
-                                                  const blobUrl = window.URL.createObjectURL(blob);
-                                                  const a = document.createElement('a');
-                                                  a.href = blobUrl;
-                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                                  document.body.appendChild(a);
-                                                  a.click();
-                                                  a.remove();
-                                                  setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
-                                                  toast.success('Document downloaded successfully');
-                                                } catch (error) {
-                                                  console.error('Download failed:', error);
-                                                  // Fallback to direct link
-                                                  const a = document.createElement('a');
-                                                  a.href = c.documentUrl;
-                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
-                                                  a.target = '_blank';
-                                                  document.body.appendChild(a);
-                                                  a.click();
-                                                  a.remove();
-                                                  toast.success('Document download started');
-                                                }
-                                              }}
-                                            >
-                                              <FaDownload size={14} />
-                                            </button>
                                           </div>
                                         )}
                                         {/* Link Preview in Message */}
