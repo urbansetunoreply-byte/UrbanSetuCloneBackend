@@ -1274,16 +1274,40 @@ export default function AdminCommunity() {
                                                                     </div>
                                                                     {editingContent.id === comment._id && editingContent.type === 'comment' ? (
                                                                         <form onSubmit={(e) => handleUpdateComment(e, post._id, comment._id)} className="w-full mb-2">
-                                                                            <textarea
-                                                                                value={editingContent.content}
-                                                                                onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
-                                                                                className="w-full bg-white border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-blue-500 min-h-[60px]"
-                                                                                autoFocus
-                                                                            />
+                                                                            <div className="relative">
+                                                                                <textarea
+                                                                                    value={editingContent.content}
+                                                                                    onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                                                                                    className="w-full bg-white border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-blue-500 min-h-[60px]"
+                                                                                    autoFocus
+                                                                                />
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => setShowEmojiPicker(prev => ({
+                                                                                        show: prev.type === 'edit-comment' && prev.id === comment._id ? !prev.show : true,
+                                                                                        type: 'edit-comment',
+                                                                                        id: comment._id
+                                                                                    }))}
+                                                                                    className="absolute top-1 right-1 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-all"
+                                                                                    title="Add Emoji"
+                                                                                >
+                                                                                    <FaSmile className="text-sm" />
+                                                                                </button>
+                                                                                {showEmojiPicker.show && showEmojiPicker.type === 'edit-comment' && showEmojiPicker.id === comment._id && (
+                                                                                    <div className="absolute top-full right-0 z-[100] mt-2 shadow-xl animate-fade-in">
+                                                                                        <EmojiPicker
+                                                                                            onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-comment', comment._id)}
+                                                                                            width={300}
+                                                                                            height={400}
+                                                                                            previewConfig={{ showPreview: false }}
+                                                                                        />
+                                                                                    </div>
+                                                                                )}
+                                                                            </div>
                                                                             <div className="flex justify-end gap-2 mt-1">
                                                                                 <button
                                                                                     type="button"
-                                                                                    onClick={() => setEditingContent({ type: null, id: null, content: '' })}
+                                                                                    onClick={() => { setEditingContent({ type: null, id: null, content: '' }); setShowEmojiPicker({ show: false, type: null, id: null }); }}
                                                                                     className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
                                                                                 >
                                                                                     Cancel
@@ -1455,16 +1479,40 @@ export default function AdminCommunity() {
                                                                                                         </div>
                                                                                                         {editingContent.id === reply._id && editingContent.type === 'reply' ? (
                                                                                                             <form onSubmit={(e) => handleUpdateReply(e, post._id, comment._id, reply._id)} className="w-full mb-2">
-                                                                                                                <textarea
-                                                                                                                    value={editingContent.content}
-                                                                                                                    onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
-                                                                                                                    className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-blue-500 min-h-[50px]"
-                                                                                                                    autoFocus
-                                                                                                                />
+                                                                                                                <div className="relative">
+                                                                                                                    <textarea
+                                                                                                                        value={editingContent.content}
+                                                                                                                        onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                                                                                                                        className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-blue-500 min-h-[50px]"
+                                                                                                                        autoFocus
+                                                                                                                    />
+                                                                                                                    <button
+                                                                                                                        type="button"
+                                                                                                                        onClick={() => setShowEmojiPicker(prev => ({
+                                                                                                                            show: prev.type === 'edit-reply' && prev.id === reply._id ? !prev.show : true,
+                                                                                                                            type: 'edit-reply',
+                                                                                                                            id: reply._id
+                                                                                                                        }))}
+                                                                                                                        className="absolute top-1 right-1 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-all"
+                                                                                                                        title="Add Emoji"
+                                                                                                                    >
+                                                                                                                        <FaSmile className="text-sm" />
+                                                                                                                    </button>
+                                                                                                                    {showEmojiPicker.show && showEmojiPicker.type === 'edit-reply' && showEmojiPicker.id === reply._id && (
+                                                                                                                        <div className="absolute top-full right-0 z-[100] mt-2 shadow-xl animate-fade-in">
+                                                                                                                            <EmojiPicker
+                                                                                                                                onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-reply', reply._id)}
+                                                                                                                                width={300}
+                                                                                                                                height={400}
+                                                                                                                                previewConfig={{ showPreview: false }}
+                                                                                                                            />
+                                                                                                                        </div>
+                                                                                                                    )}
+                                                                                                                </div>
                                                                                                                 <div className="flex justify-end gap-2 mt-1">
                                                                                                                     <button
                                                                                                                         type="button"
-                                                                                                                        onClick={() => setEditingContent({ type: null, id: null, content: '' })}
+                                                                                                                        onClick={() => { setEditingContent({ type: null, id: null, content: '' }); setShowEmojiPicker({ show: false, type: null, id: null }); }}
                                                                                                                         className="text-[10px] text-gray-500 hover:text-gray-700 px-2 py-1"
                                                                                                                     >
                                                                                                                         Cancel
