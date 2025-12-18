@@ -122,6 +122,7 @@ const AdminRentalLoans = lazy(() => import('./pages/AdminRentalLoans'));
 const RentalLoans = lazy(() => import('./pages/RentalLoans'));
 const SharedChatView = lazy(() => import('./pages/SharedChatView'));
 const ViewDocument = lazy(() => import('./pages/ViewDocument'));
+const ViewChatDocument = lazy(() => import('./pages/ViewChatDocument'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -685,6 +686,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/investment-tools" element={<InvestmentTools />} />
               <Route path="/user/settings" element={<Settings />} />
               <Route path="/user/view/:documentId" element={<ViewDocument />} />
+              <Route path="/user/view-chat/preview" element={<ViewChatDocument />} />
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/ai" element={<Navigate to="/user/ai" />} />
@@ -736,6 +738,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/disputes" element={<AdminDisputeResolution />} />
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/admin/view/:documentId" element={<ViewDocument />} />
+              <Route path="/admin/view-chat/preview" element={<ViewChatDocument />} />
               <Route path="/contact" element={<Navigate to="/admin/support" />} />
               <Route path="/support" element={<Navigate to="/admin/support" />} />
               <Route path="/user/contact" element={<Navigate to="/admin/support" />} />

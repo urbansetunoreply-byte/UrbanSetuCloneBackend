@@ -8987,7 +8987,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                 else if (ext === 'pdf') type = 'pdf';
 
                                                 // Open preview in new tab
-                                                const previewUrl = `/user/view/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                                const previewUrl = `/user/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
                                                 window.open(previewUrl, '_blank');
                                               }}
                                               title="Click to view document"
@@ -8999,6 +8999,45 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                                                 <span className="text-sm font-medium truncate text-gray-900 w-full text-left">{c.documentName || 'Document'}</span>
                                               </div>
                                             </div>
+
+                                            {/* Separator */}
+                                            <div className="w-[1px] h-8 bg-gray-200" />
+
+                                            {/* Download Button */}
+                                            <button
+                                              className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex-shrink-0"
+                                              title="Download"
+                                              onClick={async (e) => {
+                                                e.stopPropagation();
+                                                try {
+                                                  const response = await fetch(c.documentUrl, { mode: 'cors' });
+                                                  if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                  const blob = await response.blob();
+                                                  const blobUrl = window.URL.createObjectURL(blob);
+                                                  const a = document.createElement('a');
+                                                  a.href = blobUrl;
+                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  a.remove();
+                                                  setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                  toast.success('Document downloaded successfully');
+                                                } catch (error) {
+                                                  console.error('Download failed:', error);
+                                                  // Fallback to direct link
+                                                  const a = document.createElement('a');
+                                                  a.href = c.documentUrl;
+                                                  a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                  a.target = '_blank';
+                                                  document.body.appendChild(a);
+                                                  a.click();
+                                                  a.remove();
+                                                  toast.success('Document download started');
+                                                }
+                                              }}
+                                            >
+                                              <FaDownload size={14} />
+                                            </button>
                                           </div>
                                         )}
                                         {/* Link Preview in Message */}

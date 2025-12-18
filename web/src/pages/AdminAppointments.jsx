@@ -7721,7 +7721,7 @@ function AdminAppointmentRow({
                                                     else if (ext === 'pdf') type = 'pdf';
 
                                                     // Open preview in new tab
-                                                    const previewUrl = `/admin/view/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                                    const previewUrl = `/admin/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
                                                     window.open(previewUrl, '_blank');
                                                   }}
                                                 >
@@ -7735,6 +7735,37 @@ function AdminAppointmentRow({
                                                     </div>
                                                   </div>
                                                 </div>
+                                                <button
+                                                  className="px-3 py-1 text-xs bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+                                                  onClick={async (e) => {
+                                                    e.stopPropagation();
+                                                    try {
+                                                      const response = await fetch(c.documentUrl, { mode: 'cors' });
+                                                      if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                      const blob = await response.blob();
+                                                      const blobUrl = window.URL.createObjectURL(blob);
+                                                      const a = document.createElement('a');
+                                                      a.href = blobUrl;
+                                                      a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                      document.body.appendChild(a);
+                                                      a.click();
+                                                      a.remove();
+                                                      setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                      toast.success('Document downloaded successfully');
+                                                    } catch (error) {
+                                                      const a = document.createElement('a');
+                                                      a.href = c.documentUrl;
+                                                      a.download = c.documentName || `document-${c._id || Date.now()}`;
+                                                      a.target = '_blank';
+                                                      document.body.appendChild(a);
+                                                      a.click();
+                                                      a.remove();
+                                                      toast.success('Document download started');
+                                                    }
+                                                  }}
+                                                >
+                                                  Download
+                                                </button>
                                               </div>
                                             </div>
                                           </div>
@@ -8255,7 +8286,7 @@ function AdminAppointmentRow({
                                               else if (ext === 'pdf') type = 'pdf';
 
                                               // Open preview in new tab
-                                              const previewUrl = `/admin/view/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
+                                              const previewUrl = `/admin/view-chat/preview?url=${encodeURIComponent(c.documentUrl)}&name=${encodeURIComponent(c.documentName || 'Document')}&type=${type}`;
                                               window.open(previewUrl, '_blank');
                                             }}
                                             title="Click to view document"
@@ -8267,6 +8298,44 @@ function AdminAppointmentRow({
                                               <span className="text-sm font-medium truncate text-gray-900 w-full text-left">{c.documentName || 'Document'}</span>
                                             </div>
                                           </div>
+
+                                          {/* Separator */}
+                                          <div className="w-[1px] h-8 bg-gray-200" />
+
+                                          {/* Download Button */}
+                                          <button
+                                            className="p-3 text-gray-500 hover:text-blue-600 hover:bg-blue-50 transition-colors flex-shrink-0"
+                                            title="Download"
+                                            onClick={async (e) => {
+                                              e.stopPropagation();
+                                              try {
+                                                const response = await fetch(c && c.documentUrl ? c.documentUrl : '', { mode: 'cors' });
+                                                if (!response.ok) throw new Error(`HTTP ${response.status}`);
+                                                const blob = await response.blob();
+                                                const blobUrl = window.URL.createObjectURL(blob);
+                                                const a = document.createElement('a');
+                                                a.href = blobUrl;
+                                                a.download = (c && c.documentName) || `document-${(c && c._id) || Date.now()}`;
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                                setTimeout(() => window.URL.revokeObjectURL(blobUrl), 200);
+                                                toast.success('Document downloaded successfully');
+                                              } catch (error) {
+                                                console.error('Download failed:', error);
+                                                const a = document.createElement('a');
+                                                a.href = c && c.documentUrl ? c.documentUrl : '';
+                                                a.download = (c && c.documentName) || `document-${(c && c._id) || Date.now()}`;
+                                                a.target = '_blank';
+                                                document.body.appendChild(a);
+                                                a.click();
+                                                a.remove();
+                                                toast.success('Document download started');
+                                              }
+                                            }}
+                                          >
+                                            <FaDownload size={14} />
+                                          </button>
                                         </div>
                                       )}
                                       {/* Link Preview in Message */}
