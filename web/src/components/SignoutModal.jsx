@@ -23,6 +23,15 @@ export default function SignoutModal() {
 
     return (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-md flex items-center justify-center z-[9999] animate-fade-in">
+            <style>{`
+                @keyframes slideUpFade {
+                    0% { opacity: 0; transform: translateY(10px); }
+                    100% { opacity: 1; transform: translateY(0); }
+                }
+                .animate-slide-up {
+                    animation: slideUpFade 0.5s ease-out forwards;
+                }
+            `}</style>
             <div className="bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center gap-6 max-w-sm w-full mx-4 transform scale-100 animate-bounce-small">
                 <div className="relative">
                     <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-100 border-t-blue-600"></div>
@@ -31,10 +40,10 @@ export default function SignoutModal() {
                     </div>
                 </div>
                 <div className="text-center w-full">
-                    <h3 className="text-xl font-bold text-gray-900 transition-all duration-300 min-h-[28px]">
+                    <h3 key={`title-${index}`} className="text-xl font-bold text-gray-900 animate-slide-up min-h-[28px]">
                         {current.title}
                     </h3>
-                    <p className="text-gray-500 text-sm mt-2 transition-all duration-300 min-h-[20px]">
+                    <p key={`sub-${index}`} className="text-gray-500 text-sm mt-2 animate-slide-up min-h-[20px]">
                         {current.subtitle}
                     </p>
                 </div>
