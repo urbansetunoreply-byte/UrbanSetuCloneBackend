@@ -6243,7 +6243,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     <button
                                                         onClick={() => {
                                                             setIsOpen(false);
-                                                            navigate('/sign-in');
+                                                            navigate('/sign-in?redirect=/ai');
                                                         }}
                                                         className="px-6 py-3 rounded-lg font-semibold bg-blue-600 hover:bg-blue-700 text-white transition-all duration-200 hover:shadow-lg hover:scale-105"
                                                     >
