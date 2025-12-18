@@ -9,6 +9,7 @@ import {
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ConfirmationModal from '../components/ConfirmationModal';
+import { socket } from '../utils/socket';
 
 export default function AdminCommunity() {
     usePageTitle("Admin Dashboard - Community Moderation");
@@ -150,6 +151,114 @@ export default function AdminCommunity() {
             console.error('Failed to fetch stats:', error);
         }
     };
+
+    useEffect(() => {
+        // Socket listeners
+        const handlePostCreated = (newPost) => {
+            if (activeTab === 'All' || activeTab === newPost.category) {
+                setPosts(prev => [newPost, ...prev]);
+                setStats(prev => ({ ...prev, dailyPosts: prev.dailyPosts + 1 }));
+            }
+        };
+
+        const handlePostDeleted = (postId) => {
+            setPosts(prev => prev.filter(p => p._id !== postId));
+        };
+
+        const handlePostUpdated = (updatedPost) => {
+            setPosts(prev => prev.map(p => {
+                if (p._id === updatedPost._id) {
+                    return {
+                        ...updatedPost,
+                        comments: p.comments, // Preserve comments
+                        author: updatedPost.author || p.author
+                    };
+                }
+                return p;
+            }));
+        };
+
+        const handleCommentAdded = ({ postId, comment }) => {
+            setPosts(prev => prev.map(post => {
+                if (post._id === postId) {
+                    if (post.comments.some(c => c._id === comment._id)) return post;
+                    return { ...post, comments: [...post.comments, comment] };
+                }
+                return post;
+            }));
+        };
+
+        const handleCommentDeleted = ({ postId, commentId }) => {
+            setPosts(prev => prev.map(post => {
+                if (post._id === postId) {
+                    return {
+                        ...post,
+                        comments: post.comments.filter(c => c._id !== commentId)
+                    };
+                }
+                return post;
+            }));
+        };
+
+        const handleReplyAdded = ({ postId, commentId, reply }) => {
+            setPosts(prev => prev.map(post => {
+                if (post._id === postId) {
+                    return {
+                        ...post,
+                        comments: post.comments.map(comment => {
+                            if (comment._id === commentId) {
+                                if (comment.replies && comment.replies.some(r => r._id === reply._id)) return comment;
+                                return {
+                                    ...comment,
+                                    replies: [...(comment.replies || []), reply]
+                                };
+                            }
+                            return comment;
+                        })
+                    };
+                }
+                return post;
+            }));
+        };
+
+        const handleReplyDeleted = ({ postId, commentId, replyId }) => {
+            setPosts(prev => prev.map(post => {
+                if (post._id === postId) {
+                    return {
+                        ...post,
+                        comments: post.comments.map(comment => {
+                            if (comment._id === commentId) {
+                                return {
+                                    ...comment,
+                                    replies: comment.replies ? comment.replies.filter(r => r._id !== replyId) : []
+                                };
+                            }
+                            return comment;
+                        })
+                    };
+                }
+                return post;
+            }));
+        };
+
+        socket.on('forum:postCreated', handlePostCreated);
+        socket.on('forum:postDeleted', handlePostDeleted);
+        socket.on('forum:postUpdated', handlePostUpdated);
+        socket.on('forum:commentAdded', handleCommentAdded);
+        socket.on('forum:commentDeleted', handleCommentDeleted);
+        socket.on('forum:replyAdded', handleReplyAdded);
+        socket.on('forum:replyDeleted', handleReplyDeleted);
+
+        return () => {
+            socket.off('forum:postCreated', handlePostCreated);
+            socket.off('forum:postDeleted', handlePostDeleted);
+            socket.off('forum:postUpdated', handlePostUpdated);
+            socket.off('forum:commentAdded', handleCommentAdded);
+            socket.off('forum:commentDeleted', handleCommentDeleted);
+            socket.off('forum:replyAdded', handleReplyAdded);
+            socket.off('forum:replyDeleted', handleReplyDeleted);
+        };
+    }, [activeTab]);
 
     const handleLike = async (postId) => {
         if (!currentUser) return navigate('/sign-in');

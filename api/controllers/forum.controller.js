@@ -22,6 +22,8 @@ export const createPost = async (req, res, next) => {
             .populate('author', 'username avatar email type isVerified')
             .exec();
 
+        req.app.get('io').emit('forum:postCreated', populatedPost);
+
         res.status(201).json(populatedPost);
     } catch (error) {
         next(error);
@@ -89,6 +91,7 @@ export const deletePost = async (req, res, next) => {
         }
 
         await ForumPost.findByIdAndDelete(req.params.id);
+        req.app.get('io').emit('forum:postDeleted', req.params.id);
         res.status(200).json('The post has been deleted');
     } catch (error) {
         next(error);
@@ -106,6 +109,7 @@ export const togglePin = async (req, res, next) => {
 
         post.isPinned = !post.isPinned;
         await post.save();
+        req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
         next(error);
@@ -126,6 +130,7 @@ export const likePost = async (req, res, next) => {
 
         await post.save();
         await post.populate('author', 'username avatar type');
+        req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
         next(error);
@@ -156,6 +161,8 @@ export const addComment = async (req, res, next) => {
         // Return the last added comment (which is now populated)
         const addedComment = updatedPost.comments[updatedPost.comments.length - 1];
 
+        req.app.get('io').emit('forum:commentAdded', { postId: req.params.id, comment: addedComment });
+
         res.status(200).json(addedComment);
     } catch (error) {
         next(error);
@@ -176,6 +183,7 @@ export const deleteComment = async (req, res, next) => {
 
         comment.deleteOne();
         await post.save();
+        req.app.get('io').emit('forum:commentDeleted', { postId: req.params.id, commentId: req.params.commentId });
         res.status(200).json('Comment has been deleted');
     } catch (error) {
         next(error);
@@ -211,6 +219,8 @@ export const addReply = async (req, res, next) => {
         const updatedComment = updatedPost.comments.id(req.params.commentId);
         const addedReply = updatedComment.replies[updatedComment.replies.length - 1];
 
+        req.app.get('io').emit('forum:replyAdded', { postId: req.params.id, commentId: req.params.commentId, reply: addedReply });
+
         res.status(200).json(addedReply);
     } catch (error) {
         next(error);
@@ -234,6 +244,7 @@ export const deleteReply = async (req, res, next) => {
 
         reply.deleteOne();
         await post.save();
+        req.app.get('io').emit('forum:replyDeleted', { postId: req.params.id, commentId: req.params.commentId, replyId: req.params.replyId });
         res.status(200).json('Reply deleted');
     } catch (error) {
         next(error);
@@ -289,6 +300,7 @@ export const lockPost = async (req, res, next) => {
 
         post.isLocked = !post.isLocked;
         await post.save();
+        req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
         next(error);
