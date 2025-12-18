@@ -142,7 +142,7 @@ const LoadingSpinner = () => (
         <div className="absolute inset-3 rounded-full border-4 border-transparent border-t-purple-500 border-l-purple-500 animate-spin-reverse-slower"></div>
         {/* Inner Circle / Logo Container */}
         <div className="absolute inset-6 bg-white rounded-full shadow-lg flex items-center justify-center animate-pulse-subtle">
-          <FaHome className="text-3xl text-transparent bg-clip-text bg-gradient-to-br from-blue-600 to-purple-600" />
+          <FaHome className="text-4xl text-blue-600" />
         </div>
       </div>
 
@@ -151,7 +151,7 @@ const LoadingSpinner = () => (
         <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm">
           UrbanSetu
         </h1>
-        <div className="flex items-center justify-center gap-2">
+        <div className="flex flex-col items-center justify-center gap-2">
           <span className="text-gray-500 font-medium tracking-[0.2em] text-sm uppercase">Loading</span>
           <div className="flex gap-1.5 mt-1">
             <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
