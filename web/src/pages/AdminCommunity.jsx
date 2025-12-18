@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt,
     FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch,
-    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag
+    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaExclamationTriangle, FaEdit
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -55,12 +55,14 @@ export default function AdminCommunity() {
 
     // Property Mention State
     const [propertySuggestions, setPropertySuggestions] = useState([]);
-    const [showMentionSuggestions, setShowMentionSuggestions] = useState({ show: false, query: '', type: null, id: null }); // type: 'post' | 'comment' | 'reply'
+    const [showMentionSuggestions, setShowMentionSuggestions] = useState({ show: false, query: '', type: null, id: null });
+    const [activeReplyInput, setActiveReplyInput] = useState(null); // State for nested reply input // type: 'post' | 'comment' | 'reply'
     const [mentionSearchLoading, setMentionSearchLoading] = useState(false);
     const [selectedMentionIndex, setSelectedMentionIndex] = useState(0);
 
     const [expandedComments, setExpandedComments] = useState({});
     const [commentText, setCommentText] = useState({});
+    const [editingContent, setEditingContent] = useState({ type: null, id: null, content: '' });
 
     // Reply State
     const [replyingTo, setReplyingTo] = useState(null); // { postId, commentId }
@@ -529,7 +531,7 @@ export default function AdminCommunity() {
 
 
 
-    const handleAddReply = async (e, postId, commentId) => {
+    const handleAddReply = async (e, postId, commentId, parentReplyId = null) => {
         e.preventDefault();
         if (!replyText.trim()) return;
 
@@ -538,20 +540,45 @@ export default function AdminCommunity() {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 credentials: 'include',
-                body: JSON.stringify({ content: replyText })
+                body: JSON.stringify({
+                    content: replyText,
+                    replyToUser: replyingTo?.userId,
+                    parentReplyId
+                })
             });
 
             if (res.ok) {
                 const newReply = await res.json();
                 setPosts(posts.map(post => {
                     if (post._id === postId) {
+                        const updateRepliesRecursively = (replies) => {
+                            if (parentReplyId) {
+                                return replies.map(r => {
+                                    if (r._id === parentReplyId) {
+                                        return {
+                                            ...r,
+                                            replies: [...(r.replies || []), newReply]
+                                        };
+                                    }
+                                    if (r.replies && r.replies.length > 0) {
+                                        return {
+                                            ...r,
+                                            replies: updateRepliesRecursively(r.replies)
+                                        };
+                                    }
+                                    return r;
+                                });
+                            }
+                            return [...(replies || []), newReply];
+                        };
+
                         return {
                             ...post,
                             comments: post.comments.map(c => {
                                 if (c._id === commentId) {
                                     return {
                                         ...c,
-                                        replies: [...(c.replies || []), newReply]
+                                        replies: updateRepliesRecursively(c.replies)
                                     };
                                 }
                                 return c;
@@ -563,6 +590,7 @@ export default function AdminCommunity() {
                 setReplyText('');
                 setReplyingTo(null);
                 setExpandedReplies(prev => ({ ...prev, [commentId]: true }));
+                setActiveReplyInput(null);
                 toast.success('Reply added');
             } else {
                 const data = await res.json();
@@ -613,6 +641,80 @@ export default function AdminCommunity() {
                 }
             }
         });
+    };
+
+    const handleUpdateComment = async (e, postId, commentId) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ content: editingContent.content })
+            });
+
+            if (res.ok) {
+                const updatedComment = await res.json();
+                setPosts(posts.map(post => {
+                    if (post._id === postId) {
+                        return {
+                            ...post,
+                            comments: post.comments.map(c => c._id === commentId ? { ...c, content: updatedComment.content } : c)
+                        };
+                    }
+                    return post;
+                }));
+                setEditingContent({ type: null, id: null, content: '' });
+                toast.success('Comment updated');
+            } else {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to update comment');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update comment');
+        }
+    };
+
+    const handleUpdateReply = async (e, postId, commentId, replyId) => {
+        e.preventDefault();
+        try {
+            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/comment/${postId}/${commentId}/reply/${replyId}`, {
+                method: 'PUT',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ content: editingContent.content })
+            });
+
+            if (res.ok) {
+                const updatedReply = await res.json();
+                setPosts(posts.map(post => {
+                    if (post._id === postId) {
+                        return {
+                            ...post,
+                            comments: post.comments.map(c => {
+                                if (c._id === commentId) {
+                                    return {
+                                        ...c,
+                                        replies: c.replies.map(r => r._id === replyId ? { ...r, content: updatedReply.content } : r)
+                                    };
+                                }
+                                return c;
+                            })
+                        };
+                    }
+                    return post;
+                }));
+                setEditingContent({ type: null, id: null, content: '' });
+                toast.success('Reply updated');
+            } else {
+                const data = await res.json();
+                toast.error(data.message || 'Failed to update reply');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Failed to update reply');
+        }
     };
 
     const handleShare = (post) => {
@@ -1028,7 +1130,42 @@ export default function AdminCommunity() {
                                                                             {new Date(comment.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                         </span>
                                                                     </div>
-                                                                    <p className="text-sm text-gray-700">{formatContent(comment.content)}</p>
+                                                                    {editingContent.id === comment._id && editingContent.type === 'comment' ? (
+                                                                        <form onSubmit={(e) => handleUpdateComment(e, post._id, comment._id)} className="w-full mb-2">
+                                                                            <textarea
+                                                                                value={editingContent.content}
+                                                                                onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                                                                                className="w-full bg-white border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-blue-500 min-h-[60px]"
+                                                                                autoFocus
+                                                                            />
+                                                                            <div className="flex justify-end gap-2 mt-1">
+                                                                                <button
+                                                                                    type="button"
+                                                                                    onClick={() => setEditingContent({ type: null, id: null, content: '' })}
+                                                                                    className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                                                                                >
+                                                                                    Cancel
+                                                                                </button>
+                                                                                <button
+                                                                                    type="submit"
+                                                                                    className="text-xs bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                                                                                >
+                                                                                    Save
+                                                                                </button>
+                                                                            </div>
+                                                                        </form>
+                                                                    ) : (
+                                                                        <p className="text-sm text-gray-700">{formatContent(comment.content)}</p>
+                                                                    )}
+
+                                                                    {/* Report Indicator */}
+                                                                    {comment.reports && comment.reports.length > 0 && (
+                                                                        <div className="mt-2 bg-red-50 border border-red-100 p-2 rounded text-xs text-red-600 flex items-center gap-2">
+                                                                            <FaExclamationTriangle />
+                                                                            Reported: {comment.reports.length} times
+                                                                            <span className="text-gray-500">- Last reason: {comment.reports[comment.reports.length - 1].reason}</span>
+                                                                        </div>
+                                                                    )}
 
                                                                     {/* Actions */}
                                                                     <div className="flex items-center gap-4 mt-2">
@@ -1063,6 +1200,15 @@ export default function AdminCommunity() {
                                                                         )}
                                                                     </div>
 
+                                                                    {/* Admin Edit Comment Button */}
+                                                                    <button
+                                                                        onClick={() => setEditingContent({ type: 'comment', id: comment._id, content: comment.content })}
+                                                                        className="absolute right-8 top-2 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                                                        title="Edit Comment (Admin)"
+                                                                    >
+                                                                        <FaEdit className="text-xs" />
+                                                                    </button>
+
                                                                     {/* Admin Delete Comment Button */}
                                                                     <button
                                                                         onClick={() => handleDeleteComment(post._id, comment._id)}
@@ -1073,14 +1219,14 @@ export default function AdminCommunity() {
                                                                     </button>
                                                                 </div>
 
-                                                                {/* Reply Input */}
-                                                                {replyingTo?.commentId === comment._id && (
+                                                                {/* Top level Reply Input */}
+                                                                {activeReplyInput === comment._id && (
                                                                     <div className="mt-2 flex gap-2 animate-fade-in pl-2">
                                                                         <img
                                                                             src={currentUser?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                                                                             className="w-6 h-6 rounded-full object-cover"
                                                                         />
-                                                                        <form onSubmit={(e) => handleAddReply(e, post._id, comment._id)} className="flex-1 flex gap-2 relative">
+                                                                        <form onSubmit={(e) => handleAddReply(e, post._id, comment._id, null)} className="flex-1 flex gap-2 relative">
                                                                             {showMentionSuggestions.show && showMentionSuggestions.id === comment._id && renderMentionsPanel("bottom-full mb-2")}
                                                                             <input
                                                                                 type="text"
@@ -1093,7 +1239,7 @@ export default function AdminCommunity() {
                                                                             <div className="flex gap-1">
                                                                                 <button
                                                                                     type="button"
-                                                                                    onClick={() => { setReplyingTo(null); setReplyText(''); }}
+                                                                                    onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); }}
                                                                                     className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
                                                                                 >
                                                                                     Cancel
@@ -1110,50 +1256,156 @@ export default function AdminCommunity() {
                                                                     </div>
                                                                 )}
 
-                                                                {/* Nested Replies */}
+                                                                {/* Infinite Recursive Replies */}
                                                                 {expandedReplies[comment._id] && comment.replies && (
                                                                     <div className="mt-2 space-y-3 pl-4 border-l-2 border-gray-100 ml-2">
-                                                                        {comment.replies.map((reply, rIdx) => (
-                                                                            <div key={rIdx} className="flex gap-2 relative group/reply">
-                                                                                <img
-                                                                                    src={reply.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                                                                                    className="w-6 h-6 rounded-full object-cover mt-1"
-                                                                                />
-                                                                                <div className="flex-1">
-                                                                                    <div className="bg-gray-50/50 p-2 rounded-lg relative">
-                                                                                        <div className="flex items-center gap-2 mb-1">
-                                                                                            <span className="text-xs font-bold text-gray-800">{reply.user?.username}</span>
-                                                                                            <span className="text-[10px] text-gray-400">
-                                                                                                {new Date(reply.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
-                                                                                            </span>
-                                                                                        </div>
-                                                                                        <p className="text-xs text-gray-700">{formatContent(reply.content)}</p>
-                                                                                        <div className="flex items-center gap-3 mt-1.5">
-                                                                                            <button
-                                                                                                onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
-                                                                                                className={`flex items-center gap-1 text-[10px] font-semibold ${reply.likes?.includes(currentUser?._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
-                                                                                            >
-                                                                                                <FaThumbsUp /> {reply.likes?.length || 0}
-                                                                                            </button>
-                                                                                            <button
-                                                                                                onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
-                                                                                                className={`flex items-center gap-1 text-[10px] font-semibold ${reply.dislikes?.includes(currentUser?._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
-                                                                                            >
-                                                                                                <FaThumbsDown /> {reply.dislikes?.length || 0}
-                                                                                            </button>
-                                                                                        </div>
+                                                                        {(() => {
+                                                                            const renderReplies = (parentId) => {
+                                                                                const currentReplies = comment.replies.filter(r => (r.parentReplyId || null) === (parentId || null));
+                                                                                if (!currentReplies.length) return null;
 
-                                                                                        {/* Admin Delete Reply Button */}
-                                                                                        <button
-                                                                                            onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
-                                                                                            className="absolute right-1 top-1 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
-                                                                                        >
-                                                                                            <FaTimes size={10} />
-                                                                                        </button>
+                                                                                return currentReplies.map(reply => (
+                                                                                    <div key={reply._id} className="flex gap-2 relative group/reply flex-col mb-2">
+                                                                                        <div className="flex gap-2">
+                                                                                            <img
+                                                                                                src={reply.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                                                                                className="w-6 h-6 rounded-full object-cover mt-1"
+                                                                                            />
+                                                                                            <div className="flex-1">
+                                                                                                <div className="bg-gray-50/50 p-2 rounded-lg relative">
+                                                                                                    <div className="flex items-center gap-2 mb-1">
+                                                                                                        <span className="text-xs font-bold text-gray-800">{reply.user?.username}</span>
+                                                                                                        <span className="text-[10px] text-gray-400">
+                                                                                                            {new Date(reply.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
+                                                                                                        </span>
+                                                                                                    </div>
+                                                                                                    {editingContent.id === reply._id && editingContent.type === 'reply' ? (
+                                                                                                        <form onSubmit={(e) => handleUpdateReply(e, post._id, comment._id, reply._id)} className="w-full mb-2">
+                                                                                                            <textarea
+                                                                                                                value={editingContent.content}
+                                                                                                                onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
+                                                                                                                className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-blue-500 min-h-[50px]"
+                                                                                                                autoFocus
+                                                                                                            />
+                                                                                                            <div className="flex justify-end gap-2 mt-1">
+                                                                                                                <button
+                                                                                                                    type="button"
+                                                                                                                    onClick={() => setEditingContent({ type: null, id: null, content: '' })}
+                                                                                                                    className="text-[10px] text-gray-500 hover:text-gray-700 px-2 py-1"
+                                                                                                                >
+                                                                                                                    Cancel
+                                                                                                                </button>
+                                                                                                                <button
+                                                                                                                    type="submit"
+                                                                                                                    className="text-[10px] bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700"
+                                                                                                                >
+                                                                                                                    Save
+                                                                                                                </button>
+                                                                                                            </div>
+                                                                                                        </form>
+                                                                                                    ) : (
+                                                                                                        <p className="text-xs text-gray-700">{formatContent(reply.content)}</p>
+                                                                                                    )}
+
+                                                                                                    {/* Report Indicator */}
+                                                                                                    {reply.reports && reply.reports.length > 0 && (
+                                                                                                        <div className="mt-1 bg-red-50 border border-red-100 p-1 rounded text-[10px] text-red-600 flex items-center gap-1">
+                                                                                                            <FaExclamationTriangle />
+                                                                                                            Reported: {reply.reports.length}
+                                                                                                            <span className="text-gray-500 truncate">- {reply.reports[reply.reports.length - 1].reason}</span>
+                                                                                                        </div>
+                                                                                                    )}
+
+                                                                                                    <div className="flex items-center gap-3 mt-1.5">
+                                                                                                        <button
+                                                                                                            onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
+                                                                                                            className={`flex items-center gap-1 text-[10px] font-semibold ${reply.likes?.includes(currentUser?._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+                                                                                                        >
+                                                                                                            <FaThumbsUp /> {reply.likes?.length || 0}
+                                                                                                        </button>
+                                                                                                        <button
+                                                                                                            onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
+                                                                                                            className={`flex items-center gap-1 text-[10px] font-semibold ${reply.dislikes?.includes(currentUser?._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                                                                                        >
+                                                                                                            <FaThumbsDown /> {reply.dislikes?.length || 0}
+                                                                                                        </button>
+                                                                                                        {/* Admin Reply Button */}
+                                                                                                        <button
+                                                                                                            onClick={() => {
+                                                                                                                setActiveReplyInput(reply._id);
+                                                                                                                setReplyingTo({ postId: post._id, commentId: comment._id, userId: reply.user._id, username: reply.user.username });
+                                                                                                            }}
+                                                                                                            className="text-[10px] font-semibold text-gray-500 hover:text-blue-600"
+                                                                                                        >
+                                                                                                            Reply
+                                                                                                        </button>
+                                                                                                    </div>
+
+                                                                                                    {/* Admin Edit Reply Button */}
+                                                                                                    <button
+                                                                                                        onClick={() => setEditingContent({ type: 'reply', id: reply._id, content: reply.content })}
+                                                                                                        className="absolute right-6 top-1 p-1 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
+                                                                                                        title="Edit Reply (Admin)"
+                                                                                                    >
+                                                                                                        <FaEdit size={10} />
+                                                                                                    </button>
+
+                                                                                                    {/* Admin Delete Reply Button */}
+                                                                                                    <button
+                                                                                                        onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
+                                                                                                        className="absolute right-1 top-1 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
+                                                                                                        title="Delete Reply (Admin)"
+                                                                                                    >
+                                                                                                        <FaTimes size={10} />
+                                                                                                    </button>
+                                                                                                </div>
+                                                                                                {/* Reply Input for Nested Reply */}
+                                                                                                {activeReplyInput === reply._id && (
+                                                                                                    <div className="mt-2 flex gap-2 animate-fade-in pl-2">
+                                                                                                        <img
+                                                                                                            src={currentUser?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
+                                                                                                            className="w-6 h-6 rounded-full object-cover"
+                                                                                                        />
+                                                                                                        <form onSubmit={(e) => handleAddReply(e, post._id, comment._id, reply._id)} className="flex-1 flex gap-2 relative">
+                                                                                                            {showMentionSuggestions.show && showMentionSuggestions.id === comment._id && renderMentionsPanel("bottom-full mb-2")}
+                                                                                                            <input
+                                                                                                                type="text"
+                                                                                                                autoFocus
+                                                                                                                value={replyText}
+                                                                                                                onChange={(e) => handleInputChange(e, 'reply', comment._id)}
+                                                                                                                placeholder={`Replying to ${reply.user?.username}...`}
+                                                                                                                className="flex-1 bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
+                                                                                                            />
+                                                                                                            <div className="flex gap-1">
+                                                                                                                <button
+                                                                                                                    type="button"
+                                                                                                                    onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); }}
+                                                                                                                    className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
+                                                                                                                >
+                                                                                                                    Cancel
+                                                                                                                </button>
+                                                                                                                <button
+                                                                                                                    type="submit"
+                                                                                                                    disabled={!replyText.trim()}
+                                                                                                                    className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full disabled:opacity-50"
+                                                                                                                >
+                                                                                                                    Reply
+                                                                                                                </button>
+                                                                                                            </div>
+                                                                                                        </form>
+                                                                                                    </div>
+                                                                                                )}
+                                                                                                {/* Recursion */}
+                                                                                                <div className="ml-4 border-l-2 border-gray-100 pl-2 mt-2">
+                                                                                                    {renderReplies(reply._id)}
+                                                                                                </div>
+                                                                                            </div>
+                                                                                        </div>
                                                                                     </div>
-                                                                                </div>
-                                                                            </div>
-                                                                        ))}
+                                                                                ));
+                                                                            };
+                                                                            return renderReplies(null);
+                                                                        })()}
                                                                     </div>
                                                                 )}
                                                             </div>

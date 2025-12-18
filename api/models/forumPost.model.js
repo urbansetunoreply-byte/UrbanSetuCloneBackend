@@ -23,9 +23,20 @@ const forumCommentSchema = new mongoose.Schema({
     replies: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User', required: true },
         replyToUser: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        parentReplyId: { type: mongoose.Schema.Types.ObjectId }, // For infinite nesting
         content: { type: String, required: true },
         likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
         dislikes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+        reports: [{
+            user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+            reason: { type: String, required: true },
+            createdAt: { type: Date, default: Date.now }
+        }],
+        createdAt: { type: Date, default: Date.now }
+    }],
+    reports: [{
+        user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+        reason: { type: String, required: true },
         createdAt: { type: Date, default: Date.now }
     }]
 }, { timestamps: true });

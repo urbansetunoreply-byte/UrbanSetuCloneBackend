@@ -45,7 +45,11 @@ export const getPosts = async (req, res, next) => {
             ];
         }
         if (category === 'Reported') {
-            query.reports = { $exists: true, $not: { $size: 0 } };
+            query.$or = [
+                { reports: { $exists: true, $not: { $size: 0 } } },
+                { 'comments.reports': { $exists: true, $not: { $size: 0 } } },
+                { 'comments.replies.reports': { $exists: true, $not: { $size: 0 } } }
+            ];
         } else if (category && category !== 'All') {
             query.category = category;
         }
@@ -228,6 +232,32 @@ export const deleteComment = async (req, res, next) => {
     }
 };
 
+export const updateComment = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        if (req.user.id !== comment.user.toString() && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'You are not allowed to edit this comment'));
+        }
+
+        comment.content = req.body.content;
+        await post.save();
+
+        // Re-fetch to populate user (and ensure fresh data)
+        const updatedPost = await ForumPost.findById(req.params.id).populate('comments.user', 'username avatar');
+        const updatedComment = updatedPost.comments.id(req.params.commentId);
+
+        req.app.get('io').emit('forum:commentUpdated', { postId: req.params.id, comment: updatedComment });
+        res.status(200).json(updatedComment);
+    } catch (error) {
+        next(error);
+    }
+};
+
 export const addReply = async (req, res, next) => {
     try {
         const post = await ForumPost.findById(req.params.id);
@@ -240,10 +270,11 @@ export const addReply = async (req, res, next) => {
         const comment = post.comments.id(req.params.commentId);
         if (!comment) return next(errorHandler(404, 'Comment not found'));
 
-        const { content, replyToUser } = req.body;
+        const { content, replyToUser, parentReplyId } = req.body;
         const newReply = {
             user: req.user.id,
             replyToUser: replyToUser || null,
+            parentReplyId: parentReplyId || null,
             content
         };
 
@@ -284,6 +315,37 @@ export const deleteReply = async (req, res, next) => {
         await post.save();
         req.app.get('io').emit('forum:replyDeleted', { postId: req.params.id, commentId: req.params.commentId, replyId: req.params.replyId });
         res.status(200).json('Reply deleted');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const updateReply = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        const reply = comment.replies.id(req.params.replyId);
+        if (!reply) return next(errorHandler(404, 'Reply not found'));
+
+        if (req.user.id !== reply.user.toString() && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'Not authorized'));
+        }
+
+        reply.content = req.body.content;
+        await post.save();
+
+        const updatedPost = await ForumPost.findById(req.params.id)
+            .populate('comments.replies.user', 'username avatar');
+
+        const updatedComment = updatedPost.comments.id(req.params.commentId);
+        const updatedReply = updatedComment.replies.id(req.params.replyId);
+
+        req.app.get('io').emit('forum:replyUpdated', { postId: req.params.id, commentId: req.params.commentId, reply: updatedReply });
+        res.status(200).json(updatedReply);
     } catch (error) {
         next(error);
     }
@@ -478,6 +540,53 @@ export const reportPost = async (req, res, next) => {
         });
         await post.save();
         res.status(200).json('Post reported successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const reportComment = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        const existingReport = comment.reports?.find(r => r.user.toString() === req.user.id);
+        if (existingReport) return next(errorHandler(400, 'You have already reported this comment'));
+
+        comment.reports.push({
+            user: req.user.id,
+            reason: req.body.reason || 'Spam/Inappropriate'
+        });
+        await post.save();
+        res.status(200).json('Comment reported successfully');
+    } catch (error) {
+        next(error);
+    }
+};
+
+export const reportReply = async (req, res, next) => {
+    try {
+        const post = await ForumPost.findById(req.params.id);
+        if (!post) return next(errorHandler(404, 'Post not found'));
+
+        const comment = post.comments.id(req.params.commentId);
+        if (!comment) return next(errorHandler(404, 'Comment not found'));
+
+        const reply = comment.replies.id(req.params.replyId);
+        if (!reply) return next(errorHandler(404, 'Reply not found'));
+
+        const existingReport = reply.reports?.find(r => r.user.toString() === req.user.id);
+        if (existingReport) return next(errorHandler(400, 'You have already reported this reply'));
+
+        reply.reports.push({
+            user: req.user.id,
+            reason: req.body.reason || 'Spam/Inappropriate'
+        });
+        await post.save();
+        res.status(200).json('Reply reported successfully');
     } catch (error) {
         next(error);
     }

@@ -19,7 +19,11 @@ import {
     togglePin,
     lockPost,
     reportPost,
-    getSuggestions
+    reportComment,
+    reportReply,
+    getSuggestions,
+    updateComment,
+    updateReply
 } from '../controllers/forum.controller.js';
 
 const router = express.Router();
@@ -43,9 +47,13 @@ router.post('/comment/:id', verifyToken, addComment);
 router.delete('/comment/:id/:commentId', verifyToken, deleteComment);
 router.post('/comment/:id/:commentId/reply', verifyToken, addReply);
 router.delete('/comment/:id/:commentId/reply/:replyId', verifyToken, deleteReply);
+router.put('/comment/:id/:commentId', verifyToken, updateComment);
+router.put('/comment/:id/:commentId/reply/:replyId', verifyToken, updateReply);
 router.put('/pin/:id', verifyToken, togglePin);
 router.put('/lock/:id', verifyToken, lockPost);
 router.post('/report/:id', verifyToken, reportPost);
+router.post('/report/comment/:id/:commentId', verifyToken, reportComment);
+router.post('/report/reply/:id/:commentId/:replyId', verifyToken, reportReply);
 
 
 export default router;
