@@ -239,37 +239,60 @@ export default function AdminCommunity() {
         });
     };
 
-    const handlePinPost = async (postId) => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/pin/${postId}`, {
-                method: 'PUT',
-                credentials: 'include'
-            });
-            if (res.ok) {
-                const updatedPost = await res.json();
-                setPosts(posts.map(p => p._id === postId ? { ...p, isPinned: updatedPost.isPinned } : p));
-                toast.success(updatedPost.isPinned ? 'Post pinned successfully' : 'Post unpinned successfully');
+    const handlePinPost = (postId, isPinned) => {
+        setConfirmModal({
+            isOpen: true,
+            title: isPinned ? 'Unpin Discussion' : 'Pin Discussion',
+            message: isPinned
+                ? 'Are you sure you want to unpin this discussion? It will no longer appear at the top of the feed.'
+                : 'Are you sure you want to pin this discussion? It will appear at the top of the feed for better visibility.',
+            confirmText: isPinned ? 'Unpin' : 'Pin',
+            isDestructive: false,
+            onConfirm: async () => {
+                try {
+                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/pin/${postId}`, {
+                        method: 'PUT',
+                        credentials: 'include'
+                    });
+                    if (res.ok) {
+                        const updatedPost = await res.json();
+                        setPosts(posts.map(p => p._id === postId ? { ...p, isPinned: updatedPost.isPinned } : p));
+                        toast.success(updatedPost.isPinned ? 'Post pinned successfully' : 'Post unpinned successfully');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    toast.error('Failed to update pin status');
+                }
             }
-        } catch (error) {
-            console.error(error);
-        }
+        });
     };
 
-    const handleLockPost = async (postId) => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/lock/${postId}`, {
-                method: 'PUT',
-                credentials: 'include'
-            });
-            if (res.ok) {
-                const updatedPost = await res.json();
-                setPosts(posts.map(p => p._id === postId ? { ...p, isLocked: updatedPost.isLocked } : p));
-                toast.success(updatedPost.isLocked ? 'Post locked' : 'Post unlocked');
+    const handleLockPost = (postId, isLocked) => {
+        setConfirmModal({
+            isOpen: true,
+            title: isLocked ? 'Unlock Discussion' : 'Lock Discussion',
+            message: isLocked
+                ? 'Are you sure you want to unlock this discussion? Users will be able to comment and reply again.'
+                : 'Are you sure you want to lock this discussion? Regular users will no longer be able to add comments or replies.',
+            confirmText: isLocked ? 'Unlock' : 'Lock',
+            isDestructive: !isLocked,
+            onConfirm: async () => {
+                try {
+                    const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/forum/lock/${postId}`, {
+                        method: 'PUT',
+                        credentials: 'include'
+                    });
+                    if (res.ok) {
+                        const updatedPost = await res.json();
+                        setPosts(posts.map(p => p._id === postId ? { ...p, isLocked: updatedPost.isLocked } : p));
+                        toast.success(updatedPost.isLocked ? 'Post locked' : 'Post unlocked');
+                    }
+                } catch (error) {
+                    console.error(error);
+                    toast.error('Failed to update lock status');
+                }
             }
-        } catch (error) {
-            console.error(error);
-            toast.error('Failed to update lock status');
-        }
+        });
     };
 
     const toggleComments = (postId) => {
@@ -593,14 +616,14 @@ export default function AdminCommunity() {
                                                 {post.category}
                                             </span>
                                             <button
-                                                onClick={() => handlePinPost(post._id)}
+                                                onClick={() => handlePinPost(post._id, post.isPinned)}
                                                 className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${post.isPinned ? 'text-blue-600' : 'text-gray-400'}`}
                                                 title={post.isPinned ? "Unpin Post" : "Pin Post"}
                                             >
                                                 <FaMapMarkerAlt className="transform rotate-45" />
                                             </button>
                                             <button
-                                                onClick={() => handleLockPost(post._id)}
+                                                onClick={() => handleLockPost(post._id, post.isLocked)}
                                                 className={`p-2 rounded-full hover:bg-gray-100 transition-colors ${post.isLocked ? 'text-orange-500' : 'text-gray-400'}`}
                                                 title={post.isLocked ? "Unlock Post" : "Lock Post"}
                                             >
