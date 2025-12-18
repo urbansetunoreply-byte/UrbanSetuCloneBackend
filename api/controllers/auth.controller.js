@@ -441,11 +441,40 @@ export const Google = async (req, res, next) => {
                 path: '/'
             });
 
-            // LOGIN SUCCESSFUL - Send email notifications with retry logic
+            // Get session info
             const userAgent = req.get('User-Agent');
             const device = getDeviceInfo(userAgent);
-            const location = getLocationFromIP(req.ip || req.connection.remoteAddress);
-            const suspiciousCheck = await checkSuspiciousLogin(validUser._id, req.ip, device);
+            const ip = req.ip || req.connection.remoteAddress;
+            const location = getLocationFromIP(ip);
+
+            // Check concurrency & suspicious login
+            const concurrentInfo = detectConcurrentLogins(validUser._id, session.sessionId);
+            const suspiciousCheck = await checkSuspiciousLogin(validUser._id, ip, device);
+
+            // Log session action (Audit Log)
+            await logSessionAction(
+                validUser._id,
+                'login',
+                session.sessionId,
+                ip,
+                device,
+                location,
+                `Successful Google login with ${concurrentInfo.activeSessions} concurrent sessions`,
+                suspiciousCheck.isSuspicious,
+                suspiciousCheck.reason
+            );
+
+            // Log security event
+            logSecurityEvent('successful_google_login', {
+                email: validUser.email,
+                userId: validUser._id,
+                ip,
+                userAgent,
+                sessionId: session.sessionId,
+                concurrentLogins: concurrentInfo.activeSessions
+            });
+
+            // LOGIN SUCCESSFUL - Send email notifications with retry logic
 
             // Send emails AFTER login response (async, non-blocking)
             (async () => {
@@ -575,6 +604,34 @@ export const Google = async (req, res, next) => {
                 path: '/'
             });
 
+            // Get session info
+            const userAgent = req.get('User-Agent');
+            const device = getDeviceInfo(userAgent);
+            const ip = req.ip || req.connection.remoteAddress;
+            const location = getLocationFromIP(ip);
+
+            // Log session action (Audit Log)
+            await logSessionAction(
+                newUser._id,
+                'login',
+                session.sessionId,
+                ip,
+                device,
+                location,
+                `Successful Google signup/login`,
+                false,
+                null
+            );
+
+            // Log security event
+            logSecurityEvent('successful_google_signup', {
+                email: newUser.email,
+                userId: newUser._id,
+                ip,
+                userAgent,
+                sessionId: session.sessionId
+            });
+
             // Send welcome email for new Google sign-in users
             try {
                 await sendWelcomeEmail(newUser.email, {
@@ -592,13 +649,11 @@ export const Google = async (req, res, next) => {
 
             // Send new login email (first login) for Google sign-in users
             try {
-                const userAgent = req.get('User-Agent');
-                const device = getDeviceInfo(userAgent);
-                const location = getLocationFromIP(req.ip || req.connection.remoteAddress);
+                // Variables userAgent, device, location, ip are already defined above
                 await sendNewLoginEmail(
                     newUser.email,
                     device,
-                    req.ip,
+                    ip,
                     location,
                     new Date()
                 );
