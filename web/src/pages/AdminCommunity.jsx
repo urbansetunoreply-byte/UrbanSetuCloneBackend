@@ -1783,6 +1783,28 @@ export default function AdminCommunity() {
                                         placeholder="Share details... (Type @ to mention property)"
                                         required
                                     />
+                                    <button
+                                        type="button"
+                                        onClick={() => setShowEmojiPicker(prev => ({
+                                            show: prev.type === 'post' ? !prev.show : true,
+                                            type: 'post',
+                                            id: 'new-post'
+                                        }))}
+                                        className="absolute right-2 bottom-2 p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                        title="Add Emoji"
+                                    >
+                                        <FaSmile className="text-lg" />
+                                    </button>
+                                    {showEmojiPicker.show && showEmojiPicker.type === 'post' && (
+                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
+                                            <EmojiPicker
+                                                onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'post', 'new-post')}
+                                                width={300}
+                                                height={400}
+                                                previewConfig={{ showPreview: false }}
+                                            />
+                                        </div>
+                                    )}
                                 </div>
                             </div>
 

@@ -1598,6 +1598,28 @@ export default function Community() {
                                                             onChange={(e) => handleInputChange(e, 'comment', post._id)}
                                                         />
                                                         <button
+                                                            type="button"
+                                                            onClick={() => setShowEmojiPicker(prev => ({
+                                                                show: prev.type === 'comment' && prev.id === post._id ? !prev.show : true,
+                                                                type: 'comment',
+                                                                id: post._id
+                                                            }))}
+                                                            className="absolute right-9 top-1/2 -translate-y-1/2 p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                                                            title="Add Emoji"
+                                                        >
+                                                            <FaSmile className="text-base" />
+                                                        </button>
+                                                        {showEmojiPicker.show && showEmojiPicker.type === 'comment' && showEmojiPicker.id === post._id && (
+                                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
+                                                                <EmojiPicker
+                                                                    onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'comment', post._id)}
+                                                                    width={300}
+                                                                    height={400}
+                                                                    previewConfig={{ showPreview: false }}
+                                                                />
+                                                            </div>
+                                                        )}
+                                                        <button
                                                             type="submit"
                                                             disabled={!commentText[post._id]?.trim()}
                                                             className="absolute right-1 top-1/2 -translate-y-1/2 p-1.5 bg-blue-600 text-white rounded-full hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
@@ -1733,6 +1755,28 @@ export default function Community() {
                                             placeholder="Share details... Use @ to mention property"
                                             required
                                         />
+                                        <button
+                                            type="button"
+                                            onClick={() => setShowEmojiPicker(prev => ({
+                                                show: prev.type === 'post' ? !prev.show : true,
+                                                type: 'post',
+                                                id: 'new-post'
+                                            }))}
+                                            className="absolute right-2 bottom-2 p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                            title="Add Emoji"
+                                        >
+                                            <FaSmile className="text-lg" />
+                                        </button>
+                                        {showEmojiPicker.show && showEmojiPicker.type === 'post' && (
+                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
+                                                <EmojiPicker
+                                                    onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'post', 'new-post')}
+                                                    width={300}
+                                                    height={400}
+                                                    previewConfig={{ showPreview: false }}
+                                                />
+                                            </div>
+                                        )}
                                     </div>
 
                                     <div className="flex justify-end pt-4">
