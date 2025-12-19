@@ -126,6 +126,7 @@ const AdminCommunity = lazy(() => import('./pages/AdminCommunity'));
 const Contact = lazy(() => import('./pages/Contact'));
 const CookiePolicy = lazy(() => import('./pages/CookiePolicy'));
 const PayMonthlyRent = lazy(() => import('./pages/PayMonthlyRent'));
+const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 
 // Loading component
 const LoadingSpinner = () => (
@@ -735,6 +736,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/view/:documentId" element={<ViewDocument />} />
               <Route path="/user/view-chat/preview" element={<ViewChatDocument />} />
               <Route path="/user/community" element={<Community />} />
+              <Route path="/user/leaderboard" element={<Leaderboard />} />
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/ai" element={<Navigate to="/user/ai" />} />

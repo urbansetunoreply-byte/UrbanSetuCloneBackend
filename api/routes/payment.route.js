@@ -1206,6 +1206,36 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     // Send rental payment notifications if this is a monthly rent payment
     if (payment.paymentType === 'monthly_rent' && payment.contractId) {
       try {
+        // --- Award SetuCoins Reward ---
+        const CoinService = (await import('../services/coinService.js')).default;
+        let earnedCoins = 0;
+        // Standardize Earning Rates: INR 1000 = 1 Coin | USD 12 = 1 Coin
+        if (payment.currency === 'USD') {
+          earnedCoins = Math.floor(payment.amount / 12);
+        } else {
+          // Default to INR (payment.currency === 'INR' or undefined)
+          earnedCoins = Math.floor(payment.amount / 1000);
+        }
+
+        if (earnedCoins > 0) {
+          try {
+            await CoinService.credit({
+              userId: payment.userId,
+              amount: earnedCoins,
+              source: 'rent_payment_reward',
+              description: `Reward for rent payment (${payment.rentMonth}/${payment.rentYear})`,
+              referenceId: payment._id,
+              referenceModel: 'Payment'
+            });
+            // Update Streak
+            await CoinService.updateRentStreak(payment.userId, payment.completedAt || new Date());
+            console.log(`✅ Awarded ${earnedCoins} SetuCoins to user ${payment.userId}`);
+          } catch (coinError) {
+            console.error("Error crediting SetuCoins:", coinError);
+          }
+        }
+        // ------------------------------
+
         const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
         const contract = await RentLockContract.findById(payment.contractId)
           .populate('listingId', 'name address')

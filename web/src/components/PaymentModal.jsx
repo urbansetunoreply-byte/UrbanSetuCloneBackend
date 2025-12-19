@@ -1260,6 +1260,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                     </div>
 
                     {/* Completion Reward Preview */}
+                    {/* Completion Reward Preview */}
                     {preferredMethod === 'razorpay' && paymentData?.payment?.amount >= 1000 && (
                       <div className="mt-3 bg-yellow-100 rounded-lg p-2 flex items-center justify-between border border-yellow-200">
                         <span className="text-xs font-semibold text-yellow-800 flex items-center gap-1">
@@ -1267,6 +1268,16 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                         </span>
                         <span className="text-sm font-bold text-yellow-700">
                           {Math.floor(paymentData?.payment?.amount / 1000)} SetuCoins
+                        </span>
+                      </div>
+                    )}
+                    {preferredMethod === 'paypal' && paymentData?.payment?.amount >= 12 && (
+                      <div className="mt-3 bg-yellow-100 rounded-lg p-2 flex items-center justify-between border border-yellow-200">
+                        <span className="text-xs font-semibold text-yellow-800 flex items-center gap-1">
+                          <FaCoins className="text-yellow-600" /> You will earn:
+                        </span>
+                        <span className="text-sm font-bold text-yellow-700">
+                          {Math.floor(paymentData?.payment?.amount / 12)} SetuCoins
                         </span>
                       </div>
                     )}

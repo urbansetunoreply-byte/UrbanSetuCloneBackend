@@ -209,6 +209,32 @@ class CoinService {
     }
 
     /**
+     * Get Leaderboard
+     */
+    async getLeaderboard(limit = 10) {
+        const users = await User.find({ 'gamification.totalCoinsEarned': { $gt: 0 } })
+            .select('username firstName lastName avatar gamification.totalCoinsEarned gamification.currentStreak')
+            .sort({ 'gamification.totalCoinsEarned': -1 })
+            .limit(limit);
+
+        return users.map((u, index) => {
+            const name = u.username || 'Anonymous';
+            const maskedName = name.length > 3
+                ? `${name.substring(0, 3)}***`
+                : `${name}***`;
+
+            return {
+                rank: index + 1,
+                userId: u._id, // Ideally shouldn't expose ID, but rank tracking might need it. Masking name is key.
+                name: maskedName,
+                avatar: u.avatar,
+                totalCoins: u.gamification?.totalCoinsEarned || 0,
+                streak: u.gamification?.currentStreak || 0
+            };
+        });
+    }
+
+    /**
      * Get transaction history
      */
     async getHistory(userId, page = 1, limit = 10) {

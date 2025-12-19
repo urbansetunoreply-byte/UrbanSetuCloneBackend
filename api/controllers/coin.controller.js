@@ -30,6 +30,19 @@ export const getHistory = async (req, res, next) => {
 };
 
 /**
+ * Get Global Leaderboard (Public)
+ */
+export const getLeaderboard = async (req, res, next) => {
+    try {
+        const limit = parseInt(req.query.limit) || 10;
+        const leaderboard = await CoinService.getLeaderboard(limit);
+        res.status(200).json({ success: true, leaderboard });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Admin: Get any user's coin balance
  */
 export const getUserBalance = async (req, res, next) => {
