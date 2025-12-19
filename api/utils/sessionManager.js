@@ -1,4 +1,5 @@
 import jwt from 'jsonwebtoken';
+import geoip from 'geoip-lite';
 import { generateTokenPair } from './jwtUtils.js';
 import User from '../models/user.model.js';
 import SessionAuditLog from '../models/sessionAuditLog.model.js';
@@ -19,18 +20,18 @@ setInterval(() => {
 // Create a new session
 export const createSession = (userId, req) => {
     const sessionId = jwt.sign(
-        { 
-            userId, 
+        {
+            userId,
             type: 'session',
             timestamp: Date.now()
-        }, 
-        process.env.JWT_TOKEN, 
+        },
+        process.env.JWT_TOKEN,
         { expiresIn: '7d' }
     );
-    
+
     const ip = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent');
-    
+
     const session = {
         sessionId,
         userId,
@@ -41,9 +42,9 @@ export const createSession = (userId, req) => {
         lastActivity: Date.now(),
         isActive: true
     };
-    
+
     activeSessions.set(sessionId, session);
-    
+
     return session;
 };
 
@@ -102,13 +103,13 @@ export const revokeAllUserSessions = (userId) => {
 export const isSessionValid = (sessionId) => {
     const session = activeSessions.get(sessionId);
     if (!session || !session.isActive) return false;
-    
+
     const now = Date.now();
     if (now > session.expiresAt) {
         activeSessions.delete(sessionId);
         return false;
     }
-    
+
     return true;
 };
 
@@ -121,7 +122,7 @@ export const getSessionInfo = (sessionId) => {
 export const detectConcurrentLogins = (userId, currentSessionId) => {
     const userSessions = getUserSessions(userId);
     const activeSessions = userSessions.filter(s => s.sessionId !== currentSessionId);
-    
+
     if (activeSessions.length > 0) {
         return {
             hasConcurrentLogins: true,
@@ -129,7 +130,7 @@ export const detectConcurrentLogins = (userId, currentSessionId) => {
             sessions: activeSessions
         };
     }
-    
+
     return {
         hasConcurrentLogins: false,
         activeSessions: 0,
@@ -147,10 +148,10 @@ const SESSION_LIMITS = {
 // Get detailed browser info from user agent
 export const getBrowserInfo = (userAgent) => {
     if (!userAgent) return { name: 'Unknown', version: '' };
-    
+
     let browserName = 'Unknown';
     let browserVersion = '';
-    
+
     // Detect browser (order matters - check specific browsers first, then generic ones)
     // Check for specific Chromium-based browsers first (before Chrome)
     if (userAgent.includes('Brave/') || userAgent.includes('Brave')) {
@@ -195,7 +196,7 @@ export const getBrowserInfo = (userAgent) => {
     } else if (userAgent.includes('Chromium/')) {
         browserName = 'Chromium';
         browserVersion = userAgent.match(/Chromium\/(\d+)/)?.[1] || '';
-    // Check for mainstream browsers (Microsoft Edge before Chrome)
+        // Check for mainstream browsers (Microsoft Edge before Chrome)
     } else if (userAgent.includes('Edg/')) {
         browserName = 'Edge';
         browserVersion = userAgent.match(/Edg\/(\d+)/)?.[1] || '';
@@ -224,45 +225,45 @@ export const getBrowserInfo = (userAgent) => {
         browserName = 'Internet Explorer';
         browserVersion = userAgent.match(/(?:MSIE |rv:)(\d+)/)?.[1] || '';
     }
-    
+
     return { name: browserName, version: browserVersion };
 };
 
 // Get operating system from user agent
 export const getOSInfo = (userAgent) => {
     if (!userAgent) return 'Unknown';
-    
+
     if (userAgent.includes('Windows NT 10.0')) return 'Windows 10/11';
     if (userAgent.includes('Windows NT 6.3')) return 'Windows 8.1';
     if (userAgent.includes('Windows NT 6.2')) return 'Windows 8';
     if (userAgent.includes('Windows NT 6.1')) return 'Windows 7';
     if (userAgent.includes('Windows')) return 'Windows';
-    
+
     if (userAgent.includes('Mac OS X')) {
         const version = userAgent.match(/Mac OS X (\d+[._]\d+)/)?.[1]?.replace('_', '.') || '';
         return version ? `macOS ${version}` : 'macOS';
     }
-    
+
     if (userAgent.includes('Android')) {
         const version = userAgent.match(/Android (\d+\.?\d*)/)?.[1] || '';
         return version ? `Android ${version}` : 'Android';
     }
-    
+
     if (userAgent.includes('iPhone') || userAgent.includes('iPad')) {
         const version = userAgent.match(/OS (\d+_\d+)/)?.[1]?.replace('_', '.') || '';
         return version ? `iOS ${version}` : 'iOS';
     }
-    
+
     if (userAgent.includes('Linux')) return 'Linux';
     if (userAgent.includes('CrOS')) return 'Chrome OS';
-    
+
     return 'Unknown';
 };
 
 // Get device type from user agent
 export const getDeviceType = (userAgent) => {
     if (!userAgent) return 'Unknown';
-    
+
     if (userAgent.includes('Mobile') || userAgent.includes('Android')) {
         return 'Mobile';
     } else if (userAgent.includes('Tablet') || userAgent.includes('iPad')) {
@@ -275,11 +276,11 @@ export const getDeviceType = (userAgent) => {
 // Get device info from user agent (keeping for backward compatibility)
 export const getDeviceInfo = (userAgent) => {
     if (!userAgent) return 'Unknown Device';
-    
+
     const browser = getBrowserInfo(userAgent);
     const os = getOSInfo(userAgent);
     const deviceType = getDeviceType(userAgent);
-    
+
     // Format: "Chrome 120 on Windows 10/11 (Desktop)"
     let deviceInfo = '';
     if (browser.name !== 'Unknown') {
@@ -291,22 +292,35 @@ export const getDeviceInfo = (userAgent) => {
     if (deviceType !== 'Unknown') {
         deviceInfo = deviceInfo ? `${deviceInfo} (${deviceType})` : deviceType;
     }
-    
+
     return deviceInfo || 'Unknown Device';
 };
 
 // Get location from IP (simplified - in production use a proper geo service)
+// Get location from IP using GeoIP
 export const getLocationFromIP = (ip) => {
     try {
         if (!ip) return 'Unknown';
         if (ip === '127.0.0.1' || ip === '::1') return 'Local Development';
+
         const pureIp = String(ip).split(',')[0].trim();
+
         if (pureIp.startsWith('10.') || pureIp.startsWith('192.168.') || pureIp.startsWith('172.16.') || pureIp.startsWith('172.31.')) {
             return 'Private Network';
         }
-        // Without external geo lookup, do not echo IP as location; show Unknown
+
+        const geo = geoip.lookup(pureIp);
+        if (geo) {
+            const parts = [];
+            if (geo.city) parts.push(geo.city);
+            if (geo.region) parts.push(geo.region);
+            if (geo.country) parts.push(geo.country);
+            return parts.join(', ');
+        }
+
         return 'Unknown';
-    } catch (_) {
+    } catch (e) {
+        console.error('GeoIP lookup error:', e);
         return 'Unknown';
     }
 };
@@ -314,20 +328,20 @@ export const getLocationFromIP = (ip) => {
 // Create a new session with enhanced tracking
 export const createEnhancedSession = async (userId, req) => {
     const sessionId = jwt.sign(
-        { 
-            userId, 
+        {
+            userId,
             type: 'session',
             timestamp: Date.now()
-        }, 
-        process.env.JWT_TOKEN, 
+        },
+        process.env.JWT_TOKEN,
         { expiresIn: '7d' }
     );
-    
+
     const ip = req.ip || req.connection.remoteAddress;
     const userAgent = req.get('User-Agent');
     const device = getDeviceInfo(userAgent);
     const location = getLocationFromIP(ip);
-    
+
     const session = {
         sessionId,
         userId,
@@ -340,9 +354,9 @@ export const createEnhancedSession = async (userId, req) => {
         lastActivity: Date.now(),
         isActive: true
     };
-    
+
     activeSessions.set(sessionId, session);
-    
+
     // Update user's active sessions in database
     await User.findByIdAndUpdate(userId, {
         $push: {
@@ -360,7 +374,7 @@ export const createEnhancedSession = async (userId, req) => {
             lastKnownDevice: device
         }
     });
-    
+
     return session;
 };
 
@@ -368,13 +382,13 @@ export const createEnhancedSession = async (userId, req) => {
 export const checkSuspiciousLogin = async (userId, ip, device) => {
     const user = await User.findById(userId);
     if (!user) return { isSuspicious: false };
-    
+
     const isSuspicious = (
         user.lastKnownIp && user.lastKnownIp !== ip
     ) || (
-        user.lastKnownDevice && user.lastKnownDevice !== device
-    );
-    
+            user.lastKnownDevice && user.lastKnownDevice !== device
+        );
+
     return {
         isSuspicious,
         reason: isSuspicious ? 'New IP or device detected' : null,
@@ -387,19 +401,19 @@ export const checkSuspiciousLogin = async (userId, ip, device) => {
 export const enforceSessionLimits = async (userId, userRole) => {
     const limit = SESSION_LIMITS[userRole] || SESSION_LIMITS.user;
     const user = await User.findById(userId);
-    
+
     if (!user || !user.activeSessions) return 0;
-    
+
     // Only enforce when exceeding the limit (not when equal)
     if (user.activeSessions.length > limit) {
         // Sort by lastActive ascending and remove the oldest sessions beyond the limit
-        const sortedSessions = user.activeSessions.sort((a, b) => 
+        const sortedSessions = user.activeSessions.sort((a, b) =>
             new Date(a.lastActive) - new Date(b.lastActive)
         );
-        
+
         const countToRemove = user.activeSessions.length - limit;
         const sessionsToRemove = sortedSessions.slice(0, countToRemove);
-        
+
         // Remove from database
         const sessionIdsToRemove = sessionsToRemove.map(s => s.sessionId);
         await User.findByIdAndUpdate(userId, {
@@ -409,12 +423,12 @@ export const enforceSessionLimits = async (userId, userRole) => {
                 }
             }
         });
-        
+
         // Remove from active sessions map
         sessionsToRemove.forEach(session => {
             revokeSession(session.sessionId);
         });
-        
+
         // Log session cleanup
         await SessionAuditLog.create({
             userId,
@@ -425,10 +439,10 @@ export const enforceSessionLimits = async (userId, userRole) => {
             device: 'system',
             additionalInfo: `Removed ${sessionsToRemove.length} old sessions to enforce ${limit} session limit`
         });
-        
+
         return sessionsToRemove.length;
     }
-    
+
     return 0;
 };
 
@@ -436,7 +450,7 @@ export const enforceSessionLimits = async (userId, userRole) => {
 export const logSessionAction = async (userId, action, sessionId, ip, device, location, additionalInfo = null, isSuspicious = false, suspiciousReason = null, performedBy = null) => {
     const user = await User.findById(userId);
     if (!user) return;
-    
+
     await SessionAuditLog.create({
         userId,
         action,
@@ -456,16 +470,16 @@ export const logSessionAction = async (userId, action, sessionId, ip, device, lo
 export const cleanupOldSessions = async (userId, userRole) => {
     const limit = SESSION_LIMITS[userRole] || SESSION_LIMITS.user;
     const user = await User.findById(userId);
-    
+
     if (!user || !user.activeSessions) return 0;
-    
+
     if (user.activeSessions.length > limit) {
         // Sort by last activity and keep only the most recent
-        const sortedSessions = user.activeSessions.sort((a, b) => 
+        const sortedSessions = user.activeSessions.sort((a, b) =>
             new Date(b.lastActive) - new Date(a.lastActive)
         );
         const sessionsToRevoke = sortedSessions.slice(limit);
-        
+
         // Remove from database
         const sessionIdsToRemove = sessionsToRevoke.map(s => s.sessionId);
         await User.findByIdAndUpdate(userId, {
@@ -475,26 +489,26 @@ export const cleanupOldSessions = async (userId, userRole) => {
                 }
             }
         });
-        
+
         // Remove from active sessions map
         sessionsToRevoke.forEach(session => {
             revokeSession(session.sessionId);
         });
-        
+
         // Log session cleanup
         await logSessionAction(
-            userId, 
-            'session_cleaned', 
-            'multiple', 
-            'system', 
-            'system', 
+            userId,
+            'session_cleaned',
+            'multiple',
+            'system',
+            'system',
             'system',
             `Removed ${sessionsToRevoke.length} old sessions to enforce ${limit} session limit`
         );
-        
+
         return sessionsToRevoke.length;
     }
-    
+
     return 0;
 };
 
@@ -502,7 +516,7 @@ export const cleanupOldSessions = async (userId, userRole) => {
 export const getUserActiveSessions = async (userId) => {
     const user = await User.findById(userId).select('activeSessions');
     if (!user || !user.activeSessions) return [];
-    
+
     return user.activeSessions.map(session => ({
         sessionId: session.sessionId,
         ip: session.ip,
@@ -521,7 +535,7 @@ export const revokeSessionFromDB = async (userId, sessionId) => {
             activeSessions: { sessionId }
         }
     });
-    
+
     // Also remove from active sessions map
     revokeSession(sessionId);
 };
@@ -530,19 +544,19 @@ export const revokeSessionFromDB = async (userId, sessionId) => {
 export const revokeAllUserSessionsFromDB = async (userId) => {
     const user = await User.findById(userId);
     if (!user || !user.activeSessions) return 0;
-    
+
     const sessionCount = user.activeSessions.length;
-    
+
     // Clear from database
     await User.findByIdAndUpdate(userId, {
         $set: { activeSessions: [] }
     });
-    
+
     // Clear from active sessions map
     user.activeSessions.forEach(session => {
         revokeSession(session.sessionId);
     });
-    
+
     return sessionCount;
 };
 
@@ -577,17 +591,17 @@ export const revokeAllOtherUserSessionsFromDB = async (userId, keepSessionId) =>
 // Update session activity in database
 export const updateSessionActivityInDB = async (userId, sessionId) => {
     await User.findOneAndUpdate(
-        { 
-            _id: userId, 
-            'activeSessions.sessionId': sessionId 
+        {
+            _id: userId,
+            'activeSessions.sessionId': sessionId
         },
-        { 
-            $set: { 
-                'activeSessions.$.lastActive': new Date() 
-            } 
+        {
+            $set: {
+                'activeSessions.$.lastActive': new Date()
+            }
         }
     );
-    
+
     // Also update in memory
     updateSessionActivity(sessionId);
 };

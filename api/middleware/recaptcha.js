@@ -21,9 +21,9 @@ const captchaRateLimit = (req, res, next) => {
     const now = Date.now();
     const windowMs = 60 * 1000; // 1 minute window
     const maxAttempts = 10; // max 10 captcha verifications per minute
-    
+
     const existing = captchaRateLimitStore.get(key);
-    
+
     if (!existing) {
         captchaRateLimitStore.set(key, {
             attempts: 1,
@@ -32,7 +32,7 @@ const captchaRateLimit = (req, res, next) => {
         });
         return next();
     }
-    
+
     // Check if window has expired
     if (now > existing.expiresAt) {
         captchaRateLimitStore.set(key, {
@@ -42,7 +42,7 @@ const captchaRateLimit = (req, res, next) => {
         });
         return next();
     }
-    
+
     // Check if max attempts exceeded
     if (existing.attempts >= maxAttempts) {
         logSecurityEvent('captcha_rate_limit_exceeded', {
@@ -52,11 +52,11 @@ const captchaRateLimit = (req, res, next) => {
         });
         return next(errorHandler(429, 'Too many reCAPTCHA verification attempts. Please try again later.'));
     }
-    
+
     // Increment attempts
     existing.attempts += 1;
     captchaRateLimitStore.set(key, existing);
-    
+
     next();
 };
 
@@ -74,7 +74,7 @@ const verifyRecaptchaToken = async (token, secretKey) => {
                 remoteip: '' // Optional: include client IP for additional security
             })
         });
-        
+
         const data = await response.json();
         return data;
     } catch (error) {
@@ -97,7 +97,7 @@ const verifyHcaptchaToken = async (token, secretKey) => {
                 sitekey: process.env.VITE_HCAPTCHA_SITE_KEY || ''
             })
         });
-        
+
         const data = await response.json();
         return data;
     } catch (error) {
@@ -113,25 +113,25 @@ export const validateRecaptcha = (options = {}) => {
         skipOnDev = false,
         provider = 'recaptcha' // 'recaptcha' or 'hcaptcha'
     } = options;
-    
+
     return async (req, res, next) => {
         try {
             // Skip validation in development if configured
             if (skipOnDev && process.env.NODE_ENV === 'development') {
                 return next();
             }
-            
+
             const { recaptchaToken } = req.body;
-            
+
             // Check if this is a mobile app request (skip reCAPTCHA for mobile apps)
             const userAgent = req.get('User-Agent') || '';
             const isMobileApp = userAgent.includes('UrbanSetuMobile') || userAgent.includes('UrbanSetu/1.0');
-            
+
             if (isMobileApp) {
                 console.log('Skipping reCAPTCHA verification for mobile app:', userAgent);
                 return next();
             }
-            
+
             // Check if token is provided
             if (!recaptchaToken) {
                 if (required) {
@@ -145,12 +145,12 @@ export const validateRecaptcha = (options = {}) => {
                     return next();
                 }
             }
-            
+
             // Get the appropriate secret key
-            const secretKey = provider === 'hcaptcha' 
-                ? process.env.HCAPTCHA_SECRET_KEY 
+            const secretKey = provider === 'hcaptcha'
+                ? process.env.HCAPTCHA_SECRET_KEY
                 : process.env.RECAPTCHA_SECRET_KEY;
-            
+
             if (!secretKey) {
                 // In environments without configured secret, skip verification but log a warning
                 console.warn(`[reCAPTCHA] Missing ${provider.toUpperCase()} secret key. Skipping verification for ${req.path}`);
@@ -162,12 +162,12 @@ export const validateRecaptcha = (options = {}) => {
                 };
                 return next();
             }
-            
+
             // Verify the token
-            const verificationResult = provider === 'hcaptcha' 
+            const verificationResult = provider === 'hcaptcha'
                 ? await verifyHcaptchaToken(recaptchaToken, secretKey)
                 : await verifyRecaptchaToken(recaptchaToken, secretKey);
-            
+
             // Check verification result
             if (!verificationResult.success) {
                 logSecurityEvent('captcha_verification_failed', {
@@ -177,14 +177,14 @@ export const validateRecaptcha = (options = {}) => {
                     errorCodes: verificationResult['error-codes'] || [],
                     provider
                 });
-                
+
                 const errorMessage = verificationResult['error-codes']?.includes('timeout-or-duplicate')
                     ? 'reCAPTCHA token has expired or been used. Please try again.'
                     : 'reCAPTCHA verification failed. Please try again.';
-                
+
                 return next(errorHandler(400, errorMessage));
             }
-            
+
             // Add verification details to request for logging
             req.recaptchaVerification = {
                 success: true,
@@ -194,9 +194,9 @@ export const validateRecaptcha = (options = {}) => {
                 hostname: verificationResult.hostname,
                 provider
             };
-            
+
             next();
-            
+
         } catch (error) {
             console.error('reCAPTCHA middleware error:', error);
             logSecurityEvent('captcha_middleware_error', {
@@ -212,13 +212,18 @@ export const validateRecaptcha = (options = {}) => {
 
 // Middleware for conditional reCAPTCHA (e.g., after failed attempts)
 export const conditionalRecaptcha = (conditionFn) => {
-    return (req, res, next) => {
-        const shouldRequireCaptcha = conditionFn(req);
-        
-        if (shouldRequireCaptcha) {
-            return validateRecaptcha({ required: true })(req, res, next);
-        } else {
-            return validateRecaptcha({ required: false })(req, res, next);
+    return async (req, res, next) => {
+        try {
+            const shouldRequireCaptcha = await conditionFn(req);
+
+            if (shouldRequireCaptcha) {
+                return validateRecaptcha({ required: true })(req, res, next);
+            } else {
+                return validateRecaptcha({ required: false })(req, res, next);
+            }
+        } catch (error) {
+            console.error('Error in conditionalRecaptcha condition:', error);
+            next(error);
         }
     };
 };
