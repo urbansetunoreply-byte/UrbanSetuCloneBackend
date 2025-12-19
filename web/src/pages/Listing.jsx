@@ -2000,7 +2000,7 @@ export default function Listing() {
                                 <button
                                   onClick={(e) => {
                                     e.preventDefault();
-                                    navigate('/sign-in');
+                                    navigate(`/sign-in?redirect=${encodeURIComponent(location.pathname + location.search)}`);
                                   }}
                                   className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30 flex items-center justify-center gap-2 w-full"
                                 >

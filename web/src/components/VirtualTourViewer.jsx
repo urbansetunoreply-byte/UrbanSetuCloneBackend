@@ -253,8 +253,8 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
                 </div>
             </div>
 
-            {/* Title / Indicator (Bottom Left) */}
-            <div className={`absolute bottom-6 left-6 transition-all duration-500 ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'}`}>
+            {/* Title / Indicator (Top Left) */}
+            <div className={`absolute top-4 left-4 transition-all duration-500 ${showControls ? 'opacity-100 translate-y-0' : 'opacity-0 -translate-y-4 pointer-events-none'}`}>
                 <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2">
                     <FaCompass className="text-indigo-400 animate-spin-slow" size={14} />
                     <span className="text-white/90 text-xs font-semibold tracking-wide">360° VIEW</span>
