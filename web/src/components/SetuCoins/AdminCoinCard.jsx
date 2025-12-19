@@ -27,7 +27,31 @@ const AdminCoinCard = ({ loading: parentLoading }) => {
 
     if (loading || parentLoading) {
         return (
-            <div className="w-full h-48 rounded-2xl bg-gray-200 animate-pulse shadow-lg"></div>
+            <div className="w-full min-h-[220px] rounded-2xl bg-white/50 border border-indigo-100 shadow-lg overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-50/50 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                <div className="p-6 space-y-8">
+                    <div className="flex justify-between items-start">
+                        <div className="flex items-center gap-3">
+                            <div className="w-10 h-10 bg-gray-200 rounded-lg"></div>
+                            <div className="space-y-2">
+                                <div className="h-4 w-32 bg-gray-200 rounded-lg"></div>
+                                <div className="h-2 w-24 bg-gray-100 rounded-lg"></div>
+                            </div>
+                        </div>
+                        <div className="h-10 w-32 bg-gray-200 rounded-2xl"></div>
+                    </div>
+                    <div className="grid grid-cols-2 gap-8">
+                        <div className="space-y-3">
+                            <div className="h-2 w-24 bg-gray-100 rounded-lg"></div>
+                            <div className="h-8 w-32 bg-gray-200 rounded-xl"></div>
+                        </div>
+                        <div className="space-y-3 flex flex-col items-end">
+                            <div className="h-2 w-24 bg-gray-100 rounded-lg"></div>
+                            <div className="h-6 w-16 bg-gray-200 rounded-xl"></div>
+                        </div>
+                    </div>
+                </div>
+            </div>
         );
     }
 

@@ -17,7 +17,22 @@ const SetuCoinCard = ({ balance = 0, streak = 0, loading = false, onViewHistory 
 
     if (loading) {
         return (
-            <div className="w-full h-48 rounded-2xl bg-gray-200 animate-pulse shadow-lg"></div>
+            <div className="w-full min-h-[180px] rounded-2xl bg-white/50 border border-gray-100 shadow-lg overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+                <div className="p-6 space-y-6">
+                    <div className="flex justify-between items-start">
+                        <div className="space-y-2">
+                            <div className="h-4 w-32 bg-gray-200 rounded-lg"></div>
+                            <div className="h-3 w-24 bg-gray-100 rounded-lg"></div>
+                        </div>
+                        <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+                    </div>
+                    <div className="space-y-3">
+                        <div className="h-10 w-40 bg-gray-200 rounded-xl"></div>
+                        <div className="h-6 w-28 bg-gray-100 rounded-lg"></div>
+                    </div>
+                </div>
+            </div>
         );
     }
 
