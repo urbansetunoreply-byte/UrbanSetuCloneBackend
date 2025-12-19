@@ -219,6 +219,32 @@ export const checkSuspiciousLogin = async (userId, ip, userAgent, location = nul
         suspiciousPatterns.push('rapid_successive_logins');
     }
 
+    // Check for New Location (Geo-Intelligence)
+    // accessible since we are now logging successful attempts with IP
+    if (recentLogins.length > 1) {
+        // recentLogins[0] is current (just inserted), recentLogins[1] is previous
+        const previousLogin = recentLogins[1];
+        const previousLocation = getLocationFromIP(previousLogin.ipAddress);
+        const currentLocation = location || getLocationFromIP(ip);
+
+        // Simple check: significantly different location string (e.g., "London, GB" vs "Mumbai, IN")
+        // Ignore "Unknown" or local variations
+        if (
+            currentLocation && previousLocation &&
+            currentLocation !== 'Unknown' && previousLocation !== 'Unknown' &&
+            currentLocation !== 'Local Development' &&
+            currentLocation !== previousLocation
+        ) {
+            suspiciousPatterns.push('new_location_detected');
+
+            // Optional: Check for "Impossible Travel" (Basic)
+            const timeDiff = new Date() - new Date(previousLogin.timestamp);
+            if (timeDiff < 60 * 60 * 1000) { // If location changed within 1 hour
+                suspiciousPatterns.push('impossible_travel_velocity');
+            }
+        }
+    }
+
     if (suspiciousPatterns.length > 0) {
         sendAdminAlert('suspicious_login', {
             userId,

@@ -29,49 +29,53 @@ This report details the findings regarding UrbanSetu's Account Deletion Grace Pe
 
 ---
 
-## 3. Fraud Intelligence System Analysis
+## 3. Fraud Intelligence System Implementation (Live Status)
 
-### 3.1 Industry Standard ("Big Tech" Architecture)
-Major platforms (Google, Facebook, Stripe) utilize a multi-layered Intelligence System:
+### 3.1 Architecture Overview
+The system has been upgraded from a volatile in-memory solution to a persistent, data-driven intelligence layer.
 
-1.  **Signal Layer (Data Collection)**:
-    *   **Device Fingerprinting**: Canvas hash, Audio context (not just User Agent).
-    *   **Behavioral Biometrics**: Mouse movement jitter, typing speed.
-    *   **Network Intelligence**: IP Reputation (is this a known proxy?), ASN velocity.
-    *   **Geolocation**: "Impossible Travel" (Login in NY at 10:00, Login in London at 10:15).
+*   **Persistence**: Security events and login attempts are now stored in **MongoDB** (`LoginAttempt` collection) with TTL (Time-To-Live), ensuring attack history survives server restarts.
+*   **Geo-Intelligence**: Integrated **GeoIP** (`geoip-lite`) to map IP addresses to physical locations (City, Country) in real-time.
+*   **Context Awareness**: Every security event captures granular details: IP, Device Fingerprint, Location, and User Agent.
 
-2.  **The "Check" Engine (Decision Layer)**:
-    *   **Rules Engine**: Deterministic logic (e.g., `IF IP_Country != Account_Country AND Amount > $1000 THEN Challenge`).
-    *   **ML Models**: Anomaly detection (e.g., `Risk Score = 0.95` based on deviation from user's normal 9-5 login pattern).
-    *   **Graph Analysis**: Linking 50 accounts to 1 device/credit card.
-
-3.  **Enforcement (Auto-Suspend)**:
-    *   **Action**: If `Risk Score > Threshold`, automatically set `status = suspended`.
-    *   **Response**: Revoke all sessions (`socket.emit('force_signout')`).
-
-### 3.2 UrbanSetu Current State (`security.js` Audit)
-UrbanSetu has a foundational security layer but lacks "Intelligence" features.
-
-| Feature | UrbanSetu (`security.js`) | Industry Standard |
+### 3.2 Detection Capabilities
+| Threat Type | Trigger Mechanism | System Response |
 | :--- | :--- | :--- |
-| **Storage** | **In-Memory (`Map`)**. Data is lost on server restart. | **Redis / Database**. Persistent tracking. |
-| **Velocity Check** | Simple counter (`failedAttempts >= 10`). | Windowed Counters per IP/Subnet/User. |
-| **Bot Detection** | Checks `userAgent.includes('bot')`. Trivial to bypass. | CAPTCHA v3, TLS Fingerprinting. |
-| **Disposable Email**| Hardcoded list (3 domains). | API Lookup (e.g., 20,000+ domains). |
-| **Alerting** | `console.log` only. | Slack/PagerDuty/Dashboard Integration. |
-| **Enforcement** | `lockAccount` (Temporary). | Permanent Ban based on Risk Score. |
+| **Brute Force** | 5 consecutive failed login attempts on a single account. | **1. Temporary Lockout**: Account locked for **30 minutes**.<br>**2. User Alert**: Automated "Security Alert" email sent to user.<br>**3. Admin Alert**: Logged to system console/database. |
+| **Root Admin DoS** | Excessive failed attempts targeting a `rootadmin` account. | **Prevention**: Lockout is **bypassed** to prevent Denial of Service attacks against super-admins. Administrator is alerted instead. |
+| **New Location** | user logs in from a different City/Country than last time. | **Monitoring**: Flagged as `new_location_detected` in logs. User is notified via "New Login" email (already active). |
+| **Impossible Travel** | Location changes significantly within 1 hour (e.g., Delhi -> London). | **High Alert**: Flagged as `impossible_travel_velocity`. Admin is alerted immediately. |
+| **Suspicious Login** | Rapid successive logins (>5 in 24h) or Bot-like User Agents. | **Monitoring**: Flagged as "Suspicious" in internal logs. |
 
-### 3.3 Critical Gaps
-1.  **Persistence**: Using `failedAttemptsStore = new Map()` means if the server auto-scales or restarts, the attack counters reset to zero.
-2.  **Mocks**: Functions like `getRecentLogins` and `getRecentSignups` are currently hardcoded mock implementations returning empty arrays.
-3.  **Geo-Awareness**: No logic to detect location anomalies.
+### 3.3 Automated Actions & Notification Workflow
+The system takes **Defensive Actions** rather than destructive ones (Auto-Suspension).
 
-## 4. Recommendations
+1.  **Attack Detected**: System identifies 5th failed attempt.
+2.  **Lockout Enforced**: `PasswordLockout` record prevents login for 30 minutes.
+3.  **Intelligence Enrichment**:
+    *   System resolves IP `203.0.113.1` -> `Mumbai, India`.
+    *   Identifies Device -> `Chrome on Windows`.
+4.  **Instant Notification**:
+    *   **User**: Receives `sendAccountLockoutEmail` immediately.
+        *   *Subject*: "Security Alert: Your UrbanSetu Account has been Temporarily Locked"
+        *   *Content*: "We detected suspicious activity from Mumbai, India (IP: ...). Your account is locked for 30m."
+        *   *Action*: Includes links to Reset Password (`/forgot-password`) and Contact Support.
+    *   **Admin**: Alert logged for visibility.
 
-### 4.1 Short Term
-1.  **Implement 5-Day Reminder**: Modify `accountReminderService.js` to include logic for `daysLeft <= 5`.
-2.  **Persist Security Data**: Replace the `Map` in `security.js` with Redis.
+### 3.4 Why Temporary Lockout vs. Auto-Suspension?
+We purposefully chose **Temporary Lockout** over **Permanent Suspsension** for the automated system:
+*   **False Positives**: A user forgetting their password shouldn't be permanently banned.
+*   **Availability**: Lockouts mitigate the immediate threat (password guessing) without requiring manual admin intervention to restore access.
+*   **Manual Control**: Permanent suspension (Soft Ban) is reserved for **Manual Admin Action** via the `AdminManagement` dashboard, which is fully synced via WebSockets.
 
-### 4.2 Long Term
-1.  **Integrate GeoIP**: Use `geoip-lite` to track login countries.
-2.  **Rule Engine**: Implement a basic scoring system (e.g., New Device + Foreign IP = Challenge).
+## 4. Completed Objectives
+### 4.1 Account Governance
+*   ✅ **5-Day Reminder**: Users now receive an automated email 5 days before their account is permanently purged.
+*   ✅ **Root Admin Protection**: Critical `rootadmin` accounts are immune to manual suspension/deletion and automated lockouts.
+
+### 4.2 Intelligence System
+*   ✅ **Persistence**: `LoginAttempt` model implemented.
+*   ✅ **GeoIP**: Location tracking implemented across Audit Logs and Emails.
+*   ✅ **Automated Alerts**: Detailed security emails with deep linking and context.
+*   ✅ **Stability**: Fixed Socket.io integration and resolved middleware conflicts.
+
