@@ -46,11 +46,13 @@ export default function Rewards() {
     const [showCoinBurst, setShowCoinBurst] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
     const [currentFact, setCurrentFact] = useState(DID_YOU_KNOW_FACTS[0]);
+    const [activeContractId, setActiveContractId] = useState(null);
 
     useEffect(() => {
         // Pick a random fact on every mountain/visit
         const randomIdx = Math.floor(Math.random() * DID_YOU_KNOW_FACTS.length);
         setCurrentFact(DID_YOU_KNOW_FACTS[randomIdx]);
+        fetchActiveContract();
     }, []);
 
     useEffect(() => {
@@ -74,6 +76,25 @@ export default function Rewards() {
         } catch (error) {
             console.error(error);
             setCoinData(prev => ({ ...prev, loading: false }));
+        }
+    };
+
+    const fetchActiveContract = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/rental/contracts`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success && data.contracts) {
+                // Find first active contract where user is tenant
+                const active = data.contracts.find(c =>
+                    c.status === 'active' &&
+                    (c.tenantId?._id === currentUser._id || c.tenantId === currentUser._id)
+                );
+                if (active) {
+                    setActiveContractId(active.contractId || active._id);
+                }
+            }
+        } catch (error) {
+            console.error("Error fetching active contract:", error);
         }
     };
 
@@ -104,14 +125,14 @@ export default function Rewards() {
     // Earn Activities (Static for now, but linked to features)
     const earnActivities = [
         { title: 'Pay Monthly Rent', coins: '100+', icon: <FaHome className="text-blue-500" />, desc: 'Earn 1% back in coins on every rent payment.', link: '/user/rental-contracts' },
-        { title: 'Maintain Streak', coins: 'Up to 100', icon: <FaFire className="text-orange-500" />, desc: 'Pay rent on time for consecutive months for bonus coins.', link: '/user/rent-wallet' },
+        { title: 'Maintain Streak', coins: 'Up to 100', icon: <FaFire className="text-orange-500" />, desc: 'Pay rent on time for consecutive months for bonus coins.', link: activeContractId ? `/user/rent-wallet?contractId=${activeContractId}` : '/user/rental-contracts' },
         { title: 'Request Service', coins: '10-50', icon: <FaBolt className="text-yellow-500" />, desc: 'Book cleaning, plumbing or electrical tasks.', link: '/user/services' },
         { title: 'Refer a Friend', coins: '500', icon: <FaUserFriends className="text-purple-500" />, desc: 'Coming Soon: Get rewarded for every successful referral.', link: '#' },
     ];
 
     // Redeem Options
     const redeemOptions = [
-        { title: 'Rent Discount', rate: '10 Coins = ₹1', icon: <FaHome className="text-indigo-600" />, desc: 'Apply coins during checkout to lower your monthly rent.', link: '/user/pay-monthly-rent' },
+        { title: 'Rent Discount', rate: '10 Coins = ₹1', icon: <FaHome className="text-indigo-600" />, desc: 'Apply coins during checkout to lower your monthly rent.', link: activeContractId ? `/user/pay-monthly-rent?contractId=${activeContractId}` : '/user/rental-contracts' },
         { title: 'Handyman Services', rate: 'Up to ₹200 OFF', icon: <FaBolt className="text-yellow-600" />, desc: 'Use coins to get discounts on home maintenance.', link: '/user/services' },
         { title: 'Packers & Movers', rate: 'Up to ₹500 OFF', icon: <FaRocket className="text-red-500" />, desc: 'Heavy discounts on moving services.', link: '/user/services' },
     ];
