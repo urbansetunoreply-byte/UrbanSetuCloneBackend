@@ -116,7 +116,7 @@ export default function AccountRevocation() {
 
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col justify-center relative overflow-hidden py-12 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-50 flex flex-col justify-center relative overflow-hidden py-6 sm:py-12 px-4 sm:px-6 lg:px-8">
       {/* Background Decor */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0">
         <div className="absolute -top-[30%] -right-[10%] w-[70%] h-[70%] rounded-full bg-gradient-to-br from-blue-100/40 to-indigo-100/40 blur-3xl" />
@@ -125,11 +125,11 @@ export default function AccountRevocation() {
 
       <div className="sm:mx-auto sm:w-full sm:max-w-md relative z-10">
         {/* Brand/Logo Area */}
-        <div className="text-center mb-8 animate-fade-in-up">
+        <div className="text-center mb-6 sm:mb-8 animate-fade-in-up">
           <div className="inline-flex items-center justify-center p-3 bg-white rounded-2xl shadow-lg mb-4 ring-1 ring-gray-100">
-            <Shield className="w-10 h-10 text-blue-600" />
+            <Shield className="w-8 h-8 sm:w-10 sm:h-10 text-blue-600" />
           </div>
-          <h2 className="text-3xl font-extrabold text-gray-900 tracking-tight">
+          <h2 className="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight">
             Account Recovery
           </h2>
           <p className="mt-2 text-sm text-gray-600 max-w-xs mx-auto">
@@ -138,25 +138,25 @@ export default function AccountRevocation() {
         </div>
 
         {/* Main Card */}
-        <div className="bg-white/80 backdrop-blur-xl py-8 px-4 shadow-2xl sm:rounded-3xl sm:px-10 border border-white/50 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+        <div className="bg-white/80 backdrop-blur-xl py-6 sm:py-8 px-4 shadow-2xl rounded-2xl sm:rounded-3xl sm:px-10 border border-white/50 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
 
           {loading && (
-            <div className="text-center py-8">
-              <div className="relative w-16 h-16 mx-auto mb-6">
+            <div className="text-center py-6 sm:py-8">
+              <div className="relative w-12 h-12 sm:w-16 sm:h-16 mx-auto mb-6">
                 <div className="absolute inset-0 border-4 border-blue-100 rounded-full"></div>
                 <div className="absolute inset-0 border-4 border-blue-600 rounded-full border-t-transparent animate-spin"></div>
               </div>
-              <h3 className="text-lg font-semibold text-gray-900 mb-2">Verifying Token</h3>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-900 mb-2">Verifying Token</h3>
               <p className="text-gray-500 text-sm">Please wait while we validate your restoration link...</p>
             </div>
           )}
 
           {!loading && error && (
             <div className="text-center py-4">
-              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-short">
-                <XCircle className="w-8 h-8 text-red-500" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-bounce-short">
+                <XCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Link Invalid or Expired</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Link Invalid or Expired</h3>
               <p className="text-gray-600 mb-8 text-sm leading-relaxed">{error}</p>
 
               {/* Retry with manual token entry */}
@@ -204,10 +204,10 @@ export default function AccountRevocation() {
 
           {!loading && success && (
             <div className="text-center py-6">
-              <div className="w-20 h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-scale-in">
-                <CheckCircle2 className="w-10 h-10 text-green-500" />
+              <div className="w-16 h-16 sm:w-20 sm:h-20 bg-green-50 rounded-full flex items-center justify-center mx-auto mb-6 animate-scale-in">
+                <CheckCircle2 className="w-8 h-8 sm:w-10 sm:h-10 text-green-500" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">Success!</h3>
+              <h3 className="text-xl sm:text-2xl font-bold text-gray-900 mb-2">Success!</h3>
               <p className="text-gray-600 mb-8 leading-relaxed">
                 Your account has been successfully restored. We're redirecting you to safe waters...
               </p>
@@ -312,10 +312,10 @@ export default function AccountRevocation() {
 
           {!loading && isPurged && (
             <div className="text-center">
-              <div className="w-16 h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
-                <AlertCircle className="w-8 h-8 text-red-500" />
+              <div className="w-12 h-12 sm:w-16 sm:h-16 bg-red-50 rounded-full flex items-center justify-center mx-auto mb-6">
+                <AlertCircle className="w-6 h-6 sm:w-8 sm:h-8 text-red-500" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900 mb-2">Account Not Available</h3>
+              <h3 className="text-lg sm:text-xl font-bold text-gray-900 mb-2">Account Not Available</h3>
               <p className="text-gray-600 mb-8 text-sm leading-relaxed">
                 We're sorry, but this account has been permanently deleted and cannot be restored anymore. The 30-day recovery window has passed.
               </p>
