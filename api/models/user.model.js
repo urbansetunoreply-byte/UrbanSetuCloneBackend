@@ -205,6 +205,11 @@ const userSchema = new mongoose.Schema({
     lastRentPaymentDate: {
       type: Date,
       default: null
+    },
+    referredBy: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: 'User',
+      default: null
     }
   },
 

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from "react";
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom";
 import { FaEye, FaEyeSlash, FaCheck, FaTimes, FaEdit } from "react-icons/fa";
 import Oauth from "../components/Oauth";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
@@ -48,6 +48,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   const [loading, setLoading] = useState(false);
   const [success, setSuccess] = useState("");
   const navigate = useNavigate();
+  const location = useLocation();
+  const [referredBy, setReferredBy] = useState(null);
   const { currentUser } = useSelector((state) => state.user);
   const [consent, setConsent] = useState(false);
   const [recaptchaToken, setRecaptchaToken] = useState(null);
@@ -139,6 +141,16 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
       if (interval) clearInterval(interval);
     };
   }, [resendTimer]);
+
+  // Extract referral code on mount
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      setReferredBy(ref);
+      console.log("Referral detected:", ref);
+    }
+  }, [location]);
 
   const handleChange = (e) => {
     const { id, value } = e.target;
@@ -306,7 +318,8 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
         body: JSON.stringify({
           ...formData,
           emailVerified: true,
-          recaptchaToken
+          recaptchaToken,
+          referredBy // Pass referral ID to backend
         }),
       });
       const data = await res.json();

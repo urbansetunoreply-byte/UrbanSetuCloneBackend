@@ -10,6 +10,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
 import SetuCoinInfoModal from '../components/SetuCoins/SetuCoinInfoModal';
 import CommunityLeaderboard from '../components/SetuCoins/CommunityLeaderboard';
+import SocialSharePanel from '../components/SocialSharePanel';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -45,6 +46,7 @@ export default function Rewards() {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [showCoinBurst, setShowCoinBurst] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
+    const [showReferral, setShowReferral] = useState(false);
     const [currentFact, setCurrentFact] = useState(DID_YOU_KNOW_FACTS[0]);
     const [activeContractId, setActiveContractId] = useState(null);
 
@@ -127,7 +129,7 @@ export default function Rewards() {
         { title: 'Pay Monthly Rent', coins: '100+', icon: <FaHome className="text-blue-500" />, desc: 'Earn 1% back in coins on every rent payment.', link: '/user/rental-contracts' },
         { title: 'Maintain Streak', coins: 'Up to 100', icon: <FaFire className="text-orange-500" />, desc: 'Pay rent on time for consecutive months for bonus coins.', link: activeContractId ? `/user/rent-wallet?contractId=${activeContractId}` : '/user/rental-contracts' },
         { title: 'Request Service', coins: '10-50', icon: <FaBolt className="text-yellow-500" />, desc: 'Book cleaning, plumbing or electrical tasks.', link: '/user/services' },
-        { title: 'Refer a Friend', coins: '500', icon: <FaUserFriends className="text-purple-500" />, desc: 'Coming Soon: Get rewarded for every successful referral.', link: '#' },
+        { title: 'Refer a Friend', coins: '500', icon: <FaUserFriends className="text-purple-500" />, desc: 'Get rewarded for every friend who joins UrbanSetu through your link.', link: '#', isReferral: true },
     ];
 
     // Redeem Options
@@ -286,8 +288,11 @@ export default function Rewards() {
                                             <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-xs font-black">+{act.coins}</span>
                                         </div>
                                         <p className="text-sm text-slate-500 mb-4">{act.desc}</p>
-                                        <button onClick={() => navigate(act.link)} className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:gap-2 transition-all">
-                                            Go to activity <FaChevronRight className="text-[10px]" />
+                                        <button
+                                            onClick={() => act.isReferral ? setShowReferral(true) : navigate(act.link)}
+                                            className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:gap-2 transition-all"
+                                        >
+                                            {act.isReferral ? 'Invite Friends' : 'Go to activity'} <FaChevronRight className="text-[10px]" />
                                         </button>
                                     </div>
                                 </div>
@@ -397,6 +402,14 @@ export default function Rewards() {
 
             <SetuCoinParticles active={showCoinBurst} onComplete={() => setShowCoinBurst(false)} count={30} />
             <SetuCoinInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} />
+
+            <SocialSharePanel
+                isOpen={showReferral}
+                onClose={() => setShowReferral(false)}
+                url={`${window.location.origin}/sign-up?ref=${currentUser._id}`}
+                title="Join me on UrbanSetu! 🏠"
+                description="Sign up using my link to get started with the best real estate platform and earn exclusive rewards!"
+            />
 
             <style>{`
                 @keyframes fadeIn {

@@ -139,10 +139,29 @@ export const SignUp = async (req, res, next) => {
             mobileNumber,
             address: address ? address.trim() : undefined,
             role,
-            adminApprovalStatus
+            adminApprovalStatus,
+            'gamification.referredBy': req.body.referredBy || null
         })
 
         await newUser.save();
+
+        // Handle Referral Reward
+        if (req.body.referredBy) {
+            try {
+                const CoinService = (await import("../services/coinService.js")).default;
+                await CoinService.credit({
+                    userId: req.body.referredBy,
+                    amount: 500,
+                    source: 'referral',
+                    referenceId: newUser._id,
+                    referenceModel: 'User',
+                    description: `Referral bonus for inviting ${newUser.username}`
+                });
+                console.log(`✅ Referral bonus (500) credited to referrer: ${req.body.referredBy}`);
+            } catch (referralError) {
+                console.error("❌ Failed to credit referral bonus:", referralError.message);
+            }
+        }
 
         // Check for suspicious signup patterns
         const ip = req.ip || req.connection.remoteAddress;
@@ -592,9 +611,28 @@ export const Google = async (req, res, next) => {
                 email,
                 password: hashedPassword,
                 avatar: photo,
-                isGeneratedMobile: true
+                isGeneratedMobile: true,
+                'gamification.referredBy': req.body.referredBy || null
             })
             await newUser.save()
+
+            // Handle Referral Reward for Google Sign-up
+            if (req.body.referredBy) {
+                try {
+                    const CoinService = (await import("../services/coinService.js")).default;
+                    await CoinService.credit({
+                        userId: req.body.referredBy,
+                        amount: 500,
+                        source: 'referral',
+                        referenceId: newUser._id,
+                        referenceModel: 'User',
+                        description: `Referral bonus for inviting ${newUser.username} (via Google)`
+                    });
+                    console.log(`✅ Referral bonus (500) credited to referrer for Google user: ${req.body.referredBy}`);
+                } catch (referralError) {
+                    console.error("❌ Failed to credit referral bonus for Google user:", referralError.message);
+                }
+            }
 
             // Generate token pair
             const { accessToken, refreshToken } = generateTokenPair({ id: newUser._id });

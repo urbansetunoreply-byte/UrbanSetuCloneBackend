@@ -2,7 +2,7 @@ import { GoogleAuthProvider, getAuth, signInWithRedirect, getRedirectResult, sig
 import { app } from '../firebase';
 import { signInSuccess } from '../redux/user/userSlice.js';
 import { useDispatch } from 'react-redux';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { FcGoogle } from 'react-icons/fc';
 import { authenticatedFetch } from '../utils/csrf';
 import React, { useEffect, useState } from 'react';
@@ -13,6 +13,7 @@ import { reconnectSocket } from "../utils/socket";
 export default function Oauth({ pageType, disabled = false, onAuthStart = null, onAuthSuccess = null }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
+    const location = useLocation();
     const [isLoading, setIsLoading] = useState(false);
     const [error, setError] = useState(null);
 
@@ -48,7 +49,8 @@ export default function Oauth({ pageType, disabled = false, onAuthStart = null, 
                 body: JSON.stringify({
                     name: result.user.displayName,
                     email: result.user.email,
-                    photo: result.user.photoURL
+                    photo: result.user.photoURL,
+                    referredBy: new URLSearchParams(location.search).get('ref')
                 })
             });
 
