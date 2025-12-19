@@ -13313,41 +13313,41 @@ export const sendReEngagementEmail = async (email, username) => {
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: 'We Miss You! See What\'s Trending on UrbanSetu',
+    subject: 'Unlock New Opportunities: Latest Trends & Updates on UrbanSetu 🌟',
     html: `
       <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
-            <p style="color: #6b7280; margin: 10px 0 0 0;">We Miss You, ${username}!</p>
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu 🏙️</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 18px;">Hello, ${username}! 👋</p>
           </div>
           
           <div style="background-color: #eff6ff; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid #2563eb;">
-            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">You've Been Missing Out!</h2>
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">See What's New Since Your Last Visit 🚀</h2>
             <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
-              It's been a while since we last saw you. The UrbanSetu community has been buzzing with new properties, discussions, and updates!
+              It's been a while, and we'd love to welcome you back. The UrbanSetu community has grown with exciting new opportunities tailored just for you. ✨
             </p>
             
             <div style="background-color: white; padding: 15px; border-radius: 8px; margin: 20px 0; border: 1px solid #e5e7eb;">
                <h3 style="color: #111827; margin: 0 0 10px 0; font-size: 16px;">🔥 Trending Now:</h3>
-               <ul style="color: #4b5563; padding-left: 20px; margin: 0;">
-                  <li style="margin-bottom: 5px;">New premium listings in your favorite areas</li>
-                  <li style="margin-bottom: 5px;">Active community discussions on property rates</li>
-                  <li style="margin-bottom: 5px;">Rental trends and verified movers</li>
+               <ul style="color: #4b5563; padding-left: 20px; margin: 0; list-style-type: none;">
+                  <li style="margin-bottom: 8px;">💎 <strong>New premium listings</strong> in your favorite areas</li>
+                  <li style="margin-bottom: 8px;">🗣️ <strong>Active community discussions</strong> on property rates</li>
+                  <li style="margin-bottom: 8px;">📈 <strong>Latest rental trends</strong> and verified movers</li>
                </ul>
             </div>
 
             <p style="color: #4b5563; margin: 0 0 20px 0; line-height: 1.6;">
-              Come back and check what's new for you.
+              Come back and check what's specially curated for you.
             </p>
 
             <div style="text-align: center; margin: 25px 0;">
-              <a href="${clientBaseUrl}/sign-in" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:12px 30px; border-radius:6px; font-weight:bold; font-size: 16px;">Sign In Now</a>
+              <a href="${clientBaseUrl}/sign-in" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:12px 30px; border-radius:6px; font-weight:bold; font-size: 16px;">Sign In & Explore 🚀</a>
             </div>
             
             <div style="text-align: center; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-               <a href="${clientBaseUrl}/explore" style="color:#2563eb; text-decoration:none; font-size: 14px;">Explore Properties</a> | 
-               <a href="${clientBaseUrl}/user/community" style="color:#2563eb; text-decoration:none; font-size: 14px;">Join Discussion</a>
+               <a href="${clientBaseUrl}/explore" style="color:#2563eb; text-decoration:none; font-size: 14px;">🔍 Explore Properties</a> | 
+               <a href="${clientBaseUrl}/user/community" style="color:#2563eb; text-decoration:none; font-size: 14px;">💬 Join Discussion</a>
             </div>
 
           </div>
