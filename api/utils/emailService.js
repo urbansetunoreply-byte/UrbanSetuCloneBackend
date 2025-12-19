@@ -13350,6 +13350,28 @@ export const sendReEngagementEmail = async (email, username) => {
                <a href="${clientBaseUrl}/user/community" style="color:#2563eb; text-decoration:none; font-size: 14px;">💬 Join Discussion</a>
             </div>
 
+            <div style="margin-top: 25px; border-top: 1px dashed #bfdbfe; padding-top: 20px;">
+              <h3 style="color: #1e40af; text-align: center; margin: 0 0 15px 0; font-size: 16px;">✨ Explore More</h3>
+              <div style="text-align: center; font-size: 0;">
+                  <a href="${clientBaseUrl}/user/ai" style="display: inline-block; width: 70px; margin: 0 5px 10px; text-decoration: none; color: #4b5563; vertical-align: top;">
+                      <div style="background-color: white; border-radius: 12px; width: 45px; height: 45px; line-height: 45px; margin: 0 auto 5px; font-size: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">🤖</div>
+                      <div style="font-size: 11px; font-weight: 600;">AI Guide</div>
+                  </a>
+                  <a href="${clientBaseUrl}/user/community" style="display: inline-block; width: 70px; margin: 0 5px 10px; text-decoration: none; color: #4b5563; vertical-align: top;">
+                      <div style="background-color: white; border-radius: 12px; width: 45px; height: 45px; line-height: 45px; margin: 0 auto 5px; font-size: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">💬</div>
+                      <div style="font-size: 11px; font-weight: 600;">Groups</div>
+                  </a>
+                  <a href="${clientBaseUrl}/user/search" style="display: inline-block; width: 70px; margin: 0 5px 10px; text-decoration: none; color: #4b5563; vertical-align: top;">
+                      <div style="background-color: white; border-radius: 12px; width: 45px; height: 45px; line-height: 45px; margin: 0 auto 5px; font-size: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">🔍</div>
+                      <div style="font-size: 11px; font-weight: 600;">Search</div>
+                  </a>
+                  <a href="${clientBaseUrl}/user/services" style="display: inline-block; width: 70px; margin: 0 5px 10px; text-decoration: none; color: #4b5563; vertical-align: top;">
+                      <div style="background-color: white; border-radius: 12px; width: 45px; height: 45px; line-height: 45px; margin: 0 auto 5px; font-size: 20px; box-shadow: 0 1px 2px rgba(0,0,0,0.05);">🛠️</div>
+                      <div style="font-size: 11px; font-weight: 600;">Services</div>
+                  </a>
+              </div>
+            </div>
+
           </div>
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
