@@ -211,6 +211,13 @@ export default function AdminManagement() {
   // Optimistic UI for suspend
   const handleSuspend = async (id, type) => {
     const account = type === 'user' ? users.find(u => u._id === id) : admins.find(a => a._id === id);
+
+    // Protect Root Admin
+    if (account?.role === 'rootadmin') {
+      toast.error("Root Admin account cannot be suspended or activated.");
+      return;
+    }
+
     const isSuspending = account?.status === 'active';
     const actionText = isSuspending ? 'suspend' : 'activate';
     const actionTextCapitalized = isSuspending ? 'Suspend' : 'Activate';
@@ -363,6 +370,14 @@ export default function AdminManagement() {
 
   // Optimistic UI for delete
   const handleDelete = async (id, type) => {
+    const account = type === 'user' ? users.find(u => u._id === id) : admins.find(a => a._id === id);
+
+    // Protect Root Admin
+    if (account?.role === 'rootadmin') {
+      toast.error("Root Admin account cannot be softbanned.");
+      return;
+    }
+
     setSelectedAccount({ _id: id, type });
     setDeleteReason("");
     setDeleteOtherReason("");

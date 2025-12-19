@@ -2,6 +2,8 @@ import { errorHandler } from '../utils/error.js';
 import User from '../models/user.model.js';
 import PasswordLockout from '../models/passwordLockout.model.js';
 import LoginAttempt from '../models/loginAttempt.model.js';
+import { sendAdminAlert, sendAccountLockoutEmail } from '../utils/emailService.js';
+import { getLocationFromIP } from '../utils/sessionManager.js';
 
 // Track failed login attempts (Persistent using LoginAttempt)
 export const trackFailedAttempt = async (identifier, userId = null) => {
@@ -27,7 +29,31 @@ export const trackFailedAttempt = async (identifier, userId = null) => {
 
         // If too many attempts, lock the account
         if (attempts >= 5 && userId) {
+            // Check if user is rootadmin before locking (Prevent DoS on root admin)
+            const user = await User.findById(userId);
+            if (user && user.role === 'rootadmin') {
+                console.log(`⚠️ Prevented lockout for rootadmin ${userId}`);
+                sendAdminAlert('root_admin_attack_attempt', { identifier, userId, attempts });
+                return { attempts };
+            }
+
             await lockAccount(userId, 30 * 60 * 1000, { identifier, attempts, ipAddress: identifier }); // 30 minutes lockout
+
+            // Send automated lockout email to user
+            try {
+                const location = getLocationFromIP(identifier);
+                await sendAccountLockoutEmail(user.email, {
+                    username: user.username,
+                    attempts,
+                    lockoutDuration: '30 minutes',
+                    ipAddress: identifier,
+                    location: location,
+                    device: 'Unknown (Login Screen)'
+                });
+            } catch (emailErr) {
+                console.error("Failed to send lockout email to user:", emailErr);
+            }
+
             sendAdminAlert('account_locked', {
                 userId,
                 identifier,

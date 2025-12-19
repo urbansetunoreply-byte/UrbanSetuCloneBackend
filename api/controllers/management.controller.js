@@ -240,6 +240,12 @@ export const suspendUserOrAdmin = async (req, res, next) => {
     const currentUser = await User.findById(req.user.id);
     if (!currentUser) return next(errorHandler(403, 'Access denied'));
 
+    // Prevent any action on rootadmin via this endpoint
+    const targetCheck = await User.findById(id);
+    if (targetCheck?.role === 'rootadmin') {
+      return next(errorHandler(403, 'Root admin cannot be suspended or modified via this endpoint.'));
+    }
+
     if (type === 'user') {
       // Only admin/rootadmin can suspend users
       if (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin') {
@@ -358,6 +364,13 @@ export const deleteUserOrAdmin = async (req, res, next) => {
     const { type, id } = req.params;
     const currentUser = await User.findById(req.user.id);
     if (!currentUser) return next(errorHandler(403, 'Access denied'));
+
+    // Prevent any action on rootadmin via this endpoint
+    const targetCheck = await User.findById(id);
+    if (targetCheck?.role === 'rootadmin') {
+      return next(errorHandler(403, 'Root admin cannot be softbanned via this endpoint.'));
+    }
+
     const isRoot = currentUser.role === 'rootadmin' || currentUser.isDefaultAdmin;
     if (type === 'user') {
       if (currentUser.role !== 'admin' && !isRoot) {

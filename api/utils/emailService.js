@@ -13574,3 +13574,106 @@ export const sendIssueReportAcknowledgement = async (email, username, listingNam
   };
   return sendEmailWithRetry(mailOptions);
 };
+
+// Send Account Lockout Email (Intelligence System)
+export const sendAccountLockoutEmail = async (email, details) => {
+  try {
+    const { username, attempts, lockoutDuration, ipAddress, device, location } = details;
+    const subject = 'Security Alert: Your UrbanSetu Account has been Temporarily Locked';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Account Locked</title>
+      </head>
+      <body style="margin: 0; padding: 0; background-color: #f3f4f6; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;">
+        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+           <!-- Header Red for Alert -->
+           <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 30px; text-align: center;">
+              <h1 style="color: white; margin: 0; font-size: 24px; font-weight: 700;">Security Alert</h1>
+              <p style="color: rgba(255,255,255,0.9); margin: 10px 0 0; font-size: 16px;">Suspicious Activity Detected</p>
+           </div>
+           
+           <div style="padding: 40px 30px;">
+              <p style="color: #374151; font-size: 16px; line-height: 1.6; margin-top: 0;">
+                Hello <strong>${username}</strong>,
+              </p>
+              <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+                Our intelligence system detected suspicious login activity on your account. For your security, your account has been <strong>temporarily locked</strong> for <strong>${lockoutDuration}</strong>.
+              </p>
+              
+              <div style="background-color: #fef2f2; padding: 25px; border-radius: 8px; border-left: 4px solid #ef4444; margin: 25px 0;">
+                <h3 style="color: #b91c1c; margin: 0 0 15px; font-size: 16px; display: flex; align-items: center;">
+                   Activity Details
+                </h3>
+                <div style="display: grid; gap: 10px;">
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #fee2e2; padding-bottom: 8px;">
+                        <span style="color: #7f1d1d; font-weight: 500;">Reason</span>
+                        <span style="color: #450a0a; font-weight: 600;">${attempts} failed attempts (Brute Force Detection)</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #fee2e2; padding-bottom: 8px;">
+                        <span style="color: #7f1d1d; font-weight: 500;">IP Address</span>
+                        <span style="color: #450a0a; font-weight: 600;">${ipAddress || 'Unknown'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #fee2e2; padding-bottom: 8px;">
+                        <span style="color: #7f1d1d; font-weight: 500;">Location</span>
+                        <span style="color: #450a0a; font-weight: 600;">${location || 'Unknown'}</span>
+                    </div>
+                     <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #fee2e2; padding-bottom: 8px;">
+                        <span style="color: #7f1d1d; font-weight: 500;">Device</span>
+                        <span style="color: #450a0a; font-weight: 600;">${device || 'Unknown'}</span>
+                    </div>
+                    <div style="display: flex; justify-content: space-between; padding-bottom: 0;">
+                        <span style="color: #7f1d1d; font-weight: 500;">Time</span>
+                        <span style="color: #450a0a; font-weight: 600;">${new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })} (IST)</span>
+                    </div>
+                </div>
+              </div>
+              
+              <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+                <strong>Was this you?</strong><br>
+                Please wait for the lockout to expire. You can then try again or reset your password.
+              </p>
+
+               <p style="color: #374151; font-size: 16px; line-height: 1.6;">
+                <strong>Wasn't you?</strong><br>
+                Please contact our support team immediately to secure your account.
+              </p>
+              
+              <div style="text-align: center; margin: 35px 0 10px;">
+                 <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/contact" style="background-color: #ef4444; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; margin-right: 15px; display: inline-block;">
+                    Contact Support
+                 </a>
+                  <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/forgot-password" style="background-color: #ffffff; color: #ef4444; border: 2px solid #ef4444; padding: 12px 26px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; display: inline-block;">
+                    Reset Password
+                 </a>
+              </div>
+           </div>
+           
+           <!-- Footer -->
+           <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="color: #6b7280; font-size: 12px; margin: 0;">
+                This is an automated security alert from UrbanSetu Intelligence System.
+              </p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">
+                © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+              </p>
+           </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending lockout email:', error);
+    return createErrorResponse(error, 'lockout_email');
+  }
+};
