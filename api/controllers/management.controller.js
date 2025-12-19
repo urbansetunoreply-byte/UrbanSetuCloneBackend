@@ -49,18 +49,62 @@ export const getManagementUsers = async (req, res, next) => {
           as: 'bookingsData'
         }
       },
+      // Lookup Wishlists
+      {
+        $lookup: {
+          from: 'wishlists',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'wishlistData'
+        }
+      },
+      // Lookup Watchlists
+      {
+        $lookup: {
+          from: 'propertywatchlists',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'watchlistData'
+        }
+      },
+      // Lookup Reviews
+      {
+        $lookup: {
+          from: 'reviews',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'reviewsData'
+        }
+      },
+      // Lookup Payments
+      {
+        $lookup: {
+          from: 'payments',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'paymentsData'
+        }
+      },
       // Add counts and remove password
       {
         $addFields: {
           listingsCount: { $size: '$listingsData' },
-          appointmentsCount: { $size: '$bookingsData' }
+          appointmentsCount: { $size: '$bookingsData' },
+          wishlistCount: { $size: '$wishlistData' },
+          watchlistCount: { $size: '$watchlistData' },
+          reviewsCount: { $size: '$reviewsData' },
+          paymentsCount: { $size: '$paymentsData' }
         }
       },
       {
         $project: {
           password: 0,
           listingsData: 0,
-          bookingsData: 0
+          bookingsData: 0,
+          wishlistData: 0,
+          watchlistData: 0,
+          reviewsData: 0,
+          paymentsData: 0
         }
       }
     ]);
@@ -122,18 +166,62 @@ export const getManagementAdmins = async (req, res, next) => {
           as: 'bookingsData'
         }
       },
+      // Lookup Wishlists
+      {
+        $lookup: {
+          from: 'wishlists',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'wishlistData'
+        }
+      },
+      // Lookup Watchlists
+      {
+        $lookup: {
+          from: 'propertywatchlists',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'watchlistData'
+        }
+      },
+      // Lookup Reviews
+      {
+        $lookup: {
+          from: 'reviews',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'reviewsData'
+        }
+      },
+      // Lookup Payments
+      {
+        $lookup: {
+          from: 'payments',
+          localField: '_id',
+          foreignField: 'userId',
+          as: 'paymentsData'
+        }
+      },
       // Add counts and remove password
       {
         $addFields: {
           listingsCount: { $size: '$listingsData' },
-          appointmentsCount: { $size: '$bookingsData' }
+          appointmentsCount: { $size: '$bookingsData' },
+          wishlistCount: { $size: '$wishlistData' },
+          watchlistCount: { $size: '$watchlistData' },
+          reviewsCount: { $size: '$reviewsData' },
+          paymentsCount: { $size: '$paymentsData' }
         }
       },
       {
         $project: {
           password: 0,
           listingsData: 0,
-          bookingsData: 0
+          bookingsData: 0,
+          wishlistData: 0,
+          watchlistData: 0,
+          reviewsData: 0,
+          paymentsData: 0
         }
       }
     ]);

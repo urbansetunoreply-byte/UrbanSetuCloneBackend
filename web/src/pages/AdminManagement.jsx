@@ -1326,9 +1326,13 @@ export default function AdminManagement() {
                                 <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Login:</span> {new Date(user.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</div>
                               )}
 
-                              <div className="flex gap-6 mt-2">
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
                                 <div className="text-gray-600"><span className="font-semibold text-gray-700">Listings:</span> {user.listingsCount || 0}</div>
                                 <div className="text-gray-600"><span className="font-semibold text-gray-700">Appointments:</span> {user.appointmentsCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Wishlist:</span> {user.wishlistCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Watchlist:</span> {user.watchlistCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Reviews:</span> {user.reviewsCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Payments:</span> {user.paymentsCount || 0}</div>
                               </div>
                             </div>
                           </div>
@@ -1462,9 +1466,13 @@ export default function AdminManagement() {
                                 <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Login:</span> {new Date(admin.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</div>
                               )}
 
-                              <div className="flex gap-6 mt-2">
+                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
                                 <div className="text-gray-600"><span className="font-semibold text-gray-700">Listings:</span> {admin.listingsCount || 0}</div>
                                 <div className="text-gray-600"><span className="font-semibold text-gray-700">Appointments:</span> {admin.appointmentsCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Wishlist:</span> {admin.wishlistCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Watchlist:</span> {admin.watchlistCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Reviews:</span> {admin.reviewsCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Payments:</span> {admin.paymentsCount || 0}</div>
                               </div>
                             </div>
                           </div>
