@@ -1,10 +1,27 @@
-import React, { useEffect, useRef, useState } from 'react';
-import { FaCompass, FaExpand, FaCompress } from 'react-icons/fa';
+import React, { useEffect, useRef, useState, useCallback } from 'react';
+import { FaCompass, FaExpand, FaCompress, FaSearchPlus, FaSearchMinus, FaPlay, FaPause, FaTimes, FaRedo } from 'react-icons/fa';
 
 const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
     const viewerRef = useRef(null);
+    const pannellumViewer = useRef(null); // Keep track of the viewer instance
     const [isLoaded, setIsLoaded] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
+    const [isAutoRotating, setIsAutoRotating] = useState(false);
+    const [showControls, setShowControls] = useState(true);
+    const controlsTimeoutRef = useRef(null);
+
+    // Auto-hide controls function
+    const resetControlsTimeout = useCallback(() => {
+        setShowControls(true);
+        if (controlsTimeoutRef.current) {
+            clearTimeout(controlsTimeoutRef.current);
+        }
+        controlsTimeoutRef.current = setTimeout(() => {
+            if (!isAutoRotating) { // Optional: Keep controls hidden during auto-rotate? Or maybe hide after timeout regardless?
+                setShowControls(false);
+            }
+        }, 3000); // Hide after 3 seconds of inactivity
+    }, [isAutoRotating]);
 
     useEffect(() => {
         // Dynamically load Pannellum script and CSS if not already loaded
@@ -36,29 +53,64 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
         }).catch(err => console.error(err));
 
         return () => {
-            // Cleanup if needed
+            if (controlsTimeoutRef.current) clearTimeout(controlsTimeoutRef.current);
         };
     }, []);
 
     useEffect(() => {
         if (isLoaded && viewerRef.current && window.pannellum) {
-            const viewer = window.pannellum.viewer(viewerRef.current, {
+            // Initialize viewer
+            pannellumViewer.current = window.pannellum.viewer(viewerRef.current, {
                 type: 'equirectangular',
                 panorama: imageUrl,
                 autoLoad: autoLoad,
-                compass: true,
-                showControls: false, // We'll build custom overlay controls optionally
+                compass: false, // We use custom UI
+                showControls: false, // We build custom overlay controls
                 mouseZoom: true,
                 pitch: 10,
                 yaw: 180,
-                hfov: 110
+                hfov: 110,
+                autoRotate: isAutoRotating ? -2 : 0,
             });
 
+            // Add event listeners for interaction to show controls
+            const container = viewerRef.current;
+            const handleInteraction = () => resetControlsTimeout();
+
+            container.addEventListener('mousedown', handleInteraction);
+            container.addEventListener('mousemove', handleInteraction);
+            container.addEventListener('touchstart', handleInteraction);
+            container.addEventListener('click', handleInteraction);
+
+            // Initial timeout start
+            resetControlsTimeout();
+
             return () => {
-                // viewer.destroy(); // Pannellum doesn't always have a clean destroy method exposed easily in all versions
+                // Cleanup listeners
+                container.removeEventListener('mousedown', handleInteraction);
+                container.removeEventListener('mousemove', handleInteraction);
+                container.removeEventListener('touchstart', handleInteraction);
+                container.removeEventListener('click', handleInteraction);
+
+                // Note: Pannellum destroy might be tricky, usually just clearing innerHTML or letting React unmount handles it roughly
+                // But properly:
+                // if (pannellumViewer.current && pannellumViewer.current.destroy) {
+                //    pannellumViewer.current.destroy();
+                // }
             };
         }
-    }, [isLoaded, imageUrl, autoLoad]);
+    }, [isLoaded, imageUrl, autoLoad]); // Re-init if imageUrl changes
+
+    // Update auto-rotate when state changes
+    useEffect(() => {
+        if (pannellumViewer.current) {
+            if (isAutoRotating) {
+                pannellumViewer.current.startAutoRotate(-5); // Rotate speed
+            } else {
+                pannellumViewer.current.stopAutoRotate();
+            }
+        }
+    }, [isAutoRotating]);
 
     const toggleFullscreen = () => {
         if (!viewerRef.current) return;
@@ -74,10 +126,52 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
         }
     };
 
+    const handleZoomIn = () => {
+        if (pannellumViewer.current) {
+            pannellumViewer.current.setHfov(pannellumViewer.current.getHfov() - 10);
+            resetControlsTimeout();
+        }
+    };
+
+    const handleZoomOut = () => {
+        if (pannellumViewer.current) {
+            pannellumViewer.current.setHfov(pannellumViewer.current.getHfov() + 10);
+            resetControlsTimeout();
+        }
+    };
+
+    const handleReset = () => {
+        if (pannellumViewer.current) {
+            pannellumViewer.current.setPitch(10);
+            pannellumViewer.current.setYaw(180);
+            pannellumViewer.current.setHfov(110);
+            setIsAutoRotating(false);
+            resetControlsTimeout();
+        }
+    };
+
+    const handleClose = (e) => {
+        e.stopPropagation();
+        if (isFullscreen) {
+            toggleFullscreen();
+        } else {
+            // If not fullscreen, typically "Closing" might simply mean stopping auto-load or similar, 
+            // but here we can treat it as 'Reset View' or just hiding controls instantly.
+            // Or if the user meant 'Close' as in 'Remove from view', that's controlled by parent.
+            // We'll treat it as 'Reset' for inline mode to be safe and useful.
+            handleReset();
+        }
+    };
+
     return (
-        <div className={`relative w-full h-full bg-gray-900 rounded-xl overflow-hidden shadow-2xl group ${className}`}>
+        <div
+            className={`relative w-full h-full bg-gray-900 rounded-xl overflow-hidden shadow-2xl group ${className}`}
+            onMouseEnter={resetControlsTimeout}
+            onMouseMove={resetControlsTimeout}
+            onTouchStart={resetControlsTimeout}
+        >
             {!isLoaded && (
-                <div className="absolute inset-0 flex items-center justify-center text-white">
+                <div className="absolute inset-0 flex items-center justify-center text-white z-0">
                     <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
                 </div>
             )}
@@ -85,26 +179,85 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
             {/* Viewer Container */}
             <div ref={viewerRef} className="w-full h-full" style={{ width: '100%', height: '100%' }}></div>
 
-            {/* Overlay Controls */}
-            <div className="absolute bottom-4 left-4 right-4 flex justify-between items-center pointer-events-none">
-                <div className="bg-black/50 backdrop-blur-md px-4 py-2 rounded-full text-white flex items-center gap-2 pointer-events-auto">
-                    <FaCompass className="text-blue-400 animate-pulse" />
-                    <span className="text-sm font-medium">360° View</span>
+            {/* Interaction Hint (Only shows initially or when hovering very still) */}
+            <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-1000 ${showControls && !isAutoRotating ? 'opacity-100' : 'opacity-0'}`}>
+                <div className="bg-black/30 text-white px-4 py-2 rounded-full backdrop-blur-[2px] border border-white/10 text-center animate-pulse">
+                    <p className="text-xs font-medium tracking-wider uppercase">Drag to Explore</p>
                 </div>
+            </div>
 
+            {/* Top Right Controls (Close/Exit) */}
+            <div className={`absolute top-4 right-4 flex flex-col gap-2 transition-all duration-500 transform ${showControls ? 'translate-y-0 opacity-100' : '-translate-y-4 opacity-0 pointer-events-none'}`}>
                 <button
-                    onClick={toggleFullscreen}
-                    className="bg-black/50 backdrop-blur-md p-3 rounded-full text-white hover:bg-black/70 transition-all pointer-events-auto"
-                    aria-label="Toggle Fullscreen"
+                    onClick={handleClose}
+                    className="bg-black/40 hover:bg-red-500/80 backdrop-blur-md p-2.5 rounded-full text-white transition-all shadow-lg hover:rotate-90 active:scale-95"
+                    aria-label="Close"
+                    title={isFullscreen ? "Exit Fullscreen" : "Reset View"}
                 >
-                    {isFullscreen ? <FaCompress /> : <FaExpand />}
+                    <FaTimes size={14} />
                 </button>
             </div>
 
-            {/* Interaction Hint */}
-            <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none opacity-0 group-hover:opacity-100 transition-opacity duration-500">
-                <div className="bg-black/40 text-white px-4 py-2 rounded-lg backdrop-blur-sm text-center">
-                    <p className="text-sm font-semibold">Click & Drag to Look Around</p>
+            {/* Bottom Controls Bar */}
+            <div className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 transition-all duration-500 ${showControls ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
+                <div className="bg-black/60 backdrop-blur-md rounded-2xl p-2 flex items-center gap-1 shadow-2xl border border-white/10">
+
+                    {/* Auto Rotate */}
+                    <button
+                        onClick={() => { setIsAutoRotating(!isAutoRotating); resetControlsTimeout(); }}
+                        className={`p-2.5 rounded-xl transition-all ${isAutoRotating ? 'bg-indigo-600 text-white' : 'text-white/80 hover:bg-white/10'}`}
+                        title={isAutoRotating ? "Pause Rotation" : "Auto Rotate"}
+                    >
+                        {isAutoRotating ? <FaPause size={14} /> : <FaPlay size={14} className="ml-0.5" />}
+                    </button>
+
+                    <div className="w-px h-6 bg-white/20 mx-1"></div>
+
+                    {/* Zoom In */}
+                    <button
+                        onClick={handleZoomIn}
+                        className="p-2.5 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                        title="Zoom In"
+                    >
+                        <FaSearchPlus size={16} />
+                    </button>
+
+                    {/* Zoom Out */}
+                    <button
+                        onClick={handleZoomOut}
+                        className="p-2.5 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                        title="Zoom Out"
+                    >
+                        <FaSearchMinus size={16} />
+                    </button>
+
+                    <div className="w-px h-6 bg-white/20 mx-1"></div>
+
+                    {/* Reset */}
+                    <button
+                        onClick={handleReset}
+                        className="p-2.5 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                        title="Reset View"
+                    >
+                        <FaRedo size={14} />
+                    </button>
+
+                    {/* Fullscreen */}
+                    <button
+                        onClick={() => { toggleFullscreen(); resetControlsTimeout(); }}
+                        className="p-2.5 rounded-xl text-white/80 hover:bg-white/10 hover:text-white transition-all active:scale-95"
+                        title="Toggle Fullscreen"
+                    >
+                        {isFullscreen ? <FaCompress size={16} /> : <FaExpand size={16} />}
+                    </button>
+                </div>
+            </div>
+
+            {/* Title / Indicator (Bottom Left) */}
+            <div className={`absolute bottom-6 left-6 transition-all duration-500 ${showControls ? 'opacity-100 translate-x-0' : 'opacity-0 -translate-x-4 pointer-events-none'}`}>
+                <div className="bg-black/30 backdrop-blur-md px-3 py-1.5 rounded-lg border border-white/10 flex items-center gap-2">
+                    <FaCompass className="text-indigo-400 animate-spin-slow" size={14} />
+                    <span className="text-white/90 text-xs font-semibold tracking-wide">360° VIEW</span>
                 </div>
             </div>
         </div>
