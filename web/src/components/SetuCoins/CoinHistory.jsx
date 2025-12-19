@@ -3,42 +3,6 @@ import { FaArrowUp, FaArrowDown, FaExchangeAlt, FaHistory, FaCalendarAlt, FaChev
 import { toast } from 'react-toastify';
 
 const CoinHistory = () => {
-    const [history, setHistory] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [expandedId, setExpandedId] = useState(null);
-
-    useEffect(() => {
-        fetchHistory();
-    }, []);
-
-    const fetchHistory = async () => {
-        try {
-            const res = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/coins/history`, {
-                // Standard fetch with credentials (cookie/token) is usually handled by a wrapper or explicit header
-                // Assuming standard auth via cookies or header. The User Profile uses 'authenticatedFetch' helper?
-                // Checking Profile.jsx import: import { authenticatedFetch ... } from '../utils/auth';
-                // I should probably use that if available, but for now standard fetch with credentials: 'include'.
-                // If auth header is needed, I rely on browser cookie primarily for this project's pattern (usually).
-                // Profile.jsx uses authenticatedFetch helper. I'll stick to fetch with credentials for simplicity as I can't import the helper easily without knowing its path for sure (it was visible in Profile.jsx though).
-                // Profile.jsx: import { authenticatedFetch ... } from '../utils/auth';
-                // I'll try to use standard logic.
-            });
-            // Actually, looking at Profile.jsx again, it imports `authenticatedFetch` from `../utils/auth`.
-            // I should assume `api/index.js` uses cookies based on `verify.js`.
-            // Let's use `fetch` with credential include to be safe for cookie-based auth.
-        } catch (error) {
-            console.error(error);
-        }
-    };
-
-    // Redoing the fetch with full logic in component render
-    // I will restart the component code properly below.
-    return null;
-}
-
-// ... wait, I need to output the full file content in the tool call.
-
-const CoinHistoryComponent = () => {
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isOpen, setIsOpen] = useState(false); // Collapsible
@@ -47,24 +11,13 @@ const CoinHistoryComponent = () => {
         const getHistory = async () => {
             try {
                 setLoading(true);
-                const token = localStorage.getItem('access_token'); // Or however auth is handled.
-                // Profile.jsx imports authenticatedFetch. I'll use raw fetch with headers if I can guesses.
-                // Best bet: use standard fetch and assume proxy or credentials work.
-                // But wait, user info mentioned `verifyToken` uses checking cookie 'access_token'.
-
-                const res = await fetch('/api/coins/history'); // Using proxy in vite.config?
-                // User's PaymnentHistory.jsx uses import.meta.env.VITE_API_BASE_URL + credentials: 'include'.
-
+                // We use authenticatedFetch logic or standard fetch with credentials
                 const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/coins/history`, {
-                    headers: {
-                        // If token is in localStorage also add it?
-                        // Usually cookies.
-                    },
                     credentials: 'include'
                 });
                 const data = await response.json();
                 if (data.success) {
-                    setTransactions(data.history);
+                    setTransactions(data.transactions);
                 }
             } catch (err) {
                 console.error('Failed to fetch coin history', err);
@@ -138,4 +91,4 @@ const CoinHistoryComponent = () => {
     );
 };
 
-export default CoinHistoryComponent;
+export default CoinHistory;

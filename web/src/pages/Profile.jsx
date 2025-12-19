@@ -315,8 +315,8 @@ export default function Profile() {
         const data = await res.json();
         if (data.success) {
           setCoinData({
-            balance: data.balance,
-            streak: data.streak || 0, // Assuming streak is returned or part of user object logic
+            balance: data.setuCoinsBalance || 0,
+            streak: data.currentStreak || 0,
             loading: false
           });
         }
