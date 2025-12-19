@@ -6,6 +6,7 @@ import { FaMoneyBillWave, FaCheckCircle, FaCheck, FaChevronRight, FaChevronLeft,
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
+import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -34,6 +35,7 @@ export default function PayMonthlyRent() {
   const [selectedGateway, setSelectedGateway] = useState('razorpay');
   const [coinBalance, setCoinBalance] = useState(0);
   const [coinsToRedeem, setCoinsToRedeem] = useState(0);
+  const [showCoinBurst, setShowCoinBurst] = useState(false);
 
   useEffect(() => {
     if (currentUser) {
@@ -165,6 +167,7 @@ export default function PayMonthlyRent() {
     setPaymentCompleted(true);
     setStep(5);
     setShowPaymentModal(false);
+    setShowCoinBurst(true); // Celebration!
 
     // Refresh contract and wallet
     setTimeout(() => {
@@ -299,6 +302,7 @@ export default function PayMonthlyRent() {
         // If payment is already completed (idempotency), show success immediately
         if (data.payment.status === 'completed' || data.payment.status === 'paid') {
           setCreatedPayment(data.payment);
+          setShowCoinBurst(true); // Celebration!
           setStep(5);
           return;
         }
@@ -660,7 +664,7 @@ export default function PayMonthlyRent() {
               <div className="bg-white p-4 rounded-lg border border-yellow-200 mb-6 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
                   <h4 className="font-semibold text-gray-800 flex items-center gap-2">
-                    <FaCoins className="text-yellow-500" />
+                    <FaCoins className={`text-yellow-500 ${coinsToRedeem > 0 ? 'animate-bounce' : ''}`} />
                     Pay with SetuCoins
                   </h4>
                   <span className="text-xs font-medium bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
@@ -835,6 +839,7 @@ export default function PayMonthlyRent() {
               setCreatedPayment(payment);
               setPaymentCompleted(true);
               setStep(5);
+              setShowCoinBurst(true); // Celebration!
               setShowPaymentModal(false);
               // Refresh wallet data to update UI immediately
               fetchContractAndWallet();
@@ -842,6 +847,12 @@ export default function PayMonthlyRent() {
           />
         )}
       </div>
+
+      <SetuCoinParticles
+        active={showCoinBurst}
+        onComplete={() => setShowCoinBurst(false)}
+        count={25}
+      />
     </div>
   );
 }

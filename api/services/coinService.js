@@ -235,6 +235,43 @@ class CoinService {
     }
 
     /**
+     * Get System Stats for Admin
+     */
+    async getStats() {
+        // 1. Total Circulating Supply (Sum of all user balances)
+        const supplyAgg = await User.aggregate([
+            { $group: { _id: null, totalBalance: { $sum: '$gamification.setuCoinsBalance' }, totalEarned: { $sum: '$gamification.totalCoinsEarned' } } }
+        ]);
+
+        const circulatingSupply = supplyAgg[0]?.totalBalance || 0;
+        const totalMintedLifetime = supplyAgg[0]?.totalEarned || 0;
+
+        // 2. Total Redeemed (Burned)
+        const burnedAgg = await CoinTransaction.aggregate([
+            { $match: { type: 'debit' } },
+            { $group: { _id: null, totalBurned: { $sum: '$amount' } } }
+        ]);
+        const totalBurned = burnedAgg[0]?.totalBurned || 0;
+
+        // 3. User Stats
+        const holdersCount = await User.countDocuments({ 'gamification.setuCoinsBalance': { $gt: 0 } });
+
+        // 4. Recent Transactions
+        const recentTransactions = await CoinTransaction.find()
+            .sort({ createdAt: -1 })
+            .limit(5)
+            .populate('userId', 'username email');
+
+        return {
+            circulatingSupply,
+            totalMintedLifetime,
+            totalBurned,
+            holdersCount,
+            recentTransactions
+        };
+    }
+
+    /**
      * Get transaction history
      */
     async getHistory(userId, page = 1, limit = 10) {

@@ -1344,7 +1344,23 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
     // DELAYED SAVE: Finally save the payment as completed
     await payment.save();
 
-    if (payment.paymentType !== 'monthly_rent') {
+    // Handle Service/Movers Booking Success
+    if (payment.paymentType === 'service_booking' || payment.paymentType === 'movers_booking') {
+      const requestId = payment.metadata?.requestId;
+      const type = payment.metadata?.requestType;
+      if (requestId) {
+        // Update Request Doc
+        const ServiceRequest = (await import('../models/serviceRequest.model.js')).default;
+        const MoversRequest = (await import('../models/moversRequest.model.js')).default;
+        const Model = type === 'movers' ? MoversRequest : ServiceRequest;
+
+        await Model.findByIdAndUpdate(requestId, {
+          paymentStatus: 'paid',
+          paymentId: payment.paymentId,
+          status: 'pending' // Confirm it's active now
+        });
+      }
+    } else if (payment.paymentType !== 'monthly_rent') {
       // Send payment success email to buyer (reusing existing appointment, user, listing variables)
       try {
         await sendPaymentSuccessEmail(user.email, {
@@ -1395,6 +1411,118 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
   } catch (err) {
     console.error('Razorpay verify error:', err);
     return res.status(500).json({ message: 'Server error' });
+  }
+});
+
+// POST: Create service request payment intent
+router.post("/service-request", verifyToken, async (req, res) => {
+  try {
+    const { requestId, type, gateway } = req.body; // type: 'service' or 'movers'
+    const userId = req.user.id;
+
+    // Import models dynamically
+    const ServiceRequest = (await import('../models/serviceRequest.model.js')).default;
+    const MoversRequest = (await import('../models/moversRequest.model.js')).default;
+
+    let requestDoc;
+    let description;
+
+    if (type === 'movers') {
+      requestDoc = await MoversRequest.findById(requestId);
+      description = 'Movers Request Booking Fee';
+    } else {
+      requestDoc = await ServiceRequest.findById(requestId);
+      description = 'Service Request Booking Fee';
+    }
+
+    if (!requestDoc) {
+      return res.status(404).json({ message: "Request not found." });
+    }
+
+    if (requestDoc.userId.toString() !== userId) {
+      return res.status(403).json({ message: "Unauthorized." });
+    }
+
+    // Determine Amount
+    // Standard Base Fees
+    let baseFee = 149; // Service
+    if (type === 'movers') baseFee = 499;
+
+    // Apply allowed discount
+    let discount = requestDoc.discountApplied || 0;
+    let amount = Math.max(1, baseFee - discount); // Ensure at least 1 INR
+
+    // Update doc's amount if not set
+    if (!requestDoc.amount || requestDoc.amount === 0) {
+      requestDoc.amount = amount;
+      await requestDoc.save();
+    } else {
+      // If already set (e.g. retry), use it
+      amount = requestDoc.amount;
+    }
+
+    const { keyId, authHeader } = getRazorpayAuthHeader();
+    const currency = 'INR';
+
+    // Create Razorpay Order
+    const razorpayResponse = await fetch(`https://api.razorpay.com/v1/orders`, {
+      method: 'POST',
+      headers: {
+        'Authorization': authHeader,
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        amount: Math.round(amount * 100), // paise
+        currency,
+        receipt: generateReceiptNumber(),
+        notes: {
+          requestId: requestDoc._id.toString(),
+          type: type === 'movers' ? 'movers_request' : 'service_request'
+        }
+      })
+    });
+
+    const orderData = await razorpayResponse.json();
+    if (!razorpayResponse.ok) {
+      // Fallback for demo/test mode if keys invalid
+      console.error("Razorpay Error:", orderData);
+      throw new Error(orderData.error?.description || 'Razorpay order creation failed');
+    }
+
+    // Create Payment Record
+    const payment = new Payment({
+      paymentId: generatePaymentId(),
+      userId,
+      amount: amount,
+      currency,
+      status: 'pending',
+      gateway: 'razorpay',
+      paymentType: type === 'movers' ? 'movers_booking' : 'service_booking',
+      metadata: {
+        requestId: requestDoc._id,
+        requestType: type,
+        originalAmount: baseFee,
+        discount: discount
+      }
+    });
+    await payment.save();
+
+    res.json({
+      payment: {
+        ...payment.toObject(),
+        orderId: orderData.id,
+      },
+      razorpay: {
+        orderId: orderData.id,
+        amount: orderData.amount,
+        currency: orderData.currency,
+        keyId
+      }
+    });
+
+  } catch (err) {
+    console.error("Error creating service payment intent:", err);
+    res.status(500).json({ message: "Server error creating payment." });
   }
 });
 

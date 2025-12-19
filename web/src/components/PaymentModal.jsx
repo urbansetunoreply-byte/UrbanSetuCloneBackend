@@ -271,7 +271,7 @@ const createPaymentLockManager = (appointmentId) => {
   };
 };
 
-const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existingPayment }) => {
+const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existingPayment, isServicePayment, servicePaymentDetails }) => {
   const [loading, setLoading] = useState(false);
   const [paymentData, setPaymentData] = useState(null);
   const [paymentSuccess, setPaymentSuccess] = useState(false);
@@ -721,6 +721,18 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
             amount: monthlyRentContext.originalAmount, // Always use original INR amount
             gateway: targetGateway,
             isAutoDebit: false
+          })
+        });
+      } else if (isServicePayment && servicePaymentDetails) {
+        // Special handling for Service Requests
+        response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/service-request`, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          credentials: 'include',
+          body: JSON.stringify({
+            requestId: servicePaymentDetails.requestId,
+            type: servicePaymentDetails.type,
+            gateway: targetGateway
           })
         });
       } else {
@@ -1259,7 +1271,6 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                       </div>
                     </div>
 
-                    {/* Completion Reward Preview */}
                     {/* Completion Reward Preview */}
                     {preferredMethod === 'razorpay' && paymentData?.payment?.amount >= 1000 && (
                       <div className="mt-3 bg-yellow-100 rounded-lg p-2 flex items-center justify-between border border-yellow-200">

@@ -8,13 +8,37 @@ const router = express.Router();
 // Create movers request
 router.post('/movers', verifyToken, async (req, res, next) => {
   try {
-    const { fromAddress, toAddress, moveDate, size, notes } = req.body;
+    const { fromAddress, toAddress, moveDate, size, notes, coinsToRedeem } = req.body;
     if (!fromAddress || !toAddress || !moveDate || !size) return res.status(400).json({ message: 'Missing fields' });
+
+    let redeemed = 0;
+    let discount = 0;
+
+    if (coinsToRedeem && coinsToRedeem > 0) {
+      const CoinService = (await import('../services/coinService.js')).default;
+      const balanceData = await CoinService.getBalance(req.user.id);
+      if (balanceData.setuCoinsBalance < coinsToRedeem) {
+        return res.status(400).json({ message: 'Insufficient SetuCoins balance' });
+      }
+      // 10 Coins = 1 INR
+      discount = Math.floor(coinsToRedeem / 10);
+      await CoinService.debit({
+        userId: req.user.id,
+        amount: coinsToRedeem,
+        source: 'redemption_service_discount',
+        description: `Discount on Movers Request to ${toAddress}`,
+        referenceModel: 'MoversRequest' // We'll update ID after creation if needed, or just link by description
+      });
+      redeemed = coinsToRedeem;
+    }
+
     const doc = await MoversRequest.create({
       userId: req.user.id,
       requesterName: req.user.username,
       requesterEmail: req.user.email,
-      fromAddress, toAddress, moveDate, size, notes
+      fromAddress, toAddress, moveDate, size, notes,
+      redeemedCoins: redeemed,
+      discountApplied: discount
     });
     res.status(201).json(doc);
   } catch (e) { next(e); }
@@ -76,13 +100,37 @@ router.delete('/movers/:id', verifyToken, async (req, res, next) => {
 // Create service request
 router.post('/services', verifyToken, async (req, res, next) => {
   try {
-    const { services, preferredDate, address, notes } = req.body;
+    const { services, preferredDate, address, notes, coinsToRedeem } = req.body;
     if (!services || services.length === 0 || !preferredDate || !address) return res.status(400).json({ message: 'Missing fields' });
+
+    let redeemed = 0;
+    let discount = 0;
+
+    if (coinsToRedeem && coinsToRedeem > 0) {
+      const CoinService = (await import('../services/coinService.js')).default;
+      const balanceData = await CoinService.getBalance(req.user.id);
+      if (balanceData.setuCoinsBalance < coinsToRedeem) {
+        return res.status(400).json({ message: 'Insufficient SetuCoins balance' });
+      }
+      // 10 Coins = 1 INR
+      discount = Math.floor(coinsToRedeem / 10);
+      await CoinService.debit({
+        userId: req.user.id,
+        amount: coinsToRedeem,
+        source: 'redemption_service_discount',
+        description: `Discount on Service Request (${services.join(', ')})`,
+        referenceModel: 'ServiceRequest'
+      });
+      redeemed = coinsToRedeem;
+    }
+
     const doc = await ServiceRequest.create({
       userId: req.user.id,
       requesterName: req.user.username,
       requesterEmail: req.user.email,
-      services, preferredDate, address, notes
+      services, preferredDate, address, notes,
+      redeemedCoins: redeemed,
+      discountApplied: discount
     });
     res.status(201).json(doc);
   } catch (e) { next(e); }

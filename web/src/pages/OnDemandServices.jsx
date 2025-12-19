@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { FaBroom, FaBolt, FaWrench, FaBug, FaTools, FaTruckMoving, FaCalendarAlt, FaMapMarkerAlt, FaHome, FaSignInAlt, FaSignOutAlt, FaCheckCircle, FaClock, FaTimesCircle } from 'react-icons/fa';
+import { FaBroom, FaBolt, FaWrench, FaBug, FaTools, FaTruckMoving, FaCalendarAlt, FaMapMarkerAlt, FaHome, FaSignInAlt, FaSignOutAlt, FaCheckCircle, FaClock, FaTimesCircle, FaCoins } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
@@ -7,6 +7,8 @@ import ConditionImageUpload from '../components/rental/ConditionImageUpload';
 import ChecklistModal from '../components/rental/ChecklistModal';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import PaymentModal from '../components/PaymentModal';
+import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
 const services = [
   { key: 'cleaning', name: 'Cleaning', icon: <FaBroom className="text-blue-600" /> },
   { key: 'electrician', name: 'Electrician', icon: <FaBolt className="text-yellow-600" /> },
@@ -41,6 +43,13 @@ export default function OnDemandServices() {
   const [checklistForm, setChecklistForm] = useState({ rooms: [], amenities: [], notes: '' });
   const [checklistFilters, setChecklistFilters] = useState({ q: '', status: 'all' });
   const [showSelectionModal, setShowSelectionModal] = useState(false);
+
+  // SetuCoins Redemption
+  const [coinBalance, setCoinBalance] = useState(0);
+  const [coinsToRedeem, setCoinsToRedeem] = useState(0);
+  const [coinsToRedeemMovers, setCoinsToRedeemMovers] = useState(0);
+  const [showCoinBurst, setShowCoinBurst] = useState(false);
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchMyRequests = async () => {
@@ -88,10 +97,22 @@ export default function OnDemandServices() {
     return null;
   };
 
+  const fetchCoinBalance = async () => {
+    if (!currentUser) return;
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/coins/balance`, { credentials: 'include' });
+      const data = await res.json();
+      if (data.success) {
+        setCoinBalance(data.setuCoinsBalance);
+      }
+    } catch (_) { }
+  };
+
   useEffect(() => {
     fetchMyRequests();
     fetchMyMoverRequests();
     fetchMyContracts();
+    fetchCoinBalance();
   }, [currentUser?._id]);
 
   // Handle URL parameters for opening checklist modal
@@ -136,11 +157,19 @@ export default function OnDemandServices() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ services: selected, preferredDate: details.date, address: details.address, notes: details.notes })
+        body: JSON.stringify({
+          services: selected,
+          preferredDate: details.date,
+          address: details.address,
+          notes: details.notes,
+          coinsToRedeem: coinsToRedeem
+        })
       });
       if (res.ok) {
         toast.success('Service request submitted');
         fetchMyRequests();
+        setCoinsToRedeem(0);
+        fetchCoinBalance(); // Update balance
         // Notify admins
         try {
           await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
@@ -173,11 +202,20 @@ export default function OnDemandServices() {
         method: 'POST',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ fromAddress: moversForm.from, toAddress: moversForm.to, moveDate: moversForm.date, size: moversForm.size, notes: moversForm.notes })
+        body: JSON.stringify({
+          fromAddress: moversForm.from,
+          toAddress: moversForm.to,
+          moveDate: moversForm.date,
+          size: moversForm.size,
+          notes: moversForm.notes,
+          coinsToRedeem: coinsToRedeemMovers
+        })
       });
       if (res.ok) {
         toast.success('Movers request submitted');
         fetchMyMoverRequests();
+        setCoinsToRedeemMovers(0);
+        fetchCoinBalance();
         // Notify admins
         try {
           await fetch(`${API_BASE_URL}/api/notifications/notify-admins`, {
@@ -229,6 +267,36 @@ export default function OnDemandServices() {
             <label className="text-sm text-gray-600">Notes</label>
             <textarea className="w-full border rounded p-2" rows={3} value={details.notes} onChange={e => setDetails(d => ({ ...d, notes: e.target.value }))} placeholder="Describe the issue" />
           </div>
+
+          {/* Service Redemption UI */}
+          <div className="md:col-span-2 bg-yellow-50 p-4 rounded-lg border border-yellow-200 mt-2">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                <FaCoins className={`text-yellow-600 ${coinsToRedeem > 0 ? 'animate-bounce' : ''}`} /> Redeem SetuCoins
+              </span>
+              <span className="text-xs text-gray-600">Balance: {coinBalance}</span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <input
+                type="range"
+                min="0"
+                max={Math.min(coinBalance, 500)} // Cap at 500 for safety or user limit
+                step="10"
+                value={coinsToRedeem}
+                onChange={(e) => setCoinsToRedeem(Number(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+              <span className="text-sm font-bold min-w-[3rem] text-right">{coinsToRedeem}</span>
+            </div>
+
+            {coinsToRedeem > 0 && (
+              <div className="mt-2 text-xs text-green-700 font-medium">
+                Discount applied: ₹{Math.floor(coinsToRedeem / 10)} OFF
+              </div>
+            )}
+            <p className="text-[10px] text-gray-500 mt-1">10 Coins = ₹1 Discount</p>
+          </div>
         </div>
         <button onClick={submit} disabled={loading} className="mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded disabled:opacity-60">{loading ? 'Submitting...' : 'Submit Request'}</button>
       </div>
@@ -265,6 +333,36 @@ export default function OnDemandServices() {
           <div>
             <label className="text-sm text-gray-600">Notes</label>
             <textarea className="w-full border rounded p-2" rows={3} value={moversForm.notes} onChange={e => setMoversForm(f => ({ ...f, notes: e.target.value }))} placeholder="Additional details" />
+          </div>
+
+          {/* Movers Redemption UI */}
+          <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200 mt-2">
+            <div className="flex justify-between items-center mb-2">
+              <span className="text-sm font-semibold text-gray-800 flex items-center gap-1">
+                <FaCoins className={`text-yellow-600 ${coinsToRedeemMovers > 0 ? 'animate-bounce' : ''}`} /> Redeem SetuCoins
+              </span>
+              <span className="text-xs text-gray-600">Balance: {coinBalance}</span>
+            </div>
+
+            <div className="flex items-center gap-4">
+              <input
+                type="range"
+                min="0"
+                max={Math.min(coinBalance, 2000)} // Higher cap for Movers
+                step="50"
+                value={coinsToRedeemMovers}
+                onChange={(e) => setCoinsToRedeemMovers(Number(e.target.value))}
+                className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer"
+              />
+              <span className="text-sm font-bold min-w-[3rem] text-right">{coinsToRedeemMovers}</span>
+            </div>
+
+            {coinsToRedeemMovers > 0 && (
+              <div className="mt-2 text-xs text-green-700 font-medium">
+                Discount applied: ₹{Math.floor(coinsToRedeemMovers / 10)} OFF
+              </div>
+            )}
+            <p className="text-[10px] text-gray-500 mt-1">10 Coins = ₹1 Discount</p>
           </div>
           <button disabled={moversSubmitting} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded hover:from-blue-700 hover:to-purple-700 disabled:opacity-50">{moversSubmitting ? 'Submitting...' : 'Request Quote'}</button>
         </form>
@@ -643,6 +741,48 @@ export default function OnDemandServices() {
           )}
         </div>
       )}
+      {/* Payment Modal */}
+      {showPaymentModal && paymentRequestData && (
+        <PaymentModal
+          isOpen={showPaymentModal}
+          onClose={() => { setShowPaymentModal(false); setPaymentRequestData(null); }}
+          onSuccess={() => {
+            setShowPaymentModal(false);
+            setPaymentRequestData(null);
+            setShowCoinBurst(true); // Trigger delight!
+            toast.success("Payment Received & Request Confirmed!");
+            fetchMyRequests();
+            fetchMyMoverRequests();
+            fetchCoinBalance();
+            setSelected([]);
+            setDetails({ date: '', address: '', notes: '' });
+            setMoversForm({ from: '', to: '', date: '', size: '1BHK', notes: '' });
+          }}
+          // Mock appointment object for display compatibility
+          appointment={{
+            _id: paymentRequestData.requestId, // Hack for ID
+            propertyName: paymentRequestData.type === 'movers' ? 'Movers Booking' : 'Service Booking',
+            date: paymentRequestData.date,
+            address: paymentRequestData.address,
+            amount: paymentRequestData.amount, // Explicit amount handling in Modal needed or assumed
+            listingId: {
+              name: paymentRequestData.type === 'movers' ? 'Packers & Movers' : 'On-Demand Service',
+              address: paymentRequestData.address,
+              imageUrls: ['https://cdn-icons-png.flaticon.com/512/1067/1067566.png']
+            }
+          }}
+          // Custom props for service payment
+          isServicePayment={true}
+          servicePaymentDetails={paymentRequestData}
+        />
+      )}
+
+      {/* Celebration! */}
+      <SetuCoinParticles
+        active={showCoinBurst}
+        onComplete={() => setShowCoinBurst(false)}
+        count={20}
+      />
     </div>
   );
 }

@@ -1,8 +1,8 @@
 import React, { useState, useEffect, useCallback } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useNavigate, useLocation, Link } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
-import { FaWallet, FaCalendarAlt, FaHistory, FaCog, FaMoneyBillWave, FaExclamationTriangle, FaCheckCircle, FaClock, FaSpinner, FaDownload } from "react-icons/fa";
+import { FaWallet, FaCalendarAlt, FaHistory, FaCog, FaMoneyBillWave, FaExclamationTriangle, FaCheckCircle, FaClock, FaSpinner, FaDownload, FaTrophy, FaArrowRight } from "react-icons/fa";
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentSchedule from '../components/rental/PaymentSchedule';
 import AutoDebitSettings from '../components/rental/AutoDebitSettings';
@@ -230,6 +230,29 @@ export default function RentWallet() {
         {/* Overview Tab */}
         {activeTab === 'overview' && (
           <div className="space-y-6">
+
+            {/* Gamification Banner */}
+            <div className="bg-gradient-to-r from-indigo-600 to-purple-600 rounded-xl shadow-lg p-6 text-white relative overflow-hidden">
+              <div className="absolute top-0 right-0 opacity-10 transform translate-x-10 -translate-y-10">
+                <FaTrophy className="text-9xl" />
+              </div>
+              <div className="relative z-10 flex flex-col md:flex-row items-center justify-between gap-4">
+                <div>
+                  <h2 className="text-2xl font-bold flex items-center gap-2 mb-2">
+                    <FaTrophy className="text-yellow-300" /> Community Leaderboard
+                  </h2>
+                  <p className="text-indigo-100 max-w-xl">
+                    Earn SetuCoins by paying rent on time and climb the leaderboard! Top rankers get exclusive rewards.
+                  </p>
+                </div>
+                <div className="flex items-center gap-4">
+                  <Link to="/user/leaderboard" className="bg-white text-indigo-600 px-6 py-2.5 rounded-full font-bold shadow-md hover:bg-gray-50 hover:shadow-lg transition flex items-center gap-2">
+                    View Standings <FaArrowRight />
+                  </Link>
+                </div>
+              </div>
+            </div>
+
             {/* Wallet Statistics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Paid */}

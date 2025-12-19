@@ -1970,7 +1970,7 @@ export default function Profile() {
             balance={coinData.balance}
             streak={coinData.streak}
             loading={coinData.loading}
-            onViewHistory={() => setShowCoinHistory(!showCoinHistory)}
+            onViewHistory={() => navigate('/user/rewards?tab=history')}
           />
 
           {/* Expandable History */}

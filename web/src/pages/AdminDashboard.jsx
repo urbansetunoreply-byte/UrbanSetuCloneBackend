@@ -18,7 +18,9 @@ import {
   FaLock,
   FaRupeeSign,
   FaSync,
-  FaShieldAlt
+  FaShieldAlt,
+  FaCoins,
+  FaTrophy
 } from "react-icons/fa";
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
 import { toast } from 'react-toastify';
@@ -1695,6 +1697,17 @@ export default function AdminDashboard() {
               <div>
                 <h3 className="font-semibold text-gray-800 mb-1">Security Moderation</h3>
                 <p className="text-sm text-gray-600 mb-2">OTP/password lockouts and unlocks</p>
+              </div>
+            </div>
+          </Link>
+          <Link to="/admin/setu-coins" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-amber-200">
+            <div className="flex flex-col items-center text-center space-y-4">
+              <div className="bg-gradient-to-r from-amber-100 to-amber-200 p-4 rounded-xl group-hover:from-amber-200 group-hover:to-amber-300 transition-all duration-300">
+                <FaCoins className="text-2xl text-amber-600" />
+              </div>
+              <div>
+                <h3 className="font-semibold text-gray-800 mb-1">SetuCoins Economy</h3>
+                <p className="text-sm text-gray-600 mb-2">Monitor minting and redemption</p>
               </div>
             </div>
           </Link>

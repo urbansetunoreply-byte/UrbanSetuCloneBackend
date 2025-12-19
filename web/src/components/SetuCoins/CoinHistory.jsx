@@ -1,11 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import { FaArrowUp, FaArrowDown, FaExchangeAlt, FaHistory, FaCalendarAlt, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
-const CoinHistory = () => {
+const CoinHistory = ({ initialOpen = false }) => {
+    const navigate = useNavigate();
     const [transactions, setTransactions] = useState([]);
     const [loading, setLoading] = useState(true);
-    const [isOpen, setIsOpen] = useState(false); // Collapsible
+    const [isOpen, setIsOpen] = useState(initialOpen); // Collapsible
 
     useEffect(() => {
         const getHistory = async () => {
@@ -84,8 +86,14 @@ const CoinHistory = () => {
                     </ul>
                 )}
             </div>
-            <div className="p-3 bg-gray-50 border-t border-gray-100 text-center">
-                <button className="text-xs text-blue-600 font-medium hover:underline">View All Activity</button>
+            <div className="p-4 bg-gray-50/50 border-t border-gray-100 text-center">
+                <button
+                    onClick={() => navigate('/user/rewards?tab=history')}
+                    className="group inline-flex items-center gap-2 text-sm text-indigo-600 font-bold hover:text-indigo-700 transition-all focus:outline-none"
+                >
+                    View All Activity
+                    <FaChevronDown className="text-[10px] group-hover:translate-y-0.5 transition-transform" />
+                </button>
             </div>
         </div>
     );

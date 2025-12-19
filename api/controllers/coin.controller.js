@@ -106,3 +106,18 @@ export const adminAdjustCoins = async (req, res, next) => {
         next(error);
     }
 };
+
+/**
+ * Admin: Get System Stats
+ */
+export const getStats = async (req, res, next) => {
+    try {
+        if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'Forbidden'));
+        }
+        const stats = await CoinService.getStats();
+        res.status(200).json({ success: true, stats });
+    } catch (error) {
+        next(error);
+    }
+};
