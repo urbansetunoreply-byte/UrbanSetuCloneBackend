@@ -287,6 +287,12 @@ const formatLocalizedTime = (dateInput = new Date(), ip = null, options = {}) =>
 
   return dateValue.toLocaleString('en-IN', {
     timeZone,
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: true,
     ...options
   }) + (ip ? ` (${timeZone})` : '');
 };
@@ -10868,9 +10874,7 @@ export const sendRentPaymentReceivedEmail = async (email, paymentDetails) => {
     } = paymentDetails;
 
     // Format transaction date if provided, else use current time
-    const txDate = transactionDate
-      ? new Date(transactionDate).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' })
-      : new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
+    const txDate = transactionDate ? formatIndiaTime(transactionDate) : formatIndiaTime();
 
     const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
     const subject = `✅ Rent Payment Received - ${propertyName}`;
@@ -10965,9 +10969,7 @@ export const sendRentPaymentReceivedToLandlordEmail = async (email, paymentDetai
     } = paymentDetails;
 
     // Format transaction date if provided, else use current time
-    const txDate = transactionDate
-      ? new Date(transactionDate).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' })
-      : new Date().toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', dateStyle: 'full', timeStyle: 'short' });
+    const txDate = transactionDate ? formatIndiaTime(transactionDate) : formatIndiaTime();
 
     const subject = `💰 Rent Payment Received from ${tenantName} - ${propertyName}`;
 
@@ -12217,7 +12219,7 @@ export const sendReportAcknowledgementEmail = async (email, reportDetails) => {
               <div style="background-color: white; padding: 15px; border-radius: 6px; margin: 15px 0;">
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Category:</strong> ${category}</p>
                 <p style="color: #4b5563; margin: 0 0 10px 0;"><strong>Sub-Category:</strong> ${subCategory}</p>
-                <p style="color: #4b5563; margin: 0;"><strong>Date:</strong> ${new Date(createdAt).toLocaleString('en-IN')}</p>
+                <p style="color: #4b5563; margin: 0;"><strong>Date:</strong> ${formatIndiaTime(createdAt)}</p>
               </div>
               <p style="color: #3730a3; margin: 15px 0 0; font-size: 14px; line-height: 1.6;">
                 Thank you for helping us improve our AI. We have received your report regarding an inappropriate or incorrect AI response. Our team will review this incident to enhance safety and accuracy.
@@ -12258,10 +12260,9 @@ export const sendReportAcknowledgementEmail = async (email, reportDetails) => {
 export const sendSharedChatLinkEmail = async (email, sharedLink, title, expiryDate, messageCount, shareToken = null) => {
   const clientBaseUrl = 'https://urbansetu.vercel.app';
   const formattedExpiry = expiryDate ? new Date(expiryDate).toLocaleDateString('en-IN', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
   }) : 'Never expires';
 
   const mailOptions = {
@@ -12358,10 +12359,9 @@ export const sendSharedChatLinkEmail = async (email, sharedLink, title, expiryDa
 export const sendSharedChatRevokedEmail = async (email, title, revokedDate) => {
   const clientBaseUrl = 'https://urbansetu.vercel.app';
   const formattedDate = new Date(revokedDate).toLocaleDateString('en-IN', {
-    weekday: 'long',
-    year: 'numeric',
-    month: 'long',
-    day: 'numeric'
+    day: '2-digit',
+    month: '2-digit',
+    year: 'numeric'
   });
 
   const mailOptions = {
@@ -12456,7 +12456,7 @@ export const sendSessionRevokedEmail = async (email, device, ip, location, time)
             <p style="margin: 5px 0;"><strong>Device:</strong> ${device}</p>
             <p style="margin: 5px 0;"><strong>Location:</strong> ${location || 'Unknown'}</p>
             <p style="margin: 5px 0;"><strong>IP Address:</strong> ${ip}</p>
-            <p style="margin: 5px 0;"><strong>Time:</strong> ${new Date(time).toLocaleString()}</p>
+            <p style="margin: 5px 0;"><strong>Time:</strong> ${formatLocalizedTime(time, ip)}</p>
           </div>
 
           <p style="margin-bottom: 20px;">If you did not authorize this action, please secure your account immediately.</p>
@@ -12543,9 +12543,7 @@ export const sendDisputeResolvedEmail = async (email, disputeDetails) => {
 
     const subject = `✅ Dispute Resolved - ${propertyName}`;
 
-    const resolutionDate = resolvedAt ? new Date(resolvedAt).toLocaleString('en-IN', {
-      day: 'numeric', month: 'long', year: 'numeric', hour: '2-digit', minute: '2-digit'
-    }) : new Date().toLocaleString('en-IN');
+    const resolutionDate = resolvedAt ? formatIndiaTime(resolvedAt) : formatIndiaTime();
 
     const html = `
       <!DOCTYPE html>
@@ -13249,15 +13247,7 @@ export const sendProfileUpdateSuccessEmail = async (email, username, role) => {
               </div>
               <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Changes Saved Successfully</h2>
               <p style="color: #4b5563; margin: 0; font-size: 16px; line-height: 1.6;">
-                Hi ${username}, your profile information has been successfully updated on ${new Date().toLocaleDateString('en-IN', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
-      hour: '2-digit',
-      minute: '2-digit',
-      timeZoneName: 'short'
-    })}.
+                Hi ${username}, your profile information has been successfully updated on ${formatIndiaTime()}.
               </p>
             </div>
             
