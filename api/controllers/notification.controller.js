@@ -48,7 +48,7 @@ const parseReviewReportFromNotification = (n) => {
   const reporterMatch = message.match(/reported by ([^\\s]+)/);
   const categoryMatch = message.match(/for: ([^-]+)/);
   const detailsMatch = message.match(/- (.+)$/);
-  
+
   return {
     notificationId: n._id,
     type: 'review',
@@ -74,17 +74,17 @@ export const getReportedNotifications = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Admins only' });
     }
 
-    const { 
-      appointmentId, 
-      dateFrom, 
-      dateTo, 
-      reporter, 
-      status, 
-      search, 
-      sortBy = 'date', 
+    const {
+      appointmentId,
+      dateFrom,
+      dateTo,
+      reporter,
+      status,
+      search,
+      sortBy = 'date',
       sortOrder = 'desc',
       messageType,
-      messageId 
+      messageId
     } = req.query;
 
     // Build date filter
@@ -99,12 +99,12 @@ export const getReportedNotifications = async (req, res, next) => {
     }
 
     // Fetch this admin's notifications with date filter
-    const query = { 
-      userId: req.user.id, 
+    const query = {
+      userId: req.user.id,
       title: { $in: ['Chat message reported', 'Chat conversation reported', 'Review Reported'] },
       ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
     };
-    
+
     const notifications = await Notification.find(query).sort({ createdAt: -1 });
 
     // Parse to structured reports
@@ -136,7 +136,7 @@ export const getReportedNotifications = async (req, res, next) => {
 
     if (search) {
       const searchLower = search.toLowerCase();
-      reports = reports.filter(r => 
+      reports = reports.filter(r =>
         (r.reason && r.reason.toLowerCase().includes(searchLower)) ||
         (r.details && r.details.toLowerCase().includes(searchLower)) ||
         (r.messageExcerpt && r.messageExcerpt.toLowerCase().includes(searchLower)) ||
@@ -155,7 +155,7 @@ export const getReportedNotifications = async (req, res, next) => {
     // Apply sorting
     reports.sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (sortBy) {
         case 'user':
           aValue = a.reporter || '';
@@ -221,12 +221,12 @@ export const getReviewReports = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Admins only' });
     }
 
-    const { 
-      dateFrom, 
-      dateTo, 
-      reporter, 
-      search, 
-      sortBy = 'date', 
+    const {
+      dateFrom,
+      dateTo,
+      reporter,
+      search,
+      sortBy = 'date',
       sortOrder = 'desc'
     } = req.query;
 
@@ -245,39 +245,40 @@ export const getReviewReports = async (req, res, next) => {
     let query;
     if (req.user.role === 'rootadmin') {
       // Root admins see all review reports (notifications sent to any admin)
-      query = { 
+      query = {
         title: 'Review Reported',
         ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
       };
     } else {
       // Regular admins see only reports assigned to them
-      query = { 
+      query = {
         userId: req.user.id,
         title: 'Review Reported',
         ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
       };
     }
-    
-    console.log('User role:', req.user.role);
-    console.log('Query for notifications:', JSON.stringify(query, null, 2));
-    
+
+    // console.log('User role:', req.user.role);
+    // console.log('Query for notifications:', JSON.stringify(query, null, 2));
+
     const notifications = await Notification.find(query).sort({ createdAt: -1 });
-    console.log('Found notifications:', notifications.length);
-    
+    // console.log('Found notifications:', notifications.length);
+
     // Additional debugging for root admin
     if (req.user.role === 'rootadmin') {
       const totalReviewReports = await Notification.countDocuments({ title: 'Review Reported' });
-      console.log('Total review reports in system:', totalReviewReports);
-      console.log('Reports found for root admin:', notifications.length);
+      // console.log('Total review reports in system:', totalReviewReports);
+      // console.log('Reports found for root admin:', notifications.length);
     }
 
     // Parse to structured reports
     let reports = notifications.map(parseReviewReportFromNotification);
-    
+
     // Debug: Log first notification to see what's stored
-    if (notifications.length > 0) {
+    // Debug: Log first notification to see what's stored
+    /* if (notifications.length > 0) {
       console.log('First notification:', JSON.stringify(notifications[0], null, 2));
-    }
+    } */
 
     // Deduplicate reports for root admin (same review can be reported multiple times to different admins)
     if (req.user.role === 'rootadmin') {
@@ -290,34 +291,34 @@ export const getReviewReports = async (req, res, next) => {
         }
       });
       reports = Array.from(uniqueReports.values());
-      console.log('Deduplicated reports for root admin:', reports.length, 'from', notifications.length, 'notifications');
+      // console.log('Deduplicated reports for root admin:', reports.length, 'from', notifications.length, 'notifications');
     }
 
     // Enhance reports with additional reporter details
     let enhancedReports = await Promise.all(reports.map(async (report) => {
-      console.log('Processing report:', report.notificationId, 'reporterId:', report.reporterId);
-      
+      // console.log('Processing report:', report.notificationId, 'reporterId:', report.reporterId);
+
       // Try to get reporter details from multiple sources
       let reporterId = report.reporterId;
-      
+
       // If no reporterId in meta, try to find the notification and use adminId
       if (!reporterId) {
         const notification = notifications.find(n => n._id.toString() === report.notificationId.toString());
-        console.log('Looking for notification with ID:', report.notificationId.toString());
-        console.log('Available notification IDs:', notifications.map(n => n._id.toString()));
+        // console.log('Looking for notification with ID:', report.notificationId.toString());
+        // console.log('Available notification IDs:', notifications.map(n => n._id.toString()));
         if (notification && notification.adminId) {
           reporterId = notification.adminId;
-          console.log('Using adminId as reporterId:', reporterId);
+          // console.log('Using adminId as reporterId:', reporterId);
         } else {
-          console.log('No notification found or no adminId for report:', report.notificationId);
+          // console.log('No notification found or no adminId for report:', report.notificationId);
         }
       }
-      
+
       if (reporterId) {
         try {
           const User = (await import('../models/user.model.js')).default;
           const reporter = await User.findById(reporterId).select('email mobileNumber role username');
-          console.log('Found reporter:', reporter ? { email: reporter.email, phone: reporter.mobileNumber, role: reporter.role, username: reporter.username } : 'null');
+          // console.log('Found reporter:', reporter ? { email: reporter.email, phone: reporter.mobileNumber, role: reporter.role, username: reporter.username } : 'null');
           if (reporter) {
             const enhanced = {
               ...report,
@@ -326,14 +327,14 @@ export const getReviewReports = async (req, res, next) => {
               reporterRole: report.reporterRole || reporter.role,
               reporterUsername: reporter.username
             };
-            console.log('Enhanced report:', { reporterEmail: enhanced.reporterEmail, reporterPhone: enhanced.reporterPhone, reporterRole: enhanced.reporterRole });
+            // console.log('Enhanced report:', { reporterEmail: enhanced.reporterEmail, reporterPhone: enhanced.reporterPhone, reporterRole: enhanced.reporterRole });
             return enhanced;
           }
         } catch (error) {
           console.error('Error fetching reporter details:', error);
         }
       } else {
-        console.log('No reporterId found for report:', report.notificationId);
+        // console.log('No reporterId found for report:', report.notificationId);
       }
       return report;
     }));
@@ -345,7 +346,7 @@ export const getReviewReports = async (req, res, next) => {
 
     if (search) {
       const searchLower = search.toLowerCase();
-      enhancedReports = enhancedReports.filter(r => 
+      enhancedReports = enhancedReports.filter(r =>
         (r.propertyName && r.propertyName.toLowerCase().includes(searchLower)) ||
         (r.reporter && r.reporter.toLowerCase().includes(searchLower)) ||
         (r.reporterEmail && r.reporterEmail.toLowerCase().includes(searchLower)) ||
@@ -358,7 +359,7 @@ export const getReviewReports = async (req, res, next) => {
     // Apply sorting
     reports.sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (sortBy) {
         case 'reporter':
           aValue = a.reporter || '';
@@ -386,8 +387,8 @@ export const getReviewReports = async (req, res, next) => {
       }
     });
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       reports: enhancedReports,
       total: enhancedReports.length
     });
@@ -404,7 +405,7 @@ const parsePropertyReportFromNotification = (n) => {
   const reporterMatch = message.match(/reported by ([^\\s]+)/);
   const categoryMatch = message.match(/for: ([^-]+)/);
   const detailsMatch = message.match(/- (.+)$/);
-  
+
   return {
     notificationId: n._id,
     type: 'property',
@@ -429,12 +430,12 @@ export const getPropertyReports = async (req, res, next) => {
       return res.status(403).json({ success: false, message: 'Admins only' });
     }
 
-    const { 
-      dateFrom, 
-      dateTo, 
-      reporter, 
-      search, 
-      sortBy = 'date', 
+    const {
+      dateFrom,
+      dateTo,
+      reporter,
+      search,
+      sortBy = 'date',
       sortOrder = 'desc'
     } = req.query;
 
@@ -453,39 +454,40 @@ export const getPropertyReports = async (req, res, next) => {
     let query;
     if (req.user.role === 'rootadmin') {
       // Root admins see all property reports (notifications sent to any admin)
-      query = { 
+      query = {
         title: 'Property Reported',
         ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
       };
     } else {
       // Regular admins see only reports assigned to them
-      query = { 
+      query = {
         userId: req.user.id,
         title: 'Property Reported',
         ...(Object.keys(dateFilter).length > 0 && { createdAt: dateFilter })
       };
     }
-    
-    console.log('User role:', req.user.role);
-    console.log('Query for property notifications:', JSON.stringify(query, null, 2));
-    
+
+    // console.log('User role:', req.user.role);
+    // console.log('Query for property notifications:', JSON.stringify(query, null, 2));
+
     const notifications = await Notification.find(query).sort({ createdAt: -1 });
-    console.log('Found property notifications:', notifications.length);
-    
+    // console.log('Found property notifications:', notifications.length);
+
     // Additional debugging for root admin
     if (req.user.role === 'rootadmin') {
       const totalPropertyReports = await Notification.countDocuments({ title: 'Property Reported' });
-      console.log('Total property reports in system:', totalPropertyReports);
-      console.log('Reports found for root admin:', notifications.length);
+      // console.log('Total property reports in system:', totalPropertyReports);
+      // console.log('Reports found for root admin:', notifications.length);
     }
 
     // Parse to structured reports
     let reports = notifications.map(parsePropertyReportFromNotification);
-    
+
     // Debug: Log first notification to see what's stored
-    if (notifications.length > 0) {
+    // Debug: Log first notification to see what's stored
+    /* if (notifications.length > 0) {
       console.log('First property notification:', JSON.stringify(notifications[0], null, 2));
-    }
+    } */
 
     // Deduplicate reports for root admin (same property can be reported multiple times to different admins)
     if (req.user.role === 'rootadmin') {
@@ -498,34 +500,34 @@ export const getPropertyReports = async (req, res, next) => {
         }
       });
       reports = Array.from(uniqueReports.values());
-      console.log('Deduplicated property reports for root admin:', reports.length, 'from', notifications.length, 'notifications');
+      // console.log('Deduplicated property reports for root admin:', reports.length, 'from', notifications.length, 'notifications');
     }
 
     // Enhance reports with additional reporter details
     let enhancedReports = await Promise.all(reports.map(async (report) => {
-      console.log('Processing property report:', report.notificationId, 'reporterId:', report.reporterId);
-      
+      // console.log('Processing property report:', report.notificationId, 'reporterId:', report.reporterId);
+
       // Try to get reporter details from multiple sources
       let reporterId = report.reporterId;
-      
+
       // If no reporterId in meta, try to find the notification and use adminId
       if (!reporterId) {
         const notification = notifications.find(n => n._id.toString() === report.notificationId.toString());
-        console.log('Looking for property notification with ID:', report.notificationId.toString());
-        console.log('Available property notification IDs:', notifications.map(n => n._id.toString()));
+        // console.log('Looking for property notification with ID:', report.notificationId.toString());
+        // console.log('Available property notification IDs:', notifications.map(n => n._id.toString()));
         if (notification && notification.adminId) {
           reporterId = notification.adminId;
-          console.log('Using adminId as reporterId for property:', reporterId);
+          // console.log('Using adminId as reporterId for property:', reporterId);
         } else {
-          console.log('No property notification found or no adminId for report:', report.notificationId);
+          // console.log('No property notification found or no adminId for report:', report.notificationId);
         }
       }
-      
+
       if (reporterId) {
         try {
           const User = (await import('../models/user.model.js')).default;
           const reporter = await User.findById(reporterId).select('email mobileNumber role username');
-          console.log('Found property reporter:', reporter ? { email: reporter.email, phone: reporter.mobileNumber, role: reporter.role, username: reporter.username } : 'null');
+          // console.log('Found property reporter:', reporter ? { email: reporter.email, phone: reporter.mobileNumber, role: reporter.role, username: reporter.username } : 'null');
           if (reporter) {
             const enhanced = {
               ...report,
@@ -534,14 +536,14 @@ export const getPropertyReports = async (req, res, next) => {
               reporterRole: report.reporterRole || reporter.role,
               reporterUsername: reporter.username
             };
-            console.log('Enhanced property report:', { reporterEmail: enhanced.reporterEmail, reporterPhone: enhanced.reporterPhone, reporterRole: enhanced.reporterRole });
+            // console.log('Enhanced property report:', { reporterEmail: enhanced.reporterEmail, reporterPhone: enhanced.reporterPhone, reporterRole: enhanced.reporterRole });
             return enhanced;
           }
         } catch (error) {
           console.error('Error fetching property reporter details:', error);
         }
       } else {
-        console.log('No reporterId found for property report:', report.notificationId);
+        // console.log('No reporterId found for property report:', report.notificationId);
       }
       return report;
     }));
@@ -553,7 +555,7 @@ export const getPropertyReports = async (req, res, next) => {
 
     if (search) {
       const searchLower = search.toLowerCase();
-      enhancedReports = enhancedReports.filter(r => 
+      enhancedReports = enhancedReports.filter(r =>
         (r.propertyName && r.propertyName.toLowerCase().includes(searchLower)) ||
         (r.reporter && r.reporter.toLowerCase().includes(searchLower)) ||
         (r.reporterEmail && r.reporterEmail.toLowerCase().includes(searchLower)) ||
@@ -566,7 +568,7 @@ export const getPropertyReports = async (req, res, next) => {
     // Apply sorting
     enhancedReports.sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (sortBy) {
         case 'reporter':
           aValue = a.reporter || '';
@@ -594,8 +596,8 @@ export const getPropertyReports = async (req, res, next) => {
       }
     });
 
-    res.status(200).json({ 
-      success: true, 
+    res.status(200).json({
+      success: true,
       reports: enhancedReports,
       total: enhancedReports.length
     });
@@ -828,7 +830,7 @@ export const reportChatConversation = async (req, res, next) => {
 export const getUserNotifications = async (req, res, next) => {
   try {
     const { userId } = req.params;
-    
+
     // Verify the user is requesting their own notifications
     if (req.user.id !== userId && req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
       return next(errorHandler(403, 'You can only view your own notifications'));
@@ -879,7 +881,7 @@ export const markNotificationAsRead = async (req, res, next) => {
 
       if (otherAdmins.length > 0) {
         const otherAdminIds = otherAdmins.map(admin => admin._id);
-        
+
         // Find and mark the same notification as read for all other admins
         const sameNotifications = await Notification.find({
           _id: { $ne: notificationId },
@@ -966,13 +968,13 @@ export const markAllNotificationsAsReadForAllAdmins = async (req, res, next) => 
     // Mark all unread notifications as read for all admins
     const adminIds = admins.map(admin => admin._id);
     const result = await Notification.updateMany(
-      { 
-        userId: { $in: adminIds }, 
-        isRead: false 
+      {
+        userId: { $in: adminIds },
+        isRead: false
       },
-      { 
-        isRead: true, 
-        readAt: new Date() 
+      {
+        isRead: true,
+        readAt: new Date()
       }
     );
 
@@ -988,7 +990,7 @@ export const markAllNotificationsAsReadForAllAdmins = async (req, res, next) => 
       });
     }
 
-    res.status(200).json({ 
+    res.status(200).json({
       success: true,
       message: `All notifications marked as read for ${admins.length} admins`,
       count: result.modifiedCount,
@@ -1058,7 +1060,7 @@ export const deleteAllNotifications = async (req, res, next) => {
 export const adminSendNotification = async (req, res, next) => {
   try {
     const { userId, title, message, type = 'admin_message' } = req.body;
-    
+
     // Validate required fields
     if (!userId || !title || !message) {
       return res.status(400).json({
@@ -1101,7 +1103,7 @@ export const adminSendNotification = async (req, res, next) => {
 export const getAllUsersForNotifications = async (req, res, next) => {
   try {
     const users = await User.find(
-      { 
+      {
         status: { $ne: 'suspended' },
         role: { $ne: 'admin' },
         role: { $ne: 'rootadmin' }
@@ -1119,7 +1121,7 @@ export const getAllUsersForNotifications = async (req, res, next) => {
 export const adminSendNotificationToAll = async (req, res, next) => {
   try {
     const { title, message, type = 'admin_message' } = req.body;
-    
+
     // Validate required fields
     if (!title || !message) {
       return res.status(400).json({
@@ -1130,7 +1132,7 @@ export const adminSendNotificationToAll = async (req, res, next) => {
 
     // Get all regular users (exclude admins and suspended users)
     const users = await User.find(
-      { 
+      {
         status: { $ne: 'suspended' },
         role: { $ne: 'admin' },
         role: { $ne: 'rootadmin' }
@@ -1164,7 +1166,7 @@ export const adminSendNotificationToAll = async (req, res, next) => {
   } catch (error) {
     next(error);
   }
-}; 
+};
 
 // Notify all admins: generic helper for user-initiated requests (e.g., services/movers)
 export const notifyAdminsGeneric = async (req, res, next) => {
@@ -1220,10 +1222,10 @@ export const notifyWatchlistUsers = async (app, { listing, changeType, oldPrice,
 
     const io = app.get('io');
     const notifications = [];
-    
+
     for (const w of watchers) {
       let title, message, type;
-      
+
       switch (changeType) {
         case 'price_drop':
           title = 'Price Drop Alert! 🎉';
@@ -1269,14 +1271,14 @@ export const notifyWatchlistUsers = async (app, { listing, changeType, oldPrice,
         message,
         link: `/listing/${listing._id}`
       });
-      
+
       notifications.push(notification);
-      
+
       if (io) {
         io.to(w.userId.toString()).emit('notificationCreated', notification);
       }
     }
-    
+
     return notifications;
   } catch (error) {
     console.error('Failed to notify watchlist users:', error);

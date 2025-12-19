@@ -187,6 +187,27 @@ const userSchema = new mongoose.Schema({
     }
   },
 
+  // Gamification & Loyalty (SetuCoins)
+  gamification: {
+    setuCoinsBalance: {
+      type: Number,
+      default: 0,
+      min: 0
+    },
+    totalCoinsEarned: { // Lifetime earnings
+      type: Number,
+      default: 0
+    },
+    currentStreak: { // Consecutive months of rent payments
+      type: Number,
+      default: 0
+    },
+    lastRentPaymentDate: {
+      type: Date,
+      default: null
+    }
+  },
+
   // Auto-debit Settings
   autoDebitSettings: {
     enabled: {

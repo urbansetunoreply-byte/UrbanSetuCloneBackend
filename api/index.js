@@ -53,6 +53,7 @@ import { generateCallId } from "./routes/call.route.js";
 import CallHistory from "./models/callHistory.model.js";
 import { sendCallMissedEmail, sendCallInitiatedEmail } from "./utils/emailService.js";
 import rentalRouter from "./routes/rental.route.js";
+import coinRouter from "./routes/coin.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -1172,6 +1173,7 @@ app.use("/api/advanced-ai", advancedAIRecommendationRouter);
 app.use("/api/rental", rentalRouter);
 app.use("/api/report-message", reportMessageRouter);
 app.use("/api/forum", forumRouter);
+app.use("/api/coins", coinRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes
