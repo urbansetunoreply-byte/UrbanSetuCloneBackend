@@ -377,7 +377,7 @@ export const SignIn = async (req, res, next) => {
                             location,
                             suspiciousCheck.previousDevice,
                             suspiciousCheck.previousIp,
-                            'Unknown Location'
+                            suspiciousCheck.previousLocation
                         )
                     );
                 }
@@ -531,7 +531,7 @@ export const Google = async (req, res, next) => {
                                 location,
                                 suspiciousCheck.previousDevice,
                                 suspiciousCheck.previousIp,
-                                'Unknown Location'
+                                suspiciousCheck.previousLocation
                             )
                         );
                     }

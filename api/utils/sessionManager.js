@@ -389,11 +389,15 @@ export const checkSuspiciousLogin = async (userId, ip, device) => {
             user.lastKnownDevice && user.lastKnownDevice !== device
         );
 
+    // Get location for previous IP
+    const previousLocation = user.lastKnownIp ? getLocationFromIP(user.lastKnownIp) : 'Unknown Location';
+
     return {
         isSuspicious,
         reason: isSuspicious ? 'New IP or device detected' : null,
         previousIp: user.lastKnownIp,
-        previousDevice: user.lastKnownDevice
+        previousDevice: user.lastKnownDevice,
+        previousLocation: previousLocation
     };
 };
 
