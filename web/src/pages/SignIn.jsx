@@ -15,6 +15,7 @@ import { LogIn, Mail, Lock } from "lucide-react";
 import FormField from "../components/ui/FormField";
 import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
+import PremiumLoader from "../components/ui/PremiumLoader";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -63,7 +64,12 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
     const [authInProgress, setAuthInProgress] = useState(null); // null, 'password', 'otp', 'google'
 
     // State to track OTP verification loading
+    // State to track OTP verification loading
     const [otpVerifyingLoading, setOtpVerifyingLoading] = useState(false);
+
+    // Premium Loader State
+    const [showLoader, setShowLoader] = useState(false);
+    const [pendingLoginData, setPendingLoginData] = useState(null);
 
     const { loading, error, currentUser } = useSelector((state) => state.user);
     const navigate = useNavigate();
@@ -121,7 +127,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
     // Block access if already signed in
     useEffect(() => {
-        if (bootstrapped && sessionChecked && currentUser) {
+        if (bootstrapped && sessionChecked && currentUser && !showLoader) {
             if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
                 if (currentUser.isDefaultAdmin) {
                     navigate('/admin', { replace: true });
@@ -460,33 +466,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 localStorage.setItem('accessToken', data.token);
                 localStorage.setItem('login', Date.now()); // Notify other tabs
             }
-            // Dispatch success and wait for state update
+
+            // Trigger Loading Animation
+            setPendingLoginData(data);
+            setShowLoader(true);
+
+            // Dispatch success to update Redux state
             dispatch(signInSuccess(data));
-
-            // Use a small delay to ensure state is updated
-            await new Promise(resolve => setTimeout(resolve, 50));
-
-            // Reconnect socket with new token
-            reconnectSocket();
-
-            // Check for redirect URL in query params
-            const searchParams = new URLSearchParams(location.search);
-            const redirectUrl = searchParams.get('redirect');
-
-            if (redirectUrl && redirectUrl.startsWith('/')) {
-                navigate(redirectUrl, { replace: true });
-            } else {
-                if (data.role === "admin" || data.role === "rootadmin") {
-                    // Special handling for root admin
-                    if (data.isDefaultAdmin) {
-                        navigate("/admin");
-                    } else {
-                        navigate("/admin");
-                    }
-                } else {
-                    navigate("/user");
-                }
-            }
 
         } catch (error) {
             dispatch(signInFailure(error.message));
@@ -592,33 +578,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                 localStorage.setItem('accessToken', data.token);
                 localStorage.setItem('login', Date.now()); // Notify other tabs
             }
-            // Dispatch success and wait for state update
+
+            // Trigger Loading Animation
+            setPendingLoginData(data);
+            setShowLoader(true);
+
+            // Dispatch success to update Redux state
             dispatch(signInSuccess(data));
-
-            // Use a small delay to ensure state is updated
-            await new Promise(resolve => setTimeout(resolve, 50));
-
-            // Reconnect socket with new token
-            reconnectSocket();
-
-            // Check for redirect URL in query params
-            const searchParams = new URLSearchParams(location.search);
-            const redirectUrl = searchParams.get('redirect');
-
-            if (redirectUrl && redirectUrl.startsWith('/')) {
-                navigate(redirectUrl, { replace: true });
-            } else {
-                if (data.role === "admin" || data.role === "rootadmin") {
-                    // Special handling for root admin
-                    if (data.isDefaultAdmin) {
-                        navigate("/admin");
-                    } else {
-                        navigate("/admin");
-                    }
-                } else {
-                    navigate("/user");
-                }
-            }
 
         } catch (error) {
             dispatch(signInFailure(error.message));
@@ -626,6 +592,33 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             setAuthInProgress(null);
         }
     };
+
+    const finalizeLogin = () => {
+        if (!pendingLoginData) return;
+
+        const data = pendingLoginData;
+
+        // Reconnect socket with new token
+        reconnectSocket();
+
+        // Check for redirect URL in query params
+        const searchParams = new URLSearchParams(location.search);
+        const redirectUrl = searchParams.get('redirect');
+
+        if (redirectUrl && redirectUrl.startsWith('/')) {
+            navigate(redirectUrl, { replace: true });
+        } else {
+            if (data.role === "admin" || data.role === "rootadmin") {
+                navigate("/admin");
+            } else {
+                navigate("/user");
+            }
+        }
+    };
+
+    if (showLoader) {
+        return <PremiumLoader onComplete={finalizeLogin} />;
+    }
 
     return (
         <AuthFormLayout
