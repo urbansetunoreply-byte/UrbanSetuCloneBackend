@@ -355,7 +355,7 @@ export const sendSignupOTPEmail = async (email, otp) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -408,7 +408,7 @@ export const sendForgotPasswordOTPEmail = async (email, otp) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -461,7 +461,7 @@ export const sendProfileEmailOTPEmail = async (email, otp) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -514,7 +514,7 @@ export const sendLoginOTPEmail = async (email, otp) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -562,7 +562,7 @@ export const sendAccountDeletionOTPEmail = async (email, otp) => {
           </div>
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -610,7 +610,7 @@ export const sendTransferRightsOTPEmail = async (email, otp) => {
           </div>
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -672,7 +672,7 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -740,7 +740,7 @@ export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, 
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -791,7 +791,7 @@ export const sendForcedLogoutEmail = async (email, reason, performedBy) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -861,7 +861,7 @@ export const sendCoinAdjustmentEmail = async (email, details) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -10794,7 +10794,7 @@ export const sendDataExportEmail = async (email, username, jsonDownloadUrl, txtD
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
             <p style="color: #9ca3af; margin: 5px 0 0; font-size: 12px;">
               This is an automated message. Please do not reply to this email.
@@ -10858,7 +10858,7 @@ export const sendCallInitiatedEmail = async (toEmail, { callType, callerName, pr
               This is an automated notification from UrbanSetu.
             </p>
             <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -10907,7 +10907,7 @@ export const sendCallMissedEmail = async (toEmail, { callType, callerName, prope
               This is an automated notification from UrbanSetu.
             </p>
             <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -10973,7 +10973,7 @@ export const sendCallEndedEmail = async (toEmail, { callType, duration, callerNa
               This is an automated notification from UrbanSetu.
             </p>
             <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -11237,7 +11237,7 @@ export const sendRentPaymentReminderEmail = async (email, reminderDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated reminder from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -11306,7 +11306,7 @@ export const sendRentPaymentOverdueEmail = async (email, overdueDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -11388,7 +11388,7 @@ export const sendEscrowReleasedEmail = async (email, releaseDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -11491,7 +11491,7 @@ export const sendContractSignedEmail = async (email, contractDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -11656,7 +11656,7 @@ export const sendContractExpiringSoonEmail = async (email, contractDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated reminder from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -11726,7 +11726,7 @@ export const sendDisputeRaisedEmail = async (email, disputeDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -11813,7 +11813,7 @@ export const sendVerificationRequestedEmail = async (email, verificationDetails)
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -11885,7 +11885,7 @@ export const sendVerificationApprovedEmail = async (email, verificationDetails) 
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -11959,7 +11959,7 @@ export const sendVerificationRejectedEmail = async (email, verificationDetails) 
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -12027,7 +12027,7 @@ export const sendRatingReceivedEmail = async (email, ratingDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -12095,7 +12095,7 @@ export const sendLoanAppliedEmail = async (email, loanDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -12163,7 +12163,7 @@ export const sendLoanApprovedEmail = async (email, loanDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -12233,7 +12233,7 @@ export const sendLoanRejectedEmail = async (email, loanDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -12303,7 +12303,7 @@ export const sendLoanDisbursedEmail = async (email, loanDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -12376,7 +12376,7 @@ export const sendReportAcknowledgementEmail = async (email, reportDetails) => {
 
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -12475,7 +12475,7 @@ export const sendSharedChatLinkEmail = async (email, sharedLink, title, expiryDa
           <!-- Footer -->
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved. • <a href="${clientBaseUrl}/privacy" style="color: #9ca3af; text-decoration: underline;">Privacy</a>
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved. • <a href="${clientBaseUrl}/privacy" style="color: #9ca3af; text-decoration: underline;">Privacy</a>
             </p>
           </div>
         </div>
@@ -12558,7 +12558,7 @@ export const sendSharedChatRevokedEmail = async (email, title, revokedDate) => {
           <!-- Footer -->
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved. • <a href="${clientBaseUrl}/privacy" style="color: #9ca3af; text-decoration: underline;">Privacy</a>
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved. • <a href="${clientBaseUrl}/privacy" style="color: #9ca3af; text-decoration: underline;">Privacy</a>
             </p>
           </div>
         </div>
@@ -12732,7 +12732,7 @@ export const sendDisputeResolvedEmail = async (email, disputeDetails) => {
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -12809,7 +12809,7 @@ export const sendDisputeRaisedAcknowledgementEmail = async (email, disputeDetail
             
             <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
               <p style="color: #9ca3af; margin: 0; font-size: 12px;">This is an automated notification from UrbanSetu.</p>
-              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -12866,7 +12866,7 @@ export const sendLoanEMIDueReminderEmail = async (email, details) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -12923,7 +12923,7 @@ export const sendLoanEMIOverdueReminderEmail = async (email, details) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -12977,7 +12977,7 @@ export const sendLoanRepaidEmail = async (email, details) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -13032,7 +13032,7 @@ export const sendRentPaymentDueReminderEmail = async (email, details) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -13089,7 +13089,7 @@ export const sendRentPaymentOverdueReminderEmail = async (email, details) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -13141,7 +13141,7 @@ export const sendRentPaymentConfirmationEmail = async (email, details) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -13186,7 +13186,7 @@ export const sendTokenReceivedEmail = async (buyerEmail, buyerName, sellerEmail,
             </p>
           </div>
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
           </div>
         </div>
       </div>
@@ -13215,7 +13215,7 @@ export const sendTokenReceivedEmail = async (buyerEmail, buyerName, sellerEmail,
             </p>
           </div>
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
           </div>
         </div>
       </div>
@@ -13256,7 +13256,7 @@ export const sendPropertySoldEmail = async (buyerEmail, buyerName, sellerEmail, 
             </p>
           </div>
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
           </div>
         </div>
       </div>
@@ -13282,7 +13282,7 @@ export const sendPropertySoldEmail = async (buyerEmail, buyerName, sellerEmail, 
             </p>
           </div>
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
           </div>
         </div>
       </div>
@@ -13334,7 +13334,7 @@ export const sendDisputeAlertEmail = async (adminEmails, disputeDetails) => {
                 <p style="color: #4b5563;">Please investigate via the Admin Panel.</p>
               </div>
               <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
-                <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu. All rights reserved.</p>
+                <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
               </div>
             </div>
           </div>
@@ -13513,7 +13513,7 @@ export const sendReEngagementEmail = async (email, username) => {
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
             <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
             <p style="color: #9ca3af; margin: 5px 0 0 0; font-size: 12px;">
               You received this email because you haven't visited us in a while.
@@ -13621,7 +13621,7 @@ export const sendTrendingUpdateEmail = async (email, username, newProperties, tr
             
             <div style="margin-top: 20px; font-size: 12px; color: #9ca3af;">
               <p style="margin: 5px 0;">This email was sent to ${email} as part of your UrbanSetu subscription.</p>
-              <p style="margin: 5px 0;">© 2025 UrbanSetu. All rights reserved.</p>
+              <p style="margin: 5px 0;">© ${new Date().getFullYear()} UrbanSetu. All rights reserved.</p>
             </div>
           </div>
         </div>
@@ -13665,7 +13665,7 @@ export const sendPropertyReportAcknowledgement = async (email, username, listing
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
             <p>Reference ID: #${new Date().getTime().toString(36).toUpperCase()}</p>
-            <p>© 2025 UrbanSetu Support Team</p>
+            <p>© ${new Date().getFullYear()} UrbanSetu Support Team</p>
           </div>
         </div>
       </div>
@@ -13703,7 +13703,7 @@ export const sendIssueReportAcknowledgement = async (email, username, listingNam
 
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
             <p>Reference ID: #${new Date().getTime().toString(36).toUpperCase()}</p>
-            <p>© 2025 UrbanSetu Support Team</p>
+            <p>© ${new Date().getFullYear()} UrbanSetu Support Team</p>
           </div>
         </div>
       </div>
@@ -13875,7 +13875,7 @@ export const sendRootAdminAttackEmail = async (email, details) => {
           </div>
           
           <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu Security Intelligence</p>
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu Security Intelligence</p>
           </div>
         </div>
       </body>
@@ -13922,7 +13922,7 @@ export const sendCommunityPostConfirmationEmail = async (email, username, postTi
           <p style="margin-top: 25px; color: #64748b; font-size: 14px;">Thank you for contributing to our community!</p>
 
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
-            <p>© 2025 UrbanSetu Community Team</p>
+            <p>© ${new Date().getFullYear()} UrbanSetu Community Team</p>
           </div>
         </div>
       </div>
@@ -13956,7 +13956,7 @@ export const sendCommunityReportAcknowledgementEmail = async (email, username, i
           
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
             <p>Reference ID: #${new Date().getTime().toString(36).toUpperCase()}</p>
-            <p>© 2025 UrbanSetu Trust & Safety</p>
+            <p>© ${new Date().getFullYear()} UrbanSetu Trust & Safety</p>
           </div>
         </div>
       </div>
@@ -14012,7 +14012,7 @@ export const sendSearchAlertEmail = async (email, username, searchCriteria, newP
           </p>
 
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
-            <p>© 2025 UrbanSetu Real Estate</p>
+            <p>© ${new Date().getFullYear()} UrbanSetu Real Estate</p>
           </div>
         </div>
       </div>
@@ -14063,7 +14063,7 @@ export const sendLeaseRenewalReminderEmail = async (email, username, contractDet
 
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
             <p>Contract ID: #${contractDetails.id}</p>
-            <p>© 2025 UrbanSetu Legal Team</p>
+            <p>© ${new Date().getFullYear()} UrbanSetu Legal Team</p>
           </div>
         </div>
       </div>
@@ -14108,7 +14108,7 @@ export const sendIncompleteListingOnboardingEmail = async (email, username, list
           </p>
 
           <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
-            <p>© 2025 UrbanSetu Team</p>
+            <p>© ${new Date().getFullYear()} UrbanSetu Team</p>
           </div>
         </div>
       </div>
@@ -14156,7 +14156,7 @@ export const sendReferralBonusEmail = async (email, username, friendName, amount
               Keep referring friends to earn more! Every successful referral gets you 500 SetuCoins.
             </p>
             <p style="color: #94a3b8; margin: 10px 0 0 0; font-size: 11px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
@@ -14217,7 +14217,7 @@ export const sendReferredWelcomeEmail = async (email, username, referrerName, am
 
           <div style="margin-top: 40px; padding-top: 25px; border-top: 1px solid #f1f5f9; text-align: center;">
             <p style="color: #94a3b8; margin: 0; font-size: 11px;">
-              © 2025 UrbanSetu. All rights reserved.
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
