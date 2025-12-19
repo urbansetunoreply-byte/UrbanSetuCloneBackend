@@ -32,6 +32,22 @@ export default function PayMonthlyRent() {
   const [booking, setBooking] = useState(null);
   const [createdPayment, setCreatedPayment] = useState(null);
   const [selectedGateway, setSelectedGateway] = useState('razorpay');
+  const [coinBalance, setCoinBalance] = useState(0);
+  const [coinsToRedeem, setCoinsToRedeem] = useState(0);
+
+  useEffect(() => {
+    if (currentUser) {
+      // Fetch coin balance
+      fetch(`${API_BASE_URL}/api/coins/balance`, { credentials: 'include' })
+        .then(res => res.json())
+        .then(data => {
+          if (data.success) {
+            setCoinBalance(data.setuCoinsBalance || 0);
+          }
+        })
+        .catch(err => console.error("Error fetching coins:", err));
+    }
+  }, [currentUser]);
 
   useEffect(() => {
     if (!contractId) {
@@ -166,7 +182,16 @@ export default function PayMonthlyRent() {
     const baseAmount = selectedPayment.amount || contract.lockedRentAmount || 0;
     const penalty = selectedPayment.penaltyAmount || 0;
     const maintenance = contract.maintenanceCharges || 0;
+    const discount = Math.floor(coinsToRedeem / 10);
     // Note: Security deposit is paid upfront during contract creation, not in monthly rent payments
+    return Math.max(0, baseAmount + penalty + maintenance - discount);
+  };
+
+  const getSubtotal = () => {
+    if (!selectedPayment || !contract) return 0;
+    const baseAmount = selectedPayment.amount || contract.lockedRentAmount || 0;
+    const penalty = selectedPayment.penaltyAmount || 0;
+    const maintenance = contract.maintenanceCharges || 0;
     return baseAmount + penalty + maintenance;
   };
 
@@ -250,7 +275,8 @@ export default function PayMonthlyRent() {
           month: selectedPayment.month,
           year: selectedPayment.year,
           isAutoDebit: false,
-          gateway: selectedGateway
+          gateway: selectedGateway,
+          coinsToRedeem: coinsToRedeem
         })
       });
 
@@ -397,6 +423,7 @@ export default function PayMonthlyRent() {
                       key={idx}
                       onClick={() => {
                         setSelectedPayment({ ...payment, scheduleIndex: originalIdx });
+                        setCoinsToRedeem(0);
                         setStep(2);
                       }}
                       className={`border-2 rounded-lg p-4 cursor-pointer transition ${selectedPayment?.scheduleIndex === originalIdx
@@ -597,9 +624,17 @@ export default function PayMonthlyRent() {
                     <span className="text-gray-600 italic">Note: Security deposit (₹{contract.securityDeposit.toLocaleString('en-IN')}) was paid upfront</span>
                   </div>
                 )}
-                <div className="flex justify-between border-t pt-2 mt-2 font-bold text-lg">
-                  <span>Total Amount:</span>
-                  <span className="text-blue-600">₹{getTotalAmount().toLocaleString('en-IN')}</span>
+                <div className="border-t pt-2 mt-2">
+                  {coinsToRedeem > 0 && (
+                    <div className="flex justify-between text-green-600 mb-1">
+                      <span className="flex items-center gap-1"><FaCoins className="text-xs" /> SetuCoins Discount:</span>
+                      <span className="font-semibold">- ₹{Math.floor(coinsToRedeem / 10).toLocaleString('en-IN')}</span>
+                    </div>
+                  )}
+                  <div className="flex justify-between font-bold text-lg">
+                    <span>Total Payable:</span>
+                    <span className="text-blue-600">₹{getTotalAmount().toLocaleString('en-IN')}</span>
+                  </div>
                 </div>
               </div>
             </div>
@@ -617,6 +652,50 @@ export default function PayMonthlyRent() {
                   </div>
                 </div>
                 <div className="hidden sm:block text-yellow-500 font-bold text-xl animate-pulse">+{Math.floor(getTotalAmount() / 1000)}</div>
+              </div>
+            )}
+
+            {/* SetuCoins Redemption */}
+            {coinBalance > 0 && (
+              <div className="bg-white p-4 rounded-lg border border-yellow-200 mb-6 shadow-sm">
+                <div className="flex items-center justify-between mb-3">
+                  <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+                    <FaCoins className="text-yellow-500" />
+                    Pay with SetuCoins
+                  </h4>
+                  <span className="text-xs font-medium bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                    Available: {coinBalance}
+                  </span>
+                </div>
+
+                <div className="mb-4">
+                  <label className="block text-sm text-gray-600 mb-1">Redeem Coins for Discount</label>
+                  <div className="flex items-center gap-4">
+                    <input
+                      type="range"
+                      min="0"
+                      max={Math.min(coinBalance, getSubtotal() * 10)}
+                      step="10"
+                      value={coinsToRedeem}
+                      onChange={(e) => setCoinsToRedeem(Number(e.target.value))}
+                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                    />
+                    <div className="min-w-[80px] text-right font-bold text-gray-700">
+                      {coinsToRedeem} Coins
+                    </div>
+                  </div>
+                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                    <span>0</span>
+                    <span>Max Redeemable: {Math.min(coinBalance, getSubtotal() * 10)}</span>
+                  </div>
+                </div>
+
+                {coinsToRedeem > 0 && (
+                  <div className="flex justify-between items-center bg-yellow-50 p-3 rounded-lg border border-yellow-100">
+                    <span className="text-sm text-yellow-800">Discount Applied:</span>
+                    <span className="font-bold text-yellow-700">- ₹{(Math.floor(coinsToRedeem / 10)).toLocaleString('en-IN')}</span>
+                  </div>
+                )}
               </div>
             )}
 

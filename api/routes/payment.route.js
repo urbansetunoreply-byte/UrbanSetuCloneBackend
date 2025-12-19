@@ -1371,13 +1371,14 @@ router.post('/razorpay/verify', verifyToken, async (req, res) => {
 // POST: Create monthly rent payment (with escrow)
 router.post("/monthly-rent", verifyToken, async (req, res) => {
   try {
-    const { contractId, walletId, scheduleIndex, amount, month, year, isAutoDebit, gateway } = req.body;
+    const { contractId, walletId, scheduleIndex, amount, month, year, isAutoDebit, gateway, coinsToRedeem } = req.body;
     const userId = req.user.id;
 
     // Import required models
     const RentWallet = (await import('../models/rentWallet.model.js')).default;
     const RentLockContract = (await import('../models/rentLockContract.model.js')).default;
     const Booking = (await import('../models/booking.model.js')).default;
+    const CoinService = (await import('../services/coinService.js')).default;
 
     // Verify contract and wallet
     const contract = await RentLockContract.findById(contractId)
@@ -1422,7 +1423,47 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
     }
 
     // Calculate total amount (rent + maintenance + penalty) in INR (Base currency)
-    const baseAmountInr = amount + (scheduleEntry.penaltyAmount || 0) + (contract.maintenanceCharges || 0);
+    let baseAmountInr = amount + (scheduleEntry.penaltyAmount || 0) + (contract.maintenanceCharges || 0);
+
+    // --- SetuCoins Redemption Logic ---
+    let coinDiscount = 0;
+    let redeemedCoins = 0;
+
+    if (coinsToRedeem && coinsToRedeem > 0) {
+      try {
+        const balanceData = await CoinService.getBalance(userId);
+        if (balanceData.setuCoinsBalance < coinsToRedeem) {
+          return res.status(400).json({ message: "Insufficient SetuCoins balance." });
+        }
+
+        // Calculate discount: 10 Coins = ₹1
+        const discountValue = Math.floor(coinsToRedeem / 10);
+
+        // Ensure discount doesn't exceed total amount
+        if (discountValue > baseAmountInr) {
+          return res.status(400).json({ message: "Redemption amount cannot exceed payment total." });
+        }
+
+        // Deduct coins immediately
+        await CoinService.debit({
+          userId,
+          amount: coinsToRedeem,
+          source: 'redemption_rent_fee',
+          description: `Redeemed for rent payment (${month}/${year})`,
+          referenceModel: 'Payment'
+          // Note: referenceId will be updated to Payment ID after creation if possible, or left null/generic
+        });
+
+        coinDiscount = discountValue;
+        redeemedCoins = coinsToRedeem;
+        baseAmountInr -= coinDiscount;
+
+      } catch (coinError) {
+        console.error("Error processing coin redemption:", coinError);
+        return res.status(500).json({ message: "Failed to apply SetuCoins. Please try again." });
+      }
+    }
+    // ----------------------------------
 
     // Determine gateway and currency
     let finalGateway = gateway === 'paypal' ? 'paypal' : 'razorpay';
@@ -1468,12 +1509,22 @@ router.post("/monthly-rent", verifyToken, async (req, res) => {
         rentType: 'monthly',
         contractId: contract._id.toString(),
         walletId: wallet._id.toString(),
-        originalAmount: baseAmountInr, // Store INR amount for ledger updates
-        originalCurrency: 'INR'
+        originalAmount: baseAmountInr + coinDiscount, // Store original pre-discount INR amount
+        originalCurrency: 'INR',
+        coinsRedeemed: redeemedCoins,
+        coinDiscount: coinDiscount
       }
     });
 
     await payment.save();
+
+    // Retroactively update transaction reference if coins were redeemed
+    if (redeemedCoins > 0) {
+      // Implementation note: Ideally we'd do this in the debit call if we had the ID, 
+      // or update it here. For now, it's okay without valid referenceId or we can update it:
+      // await CoinTransaction.updateOne({ ... }, { referenceId: payment._id });
+      // Keeping it simple for MVP.
+    }
 
     // Generate Razorpay Order if gateway is razorpay
     let razorpayData = null;
