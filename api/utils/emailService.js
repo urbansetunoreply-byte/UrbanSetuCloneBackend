@@ -13501,3 +13501,76 @@ export const sendTrendingUpdateEmail = async (email, username, newProperties, tr
     return createErrorResponse(error, 'trending_update_email');
   }
 };
+
+// Send acknowledgement for property report
+export const sendPropertyReportAcknowledgement = async (email, username, listingName, listingId, category, details) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Report Received: We are reviewing your request 🛡️',
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+        <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
+          <h2 style="color: #2563eb; margin: 0; font-size: 24px;">UrbanSetu Trust & Safety</h2>
+        </div>
+        <div style="padding: 30px; border: 1px solid #e2e8f0; border-top: none; background-color: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+          <p style="font-size: 16px;">Hello <strong>${username}</strong>,</p>
+          <p style="color: #4b5563;">Thank you for helping keep UrbanSetu safe. We have received your report regarding the property:</p>
+          
+          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #2563eb;">
+            <p style="margin: 0 0 10px 0; font-size: 16px; color: #1e40af;"><strong>Property:</strong> <a href="${clientBaseUrl}/user/listing/${listingId}" style="color: #1e40af; text-decoration: underline;">${listingName}</a></p>
+            <p style="margin: 0 0 8px 0; color: #374151;"><strong>Category:</strong> <span style="background-color: white; padding: 2px 8px; border-radius: 4px; border: 1px solid #bfdbfe; font-size: 14px;">${category}</span></p>
+            ${details ? `<p style="margin: 0; color: #374151;"><strong>Details:</strong> ${details}</p>` : ''}
+          </div>
+
+          <p style="color: #4b5563;">Our team will investigate this issue thoroughly against our community guidelines. No further action is required from you at this time.</p>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
+            <p>Reference ID: #${new Date().getTime().toString(36).toUpperCase()}</p>
+            <p>© 2025 UrbanSetu Support Team</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+  return sendEmailWithRetry(mailOptions);
+};
+
+// Send acknowledgement for review/issue report
+export const sendIssueReportAcknowledgement = async (email, username, listingName, listingId, category, reason) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Issue Received: We are looking into it 🛡️',
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+        <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
+          <h2 style="color: #2563eb; margin: 0; font-size: 24px;">UrbanSetu Trust & Safety</h2>
+        </div>
+        <div style="padding: 30px; border: 1px solid #e2e8f0; border-top: none; background-color: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+          <p style="font-size: 16px;">Hello <strong>${username}</strong>,</p>
+          <p style="color: #4b5563;">We received your report regarding an issue/review on the property <strong>${listingName}</strong>.</p>
+          
+          <div style="background-color: #fff1f2; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #e11d48;">
+             <p style="margin: 0 0 10px 0; color: #9f1239;"><strong>Report Category:</strong> ${category}</p>
+             <p style="margin: 0; color: #374151;"><strong>Reason:</strong> ${reason}</p>
+          </div>
+
+          <p style="color: #4b5563;">We take such reports seriously. We will review the content and take appropriate action if it violates our policies.</p>
+          
+          <div style="margin-top: 25px; text-align: center;">
+            <a href="${clientBaseUrl}/user/listing/${listingId}" style="display: inline-block; padding: 12px 25px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Return to Property</a>
+          </div>
+
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
+            <p>Reference ID: #${new Date().getTime().toString(36).toUpperCase()}</p>
+            <p>© 2025 UrbanSetu Support Team</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+  return sendEmailWithRetry(mailOptions);
+};

@@ -223,6 +223,23 @@ router.post("/report/:listingId", verifyToken, async (req, res, next) => {
       });
     }
 
+    // Send acknowledgement email to the reporter
+    if (reporter && reporter.email) {
+      try {
+        const { sendPropertyReportAcknowledgement } = await import('../utils/emailService.js');
+        await sendPropertyReportAcknowledgement(
+          reporter.email,
+          reporter.username,
+          listing.name,
+          listing._id,
+          category,
+          details
+        );
+      } catch (emailError) {
+        console.error('Failed to send report acknowledgement email:', emailError);
+      }
+    }
+
     res.status(200).json({ message: 'Report submitted successfully.' });
   } catch (error) {
     next(error);

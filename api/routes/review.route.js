@@ -14,41 +14,41 @@ const router = express.Router();
 router.post('/create', verifyToken, async (req, res, next) => {
   try {
     const { listingId, rating, comment } = req.body;
-    
+
     if (!listingId || !rating || !comment) {
       return next(errorHandler(400, 'All fields are required'));
     }
-    
+
     if (rating < 1 || rating > 5) {
       return next(errorHandler(400, 'Rating must be between 1 and 5'));
     }
-    
+
     // Check if listing exists
     const listing = await Listing.findById(listingId);
     if (!listing) {
       return next(errorHandler(404, 'Listing not found'));
     }
-    
+
     // Get user details
     const user = await User.findById(req.user.id);
     if (!user) {
       return next(errorHandler(404, 'User not found'));
     }
-    
+
     // Check if user is the property owner - property owners cannot review their own properties
     if (listing.userRef && listing.userRef.toString() === req.user.id) {
       return next(errorHandler(403, 'Property owners cannot review their own properties.'));
     }
-    
+
     // Check if user has booked or visited this property for verification
     const hasBooked = await booking.findOne({
       buyerId: req.user.id,
       listingId: listingId,
       status: { $in: ['accepted', 'completed'] }
     });
-    
+
     const isVerified = !!hasBooked;
-    
+
     const newReview = new Review({
       listingId,
       userId: req.user.id,
@@ -61,9 +61,9 @@ router.post('/create', verifyToken, async (req, res, next) => {
       verifiedByBooking: isVerified,
       verificationDate: isVerified ? new Date() : null
     });
-    
+
     await newReview.save();
-    
+
     // Notify property owner about new review
     try {
       const propertyOwner = await User.findById(listing.userRef);
@@ -80,7 +80,7 @@ router.post('/create', verifyToken, async (req, res, next) => {
     } catch (notificationError) {
       console.error('Failed to send notification:', notificationError);
     }
-    
+
     // Notify all admins about new review pending approval
     try {
       const admins = await User.find({ role: { $in: ['admin', 'rootadmin'] } });
@@ -105,11 +105,11 @@ router.post('/create', verifyToken, async (req, res, next) => {
     } catch (adminNotificationError) {
       console.error('Failed to send admin notifications:', adminNotificationError);
     }
-    
+
     // Emit socket event for real-time review creation
     const io = req.app.get('io');
     if (io) io.emit('reviewUpdated', newReview);
-    
+
     res.status(201).json({
       success: true,
       message: 'Review submitted successfully and pending approval',
@@ -132,7 +132,7 @@ router.get('/listing/:listingId', async (req, res, next) => {
   try {
     const { listingId } = req.params;
     const { status = 'approved', sort = 'date', order = 'desc' } = req.query;
-    
+
     let sortQuery = {};
     if (sort === 'rating') {
       sortQuery = { rating: order === 'desc' ? -1 : 1, createdAt: -1 };
@@ -141,12 +141,12 @@ router.get('/listing/:listingId', async (req, res, next) => {
     } else {
       sortQuery = { createdAt: order === 'desc' ? -1 : 1 };
     }
-    
-    const reviews = await Review.find({ 
-      listingId, 
-      status: status 
+
+    const reviews = await Review.find({
+      listingId,
+      status: status
     }).sort(sortQuery);
-    
+
     res.status(200).json(reviews);
   } catch (error) {
     next(error);
@@ -166,7 +166,7 @@ router.get('/user', verifyToken, async (req, res, next) => {
     const reviews = await Review.find(query)
       .populate('listingId', 'name imageUrls city state')
       .sort({ createdAt: -1 });
-    
+
     res.status(200).json(reviews);
   } catch (error) {
     next(error);
@@ -178,16 +178,16 @@ router.put('/update/:reviewId', verifyToken, async (req, res, next) => {
   try {
     const { reviewId } = req.params;
     const { rating, comment } = req.body;
-    
+
     const review = await Review.findById(reviewId);
     if (!review) {
       return next(errorHandler(404, 'Review not found'));
     }
-    
+
     if (review.userId.toString() !== req.user.id) {
       return next(errorHandler(403, 'You can only update your own reviews'));
     }
-    
+
     const updatedReview = await Review.findByIdAndUpdate(
       reviewId,
       {
@@ -197,11 +197,11 @@ router.put('/update/:reviewId', verifyToken, async (req, res, next) => {
       },
       { new: true }
     );
-    
+
     // Emit socket event for real-time review update
     const io = req.app.get('io');
     if (io) io.emit('reviewUpdated', updatedReview);
-    
+
     res.status(200).json({
       success: true,
       message: 'Review updated successfully',
@@ -216,16 +216,16 @@ router.put('/update/:reviewId', verifyToken, async (req, res, next) => {
 router.delete('/delete/:reviewId', verifyToken, async (req, res, next) => {
   try {
     const { reviewId } = req.params;
-    
+
     const review = await Review.findById(reviewId);
     if (!review) {
       return next(errorHandler(404, 'Review not found'));
     }
-    
+
     if (review.userId.toString() !== req.user.id) {
       return next(errorHandler(403, 'You can only delete your own reviews'));
     }
-    
+
     // If already removed, just return success
     if (review.status === 'removed_by_user') {
       return res.status(200).json({
@@ -318,15 +318,15 @@ router.get('/admin/all', verifyToken, async (req, res, next) => {
     if (!user || ((user.role !== 'admin' || user.adminApprovalStatus !== 'approved') && user.role !== 'rootadmin')) {
       return next(errorHandler(403, 'Admin access required'));
     }
-    
+
     const { status, page = 1, limit = 10, sort = 'date', order = 'desc' } = req.query;
     const skip = (page - 1) * limit;
-    
+
     let query = {};
     if (status) {
       query.status = status;
     }
-    
+
     let sortQuery = {};
     if (sort === 'rating') {
       sortQuery = { rating: order === 'desc' ? -1 : 1, createdAt: -1 };
@@ -335,16 +335,16 @@ router.get('/admin/all', verifyToken, async (req, res, next) => {
     } else {
       sortQuery = { createdAt: order === 'desc' ? -1 : 1 };
     }
-    
+
     const reviews = await Review.find(query)
       .populate('listingId', 'name imageUrls city state')
       .populate('userId', 'username email')
       .sort(sortQuery)
       .skip(skip)
       .limit(parseInt(limit));
-    
+
     const total = await Review.countDocuments(query);
-    
+
     res.status(200).json({
       reviews,
       total,
@@ -361,31 +361,31 @@ router.put('/admin/status/:reviewId', verifyToken, async (req, res, next) => {
   try {
     const { reviewId } = req.params;
     const { status, adminNote } = req.body;
-    
+
     const user = await User.findById(req.user.id);
     if (!user || ((user.role !== 'admin' || user.adminApprovalStatus !== 'approved') && user.role !== 'rootadmin')) {
       return next(errorHandler(403, 'Admin access required'));
     }
-    
+
     if (!['pending', 'approved', 'rejected'].includes(status)) {
       return next(errorHandler(400, 'Invalid status'));
     }
-    
+
     const review = await Review.findById(reviewId);
     if (!review) {
       return next(errorHandler(404, 'Review not found'));
     }
-    
+
     const oldStatus = review.status;
     const oldRating = review.rating;
-    
+
     review.status = status;
     if (adminNote) {
       review.adminNote = adminNote;
     }
-    
+
     await review.save();
-    
+
     // Update listing rating if status changed
     if (oldStatus !== status) {
       const listing = await Listing.findById(review.listingId);
@@ -399,17 +399,17 @@ router.put('/admin/status/:reviewId', verifyToken, async (req, res, next) => {
           listing.totalRating += review.rating;
           listing.reviewCount += 1;
         }
-        
+
         if (listing.reviewCount > 0) {
           listing.averageRating = listing.totalRating / listing.reviewCount;
         } else {
           listing.averageRating = 0;
         }
-        
+
         await listing.save();
       }
     }
-    
+
     // Emit socket event for real-time review update
     const io = req.app.get('io');
     if (io) io.emit('reviewUpdated', review);
@@ -454,24 +454,24 @@ router.put('/admin/remove/:reviewId', verifyToken, async (req, res, next) => {
   try {
     const { reviewId } = req.params;
     const { reason, note } = req.body;
-    
+
     const user = await User.findById(req.user.id);
     if (!user || ((user.role !== 'admin' || user.adminApprovalStatus !== 'approved') && user.role !== 'rootadmin')) {
       return next(errorHandler(403, 'Admin access required'));
     }
-    
+
     if (!['spam', 'inappropriate', 'fake', 'other'].includes(reason)) {
       return next(errorHandler(400, 'Invalid removal reason'));
     }
-    
+
     const review = await Review.findById(reviewId);
     if (!review) {
       return next(errorHandler(404, 'Review not found'));
     }
-    
+
     const oldStatus = review.status;
     const oldRating = review.rating;
-    
+
     review.status = 'removed';
     review.removedBy = req.user.id;
     review.removedAt = new Date();
@@ -479,26 +479,26 @@ router.put('/admin/remove/:reviewId', verifyToken, async (req, res, next) => {
     if (note) {
       review.removalNote = note;
     }
-    
+
     await review.save();
-    
+
     // Update listing rating if review was approved
     if (oldStatus === 'approved') {
       const listing = await Listing.findById(review.listingId);
       if (listing) {
         listing.totalRating -= oldRating;
         listing.reviewCount -= 1;
-        
+
         if (listing.reviewCount > 0) {
           listing.averageRating = listing.totalRating / listing.reviewCount;
         } else {
           listing.averageRating = 0;
         }
-        
+
         await listing.save();
       }
     }
-    
+
     // Emit socket event for real-time review removal
     const io = req.app.get('io');
     if (io) io.emit('reviewUpdated', review);
@@ -598,7 +598,7 @@ router.get('/admin/stats', verifyToken, async (req, res, next) => {
     if (!user || ((user.role !== 'admin' || user.adminApprovalStatus !== 'approved') && user.role !== 'rootadmin')) {
       return next(errorHandler(403, 'Admin access required'));
     }
-    
+
     const [totalReviews, pendingReviews, approvedReviews, rejectedReviews, removedReviews] = await Promise.all([
       Review.countDocuments(),
       Review.countDocuments({ status: 'pending' }),
@@ -606,17 +606,17 @@ router.get('/admin/stats', verifyToken, async (req, res, next) => {
       Review.countDocuments({ status: 'rejected' }),
       Review.countDocuments({ status: 'removed' })
     ]);
-    
+
     const averageRating = await Review.aggregate([
       { $match: { status: 'approved' } },
       { $group: { _id: null, avgRating: { $avg: '$rating' } } }
     ]);
-    
-    const verifiedReviews = await Review.countDocuments({ 
-      status: 'approved', 
-      $or: [{ verifiedByBooking: true }, { verifiedByVisit: true }] 
+
+    const verifiedReviews = await Review.countDocuments({
+      status: 'approved',
+      $or: [{ verifiedByBooking: true }, { verifiedByVisit: true }]
     });
-    
+
     res.status(200).json({
       totalReviews,
       pendingReviews,
@@ -697,6 +697,78 @@ router.post('/reply/:reviewId', verifyToken, async (req, res, next) => {
     const io = req.app.get('io');
     if (io) io.emit('reviewReplyUpdated', { action: 'created', reply });
     res.status(201).json({ success: true, message: 'Reply added successfully', reply });
+  } catch (error) {
+    next(error);
+  }
+});
+
+// Report a review
+router.post('/report/:reviewId', verifyToken, async (req, res, next) => {
+  try {
+    const { reviewId } = req.params;
+    const { category, reason } = req.body;
+
+    if (!category || !reason) {
+      return next(errorHandler(400, 'Category and reason are required'));
+    }
+
+    const review = await Review.findById(reviewId);
+    if (!review) {
+      return next(errorHandler(404, 'Review not found'));
+    }
+
+    // Get listing for report email
+    const listing = await Listing.findById(review.listingId);
+    const listingName = listing ? listing.name : 'Unknown Property';
+    const listingId = listing ? listing._id : '#';
+
+    const reporter = await User.findById(req.user.id);
+    const admins = await User.find({ role: { $in: ['admin', 'rootadmin'] } });
+
+    // Notify admins
+    const notificationMessage = `Review reported by ${reporter.username}: [${category}] ${reason}`;
+
+    // Create notifications for admins
+    const notifications = await Promise.all(admins.map(async (admin) => {
+      return Notification.create({
+        userId: admin._id,
+        type: 'review_reported',
+        title: 'Review Reported',
+        message: notificationMessage,
+        listingId: review.listingId,
+        adminId: req.user.id,
+        meta: {
+          reviewId: review._id,
+          reporterId: reporter._id,
+          category,
+          reason
+        }
+      });
+    }));
+
+    const io = req.app.get('io');
+    if (io) {
+      notifications.forEach(notif => io.emit('notificationCreated', notif));
+    }
+
+    // Send acknowledgement email
+    if (reporter && reporter.email) {
+      try {
+        const { sendIssueReportAcknowledgement } = await import('../utils/emailService.js');
+        await sendIssueReportAcknowledgement(
+          reporter.email,
+          reporter.username,
+          listingName,
+          listingId,
+          category,
+          reason
+        );
+      } catch (emailError) {
+        console.error('Failed to send issue report email:', emailError);
+      }
+    }
+
+    res.status(200).json({ success: true, message: 'Report submitted successfully' });
   } catch (error) {
     next(error);
   }
@@ -897,25 +969,25 @@ router.post('/report/:reviewId', verifyToken, async (req, res, next) => {
   try {
     const { reviewId } = req.params;
     const { category, reason } = req.body;
-    
+
     // Validate required fields
     if (!category || !category.trim()) {
       return res.status(400).json({ message: 'Category is required.' });
     }
-    
+
     const review = await Review.findById(reviewId);
     if (!review) {
       return res.status(404).json({ message: 'Review not found.' });
     }
-    
+
     const listing = await Listing.findById(review.listingId);
     const reporter = await User.findById(req.user.id);
-    
+
     // Create notification message with category and optional reason
     const categoryText = category.charAt(0).toUpperCase() + category.slice(1).replace(/([A-Z])/g, ' $1');
     const reasonText = reason && reason.trim() ? ` - ${reason.trim()}` : '';
     const notificationMessage = `A review for property "${listing?.name || 'Unknown'}" was reported by ${reporter?.username || 'a user'} for: ${categoryText}${reasonText}`;
-    
+
     // Find all admins
     const admins = await User.find({ role: { $in: ['admin', 'rootadmin'] } });
     const notifications = await Promise.all(admins.map(async (admin) => {
@@ -926,8 +998,8 @@ router.post('/report/:reviewId', verifyToken, async (req, res, next) => {
         message: notificationMessage,
         listingId: review.listingId,
         adminId: req.user.id,
-        meta: { 
-          reviewId: review._id, 
+        meta: {
+          reviewId: review._id,
           reporterId: reporter?._id,
           reporterEmail: reporter?.email || null,
           reporterPhone: reporter?.mobileNumber || null,
@@ -937,7 +1009,7 @@ router.post('/report/:reviewId', verifyToken, async (req, res, next) => {
         }
       });
     }));
-    
+
     // Emit socket event for real-time admin notification
     const io = req.app.get('io');
     if (io) {
@@ -945,7 +1017,7 @@ router.post('/report/:reviewId', verifyToken, async (req, res, next) => {
         io.emit('notificationCreated', notification);
       });
     }
-    
+
     res.status(200).json({ message: 'Report submitted successfully.' });
   } catch (error) {
     next(error);
