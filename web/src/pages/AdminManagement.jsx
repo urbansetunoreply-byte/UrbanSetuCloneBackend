@@ -71,7 +71,7 @@ export default function AdminManagement() {
   });
   const lockoutTimerRef = useRef(null);
   const warningTimerRef = useRef(null);
-  
+
 
   useEffect(() => {
     if (!currentUser) return;
@@ -148,11 +148,11 @@ export default function AdminManagement() {
       // Fetch softbanned accounts
       try {
         await fetchSoftbannedAccounts();
-      } catch (_) {}
+      } catch (_) { }
       // Fetch purged accounts
       try {
         await fetchPurgedAccounts();
-      } catch (_) {}
+      } catch (_) { }
     } catch (err) {
       toast.error("Failed to fetch accounts");
     } finally {
@@ -244,8 +244,8 @@ export default function AdminManagement() {
           headers: {
             'Content-Type': 'application/json',
           },
-          body: JSON.stringify({ 
-            reason: isSuspending ? (suspensionReason || 'Policy violation') : null 
+          body: JSON.stringify({
+            reason: isSuspending ? (suspensionReason || 'Policy violation') : null
           })
         });
         const data = await res.json();
@@ -255,10 +255,10 @@ export default function AdminManagement() {
           // Emit socket event
           socket.emit(type === 'user' ? 'user_update' : 'admin_update', { type: 'update', [type]: data, userId: id });
           // Emit global signout event for the affected user
-          socket.emit('force_signout', { 
-            userId: id, 
-            action: 'suspend', 
-            message: `Your account has been ${data.status === 'suspended' ? 'suspended' : 'activated'}. You have been signed out.` 
+          socket.emit('force_signout', {
+            userId: id,
+            action: 'suspend',
+            message: `Your account has been ${data.status === 'suspended' ? 'suspended' : 'activated'}. You have been signed out.`
           });
           // Close modal only after success
           setShowConfirmModal(false);
@@ -298,22 +298,22 @@ export default function AdminManagement() {
   // Handle suspension with reason
   const performSuspensionWithReason = async () => {
     if (!suspensionAccount) return;
-    
+
     const { id, type } = suspensionAccount;
-    
+
     // Set loading state for modal
     setActionLoading(prev => ({
       ...prev,
       suspend: { ...prev.suspend, [id]: true }
     }));
-    
+
     // Optimistically update UI
     if (type === 'user') {
       setUsers(prev => prev.map(u => u._id === id ? { ...u, status: 'suspended' } : u));
     } else {
       setAdmins(prev => prev.map(a => a._id === id ? { ...a, status: 'suspended' } : a));
     }
-    
+
     try {
       const res = await fetch(`${API_BASE_URL}/api/admin/management/suspend/${type}/${id}`, {
         method: "PATCH",
@@ -330,10 +330,10 @@ export default function AdminManagement() {
         // Emit socket event
         socket.emit(type === 'user' ? 'user_update' : 'admin_update', { type: 'update', [type]: data, userId: id });
         // Emit global signout event for the affected user
-        socket.emit('force_signout', { 
-          userId: id, 
-          action: 'suspend', 
-          message: `Your account has been suspended. You have been signed out.` 
+        socket.emit('force_signout', {
+          userId: id,
+          action: 'suspend',
+          message: `Your account has been suspended. You have been signed out.`
         });
         // Close modal only after success
         setShowSuspensionReasonModal(false);
@@ -375,7 +375,7 @@ export default function AdminManagement() {
     if (!sel) return;
     const id = sel._id; const type = sel.type;
     const finalReason = deleteReason === 'other' ? (deleteOtherReason || '') : deleteReason;
-    
+
     // Map reason to policy category
     const policyCategory = deleteReason === 'other' ? 'other' : deleteReason;
     const finalPolicy = {
@@ -386,11 +386,11 @@ export default function AdminManagement() {
     const performDelete = async () => {
       // Set loading state
       setActionLoading(prev => ({ ...prev, softban: true }));
-      
+
       // Store original state for rollback
       const originalUsers = [...users];
       const originalAdmins = [...admins];
-      
+
       // Optimistically update UI
       if (type === 'user') {
         setUsers(prev => prev.filter(u => u._id !== id));
@@ -402,7 +402,7 @@ export default function AdminManagement() {
           method: "DELETE",
           credentials: "include",
           headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
+          body: JSON.stringify({
             reason: finalReason,
             policy: finalPolicy
           })
@@ -413,10 +413,10 @@ export default function AdminManagement() {
           // Emit socket event
           socket.emit(type === 'user' ? 'user_update' : 'admin_update', { type: 'delete', [type]: { _id: id }, userId: id });
           // Emit global signout event for the softbanned user
-          socket.emit('force_signout', { 
-            userId: id, 
-            action: 'softban', 
-            message: 'Your account has been softbanned. You have been signed out.' 
+          socket.emit('force_signout', {
+            userId: id,
+            action: 'softban',
+            message: 'Your account has been softbanned. You have been signed out.'
           });
           // Refresh softbanned accounts list if on tab
           if (tab === 'softbanned') fetchSoftbannedAccounts();
@@ -484,28 +484,28 @@ export default function AdminManagement() {
         setSelectedAccount({ ...data, type });
         // Fetch stats
         try {
-        const [listingsRes, appointmentsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/listing/user/${account._id}`, { credentials: 'include' }),
-          fetch(`${API_BASE_URL}/api/bookings/user/${account._id}`, { credentials: 'include' })
-        ]);
-          
+          const [listingsRes, appointmentsRes] = await Promise.all([
+            fetch(`${API_BASE_URL}/api/listing/user/${account._id}`, { credentials: 'include' }),
+            fetch(`${API_BASE_URL}/api/bookings/user/${account._id}`, { credentials: 'include' })
+          ]);
+
           let listingsCount = 0;
           let appointmentsCount = 0;
-          
+
           if (listingsRes.ok) {
-        const listingsData = await listingsRes.json();
+            const listingsData = await listingsRes.json();
             listingsCount = Array.isArray(listingsData) ? listingsData.length : 0;
           }
-          
+
           if (appointmentsRes.ok) {
-        const appointmentsData = await appointmentsRes.json();
+            const appointmentsData = await appointmentsRes.json();
             appointmentsCount = appointmentsData.count || 0;
           }
-          
-        setAccountStats({
+
+          setAccountStats({
             listings: listingsCount,
             appointments: appointmentsCount
-        });
+          });
         } catch (statsError) {
           console.error('Error fetching account stats:', statsError);
           // Keep the account details but with zero stats
@@ -541,7 +541,7 @@ export default function AdminManagement() {
       // Store original state for rollback
       const originalUsers = [...users];
       const originalAdmins = [...admins];
-      
+
       // Optimistically move user to admins
       if (user) {
         setUsers(prev => prev.filter(u => u._id !== id));
@@ -562,10 +562,10 @@ export default function AdminManagement() {
           socket.emit('admin_update', { type: 'add', admin: { ...user, ...data }, userId: id });
           socket.emit('user_update', { type: 'delete', user: { _id: id }, userId: id });
           // Emit global signout event for the promoted user
-          socket.emit('force_signout', { 
-            userId: id, 
-            action: 'promote', 
-            message: 'Your account has been promoted to admin. You have been signed out. Please sign in again to access admin features.' 
+          socket.emit('force_signout', {
+            userId: id,
+            action: 'promote',
+            message: 'Your account has been promoted to admin. You have been signed out. Please sign in again to access admin features.'
           });
           // Close modal only after success
           setShowConfirmModal(false);
@@ -588,7 +588,7 @@ export default function AdminManagement() {
         }));
       }
     };
-    
+
     showConfirmation(
       'Promote User to Admin',
       'Are you sure you want to promote this user to admin? They will gain administrative privileges.',
@@ -619,64 +619,64 @@ export default function AdminManagement() {
   // Handle demotion with reason
   const performDemotionWithReason = async () => {
     if (!demoteAccount) return;
-    
+
     const { id } = demoteAccount;
     const admin = admins.find(a => a._id === id);
-    
+
     // Set loading state
     setActionLoading(prev => ({
       ...prev,
       demote: { ...prev.demote, [id]: true }
     }));
 
-      // Store original state for rollback
-      const originalUsers = [...users];
-      const originalAdmins = [...admins];
-      
-      // Optimistically move admin to users
-      if (admin) {
-        setAdmins(prev => prev.filter(a => a._id !== id));
-        setUsers(prev => [
-          { ...admin, role: 'user', adminApprovalStatus: undefined },
-          ...prev
-        ]);
-      }
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/management/demote/${id}`, {
-          method: "PATCH",
-          credentials: "include",
+    // Store original state for rollback
+    const originalUsers = [...users];
+    const originalAdmins = [...admins];
+
+    // Optimistically move admin to users
+    if (admin) {
+      setAdmins(prev => prev.filter(a => a._id !== id));
+      setUsers(prev => [
+        { ...admin, role: 'user', adminApprovalStatus: undefined },
+        ...prev
+      ]);
+    }
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/admin/management/demote/${id}`, {
+        method: "PATCH",
+        credentials: "include",
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({ reason: demoteReason === 'other' ? demoteOtherReason : demoteReason || 'Administrative decision' })
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success("Admin demoted to user successfully");
+        // Emit socket event
+        socket.emit('user_update', { type: 'add', user: { ...admin, ...data }, userId: id });
+        socket.emit('admin_update', { type: 'delete', admin: { _id: id }, userId: id });
+        // Emit global signout event for the demoted admin
+        socket.emit('force_signout', {
+          userId: id,
+          action: 'demote',
+          message: 'Your admin privileges have been revoked. You have been signed out. Please sign in again as a regular user.'
         });
-        const data = await res.json();
-        if (res.ok) {
-          toast.success("Admin demoted to user successfully");
-          // Emit socket event
-          socket.emit('user_update', { type: 'add', user: { ...admin, ...data }, userId: id });
-          socket.emit('admin_update', { type: 'delete', admin: { _id: id }, userId: id });
-          // Emit global signout event for the demoted admin
-          socket.emit('force_signout', { 
-            userId: id, 
-            action: 'demote', 
-            message: 'Your admin privileges have been revoked. You have been signed out. Please sign in again as a regular user.' 
-          });
         setShowDemoteReasonModal(false);
         setDemoteAccount(null);
         setDemoteReason("");
         setDemoteOtherReason("");
-        } else {
-          // Rollback on failure
-          setUsers(originalUsers);
-          setAdmins(originalAdmins);
-          toast.error(data.message || "Failed to demote admin");
-        }
-      } catch (err) {
-        // Rollback on error
+      } else {
+        // Rollback on failure
         setUsers(originalUsers);
         setAdmins(originalAdmins);
-        toast.error("Failed to demote admin");
+        toast.error(data.message || "Failed to demote admin");
+      }
+    } catch (err) {
+      // Rollback on error
+      setUsers(originalUsers);
+      setAdmins(originalAdmins);
+      toast.error("Failed to demote admin");
     } finally {
       // Clear loading state
       setActionLoading(prev => ({
@@ -699,10 +699,10 @@ export default function AdminManagement() {
         toast.success("Admin re-approved successfully!");
         socket.emit('admin_update', { type: 'update', admin: { ...data }, userId: adminId });
         // Emit global signout event for the reapproved admin
-        socket.emit('force_signout', { 
-          userId: adminId, 
-          action: 'reapprove', 
-          message: 'Your admin account has been re-approved. You have been signed out. Please sign in again to access admin features.' 
+        socket.emit('force_signout', {
+          userId: adminId,
+          action: 'reapprove',
+          message: 'Your admin account has been re-approved. You have been signed out. Please sign in again to access admin features.'
         });
       } else {
         toast.error(data.message || "Failed to re-approve admin");
@@ -715,17 +715,17 @@ export default function AdminManagement() {
   // Filter accounts based on search term and status
   const filterAccounts = (accounts) => {
     let filtered = accounts;
-    
+
     // Search term filter
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
-      filtered = filtered.filter(account => 
+      filtered = filtered.filter(account =>
         account.username?.toLowerCase().includes(term) ||
         account.email?.toLowerCase().includes(term) ||
         account.mobileNumber?.toLowerCase().includes(term)
       );
     }
-    
+
     // Status filter
     if (statusFilter !== "all") {
       if (statusFilter === 'locked') {
@@ -735,12 +735,12 @@ export default function AdminManagement() {
         filtered = filtered.filter(account => account.status === statusFilter);
       }
     }
-    
+
     // Admin approval status filter (only for admin tab)
     if (tab === "admins" && adminApprovalFilter !== "all") {
       filtered = filtered.filter(account => account.adminApprovalStatus === adminApprovalFilter);
     }
-    
+
     return filtered;
   };
 
@@ -750,11 +750,11 @@ export default function AdminManagement() {
   // Helper function to highlight search matches
   const highlightMatch = (text) => {
     if (!searchTerm.trim() || !text) return text;
-    
+
     const regex = new RegExp(`(${searchTerm})`, 'gi');
     const parts = text.split(regex);
-    
-    return parts.map((part, index) => 
+
+    return parts.map((part, index) =>
       regex.test(part) ? (
         <span key={index} className="bg-yellow-200 font-semibold rounded px-1">
           {part}
@@ -802,11 +802,11 @@ export default function AdminManagement() {
     const performRestore = async () => {
       // Set loading state
       setActionLoading(prev => ({ ...prev, restore: true }));
-      
+
       try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${accountId}`, { 
-          method: 'POST', 
-          credentials: 'include' 
+        const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/restore/${accountId}`, {
+          method: 'POST',
+          credentials: 'include'
         });
         const data = await res.json();
         if (res.ok) {
@@ -841,11 +841,11 @@ export default function AdminManagement() {
     const performPurge = async () => {
       // Set loading state
       setActionLoading(prev => ({ ...prev, purge: true }));
-      
+
       try {
-        const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${accountId}`, { 
-          method: 'DELETE', 
-          credentials: 'include' 
+        const res = await fetch(`${API_BASE_URL}/api/admin/deleted-accounts/purge/${accountId}`, {
+          method: 'DELETE',
+          credentials: 'include'
         });
         const data = await res.json();
         if (res.ok) {
@@ -1102,67 +1102,44 @@ export default function AdminManagement() {
         {/* Enhanced Search and Filters */}
         <div className="mb-6 animate-fadeIn">
           {tab !== 'softbanned' && tab !== 'purged' ? (
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-            {/* Main Search */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaSearch className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
-              </div>
-              <input
-                id="admin-management-search"
-                type="text"
-                placeholder={`Search ${tab === "users" ? "users" : "admins"} by name, email...`}
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm"
-              />
-              {searchTerm && (
-                <button
-                  onClick={() => setSearchTerm("")}
-                  className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
-                >
-                  <span className="text-xl">&times;</span>
-                </button>
-              )}
-            </div>
-
-            {/* Status Filter Dropdown */}
-            <div className="relative">
-              <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                <FaCheckCircle className="h-5 w-5 text-gray-400 group-hover:text-green-500 transition-colors duration-200" />
-              </div>
-              <select
-                value={statusFilter}
-                onChange={(e) => setStatusFilter(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
-              >
-                <option value="all">All Status</option>
-                <option value="active">Active</option>
-                <option value="suspended">Suspended</option>
-                <option value="locked">Locked</option>
-              </select>
-              <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
-                <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
-                </svg>
-              </div>
-            </div>
-
-            {/* Admin Approval Status Filter (only for admin tab) */}
-            {tab === "admins" && (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {/* Main Search */}
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                  <FaUserShield className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors duration-200" />
+                  <FaSearch className="h-5 w-5 text-gray-400 group-hover:text-blue-500 transition-colors duration-200" />
+                </div>
+                <input
+                  id="admin-management-search"
+                  type="text"
+                  placeholder={`Search ${tab === "users" ? "users" : "admins"} by name, email...`}
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm"
+                />
+                {searchTerm && (
+                  <button
+                    onClick={() => setSearchTerm("")}
+                    className="absolute inset-y-0 right-0 pr-3 flex items-center text-gray-400 hover:text-gray-600"
+                  >
+                    <span className="text-xl">&times;</span>
+                  </button>
+                )}
+              </div>
+
+              {/* Status Filter Dropdown */}
+              <div className="relative">
+                <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                  <FaCheckCircle className="h-5 w-5 text-gray-400 group-hover:text-green-500 transition-colors duration-200" />
                 </div>
                 <select
-                  value={adminApprovalFilter}
-                  onChange={(e) => setAdminApprovalFilter(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
+                  value={statusFilter}
+                  onChange={(e) => setStatusFilter(e.target.value)}
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
                 >
-                  <option value="all">All Approval Status</option>
-                  <option value="pending">Pending</option>
-                  <option value="approved">Approved</option>
-                  <option value="rejected">Rejected</option>
+                  <option value="all">All Status</option>
+                  <option value="active">Active</option>
+                  <option value="suspended">Suspended</option>
+                  <option value="locked">Locked</option>
                 </select>
                 <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
                   <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -1170,37 +1147,60 @@ export default function AdminManagement() {
                   </svg>
                 </div>
               </div>
-            )}
 
-            {/* Clear All Filters */}
-            <div className="flex items-center">
-              <button
-                onClick={() => {
-                  setSearchTerm("");
-                  setStatusFilter("all");
-                  setAdminApprovalFilter("all");
-                }}
-                className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2"
-              >
-                <FaTimes className="text-sm" />
-                Clear All Filters
-              </button>
+              {/* Admin Approval Status Filter (only for admin tab) */}
+              {tab === "admins" && (
+                <div className="relative">
+                  <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <FaUserShield className="h-5 w-5 text-gray-400 group-hover:text-purple-500 transition-colors duration-200" />
+                  </div>
+                  <select
+                    value={adminApprovalFilter}
+                    onChange={(e) => setAdminApprovalFilter(e.target.value)}
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
+                  >
+                    <option value="all">All Approval Status</option>
+                    <option value="pending">Pending</option>
+                    <option value="approved">Approved</option>
+                    <option value="rejected">Rejected</option>
+                  </select>
+                  <div className="absolute inset-y-0 right-0 pr-3 flex items-center pointer-events-none">
+                    <svg className="h-5 w-5 text-gray-400" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M19 9l-7 7-7-7" />
+                    </svg>
+                  </div>
+                </div>
+              )}
+
+              {/* Clear All Filters */}
+              <div className="flex items-center">
+                <button
+                  onClick={() => {
+                    setSearchTerm("");
+                    setStatusFilter("all");
+                    setAdminApprovalFilter("all");
+                  }}
+                  className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+                >
+                  <FaTimes className="text-sm" />
+                  Clear All Filters
+                </button>
+              </div>
             </div>
-          </div>
           ) : tab === 'softbanned' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <input value={softbannedFilters.q} onChange={e=>setSoftbannedFilters(f=>({...f,q:e.target.value}))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
-              <select value={softbannedFilters.role} onChange={e=>setSoftbannedFilters(f=>({...f,role:e.target.value}))} className="px-3 py-3 border rounded-xl">
+              <input value={softbannedFilters.q} onChange={e => setSoftbannedFilters(f => ({ ...f, q: e.target.value }))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
+              <select value={softbannedFilters.role} onChange={e => setSoftbannedFilters(f => ({ ...f, role: e.target.value }))} className="px-3 py-3 border rounded-xl">
                 <option value="all">All Roles</option>
                 <option value="user">User</option>
                 {currentUser.isDefaultAdmin && <option value="admin">Admin</option>}
               </select>
-              <input type="date" value={softbannedFilters.from} onChange={e=>setSoftbannedFilters(f=>({...f,from:e.target.value}))} className="px-3 py-3 border rounded-xl" />
-              <input type="date" value={softbannedFilters.to} onChange={e=>setSoftbannedFilters(f=>({...f,to:e.target.value}))} className="px-3 py-3 border rounded-xl" />
-              <input value={softbannedFilters.softbannedBy} onChange={e=>setSoftbannedFilters(f=>({...f,softbannedBy:e.target.value}))} placeholder="Softbanned by (id or self)" className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={softbannedFilters.from} onChange={e => setSoftbannedFilters(f => ({ ...f, from: e.target.value }))} className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={softbannedFilters.to} onChange={e => setSoftbannedFilters(f => ({ ...f, to: e.target.value }))} className="px-3 py-3 border rounded-xl" />
+              <input value={softbannedFilters.softbannedBy} onChange={e => setSoftbannedFilters(f => ({ ...f, softbannedBy: e.target.value }))} placeholder="Softbanned by (id or self)" className="px-3 py-3 border rounded-xl" />
               <div className="flex items-center gap-2">
                 <button onClick={fetchSoftbannedAccounts} className="px-4 py-3 bg-red-600 text-white rounded-xl">Apply</button>
-                <button onClick={()=>{setSoftbannedFilters({ q:'', role:'all', softbannedBy:'', from:'', to:''}); setTimeout(fetchSoftbannedAccounts,0);}} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
+                <button onClick={() => { setSoftbannedFilters({ q: '', role: 'all', softbannedBy: '', from: '', to: '' }); setTimeout(fetchSoftbannedAccounts, 0); }} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
               </div>
               <div className="col-span-full text-sm text-gray-600">
                 {currentUser.isDefaultAdmin ? 'You are viewing all softbanned accounts (users + admins).' : 'You are viewing only softbanned user accounts.'}
@@ -1208,18 +1208,18 @@ export default function AdminManagement() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <input value={purgedFilters.q} onChange={e=>setPurgedFilters(f=>({...f,q:e.target.value}))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
-              <select value={purgedFilters.role} onChange={e=>setPurgedFilters(f=>({...f,role:e.target.value}))} className="px-3 py-3 border rounded-xl">
+              <input value={purgedFilters.q} onChange={e => setPurgedFilters(f => ({ ...f, q: e.target.value }))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
+              <select value={purgedFilters.role} onChange={e => setPurgedFilters(f => ({ ...f, role: e.target.value }))} className="px-3 py-3 border rounded-xl">
                 <option value="all">All Roles</option>
                 <option value="user">User</option>
                 {currentUser.isDefaultAdmin && <option value="admin">Admin</option>}
               </select>
-              <input type="date" value={purgedFilters.from} onChange={e=>setPurgedFilters(f=>({...f,from:e.target.value}))} className="px-3 py-3 border rounded-xl" />
-              <input type="date" value={purgedFilters.to} onChange={e=>setPurgedFilters(f=>({...f,to:e.target.value}))} className="px-3 py-3 border rounded-xl" />
-              <input value={purgedFilters.purgedBy} onChange={e=>setPurgedFilters(f=>({...f,purgedBy:e.target.value}))} placeholder="Purged by (id)" className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={purgedFilters.from} onChange={e => setPurgedFilters(f => ({ ...f, from: e.target.value }))} className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={purgedFilters.to} onChange={e => setPurgedFilters(f => ({ ...f, to: e.target.value }))} className="px-3 py-3 border rounded-xl" />
+              <input value={purgedFilters.purgedBy} onChange={e => setPurgedFilters(f => ({ ...f, purgedBy: e.target.value }))} placeholder="Purged by (id)" className="px-3 py-3 border rounded-xl" />
               <div className="flex items-center gap-2">
                 <button onClick={fetchPurgedAccounts} className="px-4 py-3 bg-red-600 text-white rounded-xl">Apply</button>
-                <button onClick={()=>{setPurgedFilters({ q:'', role:'all', purgedBy:'', from:'', to:''}); setTimeout(fetchPurgedAccounts,0);}} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
+                <button onClick={() => { setPurgedFilters({ q: '', role: 'all', purgedBy: '', from: '', to: '' }); setTimeout(fetchPurgedAccounts, 0); }} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
               </div>
               <div className="col-span-full text-sm text-gray-600">
                 {currentUser.isDefaultAdmin ? 'You are viewing all purged accounts (users + admins). These accounts are permanently removed.' : 'You are viewing only purged user accounts. These accounts are permanently removed.'}
@@ -1286,18 +1286,20 @@ export default function AdminManagement() {
                         onClick={() => handleAccountClick(user, 'user')}
                         title="Click to view full details"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-blue-200 flex items-center justify-center text-2xl font-bold text-blue-700 shadow-inner">
+                        <div className="flex items-start gap-4">
+                          <div className="w-16 h-16 rounded-full bg-blue-200 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-blue-700 shadow-inner">
                             <FaUser />
                           </div>
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2 min-w-0">
-                              <span className="text-lg font-semibold text-gray-800 truncate max-w-[120px] sm:max-w-[180px] md:max-w-[220px]" title={user.username}>{highlightMatch(user.username)}</span>
-                              <span className={`text-xs px-2 py-1 rounded-full font-bold break-words whitespace-nowrap mt-1 sm:mt-0 ${user.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{user.status}</span>
+                          <div className="w-full">
+                            <div className="flex flex-wrap items-center justify-between gap-2 min-w-0 mb-2">
+                              <span className="text-lg font-semibold text-gray-800 truncate" title={user.username}>{highlightMatch(user.username)}</span>
+                              <span className={`text-xs px-2 py-1 rounded-full font-bold whitespace-nowrap ${user.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{user.status}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
-                              <FaEnvelope /> {highlightMatch(user.email)}
+
+                            <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
+                              <FaEnvelope className="text-blue-400" /> {highlightMatch(user.email)}
                             </div>
+
                             {(() => {
                               if (!passwordLockouts || !Array.isArray(passwordLockouts)) return null;
                               const entry = passwordLockouts.find(l => (l.email || '').toLowerCase() === (user.email || '').toLowerCase() && new Date(l.unlockAt) > new Date());
@@ -1305,22 +1307,29 @@ export default function AdminManagement() {
                               const remainingMs = new Date(entry.unlockAt).getTime() - Date.now();
                               const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
                               return (
-                                <div className="mt-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
-                                  Locked: about {remainingMin} minute{remainingMin>1? 's':''} left
+                                <div className="mt-1 mb-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
+                                  Locked: about {remainingMin} minute{remainingMin > 1 ? 's' : ''} left
                                 </div>
                               );
                             })()}
-                            {user.mobileNumber && (
-                              <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
-                                <FaPhone /> {highlightMatch(user.mobileNumber)}
+
+                            <div className="grid grid-cols-1 text-sm gap-1 mt-3 border-t pt-2 border-gray-100">
+                              {user.mobileNumber && (
+                                <div className="text-gray-600 truncate"><span className="font-semibold text-gray-700">Mobile:</span> {highlightMatch(user.mobileNumber)}</div>
+                              )}
+                              <div className="text-gray-600"><span className="font-semibold text-gray-700">Gender:</span> {user.gender || 'Prefer-not-to-say'}</div>
+                              <div className="text-gray-600 truncate" title={user.address}><span className="font-semibold text-gray-700">Address:</span> {user.address || 'Not provided'}</div>
+
+                              <div className="text-gray-600 mt-1"><span className="font-semibold text-gray-700">Member Since:</span> {new Date(user.createdAt).toLocaleDateString('en-GB')}</div>
+                              <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Updated Profile:</span> {user.updatedAt ? new Date(user.updatedAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '') : 'N/A'}</div>
+                              {user.lastLogin && (
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Login:</span> {new Date(user.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</div>
+                              )}
+
+                              <div className="flex gap-6 mt-2">
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Listings:</span> {user.listingsCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Appointments:</span> {user.appointmentsCount || 0}</div>
                               </div>
-                            )}
-                            <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
-                              <FaCalendarAlt /> {new Date(user.createdAt).toLocaleDateString('en-GB', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                              })}
                             </div>
                           </div>
                         </div>
@@ -1336,8 +1345,8 @@ export default function AdminManagement() {
                               </>
                             ) : (
                               <>
-                            {user.status === "active" ? <FaBan /> : <FaCheckCircle />}
-                            {user.status === "active" ? "Suspend" : "Activate"}
+                                {user.status === "active" ? <FaBan /> : <FaCheckCircle />}
+                                {user.status === "active" ? "Suspend" : "Activate"}
                               </>
                             )}
                           </button>
@@ -1359,7 +1368,7 @@ export default function AdminManagement() {
                                 </>
                               ) : (
                                 <>
-                              <FaUserShield /> Promote to Admin
+                                  <FaUserShield /> Promote to Admin
                                 </>
                               )}
                             </button>
@@ -1433,7 +1442,7 @@ export default function AdminManagement() {
                               const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
                               return (
                                 <div className="mt-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
-                                  Locked: about {remainingMin} minute{remainingMin>1? 's':''} left
+                                  Locked: about {remainingMin} minute{remainingMin > 1 ? 's' : ''} left
                                 </div>
                               );
                             })()}
@@ -1463,8 +1472,8 @@ export default function AdminManagement() {
                               </>
                             ) : (
                               <>
-                            {admin.status === "active" ? <FaBan /> : <FaCheckCircle />}
-                            {admin.status === "active" ? "Suspend" : "Activate"}
+                                {admin.status === "active" ? <FaBan /> : <FaCheckCircle />}
+                                {admin.status === "active" ? "Suspend" : "Activate"}
                               </>
                             )}
                           </button>
@@ -1485,7 +1494,7 @@ export default function AdminManagement() {
                               </>
                             ) : (
                               <>
-                            <FaArrowDown /> Demote to User
+                                <FaArrowDown /> Demote to User
                               </>
                             )}
                           </button>
@@ -1536,7 +1545,7 @@ export default function AdminManagement() {
                             <td className="px-4 py-2 text-gray-700 whitespace-nowrap">{acc.email}</td>
                             <td className="px-4 py-2 whitespace-nowrap"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
                             <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString('en-GB') : '-'}</td>
-                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{typeof acc.deletedBy === 'string' ? acc.deletedBy : (acc.deletedBy?._id || acc.deletedBy) }</td>
+                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{typeof acc.deletedBy === 'string' ? acc.deletedBy : (acc.deletedBy?._id || acc.deletedBy)}</td>
                             <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.reason || '-'}</td>
                             <td className="px-4 py-2 text-gray-600">
                               {acc.policy ? (
@@ -1725,7 +1734,7 @@ export default function AdminManagement() {
                       const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
                       return (
                         <div className="flex items-center gap-2 text-orange-700 text-sm">
-                          <span><strong>Time left to unlock:</strong> about {remainingMin} minute{remainingMin>1? 's':''}</span>
+                          <span><strong>Time left to unlock:</strong> about {remainingMin} minute{remainingMin > 1 ? 's' : ''}</span>
                         </div>
                       );
                     })()}
@@ -1778,7 +1787,7 @@ export default function AdminManagement() {
           </div>
         </div>
       )}
-      
+
       {/* Confirmation Modal */}
       {showConfirmModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
@@ -1801,11 +1810,11 @@ export default function AdminManagement() {
                   {(actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge || actionLoading.suspend[confirmModalData.userId] || actionLoading.softban) ? (
                     <>
                       <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      {actionLoading.promote[confirmModalData.userId] ? 'Promoting...' : 
-                       actionLoading.demote[confirmModalData.userId] ? 'Demoting...' :
-                       actionLoading.suspend[confirmModalData.userId] ? 'Activating...' :
-                       actionLoading.softban ? 'Processing...' :
-                       actionLoading.restore ? 'Restoring...' : 'Purging...'}
+                      {actionLoading.promote[confirmModalData.userId] ? 'Promoting...' :
+                        actionLoading.demote[confirmModalData.userId] ? 'Demoting...' :
+                          actionLoading.suspend[confirmModalData.userId] ? 'Activating...' :
+                            actionLoading.softban ? 'Processing...' :
+                              actionLoading.restore ? 'Restoring...' : 'Purging...'}
                     </>
                   ) : (
                     confirmModalData.confirmText
@@ -1816,14 +1825,14 @@ export default function AdminManagement() {
           </div>
         </div>
       )}
-      
+
       {/* Softban Reason Modal */}
       {showDeleteReasonModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Softban</h3>
             <p className="text-gray-600 mb-3">Please select a reason and configure policy to proceed.</p>
-            
+
             {/* Reason Selection */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Reason</label>
@@ -1853,7 +1862,7 @@ export default function AdminManagement() {
                 )}
               </select>
             </div>
-            
+
             {deleteReason === 'other' && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Additional Details</label>
@@ -1866,7 +1875,7 @@ export default function AdminManagement() {
                 />
               </div>
             )}
-            
+
             {/* Policy Configuration */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Ban Type</label>
@@ -1879,7 +1888,7 @@ export default function AdminManagement() {
                 <option value="ban">Permanent ban</option>
               </select>
             </div>
-            
+
             {deletePolicy.banType === 'allow' && (
               <div className="mb-4">
                 <label className="block text-sm font-medium text-gray-700 mb-2">Cooling-off Period (days)</label>
@@ -1895,7 +1904,7 @@ export default function AdminManagement() {
                 <p className="text-xs text-gray-500 mt-1">Set to 0 for immediate re-signup, or specify days to wait</p>
               </div>
             )}
-            
+
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Policy Notes (Optional)</label>
               <textarea
@@ -1906,24 +1915,24 @@ export default function AdminManagement() {
                 onChange={e => setDeletePolicy(prev => ({ ...prev, notes: e.target.value }))}
               />
             </div>
-            
+
             <div className="flex justify-end gap-3 mt-6">
-              <button 
-                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600" 
-                onClick={() => { 
-                  setShowDeleteReasonModal(false); 
-                  setSelectedAccount(null); 
+              <button
+                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                onClick={() => {
+                  setShowDeleteReasonModal(false);
+                  setSelectedAccount(null);
                   setDeletePolicy({ category: '', banType: 'allow', allowResignupAfterDays: 0, notes: '' });
                 }}
               >
                 Cancel
               </button>
-              <button 
-                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
-                onClick={async () => { 
+              <button
+                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                onClick={async () => {
                   // Close the reason modal first
-                  setShowDeleteReasonModal(false); 
-                  await performDeleteWithReason(); 
+                  setShowDeleteReasonModal(false);
+                  await performDeleteWithReason();
                 }}
                 disabled={actionLoading.softban}
               >
@@ -1940,14 +1949,14 @@ export default function AdminManagement() {
           </div>
         </div>
       )}
-      
+
       {/* Suspension Reason Modal */}
       {showSuspensionReasonModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
           <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Suspension</h3>
             <p className="text-gray-600 mb-3">Please provide a reason for suspending this account. This will be included in the notification email.</p>
-            
+
             {/* Reason Input */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Suspension Reason</label>
@@ -1978,7 +1987,7 @@ export default function AdminManagement() {
                   </>
                 )}
               </select>
-              
+
               {suspensionReason === 'other' && (
                 <input
                   type="text"
@@ -1989,21 +1998,21 @@ export default function AdminManagement() {
                 />
               )}
             </div>
-            
+
             <div className="flex justify-end gap-3 mt-6">
-              <button 
-                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600" 
-                onClick={() => { 
-                  setShowSuspensionReasonModal(false); 
-                  setSuspensionAccount(null); 
+              <button
+                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                onClick={() => {
+                  setShowSuspensionReasonModal(false);
+                  setSuspensionAccount(null);
                   setSuspensionReason("");
                   setSuspensionOtherReason("");
                 }}
               >
                 Cancel
               </button>
-              <button 
-                className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
+              <button
+                className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 onClick={performSuspensionWithReason}
                 disabled={!suspensionReason || (suspensionReason === 'other' && !suspensionOtherReason.trim()) || actionLoading.suspend[suspensionAccount?.id]}
               >
@@ -2027,7 +2036,7 @@ export default function AdminManagement() {
           <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
             <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Demotion</h3>
             <p className="text-gray-600 mb-3">Please provide a reason for demoting this admin to user. This will be included in the notification email.</p>
-            
+
             {/* Reason Input */}
             <div className="mb-4">
               <label className="block text-sm font-medium text-gray-700 mb-2">Demotion Reason</label>
@@ -2046,7 +2055,7 @@ export default function AdminManagement() {
                 <option value="organizational_changes">Organizational changes</option>
                 <option value="other">Other (specify below)</option>
               </select>
-              
+
               {demoteReason === 'other' && (
                 <input
                   type="text"
@@ -2057,21 +2066,21 @@ export default function AdminManagement() {
                 />
               )}
             </div>
-            
+
             <div className="flex justify-end gap-3 mt-6">
-              <button 
-                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600" 
-                onClick={() => { 
-                  setShowDemoteReasonModal(false); 
-                  setDemoteAccount(null); 
+              <button
+                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                onClick={() => {
+                  setShowDemoteReasonModal(false);
+                  setDemoteAccount(null);
                   setDemoteReason("");
                   setDemoteOtherReason("");
                 }}
               >
                 Cancel
               </button>
-              <button 
-                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2" 
+              <button
+                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
                 onClick={performDemotionWithReason}
                 disabled={!demoteReason || (demoteReason === 'other' && !demoteOtherReason.trim()) || actionLoading.demote[demoteAccount?.id]}
               >
@@ -2088,7 +2097,7 @@ export default function AdminManagement() {
           </div>
         </div>
       )}
-      
+
       {/* Animations */}
       <style jsx>{`
         @keyframes fadeIn {

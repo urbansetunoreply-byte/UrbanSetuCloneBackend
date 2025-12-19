@@ -16,9 +16,55 @@ export const getManagementUsers = async (req, res, next) => {
     if (!currentUser || (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin')) {
       return next(errorHandler(403, 'Access denied'));
     }
-    // Include all users regardless of status (active, suspended, etc.)
-    // This includes Google sign-up users and all user statuses
-    const users = await User.find({ role: 'user' }).select('-password');
+
+    // Use aggregation to fetch users with counts of their listings and appointments
+    const users = await User.aggregate([
+      { $match: { role: 'user' } },
+      // Lookup listings count
+      {
+        $lookup: {
+          from: 'listings',
+          localField: '_id',
+          foreignField: 'userRef',
+          as: 'listingsData'
+        }
+      },
+      // Lookup appointments count (buyer or seller)
+      {
+        $lookup: {
+          from: 'bookings',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    { $eq: ['$buyerId', '$$userId'] },
+                    { $eq: ['$sellerId', '$$userId'] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'bookingsData'
+        }
+      },
+      // Add counts and remove password
+      {
+        $addFields: {
+          listingsCount: { $size: '$listingsData' },
+          appointmentsCount: { $size: '$bookingsData' }
+        }
+      },
+      {
+        $project: {
+          password: 0,
+          listingsData: 0,
+          bookingsData: 0
+        }
+      }
+    ]);
+
     res.status(200).json(users);
   } catch (err) {
     next(err);
@@ -35,8 +81,8 @@ export const getManagementAdmins = async (req, res, next) => {
     // Include all admins regardless of approval status (pending, approved, rejected)
     // Regular admins: only see other admins (not rootadmin/default admin)
     // Rootadmin: see all admins (not rootadmin/default admin)
-    const query = { 
-      role: 'admin', 
+    const query = {
+      role: 'admin',
       _id: { $ne: currentUser._id }
       // Removed adminApprovalStatus filter to include pending and rejected admins
     };
@@ -58,7 +104,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
     const { reason } = req.body; // Get suspension reason from request body
     const currentUser = await User.findById(req.user.id);
     if (!currentUser) return next(errorHandler(403, 'Access denied'));
-    
+
     if (type === 'user') {
       // Only admin/rootadmin can suspend users
       if (currentUser.role !== 'admin' && currentUser.role !== 'rootadmin') {
@@ -78,7 +124,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
         user.suspensionReason = null;
       }
       await user.save();
-      
+
       // Send suspension/reactivation email
       try {
         const suspensionDetails = {
@@ -89,7 +135,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
           suspendedAt: user.suspendedAt || new Date(),
           isSuspension: togglingToSuspended
         };
-        
+
         await sendAccountSuspensionEmail(user.email, suspensionDetails);
         console.log(`✅ ${togglingToSuspended ? 'Suspension' : 'Reactivation'} email sent to: ${user.email}`);
         console.log(`📧 Email details:`, suspensionDetails);
@@ -97,7 +143,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
         console.error(`❌ Failed to send ${togglingToSuspended ? 'suspension' : 'reactivation'} email to ${user.email}:`, emailError);
         // Don't fail the suspension if email fails, just log the error
       }
-      
+
       // Emit socket event for account suspension
       const io = req.app.get('io');
       if (io) {
@@ -109,7 +155,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
           type: 'user'
         });
       }
-      
+
       return res.status(200).json({ message: 'User status updated', status: user.status });
     } else if (type === 'admin') {
       // Only the current default admin can suspend admins
@@ -130,7 +176,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
         admin.suspensionReason = null;
       }
       await admin.save();
-      
+
       // Send suspension/reactivation email
       try {
         const suspensionDetails = {
@@ -141,7 +187,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
           suspendedAt: admin.suspendedAt || new Date(),
           isSuspension: togglingAdminToSuspended
         };
-        
+
         await sendAccountSuspensionEmail(admin.email, suspensionDetails);
         console.log(`✅ ${togglingAdminToSuspended ? 'Suspension' : 'Reactivation'} email sent to: ${admin.email}`);
         console.log(`📧 Email details:`, suspensionDetails);
@@ -149,7 +195,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
         console.error(`❌ Failed to send ${togglingAdminToSuspended ? 'suspension' : 'reactivation'} email to ${admin.email}:`, emailError);
         // Don't fail the suspension if email fails, just log the error
       }
-      
+
       // Emit socket event for account suspension
       const io = req.app.get('io');
       if (io) {
@@ -161,7 +207,7 @@ export const suspendUserOrAdmin = async (req, res, next) => {
           type: 'admin'
         });
       }
-      
+
       return res.status(200).json({ message: 'Admin status updated', status: admin.status });
     } else {
       return next(errorHandler(400, 'Invalid type'));
@@ -344,7 +390,7 @@ export const restoreDeletedAccount = async (req, res, next) => {
     // Ensure required fields
     const username = original.username || record.name || 'Restored User';
     const mobileNumber = original.mobileNumber && String(original.mobileNumber).match(/^\d{10}$/) ? String(original.mobileNumber) : String(Math.floor(1000000000 + Math.random() * 9000000000));
-    
+
     // CRITICAL FIX: Preserve the original user ID to maintain relationships
     const restored = new User({
       _id: record.accountId, // Use the original accountId to preserve all relationships
@@ -367,17 +413,17 @@ export const restoreDeletedAccount = async (req, res, next) => {
     });
     await restored.save();
     await AuditLog.create({ action: 'restore', performedBy: currentUser._id, targetAccount: record._id, targetEmail: record.email });
-    
+
     // Invalidate any active revocation tokens for this account
     try {
       const AccountRevocation = (await import('../models/accountRevocation.model.js')).default;
       await AccountRevocation.updateMany(
-        { 
+        {
           accountId: record.accountId,
-          isUsed: false 
+          isUsed: false
         },
-        { 
-          $set: { 
+        {
+          $set: {
             isUsed: true,
             usedAt: new Date(),
             restoredAt: new Date(),
@@ -390,7 +436,7 @@ export const restoreDeletedAccount = async (req, res, next) => {
       console.error(`❌ Failed to invalidate revocation tokens for ${record.email}:`, tokenError);
       // Don't fail the restoration if token invalidation fails
     }
-    
+
     // Send manual account restoration email
     try {
       await sendManualAccountRestorationEmail(record.email, {
@@ -404,7 +450,7 @@ export const restoreDeletedAccount = async (req, res, next) => {
       console.error(`❌ Failed to send restoration email to ${record.email}:`, emailError);
       // Don't fail the restoration if email fails
     }
-    
+
     await DeletedAccount.findByIdAndDelete(id);
     res.json({ success: true, message: 'Account restored', userId: restored._id });
   } catch (err) {
@@ -447,7 +493,7 @@ export const demoteAdminToUser = async (req, res, next) => {
     if (admin._id.equals(currentUser._id)) {
       return next(errorHandler(400, 'You cannot demote yourself.'));
     }
-    
+
     const demotedAt = new Date();
     admin.role = 'user';
     admin.adminApprovalStatus = undefined;
@@ -456,7 +502,7 @@ export const demoteAdminToUser = async (req, res, next) => {
     admin.adminRequestDate = undefined;
     admin.isDefaultAdmin = false;
     await admin.save();
-    
+
     // Send demotion email
     try {
       const demotionDetails = {
@@ -465,7 +511,7 @@ export const demoteAdminToUser = async (req, res, next) => {
         demotedAt: demotedAt,
         reason: reason || 'Administrative decision'
       };
-      
+
       await sendAdminDemotionEmail(admin.email, demotionDetails);
       console.log(`✅ Admin demotion email sent to: ${admin.email}`);
       console.log(`📧 Demotion details:`, demotionDetails);
@@ -473,7 +519,7 @@ export const demoteAdminToUser = async (req, res, next) => {
       console.error(`❌ Failed to send demotion email to ${admin.email}:`, emailError);
       // Don't fail the demotion if email fails, just log the error
     }
-    
+
     return res.status(200).json({ message: 'Admin demoted to user successfully.' });
   } catch (err) {
     next(err);
@@ -495,7 +541,7 @@ export const promoteUserToAdmin = async (req, res, next) => {
     user.adminApprovalDate = new Date();
     user.approvedBy = currentUser._id;
     await user.save();
-    
+
     // Send promotion email
     try {
       const promotionDetails = {
@@ -503,19 +549,19 @@ export const promoteUserToAdmin = async (req, res, next) => {
         promotedBy: currentUser.username || currentUser.email,
         promotedAt: user.adminApprovalDate
       };
-      
+
       await sendUserPromotionEmail(user.email, promotionDetails);
       console.log(`✅ User promotion email sent to: ${user.email}`);
     } catch (emailError) {
       console.error(`❌ Failed to send promotion email to ${user.email}:`, emailError);
       // Don't fail the promotion if email fails, just log the error
     }
-    
+
     return res.status(200).json({ message: 'User promoted to admin successfully.' });
   } catch (err) {
     next(err);
   }
-}; 
+};
 
 // Re-approve a rejected admin (default admin only)
 export const reapproveRejectedAdmin = async (req, res, next) => {
@@ -548,7 +594,7 @@ export const triggerAutoPurge = async (req, res, next) => {
 
     console.log('🔄 Manual auto-purge triggered by admin:', currentUser.email);
     const result = await autoPurgeSoftbannedAccounts();
-    
+
     res.status(200).json({
       success: true,
       message: 'Auto-purge completed successfully',
@@ -584,7 +630,7 @@ export const triggerAccountReminders = async (req, res, next) => {
 
     console.log('📧 Manual account reminders triggered by admin:', currentUser.email);
     const result = await sendAccountDeletionReminders();
-    
+
     res.status(200).json({
       success: true,
       message: 'Account reminder process completed successfully',
@@ -620,7 +666,7 @@ export const triggerEmailMonitoring = async (req, res, next) => {
 
     console.log('🔍 Manual email monitoring triggered by admin:', currentUser.email);
     const result = await checkEmailServiceStatus(req.app);
-    
+
     res.status(200).json({
       success: true,
       message: 'Email service monitoring check completed successfully',
