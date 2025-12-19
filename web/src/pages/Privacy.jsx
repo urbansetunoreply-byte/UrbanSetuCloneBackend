@@ -11,7 +11,7 @@ export default function Privacy() {
       <h1 className="text-4xl font-bold mb-6 text-blue-700">Privacy Policy</h1>
       <div className="space-y-6 text-gray-800 text-base">
         <p className="text-lg">Your privacy is important to us. This policy explains how we collect, use, and protect your information as a user or admin of our UrbanSetu real estate platform.</p>
-        
+
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Information We Collect</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Account Information:</strong> Name, email, validated mobile number (unique 10 digits), role selection (user/admin), profile picture, and authentication credentials.</li>
@@ -122,12 +122,27 @@ export default function Privacy() {
           <li><strong>Access:</strong> Only authorized support or compliance personnel can access call/chat data, and only for legitimate business reasons.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">15. Your Choices & Escalations</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">15. Cookies & Tracking</h2>
+        <p className="ml-6">See our full Cookie Policy for details on how we use analytics, advertising, and functional cookies to improve your experience.</p>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">16. AI Content Moderation & Safety</h2>
         <ul className="list-disc ml-6 space-y-3">
-          <li><strong>Notification Preferences:</strong> Manage marketing, reminder, or product-update messages from notification settings. Critical security or transaction alerts cannot be disabled.</li>
-          <li><strong>Data Requests:</strong> Submit right-to-access or deletion requests via privacy@urbansetu.com. We may verify identity before fulfilling requests.</li>
-          <li><strong>Regulatory Complaints:</strong> If you believe we have not addressed a privacy concern, you may escalate to the relevant data-protection authority in your jurisdiction.</li>
-          <li><strong>Cookies & Tracking:</strong> See the Cookie Policy for granular choices regarding analytics, advertising, and functional cookies.</li>
+          <li><strong>Automated Review:</strong> We use AI (via providers like Groq and Gemini) to monitor chats, search queries, and listings for policy violations, hate speech, and fraudulent content.</li>
+          <li><strong>Data Processing:</strong> When you send a message or create a listing, the content is analyzed by AI models to ensure platform safety. This processing is transient but records of violations are kept for enforcement.</li>
+          <li><strong>Admin Oversight:</strong> Flagged content is reviewed by admins to prevent false positives and maintain a high-quality community.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">17. Loyalty Program & Referral Data</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Referral Tracking:</strong> To credit rewards, we track successful sign-ups via unique referral links. We store the relationship between the referrer and the new joiner.</li>
+          <li><strong>SetuCoin Economy:</strong> Your coin balance, earning history (referrals, bookings, bonuses), and redemption logs (discounts, partner rewards) are stored securely.</li>
+          <li><strong>Verification:</strong> We may use account age, activity levels, and IP logs to prevent referral fraud or gaming of the rewards system.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">18. On-Demand Services & Mover Verification</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Service Logs:</strong> For cleaning, electricians, or movers, we store addresses, preferred dates, and service-specific notes to coordinate with vendors.</li>
+          <li><strong>Condition Records:</strong> Move-in/move-out checklists with images and videos are stored to resolve property damage disputes between tenants and landlords.</li>
         </ul>
 
         <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
@@ -143,8 +158,8 @@ export default function Privacy() {
         <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Related Policies</h3>
           <p className="text-gray-700 mb-3">For information about how we use cookies and similar technologies, please review our:</p>
-          <a 
-            href="/cookie-policy" 
+          <a
+            href="/cookie-policy"
             className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
           >
             🍪 Cookie Policy

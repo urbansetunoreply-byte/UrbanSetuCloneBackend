@@ -2,11 +2,13 @@ import React, { useState } from 'react';
 import { FaCoins, FaFire, FaHistory, FaGift, FaQuestionCircle, FaInfoCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
 import SetuCoinInfoModal from './SetuCoinInfoModal';
+import { getCoinValue, COIN_CONFIG } from '../../utils/coinUtils';
 
 const SetuCoinCard = ({ balance = 0, streak = 0, loading = false, onViewHistory }) => {
     const [showInfo, setShowInfo] = useState(false);
-    // Conversion rate: 10 Coins = ₹1 (as per plan)
-    const rupeeValue = (balance / 10).toFixed(2);
+
+    const inrValue = getCoinValue(balance, 'INR').toFixed(2);
+    const usdValue = getCoinValue(balance, 'USD').toFixed(2);
 
     // Gradient background based on balance tier (gamification visual)
     const getGradient = () => {
@@ -79,9 +81,16 @@ const SetuCoinCard = ({ balance = 0, streak = 0, loading = false, onViewHistory 
                             </span>
                             <span className="text-lg font-medium text-white/80">Coins</span>
                         </div>
-                        <div className="mt-2 inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-lg text-sm font-medium border border-white/10 transition-colors hover:bg-white/30">
-                            <span>≈ ₹{rupeeValue} Value</span>
-                            <FaQuestionCircle className="text-xs opacity-70" title="10 Coins = ₹1 on redemption" />
+                        <div className="mt-2 flex flex-wrap gap-2">
+                            <div className="inline-flex items-center gap-1.5 bg-white/20 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-semibold border border-white/10">
+                                <span>≈ ₹{inrValue}</span>
+                            </div>
+                            <div className="inline-flex items-center gap-1.5 bg-black/10 backdrop-blur-md px-3 py-1 rounded-lg text-xs font-semibold border border-white/5">
+                                <span>≈ ${usdValue}</span>
+                            </div>
+                            <button onClick={() => setShowInfo(true)} className="ml-1 text-white/50 hover:text-white transition-colors">
+                                <FaQuestionCircle size={14} title={`${COIN_CONFIG.RATES.INR} Coins = ₹1 | ${COIN_CONFIG.RATES.USD} Coins = $1`} />
+                            </button>
                         </div>
                     </div>
                 </div>

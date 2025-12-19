@@ -11,6 +11,7 @@ import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
 import SetuCoinInfoModal from '../components/SetuCoins/SetuCoinInfoModal';
 import CommunityLeaderboard from '../components/SetuCoins/CommunityLeaderboard';
 import SocialSharePanel from '../components/SocialSharePanel';
+import { getCoinValue, COIN_CONFIG } from '../utils/coinUtils';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -18,7 +19,7 @@ const DID_YOU_KNOW_FACTS = [
     "Paying your rent on the exact due date for 3 consecutive months gives you a 'Speed Demon' bonus of 50 SetuCoins!",
     "You can redeem SetuCoins for real discounts on monthly rent or on-demand home services!",
     "Reaching a 6-month rent streak unlocks the 'Elite Resident' badge and a 200 coin bonus!",
-    "Inviting a friend to UrbanSetu earns you both 100 SetuCoins once they sign their first contract!",
+    "Inviting a friend to UrbanSetu earns you 100 SetuCoins and your friend 50 SetuCoins once they join!",
     "SetuCoins never expire as long as you have one active property listing or rental contract!",
     "Top 3 leaderboard champions every month get exclusive UrbanSetu merchandise and premium support!",
     "Checking your property's maintenance checklist once a month earns you a 'Diligent Owner' bonus of 10 coins!"
@@ -49,6 +50,7 @@ export default function Rewards() {
     const [showReferral, setShowReferral] = useState(false);
     const [currentFact, setCurrentFact] = useState(DID_YOU_KNOW_FACTS[0]);
     const [activeContractId, setActiveContractId] = useState(null);
+    const [referralStats, setReferralStats] = useState({ referralsCount: 0, totalEarned: 0, loading: true });
 
     useEffect(() => {
         // Pick a random fact on every mountain/visit
@@ -59,7 +61,7 @@ export default function Rewards() {
 
     useEffect(() => {
         fetchUserInfo();
-        if (activeTab === 'history') fetchHistory();
+        fetchReferralStats();
         if (activeTab === 'history') fetchHistory();
     }, [activeTab]);
 
@@ -116,6 +118,23 @@ export default function Rewards() {
     };
 
 
+    const fetchReferralStats = async () => {
+        try {
+            const res = await fetch(`${API_BASE_URL}/api/coins/referral-stats`, { credentials: 'include' });
+            const data = await res.json();
+            if (data.success) {
+                setReferralStats({
+                    referralsCount: data.referralsCount || 0,
+                    totalEarned: data.totalEarned || 0,
+                    loading: false
+                });
+            }
+        } catch (error) {
+            console.error(error);
+            setReferralStats(prev => ({ ...prev, loading: false }));
+        }
+    };
+
     const tabs = [
         { id: 'overview', label: 'Overview', icon: <FaRocket /> },
         { id: 'rewards', label: 'Redeem', icon: <FaGift /> },
@@ -129,14 +148,14 @@ export default function Rewards() {
         { title: 'Pay Monthly Rent', coins: '100+', icon: <FaHome className="text-blue-500" />, desc: 'Earn 1% back in coins on every rent payment.', link: '/user/rental-contracts' },
         { title: 'Maintain Streak', coins: 'Up to 100', icon: <FaFire className="text-orange-500" />, desc: 'Pay rent on time for consecutive months for bonus coins.', link: activeContractId ? `/user/rent-wallet?contractId=${activeContractId}` : '/user/rental-contracts' },
         { title: 'Request Service', coins: '10-50', icon: <FaBolt className="text-yellow-500" />, desc: 'Book cleaning, plumbing or electrical tasks.', link: '/user/services' },
-        { title: 'Refer a Friend', coins: '500', icon: <FaUserFriends className="text-purple-500" />, desc: 'Get rewarded for every friend who joins UrbanSetu through your link.', link: '#', isReferral: true },
+        { title: 'Refer a Friend', coins: '100', icon: <FaUserFriends className="text-purple-500" />, desc: 'Earn 100 SetuCoins & your friend gets 50 coins for joining.', link: '#', isReferral: true },
     ];
 
     // Redeem Options
     const redeemOptions = [
-        { title: 'Rent Discount', rate: '10 Coins = ₹1', icon: <FaHome className="text-indigo-600" />, desc: 'Apply coins during checkout to lower your monthly rent.', link: activeContractId ? `/user/pay-monthly-rent?contractId=${activeContractId}` : '/user/rental-contracts' },
-        { title: 'Handyman Services', rate: 'Up to ₹200 OFF', icon: <FaBolt className="text-yellow-600" />, desc: 'Use coins to get discounts on home maintenance.', link: '/user/services' },
-        { title: 'Packers & Movers', rate: 'Up to ₹500 OFF', icon: <FaRocket className="text-red-500" />, desc: 'Heavy discounts on moving services.', link: '/user/services' },
+        { title: 'Rent Discount', rate: `${COIN_CONFIG.RATES.INR} Coins = ₹1`, icon: <FaHome className="text-indigo-600" />, desc: 'Apply coins during checkout to lower your monthly rent.', link: activeContractId ? `/user/pay-monthly-rent?contractId=${activeContractId}` : '/user/rental-contracts' },
+        { title: 'Handyman Services', rate: `Up to ₹200 OFF`, icon: <FaBolt className="text-yellow-600" />, desc: 'Use coins to get discounts on home maintenance.', link: '/user/services' },
+        { title: 'Packers & Movers', rate: `Up to ₹500 OFF`, icon: <FaRocket className="text-red-500" />, desc: 'Heavy discounts on moving services.', link: '/user/services' },
     ];
 
     return (
@@ -276,27 +295,62 @@ export default function Rewards() {
                     )}
 
                     {activeTab === 'activities' && (
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                            {earnActivities.map((act, i) => (
-                                <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4 hover:shadow-md transition-all group">
-                                    <div className="p-4 bg-slate-50 rounded-2xl group-hover:bg-slate-100 transition-colors shadow-inner">
-                                        {act.icon}
-                                    </div>
-                                    <div className="flex-1">
-                                        <div className="flex justify-between items-center mb-1">
-                                            <h3 className="font-bold text-slate-800">{act.title}</h3>
-                                            <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-xs font-black">+{act.coins}</span>
+                        <div className="space-y-6">
+                            <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                                {earnActivities.map((act, i) => (
+                                    <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4 hover:shadow-md transition-all group">
+                                        <div className="p-4 bg-slate-50 rounded-2xl group-hover:bg-slate-100 transition-colors shadow-inner">
+                                            {act.icon}
                                         </div>
-                                        <p className="text-sm text-slate-500 mb-4">{act.desc}</p>
-                                        <button
-                                            onClick={() => act.isReferral ? setShowReferral(true) : navigate(act.link)}
-                                            className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:gap-2 transition-all"
-                                        >
-                                            {act.isReferral ? 'Invite Friends' : 'Go to activity'} <FaChevronRight className="text-[10px]" />
-                                        </button>
+                                        <div className="flex-1">
+                                            <div className="flex justify-between items-center mb-1">
+                                                <h3 className="font-bold text-slate-800">{act.title}</h3>
+                                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-xs font-black">+{act.coins}</span>
+                                            </div>
+                                            <p className="text-sm text-slate-500 mb-4">{act.desc}</p>
+                                            <button
+                                                onClick={() => act.isReferral ? setShowReferral(true) : navigate(act.link)}
+                                                className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:gap-2 transition-all"
+                                            >
+                                                {act.isReferral ? 'Invite Friends' : 'Go to activity'} <FaChevronRight className="text-[10px]" />
+                                            </button>
+                                        </div>
+                                    </div>
+                                ))}
+                            </div>
+
+                            {/* Referral Stats Summary */}
+                            <div className="bg-indigo-600 rounded-3xl p-8 text-white relative overflow-hidden shadow-xl">
+                                <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
+                                <div className="relative z-10 flex flex-col md:flex-row justify-between items-center gap-6">
+                                    <div className="flex items-center gap-4">
+                                        <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center border border-white/30">
+                                            <FaUserFriends size={30} />
+                                        </div>
+                                        <div>
+                                            <h3 className="text-xl font-black">Your Referral Impact</h3>
+                                            <p className="text-indigo-100 text-sm">See how many friends you've brought to UrbanSetu</p>
+                                        </div>
+                                    </div>
+                                    <div className="flex gap-8">
+                                        <div className="text-center">
+                                            <p className="text-3xl font-black">{referralStats.referralsCount}</p>
+                                            <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-200">Friends Joined</p>
+                                        </div>
+                                        <div className="text-center bg-white/10 px-4 py-2 rounded-2xl backdrop-blur-sm">
+                                            <div className="flex flex-col">
+                                                <p className="text-2xl font-black">₹{getCoinValue(referralStats.totalEarned, 'INR').toFixed(0)}</p>
+                                                <p className="text-xl font-black opacity-80">${getCoinValue(referralStats.totalEarned, 'USD').toFixed(2)}</p>
+                                            </div>
+                                            <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-200 mt-1">Value Earned</p>
+                                        </div>
+                                        <div className="text-center">
+                                            <p className="text-3xl font-black">{referralStats.totalEarned}</p>
+                                            <p className="text-[10px] uppercase font-bold tracking-widest text-indigo-200">Total Coins</p>
+                                        </div>
                                     </div>
                                 </div>
-                            ))}
+                            </div>
                         </div>
                     )}
 
@@ -350,12 +404,18 @@ export default function Rewards() {
                                                 <tr key={tx._id} className="hover:bg-slate-50 transition-colors">
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                                                                {tx.type === 'credit' ? <FaArrowUp /> : <FaArrowDown />}
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.source === 'referral' ? 'bg-purple-100 text-purple-600' :
+                                                                    tx.source === 'admin_adjustment' ? 'bg-amber-100 text-amber-600' :
+                                                                        tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                                                }`}>
+                                                                {tx.source === 'referral' ? <FaUserFriends /> :
+                                                                    tx.source === 'admin_adjustment' ? <FaStar /> :
+                                                                        tx.type === 'credit' ? <FaArrowUp /> : <FaArrowDown />}
                                                             </div>
                                                             <div>
                                                                 <p className="font-bold text-slate-800 text-sm">{tx.description}</p>
-                                                                <p className="text-[10px] text-slate-400 font-medium tracking-wide uppercase">{tx.source.replace('_', ' ')}</p>
+                                                                <p className={`text-[10px] font-bold tracking-wide uppercase ${tx.source === 'referral' ? 'text-purple-600' : 'text-slate-400'
+                                                                    }`}>{tx.source.replace('_', ' ')}</p>
                                                             </div>
                                                         </div>
                                                     </td>

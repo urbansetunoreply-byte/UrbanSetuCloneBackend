@@ -4,6 +4,7 @@ import { FaTools, FaEnvelope, FaCheckCircle, FaTruckMoving, FaHome, FaSignInAlt,
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import ChecklistModal from '../components/rental/ChecklistModal';
+import { getCoinValue, COIN_CONFIG } from '../utils/coinUtils';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 export default function AdminServices() {
@@ -157,8 +158,11 @@ export default function AdminServices() {
                       <div className="text-xs text-gray-700">Address: {n.address}</div>
                       {n.notes && (<div className="text-xs text-gray-700">Notes: {n.notes}</div>)}
                       {n.coinsToRedeem > 0 && (
-                        <div className="text-xs font-bold text-amber-600 flex items-center gap-1 mt-1">
-                          <FaCheckCircle className="text-amber-500" /> {n.coinsToRedeem} Coins Redeemed (₹{Math.floor(n.coinsToRedeem / 10)} OFF)
+                        <div className="text-xs font-bold text-amber-600 flex items-center flex-wrap gap-2 mt-1">
+                          <div className="flex items-center gap-1">
+                            <FaCheckCircle className="text-amber-500" /> {n.coinsToRedeem} Coins
+                          </div>
+                          <span>(₹{getCoinValue(n.coinsToRedeem, 'INR').toFixed(0)} | ${getCoinValue(n.coinsToRedeem, 'USD').toFixed(2)} OFF)</span>
                         </div>
                       )}
                     </td>
@@ -230,8 +234,11 @@ export default function AdminServices() {
                       <div className="text-xs text-gray-700">Size: {n.size}</div>
                       {n.notes && (<div className="text-xs text-gray-700">Notes: {n.notes}</div>)}
                       {n.coinsToRedeem > 0 && (
-                        <div className="text-xs font-bold text-amber-600 flex items-center gap-1 mt-1">
-                          <FaCheckCircle className="text-amber-500" /> {n.coinsToRedeem} Coins Redeemed (₹{Math.floor(n.coinsToRedeem / 10)} OFF)
+                        <div className="text-xs font-bold text-amber-600 flex items-center flex-wrap gap-2 mt-1">
+                          <div className="flex items-center gap-1">
+                            <FaCheckCircle className="text-amber-500" /> {n.coinsToRedeem} Coins
+                          </div>
+                          <span>(₹{getCoinValue(n.coinsToRedeem, 'INR').toFixed(0)} | ${getCoinValue(n.coinsToRedeem, 'USD').toFixed(2)} OFF)</span>
                         </div>
                       )}
                     </td>

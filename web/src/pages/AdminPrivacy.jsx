@@ -11,7 +11,7 @@ export default function AdminPrivacy() {
       <h1 className="text-4xl font-bold mb-6 text-blue-700">Admin Privacy Policy</h1>
       <div className="space-y-6 text-gray-800 text-base">
         <p className="text-lg">This policy explains how we collect, use, and protect your information as an admin on UrbanSetu.</p>
-        
+
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Information We Collect</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Admin Profile:</strong> Name, email, validated mobile number (unique 10 digits), role (admin/rootadmin), and authentication credentials.</li>
@@ -78,19 +78,18 @@ export default function AdminPrivacy() {
           <li><strong>Retention Windows:</strong> Monitoring artifacts are deleted once a case is closed unless regulators require longer retention.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">10. Incident Response & Notifications</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">11. AI Oversight & Rewards Management</h2>
         <ul className="list-disc ml-6 space-y-3">
-          <li><strong>Logging:</strong> Security incidents, unauthorized access attempts, or data-export anomalies must be logged immediately.</li>
-          <li><strong>User Notification:</strong> If an incident impacts users, admins must coordinate with the security team to notify affected parties per applicable breach laws.</li>
-          <li><strong>Post-Mortems:</strong> Significant incidents require a root-cause analysis and documented preventive actions.</li>
-          <li><strong>Continuous Training:</strong> Admins participate in periodic privacy and security trainings to maintain compliance.</li>
+          <li><strong>Moderation Tools:</strong> Admins use AI insights to review flagged content. Access to raw chat logs is strictly for safety audits.</li>
+          <li><strong>Referral Audits:</strong> Admins may review referral chains and SetuCoin accounts to detect and prevent system exploitation.</li>
+          <li><strong>Service Coordination:</strong> Scoped access to on-demand service requests (movers, cleaning) is granted for vendor allotment and quality control.</li>
         </ul>
 
         <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Related Policies</h3>
           <p className="text-gray-700 mb-3">For information about how we use cookies and similar technologies, please review our:</p>
-          <a 
-            href="/admin/cookie-policy" 
+          <a
+            href="/admin/cookie-policy"
             className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
           >
             🍪 Cookie Policy

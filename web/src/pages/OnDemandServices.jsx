@@ -1,14 +1,15 @@
 import React, { useEffect, useState } from 'react';
 import { FaBroom, FaBolt, FaWrench, FaBug, FaTools, FaTruckMoving, FaCalendarAlt, FaMapMarkerAlt, FaHome, FaSignInAlt, FaSignOutAlt, FaCheckCircle, FaClock, FaTimesCircle, FaCoins } from 'react-icons/fa';
-import { toast } from 'react-toastify';
 import { useSelector } from 'react-redux';
 import { Link, useLocation, useNavigate } from 'react-router-dom';
 import ConditionImageUpload from '../components/rental/ConditionImageUpload';
 import ChecklistModal from '../components/rental/ChecklistModal';
 
+import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
+import { getCoinValue, COIN_CONFIG } from '../utils/coinUtils';
 const services = [
   { key: 'cleaning', name: 'Cleaning', icon: <FaBroom className="text-blue-600" /> },
   { key: 'electrician', name: 'Electrician', icon: <FaBolt className="text-yellow-600" /> },
@@ -314,10 +315,10 @@ export default function OnDemandServices() {
 
             {coinsToRedeem > 0 && (
               <div className="mt-2 text-xs text-green-700 font-medium">
-                Discount applied: ₹{Math.floor(coinsToRedeem / 10)} OFF
+                Discount applied: ₹{getCoinValue(coinsToRedeem, 'INR').toFixed(0)} OFF
               </div>
             )}
-            <p className="text-[10px] text-gray-500 mt-1">10 Coins = ₹1 Discount</p>
+            <p className="text-[10px] text-gray-500 mt-1">{COIN_CONFIG.RATES.INR} Coins = ₹1 Discount</p>
           </div>
         </div>
         <button onClick={submit} disabled={loading} className="mt-4 bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded disabled:opacity-60">{loading ? 'Submitting...' : 'Submit Request'}</button>
@@ -381,10 +382,10 @@ export default function OnDemandServices() {
 
             {coinsToRedeemMovers > 0 && (
               <div className="mt-2 text-xs text-green-700 font-medium">
-                Discount applied: ₹{Math.floor(coinsToRedeemMovers / 10)} OFF
+                Discount applied: ₹{getCoinValue(coinsToRedeemMovers, 'INR').toFixed(0)} OFF
               </div>
             )}
-            <p className="text-[10px] text-gray-500 mt-1">10 Coins = ₹1 Discount</p>
+            <p className="text-[10px] text-gray-500 mt-1">{COIN_CONFIG.RATES.INR} Coins = ₹1 Discount</p>
           </div>
           <button disabled={moversSubmitting} className="bg-gradient-to-r from-blue-600 to-purple-600 text-white px-4 py-2 rounded hover:from-blue-700 hover:to-purple-700 disabled:opacity-50">{moversSubmitting ? 'Submitting...' : 'Request Quote'}</button>
         </form>
@@ -416,12 +417,32 @@ export default function OnDemandServices() {
                   return matchQ && matchStatus;
                 }).map(req => (
                   <li key={req._id} className="py-2">
-                    <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status === 'completed' ? 'bg-green-600' : req.status === 'in_progress' ? 'bg-blue-600' : req.status === 'cancelled' ? 'bg-gray-500' : 'bg-orange-500'}`}>{req.status}</span></div>
+                    <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status === 'completed' ? 'bg-green-600' : req.status === 'in_progress' ? 'bg-blue-600' : (req.status === 'pending_payment' || req.status === 'awaiting_payment') ? 'bg-yellow-500' : req.status === 'cancelled' ? 'bg-gray-500' : 'bg-orange-500'}`}>{req.status.replace('_', ' ')}</span></div>
                     <div className="text-sm text-gray-800">From: {req.fromAddress}</div>
                     <div className="text-sm text-gray-800">To: {req.toAddress}</div>
                     <div className="text-sm text-gray-800">Date: {req.moveDate}</div>
                     <div className="text-sm text-gray-800">Size: {req.size}</div>
                     {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
+                    {(req.status === 'pending_payment' || req.status === 'awaiting_payment') && (
+                      <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800 flex items-center justify-between">
+                        <span>Payment of ₹{req.amount} is required to confirm this movers booking.</span>
+                        <button
+                          onClick={() => {
+                            setPaymentRequestData({
+                              requestId: req._id,
+                              type: 'movers',
+                              amount: req.amount,
+                              address: `${req.fromAddress} to ${req.toAddress}`,
+                              date: req.moveDate
+                            });
+                            setShowPaymentModal(true);
+                          }}
+                          className="bg-yellow-600 text-white px-3 py-1 rounded-md font-bold hover:bg-yellow-700"
+                        >
+                          Pay Now
+                        </button>
+                      </div>
+                    )}
                     <div className="mt-2 flex items-center gap-2">
                       {req.status === 'pending' && (
                         <button onClick={async () => { try { await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Movers request cancelled'); fetchMyMoverRequests(); } catch (_) { toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>
@@ -743,11 +764,31 @@ export default function OnDemandServices() {
                 return matchQ && matchStatus;
               }).map(req => (
                 <li key={req._id} className="py-2">
-                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status === 'completed' ? 'bg-green-600' : req.status === 'in_progress' ? 'bg-blue-600' : req.status === 'cancelled' ? 'bg-gray-500' : 'bg-orange-500'}`}>{req.status}</span></div>
+                  <div className="text-xs text-gray-500">{new Date(req.createdAt).toLocaleString()} — <span className={`px-2 py-0.5 rounded text-white text-[10px] ${req.status === 'completed' ? 'bg-green-600' : req.status === 'in_progress' ? 'bg-blue-600' : (req.status === 'pending_payment' || req.status === 'awaiting_payment') ? 'bg-yellow-500' : req.status === 'cancelled' ? 'bg-gray-500' : 'bg-orange-500'}`}>{req.status.replace('_', ' ')}</span></div>
                   <div className="text-sm text-gray-800">Services: {req.services?.join(', ')}</div>
                   <div className="text-sm text-gray-800">Date: {req.preferredDate}</div>
                   <div className="text-sm text-gray-800">Address: {req.address}</div>
                   {req.notes && (<div className="text-sm text-gray-700">Notes: {req.notes}</div>)}
+                  {(req.status === 'pending_payment' || req.status === 'awaiting_payment') && (
+                    <div className="mt-2 p-2 bg-yellow-50 border border-yellow-200 rounded text-xs text-yellow-800 flex items-center justify-between">
+                      <span>Payment of ₹{req.amount} is required to confirm this booking.</span>
+                      <button
+                        onClick={() => {
+                          setPaymentRequestData({
+                            requestId: req._id,
+                            type: 'service',
+                            amount: req.amount,
+                            address: req.address,
+                            date: req.preferredDate
+                          });
+                          setShowPaymentModal(true);
+                        }}
+                        className="bg-yellow-600 text-white px-3 py-1 rounded-md font-bold hover:bg-yellow-700"
+                      >
+                        Pay Now
+                      </button>
+                    </div>
+                  )}
                   <div className="mt-2 flex items-center gap-2">
                     {req.status === 'pending' && (
                       <button onClick={async () => { try { await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: 'cancelled' }) }); toast.success('Service request cancelled'); fetchMyRequests(); } catch (_) { toast.error('Failed to cancel'); } }} className="text-xs px-2 py-1 rounded bg-gray-200">Cancel</button>

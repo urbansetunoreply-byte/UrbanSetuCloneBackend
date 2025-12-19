@@ -1,5 +1,6 @@
 import User from "../models/user.model.js";
 import CoinTransaction from "../models/coinTransaction.model.js";
+import mongoose from "mongoose";
 
 /**
  * Service to handle SetuCoins operations
@@ -292,6 +293,28 @@ class CoinService {
                 page,
                 pages: Math.ceil(total / limit)
             }
+        };
+    }
+
+    /**
+     * Get referral statistics for a user
+     * @param {string} userId 
+     */
+    async getReferralStats(userId) {
+        // Count users who were referred by this user
+        const referralsCount = await User.countDocuments({ 'gamification.referredBy': userId });
+
+        // Calculate total coins earned from referrals
+        const referralTransactions = await CoinTransaction.aggregate([
+            { $match: { userId: new mongoose.Types.ObjectId(userId), source: 'referral', type: 'credit' } },
+            { $group: { _id: null, totalEarned: { $sum: '$amount' } } }
+        ]);
+
+        const totalEarned = referralTransactions[0]?.totalEarned || 0;
+
+        return {
+            referralsCount,
+            totalEarned
         };
     }
 }

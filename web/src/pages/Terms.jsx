@@ -206,7 +206,8 @@ export default function Terms() {
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Nature of Program:</strong> SetuCoins are virtual loyalty points and do not constitute legal tender, currency, or property. They have no cash value outside of authorized platform redemptions.</li>
           <li><strong>Earning Rewards:</strong> Coins are earned through verified activities including on-time rent payments (1% back), maintaining payment streaks, booking home services, and successful referrals.</li>
-          <li><strong>Redemption:</strong> Coins can be redeemed for discounts on monthly rent or on-demand services at a standard rate of 10 SetuCoins = ₹1. Redemption rates are subject to change with notice.</li>
+          <li><strong>Referral Program:</strong> Users earn 100 SetuCoins for every successful referral who joins using their unique link. New joining users receive 50 SetuCoins as a one-time welcome bonus.</li>
+          <li><strong>Redemption:</strong> Coins can be redeemed for discounts on monthly rent or on-demand services at a standard rate of 10 SetuCoins = ₹1 or 800 SetuCoins = $1. Redemption rates are subject to change with notice.</li>
           <li><strong>Validity & Expiry:</strong> SetuCoins remain valid as long as the user maintains an active rental contract or property listing. Inactive accounts for over 12 months may face balance expiration.</li>
           <li><strong>Abuse & Fraud:</strong> UrbanSetu reserves the right to void or zero-out balances if coins were earned through system exploits, fraudulent activities, or cancelled transactions.</li>
           <li><strong>Program Modifications:</strong> We reserve the right to modify, suspend, or terminate the loyalty program or change earning/redemption rules at any time.</li>

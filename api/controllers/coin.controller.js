@@ -30,6 +30,18 @@ export const getHistory = async (req, res, next) => {
 };
 
 /**
+ * Get referral stats for logged-in user
+ */
+export const getReferralStats = async (req, res, next) => {
+    try {
+        const stats = await CoinService.getReferralStats(req.user.id);
+        res.status(200).json({ success: true, ...stats });
+    } catch (error) {
+        next(error);
+    }
+};
+
+/**
  * Get Global Leaderboard (Public)
  */
 export const getLeaderboard = async (req, res, next) => {
@@ -78,27 +90,31 @@ export const adminAdjustCoins = async (req, res, next) => {
             return next(errorHandler(400, 'Amount must be positive'));
         }
 
-        let result;
-        if (type === 'credit') {
-            result = await CoinService.credit({
-                userId,
-                amount,
-                source: 'admin_adjustment',
-                description: reason,
-                adminId: req.user.id,
-                referenceModel: 'AdminLog' // Optional: link to an audit log if exists
-            });
-        } else if (type === 'debit') {
-            result = await CoinService.debit({
-                userId,
-                amount,
-                source: 'admin_adjustment',
-                description: reason,
-                adminId: req.user.id,
-                referenceModel: 'AdminLog'
-            });
-        } else {
-            return next(errorHandler(400, 'Invalid adjustment type'));
+        const result = await (type === 'credit' ? CoinService.credit : CoinService.debit)({
+            userId,
+            amount,
+            source: 'admin_adjustment',
+            description: reason,
+            adminId: req.user.id,
+            referenceModel: 'AdminLog'
+        });
+
+        // Send notification email
+        try {
+            const User = (await import("../models/user.model.js")).default;
+            const updatedUser = await User.findById(userId).select('email');
+            if (updatedUser?.email) {
+                const { sendCoinAdjustmentEmail } = await import("../utils/emailService.js");
+                await sendCoinAdjustmentEmail(updatedUser.email, {
+                    type,
+                    amount,
+                    reason,
+                    newBalance: result.newBalance
+                });
+            }
+        } catch (emailError) {
+            console.error("Failed to send coin adjustment email:", emailError);
+            // Don't fail the whole request if email fails
         }
 
         res.status(200).json({ success: true, ...result });

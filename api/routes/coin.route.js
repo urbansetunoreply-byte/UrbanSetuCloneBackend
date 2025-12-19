@@ -1,12 +1,13 @@
 import express from 'express';
 import { verifyToken } from '../utils/verify.js';
-import { getBalance, getHistory, getUserBalance, adminAdjustCoins, getLeaderboard, getStats } from '../controllers/coin.controller.js';
+import { getBalance, getHistory, getReferralStats, getUserBalance, adminAdjustCoins, getLeaderboard, getStats } from '../controllers/coin.controller.js';
 
 const router = express.Router();
 
 // User routes
 router.get('/balance', verifyToken, getBalance);
 router.get('/history', verifyToken, getHistory);
+router.get('/referral-stats', verifyToken, getReferralStats);
 router.get('/leaderboard', verifyToken, getLeaderboard);
 
 // Admin routes

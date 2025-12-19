@@ -809,6 +809,76 @@ export const sendForcedLogoutEmail = async (email, reason, performedBy) => {
   }
 };
 
+// Send SetuCoin adjustment notification email
+export const sendCoinAdjustmentEmail = async (email, details) => {
+  const { type, amount, reason, newBalance } = details;
+  const isRevocation = type === 'debit';
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `SetuCoins ${isRevocation ? 'Revocation' : 'Credit'} Notification - UrbanSetu`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 28px;">UrbanSetu</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0;">Loyalty Program Update</p>
+          </div>
+          
+          <div style="background-color: ${isRevocation ? '#fef2f2' : '#f0f9ff'}; padding: 20px; border-radius: 8px; margin-bottom: 20px; border-left: 4px solid ${isRevocation ? '#dc2626' : '#2563eb'};">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 20px;">
+              SetuCoins ${isRevocation ? 'Revoked' : 'Added'}
+            </h2>
+            <p style="color: #4b5563; margin: 0 0 15px 0; line-height: 1.6;">
+              ${isRevocation
+        ? 'An administrator has revoked SetuCoins from your account for the reason specified below.'
+        : 'Great news! SetuCoins have been credited to your account by an administrator.'}
+            </p>
+            
+            <div style="background-color: #f8fafc; padding: 15px; border-radius: 6px; margin: 15px 0;">
+              <p style="margin: 5px 0; color: #374151;"><strong>Adjustment Type:</strong> ${isRevocation ? 'Deduction' : 'Credit'}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Amount:</strong> <span style="color: ${isRevocation ? '#dc2626' : '#059669'}; font-weight: bold;">${isRevocation ? '-' : '+'}${amount} Coins</span></p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Reason:</strong> ${reason}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>New Balance:</strong> ${newBalance} SC</p>
+            </div>
+            
+            <p style="color: #6b7280; margin: 15px 0 10px 0; font-size: 14px;">
+              You can view your full transaction history on the Rewards page.
+            </p>
+            <div style="text-align:center; margin-top: 15px;">
+              <a href="${clientBaseUrl}/user/rewards?tab=history" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:12px 24px; border-radius:6px; font-weight:600; margin-bottom: 15px;">View Activity History</a>
+            </div>
+            
+            <p style="color: #6b7280; margin: 10px 0 10px 0; font-size: 14px;">
+              Questions? Reach out to our support team.
+            </p>
+            <div style="text-align:center;">
+              <a href="${clientBaseUrl}/user/contact" style="color:#2563eb; text-decoration:underline; font-weight:600; font-size: 14px;">Contact Support</a>
+            </div>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'coin_adjustment') :
+      createErrorResponse(new Error(result.error), 'coin_adjustment');
+  } catch (error) {
+    return createErrorResponse(error, 'coin_adjustment');
+  }
+};
+
 // Payment Success Email
 export const sendPaymentSuccessEmail = async (email, paymentDetails) => {
   try {
@@ -13975,4 +14045,122 @@ export const sendIncompleteListingOnboardingEmail = async (email, username, list
     `
   };
   return sendEmailWithRetry(mailOptions);
+};
+// Send referral bonus notification
+export const sendReferralBonusEmail = async (email, username, friendName, amount) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Congratulations! You earned a Referral Bonus 💎 - UrbanSetu',
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #6366f1; margin: 0; font-size: 32px; font-weight: 900;">UrbanSetu</h1>
+            <p style="color: #64748b; margin: 10px 0 0 0; font-weight: 600;">Referral Success!</p>
+          </div>
+          
+          <div style="background-color: #f5f3ff; padding: 30px; border-radius: 15px; margin-bottom: 20px; text-align: center; border: 1px solid #e0e7ff;">
+            <h2 style="color: #1e293b; margin: 0 0 15px 0; font-size: 24px; font-weight: 800;">Hey ${username}! 🚀</h2>
+            <p style="color: #475569; margin: 0 0 20px 0; line-height: 1.6; font-size: 16px;">
+              Great news! Your friend <strong>${friendName}</strong> just joined UrbanSetu using your referral link.
+            </p>
+            
+            <div style="background-color: white; display: inline-block; padding: 15px 30px; border-radius: 12px; margin: 10px 0; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1); border: 1px solid #e0e7ff;">
+              <span style="display: block; font-size: 12px; color: #6366f1; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Bonus Earned</span>
+              <span style="font-size: 36px; font-weight: 900; color: #4338ca;">+${amount} <span style="font-size: 18px;">SetuCoins</span></span>
+            </div>
+            
+            <p style="color: #64748b; margin: 25px 0 0 0; font-size: 14px; line-height: 1.6;">
+              These coins have been added to your rewards wallet. Use them for rent discounts, home services, and more!
+            </p>
+          </div>
+          
+          <div style="text-align:center; margin-top: 30px;">
+            <a href="${clientBaseUrl}/user/rewards" style="display:inline-block; background-color:#6366f1; color:#ffffff; text-decoration:none; padding:16px 32px; border-radius:12px; font-weight:700; font-size: 16px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">View My Rewards</a>
+          </div>
+
+          <div style="margin-top: 40px; padding-top: 25px; border-top: 1px solid #f1f5f9; text-align: center;">
+            <p style="color: #94a3b8; margin: 0; font-size: 12px;">
+              Keep referring friends to earn more! Every successful referral gets you 500 SetuCoins.
+            </p>
+            <p style="color: #94a3b8; margin: 10px 0 0 0; font-size: 11px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'referral_bonus') :
+      createErrorResponse(new Error(result.error), 'referral_bonus');
+  } catch (error) {
+    return createErrorResponse(error, 'referral_bonus');
+  }
+};
+
+// Specialized Welcome Email for users joined via Referral
+export const sendReferredWelcomeEmail = async (email, username, referrerName, amount) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Welcome to UrbanSetu! You joined via ${referrerName}'s invitation 🎁`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);">
+          <div style="text-align: center; margin-bottom: 30px;">
+            <h1 style="color: #6366f1; margin: 0; font-size: 32px; font-weight: 900;">UrbanSetu</h1>
+            <p style="color: #64748b; margin: 10px 0 0 0; font-weight: 600;">Welcome to the Community!</p>
+          </div>
+          
+          <div style="background-color: #f5f3ff; padding: 30px; border-radius: 15px; margin-bottom: 20px; text-align: center; border: 1px solid #e0e7ff;">
+            <h2 style="color: #1e293b; margin: 0 0 15px 0; font-size: 24px; font-weight: 800;">Hey ${username}! 👋</h2>
+            <p style="color: #475569; margin: 0 0 20px 0; line-height: 1.6; font-size: 16px;">
+              You've successfully joined UrbanSetu through <strong>${referrerName}'s</strong> invitation! We're thrilled to have you here.
+            </p>
+            
+            <div style="background-color: white; display: inline-block; padding: 12px 24px; border-radius: 12px; margin: 10px 0; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1); border: 1px solid #e0e7ff;">
+              <span style="display: block; font-size: 11px; color: #6366f1; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Joining Bonus</span>
+              <span style="font-size: 28px; font-weight: 900; color: #4338ca;">+${amount} <span style="font-size: 16px;">SetuCoins</span></span>
+            </div>
+          </div>
+          
+          <div style="padding: 20px; border: 2px dashed #e0e7ff; border-radius: 15px; margin-bottom: 30px;">
+            <h3 style="color: #4338ca; font-size: 16px; font-weight: 800; margin: 0 0 10px 0; text-transform: uppercase;">What's next?</h3>
+            <ul style="color: #64748b; font-size: 14px; padding-left: 20px; line-height: 1.8;">
+              <li>Explore premium property listings.</li>
+              <li>Track your rent payments and streaks.</li>
+              <li>Earn SetuCoins for every activity you do!</li>
+              <li>Redeem coins for actual rent discounts.</li>
+            </ul>
+          </div>
+
+          <div style="text-align:center;">
+             <a href="${clientBaseUrl}/user/rewards" style="display:inline-block; background-color:#6366f1; color:#ffffff; text-decoration:none; padding:16px 32px; border-radius:12px; font-weight:700; font-size: 16px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">Explore My Rewards Dashboard</a>
+          </div>
+
+          <div style="margin-top: 40px; padding-top: 25px; border-top: 1px solid #f1f5f9; text-align: center;">
+            <p style="color: #94a3b8; margin: 0; font-size: 11px;">
+              © 2025 UrbanSetu. All rights reserved.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'referred_welcome') :
+      createErrorResponse(new Error(result.error), 'referred_welcome');
+  } catch (error) {
+    return createErrorResponse(error, 'referred_welcome');
+  }
 };

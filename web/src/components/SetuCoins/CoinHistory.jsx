@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowUp, FaArrowDown, FaExchangeAlt, FaHistory, FaCalendarAlt, FaChevronDown, FaChevronUp } from 'react-icons/fa';
+import { FaArrowUp, FaArrowDown, FaExchangeAlt, FaHistory, FaCalendarAlt, FaChevronDown, FaChevronUp, FaUserFriends, FaStar } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -67,14 +67,20 @@ const CoinHistory = ({ initialOpen = false }) => {
                         {transactions.map((tx) => (
                             <li key={tx._id} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between group">
                                 <div className="flex items-start gap-3">
-                                    <div className={`mt-1 p-2 rounded-lg ${tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
-                                        {tx.type === 'credit' ? <FaArrowUp className="text-xs" /> : <FaArrowDown className="text-xs" />}
+                                    <div className={`mt-1 p-2 rounded-lg ${tx.source === 'referral' ? 'bg-purple-100 text-purple-600' :
+                                        tx.source === 'admin_adjustment' ? 'bg-amber-100 text-amber-600' :
+                                            tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                        }`}>
+                                        {tx.source === 'referral' ? <FaUserFriends size={14} /> :
+                                            tx.source === 'admin_adjustment' ? <FaStar size={14} /> :
+                                                tx.type === 'credit' ? <FaArrowUp className="text-xs" /> : <FaArrowDown className="text-xs" />}
                                     </div>
                                     <div>
                                         <p className="font-medium text-gray-800">{tx.description}</p>
                                         <div className="flex gap-2 text-xs text-gray-500 mt-1">
                                             <span className="flex items-center gap-1"><FaCalendarAlt className="text-[10px]" /> {new Date(tx.createdAt).toLocaleDateString()}</span>
-                                            <span className="bg-gray-200 px-1.5 rounded uppercase text-[10px] tracking-wider">{tx.source.replace('_', ' ')}</span>
+                                            <span className={`px-1.5 rounded uppercase text-[10px] tracking-wider ${tx.source === 'referral' ? 'bg-purple-100 text-purple-700 font-bold' : 'bg-gray-200'
+                                                }`}>{tx.source.replace('_', ' ')}</span>
                                         </div>
                                     </div>
                                 </div>

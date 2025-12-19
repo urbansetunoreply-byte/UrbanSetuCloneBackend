@@ -460,13 +460,15 @@ export default function Profile() {
       if (currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')) {
         // Fetch admin-specific stats
         // For admins: fetch Reviews count (same as /admin/reviews page which uses /api/review/admin/stats)
-        const [reviewsRes, appointmentsRes] = await Promise.all([
+        const [reviewsRes, appointmentsRes, referralsRes] = await Promise.all([
           authenticatedFetch(`${API_BASE_URL}/api/review/admin/stats`),
-          authenticatedFetch(`${API_BASE_URL}/api/bookings/`)
+          authenticatedFetch(`${API_BASE_URL}/api/bookings/`),
+          authenticatedFetch(`${API_BASE_URL}/api/coins/referral-stats`)
         ]);
 
         const reviewsData = await reviewsRes.json();
         const appointmentsData = await appointmentsRes.json();
+        const referralData = await referralsRes.json();
 
         // For admins, get totalReviews from /api/review/admin/stats endpoint (same as /admin/reviews page)
         const reviewsCount = reviewsData?.totalReviews || 0;
@@ -475,23 +477,27 @@ export default function Profile() {
           listings: reviewsCount, // Store reviews count in listings field for admins
           appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
           wishlist: prev.wishlist, // Keep the wishlist count from context
-          watchlist: watchlistCount
+          watchlist: watchlistCount,
+          referrals: referralData.success ? referralData.referralCount : 0
         }));
       } else {
         // Fetch regular user stats
-        const [listingsRes, appointmentsRes] = await Promise.all([
+        const [listingsRes, appointmentsRes, referralsRes] = await Promise.all([
           authenticatedFetch(`${API_BASE_URL}/api/listing/user`),
-          authenticatedFetch(`${API_BASE_URL}/api/bookings/user/${currentUser._id}`)
+          authenticatedFetch(`${API_BASE_URL}/api/bookings/user/${currentUser._id}`),
+          authenticatedFetch(`${API_BASE_URL}/api/coins/referral-stats`)
         ]);
 
         const listingsData = await listingsRes.json();
         const appointmentsData = await appointmentsRes.json();
+        const referralData = await referralsRes.json();
 
         setUserStats(prev => ({
           listings: Array.isArray(listingsData) ? listingsData.length : 0,
           appointments: Array.isArray(appointmentsData) ? appointmentsData.length : 0,
           wishlist: prev.wishlist, // Keep the wishlist count from context
-          watchlist: watchlistCount
+          watchlist: watchlistCount,
+          referrals: referralData.success ? referralData.referralCount : 0
         }));
       }
     } catch (error) {
@@ -1340,6 +1346,22 @@ export default function Profile() {
                       </div>
                     </div>
                   </div>
+
+                  {/* Referral Info */}
+                  <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200 hover:border-indigo-300 transition-all duration-300 hover:shadow-md sm:col-span-2">
+                    <div className="flex items-center justify-between gap-4">
+                      <div className="flex items-center">
+                        <FaStar className="w-4 h-4 mr-3 text-indigo-500 flex-shrink-0" />
+                        <div className="min-w-0 flex-1">
+                          <p className="text-xs text-indigo-500 font-bold mb-1 uppercase tracking-wider">Referral Program</p>
+                          <p className="text-gray-700 text-sm">Earn 100 coins per successful referral. New users get 50 coins!</p>
+                        </div>
+                      </div>
+                      <Link to="/user/rewards" className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
+                        Refer Now
+                      </Link>
+                    </div>
+                  </div>
                 </div>
 
                 {/* Profile Completion Status */}
@@ -1975,13 +1997,21 @@ export default function Profile() {
                 balance={coinData.balance}
                 streak={coinData.streak}
                 loading={coinData.loading}
-                onViewHistory={() => navigate('/user/rewards?tab=history')}
+                onViewHistory={() => {
+                  setShowCoinHistory(!showCoinHistory);
+                  // Ensure it's scrolled into view if opening
+                  if (!showCoinHistory) {
+                    setTimeout(() => {
+                      document.getElementById('recent-transactions')?.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                    }, 100);
+                  }
+                }}
               />
 
               {/* Expandable History */}
-              <div className={`transition-all duration-500 ease-in-out overflow-hidden ${showCoinHistory ? 'max-h-[1000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
+              <div id="recent-transactions" className={`transition-all duration-500 ease-in-out overflow-hidden ${showCoinHistory ? 'max-h-[1000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
                 <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-2">
-                  <CoinHistory />
+                  <CoinHistory initialOpen={true} />
                 </div>
               </div>
             </>
@@ -2034,13 +2064,13 @@ export default function Profile() {
           </div>
           {!isAdmin && (
             <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
-              <div className={`bg-purple-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-purple-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
-                <FaEye className="w-5 h-5 text-purple-600 group-hover:text-purple-700 transition-colors duration-300" />
+              <div className={`bg-indigo-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+                <FaStar className="w-5 h-5 text-indigo-600 group-hover:text-indigo-700 transition-colors duration-300" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 group-hover:text-purple-600 transition-colors duration-300">
-                {statsAnimated ? <AnimatedCounter end={userStats.watchlist} delay={950} /> : userStats.watchlist}
+              <h3 className="text-xl font-bold text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
+                {statsAnimated ? <AnimatedCounter end={userStats.referrals || 0} delay={1050} /> : (userStats.referrals || 0)}
               </h3>
-              <p className="text-sm text-gray-600 group-hover:text-purple-500 transition-colors duration-300">Watchlist Items</p>
+              <p className="text-sm text-gray-600 group-hover:text-indigo-500 transition-colors duration-300">Total Referrals</p>
             </div>
           )}
         </div>

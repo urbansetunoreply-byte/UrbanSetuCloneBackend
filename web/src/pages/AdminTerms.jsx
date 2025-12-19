@@ -97,8 +97,10 @@ export default function AdminTerms() {
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">12. SetuCoin Economy & Loyalty Oversight</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Balance Adjustments:</strong> Admins may only adjust user coin balances to correct system errors, process refunds, or penalize verified fraud.</li>
+          <li><strong>Referral Policy:</strong> The current standard reward is 100 coins for the referrer and 50 coins for the joining user.</li>
+          <li><strong>Redemption Rates:</strong> The platform standard is 10 Coins = ₹1 or 800 Coins = $1.</li>
           <li><strong>Economy Monitoring:</strong> Root admins must monitor the system-wide burn-to-mint ratio to ensure the sustainability of the rewards program.</li>
-          <li><strong>Revocation:</strong> Admins reserve the right to revoke coins earned through cancelled service requests or fraudulent rent payments.</li>
+          <li><strong>Revocation:</strong> Admins reserve the right to revoke coins earned through cancelled service requests, fraudulent rent payments, or non-genuine referrals.</li>
         </ul>
 
         <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {

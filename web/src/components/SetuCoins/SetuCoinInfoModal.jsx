@@ -82,13 +82,24 @@ const SetuCoinInfoModal = ({ isOpen, onClose }) => {
                         </div>
                     </section>
 
-                    <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 flex items-center gap-4">
-                        <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 font-black text-lg">
-                            ₹
+                    <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 flex flex-col gap-3">
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 font-black text-lg">
+                                ₹
+                            </div>
+                            <div>
+                                <p className="text-slate-800 font-bold text-xs capitalize">Indian Currency Rate</p>
+                                <p className="text-[10px] text-slate-500">Every 10 Coins = ₹1 Discount</p>
+                            </div>
                         </div>
-                        <div>
-                            <p className="text-slate-800 font-bold text-xs">Real Value Redemption</p>
-                            <p className="text-[10px] text-slate-500">Every 10 Coins = ₹1 Discount on platform services.</p>
+                        <div className="flex items-center gap-4">
+                            <div className="w-10 h-10 bg-emerald-100 rounded-xl flex items-center justify-center text-emerald-600 font-black text-lg">
+                                $
+                            </div>
+                            <div>
+                                <p className="text-slate-800 font-bold text-xs capitalize">Global Value Rate</p>
+                                <p className="text-[10px] text-slate-500">Every 800 Coins = $1 Discount</p>
+                            </div>
                         </div>
                     </div>
 

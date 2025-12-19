@@ -3,7 +3,7 @@ import PasswordLockout from "../models/passwordLockout.model.js";
 import bcryptjs from "bcryptjs";
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
-import { generateOTP, sendSignupOTPEmail, sendLoginOTPEmail, sendPasswordResetSuccessEmail, sendPasswordChangeSuccessEmail, sendWelcomeEmail } from "../utils/emailService.js";
+import { generateOTP, sendSignupOTPEmail, sendLoginOTPEmail, sendPasswordResetSuccessEmail, sendPasswordChangeSuccessEmail, sendWelcomeEmail, sendReferralBonusEmail, sendReferredWelcomeEmail } from "../utils/emailService.js";
 import { generateTokenPair, setSecureCookies, clearAuthCookies } from "../utils/jwtUtils.js";
 import { trackFailedAttempt, clearFailedAttempts, logSecurityEvent, sendAdminAlert, isAccountLocked, checkSuspiciousSignup, getAccountLockRemainingMs } from "../middleware/security.js";
 import {
@@ -145,21 +145,39 @@ export const SignUp = async (req, res, next) => {
 
         await newUser.save();
 
-        // Handle Referral Reward
+        // Handle Referral Reward (Both Sides)
         if (req.body.referredBy) {
             try {
                 const CoinService = (await import("../services/coinService.js")).default;
-                await CoinService.credit({
-                    userId: req.body.referredBy,
-                    amount: 500,
-                    source: 'referral',
-                    referenceId: newUser._id,
-                    referenceModel: 'User',
-                    description: `Referral bonus for inviting ${newUser.username}`
-                });
-                console.log(`✅ Referral bonus (500) credited to referrer: ${req.body.referredBy}`);
+                const referrer = await User.findById(req.body.referredBy);
+
+                if (referrer) {
+                    // Credit Referrer (100 Coins)
+                    await CoinService.credit({
+                        userId: referrer._id,
+                        amount: 100,
+                        source: 'referral',
+                        referenceId: newUser._id,
+                        referenceModel: 'User',
+                        description: `Referral bonus for inviting ${newUser.username}`
+                    });
+
+                    // Credit Joiner (50 Coins)
+                    await CoinService.credit({
+                        userId: newUser._id,
+                        amount: 50,
+                        source: 'referral',
+                        referenceId: referrer._id,
+                        referenceModel: 'User',
+                        description: `Welcome bonus for joining via ${referrer.username}'s referral`
+                    });
+
+                    await sendReferralBonusEmail(referrer.email, referrer.username, newUser.username, 100);
+                    await sendReferredWelcomeEmail(newUser.email, newUser.username, referrer.username, 50);
+                    console.log(`✅ Referral rewards (100/50) processed and emails sent.`);
+                }
             } catch (referralError) {
-                console.error("❌ Failed to credit referral bonus:", referralError.message);
+                console.error("❌ Failed to handle referral reward:", referralError.message);
             }
         }
 
@@ -616,21 +634,39 @@ export const Google = async (req, res, next) => {
             })
             await newUser.save()
 
-            // Handle Referral Reward for Google Sign-up
+            // Handle Referral Reward for Google Sign-up (Both Sides)
             if (req.body.referredBy) {
                 try {
                     const CoinService = (await import("../services/coinService.js")).default;
-                    await CoinService.credit({
-                        userId: req.body.referredBy,
-                        amount: 500,
-                        source: 'referral',
-                        referenceId: newUser._id,
-                        referenceModel: 'User',
-                        description: `Referral bonus for inviting ${newUser.username} (via Google)`
-                    });
-                    console.log(`✅ Referral bonus (500) credited to referrer for Google user: ${req.body.referredBy}`);
+                    const referrer = await User.findById(req.body.referredBy);
+
+                    if (referrer) {
+                        // Credit Referrer (100 Coins)
+                        await CoinService.credit({
+                            userId: referrer._id,
+                            amount: 100,
+                            source: 'referral',
+                            referenceId: newUser._id,
+                            referenceModel: 'User',
+                            description: `Referral bonus for inviting ${newUser.username} (via Google)`
+                        });
+
+                        // Credit Joiner (50 Coins)
+                        await CoinService.credit({
+                            userId: newUser._id,
+                            amount: 50,
+                            source: 'referral',
+                            referenceId: referrer._id,
+                            referenceModel: 'User',
+                            description: `Welcome bonus for joining via ${referrer.username}'s referral (via Google)`
+                        });
+
+                        await sendReferralBonusEmail(referrer.email, referrer.username, newUser.username, 100);
+                        await sendReferredWelcomeEmail(newUser.email, newUser.username, referrer.username, 50);
+                        console.log(`✅ Referral rewards for Google (100/50) processed and emails sent.`);
+                    }
                 } catch (referralError) {
-                    console.error("❌ Failed to credit referral bonus for Google user:", referralError.message);
+                    console.error("❌ Failed to handle referral reward for Google user:", referralError.message);
                 }
             }
 

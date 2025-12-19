@@ -79,8 +79,9 @@ export default function UserTerms() {
 
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">10. SetuCoins Rewards</h2>
         <ul className="list-disc ml-6 space-y-3">
-          <li><strong>Earning:</strong> Coins are earned automatically for rent payments and streaks. System exploits to artificially inflate balances will result in balance revocation.</li>
-          <li><strong>Discounts:</strong> 10 Coins = ₹1 discount. Discounts apply to rent and on-demand services only.</li>
+          <li><strong>Earning:</strong> Coins are earned automatically for rent payments, streaks, and successful referrals.</li>
+          <li><strong>Referral Rewards:</strong> Referrers earn 100 coins per invite; new users joining via link receive 50 coins welcome bonus.</li>
+          <li><strong>Discounts:</strong> 10 Coins = ₹1 discount or 800 Coins = $1 discount. Discounts apply to rent and on-demand services only.</li>
           <li><strong>Transferability:</strong> SetuCoins are linked to your unique verified mobile number and cannot be transferred to other users or accounts.</li>
         </ul>
 

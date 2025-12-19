@@ -11,7 +11,7 @@ export default function UserPrivacy() {
       <h1 className="text-4xl font-bold mb-6 text-blue-700">User Privacy Policy</h1>
       <div className="space-y-6 text-gray-800 text-base">
         <p className="text-lg">Your privacy is important to us. This policy explains how we collect, use, and protect your information as a user of UrbanSetu.</p>
-        
+
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Information We Collect</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Account Information:</strong> Name, email, validated mobile number (unique 10 digits), role (user), profile picture, and authentication credentials.</li>
@@ -71,18 +71,18 @@ export default function UserPrivacy() {
           <li>Chargebacks, disputes, or suspicious payment activity may be shared with card networks or authorities.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">9. Support, Disputes & Safety</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">10. AI-Powered Safety & Gamification</h2>
         <ul className="list-disc ml-6 space-y-3">
-          <li>Support tickets, dispute evidence, and call snippets are stored while the case is open and for a limited period afterward.</li>
-          <li>Emergency reports (fraud, harassment, safety) may be escalated internally and, if required, to law enforcement.</li>
-          <li>You can request redaction of sensitive information from chat logs by writing to privacy@urbansetu.com.</li>
+          <li><strong>Content Moderation:</strong> Your chats and listings are analyzed by AI to maintain a safe, professional environment.</li>
+          <li><strong>Loyalty & Referrals:</strong> We track your referrals and coin transactions to manage your SetuCoin balance and ensure program fairness.</li>
+          <li><strong>Checklists:</strong> Moving checklists with photos and videos are stored to protect you and the landlord during property transitions.</li>
         </ul>
 
         <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
           <h3 className="text-lg font-semibold text-gray-800 mb-2">Related Policies</h3>
           <p className="text-gray-700 mb-3">For information about how we use cookies and similar technologies, please review our:</p>
-          <a 
-            href="/user/cookie-policy" 
+          <a
+            href="/user/cookie-policy"
             className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
           >
             🍪 Cookie Policy
