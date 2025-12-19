@@ -13374,3 +13374,108 @@ export const sendReEngagementEmail = async (email, username) => {
     return createErrorResponse(error, 're_engagement_email');
   }
 };
+
+// Send trending/new property update email
+export const sendTrendingUpdateEmail = async (email, username, newProperties, trendingProperties) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+
+  const generatePropertyCard = (prop) => `
+    <div style="width: 100%; max-width: 260px; display: inline-block; vertical-align: top; margin: 10px; background: white; border-radius: 8px; overflow: hidden; box-shadow: 0 2px 4px rgba(0,0,0,0.1); border: 1px solid #e5e7eb; text-align: left;">
+      <div style="height: 150px; background-color: #e5e7eb; position: relative;">
+        <img src="${prop.imageUrls && prop.imageUrls[0] ? prop.imageUrls[0] : 'https://via.placeholder.com/260x150?text=No+Image'}" alt="${prop.name}" style="width: 100%; height: 100%; object-fit: cover;" />
+        ${prop.offer ? '<span style="position: absolute; top: 10px; right: 10px; background: #ef4444; color: white; padding: 2px 8px; border-radius: 4px; font-size: 12px; font-weight: bold;">Offer</span>' : ''}
+      </div>
+      <div style="padding: 12px;">
+        <h4 style="margin: 0 0 5px 0; color: #111827; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" title="${prop.name}">${prop.name}</h4>
+        <p style="margin: 0 0 8px 0; color: #6b7280; font-size: 13px;">📍 ${prop.city}, ${prop.state}</p>
+        <p style="margin: 0 0 12px 0; color: #2563eb; font-weight: bold; font-size: 15px;">
+          ₹${prop.offer ? prop.discountPrice.toLocaleString('en-IN') : prop.regularPrice.toLocaleString('en-IN')}
+          <span style="font-size: 12px; color: #6b7280; font-weight: normal;">${prop.type === 'rent' ? '/mo' : ''}</span>
+        </p>
+        <a href="${clientBaseUrl}/listing/${prop._id}" style="display: block; text-align: center; background-color: #f3f4f6; color: #1f2937; text-decoration: none; padding: 8px 0; border-radius: 4px; font-size: 13px; font-weight: 600; border: 1px solid #e5e7eb;">View Details</a>
+      </div>
+    </div>
+  `;
+
+  const newPropsHtml = newProperties && newProperties.length > 0 ? newProperties.map(generatePropertyCard).join('') : '';
+  const trendingPropsHtml = trendingProperties && trendingProperties.length > 0 ? trendingProperties.map(generatePropertyCard).join('') : '';
+
+  if (!newPropsHtml && !trendingPropsHtml) return createErrorResponse(new Error('No properties to send'), 'trending_update_email');
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Weekly Roundup: See Trending & New Properties on UrbanSetu 🏡`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 650px; margin: 0 auto; padding: 20px; background-color: #f3f4f6;">
+        <div style="background-color: white; padding: 30px; border-radius: 12px; box-shadow: 0 4px 10px rgba(0, 0, 0, 0.05);">
+          <div style="text-align: center; margin-bottom: 25px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 26px; font-weight: 800;">UrbanSetu Weekly 📊</h1>
+            <p style="color: #6b7280; margin: 8px 0 0 0; font-size: 16px;">Hello, ${username}! Here's your personalized market update.</p>
+          </div>
+          
+          ${newPropsHtml ? `
+            <div style="margin-bottom: 30px;">
+              <div style="display: flex; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
+                <span style="font-size: 20px; margin-right: 8px;">🆕</span>
+                <h2 style="color: #1f2937; margin: 0; font-size: 20px;">Fresh on the Market</h2>
+              </div>
+              <div style="text-align: center; font-size: 0;">${newPropsHtml}</div>
+            </div>
+          ` : ''}
+
+          ${trendingPropsHtml ? `
+            <div style="margin-bottom: 30px;">
+              <div style="display: flex; align-items: center; margin-bottom: 15px; border-bottom: 2px solid #f3f4f6; padding-bottom: 10px;">
+                <span style="font-size: 20px; margin-right: 8px;">🔥</span>
+                <h2 style="color: #1f2937; margin: 0; font-size: 20px;">Trending This Week</h2>
+              </div>
+              <div style="text-align: center; font-size: 0;">${trendingPropsHtml}</div>
+            </div>
+          ` : ''}
+
+          <div style="margin-top: 30px; border-top: 2px solid #f3f4f6; padding-top: 25px; margin-bottom: 10px;">
+              <h3 style="color: #1f2937; text-align: center; margin: 0 0 20px 0; font-size: 18px;">✨ Explore More on UrbanSetu</h3>
+              <div style="text-align: center; font-size: 0;">
+                  <a href="${clientBaseUrl}/user/ai" style="display: inline-block; width: 80px; margin: 0 10px 20px; text-decoration: none; color: #4b5563; vertical-align: top;">
+                      <div style="background-color: #eff6ff; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; margin: 0 auto 8px; font-size: 24px;">🤖</div>
+                      <div style="font-size: 13px; font-weight: 600;">AI Guide</div>
+                  </a>
+                  <a href="${clientBaseUrl}/user/community" style="display: inline-block; width: 80px; margin: 0 10px 20px; text-decoration: none; color: #4b5563; vertical-align: top;">
+                      <div style="background-color: #f0fdf4; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; margin: 0 auto 8px; font-size: 24px;">💬</div>
+                      <div style="font-size: 13px; font-weight: 600;">Groups</div>
+                  </a>
+                  <a href="${clientBaseUrl}/user/search" style="display: inline-block; width: 80px; margin: 0 10px 20px; text-decoration: none; color: #4b5563; vertical-align: top;">
+                      <div style="background-color: #fff7ed; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; margin: 0 auto 8px; font-size: 24px;">🔍</div>
+                      <div style="font-size: 13px; font-weight: 600;">Search</div>
+                  </a>
+                  <a href="${clientBaseUrl}/user/services" style="display: inline-block; width: 80px; margin: 0 10px 20px; text-decoration: none; color: #4b5563; vertical-align: top;">
+                      <div style="background-color: #f5f3ff; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; margin: 0 auto 8px; font-size: 24px;">🛠️</div>
+                      <div style="font-size: 13px; font-weight: 600;">Services</div>
+                  </a>
+              </div>
+          </div>
+
+          <div style="text-align: center; margin-top: 15px; padding-top: 25px; border-top: 1px solid #e5e7eb; background-color: #f9fafb; border-radius: 8px; padding: 20px;">
+            <p style="color: #4b5563; margin: 0 0 15px 0;">Don't see what you're looking for?</p>
+            <a href="${clientBaseUrl}/search" style="display:inline-block; background-color:#2563eb; color:#ffffff; text-decoration:none; padding:12px 30px; border-radius:6px; font-weight:bold; box-shadow: 0 2px 4px rgba(37, 99, 235, 0.3);">Browse All Listings</a>
+            
+            <div style="margin-top: 20px; font-size: 12px; color: #9ca3af;">
+              <p style="margin: 5px 0;">This email was sent to ${email} as part of your UrbanSetu subscription.</p>
+              <p style="margin: 5px 0;">© 2025 UrbanSetu. All rights reserved.</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'trending_update_email') :
+      createErrorResponse(new Error(result.error), 'trending_update_email');
+  } catch (error) {
+    return createErrorResponse(error, 'trending_update_email');
+  }
+};

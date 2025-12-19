@@ -70,6 +70,7 @@ try {
 }
 import { startScheduler } from "./services/schedulerService.js";
 import { initializeReEngagementScheduler } from "./utils/reEngagementScheduler.js";
+import { initializeTrendingEmailScheduler } from "./utils/trendingEmailScheduler.js";
 import { indexAllWebsiteData } from "./services/dataSyncService.js";
 import { setupAllHooks } from "./middleware/dataSyncHooks.js";
 import { startScheduledSync } from "./services/scheduledSyncService.js";
@@ -158,6 +159,7 @@ const fixRefundIdIndex = async () => {
 connectToMongoDB().then(() => {
   // Initialize schedulers after DB connection
   initializeReEngagementScheduler();
+  initializeTrendingEmailScheduler();
 });
 
 const __dirname = path.resolve();
