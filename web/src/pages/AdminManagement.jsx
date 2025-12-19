@@ -1421,22 +1421,29 @@ export default function AdminManagement() {
                     {filteredAdmins.map((admin) => (
                       <div
                         key={admin._id}
-                        className="bg-gradient-to-br from-purple-50 to-blue-100 rounded-2xl shadow-lg p-6 flex flex-col gap-4 hover:scale-105 transition-transform duration-200 animate-slideUp cursor-pointer"
+                        className="bg-purple-50/50 border border-purple-100/50 rounded-2xl shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-all duration-200 animate-slideUp cursor-pointer"
                         onClick={() => handleAccountClick(admin, 'admin')}
                         title="Click to view full details"
                       >
                         <div className="flex items-start gap-4">
-                          <div className="w-16 h-16 rounded-full bg-purple-200 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-purple-700 shadow-inner">
+                          <div className="w-16 h-16 rounded-full bg-purple-100 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-purple-600">
                             <FaUserShield />
                           </div>
-                          <div className="w-full">
-                            <div className="flex flex-wrap items-center justify-between gap-2 min-w-0 mb-2">
-                              <span className="text-lg font-semibold text-gray-800 truncate" title={admin.username}>{highlightMatch(admin.username)}</span>
-                              <span className={`text-xs px-2 py-1 rounded-full font-bold whitespace-nowrap ${admin.adminApprovalStatus === 'rejected' ? 'bg-gray-300 text-gray-700' : admin.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{admin.adminApprovalStatus === 'rejected' ? 'rejected' : admin.status}</span>
+                          <div className="flex-1 min-w-0 flex flex-col gap-1">
+                            <div className="flex items-center gap-2 w-full min-w-0">
+                              <span className="text-lg font-bold text-gray-800 truncate flex-1" title={admin.username}>{highlightMatch(admin.username)}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase flex-shrink-0 ${admin.adminApprovalStatus === 'rejected' ? 'bg-gray-300 text-gray-700' : admin.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{admin.adminApprovalStatus === 'rejected' ? 'rejected' : admin.status}</span>
                             </div>
 
-                            <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
-                              <FaEnvelope className="text-purple-400" /> {highlightMatch(admin.email)}
+                            <div className="flex items-center gap-2 text-gray-500 text-sm w-full min-w-0">
+                              <FaEnvelope className="text-gray-400 flex-shrink-0" />
+                              <span className="truncate" title={admin.email}>{highlightMatch(admin.email)}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-500 text-sm">
+                              <FaPhone className="text-gray-400" /> {admin.mobileNumber ? highlightMatch(admin.mobileNumber) : <span className="italic text-gray-300">No mobile</span>}
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-500 text-sm">
+                              <FaCalendarAlt className="text-gray-400" /> {new Date(admin.createdAt).toLocaleDateString('en-GB')}
                             </div>
 
                             {(() => {
@@ -1446,13 +1453,11 @@ export default function AdminManagement() {
                               const remainingMs = new Date(entry.unlockAt).getTime() - Date.now();
                               const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
                               return (
-                                <div className="mt-1 mb-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
-                                  Locked: about {remainingMin} minute{remainingMin > 1 ? 's' : ''} left
+                                <div className="mt-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
+                                  Locked: ~{remainingMin} min left
                                 </div>
                               );
                             })()}
-
-
                           </div>
                         </div>
                         <div className="flex flex-col gap-2 mt-4 sm:flex-row sm:gap-2">

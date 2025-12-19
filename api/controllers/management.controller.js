@@ -53,8 +53,10 @@ export const getManagementUsers = async (req, res, next) => {
       {
         $lookup: {
           from: 'wishlists',
-          localField: '_id',
-          foreignField: 'userId',
+          let: { userId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } }
+          ],
           as: 'wishlistData'
         }
       },
@@ -62,8 +64,10 @@ export const getManagementUsers = async (req, res, next) => {
       {
         $lookup: {
           from: 'propertywatchlists',
-          localField: '_id',
-          foreignField: 'userId',
+          let: { userId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } }
+          ],
           as: 'watchlistData'
         }
       },
@@ -71,8 +75,10 @@ export const getManagementUsers = async (req, res, next) => {
       {
         $lookup: {
           from: 'reviews',
-          localField: '_id',
-          foreignField: 'userId',
+          let: { userId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } }
+          ],
           as: 'reviewsData'
         }
       },
@@ -80,8 +86,10 @@ export const getManagementUsers = async (req, res, next) => {
       {
         $lookup: {
           from: 'payments',
-          localField: '_id',
-          foreignField: 'userId',
+          let: { userId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } }
+          ],
           as: 'paymentsData'
         }
       },
@@ -170,8 +178,10 @@ export const getManagementAdmins = async (req, res, next) => {
       {
         $lookup: {
           from: 'wishlists',
-          localField: '_id',
-          foreignField: 'userId',
+          let: { userId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } }
+          ],
           as: 'wishlistData'
         }
       },
@@ -179,8 +189,10 @@ export const getManagementAdmins = async (req, res, next) => {
       {
         $lookup: {
           from: 'propertywatchlists',
-          localField: '_id',
-          foreignField: 'userId',
+          let: { userId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } }
+          ],
           as: 'watchlistData'
         }
       },
@@ -188,8 +200,10 @@ export const getManagementAdmins = async (req, res, next) => {
       {
         $lookup: {
           from: 'reviews',
-          localField: '_id',
-          foreignField: 'userId',
+          let: { userId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } }
+          ],
           as: 'reviewsData'
         }
       },
@@ -197,8 +211,10 @@ export const getManagementAdmins = async (req, res, next) => {
       {
         $lookup: {
           from: 'payments',
-          localField: '_id',
-          foreignField: 'userId',
+          let: { userId: '$_id' },
+          pipeline: [
+            { $match: { $expr: { $eq: ['$userId', '$$userId'] } } }
+          ],
           as: 'paymentsData'
         }
       },
