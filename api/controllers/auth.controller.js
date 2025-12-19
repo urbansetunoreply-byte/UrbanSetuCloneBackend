@@ -16,7 +16,8 @@ import {
     logSessionAction,
     revokeSessionFromDB
 } from "../utils/sessionManager.js";
-import { sendNewLoginEmail, sendSuspiciousLoginEmail } from "../utils/emailService.js";
+import { sendNewLoginEmail, sendSuspiciousLoginEmail, sendAccountLockoutEmail } from "../utils/emailService.js";
+import { generateTokenPair as generateTokenPairUtil } from '../utils/token.js';
 import OtpTracking from "../models/otpTracking.model.js";
 import DeletedAccount from "../models/deletedAccount.model.js";
 import { validateEmail } from "../utils/emailValidation.js";
@@ -1235,6 +1236,23 @@ export const verifyLoginOTP = async (req, res, next) => {
                 const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
                 if (otpTracking.failedOtpAttempts >= 5 && otpTracking.lastFailedAttemptTimestamp >= fifteenMinutesAgo) {
                     await otpTracking.registerLockout(15 * 60 * 1000);
+                    try {
+                        const user = await User.findById(storedData.userId);
+                        if (user) {
+                            const location = getLocationFromIP(req.ip);
+                            await sendAccountLockoutEmail(user.email, {
+                                username: user.username,
+                                attempts: 5,
+                                lockoutDuration: '15 minutes',
+                                ipAddress: req.ip,
+                                location,
+                                device: 'Unknown (OTP Verification)',
+                                reason: 'Excessive Failed OTP Attempts'
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Failed to send OTP lockout email:', e);
+                    }
                 }
             }
             return res.status(400).json({
@@ -1260,6 +1278,23 @@ export const verifyLoginOTP = async (req, res, next) => {
                 const fifteenMinutesAgo = new Date(Date.now() - 15 * 60 * 1000);
                 if (otpTracking.failedOtpAttempts >= 5 && otpTracking.lastFailedAttemptTimestamp >= fifteenMinutesAgo) {
                     await otpTracking.registerLockout(15 * 60 * 1000);
+                    try {
+                        const user = await User.findById(storedData.userId);
+                        if (user) {
+                            const location = getLocationFromIP(req.ip);
+                            await sendAccountLockoutEmail(user.email, {
+                                username: user.username,
+                                attempts: 5,
+                                lockoutDuration: '15 minutes',
+                                ipAddress: req.ip,
+                                location,
+                                device: 'Unknown (OTP Verification)',
+                                reason: 'Excessive Failed OTP Attempts'
+                            });
+                        }
+                    } catch (e) {
+                        console.error('Failed to send OTP lockout email:', e);
+                    }
                 }
             }
 

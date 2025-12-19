@@ -13612,7 +13612,7 @@ export const sendAccountLockoutEmail = async (email, details) => {
                 <div style="display: grid; gap: 10px;">
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #fee2e2; padding-bottom: 8px;">
                         <span style="color: #7f1d1d; font-weight: 500;">Reason</span>
-                        <span style="color: #450a0a; font-weight: 600;">${attempts} failed attempts (Brute Force Detection)</span>
+                        <span style="color: #450a0a; font-weight: 600;">${attempts} failed attempts (${details.reason || 'Suspicious Activity'})</span>
                     </div>
                     <div style="display: flex; justify-content: space-between; border-bottom: 1px solid #fee2e2; padding-bottom: 8px;">
                         <span style="color: #7f1d1d; font-weight: 500;">IP Address</span>

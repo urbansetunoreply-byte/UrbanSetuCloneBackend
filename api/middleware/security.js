@@ -58,7 +58,8 @@ export const trackFailedAttempt = async (identifier, userId = null) => {
                     lockoutDuration: '30 minutes',
                     ipAddress: identifier,
                     location: location,
-                    device: 'Unknown (Login Screen)'
+                    device: 'Unknown (Login Screen)', // We could parse User-Agent here if available in context
+                    reason: 'Brute Force Detection'
                 });
             } catch (emailErr) {
                 console.error("Failed to send lockout email to user:", emailErr);
