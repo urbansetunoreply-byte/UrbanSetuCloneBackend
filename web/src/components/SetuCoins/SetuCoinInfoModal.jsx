@@ -29,28 +29,28 @@ const SetuCoinInfoModal = ({ isOpen, onClose }) => {
             />
 
             {/* Modal Container */}
-            <div className="bg-white max-w-lg w-full rounded-[2.5rem] shadow-2xl overflow-hidden relative z-10 animate-[scaleIn_0.4s_cubic-bezier(0.175,0.885,0.32,1.275)]">
+            <div className="bg-white max-w-lg w-full rounded-[2rem] shadow-2xl overflow-hidden relative z-10 animate-[scaleIn_0.4s_cubic-bezier(0.175,0.885,0.32,1.275)] flex flex-col max-h-[90vh]">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 p-2 rounded-full bg-slate-100/80 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-all z-20 backdrop-blur-sm"
+                    className="absolute top-4 right-4 p-2 rounded-full bg-slate-100/80 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-all z-20 backdrop-blur-sm"
                 >
                     <FaTimes />
                 </button>
 
                 {/* Modal Header */}
-                <div className="bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 p-8 text-white relative">
+                <div className="bg-gradient-to-br from-yellow-400 via-amber-500 to-orange-500 p-6 md:p-8 text-white relative shrink-0">
                     <FaCoins className="absolute bottom-[-10px] right-[-10px] text-8xl text-white/20 rotate-12" />
-                    <h2 className="text-3xl font-black mb-1 flex items-center gap-3">
+                    <h2 className="text-2xl md:text-3xl font-black mb-1 flex items-center gap-2 md:gap-3">
                         <FaTrophy className="text-yellow-200 animate-bounce" /> SetuCoins
                     </h2>
-                    <p className="text-white/80 font-medium">Your loyalty rewards ecosystem.</p>
+                    <p className="text-white/80 font-medium text-sm md:text-base">Your loyalty rewards ecosystem.</p>
                 </div>
 
                 {/* Modal Body */}
-                <div className="p-8 space-y-6">
+                <div className="p-6 md:p-8 space-y-6 overflow-y-auto custom-scrollbar">
                     <section>
-                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
+                        <h3 className="text-xs md:text-sm font-black text-slate-400 uppercase tracking-widest mb-3 flex items-center gap-2">
                             <FaStar className="text-yellow-500" /> What are SetuCoins?
                         </h3>
                         <p className="text-slate-600 leading-relaxed text-sm">
@@ -59,30 +59,30 @@ const SetuCoinInfoModal = ({ isOpen, onClose }) => {
                     </section>
 
                     <section>
-                        <h3 className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
+                        <h3 className="text-xs md:text-sm font-black text-slate-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                             <FaCheckCircle className="text-green-500" /> How to Earn?
                         </h3>
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
-                            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                 <p className="font-bold text-slate-800 text-xs mb-1">Rent Cashback</p>
                                 <p className="text-[10px] text-slate-500">1% of every rent payment back in coins.</p>
                             </div>
-                            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                 <p className="font-bold text-slate-800 text-xs mb-1">Consistency</p>
                                 <p className="text-[10px] text-slate-500">Bonus for staying on streak.</p>
                             </div>
-                            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                 <p className="font-bold text-slate-800 text-xs mb-1">Services</p>
                                 <p className="text-[10px] text-slate-500">Earn by booking handyman/cleaning.</p>
                             </div>
-                            <div className="bg-slate-50 p-3 rounded-2xl border border-slate-100">
+                            <div className="bg-slate-50 p-3 rounded-xl border border-slate-100">
                                 <p className="font-bold text-slate-800 text-xs mb-1">Engagement</p>
                                 <p className="text-[10px] text-slate-500">Earn through platform activity.</p>
                             </div>
                         </div>
                     </section>
 
-                    <div className="bg-indigo-50 p-4 rounded-2xl border border-indigo-100 flex flex-col gap-3">
+                    <div className="bg-indigo-50 p-4 rounded-xl border border-indigo-100 flex flex-col gap-3">
                         <div className="flex items-center gap-4">
                             <div className="w-10 h-10 bg-indigo-100 rounded-xl flex items-center justify-center text-indigo-600 font-black text-lg">
                                 ₹
@@ -105,7 +105,7 @@ const SetuCoinInfoModal = ({ isOpen, onClose }) => {
 
                     <button
                         onClick={onClose}
-                        className="w-full py-4 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 active:scale-95 transition-all shadow-lg"
+                        className="w-full py-3 md:py-4 bg-slate-900 text-white rounded-xl font-bold hover:bg-slate-800 active:scale-95 transition-all shadow-lg"
                     >
                         Got it, Thanks!
                     </button>
