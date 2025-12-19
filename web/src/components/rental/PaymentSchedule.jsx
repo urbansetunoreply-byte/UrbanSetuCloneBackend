@@ -1,6 +1,6 @@
 import React, { useState, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
-import { FaCalendarAlt, FaCheckCircle, FaClock, FaExclamationTriangle, FaMoneyBillWave, FaDownload } from "react-icons/fa";
+import { FaCalendarAlt, FaCheckCircle, FaClock, FaExclamationTriangle, FaMoneyBillWave, FaDownload, FaCoins } from "react-icons/fa";
 import { toast } from 'react-toastify';
 import PaymentModal from '../PaymentModal';
 
@@ -197,6 +197,12 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
                             {payment.penaltyAmount > 0 && (
                               <p className="text-sm text-red-600">
                                 + Penalty: ₹{payment.penaltyAmount.toLocaleString('en-IN')}
+                              </p>
+                            )}
+                            {/* SetuCoins Earning Preview */}
+                            {payment.status === 'pending' && payment.amount >= 1000 && (
+                              <p className="text-xs text-yellow-600 font-semibold flex justify-end items-center gap-1 mt-1">
+                                <FaCoins className="text-[10px]" /> Earn {Math.floor(payment.amount / 1000)} Coins
                               </p>
                             )}
                             {payment.status === 'pending' && (

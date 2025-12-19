@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useCallback, useRef } from 'react';
-import { FaCreditCard, FaDollarSign, FaShieldAlt, FaDownload, FaCheckCircle, FaTimes, FaSpinner } from 'react-icons/fa';
+import { FaCreditCard, FaDollarSign, FaShieldAlt, FaDownload, FaCheckCircle, FaTimes, FaSpinner, FaCoins } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 
 // Generate unique tab ID for cross-tab communication
@@ -1217,6 +1217,22 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                   <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
                     <h4 className="font-semibold text-blue-800 mb-3">Payment Summary</h4>
                     <div className="space-y-2">
+                      {/* Original Amount (if discount applied) */}
+                      {paymentData?.payment?.metadata?.coinDiscount > 0 && (
+                        <div className="flex justify-between text-gray-500 text-sm">
+                          <span>Subtotal</span>
+                          <span>₹ {Number(paymentData.payment.metadata.originalAmount).toFixed(2)}</span>
+                        </div>
+                      )}
+
+                      {/* Discount Row */}
+                      {paymentData?.payment?.metadata?.coinDiscount > 0 && (
+                        <div className="flex justify-between text-green-600 text-sm font-medium">
+                          <span className="flex items-center gap-1"><FaCoins className="text-xs" /> SetuCoins Discount</span>
+                          <span>- ₹ {Number(paymentData.payment.metadata.coinDiscount).toFixed(2)}</span>
+                        </div>
+                      )}
+
                       <div className="flex justify-between">
                         <span className="text-gray-600">
                           {appointment.paymentType === 'monthly_rent' ? 'Monthly Rent Payment' : 'Advance Payment (Flat)'}
@@ -1225,6 +1241,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                           {preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'INR' ? 100 : 0))).toFixed(2)}` : `$ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'USD' ? 5 : 0))).toFixed(2)}`}
                         </span>
                       </div>
+
                       <div className="flex justify-between text-sm text-gray-500">
                         <span>Note</span>
                         <span>
@@ -1234,12 +1251,25 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                         </span>
                       </div>
                     </div>
+
                     <div className="border-t border-blue-200 mt-3 pt-3">
                       <div className="flex justify-between font-semibold text-blue-800">
                         <span>Total Amount</span>
                         <span>{preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'INR' ? 100 : 0))).toFixed(2)}` : `$ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'USD' ? 5 : 0))).toFixed(2)}`}</span>
                       </div>
                     </div>
+
+                    {/* Completion Reward Preview */}
+                    {preferredMethod === 'razorpay' && paymentData?.payment?.amount >= 1000 && (
+                      <div className="mt-3 bg-yellow-100 rounded-lg p-2 flex items-center justify-between border border-yellow-200">
+                        <span className="text-xs font-semibold text-yellow-800 flex items-center gap-1">
+                          <FaCoins className="text-yellow-600" /> You will earn:
+                        </span>
+                        <span className="text-sm font-bold text-yellow-700">
+                          {Math.floor(paymentData?.payment?.amount / 1000)} SetuCoins
+                        </span>
+                      </div>
+                    )}
                   </div>
 
                   {/* Payment Method */}
