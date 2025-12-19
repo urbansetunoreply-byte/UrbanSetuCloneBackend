@@ -5,6 +5,7 @@ import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHo
 import UserAvatar from "../components/UserAvatar";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import SetuCoinCard from "../components/SetuCoins/SetuCoinCard";
+import AdminCoinCard from "../components/SetuCoins/AdminCoinCard";
 import CoinHistory from "../components/SetuCoins/CoinHistory";
 import RecaptchaWidget from "../components/RecaptchaWidget";
 import { authenticatedFetch, createAuthenticatedFetchOptions } from '../utils/auth';
@@ -1964,21 +1965,27 @@ export default function Profile() {
           <div className="text-green-600 text-sm mb-6">Profile updated successfully!</div>
         )}
 
-        {/* SetuCoins Loyalty Section */}
+        {/* SetuCoins Section */}
         <div className={`mb-8 ${isVisible ? animationClasses.fadeInUp + ' animation-delay-450' : 'opacity-0 translate-y-8'}`}>
-          <SetuCoinCard
-            balance={coinData.balance}
-            streak={coinData.streak}
-            loading={coinData.loading}
-            onViewHistory={() => navigate('/user/rewards?tab=history')}
-          />
+          {isAdmin ? (
+            <AdminCoinCard loading={coinData.loading} />
+          ) : (
+            <>
+              <SetuCoinCard
+                balance={coinData.balance}
+                streak={coinData.streak}
+                loading={coinData.loading}
+                onViewHistory={() => navigate('/user/rewards?tab=history')}
+              />
 
-          {/* Expandable History */}
-          <div className={`transition-all duration-500 ease-in-out overflow-hidden ${showCoinHistory ? 'max-h-[1000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-2">
-              <CoinHistory />
-            </div>
-          </div>
+              {/* Expandable History */}
+              <div className={`transition-all duration-500 ease-in-out overflow-hidden ${showCoinHistory ? 'max-h-[1000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
+                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-2">
+                  <CoinHistory />
+                </div>
+              </div>
+            </>
+          )}
         </div>
 
         {/* Stats Section - show below profile card if not editing, below edit form if editing */}
