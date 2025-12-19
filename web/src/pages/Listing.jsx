@@ -25,9 +25,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import RatingDisplay from '../components/ratings/RatingDisplay';
 import RentPredictionDisplay from '../components/rental/RentPredictionDisplay';
 import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
-import RatingDisplay from '../components/ratings/RatingDisplay';
-import RentPredictionDisplay from '../components/rental/RentPredictionDisplay';
-import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
+
 import VirtualTourViewer from "../components/VirtualTourViewer"; // Import the viewer component
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
