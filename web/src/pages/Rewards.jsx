@@ -4,7 +4,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
     FaCoins, FaFire, FaHistory, FaGift, FaTrophy, FaArrowUp,
     FaArrowDown, FaRocket, FaStar, FaChevronRight, FaInfoCircle,
-    FaCalendarAlt, FaCheckCircle, FaUserFriends, FaHome, FaBolt
+    FaCalendarAlt, FaCheckCircle, FaUserFriends, FaHome, FaBolt, FaShoppingBag, FaReceipt
 } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
@@ -156,6 +156,8 @@ export default function Rewards() {
         { title: 'Rent Discount', rate: `${COIN_CONFIG.RATES.INR} Coins = ₹1`, icon: <FaHome className="text-indigo-600" />, desc: 'Apply coins during checkout to lower your monthly rent.', link: activeContractId ? `/user/pay-monthly-rent?contractId=${activeContractId}` : '/user/rental-contracts' },
         { title: 'Handyman Services', rate: `Up to ₹200 OFF`, icon: <FaBolt className="text-yellow-600" />, desc: 'Use coins to get discounts on home maintenance.', link: '/user/services' },
         { title: 'Packers & Movers', rate: `Up to ₹500 OFF`, icon: <FaRocket className="text-red-500" />, desc: 'Heavy discounts on moving services.', link: '/user/services' },
+        { title: 'Merchant Vouchers', rate: `500 Coins = ₹100`, icon: <FaShoppingBag className="text-pink-500" />, desc: 'Redeem for Amazon, Flipkart, or Swiggy vouchers.', link: '#' },
+        { title: 'Utility Bill Payments', rate: `1000 Coins = ₹200`, icon: <FaReceipt className="text-green-500" />, desc: 'Pay electricity or water bills using SetuCoins.', link: '#' },
     ];
 
     return (
@@ -372,10 +374,7 @@ export default function Rewards() {
                                     </button>
                                 </div>
                             ))}
-                            <div className="md:col-span-3 bg-indigo-50 p-6 rounded-3xl border border-dashed border-indigo-200 text-center">
-                                <p className="text-indigo-600 font-bold mb-1 italic">More rewards coming soon!</p>
-                                <p className="text-xs text-indigo-400">Merchant vouchers, utility bill payments, and more.</p>
-                            </div>
+                            {/* Removed coming soon message as new rewards are added */}
                         </div>
                     )}
 
@@ -405,8 +404,8 @@ export default function Rewards() {
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
                                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.source === 'referral' ? 'bg-purple-100 text-purple-600' :
-                                                                    tx.source === 'admin_adjustment' ? 'bg-amber-100 text-amber-600' :
-                                                                        tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                                                tx.source === 'admin_adjustment' ? 'bg-amber-100 text-amber-600' :
+                                                                    tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                                                                 }`}>
                                                                 {tx.source === 'referral' ? <FaUserFriends /> :
                                                                     tx.source === 'admin_adjustment' ? <FaStar /> :
