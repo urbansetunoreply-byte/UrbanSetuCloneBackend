@@ -78,41 +78,41 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       />
 
       {/* Panel */}
-      <div className={`relative bg-white rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transition-all duration-500 transform ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
+      <div className={`relative bg-white rounded-[24px] md:rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transition-all duration-500 transform flex flex-col max-h-[90vh] ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
         {/* Header with Gradient */}
-        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-8 text-white relative">
+        <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 md:p-8 text-white relative shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
           <div className="absolute bottom-0 left-0 w-24 h-24 bg-black/10 rounded-full -ml-12 -mb-12 blur-xl"></div>
 
           <button
             onClick={onClose}
-            className="absolute top-6 right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white"
+            className="absolute top-4 right-4 md:top-6 md:right-6 p-2 bg-white/10 hover:bg-white/20 rounded-full transition-colors text-white"
           >
             <FaTimes size={16} />
           </button>
 
           <div className="relative z-10 flex flex-col items-center text-center">
-            <div className="w-16 h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-4 border border-white/30 shadow-inner">
-              <FaShareAlt size={28} className="text-white drop-shadow-md" />
+            <div className="w-14 h-14 md:w-16 md:h-16 bg-white/20 backdrop-blur-md rounded-2xl flex items-center justify-center mb-3 md:mb-4 border border-white/30 shadow-inner">
+              <FaShareAlt size={24} className="text-white drop-shadow-md md:text-3xl" />
             </div>
-            <h3 className="text-2xl font-black tracking-tight">{title}</h3>
-            <p className="text-indigo-100 text-sm mt-1 font-medium">{description}</p>
+            <h3 className="text-xl md:text-2xl font-black tracking-tight">{title}</h3>
+            <p className="text-indigo-100 text-xs md:text-sm mt-1 font-medium px-4">{description}</p>
           </div>
         </div>
 
-        <div className="p-8">
+        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
           {/* Link Copy Section */}
-          <div className="mb-8">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-3 block">
+          <div className="mb-6 md:mb-8">
+            <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 md:mb-3 block">
               {url.includes('ref=') ? 'Your Referral Link' : 'Direct Link'}
             </label>
-            <div className="flex items-center gap-2 p-2 bg-slate-50 border border-slate-100 rounded-2xl group transition-all hover:border-indigo-200 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/5">
-              <div className="flex-1 px-4 py-2 overflow-hidden">
-                <p className="text-sm font-bold text-slate-700 truncate line-clamp-1">{url}</p>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 bg-slate-50 border border-slate-100 rounded-2xl group transition-all hover:border-indigo-200 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/5">
+              <div className="flex-1 px-3 py-2 overflow-hidden bg-white sm:bg-transparent rounded-xl sm:rounded-none border sm:border-none border-slate-100 mb-1 sm:mb-0">
+                <p className="text-xs md:text-sm font-bold text-slate-700 truncate">{url}</p>
               </div>
               <button
                 onClick={copyToClipboard}
-                className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 ${copied
+                className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 w-full sm:w-auto ${copied
                   ? 'bg-green-500 text-white shadow-lg shadow-green-200'
                   : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100'
                   }`}
@@ -125,15 +125,15 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
 
           {/* Social Grid */}
           <div className="space-y-4">
-            <label className="text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-3 block">Share with friends</label>
-            <div className="grid grid-cols-2 gap-3">
+            <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 md:mb-3 block">Share with friends</label>
+            <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
               {shareOptions.map((opt) => (
                 <button
                   key={opt.name}
                   onClick={() => window.open(opt.link, '_blank')}
-                  className={`flex items-center gap-3 p-4 ${opt.color} ${opt.hover} text-white rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl group`}
+                  className={`flex items-center gap-3 p-3 md:p-4 ${opt.color} ${opt.hover} text-white rounded-xl md:rounded-2xl transition-all duration-300 transform hover:-translate-y-1 hover:shadow-xl group justify-center sm:justify-start`}
                 >
-                  <div className="text-xl group-hover:scale-110 transition-transform">{opt.icon}</div>
+                  <div className="text-lg md:text-xl group-hover:scale-110 transition-transform">{opt.icon}</div>
                   <span className="font-bold text-sm tracking-tight">{opt.name}</span>
                 </button>
               ))}
@@ -141,7 +141,7 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
           </div>
 
           {url.includes('ref=') && (
-            <div className="mt-8 text-center bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
+            <div className="mt-6 md:mt-8 text-center bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
               <p className="text-xs text-indigo-700 font-bold">Earn <span className="text-indigo-900 font-black">100 coins</span> per successful referral. New users get <span className="text-indigo-900 font-black">50 coins</span>! 🚀</p>
             </div>
           )}
