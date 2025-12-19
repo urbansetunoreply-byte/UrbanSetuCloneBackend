@@ -879,6 +879,76 @@ export const sendCoinAdjustmentEmail = async (email, details) => {
   }
 };
 
+// Send referral reminder email
+export const sendReferralReminderEmail = async (email, username, referralLink) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Earn Rewards with UrbanSetu Referral Program! 💎',
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);">
+        <!-- Header with Gradient -->
+        <div style="background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); padding: 40px 20px; text-align: center;">
+          <h1 style="color: #ffffff; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.5px;">UrbanSetu</h1>
+          <p style="color: #e0e7ff; margin: 10px 0 0 0; font-size: 18px; font-weight: 500;">Spread the Word & Earn Big!</p>
+        </div>
+
+        <!-- Main Content -->
+        <div style="padding: 40px 30px;">
+          <h2 style="color: #1f2937; margin: 0 0 20px 0; font-size: 24px; text-align: center;">Hello ${username || 'UrbanSetu User'},</h2>
+          
+          <p style="color: #4b5563; font-size: 16px; line-height: 1.6; margin-bottom: 25px; text-align: center;">
+            Did you know you can earn <strong>SetuCoins</strong> just by inviting your friends to UrbanSetu? It's the easiest way to stack up rewards!
+          </p>
+
+          <!-- Reward Box -->
+          <div style="background-color: #f5f3ff; border: 2px dashed #7c3aed; border-radius: 12px; padding: 25px; margin-bottom: 30px; text-align: center;">
+            <p style="color: #6d28d9; font-weight: 700; font-size: 20px; margin: 0 0 10px 0;">💰 You Earn: 100 SetuCoins</p>
+            <p style="color: #4b5563; margin: 0;">For every friend who signs up using your link.</p>
+          </div>
+
+          <!-- Referral Link Section -->
+          <div style="text-align: center; margin-bottom: 35px;">
+            <p style="color: #6b7280; font-size: 14px; margin-bottom: 10px; font-weight: 600; text-transform: uppercase; letter-spacing: 1px;">Your Unique Referral Link</p>
+            <div style="background-color: #f3f4f6; padding: 15px; border-radius: 8px; font-family: monospace; font-size: 16px; color: #1f2937; border: 1px solid #e5e7eb; word-break: break-all;">
+              ${referralLink}
+            </div>
+          </div>
+
+          <!-- Call to Action -->
+          <div style="text-align: center; margin-bottom: 30px;">
+            <a href="${clientBaseUrl}/user/rewards" style="display: inline-block; background: linear-gradient(135deg, #4f46e5 0%, #7c3aed 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; transition: transform 0.2s; box-shadow: 0 4px 6px rgba(124, 58, 237, 0.3);">
+              Go to My Rewards Dashboard
+            </a>
+          </div>
+
+          <p style="color: #6b7280; font-size: 14px; line-height: 1.6; text-align: center; margin-top: 30px;">
+            Have questions? We're here to help! Visit our <a href="${clientBaseUrl}/contact" style="color: #4f46e5; text-decoration: none; font-weight: 600;">Contact Support</a> page anytime.
+          </p>
+        </div>
+
+        <!-- Footer -->
+        <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+          <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+            © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
+            You received this email because you are a valued member of our community.
+          </p>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'referral_reminder') :
+      createErrorResponse(new Error(result.error), 'referral_reminder');
+  } catch (error) {
+    return createErrorResponse(error, 'referral_reminder');
+  }
+};
+
 // Payment Success Email
 export const sendPaymentSuccessEmail = async (email, paymentDetails) => {
   try {
