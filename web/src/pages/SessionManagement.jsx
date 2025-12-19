@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { socket } from '../utils/socket';
 
 const SessionManagement = () => {
   // Set page title
@@ -64,18 +65,10 @@ const SessionManagement = () => {
   // Refresh immediately when backend broadcasts updates
   useEffect(() => {
     const handler = () => fetchSessions();
-    let socket;
-    try {
-      // Dynamic require to match user preference/fix
-      const socketModule = require('../utils/socket');
-      socket = socketModule.socket;
 
-      if (socket) {
-        socket.on('adminSessionsUpdated', handler);
-        socket.on('sessionsUpdated', handler);
-      }
-    } catch (e) {
-      console.warn("Socket import failed/ignored", e);
+    if (socket) {
+      socket.on('adminSessionsUpdated', handler);
+      socket.on('sessionsUpdated', handler);
     }
 
     return () => {
