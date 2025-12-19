@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
+import SetuCoinInfoModal from '../components/SetuCoins/SetuCoinInfoModal';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -33,6 +34,7 @@ export default function Rewards() {
     const [leaderboard, setLeaderboard] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [showCoinBurst, setShowCoinBurst] = useState(false);
+    const [showInfo, setShowInfo] = useState(false);
 
     useEffect(() => {
         fetchUserInfo();
@@ -122,6 +124,13 @@ export default function Rewards() {
                         <div className="text-center md:text-left">
                             <h1 className="text-3xl md:text-4xl font-black mb-2 flex items-center justify-center md:justify-start gap-3">
                                 <FaCoins className="text-yellow-400 drop-shadow-md animate-bounce" /> SetuCoins Rewards
+                                <button
+                                    onClick={() => setShowInfo(true)}
+                                    className="text-white/40 hover:text-white transition-colors cursor-pointer"
+                                    title="What are SetuCoins?"
+                                >
+                                    <FaInfoCircle size={20} />
+                                </button>
                             </h1>
                             <p className="text-white/80 font-medium">Your loyalty, rewarded every step of the way.</p>
 
@@ -383,6 +392,7 @@ export default function Rewards() {
             </div>
 
             <SetuCoinParticles active={showCoinBurst} onComplete={() => setShowCoinBurst(false)} count={30} />
+            <SetuCoinInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} />
 
             <style>{`
                 @keyframes fadeIn {

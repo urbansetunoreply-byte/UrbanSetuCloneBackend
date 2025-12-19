@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
-import { FaCoins, FaFire, FaHistory, FaGift, FaArrowRight, FaQuestionCircle } from 'react-icons/fa';
+import { FaCoins, FaFire, FaHistory, FaGift, FaQuestionCircle, FaInfoCircle } from 'react-icons/fa';
 import { Link } from 'react-router-dom';
+import SetuCoinInfoModal from './SetuCoinInfoModal';
 
 const SetuCoinCard = ({ balance = 0, streak = 0, loading = false, onViewHistory }) => {
+    const [showInfo, setShowInfo] = useState(false);
     // Conversion rate: 10 Coins = ₹1 (as per plan)
     const rupeeValue = (balance / 10).toFixed(2);
 
@@ -31,10 +33,19 @@ const SetuCoinCard = ({ balance = 0, streak = 0, loading = false, onViewHistory 
             <div className="relative p-6 text-white">
                 <div className="flex justify-between items-start mb-4">
                     <div>
-                        <h3 className="text-lg font-semibold tracking-wide text-white/90 uppercase flex items-center gap-2">
-                            <FaCoins className="text-yellow-200" />
-                            SetuCoins Balance
-                        </h3>
+                        <div className="flex items-center gap-2">
+                            <h3 className="text-lg font-semibold tracking-wide text-white/90 uppercase flex items-center gap-2">
+                                <FaCoins className="text-yellow-200" />
+                                SetuCoins Balance
+                            </h3>
+                            <button
+                                onClick={() => setShowInfo(true)}
+                                className="text-white/60 hover:text-white transition-colors cursor-pointer"
+                                title="What are SetuCoins?"
+                            >
+                                <FaInfoCircle size={16} />
+                            </button>
+                        </div>
                         <p className="text-xs text-white/70 mt-1">Loyalty Rewards Program</p>
                     </div>
 
@@ -78,6 +89,9 @@ const SetuCoinCard = ({ balance = 0, streak = 0, loading = false, onViewHistory 
                     </Link>
                 </div>
             </div>
+
+            {/* Info Modal Overlay */}
+            <SetuCoinInfoModal isOpen={showInfo} onClose={() => setShowInfo(false)} />
         </div>
     );
 };
