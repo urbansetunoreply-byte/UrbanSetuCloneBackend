@@ -8,6 +8,7 @@ import SetuCoinCard from "../components/SetuCoins/SetuCoinCard";
 import AdminCoinCard from "../components/SetuCoins/AdminCoinCard";
 import CoinHistory from "../components/SetuCoins/CoinHistory";
 import RecaptchaWidget from "../components/RecaptchaWidget";
+import SocialSharePanel from "../components/SocialSharePanel";
 import { authenticatedFetch, createAuthenticatedFetchOptions } from '../utils/auth';
 import {
   updateUserStart,
@@ -305,6 +306,7 @@ export default function Profile() {
   // SetuCoins State
   const [coinData, setCoinData] = useState({ balance: 0, streak: 0, loading: true });
   const [showCoinHistory, setShowCoinHistory] = useState(false);
+  const [showReferralModal, setShowReferralModal] = useState(false);
 
   // Fetch SetuCoins Balance
   useEffect(() => {
@@ -1348,20 +1350,26 @@ export default function Profile() {
                   </div>
 
                   {/* Referral Info */}
-                  <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200 hover:border-indigo-300 transition-all duration-300 hover:shadow-md sm:col-span-2">
-                    <div className="flex items-center justify-between gap-4">
-                      <div className="flex items-center">
-                        <FaStar className="w-4 h-4 mr-3 text-indigo-500 flex-shrink-0" />
-                        <div className="min-w-0 flex-1">
-                          <p className="text-xs text-indigo-500 font-bold mb-1 uppercase tracking-wider">Referral Program</p>
-                          <p className="text-gray-700 text-sm">Earn 100 coins per successful referral. New users get 50 coins!</p>
+                  {/* Referral Info - Hide for Admins */}
+                  {!isAdmin && (
+                    <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200 hover:border-indigo-300 transition-all duration-300 hover:shadow-md sm:col-span-2">
+                      <div className="flex items-center justify-between gap-4">
+                        <div className="flex items-center">
+                          <FaStar className="w-4 h-4 mr-3 text-indigo-500 flex-shrink-0" />
+                          <div className="min-w-0 flex-1">
+                            <p className="text-xs text-indigo-500 font-bold mb-1 uppercase tracking-wider">Referral Program</p>
+                            <p className="text-gray-700 text-sm">Earn 100 coins per successful referral. New users get 50 coins!</p>
+                          </div>
                         </div>
+                        <button
+                          onClick={() => setShowReferralModal(true)}
+                          className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap"
+                        >
+                          Refer Now
+                        </button>
                       </div>
-                      <Link to="/user/rewards" className="text-xs font-bold text-white bg-indigo-600 hover:bg-indigo-700 px-3 py-1.5 rounded-lg transition-colors whitespace-nowrap">
-                        Refer Now
-                      </Link>
                     </div>
-                  </div>
+                  )}
                 </div>
 
                 {/* Profile Completion Status */}
@@ -2374,6 +2382,15 @@ export default function Profile() {
           </div>
         </div>
       )}
+
+      {/* Referral Share Modal */}
+      <SocialSharePanel
+        isOpen={showReferralModal}
+        onClose={() => setShowReferralModal(false)}
+        url={`${window.location.origin}/sign-up?ref=${currentUser._id}`}
+        title="Join me on UrbanSetu! 🏠"
+        description="Sign up using my link to get started with the best real estate platform and earn exclusive rewards!"
+      />
 
       {/* Contact Support Wrapper */}
       <ContactSupportWrapper />

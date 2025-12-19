@@ -105,7 +105,7 @@ const SetuCoinCard = ({ balance = 0, streak = 0, loading = false, onViewHistory 
                     </button>
 
                     <Link
-                        to="/user/rewards" // Placeholder route for later
+                        to="/user/rewards?tab=rewards"
                         className="flex-1 flex items-center justify-center gap-2 bg-black/20 text-white px-4 py-2.5 rounded-xl font-semibold border border-white/20 hover:bg-black/30 active:scale-95 transition-all backdrop-blur-sm group"
                     >
                         <FaGift className="text-pink-300 group-hover:-translate-y-1 transition-transform" />
