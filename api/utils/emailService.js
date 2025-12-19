@@ -13824,3 +13824,155 @@ export const sendCommunityReportAcknowledgementEmail = async (email, username, i
   };
   return sendEmailWithRetry(mailOptions);
 };
+
+// Send Search Alert Email (New Property Matches)
+export const sendSearchAlertEmail = async (email, username, searchCriteria, newProperties) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+
+  // Generate preview cards for up to 3 properties
+  const propertyCards = newProperties.slice(0, 3).map(prop => `
+    <div style="background-color: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 15px; overflow: hidden; display: flex;">
+      <div style="width: 120px; height: 100px; background-color: #f3f4f6; flex-shrink: 0;">
+        <img src="${prop.image || 'https://via.placeholder.com/120x100?text=Property'}" alt="${prop.title}" style="width: 100%; height: 100%; object-fit: cover;">
+      </div>
+      <div style="padding: 12px; flex: 1;">
+        <h4 style="margin: 0 0 5px; font-size: 16px; color: #1f2937;">${prop.title}</h4>
+        <p style="margin: 0 0 5px; color: #4b5563; font-size: 14px;">${prop.location}</p>
+        <p style="margin: 0; color: #059669; font-weight: 600;">₹${prop.price.toLocaleString('en-IN')}/mo</p>
+      </div>
+    </div>
+  `).join('');
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `New Homes in ${searchCriteria.location} match your search! 🏠`,
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+        <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
+          <h2 style="color: #2563eb; margin: 0; font-size: 24px;">UrbanSetu Alerts</h2>
+        </div>
+        <div style="padding: 30px; border: 1px solid #e2e8f0; border-top: none; background-color: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+          <p style="font-size: 16px;">Hello <strong>${username}</strong>,</p>
+          <p style="color: #4b5563;">Good news! We found new properties that match your search for <strong>${searchCriteria.type}</strong> in <strong>${searchCriteria.location}</strong>.</p>
+          
+          <div style="background-color: #f0f9ff; padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #bfdbfe;">
+            ${propertyCards}
+            <div style="text-align: center; margin-top: 15px;">
+              <a href="${clientBaseUrl}/search?q=${encodeURIComponent(searchCriteria.location)}" style="color: #2563eb; font-weight: 600; text-decoration: none;">View All Matches &rarr;</a>
+            </div>
+          </div>
+
+          <div style="margin-top: 25px; text-align: center;">
+            <a href="${clientBaseUrl}/search" style="display: inline-block; padding: 12px 30px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Browse Properties</a>
+          </div>
+
+          <p style="margin-top: 20px; font-size: 13px; color: #6b7280; text-align: center;">
+            You can adjust your alert preferences in your <a href="${clientBaseUrl}/user/settings" style="color: #6b7280; text-decoration: underline;">account settings</a>.
+          </p>
+
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
+            <p>© 2025 UrbanSetu Real Estate</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+  return sendEmailWithRetry(mailOptions);
+};
+
+// Send Lease Renewal Reminder (60/30 Days Notice)
+export const sendLeaseRenewalReminderEmail = async (email, username, contractDetails, daysRemaining) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const isUrgent = daysRemaining <= 30;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `${isUrgent ? '📅 Action Required:' : '🔔 Reminder:'} Lease Expiring in ${daysRemaining} Days`,
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+        <div style="background-color: ${isUrgent ? '#fef2f2' : '#f0f9ff'}; padding: 20px; text-align: center; border-bottom: 2px solid ${isUrgent ? '#fee2e2' : '#e0f2fe'};">
+          <h2 style="color: ${isUrgent ? '#dc2626' : '#0284c7'}; margin: 0; font-size: 24px;">Lease Renewal</h2>
+        </div>
+        <div style="padding: 30px; border: 1px solid #e2e8f0; border-top: none; background-color: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+          <p style="font-size: 16px;">Hello <strong>${username}</strong>,</p>
+          <p style="color: #4b5563;">This is a reminder that the lease agreement for <strong>${contractDetails.propertyName}</strong> is set to expire soon.</p>
+          
+          <div style="background-color: #f8fafc; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid ${isUrgent ? '#ef4444' : '#3b82f6'};">
+             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: #64748b;">Property:</span>
+                <span style="font-weight: 600; color: #334155;">${contractDetails.propertyName}</span>
+             </div>
+             <div style="display: flex; justify-content: space-between; margin-bottom: 10px;">
+                <span style="color: #64748b;">Tenant:</span>
+                <span style="font-weight: 600; color: #334155;">${contractDetails.tenantName}</span>
+             </div>
+             <div style="display: flex; justify-content: space-between;">
+                <span style="color: #64748b;">Expiry Date:</span>
+                <span style="font-weight: 600; color: ${isUrgent ? '#dc2626' : '#334155'};">${formatLocalizedTime(contractDetails.expiryDate)}</span>
+             </div>
+          </div>
+
+          <p style="color: #4b5563;">You have ${daysRemaining} days to decide on the next steps. We recommend initiating a conversation about renewal or move-out procedures soon.</p>
+          
+          <div style="margin-top: 25px; text-align: center; display: flex; gap: 10px; justify-content: center;">
+            <a href="${clientBaseUrl}/user/contracts/${contractDetails.id}/renew" style="display: inline-block; padding: 12px 20px; background-color: #2563eb; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">Renew Lease</a>
+            <a href="${clientBaseUrl}/user/contracts/${contractDetails.id}" style="display: inline-block; padding: 12px 20px; background-color: white; color: #4b5563; border: 1px solid #d1d5db; text-decoration: none; border-radius: 6px; font-weight: 600;">View Contract</a>
+          </div>
+
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
+            <p>Contract ID: #${contractDetails.id}</p>
+            <p>© 2025 UrbanSetu Legal Team</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+  return sendEmailWithRetry(mailOptions);
+};
+
+// Send Incomplete Listing Onboarding Email (Draft Nudge)
+export const sendIncompleteListingOnboardingEmail = async (email, username, listingDraft) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Almost there! Finish listing your property 🏡',
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+        <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
+          <h2 style="color: #059669; margin: 0; font-size: 24px;">Finish Your Listing</h2>
+        </div>
+        <div style="padding: 30px; border: 1px solid #e2e8f0; border-top: none; background-color: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+          <p style="font-size: 16px;">Hello <strong>${username}</strong>,</p>
+          <p style="color: #4b5563;">We noticed you started listing a property but didn't publish it yet. You're just a few steps away from finding the perfect tenant!</p>
+          
+          <div style="background-color: #ecfdf5; padding: 20px; border-radius: 8px; margin: 25px 0; border: 1px solid #a7f3d0; display: flex; align-items: center;">
+             <div style="width: 80px; height: 80px; background-color: #d1fae5; border-radius: 8px; margin-right: 15px; display: flex; align-items: center; justify-content: center; font-size: 30px;">🏠</div>
+             <div>
+                <h3 style="margin: 0 0 5px; color: #064e3b; font-size: 18px;">${listingDraft.title || 'Untitled Property'}</h3>
+                <p style="margin: 0; color: #047857; font-size: 14px;">${listingDraft.completionPercentage || '80'}% Completed</p>
+             </div>
+          </div>
+
+          <p style="color: #4b5563;">Complete your listing now to get maximum visibility and connect with verified renters.</p>
+          
+          <div style="margin-top: 25px; text-align: center;">
+            <a href="${clientBaseUrl}/user/listings/edit/${listingDraft.id}" style="display: inline-block; padding: 12px 30px; background-color: #059669; color: white; text-decoration: none; border-radius: 6px; font-weight: 600; box-shadow: 0 4px 6px -1px rgba(5, 150, 105, 0.2);">Continue Listing</a>
+          </div>
+
+          <p style="margin-top: 20px; font-size: 14px; text-align: center; color: #6b7280;">
+             Need help? <a href="${clientBaseUrl}/contact" style="color: #059669;">Contact our support</a> for assistance.
+          </p>
+
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
+            <p>© 2025 UrbanSetu Team</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+  return sendEmailWithRetry(mailOptions);
+};

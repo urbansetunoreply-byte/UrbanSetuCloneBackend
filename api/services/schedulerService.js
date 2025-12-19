@@ -7,6 +7,11 @@ import { checkEmailServiceStatus } from './emailMonitoringService.js';
 import { cleanupOldChatData } from './dataRetentionService.js';
 import { checkAndSendLoanReminders } from './loanReminderService.js';
 import { checkAndSendRentReminders } from './rentReminderService.js';
+import {
+  checkAndSendSearchAlerts,
+  checkAndSendLeaseRenewalReminders,
+  checkAndSendIncompleteListingNudges
+} from './engagementService.js';
 
 // Schedule appointment reminders to run every day at 9:00 AM
 const scheduleAppointmentReminders = () => {
@@ -186,6 +191,31 @@ const scheduleRentReminders = () => {
   console.log('📋 Schedule: Every day at 10:30 AM (Asia/Kolkata timezone)');
 };
 
+// Schedule Engagement & Retention Jobs
+const scheduleEngagementJobs = () => {
+  console.log('🚀 Setting up engagement schedulers...');
+
+  // Search Alerts: Daily at 7:00 PM
+  cron.schedule('0 19 * * *', async () => {
+    console.log('Running Search Alerts Check...');
+    await checkAndSendSearchAlerts();
+  }, { scheduled: true, timezone: "Asia/Kolkata" });
+
+  // Lease Renewal Reminders: Daily at 11:00 AM
+  cron.schedule('0 11 * * *', async () => {
+    console.log('Running Lease Renewal Check...');
+    await checkAndSendLeaseRenewalReminders();
+  }, { scheduled: true, timezone: "Asia/Kolkata" });
+
+  // Incomplete Listing Nudges: Daily at 6:00 PM
+  cron.schedule('0 18 * * *', async () => {
+    console.log('Running Incomplete Listing Nudge Check...');
+    await checkAndSendIncompleteListingNudges();
+  }, { scheduled: true, timezone: "Asia/Kolkata" });
+
+  console.log('✅ Engagement schedulers set up: Alerts (7PM), Leases (11AM), Nudges (6PM)');
+};
+
 // Start the scheduler
 export const startScheduler = (app) => {
   console.log('🚀 Starting scheduler service...');
@@ -197,6 +227,7 @@ export const startScheduler = (app) => {
   scheduleDataRetentionCleanup();
   scheduleLoanReminders();
   scheduleRentReminders();
+  scheduleEngagementJobs();
   console.log('✅ Scheduler service started successfully');
 };
 
