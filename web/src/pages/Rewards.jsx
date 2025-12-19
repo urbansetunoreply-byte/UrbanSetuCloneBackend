@@ -13,6 +13,16 @@ import CommunityLeaderboard from '../components/SetuCoins/CommunityLeaderboard';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
+const DID_YOU_KNOW_FACTS = [
+    "Paying your rent on the exact due date for 3 consecutive months gives you a 'Speed Demon' bonus of 50 SetuCoins!",
+    "You can redeem SetuCoins for real discounts on monthly rent or on-demand home services!",
+    "Reaching a 6-month rent streak unlocks the 'Elite Resident' badge and a 200 coin bonus!",
+    "Inviting a friend to UrbanSetu earns you both 100 SetuCoins once they sign their first contract!",
+    "SetuCoins never expire as long as you have one active property listing or rental contract!",
+    "Top 3 leaderboard champions every month get exclusive UrbanSetu merchandise and premium support!",
+    "Checking your property's maintenance checklist once a month earns you a 'Diligent Owner' bonus of 10 coins!"
+];
+
 export default function Rewards() {
     usePageTitle("SetuCoins Rewards - Loyalty Program");
     const { currentUser } = useSelector((state) => state.user);
@@ -35,6 +45,13 @@ export default function Rewards() {
     const [historyLoading, setHistoryLoading] = useState(false);
     const [showCoinBurst, setShowCoinBurst] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
+    const [currentFact, setCurrentFact] = useState(DID_YOU_KNOW_FACTS[0]);
+
+    useEffect(() => {
+        // Pick a random fact on every mountain/visit
+        const randomIdx = Math.floor(Math.random() * DID_YOU_KNOW_FACTS.length);
+        setCurrentFact(DID_YOU_KNOW_FACTS[randomIdx]);
+    }, []);
 
     useEffect(() => {
         fetchUserInfo();
@@ -193,8 +210,10 @@ export default function Rewards() {
 
                                 <div className="bg-indigo-900 rounded-3xl p-6 text-white overflow-hidden relative">
                                     <div className="relative z-10">
-                                        <h3 className="font-bold text-lg mb-2">Did you know?</h3>
-                                        <p className="text-indigo-200 text-sm">Paying your rent on the exact due date for 3 consecutive months gives you a "Speed Demon" bonus of 50 SetuCoins!</p>
+                                        <h3 className="font-bold text-lg mb-2 flex items-center gap-2">
+                                            <FaInfoCircle className="text-indigo-400" size={16} /> Did you know?
+                                        </h3>
+                                        <p className="text-indigo-100 text-sm leading-relaxed italic">"{currentFact}"</p>
                                     </div>
                                     <FaInfoCircle className="absolute -bottom-4 -right-4 text-8xl text-indigo-800 rotate-12" />
                                 </div>
