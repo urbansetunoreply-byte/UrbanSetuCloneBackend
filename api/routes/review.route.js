@@ -398,6 +398,34 @@ router.put('/admin/status/:reviewId', verifyToken, async (req, res, next) => {
           // Add rating to listing
           listing.totalRating += review.rating;
           listing.reviewCount += 1;
+
+          // --- SetuCoins Reward ---
+          try {
+            const CoinService = (await import('../services/coinService.js')).default;
+            const CoinTransaction = (await import('../models/coinTransaction.model.js')).default;
+
+            // Check if already rewarded to prevent double-dipping on re-approvals
+            const existingReward = await CoinTransaction.findOne({
+              referenceId: review._id,
+              source: 'review_reward',
+              type: 'credit'
+            });
+
+            if (!existingReward) {
+              await CoinService.credit({
+                userId: review.userId,
+                amount: 10,
+                source: 'review_reward',
+                referenceId: review._id,
+                referenceModel: 'Review',
+                description: `Reward for approved review on ${listing.name}`
+              });
+              console.log(`🪙 Rewarded 10 SetuCoins to ${review.userId} for review ${review._id}`);
+            }
+          } catch (coinError) {
+            console.error('Error awarding SetuCoins for review:', coinError);
+          }
+          // ------------------------
         }
 
         if (listing.reviewCount > 0) {

@@ -4,6 +4,8 @@ import { Link, useNavigate } from "react-router-dom";
 import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog, FaFileContract, FaGavel, FaMoneyCheckAlt } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
+import SetuCoinCard from "../components/SetuCoins/SetuCoinCard";
+import CoinHistory from "../components/SetuCoins/CoinHistory";
 import RecaptchaWidget from "../components/RecaptchaWidget";
 import { authenticatedFetch, createAuthenticatedFetchOptions } from '../utils/auth';
 import {
@@ -298,6 +300,33 @@ export default function Profile() {
   const [statsAnimated, setStatsAnimated] = useState(false);
 
   const navigate = useNavigate();
+
+  // SetuCoins State
+  const [coinData, setCoinData] = useState({ balance: 0, streak: 0, loading: true });
+  const [showCoinHistory, setShowCoinHistory] = useState(false);
+
+  // Fetch SetuCoins Balance
+  useEffect(() => {
+    const fetchCoins = async () => {
+      if (!currentUser) return;
+      try {
+        // We use the authenticatedFetch helper if possible, or standard fetch
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/coins/balance`);
+        const data = await res.json();
+        if (data.success) {
+          setCoinData({
+            balance: data.balance,
+            streak: data.streak || 0, // Assuming streak is returned or part of user object logic
+            loading: false
+          });
+        }
+      } catch (e) {
+        console.error("Error fetching SetuCoins:", e);
+        setCoinData(prev => ({ ...prev, loading: false }));
+      }
+    };
+    fetchCoins();
+  }, [currentUser]);
 
   // Hide My Appointments button in admin context
   const isAdminProfile = window.location.pathname.startsWith('/admin');
@@ -1546,12 +1575,12 @@ export default function Profile() {
                       readOnly={!emailEditMode || (emailEditMode && otpSent) || otpLoading}
                       disabled={otpLoading}
                       className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${!emailEditMode || (emailEditMode && otpSent) || otpLoading
-                          ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-20'
-                          : emailValidation.available === false
-                            ? 'border-red-500 focus:ring-red-500 pr-12'
-                            : emailValidation.available === true
-                              ? 'border-green-500 focus:ring-green-500 pr-12'
-                              : 'border-gray-300 focus:ring-blue-500 pr-12'
+                        ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-20'
+                        : emailValidation.available === false
+                          ? 'border-red-500 focus:ring-red-500 pr-12'
+                          : emailValidation.available === true
+                            ? 'border-green-500 focus:ring-green-500 pr-12'
+                            : 'border-gray-300 focus:ring-blue-500 pr-12'
                         }`}
                     />
                     {emailValidation.loading && (
@@ -1771,7 +1800,7 @@ export default function Profile() {
                   )}
                   {emailValidation.message && !emailError && (
                     <div className={`text-sm mt-1 ${emailValidation.available === true ? 'text-green-600' :
-                        emailValidation.available === false ? 'text-red-600' : 'text-gray-600'
+                      emailValidation.available === false ? 'text-red-600' : 'text-gray-600'
                       }`}>
                       {emailValidation.message}
                     </div>
@@ -1793,10 +1822,10 @@ export default function Profile() {
                       pattern="[0-9]{10}"
                       maxLength="10"
                       className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${mobileValidation.available === false
-                          ? 'border-red-500 focus:ring-red-500'
-                          : mobileValidation.available === true
-                            ? 'border-green-500 focus:ring-green-500'
-                            : 'border-gray-300 focus:ring-blue-500'
+                        ? 'border-red-500 focus:ring-red-500'
+                        : mobileValidation.available === true
+                          ? 'border-green-500 focus:ring-green-500'
+                          : 'border-gray-300 focus:ring-blue-500'
                         }`}
                     />
                     {mobileValidation.loading && (
@@ -1823,7 +1852,7 @@ export default function Profile() {
                   )}
                   {mobileValidation.message && !mobileError && (
                     <div className={`text-sm mt-1 ${mobileValidation.available === true ? 'text-green-600' :
-                        mobileValidation.available === false ? 'text-red-600' : 'text-gray-600'
+                      mobileValidation.available === false ? 'text-red-600' : 'text-gray-600'
                       }`}>
                       {mobileValidation.message}
                     </div>
@@ -1901,12 +1930,12 @@ export default function Profile() {
                 <button
                   type="submit"
                   className={`bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 ${loading ||
-                      emailValidation.loading ||
-                      mobileValidation.loading ||
-                      emailValidation.available === false ||
-                      mobileValidation.available === false ||
-                      (formData.email !== originalEmail && !emailVerified)
-                      ? 'opacity-60 cursor-not-allowed transform-none' : ''
+                    emailValidation.loading ||
+                    mobileValidation.loading ||
+                    emailValidation.available === false ||
+                    mobileValidation.available === false ||
+                    (formData.email !== originalEmail && !emailVerified)
+                    ? 'opacity-60 cursor-not-allowed transform-none' : ''
                     }`}
                   disabled={
                     loading ||
@@ -1934,6 +1963,23 @@ export default function Profile() {
         {!isEditing && updateSuccess && (
           <div className="text-green-600 text-sm mb-6">Profile updated successfully!</div>
         )}
+
+        {/* SetuCoins Loyalty Section */}
+        <div className={`mb-8 ${isVisible ? animationClasses.fadeInUp + ' animation-delay-450' : 'opacity-0 translate-y-8'}`}>
+          <SetuCoinCard
+            balance={coinData.balance}
+            streak={coinData.streak}
+            loading={coinData.loading}
+            onViewHistory={() => setShowCoinHistory(!showCoinHistory)}
+          />
+
+          {/* Expandable History */}
+          <div className={`transition-all duration-500 ease-in-out overflow-hidden ${showCoinHistory ? 'max-h-[1000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
+            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-2">
+              <CoinHistory />
+            </div>
+          </div>
+        </div>
 
         {/* Stats Section - show below profile card if not editing, below edit form if editing */}
         <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-4 mb-6`}>

@@ -645,6 +645,64 @@ router.post("/verify", verifyToken, async (req, res) => {
           } catch (emailError) {
             console.error('Error sending rent payment received email to landlord:', emailError);
           }
+
+          // --- SetuCoins Loyalty Integration ---
+          try {
+            const CoinService = (await import('../services/coinService.js')).default;
+            const payingUser = await User.findById(contract.tenantId._id);
+
+            if (payingUser) {
+              // 1. Credit coins for payment amount (1 coin per ₹1000)
+              const coinsToCredit = Math.floor(payment.amount / 1000);
+
+              if (coinsToCredit > 0) {
+                await CoinService.credit({
+                  userId: payingUser._id,
+                  amount: coinsToCredit,
+                  source: 'rent_payment',
+                  referenceId: payment._id,
+                  referenceModel: 'Payment',
+                  description: `Reward for rent payment of ₹${payment.amount}`
+                });
+                console.log(`🪙 Credited ${coinsToCredit} SetuCoins to user ${payingUser._id}`);
+              }
+
+              // 2. Update Streak & Check for On-Time Bonus
+              // We need to determine if it was late.
+              // Helper to find schedule entry same as earlier in this scope
+              let isLate = false;
+              if (wallet && wallet.paymentSchedule) {
+                const getMeta = (key) => payment.metadata instanceof Map ? payment.metadata.get(key) : (payment.metadata ? payment.metadata[key] : undefined);
+                const targetMonth = Number(payment.rentMonth || getMeta('month'));
+                const targetYear = Number(payment.rentYear || getMeta('year'));
+
+                const scheduleEntry = wallet.paymentSchedule.find(p => Number(p.month) === targetMonth && Number(p.year) === targetYear);
+
+                if (scheduleEntry && scheduleEntry.dueDate) {
+                  const paymentDate = new Date(); // now
+                  const dueDate = new Date(scheduleEntry.dueDate);
+                  // Standard grace period logic or strict due date?
+                  // Let's assume strict due date for gamification
+                  if (paymentDate > dueDate) {
+                    isLate = true;
+                  }
+                }
+              }
+
+              await CoinService.updateRentStreak({
+                userId: payingUser._id,
+                paymentDate: new Date(),
+                amountPaid: payment.amount,
+                isLate: isLate
+              });
+              console.log(`🔥 Updated rent streak for user ${payingUser._id} (Late: ${isLate})`);
+
+            }
+          } catch (coinError) {
+            console.error('Error processing SetuCoins loyalty reward:', coinError);
+            // Non-blocking: don't fail the verification if gamification fails
+          }
+          // -------------------------------------
         }
       } catch (notifError) {
         console.error('Error sending rental payment notifications:', notifError);

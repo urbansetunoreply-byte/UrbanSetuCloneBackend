@@ -2,7 +2,7 @@ import React, { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
-import { FaMoneyBillWave, FaCheckCircle, FaCheck, FaChevronRight, FaChevronLeft, FaCalendarAlt, FaFileContract, FaCreditCard, FaHome, FaLock, FaSpinner, FaTimesCircle, FaDownload } from "react-icons/fa";
+import { FaMoneyBillWave, FaCheckCircle, FaCheck, FaChevronRight, FaChevronLeft, FaCalendarAlt, FaFileContract, FaCreditCard, FaHome, FaLock, FaSpinner, FaTimesCircle, FaDownload, FaCoins } from "react-icons/fa";
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
@@ -604,6 +604,22 @@ export default function PayMonthlyRent() {
               </div>
             </div>
 
+            {/* SetuCoins Earning Banner */}
+            {getTotalAmount() >= 1000 && (
+              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4 mb-6 flex items-center justify-between shadow-sm">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-yellow-100 rounded-full text-yellow-600 shadow-inner">
+                    <FaCoins className="text-xl" />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800 flex items-center gap-1">SetuCoins Rewards <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded border border-yellow-200">LOYALTY</span></h4>
+                    <p className="text-sm text-gray-600">You will earn <span className="font-bold text-yellow-600 text-lg">{Math.floor(getTotalAmount() / 1000)} SetuCoins</span> with this payment!</p>
+                  </div>
+                </div>
+                <div className="hidden sm:block text-yellow-500 font-bold text-xl animate-pulse">+{Math.floor(getTotalAmount() / 1000)}</div>
+              </div>
+            )}
+
             <div className="bg-white p-4 rounded-lg border border-gray-200 mt-4 mb-6">
               <h4 className="font-semibold text-gray-800 mb-3">Select Payment Method</h4>
               <div className="flex flex-col gap-3">
@@ -681,6 +697,20 @@ export default function PayMonthlyRent() {
               <p className="text-gray-600 mb-6">
                 Your rent payment has been processed successfully and is being held in escrow.
               </p>
+
+              {/* SetuCoins Earned Success */}
+              {createdPayment && createdPayment.amount >= 1000 && (
+                <div className="flex flex-col items-center justify-center p-4 bg-yellow-50 rounded-xl border border-yellow-200 mb-6 max-w-md mx-auto animate-[fadeIn_0.5s_ease-out]">
+                  <div className="flex items-center gap-2 mb-1">
+                    <FaCoins className="text-yellow-500 text-2xl animate-bounce" />
+                    <span className="font-bold text-gray-800 text-lg">SetuCoins Earned!</span>
+                  </div>
+                  <p className="text-gray-600 text-center">
+                    Congratulations! You've earned <span className="font-bold text-yellow-600 text-xl mx-1">+{Math.floor(createdPayment.amount / 1000)}</span> coins.
+                  </p>
+                  <p className="text-xs text-gray-500 mt-2">Maintain your streak to earn bonus coins!</p>
+                </div>
+              )}
 
               <div className="flex justify-center mb-6">
                 <button

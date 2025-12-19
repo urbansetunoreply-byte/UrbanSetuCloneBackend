@@ -1,5 +1,5 @@
 import express from 'express';
-import { verifyToken } from '../utils/verifyUser.js';
+import { verifyToken } from '../utils/verify.js';
 import { getBalance, getHistory, getUserBalance, adminAdjustCoins } from '../controllers/coin.controller.js';
 
 const router = express.Router();
