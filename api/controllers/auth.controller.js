@@ -17,7 +17,7 @@ import {
     revokeSessionFromDB
 } from "../utils/sessionManager.js";
 import { sendNewLoginEmail, sendSuspiciousLoginEmail, sendAccountLockoutEmail } from "../utils/emailService.js";
-import { generateTokenPair as generateTokenPairUtil } from '../utils/token.js';
+
 import OtpTracking from "../models/otpTracking.model.js";
 import DeletedAccount from "../models/deletedAccount.model.js";
 import { validateEmail } from "../utils/emailValidation.js";
