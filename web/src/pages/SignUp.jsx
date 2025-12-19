@@ -13,6 +13,10 @@ import PrimaryButton from "../components/ui/PrimaryButton";
 import AuthFormLayout from "../components/ui/AuthFormLayout";
 import SelectField from "../components/ui/SelectField";
 import FormField from "../components/ui/FormField";
+import PremiumLoader from "../components/ui/PremiumLoader";
+import { useDispatch } from "react-redux";
+import { signInSuccess } from "../redux/user/userSlice.js";
+import { reconnectSocket } from "../utils/socket";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function SignUp({ bootstrapped, sessionChecked }) {
@@ -68,6 +72,9 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
 
   // State to track which authentication method is in progress
   const [authInProgress, setAuthInProgress] = useState(null); // null, 'form', 'google'
+  const [showLoader, setShowLoader] = useState(false);
+  const [pendingLoginData, setPendingLoginData] = useState(null);
+  const dispatch = useDispatch();
 
   const checkPasswordStrength = (password) => {
     const strength = calculatePasswordStrength(password);
@@ -327,13 +334,14 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
         setLoading(false);
         if (formData.role === 'admin' || formData.role === 'rootadmin') {
           setSuccess("Admin account created successfully. Please wait for an existing admin to approve your request.");
+          setTimeout(() => {
+            setSuccess("");
+            navigate("/sign-in");
+          }, 3000);
         } else {
-          setSuccess("Account created successfully, please sign in!");
+          setSuccess("Account created successfully!");
+          setShowLoader(true);
         }
-        setTimeout(() => {
-          setSuccess("");
-          navigate("/sign-in");
-        }, 2000);
         return;
       }
     } catch (error) {
@@ -344,15 +352,32 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     }
   };
 
+  const finalizeLogin = async () => {
+    if (pendingLoginData) {
+      // Reconnect socket with new token
+      reconnectSocket();
+
+      // Navigate based on user role
+      if (pendingLoginData.role === "admin" || pendingLoginData.role === "rootadmin") {
+        navigate("/admin");
+      } else {
+        navigate("/user");
+      }
+    } else {
+      // Fallback for regular signup (not logged in yet)
+      navigate("/sign-in");
+    }
+  };
+
   useEffect(() => {
-    if (bootstrapped && sessionChecked && currentUser) {
+    if (bootstrapped && sessionChecked && currentUser && !showLoader) {
       if (currentUser.role === 'admin' || currentUser.role === 'rootadmin') {
         navigate('/admin', { replace: true });
       } else {
         navigate('/user', { replace: true });
       }
     }
-  }, [bootstrapped, sessionChecked, currentUser, navigate]);
+  }, [bootstrapped, sessionChecked, currentUser, navigate, showLoader]);
 
   return (
     <AuthFormLayout
@@ -434,454 +459,469 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
     >
 
       {/* Right Side - Sign Up Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 min-h-screen">
-        <div className="w-full max-w-[480px] animate-fade-in">
-          <div className="text-center mb-10">
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-6 shadow-sm">
-              <UserPlus className="w-8 h-8" />
-            </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
-              Create Account
-            </h2>
-            <p className="text-gray-500 text-lg">Join thousands of users finding their perfect homes</p>
-          </div>
-
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
-            {/* Decorative background element for card */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
-
-            <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
-              <div>
-                <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
-                  Full Name <span className="text-red-500">*</span>
-                </label>
-                <FormField
-                  label={undefined}
-                  id="username"
-                  type="text"
-                  placeholder="Enter your full name"
-                  onChange={handleChange}
-                  disabled={authInProgress === 'google'}
-                  startIcon={<User className="w-5 h-5 text-gray-400" />}
-                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
-                  required
-                />
+      <>
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 min-h-screen">
+          {showLoader ? (
+            <PremiumLoader onComplete={finalizeLogin} />
+          ) : (
+            <div className="w-full max-w-[480px] animate-fade-in">
+              <div className="text-center mb-10">
+                <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-6 shadow-sm">
+                  <UserPlus className="w-8 h-8" />
+                </div>
+                <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
+                  Create Account
+                </h2>
+                <p className="text-gray-500 text-lg">Join thousands of users finding their perfect homes</p>
               </div>
 
-              <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
-                  Email Address <span className="text-red-500">*</span>
-                  {emailVerified && (
-                    <span className="ml-2 text-green-600">
-                      <FaCheck className="inline" />
-                    </span>
-                  )}
-                </label>
-                <FormField
-                  label={undefined}
-                  id="email"
-                  type="email"
-                  placeholder="Enter your email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  readOnly={((emailVerified || otpSent) && !emailEditMode) || otpLoading}
-                  disabled={authInProgress === 'google' || ((emailVerified || otpSent) && !emailEditMode) || otpLoading}
-                  startIcon={<Mail className="w-5 h-5 text-gray-400" />}
-                  endAdornment={
-                    !emailVerified && !otpSent ? (
-                      <button
-                        type="button"
-                        onClick={handleSendOTP}
-                        disabled={otpLoading || !canResend || !formData.email}
-                        className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
-                      >
-                        {otpLoading ? "Sending..." : "Send OTP"}
-                      </button>
-                    ) : (
-                      (!emailEditMode) && (
-                        <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
+                {/* Decorative background element for card */}
+                <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+
+                <form onSubmit={handleSubmit} className="space-y-5 relative z-10">
+                  <div>
+                    <label htmlFor="username" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                      Full Name <span className="text-red-500">*</span>
+                    </label>
+                    <FormField
+                      label={undefined}
+                      id="username"
+                      type="text"
+                      placeholder="Enter your full name"
+                      onChange={handleChange}
+                      disabled={authInProgress === 'google'}
+                      startIcon={<User className="w-5 h-5 text-gray-400" />}
+                      inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
+                      required
+                    />
+                  </div>
+
+                  <div>
+                    <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                      Email Address <span className="text-red-500">*</span>
+                      {emailVerified && (
+                        <span className="ml-2 text-green-600">
+                          <FaCheck className="inline" />
+                        </span>
+                      )}
+                    </label>
+                    <FormField
+                      label={undefined}
+                      id="email"
+                      type="email"
+                      placeholder="Enter your email"
+                      value={formData.email}
+                      onChange={handleChange}
+                      readOnly={((emailVerified || otpSent) && !emailEditMode) || otpLoading}
+                      disabled={authInProgress === 'google' || ((emailVerified || otpSent) && !emailEditMode) || otpLoading}
+                      startIcon={<Mail className="w-5 h-5 text-gray-400" />}
+                      endAdornment={
+                        !emailVerified && !otpSent ? (
                           <button
                             type="button"
-                            onClick={() => {
-                              setEmailEditMode(true);
-                              setOtpSent(false);
-                              setOtp("");
-                              setCanResend(true);
-                              setResendTimer(0);
-                              setEmailVerified(false);
-                            }}
-                            className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
-                            title="Edit email"
+                            onClick={handleSendOTP}
+                            disabled={otpLoading || !canResend || !formData.email}
+                            className="absolute right-3 top-1/2 -translate-y-1/2 px-3 py-1 bg-blue-600 text-white rounded-md text-sm font-medium hover:bg-blue-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
-                            <FaEdit className="text-sm" />
+                            {otpLoading ? "Sending..." : "Send OTP"}
                           </button>
-                          <div className="text-green-600">
-                            <FaCheck className="text-xl" />
-                          </div>
+                        ) : (
+                          (!emailEditMode) && (
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                              <button
+                                type="button"
+                                onClick={() => {
+                                  setEmailEditMode(true);
+                                  setOtpSent(false);
+                                  setOtp("");
+                                  setCanResend(true);
+                                  setResendTimer(0);
+                                  setEmailVerified(false);
+                                }}
+                                className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                                title="Edit email"
+                              >
+                                <FaEdit className="text-sm" />
+                              </button>
+                              <div className="text-green-600">
+                                <FaCheck className="text-xl" />
+                              </div>
+                            </div>
+                          )
+                        )
+                      }
+                      inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
+                      required
+                    />
+                    {fieldErrors.email && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
+                    )}
+                    {otpSent && !emailVerified && (
+                      <p className="text-sm text-gray-600 mt-2">
+                        OTP sent to {formData.email}
+                      </p>
+                    )}
+                    {/* OTP Error Message - Show below email field when OTP field is not open */}
+                    {otpError && !otpSent && (
+                      <p className="text-red-500 text-sm mt-2">{otpError}</p>
+                    )}
+                    {/* If captcha required before OTP field is open, show below email */}
+                    {otpCaptchaRequired && !otpSent && (
+                      <div className="mt-3">
+                        <div className="flex justify-center">
+                          <RecaptchaWidget
+                            key={`signup-otp-email-${recaptchaKey}`}
+                            ref={recaptchaRef}
+                            onVerify={handleRecaptchaVerify}
+                            onExpire={handleRecaptchaExpire}
+                            onError={handleRecaptchaError}
+                            disabled={otpLoading}
+                            className="transform scale-90"
+                          />
                         </div>
-                      )
-                    )
-                  }
-                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
-                  required
-                />
-                {fieldErrors.email && (
-                  <p className="text-red-500 text-sm mt-1">{fieldErrors.email}</p>
-                )}
-                {otpSent && !emailVerified && (
-                  <p className="text-sm text-gray-600 mt-2">
-                    OTP sent to {formData.email}
-                  </p>
-                )}
-                {/* OTP Error Message - Show below email field when OTP field is not open */}
-                {otpError && !otpSent && (
-                  <p className="text-red-500 text-sm mt-2">{otpError}</p>
-                )}
-                {/* If captcha required before OTP field is open, show below email */}
-                {otpCaptchaRequired && !otpSent && (
-                  <div className="mt-3">
-                    <div className="flex justify-center">
-                      <RecaptchaWidget
-                        key={`signup-otp-email-${recaptchaKey}`}
-                        ref={recaptchaRef}
-                        onVerify={handleRecaptchaVerify}
-                        onExpire={handleRecaptchaExpire}
-                        onError={handleRecaptchaError}
-                        disabled={otpLoading}
-                        className="transform scale-90"
-                      />
-                    </div>
-                    {otpError && (
-                      <p className="text-red-500 text-sm mt-2 text-center">{otpError}</p>
+                        {otpError && (
+                          <p className="text-red-500 text-sm mt-2 text-center">{otpError}</p>
+                        )}
+                      </div>
                     )}
                   </div>
-                )}
-              </div>
 
-              {/* OTP Verification Field */}
-              {otpSent && !emailVerified && (
-                <div>
-                  <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
-                    Enter OTP
-                  </label>
-                  <div className="flex flex-row gap-2">
-                    <input
-                      type="text"
-                      placeholder="Enter 6-digit OTP"
-                      id="otp"
-                      value={otp}
-                      disabled={verifyLoading}
-                      onChange={(e) => {
-                        // Only allow numbers
-                        const value = e.target.value.replace(/[^0-9]/g, '');
-                        setOtp(value);
-                      }}
-                      onKeyDown={(e) => {
-                        if (e.key === 'Enter') {
-                          e.preventDefault();
-                          if (otp && otp.length === 6 && !verifyLoading) {
-                            handleVerifyOTP();
-                          }
-                        }
-                      }}
-                      className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
-                        }`}
-                      maxLength="6"
-                    />
-                    <button
-                      type="button"
-                      onClick={handleVerifyOTP}
-                      disabled={verifyLoading || otp.length !== 6}
-                      className="px-3 py-2 sm:px-4 sm:py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base whitespace-nowrap shadow-sm"
-                    >
-                      {verifyLoading ? "Verifying..." : "Verify"}
-                    </button>
-                  </div>
-                  <div className="flex items-center justify-between mt-2">
-                    <p className="text-xs text-gray-500">
-                      Enter the 6-digit code sent to your email
-                    </p>
-                    <div className="flex items-center gap-2">
-                      {resendTimer > 0 ? (
-                        <span className="text-xs text-gray-500">
-                          Resend in {Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}
-                        </span>
-                      ) : (
+                  {/* OTP Verification Field */}
+                  {otpSent && !emailVerified && (
+                    <div>
+                      <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                        Enter OTP
+                      </label>
+                      <div className="flex flex-row gap-2">
+                        <input
+                          type="text"
+                          placeholder="Enter 6-digit OTP"
+                          id="otp"
+                          value={otp}
+                          disabled={verifyLoading}
+                          onChange={(e) => {
+                            // Only allow numbers
+                            const value = e.target.value.replace(/[^0-9]/g, '');
+                            setOtp(value);
+                          }}
+                          onKeyDown={(e) => {
+                            if (e.key === 'Enter') {
+                              e.preventDefault();
+                              if (otp && otp.length === 6 && !verifyLoading) {
+                                handleVerifyOTP();
+                              }
+                            }
+                          }}
+                          className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500/20 focus:border-green-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                            }`}
+                          maxLength="6"
+                        />
                         <button
                           type="button"
-                          onClick={handleSendOTP}
-                          disabled={otpLoading || verifyLoading}
-                          className="text-xs text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                          onClick={handleVerifyOTP}
+                          disabled={verifyLoading || otp.length !== 6}
+                          className="px-3 py-2 sm:px-4 sm:py-3 bg-green-600 text-white rounded-lg font-medium hover:bg-green-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 text-sm sm:text-base whitespace-nowrap shadow-sm"
                         >
-                          {otpLoading ? "Sending..." : "Resend OTP"}
+                          {verifyLoading ? "Verifying..." : "Verify"}
                         </button>
+                      </div>
+                      <div className="flex items-center justify-between mt-2">
+                        <p className="text-xs text-gray-500">
+                          Enter the 6-digit code sent to your email
+                        </p>
+                        <div className="flex items-center gap-2">
+                          {resendTimer > 0 ? (
+                            <span className="text-xs text-gray-500">
+                              Resend in {Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}
+                            </span>
+                          ) : (
+                            <button
+                              type="button"
+                              onClick={handleSendOTP}
+                              disabled={otpLoading || verifyLoading}
+                              className="text-xs text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            >
+                              {otpLoading ? "Sending..." : "Resend OTP"}
+                            </button>
+                          )}
+                        </div>
+                      </div>
+                      {/* OTP Error Message and conditional reCAPTCHA below OTP field */}
+                      {otpError && (
+                        <p className="text-red-500 text-sm mt-2">{otpError}</p>
+                      )}
+                      {/* If backend requested captcha during resends, render captcha below OTP */}
+                      {(otpCaptchaRequired) && (
+                        <div className="flex justify-center mt-3">
+                          <RecaptchaWidget
+                            key={`otp-${recaptchaKey}`}
+                            ref={recaptchaRef}
+                            onVerify={handleRecaptchaVerify}
+                            onExpire={handleRecaptchaExpire}
+                            onError={handleRecaptchaError}
+                            disabled={otpLoading}
+                            className="transform scale-90"
+                          />
+                        </div>
                       )}
                     </div>
-                  </div>
-                  {/* OTP Error Message and conditional reCAPTCHA below OTP field */}
-                  {otpError && (
-                    <p className="text-red-500 text-sm mt-2">{otpError}</p>
                   )}
-                  {/* If backend requested captcha during resends, render captcha below OTP */}
-                  {(otpCaptchaRequired) && (
-                    <div className="flex justify-center mt-3">
+
+                  <div>
+                    <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                      Mobile Number <span className="text-red-500">*</span>
+                    </label>
+                    <FormField
+                      label={undefined}
+                      id="mobileNumber"
+                      type="tel"
+                      placeholder="Enter 10-digit mobile number"
+                      onChange={(e) => {
+                        const digitsOnly = e.target.value.replace(/[^0-9]/g, '');
+                        handleChange({ target: { id: 'mobileNumber', value: digitsOnly } });
+                      }}
+                      value={formData.mobileNumber || ''}
+                      inputMode="numeric"
+                      pattern="[0-9]{10}"
+                      maxLength="10"
+                      startIcon={<Phone className="w-5 h-5 text-gray-400" />}
+                      inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
+                      disabled={authInProgress === 'google'}
+                      required
+                    />
+                    {fieldErrors.mobileNumber && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.mobileNumber}</p>
+                    )}
+                    {fieldErrors.mobileNumber && (
+                      <p className="text-red-500 text-sm mt-1">{fieldErrors.mobileNumber}</p>
+                    )}
+                  </div>
+
+
+
+                  <SelectField
+                    label={<span className="ml-1">I want to <span className="text-red-500">*</span></span>}
+                    id="role"
+                    value={formData.role}
+                    onChange={handleChange}
+                    disabled={authInProgress === 'google'}
+                    required
+                    selectClassName="transition-all duration-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 hover:border-green-500"
+                    options={[
+                      { value: "", label: "Select your role" },
+                      { value: "user", label: "Buy/Sell Properties" },
+                      { value: "admin", label: "Manage Platform (Admin)" },
+                    ]}
+                  />
+
+                  {/* Password Field */}
+                  <div>
+                    <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                      Password <span className="text-red-500">*</span>
+                    </label>
+                    <FormField
+                      label={undefined}
+                      id="password"
+                      type={showPassword ? 'text' : 'password'}
+                      placeholder="Create a strong password"
+                      onChange={handleChange}
+                      disabled={authInProgress === 'google'}
+                      startIcon={<Lock className="w-5 h-5 text-gray-400" />}
+                      endAdornment={
+                        <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
+                          {showPassword ? (
+                            <FaEyeSlash className="text-gray-400 hover:text-gray-600 transition-colors" />
+                          ) : (
+                            <FaEye className="text-gray-400 hover:text-gray-600 transition-colors" />
+                          )}
+                        </div>
+                      }
+                      inputClassName={`pr-12 border border-gray-300 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
+                      required
+                    />
+                  </div>
+
+                  {/* Enhanced Password Strength */}
+                  {formData.password && (
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between">
+                        <span className="text-sm font-medium text-gray-700">Password Strength:</span>
+                        <span className={`text-sm font-semibold ${getPasswordStrengthColor(passwordStrength.level)}`}>
+                          {getPasswordStrengthText(passwordStrength.level)}
+                        </span>
+                      </div>
+
+                      {/* Strength Bar */}
+                      <div className="w-full bg-gray-200 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
+                            passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
+                              passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
+                                passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
+                                  'bg-green-500 w-full'
+                            }`}
+                        ></div>
+                      </div>
+
+                      {/* Feedback */}
+                      {passwordStrength.feedback.length > 0 && (
+                        <div className={`p-3 rounded-lg ${getPasswordStrengthBgColor(passwordStrength.level)}`}>
+                          <p className="text-sm font-medium text-gray-700 mb-1">To improve your password:</p>
+                          <ul className="text-xs space-y-1">
+                            {passwordStrength.feedback.map((item, index) => (
+                              <li key={index} className="flex items-center">
+                                <span className="mr-2">•</span>
+                                {item}
+                              </li>
+                            ))}
+                          </ul>
+                        </div>
+                      )}
+
+                      {/* Security Tips */}
+                      <div className="text-xs text-gray-500 space-y-1">
+                        <p>💡 <strong>Tip:</strong> Use a unique password for this account</p>
+                        <p>🔒 <strong>Security:</strong> Consider using a password manager</p>
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Confirm Password */}
+                  <div>
+                    <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                      Confirm Password <span className="text-red-500">*</span>
+                    </label>
+                    <FormField
+                      label={undefined}
+                      id="confirmPassword"
+                      type={showCPassword ? 'text' : 'password'}
+                      placeholder="Confirm your password"
+                      onChange={handleChange}
+                      disabled={authInProgress === 'google'}
+                      startIcon={<Lock className="w-5 h-5 text-gray-400" />}
+                      endAdornment={
+                        <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowCPassword(!showCPassword)}>
+                          {showCPassword ? (
+                            <FaEyeSlash className="text-gray-400 hover:text-gray-600 transition-colors" />
+                          ) : (
+                            <FaEye className="text-gray-400 hover:text-gray-600 transition-colors" />
+                          )}
+                        </div>
+                      }
+                      inputClassName={`pr-12 border border-gray-300 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
+                      required
+                    />
+                  </div>
+
+                  <div className="flex items-start mb-2">
+                    <input
+                      type="checkbox"
+                      id="consent"
+                      checked={consent}
+                      onChange={e => setConsent(e.target.checked)}
+                      disabled={authInProgress === 'google'}
+                      className={`mt-1 mr-2 ${authInProgress === 'google' ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      required
+                    />
+                    <label htmlFor="consent" className="text-sm text-gray-700 select-none">
+                      I agree to the <Link to="/terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" onClick={e => { e.preventDefault(); window.open('/terms', '_blank', 'noopener,noreferrer'); }}>Terms of Use</Link> and <Link to="/privacy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" onClick={e => { e.preventDefault(); window.open('/privacy', '_blank', 'noopener,noreferrer'); }}>Privacy Policy</Link>.
+                    </label>
+                  </div>
+
+                  {/* reCAPTCHA Widget - show if not verified or briefly after verify */}
+                  {(!recaptchaToken || recaptchaJustVerified) && (
+                    <div className="flex justify-center mb-4">
                       <RecaptchaWidget
-                        key={`otp-${recaptchaKey}`}
+                        key={recaptchaKey}
                         ref={recaptchaRef}
                         onVerify={handleRecaptchaVerify}
                         onExpire={handleRecaptchaExpire}
                         onError={handleRecaptchaError}
-                        disabled={otpLoading}
+                        disabled={loading}
                         className="transform scale-90"
                       />
                     </div>
                   )}
-                </div>
-              )}
 
-              <div>
-                <label htmlFor="mobileNumber" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
-                  Mobile Number <span className="text-red-500">*</span>
-                </label>
-                <FormField
-                  label={undefined}
-                  id="mobileNumber"
-                  type="tel"
-                  placeholder="Enter 10-digit mobile number"
-                  onChange={(e) => {
-                    const digitsOnly = e.target.value.replace(/[^0-9]/g, '');
-                    handleChange({ target: { id: 'mobileNumber', value: digitsOnly } });
-                  }}
-                  value={formData.mobileNumber || ''}
-                  inputMode="numeric"
-                  pattern="[0-9]{10}"
-                  maxLength="10"
-                  startIcon={<Phone className="w-5 h-5 text-gray-400" />}
-                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${fieldErrors.mobileNumber ? 'border-red-500' : 'border-gray-300'} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
-                  disabled={authInProgress === 'google'}
-                  required
-                />
-                {fieldErrors.mobileNumber && (
-                  <p className="text-red-500 text-sm mt-1">{fieldErrors.mobileNumber}</p>
-                )}
-                {fieldErrors.mobileNumber && (
-                  <p className="text-red-500 text-sm mt-1">{fieldErrors.mobileNumber}</p>
-                )}
-              </div>
-
-
-
-              <SelectField
-                label={<span className="ml-1">I want to <span className="text-red-500">*</span></span>}
-                id="role"
-                value={formData.role}
-                onChange={handleChange}
-                disabled={authInProgress === 'google'}
-                required
-                selectClassName="transition-all duration-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 hover:border-green-500"
-                options={[
-                  { value: "", label: "Select your role" },
-                  { value: "user", label: "Buy/Sell Properties" },
-                  { value: "admin", label: "Manage Platform (Admin)" },
-                ]}
-              />
-
-              {/* Password Field */}
-              <div>
-                <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
-                  Password <span className="text-red-500">*</span>
-                </label>
-                <FormField
-                  label={undefined}
-                  id="password"
-                  type={showPassword ? 'text' : 'password'}
-                  placeholder="Create a strong password"
-                  onChange={handleChange}
-                  disabled={authInProgress === 'google'}
-                  startIcon={<Lock className="w-5 h-5 text-gray-400" />}
-                  endAdornment={
-                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? (
-                        <FaEyeSlash className="text-gray-400 hover:text-gray-600 transition-colors" />
-                      ) : (
-                        <FaEye className="text-gray-400 hover:text-gray-600 transition-colors" />
-                      )}
-                    </div>
-                  }
-                  inputClassName={`pr-12 border border-gray-300 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
-                  required
-                />
-              </div>
-
-              {/* Enhanced Password Strength */}
-              {formData.password && (
-                <div className="space-y-3">
-                  <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Password Strength:</span>
-                    <span className={`text-sm font-semibold ${getPasswordStrengthColor(passwordStrength.level)}`}>
-                      {getPasswordStrengthText(passwordStrength.level)}
-                    </span>
-                  </div>
-
-                  {/* Strength Bar */}
-                  <div className="w-full bg-gray-200 rounded-full h-2">
-                    <div
-                      className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
-                        passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
-                          passwordStrength.level === 'medium' ? 'bg-yellow-400 w-3/5' :
-                            passwordStrength.level === 'strong' ? 'bg-green-400 w-4/5' :
-                              'bg-green-500 w-full'
-                        }`}
-                    ></div>
-                  </div>
-
-                  {/* Feedback */}
-                  {passwordStrength.feedback.length > 0 && (
-                    <div className={`p-3 rounded-lg ${getPasswordStrengthBgColor(passwordStrength.level)}`}>
-                      <p className="text-sm font-medium text-gray-700 mb-1">To improve your password:</p>
-                      <ul className="text-xs space-y-1">
-                        {passwordStrength.feedback.map((item, index) => (
-                          <li key={index} className="flex items-center">
-                            <span className="mr-2">•</span>
-                            {item}
-                          </li>
-                        ))}
-                      </ul>
+                  {/* reCAPTCHA Error */}
+                  {recaptchaError && (
+                    <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
+                      <p className="text-red-600 text-sm">{recaptchaError}</p>
                     </div>
                   )}
 
-                  {/* Security Tips */}
-                  <div className="text-xs text-gray-500 space-y-1">
-                    <p>💡 <strong>Tip:</strong> Use a unique password for this account</p>
-                    <p>🔒 <strong>Security:</strong> Consider using a password manager</p>
-                  </div>
-                </div>
-              )}
+                  <PrimaryButton
+                    variant="green"
+                    loading={loading}
+                    loadingText="Creating Account..."
+                    disabled={
+                      loading ||
+                      !meetsMinimumRequirements(formData.password) ||
+                      !emailVerified ||
+                      !recaptchaToken ||
+                      authInProgress === 'google'
+                    }
+                    className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
+                  >
+                    Create Account
+                  </PrimaryButton>
 
-              {/* Confirm Password */}
-              <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
-                  Confirm Password <span className="text-red-500">*</span>
-                </label>
-                <FormField
-                  label={undefined}
-                  id="confirmPassword"
-                  type={showCPassword ? 'text' : 'password'}
-                  placeholder="Confirm your password"
-                  onChange={handleChange}
-                  disabled={authInProgress === 'google'}
-                  startIcon={<Lock className="w-5 h-5 text-gray-400" />}
-                  endAdornment={
-                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowCPassword(!showCPassword)}>
-                      {showCPassword ? (
-                        <FaEyeSlash className="text-gray-400 hover:text-gray-600 transition-colors" />
-                      ) : (
-                        <FaEye className="text-gray-400 hover:text-gray-600 transition-colors" />
-                      )}
+                  {success && (
+                    <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in mt-4">
+                      <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <p className="text-green-700 text-sm font-semibold">{success}</p>
                     </div>
-                  }
-                  inputClassName={`pr-12 border border-gray-300 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
-                  required
-                />
-              </div>
+                  )}
 
-              <div className="flex items-start mb-2">
-                <input
-                  type="checkbox"
-                  id="consent"
-                  checked={consent}
-                  onChange={e => setConsent(e.target.checked)}
-                  disabled={authInProgress === 'google'}
-                  className={`mt-1 mr-2 ${authInProgress === 'google' ? 'opacity-50 cursor-not-allowed' : ''}`}
-                  required
-                />
-                <label htmlFor="consent" className="text-sm text-gray-700 select-none">
-                  I agree to the <Link to="/terms" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" onClick={e => { e.preventDefault(); window.open('/terms', '_blank', 'noopener,noreferrer'); }}>Terms of Use</Link> and <Link to="/privacy" className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer" onClick={e => { e.preventDefault(); window.open('/privacy', '_blank', 'noopener,noreferrer'); }}>Privacy Policy</Link>.
-                </label>
-              </div>
+                  <div className="relative my-8">
+                    <div className="absolute inset-0 flex items-center">
+                      <div className="w-full border-t border-gray-200"></div>
+                    </div>
+                    <div className="relative flex justify-center text-sm">
+                      <span className="px-3 bg-white text-gray-400 font-medium">OR CONTINUE WITH</span>
+                    </div>
+                  </div>
 
-              {/* reCAPTCHA Widget - show if not verified or briefly after verify */}
-              {(!recaptchaToken || recaptchaJustVerified) && (
-                <div className="flex justify-center mb-4">
-                  <RecaptchaWidget
-                    key={recaptchaKey}
-                    ref={recaptchaRef}
-                    onVerify={handleRecaptchaVerify}
-                    onExpire={handleRecaptchaExpire}
-                    onError={handleRecaptchaError}
-                    disabled={loading}
-                    className="transform scale-90"
+                  <Oauth
+                    pageType="signUp"
+                    disabled={authInProgress !== null}
+                    onAuthStart={setAuthInProgress}
+                    onAuthSuccess={(data) => {
+                      setPendingLoginData(data);
+                      setShowLoader(true);
+                      dispatch(signInSuccess(data));
+                    }}
                   />
-                </div>
-              )}
 
-              {/* reCAPTCHA Error */}
-              {recaptchaError && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                  <p className="text-red-600 text-sm">{recaptchaError}</p>
-                </div>
-              )}
+                  {error && (
+                    <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
+                      <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                      <p className="text-red-700 text-sm font-medium">{error}</p>
+                    </div>
+                  )}
+                </form>
 
-              <PrimaryButton
-                variant="green"
-                loading={loading}
-                loadingText="Creating Account..."
-                disabled={
-                  loading ||
-                  !meetsMinimumRequirements(formData.password) ||
-                  !emailVerified ||
-                  !recaptchaToken ||
-                  authInProgress === 'google'
-                }
-                className="w-full py-3 text-base font-semibold shadow-md hover:shadow-lg transition-all duration-300 transform hover:-translate-y-0.5"
-              >
-                Create Account
-              </PrimaryButton>
-
-              {success && (
-                <div className="bg-green-50 border border-green-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in mt-4">
-                  <svg className="w-5 h-5 text-green-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <p className="text-green-700 text-sm font-semibold">{success}</p>
-                </div>
-              )}
-
-              <div className="relative my-8">
-                <div className="absolute inset-0 flex items-center">
-                  <div className="w-full border-t border-gray-200"></div>
-                </div>
-                <div className="relative flex justify-center text-sm">
-                  <span className="px-3 bg-white text-gray-400 font-medium">OR CONTINUE WITH</span>
+                <div className="mt-8 text-center">
+                  <p className="text-gray-500 font-medium">
+                    Already have an account?{" "}
+                    <Link
+                      to="/sign-in"
+                      className={`text-blue-600 hover:text-blue-700 font-bold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpLoading || verifyLoading)
+                        ? 'opacity-50 cursor-not-allowed pointer-events-none'
+                        : ''
+                        }`}
+                    >
+                      Sign In
+                    </Link>
+                  </p>
                 </div>
               </div>
-
-              <Oauth pageType="signUp" disabled={authInProgress !== null} onAuthStart={setAuthInProgress} />
-
-              {error && (
-                <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in">
-                  <svg className="w-5 h-5 text-red-500 flex-shrink-0 mt-0.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
-                  <p className="text-red-700 text-sm font-medium">{error}</p>
-                </div>
-              )}
-            </form>
-
-            <div className="mt-8 text-center">
-              <p className="text-gray-500 font-medium">
-                Already have an account?{" "}
-                <Link
-                  to="/sign-in"
-                  className={`text-blue-600 hover:text-blue-700 font-bold hover:underline transition-colors duration-200 ${(authInProgress !== null || loading || otpLoading || verifyLoading)
-                    ? 'opacity-50 cursor-not-allowed pointer-events-none'
-                    : ''
-                    }`}
-                >
-                  Sign In
-                </Link>
-              </p>
             </div>
-          </div>
+          )}
         </div>
-      </div>
-      <ContactSupportWrapper />
+        <ContactSupportWrapper />
+      </>
     </AuthFormLayout>
   );
 }

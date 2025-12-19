@@ -1032,7 +1032,16 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             </div>
                         </div>
 
-                        <Oauth pageType="signIn" disabled={authInProgress !== null || otpSent} onAuthStart={setAuthInProgress} />
+                        <Oauth
+                            pageType="signIn"
+                            disabled={authInProgress !== null || otpSent}
+                            onAuthStart={setAuthInProgress}
+                            onAuthSuccess={(data) => {
+                                setPendingLoginData(data);
+                                setShowLoader(true);
+                                dispatch(signInSuccess(data));
+                            }}
+                        />
 
                         {(error || urlError) && (
                             <div className="mt-6 bg-red-50 border border-red-200 rounded-xl p-4 flex items-start gap-3 animate-fade-in">

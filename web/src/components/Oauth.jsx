@@ -10,7 +10,7 @@ import React, { useEffect, useState } from 'react';
 import { API_BASE_URL } from '../config/api.js';
 import { reconnectSocket } from "../utils/socket";
 
-export default function Oauth({ pageType, disabled = false, onAuthStart = null }) {
+export default function Oauth({ pageType, disabled = false, onAuthStart = null, onAuthSuccess = null }) {
     const dispatch = useDispatch();
     const navigate = useNavigate();
     const [isLoading, setIsLoading] = useState(false);
@@ -65,6 +65,12 @@ export default function Oauth({ pageType, disabled = false, onAuthStart = null }
             if (data.token) {
                 localStorage.setItem('accessToken', data.token);
                 localStorage.setItem('login', Date.now()); // Notify other tabs
+            }
+
+            // If component provides a custom success handler (e.g. for showing a loader)
+            if (onAuthSuccess) {
+                onAuthSuccess(data);
+                return;
             }
 
             dispatch(signInSuccess(data));
