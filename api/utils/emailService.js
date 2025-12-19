@@ -13754,3 +13754,76 @@ export const sendRootAdminAttackEmail = async (email, details) => {
     console.error('Error sending root admin attack email:', error);
   }
 };
+
+// Send Community Post Confirmation Email
+export const sendCommunityPostConfirmationEmail = async (email, username, postTitle, postId) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Your Discussion is Live! 💬 - UrbanSetu Community',
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+        <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
+          <h2 style="color: #0f766e; margin: 0; font-size: 24px;">UrbanSetu Community</h2>
+        </div>
+        <div style="padding: 30px; border: 1px solid #e2e8f0; border-top: none; background-color: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+          <p style="font-size: 16px;">Hello <strong>${username}</strong>,</p>
+          <p style="color: #4b5563;">Great news! Your discussion has been successfully posted to the UrbanSetu Community.</p>
+          
+          <div style="background-color: #f0fdfa; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #0d9488;">
+            <p style="margin: 0 0 10px 0; font-size: 18px; font-weight: 600; color: #115e59;">${postTitle}</p>
+            <p style="margin: 0; color: #64748b; font-size: 14px;">Posted just now</p>
+          </div>
+
+          <p style="color: #4b5563;">You can view your post, reply to comments, and see how the community reacts by clicking below:</p>
+          
+          <div style="margin-top: 25px; text-align: center;">
+            <a href="${clientBaseUrl}/community/post/${postId}" style="display: inline-block; padding: 12px 25px; background-color: #0d9488; color: white; text-decoration: none; border-radius: 6px; font-weight: 600;">View Discussion</a>
+          </div>
+
+          <p style="margin-top: 25px; color: #64748b; font-size: 14px;">Thank you for contributing to our community!</p>
+
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
+            <p>© 2025 UrbanSetu Community Team</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+  return sendEmailWithRetry(mailOptions);
+};
+
+// Send Community Report Acknowledgement Email
+export const sendCommunityReportAcknowledgementEmail = async (email, username, itemType, itemTitle, reason, postId) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: 'Report Received - UrbanSetu Community Safety 🛡️',
+    html: `
+      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+         <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
+          <h2 style="color: #2563eb; margin: 0; font-size: 24px;">Community Safety</h2>
+        </div>
+        <div style="padding: 30px; border: 1px solid #e2e8f0; border-top: none; background-color: white; border-bottom-left-radius: 8px; border-bottom-right-radius: 8px;">
+          <p style="font-size: 16px;">Hello <strong>${username}</strong>,</p>
+          <p style="color: #4b5563;">Thank you for helping keep our community safe. We have received your report regarding a <strong>${itemType}</strong>.</p>
+          
+          <div style="background-color: #fff1f2; padding: 20px; border-radius: 8px; margin: 25px 0; border-left: 4px solid #e11d48;">
+             <p style="margin: 0 0 10px 0; color: #881337;"><strong>Reason:</strong> ${reason}</p>
+             <p style="margin: 0; color: #4b5563;"><strong>Related Discussion:</strong> <a href="${clientBaseUrl}/community/post/${postId}" style="color: #0369a1; text-decoration: underline;">${itemTitle}</a></p>
+          </div>
+
+          <p style="color: #4b5563;">We review all reports carefully against our Community Guidelines. If a violation is found, we will take appropriate action.</p>
+          
+          <div style="margin-top: 30px; padding-top: 20px; border-top: 1px solid #f1f5f9; font-size: 12px; color: #94a3b8; text-align: center;">
+            <p>Reference ID: #${new Date().getTime().toString(36).toUpperCase()}</p>
+            <p>© 2025 UrbanSetu Trust & Safety</p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+  return sendEmailWithRetry(mailOptions);
+};

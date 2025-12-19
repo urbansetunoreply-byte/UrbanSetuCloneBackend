@@ -1,6 +1,7 @@
 ﻿import ForumPost from '../models/forumPost.model.js';
 import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
+import { sendCommunityPostConfirmationEmail, sendCommunityReportAcknowledgementEmail } from '../utils/emailService.js';
 
 export const createPost = async (req, res, next) => {
     try {
@@ -23,6 +24,14 @@ export const createPost = async (req, res, next) => {
             .exec();
 
         req.app.get('io').emit('forum:postCreated', populatedPost);
+
+        // Send confirmation email asynchronously
+        sendCommunityPostConfirmationEmail(
+            populatedPost.author.email,
+            populatedPost.author.username,
+            populatedPost.title,
+            populatedPost._id
+        ).catch(err => console.error("Failed to send community post email:", err));
 
         res.status(201).json(populatedPost);
     } catch (error) {
@@ -565,6 +574,21 @@ export const reportPost = async (req, res, next) => {
             reason: req.body.reason || 'Spam/Inappropriate'
         });
         await post.save();
+
+        // Send acknowledgement email
+        User.findById(req.user.id).select('email username').then(user => {
+            if (user) {
+                sendCommunityReportAcknowledgementEmail(
+                    user.email,
+                    user.username,
+                    'Discussion',
+                    post.title,
+                    req.body.reason || 'Spam/Inappropriate',
+                    post._id
+                ).catch(err => console.error("Failed to send report email:", err));
+            }
+        });
+
         res.status(200).json('Post reported successfully');
     } catch (error) {
         next(error);
@@ -587,6 +611,21 @@ export const reportComment = async (req, res, next) => {
             reason: req.body.reason || 'Spam/Inappropriate'
         });
         await post.save();
+
+        // Send acknowledgement email
+        User.findById(req.user.id).select('email username').then(user => {
+            if (user) {
+                sendCommunityReportAcknowledgementEmail(
+                    user.email,
+                    user.username,
+                    'Comment',
+                    post.title,
+                    req.body.reason || 'Spam/Inappropriate',
+                    post._id
+                ).catch(err => console.error("Failed to send report email:", err));
+            }
+        });
+
         res.status(200).json('Comment reported successfully');
     } catch (error) {
         next(error);
@@ -612,6 +651,21 @@ export const reportReply = async (req, res, next) => {
             reason: req.body.reason || 'Spam/Inappropriate'
         });
         await post.save();
+
+        // Send acknowledgement email
+        User.findById(req.user.id).select('email username').then(user => {
+            if (user) {
+                sendCommunityReportAcknowledgementEmail(
+                    user.email,
+                    user.username,
+                    'Reply',
+                    post.title,
+                    req.body.reason || 'Spam/Inappropriate',
+                    post._id
+                ).catch(err => console.error("Failed to send report email:", err));
+            }
+        });
+
         res.status(200).json('Reply reported successfully');
     } catch (error) {
         next(error);
