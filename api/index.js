@@ -69,6 +69,7 @@ try {
   deploymentRouter = (await import("./routes/deployment.route.js")).default;
 }
 import { startScheduler } from "./services/schedulerService.js";
+import { initializeReEngagementScheduler } from "./utils/reEngagementScheduler.js";
 import { indexAllWebsiteData } from "./services/dataSyncService.js";
 import { setupAllHooks } from "./middleware/dataSyncHooks.js";
 import { startScheduledSync } from "./services/scheduledSyncService.js";
@@ -154,7 +155,10 @@ const fixRefundIdIndex = async () => {
 };
 
 // Connect to MongoDB
-connectToMongoDB();
+connectToMongoDB().then(() => {
+  // Initialize schedulers after DB connection
+  initializeReEngagementScheduler();
+});
 
 const __dirname = path.resolve();
 

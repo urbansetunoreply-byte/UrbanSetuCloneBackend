@@ -21,7 +21,7 @@ const userSchema = new mongoose.Schema({
     unique: true,
     sparse: true, // Allows multiple null values for unique constraint
     validate: {
-      validator: function(v) {
+      validator: function (v) {
         // If mobile number is provided, validate 10-digit format
         if (!v) return true; // Allow empty
         return /^[0-9]{10}$/.test(v);
@@ -129,7 +129,15 @@ const userSchema = new mongoose.Schema({
     type: String,
     default: null
   },
-  
+  lastLogin: {
+    type: Date,
+    default: Date.now
+  },
+  lastReEngagementEmailSent: {
+    type: Date,
+    default: null
+  },
+
   // Rental Profile
   rentalProfile: {
     isTenant: {
@@ -178,7 +186,7 @@ const userSchema = new mongoose.Schema({
       index: true
     }
   },
-  
+
   // Auto-debit Settings
   autoDebitSettings: {
     enabled: {

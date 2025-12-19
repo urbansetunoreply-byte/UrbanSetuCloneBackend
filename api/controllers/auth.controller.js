@@ -311,6 +311,11 @@ export const SignIn = async (req, res, next) => {
             concurrentLogins: concurrentInfo.activeSessions
         });
 
+        // Update lastLogin timestamp and reset re-engagement email flag
+        validUser.lastLogin = new Date();
+        validUser.lastReEngagementEmailSent = null;
+        await validUser.save();
+
         // Generate token pair
         const { accessToken, refreshToken } = generateTokenPair({ id: validUser._id });
 
@@ -473,6 +478,11 @@ export const Google = async (req, res, next) => {
                 sessionId: session.sessionId,
                 concurrentLogins: concurrentInfo.activeSessions
             });
+
+            // Update lastLogin timestamp and reset re-engagement email flag
+            validUser.lastLogin = new Date();
+            validUser.lastReEngagementEmailSent = null;
+            await validUser.save();
 
             // LOGIN SUCCESSFUL - Send email notifications with retry logic
 
