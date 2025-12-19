@@ -1,5 +1,6 @@
 import nodemailer from 'nodemailer';
 import { sendBrevoEmail, initializeBrevoService, initializeBrevoApiService, testBrevoConnection, getBrevoStatus } from './brevoService.js';
+import { getTimezoneFromIP } from './sessionManager.js';
 
 // Enhanced transporter configuration with multiple fallback options
 const createTransporter = () => {
@@ -279,14 +280,19 @@ const createSuccessResponse = (messageId = null, context = '') => {
   };
 };
 
-// Format dates in Indian Standard Time for email templates
-const formatIndiaTime = (dateInput = new Date(), options = {}) => {
+// Format dates in Indian Standard Time or Localized Time for email templates
+const formatLocalizedTime = (dateInput = new Date(), ip = null, options = {}) => {
   const dateValue = dateInput ? new Date(dateInput) : new Date();
+  const timeZone = ip ? getTimezoneFromIP(ip) : 'Asia/Kolkata';
+
   return dateValue.toLocaleString('en-IN', {
-    timeZone: 'Asia/Kolkata',
+    timeZone,
     ...options
-  });
+  }) + (ip ? ` (${timeZone})` : '');
 };
+
+// Legacy support for India time
+const formatIndiaTime = (dateInput = new Date(), options = {}) => formatLocalizedTime(dateInput, null, options);
 
 // Generate OTP
 export const generateOTP = () => {
@@ -641,7 +647,7 @@ export const sendNewLoginEmail = async (email, device, ip, location, loginTime) 
               <p style="margin: 5px 0; color: #374151;"><strong>Device:</strong> ${device}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>IP Address:</strong> ${ip}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>Location:</strong> ${location || 'Unknown'}</p>
-              <p style="margin: 5px 0; color: #374151;"><strong>Login Time:</strong> ${formatIndiaTime(loginTime)}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Login Time:</strong> ${formatLocalizedTime(loginTime, ip)}</p>
             </div>
             
             <p style="color: #6b7280; margin: 15px 0 10px 0; font-size: 14px;">
@@ -704,6 +710,7 @@ export const sendSuspiciousLoginEmail = async (email, currentDevice, currentIp, 
               <p style="margin: 5px 0; color: #374151;"><strong>Device:</strong> ${currentDevice}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>IP Address:</strong> ${currentIp}</p>
               <p style="margin: 5px 0; color: #374151;"><strong>Location:</strong> ${currentLocation || 'Unknown'}</p>
+              <p style="margin: 5px 0; color: #374151;"><strong>Time:</strong> ${formatLocalizedTime(new Date(), currentIp)}</p>
             </div>
             
             <div style="background-color: #f3f4f6; padding: 15px; border-radius: 6px; margin: 15px 0;">
@@ -13628,7 +13635,7 @@ export const sendAccountLockoutEmail = async (email, details) => {
                     </div>
                     <div style="display: flex; justify-content: space-between; padding-bottom: 0;">
                         <span style="color: #7f1d1d; font-weight: 500;">Time</span>
-                        <span style="color: #450a0a; font-weight: 600;">${new Date().toLocaleString('en-US', { timeZone: 'Asia/Kolkata' })} (IST)</span>
+                        <span style="color: #450a0a; font-weight: 600;">${formatLocalizedTime(new Date(), ipAddress)}</span>
                     </div>
                 </div>
               </div>
@@ -13713,7 +13720,7 @@ export const sendRootAdminAttackEmail = async (email, details) => {
                 <div style="margin-bottom: 5px;"><strong>Attempts:</strong> ${attempts} failed logins</div>
                 <div style="margin-bottom: 5px;"><strong>IP Address:</strong> ${ipAddress}</div>
                 <div style="margin-bottom: 5px;"><strong>Location:</strong> ${location || 'Unknown'}</div>
-                <div><strong>Time:</strong> ${new Date().toLocaleString()}</div>
+                <div><strong>Time:</strong> ${formatLocalizedTime(new Date(), ipAddress)}</div>
               </div>
             </div>
 

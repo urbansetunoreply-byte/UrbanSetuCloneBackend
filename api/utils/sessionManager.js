@@ -325,6 +325,21 @@ export const getLocationFromIP = (ip) => {
     }
 };
 
+// Get timezone from IP using GeoIP
+export const getTimezoneFromIP = (ip) => {
+    try {
+        if (!ip || ip === '127.0.0.1' || ip === '::1') return 'Asia/Kolkata'; // Default to India for local dev
+
+        const pureIp = String(ip).split(',')[0].trim();
+        const geo = geoip.lookup(pureIp);
+
+        return geo?.timezone || 'Asia/Kolkata';
+    } catch (e) {
+        console.error('GeoIP timezone error:', e);
+        return 'Asia/Kolkata';
+    }
+};
+
 // Create a new session with enhanced tracking
 export const createEnhancedSession = async (userId, req) => {
     const sessionId = jwt.sign(
