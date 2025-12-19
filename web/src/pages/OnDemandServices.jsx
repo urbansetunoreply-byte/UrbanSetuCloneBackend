@@ -49,6 +49,8 @@ export default function OnDemandServices() {
   const [coinsToRedeem, setCoinsToRedeem] = useState(0);
   const [coinsToRedeemMovers, setCoinsToRedeemMovers] = useState(0);
   const [showCoinBurst, setShowCoinBurst] = useState(false);
+  const [showPaymentModal, setShowPaymentModal] = useState(false);
+  const [paymentRequestData, setPaymentRequestData] = useState(null);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -166,6 +168,16 @@ export default function OnDemandServices() {
         })
       });
       if (res.ok) {
+        const data = await res.json();
+        if (data.requiresPayment && data.paymentDetails) {
+          setPaymentRequestData({
+            ...data.paymentDetails,
+            type: 'service',
+            requestId: data.requestId
+          });
+          setShowPaymentModal(true);
+          return; // Modal will handle the rest
+        }
         toast.success('Service request submitted');
         fetchMyRequests();
         setCoinsToRedeem(0);
@@ -212,6 +224,16 @@ export default function OnDemandServices() {
         })
       });
       if (res.ok) {
+        const data = await res.json();
+        if (data.requiresPayment && data.paymentDetails) {
+          setPaymentRequestData({
+            ...data.paymentDetails,
+            type: 'movers',
+            requestId: data.requestId
+          });
+          setShowPaymentModal(true);
+          return;
+        }
         toast.success('Movers request submitted');
         fetchMyMoverRequests();
         setCoinsToRedeemMovers(0);

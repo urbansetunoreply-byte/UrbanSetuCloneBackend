@@ -687,16 +687,6 @@ export default function AdminExplore() {
     setFormData((prev) => ({ ...prev, state: loc.state, district: loc.district, city: loc.city }));
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500 animate-pulse font-medium">Finding properties...</p>
-        </div>
-      </div>
-    );
-  }
 
   return (
     <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
@@ -988,15 +978,19 @@ export default function AdminExplore() {
           )}
 
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {listings.map((listing, index) => (
-              <div
-                key={listing._id}
-                className="animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.05}s` }}
-              >
-                <ListingItem listing={listing} onDelete={handleDelete} />
-              </div>
-            ))}
+            {loading ? (
+              <ListingSkeletonGrid count={8} />
+            ) : (
+              listings.map((listing, index) => (
+                <div
+                  key={listing._id}
+                  className="animate-fade-in-up"
+                  style={{ animationDelay: `${index * 0.05}s` }}
+                >
+                  <ListingItem listing={listing} onDelete={handleDelete} />
+                </div>
+              ))
+            )}
           </div>
 
           {showMoreListing && (

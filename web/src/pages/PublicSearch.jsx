@@ -9,6 +9,7 @@ import SearchSuggestions from '../components/SearchSuggestions';
 import FilterChips from "../components/search/FilterChips";
 import { usePageTitle } from '../hooks/usePageTitle';
 import { Search, Filter, MapPin, Home, DollarSign, GripVertical, ChevronDown, RefreshCw } from "lucide-react";
+import ListingSkeletonGrid from "../components/skeletons/ListingSkeletonGrid";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -409,8 +410,8 @@ export default function PublicSearch() {
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, type: t }))}
                                         className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
-                                                ? 'bg-white text-blue-600 shadow-sm'
-                                                : 'text-gray-500 hover:text-gray-700'
+                                            ? 'bg-white text-blue-600 shadow-sm'
+                                            : 'text-gray-500 hover:text-gray-700'
                                             }`}
                                     >
                                         {t}
@@ -487,11 +488,8 @@ export default function PublicSearch() {
                     </div>
 
                     {loading ? (
-                        <div className="min-h-[400px] flex items-center justify-center">
-                            <div className="text-center">
-                                <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-                                <p className="text-gray-500 animate-pulse font-medium">Finding the best properties for you...</p>
-                            </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+                            <ListingSkeletonGrid count={8} />
                         </div>
                     ) : error ? (
                         <div className="text-center py-10 bg-red-50 rounded-xl border border-red-100">

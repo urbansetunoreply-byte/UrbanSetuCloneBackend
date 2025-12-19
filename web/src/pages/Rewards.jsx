@@ -9,6 +9,7 @@ import {
 import { usePageTitle } from '../hooks/usePageTitle';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
 import SetuCoinInfoModal from '../components/SetuCoins/SetuCoinInfoModal';
+import CommunityLeaderboard from '../components/SetuCoins/CommunityLeaderboard';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -31,7 +32,6 @@ export default function Rewards() {
 
     const [coinData, setCoinData] = useState({ balance: 0, totalEarned: 0, streak: 0, loading: true });
     const [history, setHistory] = useState([]);
-    const [leaderboard, setLeaderboard] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [showCoinBurst, setShowCoinBurst] = useState(false);
     const [showInfo, setShowInfo] = useState(false);
@@ -39,7 +39,7 @@ export default function Rewards() {
     useEffect(() => {
         fetchUserInfo();
         if (activeTab === 'history') fetchHistory();
-        if (activeTab === 'leaderboard') fetchLeaderboard();
+        if (activeTab === 'history') fetchHistory();
     }, [activeTab]);
 
     const fetchUserInfo = async () => {
@@ -75,17 +75,6 @@ export default function Rewards() {
         }
     };
 
-    const fetchLeaderboard = async () => {
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/coins/leaderboard?limit=10`, { credentials: 'include' });
-            const data = await res.json();
-            if (data.success) {
-                setLeaderboard(data.leaderboard);
-            }
-        } catch (error) {
-            console.error(error);
-        }
-    };
 
     const tabs = [
         { id: 'overview', label: 'Overview', icon: <FaRocket /> },
@@ -348,44 +337,7 @@ export default function Rewards() {
                     )}
 
                     {activeTab === 'leaderboard' && (
-                        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                            <div className="p-8 bg-gradient-to-r from-indigo-900 to-indigo-800 text-white flex justify-between items-center">
-                                <div>
-                                    <h2 className="text-2xl font-black mb-1">Top Earners</h2>
-                                    <p className="text-indigo-300 text-sm">See who's leading the UrbanSetu community.</p>
-                                </div>
-                                <FaTrophy className="text-4xl text-yellow-400 animate-pulse" />
-                            </div>
-                            <div className="p-4 sm:p-6 space-y-4">
-                                {leaderboard.map((user, idx) => (
-                                    <div key={user.rank} className={`flex items-center justify-between p-4 rounded-2xl transition-all border ${user.userId === currentUser?._id ? 'bg-indigo-50 border-indigo-200' : 'bg-white border-slate-100'}`}>
-                                        <div className="flex items-center gap-4">
-                                            <div className={`w-8 h-8 rounded-full flex items-center justify-center font-black text-sm ${idx === 0 ? 'bg-yellow-400 text-white' : idx === 1 ? 'bg-slate-300 text-white' : idx === 2 ? 'bg-orange-400 text-white' : 'text-slate-400'}`}>
-                                                #{user.rank}
-                                            </div>
-                                            <div className="relative">
-                                                <img src={user.avatar} className="w-12 h-12 rounded-2xl object-cover shadow-sm bg-slate-100" />
-                                                {idx === 0 && <FaTrophy className="absolute -top-2 -right-2 text-yellow-500 text-xs bg-white rounded-full p-0.5" />}
-                                            </div>
-                                            <div>
-                                                <p className="font-bold text-slate-800">
-                                                    {user.name} {user.userId === currentUser?._id && "(You)"}
-                                                </p>
-                                                <div className="flex items-center gap-2">
-                                                    <span className="text-[10px] font-black text-indigo-600 flex items-center gap-0.5"><FaFire /> {user.streak} MO</span>
-                                                </div>
-                                            </div>
-                                        </div>
-                                        <div className="text-right">
-                                            <p className="font-black text-slate-800 flex items-center gap-1">
-                                                {user.totalCoins.toLocaleString()} <FaCoins className="text-yellow-500 text-xs" />
-                                            </p>
-                                            <span className="text-[10px] uppercase font-bold text-slate-300 tracking-wider">Lifetime</span>
-                                        </div>
-                                    </div>
-                                ))}
-                            </div>
-                        </div>
+                        <CommunityLeaderboard />
                     )}
                 </div>
 

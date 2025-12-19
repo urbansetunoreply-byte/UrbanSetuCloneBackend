@@ -1,16 +1,39 @@
-import React from 'react';
+import React, { useEffect } from 'react';
+import { createPortal } from 'react-dom';
 import { FaCoins, FaCheckCircle, FaStar, FaTrophy, FaTimes } from 'react-icons/fa';
 
 const SetuCoinInfoModal = ({ isOpen, onClose }) => {
+    // Handle Esc key to close
+    useEffect(() => {
+        const handleEsc = (e) => {
+            if (e.key === 'Escape') onClose();
+        };
+        if (isOpen) {
+            window.addEventListener('keydown', handleEsc);
+            document.body.style.overflow = 'hidden'; // Prevent scrolling when modal is open
+        }
+        return () => {
+            window.removeEventListener('keydown', handleEsc);
+            document.body.style.overflow = 'unset';
+        };
+    }, [isOpen, onClose]);
+
     if (!isOpen) return null;
 
-    return (
-        <div className="fixed inset-0 z-[10000] flex items-center justify-center p-4 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_0.3s_ease-out]">
-            <div className="bg-white max-w-lg w-full rounded-[2.5rem] shadow-2xl overflow-hidden relative animate-[scaleIn_0.4s_cubic-bezier(0.175,0.885,0.32,1.275)]">
+    const modalContent = (
+        <div className="fixed inset-0 z-[99999] flex items-center justify-center p-4">
+            {/* Backdrop */}
+            <div
+                className="absolute inset-0 bg-slate-900/60 backdrop-blur-sm animate-[fadeIn_0.3s_ease-out]"
+                onClick={onClose}
+            />
+
+            {/* Modal Container */}
+            <div className="bg-white max-w-lg w-full rounded-[2.5rem] shadow-2xl overflow-hidden relative z-10 animate-[scaleIn_0.4s_cubic-bezier(0.175,0.885,0.32,1.275)]">
                 {/* Close Button */}
                 <button
                     onClick={onClose}
-                    className="absolute top-6 right-6 p-2 rounded-full bg-slate-100 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-all z-10"
+                    className="absolute top-6 right-6 p-2 rounded-full bg-slate-100/80 text-slate-500 hover:bg-slate-200 hover:text-slate-800 transition-all z-20 backdrop-blur-sm"
                 >
                     <FaTimes />
                 </button>
@@ -90,6 +113,8 @@ const SetuCoinInfoModal = ({ isOpen, onClose }) => {
             `}</style>
         </div>
     );
+
+    return createPortal(modalContent, document.body);
 };
 
 export default SetuCoinInfoModal;

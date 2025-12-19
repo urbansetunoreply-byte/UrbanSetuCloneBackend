@@ -805,16 +805,6 @@ export default function Search() {
     };
 
 
-    if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-                <div className="text-center">
-                    <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-500 animate-pulse font-medium">Finding the best properties for you...</p>
-                </div>
-            </div>
-        );
-    }
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
@@ -1112,15 +1102,19 @@ export default function Search() {
                     )}
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                        {listings.map((listing, index) => (
-                            <div
-                                key={listing._id}
-                                className="animate-fade-in-up"
-                                style={{ animationDelay: `${index * 0.05}s` }}
-                            >
-                                <ListingItem listing={listing} />
-                            </div>
-                        ))}
+                        {loading ? (
+                            <ListingSkeletonGrid count={8} />
+                        ) : (
+                            listings.map((listing, index) => (
+                                <div
+                                    key={listing._id}
+                                    className="animate-fade-in-up"
+                                    style={{ animationDelay: `${index * 0.05}s` }}
+                                >
+                                    <ListingItem listing={listing} />
+                                </div>
+                            ))
+                        )}
                     </div>
 
                     {showMoreListing && (
@@ -1190,8 +1184,8 @@ export default function Search() {
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, type: t }))}
                                         className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
-                                                ? 'bg-white text-blue-600 shadow-sm'
-                                                : 'text-gray-500 hover:text-gray-700'
+                                            ? 'bg-white text-blue-600 shadow-sm'
+                                            : 'text-gray-500 hover:text-gray-700'
                                             }`}
                                     >
                                         {t}
