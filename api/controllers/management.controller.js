@@ -90,7 +90,54 @@ export const getManagementAdmins = async (req, res, next) => {
       // Regular admins cannot see rootadmin or default admin
       query.isDefaultAdmin = { $ne: true };
     }
-    const admins = await User.find(query).select('-password');
+    // Use aggregation to fetch admins with counts
+    const admins = await User.aggregate([
+      { $match: query },
+      // Lookup listings count
+      {
+        $lookup: {
+          from: 'listings',
+          localField: '_id',
+          foreignField: 'userRef',
+          as: 'listingsData'
+        }
+      },
+      // Lookup appointments count (buyer or seller)
+      {
+        $lookup: {
+          from: 'bookings',
+          let: { userId: '$_id' },
+          pipeline: [
+            {
+              $match: {
+                $expr: {
+                  $or: [
+                    { $eq: ['$buyerId', '$$userId'] },
+                    { $eq: ['$sellerId', '$$userId'] }
+                  ]
+                }
+              }
+            }
+          ],
+          as: 'bookingsData'
+        }
+      },
+      // Add counts and remove password
+      {
+        $addFields: {
+          listingsCount: { $size: '$listingsData' },
+          appointmentsCount: { $size: '$bookingsData' }
+        }
+      },
+      {
+        $project: {
+          password: 0,
+          listingsData: 0,
+          bookingsData: 0
+        }
+      }
+    ]);
+
     res.status(200).json(admins);
   } catch (err) {
     next(err);

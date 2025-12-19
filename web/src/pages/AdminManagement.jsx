@@ -1422,18 +1422,20 @@ export default function AdminManagement() {
                         onClick={() => handleAccountClick(admin, 'admin')}
                         title="Click to view full details"
                       >
-                        <div className="flex items-center gap-4">
-                          <div className="w-16 h-16 rounded-full bg-purple-200 flex items-center justify-center text-2xl font-bold text-purple-700 shadow-inner">
+                        <div className="flex items-start gap-4">
+                          <div className="w-16 h-16 rounded-full bg-purple-200 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-purple-700 shadow-inner">
                             <FaUserShield />
                           </div>
-                          <div>
-                            <div className="flex flex-wrap items-center gap-2 min-w-0">
-                              <span className="text-lg font-semibold text-gray-800 truncate max-w-[120px] sm:max-w-[180px] md:max-w-[220px]" title={admin.username}>{highlightMatch(admin.username)}</span>
-                              <span className={`text-xs px-2 py-1 rounded-full font-bold break-words whitespace-nowrap mt-1 sm:mt-0 ${admin.adminApprovalStatus === 'rejected' ? 'bg-gray-300 text-gray-700' : admin.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{admin.adminApprovalStatus === 'rejected' ? 'rejected' : admin.status}</span>
+                          <div className="w-full">
+                            <div className="flex flex-wrap items-center justify-between gap-2 min-w-0 mb-2">
+                              <span className="text-lg font-semibold text-gray-800 truncate" title={admin.username}>{highlightMatch(admin.username)}</span>
+                              <span className={`text-xs px-2 py-1 rounded-full font-bold whitespace-nowrap ${admin.adminApprovalStatus === 'rejected' ? 'bg-gray-300 text-gray-700' : admin.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{admin.adminApprovalStatus === 'rejected' ? 'rejected' : admin.status}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
-                              <FaEnvelope /> {highlightMatch(admin.email)}
+
+                            <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
+                              <FaEnvelope className="text-purple-400" /> {highlightMatch(admin.email)}
                             </div>
+
                             {(() => {
                               if (!passwordLockouts || !Array.isArray(passwordLockouts)) return null;
                               const entry = passwordLockouts.find(l => (l.email || '').toLowerCase() === (admin.email || '').toLowerCase() && new Date(l.unlockAt) > new Date());
@@ -1441,22 +1443,29 @@ export default function AdminManagement() {
                               const remainingMs = new Date(entry.unlockAt).getTime() - Date.now();
                               const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
                               return (
-                                <div className="mt-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
+                                <div className="mt-1 mb-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
                                   Locked: about {remainingMin} minute{remainingMin > 1 ? 's' : ''} left
                                 </div>
                               );
                             })()}
-                            {admin.mobileNumber && (
-                              <div className="flex items-center gap-2 text-gray-500 text-sm mt-1">
-                                <FaPhone /> {highlightMatch(admin.mobileNumber)}
+
+                            <div className="grid grid-cols-1 text-sm gap-1 mt-3 border-t pt-2 border-gray-100">
+                              {admin.mobileNumber && (
+                                <div className="text-gray-600 truncate"><span className="font-semibold text-gray-700">Mobile:</span> {highlightMatch(admin.mobileNumber)}</div>
+                              )}
+                              <div className="text-gray-600"><span className="font-semibold text-gray-700">Gender:</span> {admin.gender || 'Prefer-not-to-say'}</div>
+                              <div className="text-gray-600 truncate" title={admin.address}><span className="font-semibold text-gray-700">Address:</span> {admin.address || 'Not provided'}</div>
+
+                              <div className="text-gray-600 mt-1"><span className="font-semibold text-gray-700">Member Since:</span> {new Date(admin.createdAt).toLocaleDateString('en-GB')}</div>
+                              <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Updated Profile:</span> {admin.updatedAt ? new Date(admin.updatedAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '') : 'N/A'}</div>
+                              {admin.lastLogin && (
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Login:</span> {new Date(admin.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</div>
+                              )}
+
+                              <div className="flex gap-6 mt-2">
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Listings:</span> {admin.listingsCount || 0}</div>
+                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Appointments:</span> {admin.appointmentsCount || 0}</div>
                               </div>
-                            )}
-                            <div className="flex items-center gap-2 text-gray-400 text-xs mt-1">
-                              <FaCalendarAlt /> {new Date(admin.createdAt).toLocaleDateString('en-GB', {
-                                day: '2-digit',
-                                month: '2-digit',
-                                year: 'numeric'
-                              })}
                             </div>
                           </div>
                         </div>
