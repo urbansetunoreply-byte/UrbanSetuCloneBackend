@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
     FaCoins, FaFire, FaHistory, FaGift, FaTrophy, FaArrowUp,
     FaArrowDown, FaRocket, FaStar, FaChevronRight, FaInfoCircle,
@@ -381,6 +381,18 @@ export default function Rewards() {
                     )}
                 </div>
 
+                {/* Footer Links */}
+                <div className="mt-12 mb-8 text-center border-t border-slate-200 pt-8">
+                    <p className="text-slate-400 text-sm mb-2">UrbanSetu Loyalty Program</p>
+                    <div className="flex justify-center gap-6">
+                        <Link to="/user/terms" className="text-indigo-600 hover:text-indigo-800 text-sm font-bold transition-colors">
+                            Terms & Conditions
+                        </Link>
+                        <Link to="/user/privacy" className="text-indigo-600 hover:text-indigo-800 text-sm font-bold transition-colors">
+                            Privacy Policy
+                        </Link>
+                    </div>
+                </div>
             </div>
 
             <SetuCoinParticles active={showCoinBurst} onComplete={() => setShowCoinBurst(false)} count={30} />

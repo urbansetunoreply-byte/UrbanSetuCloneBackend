@@ -11,7 +11,7 @@ export default function Terms() {
       <h1 className="text-4xl font-bold mb-6 text-blue-700">Terms & Conditions</h1>
       <div className="space-y-6 text-gray-800 text-base">
         <p className="text-lg">Welcome to UrbanSetu, our comprehensive real estate platform. By using our services, you agree to the following terms and conditions. Please read them carefully. By registering, you must select a role (user or admin) and provide explicit consent to our Terms & Privacy Policy.</p>
-        
+
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Platform Overview & Services</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Real Estate Marketplace:</strong> We provide a platform for buying, selling, and renting properties with advanced search and matching capabilities.</li>
@@ -200,6 +200,30 @@ export default function Terms() {
           <li><strong>Evidence Preservation:</strong> We may preserve chat transcripts, call recordings, and checklist media for at least 18 months for legal or compliance purposes.</li>
           <li><strong>Regulatory Cooperation:</strong> UrbanSetu may share relevant information with regulators or law enforcement when legally compelled.</li>
           <li><strong>Account Termination:</strong> Severe violations (fraud, harassment, repeated policy abuse) can result in immediate termination without refund.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">24. SetuCoins Loyalty Program</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Nature of Program:</strong> SetuCoins are virtual loyalty points and do not constitute legal tender, currency, or property. They have no cash value outside of authorized platform redemptions.</li>
+          <li><strong>Earning Rewards:</strong> Coins are earned through verified activities including on-time rent payments (1% back), maintaining payment streaks, booking home services, and successful referrals.</li>
+          <li><strong>Redemption:</strong> Coins can be redeemed for discounts on monthly rent or on-demand services at a standard rate of 10 SetuCoins = ₹1. Redemption rates are subject to change with notice.</li>
+          <li><strong>Validity & Expiry:</strong> SetuCoins remain valid as long as the user maintains an active rental contract or property listing. Inactive accounts for over 12 months may face balance expiration.</li>
+          <li><strong>Abuse & Fraud:</strong> UrbanSetu reserves the right to void or zero-out balances if coins were earned through system exploits, fraudulent activities, or cancelled transactions.</li>
+          <li><strong>Program Modifications:</strong> We reserve the right to modify, suspend, or terminate the loyalty program or change earning/redemption rules at any time.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">25. Investment Tools & Route Planning</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Advisory Nature:</strong> Investment tools, price trends, and ROI calculators are for informational purposes only. They do not constitute financial or legal advice.</li>
+          <li><strong>Data Accuracy:</strong> While we strive for accuracy, market projections and commute time estimates (Route Planner) are based on third-party data and may vary in reality.</li>
+          <li><strong>User Discretion:</strong> Users are encouraged to conduct independent due diligence before making significant financial commitments based on platform-generated insights.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">26. Enhanced Fraud Protection & AI Monitoring</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Automated Scanning:</strong> All listings and user communications are subject to AI-driven fraud detection to identify potential scams, bait-and-switch listings, or abusive behavior.</li>
+          <li><strong>Account Verification:</strong> Mandatory verification (OTP/ID) for high-risk regions or high-value listings is enforced to protect the platform ecosystem.</li>
+          <li><strong>Reporting Obligation:</strong> Users must report any suspicious listing or "too good to be true" offer immediately through the "Report" feature.</li>
         </ul>
 
         <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">

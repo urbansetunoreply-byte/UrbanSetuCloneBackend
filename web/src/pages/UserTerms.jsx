@@ -11,7 +11,7 @@ export default function UserTerms() {
       <h1 className="text-4xl font-bold mb-6 text-blue-700">User Terms & Conditions</h1>
       <div className="space-y-6 text-gray-800 text-base">
         <p className="text-lg">By using UrbanSetu, you agree to these user terms. Please read them carefully.</p>
-        
+
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Your Responsibilities</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li>Provide accurate information. Mobile number must be unique and valid.</li>
@@ -75,6 +75,19 @@ export default function UserTerms() {
           <li>All evidence (photos, calls, chats) should stay on-platform for audit purposes.</li>
           <li>Report fraud or safety issues immediately. We may freeze chats or funds while investigating.</li>
           <li>In emergencies, contact local authorities first and then notify UrbanSetu with the case number.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">10. SetuCoins Rewards</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Earning:</strong> Coins are earned automatically for rent payments and streaks. System exploits to artificially inflate balances will result in balance revocation.</li>
+          <li><strong>Discounts:</strong> 10 Coins = ₹1 discount. Discounts apply to rent and on-demand services only.</li>
+          <li><strong>Transferability:</strong> SetuCoins are linked to your unique verified mobile number and cannot be transferred to other users or accounts.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">11. Advisory Tools (AI & Analysis)</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li>Investment tools and Route Planner insights are projections. Actual market values and commute times may vary.</li>
+          <li>Always verify AI-generated smart-search results before making viewing appointments or financial deposits.</li>
         </ul>
 
         <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {

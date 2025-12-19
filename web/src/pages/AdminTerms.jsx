@@ -11,7 +11,7 @@ export default function AdminTerms() {
       <h1 className="text-4xl font-bold mb-6 text-blue-700">Admin Terms & Conditions</h1>
       <div className="space-y-6 text-gray-800 text-base">
         <p className="text-lg">By using UrbanSetu admin tools, you agree to these admin terms.</p>
-        
+
         <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Admin Responsibilities</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li>Act impartially and in users' best interests.</li>
@@ -92,6 +92,13 @@ export default function AdminTerms() {
           <li>Critical incidents require notifying the security/compliance lead within one business hour.</li>
           <li>Admins must cooperate with regulatory or law-enforcement requests and preserve evidence exactly as collected.</li>
           <li>After every major incident, document remediation steps and lessons learned to prevent recurrence.</li>
+        </ul>
+
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">12. SetuCoin Economy & Loyalty Oversight</h2>
+        <ul className="list-disc ml-6 space-y-3">
+          <li><strong>Balance Adjustments:</strong> Admins may only adjust user coin balances to correct system errors, process refunds, or penalize verified fraud.</li>
+          <li><strong>Economy Monitoring:</strong> Root admins must monitor the system-wide burn-to-mint ratio to ensure the sustainability of the rewards program.</li>
+          <li><strong>Revocation:</strong> Admins reserve the right to revoke coins earned through cancelled service requests or fraudulent rent payments.</li>
         </ul>
 
         <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {
