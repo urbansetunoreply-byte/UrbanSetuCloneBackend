@@ -145,7 +145,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
   // Extract referral code on mount
   useEffect(() => {
     const params = new URLSearchParams(location.search);
-    const ref = params.get('ref');
+    const ref = params.get('ref') || localStorage.getItem('urbansetu_ref');
     if (ref) {
       setReferredBy(ref);
       console.log("Referral detected:", ref);

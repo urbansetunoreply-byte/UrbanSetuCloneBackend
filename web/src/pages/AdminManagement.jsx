@@ -1297,22 +1297,29 @@ export default function AdminManagement() {
                     {filteredUsers.map((user) => (
                       <div
                         key={user._id}
-                        className="bg-gradient-to-br from-blue-50 to-purple-100 rounded-2xl shadow-lg p-6 flex flex-col gap-4 hover:scale-105 transition-transform duration-200 animate-slideUp cursor-pointer"
+                        className="bg-blue-50/50 border border-blue-100/50 rounded-2xl shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-all duration-200 animate-slideUp cursor-pointer"
                         onClick={() => handleAccountClick(user, 'user')}
                         title="Click to view full details"
                       >
                         <div className="flex items-start gap-4">
-                          <div className="w-16 h-16 rounded-full bg-blue-200 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-blue-700 shadow-inner">
+                          <div className="w-16 h-16 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-blue-600">
                             <FaUser />
                           </div>
-                          <div className="w-full">
-                            <div className="flex flex-wrap items-center justify-between gap-2 min-w-0 mb-2">
-                              <span className="text-lg font-semibold text-gray-800 truncate" title={user.username}>{highlightMatch(user.username)}</span>
-                              <span className={`text-xs px-2 py-1 rounded-full font-bold whitespace-nowrap ${user.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{user.status}</span>
+                          <div className="flex-1 min-w-0 flex flex-col gap-1">
+                            <div className="flex items-center gap-2 w-full min-w-0">
+                              <span className="text-lg font-bold text-gray-800 truncate flex-1" title={user.username}>{highlightMatch(user.username)}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase flex-shrink-0 ${user.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{user.status}</span>
                             </div>
 
-                            <div className="flex items-center gap-2 text-gray-600 text-sm mb-1">
-                              <FaEnvelope className="text-blue-400" /> {highlightMatch(user.email)}
+                            <div className="flex items-center gap-2 text-gray-500 text-sm w-full min-w-0">
+                              <FaEnvelope className="text-gray-400 flex-shrink-0" />
+                              <span className="truncate" title={user.email}>{highlightMatch(user.email)}</span>
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-500 text-sm">
+                              <FaPhone className="text-gray-400" /> {user.mobileNumber ? highlightMatch(user.mobileNumber) : <span className="italic text-gray-300">No mobile</span>}
+                            </div>
+                            <div className="flex items-center gap-2 text-gray-500 text-sm">
+                              <FaCalendarAlt className="text-gray-400" /> {new Date(user.createdAt).toLocaleDateString('en-GB')}
                             </div>
 
                             {(() => {
@@ -1322,34 +1329,11 @@ export default function AdminManagement() {
                               const remainingMs = new Date(entry.unlockAt).getTime() - Date.now();
                               const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
                               return (
-                                <div className="mt-1 mb-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
-                                  Locked: about {remainingMin} minute{remainingMin > 1 ? 's' : ''} left
+                                <div className="mt-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
+                                  Locked: ~{remainingMin} min left
                                 </div>
                               );
                             })()}
-
-                            <div className="grid grid-cols-1 text-sm gap-1 mt-3 border-t pt-2 border-gray-100">
-                              {user.mobileNumber && (
-                                <div className="text-gray-600 truncate"><span className="font-semibold text-gray-700">Mobile:</span> {highlightMatch(user.mobileNumber)}</div>
-                              )}
-                              <div className="text-gray-600"><span className="font-semibold text-gray-700">Gender:</span> {user.gender || 'Prefer-not-to-say'}</div>
-                              <div className="text-gray-600 truncate" title={user.address}><span className="font-semibold text-gray-700">Address:</span> {user.address || 'Not provided'}</div>
-
-                              <div className="text-gray-600 mt-1"><span className="font-semibold text-gray-700">Member Since:</span> {new Date(user.createdAt).toLocaleDateString('en-GB')}</div>
-                              <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Updated Profile:</span> {user.updatedAt ? new Date(user.updatedAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '') : 'N/A'}</div>
-                              {user.lastLogin && (
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Login:</span> {new Date(user.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</div>
-                              )}
-
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Listings:</span> {user.listingsCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Appointments:</span> {user.appointmentsCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Wishlist:</span> {user.wishlistCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Watchlist:</span> {user.watchlistCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Reviews:</span> {user.reviewsCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Payments:</span> {user.paymentsCount || 0}</div>
-                              </div>
-                            </div>
                           </div>
                         </div>
                         <div className="flex flex-col gap-2 mt-4 sm:flex-row sm:gap-2">
@@ -1468,28 +1452,7 @@ export default function AdminManagement() {
                               );
                             })()}
 
-                            <div className="grid grid-cols-1 text-sm gap-1 mt-3 border-t pt-2 border-gray-100">
-                              {admin.mobileNumber && (
-                                <div className="text-gray-600 truncate"><span className="font-semibold text-gray-700">Mobile:</span> {highlightMatch(admin.mobileNumber)}</div>
-                              )}
-                              <div className="text-gray-600"><span className="font-semibold text-gray-700">Gender:</span> {admin.gender || 'Prefer-not-to-say'}</div>
-                              <div className="text-gray-600 truncate" title={admin.address}><span className="font-semibold text-gray-700">Address:</span> {admin.address || 'Not provided'}</div>
 
-                              <div className="text-gray-600 mt-1"><span className="font-semibold text-gray-700">Member Since:</span> {new Date(admin.createdAt).toLocaleDateString('en-GB')}</div>
-                              <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Updated Profile:</span> {admin.updatedAt ? new Date(admin.updatedAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '') : 'N/A'}</div>
-                              {admin.lastLogin && (
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Last Login:</span> {new Date(admin.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</div>
-                              )}
-
-                              <div className="grid grid-cols-2 gap-x-4 gap-y-1 mt-2">
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Listings:</span> {admin.listingsCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Appointments:</span> {admin.appointmentsCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Wishlist:</span> {admin.wishlistCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Watchlist:</span> {admin.watchlistCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Reviews:</span> {admin.reviewsCount || 0}</div>
-                                <div className="text-gray-600"><span className="font-semibold text-gray-700">Payments:</span> {admin.paymentsCount || 0}</div>
-                              </div>
-                            </div>
                           </div>
                         </div>
                         <div className="flex flex-col gap-2 mt-4 sm:flex-row sm:gap-2">
@@ -1752,6 +1715,26 @@ export default function AdminManagement() {
                       <FaCalendar className="text-pink-400" />
                       <span><strong>Appointments:</strong> {accountStats.appointments}</span>
                     </div>
+                    {/* Extended Stats */}
+                    {selectedAccount.lastLogin && (
+                      <div className="flex flex-col gap-1">
+                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+                          <FaUserLock className="text-orange-400" />
+                          <span><strong>Last Login:</strong> {new Date(selectedAccount.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</span>
+                        </div>
+                        {selectedAccount.lastLoginLocation && (
+                          <div className="flex items-center gap-2 text-gray-700 text-sm ml-6">
+                            <span className="text-xs text-gray-500">📍 {selectedAccount.lastLoginLocation}</span>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    <div className="grid grid-cols-2 gap-2 mt-2 bg-gray-50 p-3 rounded-lg">
+                      <div className="text-gray-600 text-sm"><span className="font-semibold text-gray-700">Wishlist:</span> {selectedAccount.wishlistCount || 0}</div>
+                      <div className="text-gray-600 text-sm"><span className="font-semibold text-gray-700">Watchlist:</span> {selectedAccount.watchlistCount || 0}</div>
+                      <div className="text-gray-600 text-sm"><span className="font-semibold text-gray-700">Reviews:</span> {selectedAccount.reviewsCount || 0}</div>
+                      <div className="text-gray-600 text-sm"><span className="font-semibold text-gray-700">Payments:</span> {selectedAccount.paymentsCount || 0}</div>
+                    </div>
                   </div>
                   <div className="grid grid-cols-1 gap-2 mt-2">
                     <div className="flex items-center gap-2 text-gray-700 text-sm">
@@ -1818,317 +1801,326 @@ export default function AdminManagement() {
             </div>
           </div>
         </div>
-      )}
+      )
+      }
 
       {/* Confirmation Modal */}
-      {showConfirmModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-fadeIn">
-            <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">{confirmModalData.title}</h3>
-              <p className="text-gray-600 mb-6">{confirmModalData.message}</p>
-              <div className="flex gap-3 justify-end">
-                <button
-                  onClick={handleConfirmModalClose}
-                  className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 font-semibold transition-colors"
+      {
+        showConfirmModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-fadeIn">
+              <div className="p-6">
+                <h3 className="text-xl font-bold text-gray-800 mb-4">{confirmModalData.title}</h3>
+                <p className="text-gray-600 mb-6">{confirmModalData.message}</p>
+                <div className="flex gap-3 justify-end">
+                  <button
+                    onClick={handleConfirmModalClose}
+                    className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 font-semibold transition-colors"
+                  >
+                    {confirmModalData.cancelText}
+                  </button>
+                  <button
+                    onClick={handleConfirmModalConfirm}
+                    className={`px-4 py-2 rounded-lg text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${confirmModalData.confirmButtonClass}`}
+                    disabled={actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge || actionLoading.suspend[confirmModalData.userId] || actionLoading.softban}
+                  >
+                    {(actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge || actionLoading.suspend[confirmModalData.userId] || actionLoading.softban) ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                        {actionLoading.promote[confirmModalData.userId] ? 'Promoting...' :
+                          actionLoading.demote[confirmModalData.userId] ? 'Demoting...' :
+                            actionLoading.suspend[confirmModalData.userId] ? 'Activating...' :
+                              actionLoading.softban ? 'Processing...' :
+                                actionLoading.restore ? 'Restoring...' : 'Purging...'}
+                      </>
+                    ) : (
+                      confirmModalData.confirmText
+                    )}
+                  </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Softban Reason Modal */}
+      {
+        showDeleteReasonModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Softban</h3>
+              <p className="text-gray-600 mb-3">Please select a reason and configure policy to proceed.</p>
+
+              {/* Reason Selection */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+                <select
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  value={deleteReason}
+                  onChange={e => setDeleteReason(e.target.value)}
                 >
-                  {confirmModalData.cancelText}
-                </button>
-                <button
-                  onClick={handleConfirmModalConfirm}
-                  className={`px-4 py-2 rounded-lg text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${confirmModalData.confirmButtonClass}`}
-                  disabled={actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge || actionLoading.suspend[confirmModalData.userId] || actionLoading.softban}
-                >
-                  {(actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge || actionLoading.suspend[confirmModalData.userId] || actionLoading.softban) ? (
+                  <option value="">Select a reason</option>
+                  {selectedAccount?.type === 'user' ? (
                     <>
-                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                      {actionLoading.promote[confirmModalData.userId] ? 'Promoting...' :
-                        actionLoading.demote[confirmModalData.userId] ? 'Demoting...' :
-                          actionLoading.suspend[confirmModalData.userId] ? 'Activating...' :
-                            actionLoading.softban ? 'Processing...' :
-                              actionLoading.restore ? 'Restoring...' : 'Purging...'}
+                      <option value="fraud">Fraudulent activity</option>
+                      <option value="duplicate">Fake or duplicate account</option>
+                      <option value="inappropriate">Inappropriate content or behavior</option>
+                      <option value="policy_violation">Violation of terms & policies</option>
+                      <option value="requested_by_user">Requested by user (support request)</option>
+                      <option value="other">Other (textbox optional)</option>
                     </>
                   ) : (
-                    confirmModalData.confirmText
+                    <>
+                      <option value="misuse_privileges">Misuse of admin privileges</option>
+                      <option value="inactive_admin">Inactive admin account</option>
+                      <option value="violation_trust">Violation of policies or trust</option>
+                      <option value="role_restructure">Role restructuring / reassigning</option>
+                      <option value="other">Other (textbox optional)</option>
+                    </>
+                  )}
+                </select>
+              </div>
+
+              {deleteReason === 'other' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Additional Details</label>
+                  <input
+                    type="text"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    placeholder="Optional details"
+                    value={deleteOtherReason}
+                    onChange={e => setDeleteOtherReason(e.target.value)}
+                  />
+                </div>
+              )}
+
+              {/* Policy Configuration */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Ban Type</label>
+                <select
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  value={deletePolicy.banType}
+                  onChange={e => setDeletePolicy(prev => ({ ...prev, banType: e.target.value }))}
+                >
+                  <option value="allow">Allow re-signup (default)</option>
+                  <option value="ban">Permanent ban</option>
+                </select>
+              </div>
+
+              {deletePolicy.banType === 'allow' && (
+                <div className="mb-4">
+                  <label className="block text-sm font-medium text-gray-700 mb-2">Cooling-off Period (days)</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="365"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="0 for immediate re-signup"
+                    value={deletePolicy.allowResignupAfterDays}
+                    onChange={e => setDeletePolicy(prev => ({ ...prev, allowResignupAfterDays: parseInt(e.target.value) || 0 }))}
+                  />
+                  <p className="text-xs text-gray-500 mt-1">Set to 0 for immediate re-signup, or specify days to wait</p>
+                </div>
+              )}
+
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Policy Notes (Optional)</label>
+                <textarea
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  rows="2"
+                  placeholder="Additional policy notes..."
+                  value={deletePolicy.notes}
+                  onChange={e => setDeletePolicy(prev => ({ ...prev, notes: e.target.value }))}
+                />
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                  onClick={() => {
+                    setShowDeleteReasonModal(false);
+                    setSelectedAccount(null);
+                    setDeletePolicy({ category: '', banType: 'allow', allowResignupAfterDays: 0, notes: '' });
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  onClick={async () => {
+                    // Close the reason modal first
+                    setShowDeleteReasonModal(false);
+                    await performDeleteWithReason();
+                  }}
+                  disabled={actionLoading.softban}
+                >
+                  {actionLoading.softban ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    'Confirm Softban'
                   )}
                 </button>
               </div>
             </div>
           </div>
-        </div>
-      )}
-
-      {/* Softban Reason Modal */}
-      {showDeleteReasonModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Softban</h3>
-            <p className="text-gray-600 mb-3">Please select a reason and configure policy to proceed.</p>
-
-            {/* Reason Selection */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Reason</label>
-              <select
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                value={deleteReason}
-                onChange={e => setDeleteReason(e.target.value)}
-              >
-                <option value="">Select a reason</option>
-                {selectedAccount?.type === 'user' ? (
-                  <>
-                    <option value="fraud">Fraudulent activity</option>
-                    <option value="duplicate">Fake or duplicate account</option>
-                    <option value="inappropriate">Inappropriate content or behavior</option>
-                    <option value="policy_violation">Violation of terms & policies</option>
-                    <option value="requested_by_user">Requested by user (support request)</option>
-                    <option value="other">Other (textbox optional)</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="misuse_privileges">Misuse of admin privileges</option>
-                    <option value="inactive_admin">Inactive admin account</option>
-                    <option value="violation_trust">Violation of policies or trust</option>
-                    <option value="role_restructure">Role restructuring / reassigning</option>
-                    <option value="other">Other (textbox optional)</option>
-                  </>
-                )}
-              </select>
-            </div>
-
-            {deleteReason === 'other' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Additional Details</label>
-                <input
-                  type="text"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
-                  placeholder="Optional details"
-                  value={deleteOtherReason}
-                  onChange={e => setDeleteOtherReason(e.target.value)}
-                />
-              </div>
-            )}
-
-            {/* Policy Configuration */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Ban Type</label>
-              <select
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                value={deletePolicy.banType}
-                onChange={e => setDeletePolicy(prev => ({ ...prev, banType: e.target.value }))}
-              >
-                <option value="allow">Allow re-signup (default)</option>
-                <option value="ban">Permanent ban</option>
-              </select>
-            </div>
-
-            {deletePolicy.banType === 'allow' && (
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Cooling-off Period (days)</label>
-                <input
-                  type="number"
-                  min="0"
-                  max="365"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="0 for immediate re-signup"
-                  value={deletePolicy.allowResignupAfterDays}
-                  onChange={e => setDeletePolicy(prev => ({ ...prev, allowResignupAfterDays: parseInt(e.target.value) || 0 }))}
-                />
-                <p className="text-xs text-gray-500 mt-1">Set to 0 for immediate re-signup, or specify days to wait</p>
-              </div>
-            )}
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Policy Notes (Optional)</label>
-              <textarea
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                rows="2"
-                placeholder="Additional policy notes..."
-                value={deletePolicy.notes}
-                onChange={e => setDeletePolicy(prev => ({ ...prev, notes: e.target.value }))}
-              />
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
-                onClick={() => {
-                  setShowDeleteReasonModal(false);
-                  setSelectedAccount(null);
-                  setDeletePolicy({ category: '', banType: 'allow', allowResignupAfterDays: 0, notes: '' });
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-red-600 text-white hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                onClick={async () => {
-                  // Close the reason modal first
-                  setShowDeleteReasonModal(false);
-                  await performDeleteWithReason();
-                }}
-                disabled={actionLoading.softban}
-              >
-                {actionLoading.softban ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Processing...
-                  </>
-                ) : (
-                  'Confirm Softban'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Suspension Reason Modal */}
-      {showSuspensionReasonModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Suspension</h3>
-            <p className="text-gray-600 mb-3">Please provide a reason for suspending this account. This will be included in the notification email.</p>
+      {
+        showSuspensionReasonModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Suspension</h3>
+              <p className="text-gray-600 mb-3">Please provide a reason for suspending this account. This will be included in the notification email.</p>
 
-            {/* Reason Input */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Suspension Reason</label>
-              <select
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-3"
-                value={suspensionReason}
-                onChange={e => setSuspensionReason(e.target.value)}
-              >
-                <option value="">Select a reason</option>
-                {suspensionAccount?.type === 'user' ? (
-                  <>
-                    <option value="inappropriate_content">Inappropriate content or behavior</option>
-                    <option value="policy_violation">Violation of terms & policies</option>
-                    <option value="spam_activity">Spam or suspicious activity</option>
-                    <option value="fraudulent_activity">Fraudulent activity</option>
-                    <option value="harassment">Harassment or abuse</option>
-                    <option value="fake_account">Fake or duplicate account</option>
-                    <option value="other">Other (specify below)</option>
-                  </>
-                ) : (
-                  <>
-                    <option value="misuse_privileges">Misuse of admin privileges</option>
-                    <option value="policy_violation">Violation of admin policies</option>
-                    <option value="inappropriate_behavior">Inappropriate behavior</option>
-                    <option value="security_concern">Security concern</option>
-                    <option value="inactive_admin">Inactive admin account</option>
-                    <option value="other">Other (specify below)</option>
-                  </>
+              {/* Reason Input */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Suspension Reason</label>
+                <select
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-3"
+                  value={suspensionReason}
+                  onChange={e => setSuspensionReason(e.target.value)}
+                >
+                  <option value="">Select a reason</option>
+                  {suspensionAccount?.type === 'user' ? (
+                    <>
+                      <option value="inappropriate_content">Inappropriate content or behavior</option>
+                      <option value="policy_violation">Violation of terms & policies</option>
+                      <option value="spam_activity">Spam or suspicious activity</option>
+                      <option value="fraudulent_activity">Fraudulent activity</option>
+                      <option value="harassment">Harassment or abuse</option>
+                      <option value="fake_account">Fake or duplicate account</option>
+                      <option value="other">Other (specify below)</option>
+                    </>
+                  ) : (
+                    <>
+                      <option value="misuse_privileges">Misuse of admin privileges</option>
+                      <option value="policy_violation">Violation of admin policies</option>
+                      <option value="inappropriate_behavior">Inappropriate behavior</option>
+                      <option value="security_concern">Security concern</option>
+                      <option value="inactive_admin">Inactive admin account</option>
+                      <option value="other">Other (specify below)</option>
+                    </>
+                  )}
+                </select>
+
+                {suspensionReason === 'other' && (
+                  <input
+                    type="text"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    placeholder="Please specify the reason..."
+                    value={suspensionOtherReason}
+                    onChange={e => setSuspensionOtherReason(e.target.value)}
+                  />
                 )}
-              </select>
+              </div>
 
-              {suspensionReason === 'other' && (
-                <input
-                  type="text"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
-                  placeholder="Please specify the reason..."
-                  value={suspensionOtherReason}
-                  onChange={e => setSuspensionOtherReason(e.target.value)}
-                />
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
-                onClick={() => {
-                  setShowSuspensionReasonModal(false);
-                  setSuspensionAccount(null);
-                  setSuspensionReason("");
-                  setSuspensionOtherReason("");
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                onClick={performSuspensionWithReason}
-                disabled={!suspensionReason || (suspensionReason === 'other' && !suspensionOtherReason.trim()) || actionLoading.suspend[suspensionAccount?.id]}
-              >
-                {actionLoading.suspend[suspensionAccount?.id] ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Suspending...
-                  </>
-                ) : (
-                  'Suspend Account'
-                )}
-              </button>
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                  onClick={() => {
+                    setShowSuspensionReasonModal(false);
+                    setSuspensionAccount(null);
+                    setSuspensionReason("");
+                    setSuspensionOtherReason("");
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 rounded-lg bg-yellow-500 text-white hover:bg-yellow-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  onClick={performSuspensionWithReason}
+                  disabled={!suspensionReason || (suspensionReason === 'other' && !suspensionOtherReason.trim()) || actionLoading.suspend[suspensionAccount?.id]}
+                >
+                  {actionLoading.suspend[suspensionAccount?.id] ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Suspending...
+                    </>
+                  ) : (
+                    'Suspend Account'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Demote Reason Modal */}
-      {showDemoteReasonModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-            <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Demotion</h3>
-            <p className="text-gray-600 mb-3">Please provide a reason for demoting this admin to user. This will be included in the notification email.</p>
+      {
+        showDemoteReasonModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Demotion</h3>
+              <p className="text-gray-600 mb-3">Please provide a reason for demoting this admin to user. This will be included in the notification email.</p>
 
-            {/* Reason Input */}
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">Demotion Reason</label>
-              <select
-                className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
-                value={demoteReason}
-                onChange={e => setDemoteReason(e.target.value)}
-              >
-                <option value="">Select a reason</option>
-                <option value="misuse_privileges">Misuse of admin privileges</option>
-                <option value="policy_violation">Violation of admin policies</option>
-                <option value="inappropriate_behavior">Inappropriate behavior</option>
-                <option value="security_concern">Security concern</option>
-                <option value="inactive_admin">Inactive admin account</option>
-                <option value="performance_issues">Performance issues</option>
-                <option value="organizational_changes">Organizational changes</option>
-                <option value="other">Other (specify below)</option>
-              </select>
+              {/* Reason Input */}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">Demotion Reason</label>
+                <select
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                  value={demoteReason}
+                  onChange={e => setDemoteReason(e.target.value)}
+                >
+                  <option value="">Select a reason</option>
+                  <option value="misuse_privileges">Misuse of admin privileges</option>
+                  <option value="policy_violation">Violation of admin policies</option>
+                  <option value="inappropriate_behavior">Inappropriate behavior</option>
+                  <option value="security_concern">Security concern</option>
+                  <option value="inactive_admin">Inactive admin account</option>
+                  <option value="performance_issues">Performance issues</option>
+                  <option value="organizational_changes">Organizational changes</option>
+                  <option value="other">Other (specify below)</option>
+                </select>
 
-              {demoteReason === 'other' && (
-                <input
-                  type="text"
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  placeholder="Please specify the reason..."
-                  value={demoteOtherReason}
-                  onChange={e => setDemoteOtherReason(e.target.value)}
-                />
-              )}
-            </div>
-
-            <div className="flex justify-end gap-3 mt-6">
-              <button
-                className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
-                onClick={() => {
-                  setShowDemoteReasonModal(false);
-                  setDemoteAccount(null);
-                  setDemoteReason("");
-                  setDemoteOtherReason("");
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
-                onClick={performDemotionWithReason}
-                disabled={!demoteReason || (demoteReason === 'other' && !demoteOtherReason.trim()) || actionLoading.demote[demoteAccount?.id]}
-              >
-                {actionLoading.demote[demoteAccount?.id] ? (
-                  <>
-                    <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
-                    Demoting...
-                  </>
-                ) : (
-                  'Demote Admin'
+                {demoteReason === 'other' && (
+                  <input
+                    type="text"
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Please specify the reason..."
+                    value={demoteOtherReason}
+                    onChange={e => setDemoteOtherReason(e.target.value)}
+                  />
                 )}
-              </button>
+              </div>
+
+              <div className="flex justify-end gap-3 mt-6">
+                <button
+                  className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                  onClick={() => {
+                    setShowDemoteReasonModal(false);
+                    setDemoteAccount(null);
+                    setDemoteReason("");
+                    setDemoteOtherReason("");
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  className="px-4 py-2 rounded-lg bg-blue-500 text-white hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2"
+                  onClick={performDemotionWithReason}
+                  disabled={!demoteReason || (demoteReason === 'other' && !demoteOtherReason.trim()) || actionLoading.demote[demoteAccount?.id]}
+                >
+                  {actionLoading.demote[demoteAccount?.id] ? (
+                    <>
+                      <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-white"></div>
+                      Demoting...
+                    </>
+                  ) : (
+                    'Demote Admin'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Animations */}
       <style jsx>{`
@@ -2143,6 +2135,6 @@ export default function AdminManagement() {
         .animate-fadeIn { animation: fadeIn 0.4s ease-out; }
         .animate-slideUp { animation: slideUp 0.4s cubic-bezier(0.4,0,0.2,1); }
       `}</style>
-    </div>
+    </div >
   );
 } 

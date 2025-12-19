@@ -133,6 +133,10 @@ const userSchema = new mongoose.Schema({
     type: Date,
     default: Date.now
   },
+  lastLoginLocation: {
+    type: String,
+    default: null
+  },
   lastReEngagementEmailSent: {
     type: Date,
     default: null

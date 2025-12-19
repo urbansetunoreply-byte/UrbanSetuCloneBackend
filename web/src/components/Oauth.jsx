@@ -50,7 +50,7 @@ export default function Oauth({ pageType, disabled = false, onAuthStart = null, 
                     name: result.user.displayName,
                     email: result.user.email,
                     photo: result.user.photoURL,
-                    referredBy: new URLSearchParams(location.search).get('ref')
+                    referredBy: new URLSearchParams(location.search).get('ref') || localStorage.getItem('urbansetu_ref')
                 })
             });
 

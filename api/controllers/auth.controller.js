@@ -351,6 +351,7 @@ export const SignIn = async (req, res, next) => {
 
         // Update lastLogin timestamp and reset re-engagement email flag
         validUser.lastLogin = new Date();
+        validUser.lastLoginLocation = location;
         validUser.lastReEngagementEmailSent = null;
         await validUser.save();
 
@@ -519,6 +520,7 @@ export const Google = async (req, res, next) => {
 
             // Update lastLogin timestamp and reset re-engagement email flag
             validUser.lastLogin = new Date();
+            validUser.lastLoginLocation = location;
             validUser.lastReEngagementEmailSent = null;
             await validUser.save();
 
@@ -624,13 +626,20 @@ export const Google = async (req, res, next) => {
             const generatedPassword = Math.random().toString(36).slice(-8);
             const hashedPassword = await bcryptjs.hashSync(generatedPassword, 10);
 
+            // Get session info
+            const userAgent = req.get('User-Agent');
+            const device = getDeviceInfo(userAgent);
+            const ip = req.ip || req.connection.remoteAddress;
+            const location = getLocationFromIP(ip);
+
             const newUser = new User({
                 username: name.split(" ").join("").toLowerCase() + Math.random().toString(36).slice(-8),
                 email,
                 password: hashedPassword,
                 avatar: photo,
                 isGeneratedMobile: true,
-                'gamification.referredBy': req.body.referredBy || null
+                'gamification.referredBy': req.body.referredBy || null,
+                lastLoginLocation: location
             })
             await newUser.save()
 
@@ -688,12 +697,6 @@ export const Google = async (req, res, next) => {
                 sameSite: 'none',
                 path: '/'
             });
-
-            // Get session info
-            const userAgent = req.get('User-Agent');
-            const device = getDeviceInfo(userAgent);
-            const ip = req.ip || req.connection.remoteAddress;
-            const location = getLocationFromIP(ip);
 
             // Log session action (Audit Log)
             await logSessionAction(

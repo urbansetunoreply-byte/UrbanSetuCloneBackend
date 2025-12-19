@@ -346,6 +346,15 @@ function AppRoutes({ bootstrapped }) {
     return () => window.removeEventListener('storage', handleStorageChange);
   }, []);
 
+  // Global Referral Tracking
+  useEffect(() => {
+    const params = new URLSearchParams(location.search);
+    const ref = params.get('ref');
+    if (ref) {
+      localStorage.setItem('urbansetu_ref', ref);
+    }
+  }, [location.search]);
+
   // Do not show header on /appointments admin route
   const hideHeaderRoutes = ["/appointments"];
 
