@@ -114,6 +114,12 @@ const listingSchema = new mongoose.Schema({
         required: false,
         default: []
     },
+    // 360-degree virtual tour images (equirectangular)
+    virtualTourImages: {
+        type: Array,
+        required: false,
+        default: []
+    },
     locationLink: {
         type: String,
         required: false

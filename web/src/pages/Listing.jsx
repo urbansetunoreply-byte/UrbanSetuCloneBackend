@@ -25,6 +25,10 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import RatingDisplay from '../components/ratings/RatingDisplay';
 import RentPredictionDisplay from '../components/rental/RentPredictionDisplay';
 import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
+import RatingDisplay from '../components/ratings/RatingDisplay';
+import RentPredictionDisplay from '../components/rental/RentPredictionDisplay';
+import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
+import VirtualTourViewer from "../components/VirtualTourViewer"; // Import the viewer component
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UNAVAILABLE_STATUSES = ['reserved', 'under_contract', 'rented', 'sold', 'suspended'];
@@ -1966,12 +1970,32 @@ export default function Listing() {
               <span className="font-semibold">Description:</span> {listing.description}
             </p>
 
-            {/* VR / Drone media blocks if present */}
-            {(listing.vrTourUrl || listing.droneVideoUrl) && (
-              <div className="space-y-4 mb-4">
+            {/* VR / Drone / 360 Images media blocks if present */}
+            {(listing.vrTourUrl || listing.droneVideoUrl || (listing.virtualTourImages && listing.virtualTourImages.length > 0)) && (
+              <div className="space-y-6 mb-6">
+
+                {/* 360° Images Section */}
+                {listing.virtualTourImages && listing.virtualTourImages.length > 0 && (
+                  <div className="border rounded-lg p-3 bg-white shadow-sm">
+                    <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+                      <FaCompass className="text-indigo-600" /> 360° Virtual Tour ({listing.virtualTourImages.length})
+                    </h4>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                      {listing.virtualTourImages.map((imgUrl, idx) => (
+                        <div key={idx} className="w-full h-80 rounded-lg overflow-hidden border border-gray-200">
+                          <VirtualTourViewer imageUrl={imgUrl} autoLoad={idx === 0} />
+                          {listing.virtualTourImages.length > 1 && (
+                            <p className="text-center text-xs text-gray-500 mt-1">View {idx + 1}</p>
+                          )}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
                 {listing.vrTourUrl && (
                   <div className="border rounded-lg p-3 bg-white">
-                    <h4 className="font-semibold text-gray-800 mb-2">Virtual Tour</h4>
+                    <h4 className="font-semibold text-gray-800 mb-2">Virtual Tour (External)</h4>
                     <iframe src={listing.vrTourUrl} title="VR Tour" className="w-full h-64 rounded" allowFullScreen />
                   </div>
                 )}

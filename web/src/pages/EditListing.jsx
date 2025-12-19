@@ -14,6 +14,7 @@ export default function EditListing() {
 
   const [formData, setFormData] = useState({
     imageUrls: [],
+    virtualTourImages: [], // 360 images
     videoUrls: [],
     name: "",
     description: "",
@@ -78,6 +79,8 @@ export default function EditListing() {
   const [loading, setLoading] = useState(false);
   const [imageErrors, setImageErrors] = useState({});
   const [uploadingImages, setUploadingImages] = useState({});
+  const [virtualTourErrors, setVirtualTourErrors] = useState({});
+  const [uploadingVirtualTour, setUploadingVirtualTour] = useState({});
   const [videoErrors, setVideoErrors] = useState({});
   const [uploadingVideos, setUploadingVideos] = useState({});
   const { currentUser } = useSelector((state) => state.user);
@@ -206,6 +209,69 @@ export default function EditListing() {
     delete newUploadingVideos[index];
     setUploadingVideos(newUploadingVideos);
   };
+
+  // --- Virtual Tour (360) Handlers ---
+
+  const handleVirtualTourUpload = async (index, file) => {
+    if (!file) return;
+    if (!file.type.startsWith('image/')) {
+      setVirtualTourErrors(prev => ({ ...prev, [index]: 'Please select an image file' }));
+      return;
+    }
+    if (file.size > 10 * 1024 * 1024) {
+      setVirtualTourErrors(prev => ({ ...prev, [index]: 'File size must be less than 10MB' }));
+      return;
+    }
+    setUploadingVirtualTour(prev => ({ ...prev, [index]: true }));
+    setVirtualTourErrors(prev => ({ ...prev, [index]: '' }));
+    try {
+      const uploadFormData = new FormData();
+      uploadFormData.append('image', file);
+      const res = await fetch(`${API_BASE_URL}/api/upload/image`, {
+        method: 'POST',
+        credentials: 'include',
+        body: uploadFormData,
+      });
+      const data = await res.json();
+      if (res.ok) {
+        const newVirtualTourImages = [...(formData.virtualTourImages || [])];
+        newVirtualTourImages[index] = data.imageUrl;
+        setFormData(prev => ({ ...prev, virtualTourImages: newVirtualTourImages }));
+        setVirtualTourErrors(prev => {
+          const newErrors = { ...prev };
+          delete newErrors[index];
+          return newErrors;
+        });
+      } else {
+        setVirtualTourErrors(prev => ({ ...prev, [index]: data.message || 'Upload failed' }));
+      }
+    } catch (error) {
+      console.error('Upload error:', error);
+      setVirtualTourErrors(prev => ({ ...prev, [index]: 'Upload failed. Please try again.' }));
+    } finally {
+      setUploadingVirtualTour(prev => ({ ...prev, [index]: false }));
+    }
+  };
+
+  const onHandleRemoveVirtualTour = (index) => {
+    setFormData({
+      ...formData,
+      virtualTourImages: (formData.virtualTourImages || []).filter((_, i) => i !== index),
+    });
+    const newErrors = { ...virtualTourErrors };
+    delete newErrors[index];
+    setVirtualTourErrors(newErrors);
+    const newUploading = { ...uploadingVirtualTour };
+    delete newUploading[index];
+    setUploadingVirtualTour(newUploading);
+  };
+
+  const handleVirtualTourUrlChange = (index, url) => {
+    const newImages = [...(formData.virtualTourImages || [])];
+    newImages[index] = url;
+    setFormData({ ...formData, virtualTourImages: newImages });
+  };
+
 
   const handleFileUpload = async (index, file) => {
     if (!file) return;
@@ -1033,6 +1099,76 @@ export default function EditListing() {
                 className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 transition mt-2"
               >
                 Add Video
+              </button>
+            </div>
+          </div>
+
+          {/* 360° Virtual Tour Images (New) */}
+          <div className="bg-gray-50 p-4 rounded-lg border-2 border-indigo-100">
+            <div className="flex items-center gap-2 mb-3">
+              <svg className="w-5 h-5 text-indigo-600 animate-pulse" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+              </svg>
+              <h4 className="font-semibold text-gray-800">360° Virtual Tours</h4>
+            </div>
+            <p className="text-gray-600 text-sm mb-3">
+              Upload equirectangular panoramic images for an immersive 360° view.
+            </p>
+            <div className="space-y-3">
+              {(formData.virtualTourImages || []).map((url, index) => (
+                <div key={index} className="space-y-2">
+                  <div className="flex gap-2 items-center">
+                    <input
+                      type="text"
+                      placeholder={`360 Image URL ${index + 1}`}
+                      value={url || ""}
+                      onChange={(e) => handleVirtualTourUrlChange(index, e.target.value)}
+                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${virtualTourErrors[index] ? 'border-red-500' : ''}`}
+                    />
+                    <label className={`p-3 border-2 border-dashed border-indigo-300 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all flex items-center gap-2 ${uploadingVirtualTour[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <input
+                        type="file"
+                        accept="image/*"
+                        className="hidden"
+                        onChange={(e) => handleVirtualTourUpload(index, e.target.files[0])}
+                        disabled={uploadingVirtualTour[index]}
+                      />
+                      {uploadingVirtualTour[index] ? (
+                        <>
+                          <div className="animate-spin w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
+                          <span className="text-sm text-indigo-600">Uploading...</span>
+                        </>
+                      ) : (
+                        <span className="text-sm text-indigo-600 font-medium">Upload 360°</span>
+                      )}
+                    </label>
+                    <button
+                      type="button"
+                      onClick={() => onHandleRemoveVirtualTour(index)}
+                      className="bg-red-500 text-white px-3 py-2 rounded-lg hover:bg-red-600 transition"
+                      title="Remove 360 image"
+                    >
+                      ×
+                    </button>
+                  </div>
+                  {virtualTourErrors[index] && (
+                    <p className="text-red-500 text-sm">{virtualTourErrors[index]}</p>
+                  )}
+                  {url && (
+                    <div className="mt-2">
+                      <p className="text-xs text-green-600 font-semibold mb-1">✓ 360° Image Ready</p>
+                      <img src={url} alt="360 Preview" className="h-20 w-auto rounded border border-gray-300 object-cover" />
+                    </div>
+                  )}
+                </div>
+              ))}
+              <button
+                type="button"
+                onClick={() => setFormData({ ...formData, virtualTourImages: [...(formData.virtualTourImages || []), ""] })}
+                className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition mt-2 flex items-center gap-2"
+              >
+                <span>+</span> Add 360° Image
               </button>
             </div>
           </div>
