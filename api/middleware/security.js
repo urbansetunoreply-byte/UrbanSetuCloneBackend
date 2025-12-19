@@ -2,7 +2,7 @@ import { errorHandler } from '../utils/error.js';
 import User from '../models/user.model.js';
 import PasswordLockout from '../models/passwordLockout.model.js';
 import LoginAttempt from '../models/loginAttempt.model.js';
-import { sendAdminAlert, sendAccountLockoutEmail } from '../utils/emailService.js';
+import { sendAccountLockoutEmail } from '../utils/emailService.js';
 import { getLocationFromIP } from '../utils/sessionManager.js';
 
 // Track failed login attempts (Persistent using LoginAttempt)
