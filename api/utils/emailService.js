@@ -13677,3 +13677,80 @@ export const sendAccountLockoutEmail = async (email, details) => {
     return createErrorResponse(error, 'lockout_email');
   }
 };
+
+// Send Root Admin Attack Email
+export const sendRootAdminAttackEmail = async (email, details) => {
+  try {
+    const { username, attempts, ipAddress, location } = details;
+    const subject = '🚨 CRITICAL: Attack Attempt on Root Admin Account';
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Root Admin Attack Detected</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937;">
+        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+          <div style="background: linear-gradient(135deg, #b91c1c 0%, #7f1d1d 100%); padding: 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Critical Security Alert</h1>
+            <p style="color: #fecaca; margin: 10px 0 0; font-size: 16px;">Attack Target: Root Admin</p>
+          </div>
+          
+          <div style="padding: 40px 30px;">
+            <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6;">
+              Hello <strong>${username}</strong>,
+            </p>
+            <p style="margin: 0 0 25px; font-size: 16px; line-height: 1.6;">
+              Our intelligence system detected a <strong>High-Volume Brute Force Attack</strong> targeting your Root Admin account.
+            </p>
+
+            <div style="background-color: #fef2f2; border-left: 4px solid #ef4444; padding: 20px; margin-bottom: 25px; border-radius: 4px;">
+              <p style="margin: 0 0 10px; font-weight: 700; color: #991b1b; font-size: 14px; text-transform: uppercase;">Attack Details</p>
+              <div style="font-family: monospace; color: #7f1d1d; font-size: 13px;">
+                <div style="margin-bottom: 5px;"><strong>Attempts:</strong> ${attempts} failed logins</div>
+                <div style="margin-bottom: 5px;"><strong>IP Address:</strong> ${ipAddress}</div>
+                <div style="margin-bottom: 5px;"><strong>Location:</strong> ${location || 'Unknown'}</div>
+                <div><strong>Time:</strong> ${new Date().toLocaleString()}</div>
+              </div>
+            </div>
+
+            <p style="margin: 0 0 25px; font-size: 16px; line-height: 1.6; font-weight: 600;">
+              Action Taken: <span style="color: #047857;">Account NOT Locked (DoS Protection Active)</span>
+            </p>
+            
+            <p style="margin: 0 0 25px; font-size: 16px; line-height: 1.6;">
+              We have explicitly prevented the system from locking your account to ensure you maintain control. However, we strongly recommend you:
+            </p>
+
+            <ul style="margin: 0 0 30px; padding-left: 20px; color: #4b5563;">
+              <li style="margin-bottom: 10px;">Review your audit logs immediately.</li>
+              <li style="margin-bottom: 10px;">Change your password if you suspect compromise.</li>
+            </ul>
+            
+            <div style="text-align: center;">
+               <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/admin-dashboard?tab=security" style="background-color: #dc2626; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; display: inline-block;">
+                  Go to Security Dashboard
+               </a>
+            </div>
+          </div>
+          
+          <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">© 2025 UrbanSetu Security Intelligence</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending root admin attack email:', error);
+  }
+};

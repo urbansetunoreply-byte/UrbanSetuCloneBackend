@@ -2,7 +2,7 @@ import { errorHandler } from '../utils/error.js';
 import User from '../models/user.model.js';
 import PasswordLockout from '../models/passwordLockout.model.js';
 import LoginAttempt from '../models/loginAttempt.model.js';
-import { sendAccountLockoutEmail } from '../utils/emailService.js';
+import { sendAccountLockoutEmail, sendRootAdminAttackEmail } from '../utils/emailService.js';
 import { getLocationFromIP } from '../utils/sessionManager.js';
 
 // Track failed login attempts (Persistent using LoginAttempt)
@@ -34,6 +34,16 @@ export const trackFailedAttempt = async (identifier, userId = null) => {
             if (user && user.role === 'rootadmin') {
                 console.log(`⚠️ Prevented lockout for rootadmin ${userId}`);
                 sendAdminAlert('root_admin_attack_attempt', { identifier, userId, attempts });
+
+                // Send Critical Alert Email to Root Admin (Reminder/Warning, NOT Lockout)
+                const location = getLocationFromIP(identifier);
+                await sendRootAdminAttackEmail(user.email, {
+                    username: user.username,
+                    attempts,
+                    ipAddress: identifier,
+                    location
+                });
+
                 return { attempts };
             }
 
