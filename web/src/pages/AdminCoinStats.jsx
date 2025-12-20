@@ -180,7 +180,15 @@ export default function AdminCoinStats() {
                         placeholder="Search users by name or email..."
                         className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all shadow-sm"
                     />
-                    {searchResults.length > 0 && (
+
+                    {searching && (
+                        <div className="absolute z-10 mt-1 w-full bg-white shadow-2xl rounded-xl border border-gray-100 p-4 flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
+                            <span className="ml-2 text-sm text-gray-500 font-medium">Searching users...</span>
+                        </div>
+                    )}
+
+                    {!searching && searchResults.length > 0 && (
                         <div className="absolute z-10 mt-1 w-full bg-white shadow-2xl rounded-xl border border-gray-100 overflow-hidden max-h-64 overflow-y-auto">
                             {searchResults.map(user => (
                                 <button
