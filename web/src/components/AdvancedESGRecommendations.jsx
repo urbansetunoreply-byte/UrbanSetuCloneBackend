@@ -199,7 +199,7 @@ Your current interaction patterns show a heavy leaning towards Solar and High-Ef
 To maintain a balanced portfolio, we suggest investigating more Global Impact projects.
 
 -----------------------------------------
-(c) 2025 UrbanSetu Sentinel ESG Engine
+(c) ${new Date().getFullYear()} UrbanSetu Sentinel ESG Engine
 =========================================
     `;
 
