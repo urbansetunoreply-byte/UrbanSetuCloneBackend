@@ -13352,7 +13352,7 @@ export const sendDisputeAlertEmail = async (adminEmails, disputeDetails) => {
   return createSuccessResponse(null, 'dispute_alert_email');
 };
 // Profile Update Success Email
-export const sendProfileUpdateSuccessEmail = async (email, username, role) => {
+export const sendProfileUpdateSuccessEmail = async (email, username, role, coinsEarned = 0) => {
   const profileLink = role === 'admin' ?
     `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/admin/profile` :
     `${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/user/profile`;
@@ -13361,7 +13361,7 @@ export const sendProfileUpdateSuccessEmail = async (email, username, role) => {
 
   const emailData = {
     to: email,
-    subject: 'Profile Updated Successfully - UrbanSetu',
+    subject: coinsEarned > 0 ? 'Profile Completed! You Earned SetuCoins 🪙 - UrbanSetu' : 'Profile Updated Successfully - UrbanSetu',
     html: `
       <!DOCTYPE html>
       <html>
@@ -13375,8 +13375,8 @@ export const sendProfileUpdateSuccessEmail = async (email, username, role) => {
           
           <!-- Header -->
           <div style="background: linear-gradient(135deg, #3b82f6 0%, #2563eb 100%); padding: 40px 30px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Profile Updated!</h1>
-            <p style="color: #bfdbfe; margin: 10px 0 0; font-size: 16px;">Your account information has been updated</p>
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">${coinsEarned > 0 ? 'Reward Unlocked!' : 'Profile Updated!'}</h1>
+            <p style="color: #bfdbfe; margin: 10px 0 0; font-size: 16px;">${coinsEarned > 0 ? 'Your profile is now complete' : 'Your account information has been updated'}</p>
           </div>
           
           <!-- Content -->
@@ -13391,6 +13391,17 @@ export const sendProfileUpdateSuccessEmail = async (email, username, role) => {
               </p>
             </div>
             
+            ${coinsEarned > 0 ? `
+            <!-- Warning: Styling inline for email compatibility -->
+            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border: 2px dashed #f59e0b; border-radius: 12px; padding: 25px; margin-bottom: 30px; text-align: center;">
+              <span style="display: block; font-size: 14px; color: #b45309; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Profile Completion Bonus</span>
+              <div style="font-size: 36px; font-weight: 800; color: #d97706; margin: 10px 0;">
+                +${coinsEarned} <span style="font-size: 28px;">🪙</span>
+              </div>
+              <p style="color: #92400e; margin: 0; font-weight: 600;">SetuCoins Added to Wallet</p>
+            </div>
+            ` : ''}
+
             <div style="background-color: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 20px; margin-bottom: 30px;">
               <div style="display: flex; align-items: center; margin-bottom: 10px;">
                 <span style="color: #2563eb; font-size: 20px; margin-right: 10px;">🛡️</span>
@@ -14246,7 +14257,7 @@ export const sendReferredWelcomeEmail = async (email, username, referrerName, am
             <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
               <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600; text-align: center;">🚀 Maximizing Your Experience</h3>
               <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                <li><strong>Complete Profile:</strong> Earn more coins by finishing your setups.</li>
+                <li><strong>Complete Profile:</strong> Earn 20 SetuCoins by finishing your profile setup.</li>
                 <li><strong>Browse Listings:</strong> Find verified properties with zero brokerage options.</li>
                 <li><strong>Refer Friends:</strong> Share your own link to earn even more!</li>
               </ul>

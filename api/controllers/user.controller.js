@@ -16,6 +16,7 @@ import Wishlist from "../models/wishlist.model.js";
 import PropertyWatchlist from "../models/propertyWatchlist.model.js";
 import Booking from "../models/booking.model.js";
 import Payment from "../models/payment.model.js";
+import { awardSetuCoins } from "../utils/gamification.js";
 
 // In-memory cache for export data (expires after 24 hours)
 export const exportDataCache = new Map();
@@ -112,6 +113,30 @@ export const updateUser = async (req, res, next) => {
             updateFields.isGeneratedMobile = false;
         }
 
+        let coinsEarned = 0;
+
+        // Award setuCoins if all profile details are filled for the FIRST time
+        // Required fields for "completion": gender, address, mobileNumber, avatar (avatar has default so usually check if user changed/confirmed it, or just check the others)
+        // Check current state before update to see if it was incomplete
+        // Actually, we can just checking the NEW state from req.body + existing user data
+
+        // We need to check the comprehensive set of fields for completion status
+        const isProfileComplete =
+            (req.body.gender || user.gender) &&
+            (req.body.address || user.address) &&
+            (req.body.mobileNumber || user.mobileNumber) &&
+            // Ensure mobile is not the dummy one if that logic applies, assuming standard validation passed
+            true;
+
+        const bonusAlreadyReceived = user.gamification?.hasReceivedProfileCompletionBonus;
+
+        if (isProfileComplete && !bonusAlreadyReceived) {
+            // Award 20 coins
+            await awardSetuCoins(user._id, 20, 'profile_completion', 'Profile Completion Bonus');
+            updateFields['gamification.hasReceivedProfileCompletionBonus'] = true;
+            coinsEarned = 20;
+        }
+
         const updatedUser = await User.findByIdAndUpdate(req.params.id, {
             $set: updateFields
         }, { new: true });
@@ -146,7 +171,7 @@ export const updateUser = async (req, res, next) => {
 
         // Send profile update confirmation email
         try {
-            await sendProfileUpdateSuccessEmail(updatedUser.email, updatedUser.username, updatedUser.role);
+            await sendProfileUpdateSuccessEmail(updatedUser.email, updatedUser.username, updatedUser.role, coinsEarned);
         } catch (emailErr) {
             console.error('Failed to send profile update email:', emailErr);
             // Non-blocking error
