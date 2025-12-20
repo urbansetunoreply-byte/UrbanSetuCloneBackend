@@ -1,3 +1,4 @@
+import "../models/adminLog.model.js";
 import CoinService from "../services/coinService.js";
 import { errorHandler } from "../utils/error.js";
 
