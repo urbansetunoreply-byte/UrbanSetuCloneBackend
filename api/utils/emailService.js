@@ -14120,47 +14120,74 @@ export const sendIncompleteListingOnboardingEmail = async (email, username, list
 export const sendReferralBonusEmail = async (email, username, friendName, amount) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: `${process.env.EMAIL_FROM_NAME || 'UrbanSetu'} <${process.env.EMAIL_USER}>`,
     to: email,
     subject: 'Congratulations! You earned a Referral Bonus 💎 - UrbanSetu',
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
-        <div style="background-color: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #6366f1; margin: 0; font-size: 32px; font-weight: 900;">UrbanSetu</h1>
-            <p style="color: #64748b; margin: 10px 0 0 0; font-weight: 600;">Referral Success!</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Referral Bonus Earned</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Referral Bonus Unlocked! 🚀</h1>
+            <p style="color: #e0e7ff; margin: 10px 0 0; font-size: 16px;">Thanks for growing our community</p>
           </div>
           
-          <div style="background-color: #f5f3ff; padding: 30px; border-radius: 15px; margin-bottom: 20px; text-align: center; border: 1px solid #e0e7ff;">
-            <h2 style="color: #1e293b; margin: 0 0 15px 0; font-size: 24px; font-weight: 800;">Hey ${username}! 🚀</h2>
-            <p style="color: #475569; margin: 0 0 20px 0; line-height: 1.6; font-size: 16px;">
-              Great news! Your friend <strong>${friendName}</strong> just joined UrbanSetu using your referral link.
-            </p>
-            
-            <div style="background-color: white; display: inline-block; padding: 15px 30px; border-radius: 12px; margin: 10px 0; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1); border: 1px solid #e0e7ff;">
-              <span style="display: block; font-size: 12px; color: #6366f1; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Bonus Earned</span>
-              <span style="font-size: 36px; font-weight: 900; color: #4338ca;">+${amount} <span style="font-size: 18px;">SetuCoins</span></span>
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Fantastic News, ${username}!</h2>
+              <p style="color: #4b5563; margin: 0; font-size: 16px; line-height: 1.6;">
+                Your friend <strong>${friendName}</strong> just joined UrbanSetu using your personal referral link.
+              </p>
             </div>
             
-            <p style="color: #64748b; margin: 25px 0 0 0; font-size: 14px; line-height: 1.6;">
-              These coins have been added to your rewards wallet. Use them for rent discounts, home services, and more!
+            <!-- Bonus Card -->
+            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border: 2px dashed #f59e0b; border-radius: 12px; padding: 30px; margin-bottom: 30px; text-align: center;">
+              <span style="display: block; font-size: 14px; color: #b45309; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">You Earned</span>
+              <div style="font-size: 42px; font-weight: 800; color: #d97706; margin: 10px 0;">
+                +${amount} <span style="font-size: 32px;">🪙</span>
+              </div>
+              <p style="color: #92400e; margin: 0; font-weight: 600;">SetuCoins Added to Wallet</p>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
+              <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600; text-align: center;">✨ What Can You Do With SetuCoins?</h3>
+              <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                <li><strong>Pay Rent:</strong> Use coins to discount your monthly rent payments.</li>
+                <li><strong>Unlock Features:</strong> Access premium listing analytics.</li>
+                <li><strong>Gift Cards:</strong> Redeem for popular shopping vouchers.</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${clientBaseUrl}/user/rewards" 
+                 style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.25); transition: all 0.3s ease;">
+                🪙 Check My Wallet
+              </a>
+            </div>
+            
+            <p style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px;">
+              Keep referring friends! Check your dashboard for your unique referral link.
             </p>
           </div>
           
-          <div style="text-align:center; margin-top: 30px;">
-            <a href="${clientBaseUrl}/user/rewards" style="display:inline-block; background-color:#6366f1; color:#ffffff; text-decoration:none; padding:16px 32px; border-radius:12px; font-weight:700; font-size: 16px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">View My Rewards</a>
-          </div>
-
-          <div style="margin-top: 40px; padding-top: 25px; border-top: 1px solid #f1f5f9; text-align: center;">
-            <p style="color: #94a3b8; margin: 0; font-size: 12px;">
-              Keep referring friends to earn more! Every successful referral gets you 500 SetuCoins.
-            </p>
-            <p style="color: #94a3b8; margin: 10px 0 0 0; font-size: 11px;">
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
               © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
-      </div>
+      </body>
+      </html>
     `
   };
 
@@ -14178,50 +14205,70 @@ export const sendReferralBonusEmail = async (email, username, friendName, amount
 export const sendReferredWelcomeEmail = async (email, username, referrerName, amount) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
-    from: process.env.EMAIL_USER,
+    from: `${process.env.EMAIL_FROM_NAME || 'UrbanSetu'} <${process.env.EMAIL_USER}>`,
     to: email,
     subject: `Welcome to UrbanSetu! You joined via ${referrerName}'s invitation 🎁`,
     html: `
-      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
-        <div style="background-color: white; padding: 30px; border-radius: 20px; box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);">
-          <div style="text-align: center; margin-bottom: 30px;">
-            <h1 style="color: #6366f1; margin: 0; font-size: 32px; font-weight: 900;">UrbanSetu</h1>
-            <p style="color: #64748b; margin: 10px 0 0 0; font-weight: 600;">Welcome to the Community!</p>
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>Welcome Bonus</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5;">
+        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header -->
+          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Welcome to the Family! 🏡</h1>
+            <p style="color: #ecfdf5; margin: 10px 0 0; font-size: 16px;">Your journey starts with a reward</p>
           </div>
           
-          <div style="background-color: #f5f3ff; padding: 30px; border-radius: 15px; margin-bottom: 20px; text-align: center; border: 1px solid #e0e7ff;">
-            <h2 style="color: #1e293b; margin: 0 0 15px 0; font-size: 24px; font-weight: 800;">Hey ${username}! 👋</h2>
-            <p style="color: #475569; margin: 0 0 20px 0; line-height: 1.6; font-size: 16px;">
-              You've successfully joined UrbanSetu through <strong>${referrerName}'s</strong> invitation! We're thrilled to have you here.
-            </p>
+          <!-- Content -->
+          <div style="padding: 40px 30px;">
+            <div style="text-align: center; margin-bottom: 30px;">
+              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Hello ${username},</h2>
+              <p style="color: #4b5563; margin: 0; font-size: 16px; line-height: 1.6;">
+                We are thrilled to have you join UrbanSetu via <strong>${referrerName}'s</strong> special invitation.
+              </p>
+            </div>
             
-            <div style="background-color: white; display: inline-block; padding: 12px 24px; border-radius: 12px; margin: 10px 0; box-shadow: 0 4px 12px rgba(99, 102, 241, 0.1); border: 1px solid #e0e7ff;">
-              <span style="display: block; font-size: 11px; color: #6366f1; font-weight: 800; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Joining Bonus</span>
-              <span style="font-size: 28px; font-weight: 900; color: #4338ca;">+${amount} <span style="font-size: 16px;">SetuCoins</span></span>
+            <!-- Bonus Card -->
+            <div style="background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%); border: 2px dashed #3b82f6; border-radius: 12px; padding: 30px; margin-bottom: 30px; text-align: center;">
+              <span style="display: block; font-size: 14px; color: #1e40af; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Your Welcome Gift</span>
+              <div style="font-size: 42px; font-weight: 800; color: #2563eb; margin: 10px 0;">
+                +${amount} <span style="font-size: 32px;">🪙</span>
+              </div>
+              <p style="color: #1e3a8a; margin: 0; font-weight: 600;">SetuCoins Credited Instantly</p>
+            </div>
+            
+            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
+              <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600; text-align: center;">🚀 Maximizing Your Experience</h3>
+              <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                <li><strong>Complete Profile:</strong> Earn more coins by finishing your setups.</li>
+                <li><strong>Browse Listings:</strong> Find verified properties with zero brokerage options.</li>
+                <li><strong>Refer Friends:</strong> Share your own link to earn even more!</li>
+              </ul>
+            </div>
+            
+            <div style="text-align: center;">
+              <a href="${clientBaseUrl}/user/dashboard" 
+                 style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25); transition: all 0.3s ease;">
+                🎁 Claim My Bonus & Start
+              </a>
             </div>
           </div>
           
-          <div style="padding: 20px; border: 2px dashed #e0e7ff; border-radius: 15px; margin-bottom: 30px;">
-            <h3 style="color: #4338ca; font-size: 16px; font-weight: 800; margin: 0 0 10px 0; text-transform: uppercase;">What's next?</h3>
-            <ul style="color: #64748b; font-size: 14px; padding-left: 20px; line-height: 1.8;">
-              <li>Explore premium property listings.</li>
-              <li>Track your rent payments and streaks.</li>
-              <li>Earn SetuCoins for every activity you do!</li>
-              <li>Redeem coins for actual rent discounts.</li>
-            </ul>
-          </div>
-
-          <div style="text-align:center;">
-             <a href="${clientBaseUrl}/user/rewards" style="display:inline-block; background-color:#6366f1; color:#ffffff; text-decoration:none; padding:16px 32px; border-radius:12px; font-weight:700; font-size: 16px; box-shadow: 0 4px 15px rgba(99, 102, 241, 0.3);">Explore My Rewards Dashboard</a>
-          </div>
-
-          <div style="margin-top: 40px; padding-top: 25px; border-top: 1px solid #f1f5f9; text-align: center;">
-            <p style="color: #94a3b8; margin: 0; font-size: 11px;">
+          <!-- Footer -->
+          <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
               © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
           </div>
         </div>
-      </div>
+      </body>
+      </html>
     `
   };
 

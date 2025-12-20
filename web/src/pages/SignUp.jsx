@@ -352,8 +352,32 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
             navigate("/sign-in");
           }, 3000);
         } else {
-          setSuccess("Account created successfully!");
-          setShowLoader(true);
+          // Attempt auto-login
+          try {
+            const loginRes = await authenticatedFetch(`${API_BASE_URL}/api/auth/signin`, {
+              method: "POST",
+              body: JSON.stringify({
+                email: formData.email,
+                password: formData.password
+              }),
+            });
+
+            const loginData = await loginRes.json();
+
+            if (loginRes.ok) {
+              setSuccess("Account created! Logging you in...");
+              dispatch(signInSuccess(loginData));
+              setPendingLoginData(loginData);
+              setShowLoader(true);
+            } else {
+              setSuccess("Account created successfully! Redirecting to login...");
+              setTimeout(() => navigate("/sign-in"), 2000);
+            }
+          } catch (loginError) {
+            console.error("Auto-login failed:", loginError);
+            setSuccess("Account created successfully! Redirecting to login...");
+            setTimeout(() => navigate("/sign-in"), 2000);
+          }
         }
         return;
       }

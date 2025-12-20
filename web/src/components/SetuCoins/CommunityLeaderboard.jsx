@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaCoins, FaTrophy, FaFire, FaCrown, FaMedal, FaStar } from 'react-icons/fa';
+import { FaCoins, FaTrophy, FaFire, FaCrown, FaMedal, FaStar, FaInfoCircle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
