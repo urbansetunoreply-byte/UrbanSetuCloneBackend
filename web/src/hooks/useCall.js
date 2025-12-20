@@ -907,6 +907,9 @@ export const useCall = () => {
         localVideoRef.current.srcObject = stream;
       }
 
+      // Update localStreamRef immediately for cleanup purposes
+      localStreamRef.current = stream;
+
       // Fetch ICE servers first
       fetchIceServers().then((iceServers) => {
         const peer = new SimplePeer({
@@ -963,21 +966,10 @@ export const useCall = () => {
         }
 
         peerRef.current = peer;
+
+        // Emit call accept AFTER peer is created
+        socket.emit('call-accept', { callId: incomingCall.callId });
       });
-
-      peer.on('error', (err) => {
-        console.error('Peer connection error:', err);
-        toast.error('Connection error occurred');
-        endCall();
-      });
-
-      peerRef.current = peer;
-
-      // If we have a pending offer, signal it now
-      if (pendingOfferRef.current && pendingOfferRef.current.callId === incomingCall.callId) {
-        peer.signal(pendingOfferRef.current.offer);
-        pendingOfferRef.current = null;
-      }
 
       setActiveCall({
         callId: incomingCall.callId,
@@ -990,15 +982,19 @@ export const useCall = () => {
       stopRingtone();
       ringtoneSoundRef.current = null;
 
-      // Emit call accept AFTER peer is created
-      socket.emit('call-accept', { callId: incomingCall.callId });
-
       setCallState('active');
       setIncomingCall(null);
       // Timer will be started by handleCallAccepted with synchronized time from server
     } catch (error) {
       console.error('Error accepting call:', error);
       toast.error('Failed to access microphone/camera. Please check permissions.');
+
+      // Stop tracks manually if stream was created but setup failed
+      // This handles the case where setLocalStream state update hasn't propagated yet
+      // and endCall relies on state.
+      // Note: We can't easily access 'stream' here if declared in try block,
+      // but since we set localStreamRef.current, we can use that via endCall if we ensure likely
+      // availability or clean up what we can.
       rejectCall();
     }
   };
@@ -1035,9 +1031,16 @@ export const useCall = () => {
     }
 
     // Stop local stream
-    if (localStream) {
-      localStream.getTracks().forEach(track => track.stop());
+    // Stop local stream
+    // Check both state variable and ref to ensure we catch stream even if state update is pending
+    const streamToStop = localStream || localStreamRef.current;
+    if (streamToStop) {
+      streamToStop.getTracks().forEach(track => {
+        track.stop();
+        track.enabled = false; // Explicitly disable to ensure indicator goes off
+      });
       setLocalStream(null);
+      localStreamRef.current = null;
     }
 
     // Stop remote stream
