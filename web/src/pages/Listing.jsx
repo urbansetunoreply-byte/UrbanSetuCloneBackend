@@ -142,6 +142,7 @@ export default function Listing() {
   const [selectedComparisonProperty, setSelectedComparisonProperty] = useState(null);
   const [isInWatchlist, setIsInWatchlist] = useState(false);
   const [watchlistLoading, setWatchlistLoading] = useState(false);
+  const [rootVerificationReason, setRootVerificationReason] = useState("");
   const [watchlistCount, setWatchlistCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
@@ -423,11 +424,13 @@ export default function Listing() {
           headers: {
             'Content-Type': 'application/json',
           },
-          credentials: 'include'
+          credentials: 'include',
+          body: JSON.stringify({ reason: rootVerificationReason })
         });
         const data = await res.json();
         if (res.ok) {
           toast.success('Property verified and published successfully!');
+          setRootVerificationReason(""); // reset
           window.location.reload();
         } else {
           toast.error(data.message || 'Failed to verify property');

@@ -9,7 +9,7 @@ import { errorHandler } from "../utils/error.js"
 import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, sendPropertyDeletionConfirmationEmail, sendOwnerDeassignedEmail, sendOwnerAssignedEmail, sendPropertyCreatedPendingVerificationEmail, sendPropertyVerificationReminderEmail, sendPropertyPublishedAfterVerificationEmail } from "../utils/emailService.js"
 import DeletedListing from "../models/deletedListing.model.js"
 import crypto from 'crypto'
-
+import PropertyVerification from "../models/propertyVerification.model.js";
 
 
 export const createListing = async (req, res, next) => {
@@ -792,7 +792,7 @@ export const reassignPropertyOwner = async (req, res, next) => {
         userId: newOwnerId,
         type: 'property_assigned',
         title: 'Property Assigned to You',
-        message: `You have been assigned as the owner of property "${listing.name}".`,
+        message: `You have been assigned as the owner of property "${listing.name}"`,
         listingId: listing._id,
         adminId: req.user.id,
       });
@@ -941,76 +941,89 @@ export const republishListing = async (req, res, next) => {
 };
 
 // Root Admin Bypass Verification & Publish
+// Root Admin Bypass Verification & Publish
 export const rootAdminBypassVerification = async (req, res, next) => {
   try {
-    const { id } = req.params;
-
-    // Strict Check: Only RootAdmin
     if (req.user.role !== 'rootadmin') {
-      return next(errorHandler(403, 'Access Denied: Only Root Admins can bypass verification.'));
+      return next(errorHandler(403, 'Access denied. Root Admin only.'));
     }
 
-    const listing = await Listing.findById(id).populate('userRef');
+    const { reason } = req.body;
+    const verificationReason = reason || 'Instant verification by Root Admin';
+
+    const listing = await Listing.findById(req.params.id);
     if (!listing) {
       return next(errorHandler(404, 'Listing not found'));
     }
 
-    // Update status
-    listing.isVerified = true;
-    listing.visibility = 'public';
-    listing.availabilityStatus = 'available'; // Ensure it's available
-
-    // Clear any lock metadata if present, to be clean
-    listing.availabilityMeta = {
-      lockReason: null,
-      lockDescription: null,
-      lockedAt: null,
-      bookingId: null,
-      contractId: null
-    };
-
-    const updatedListing = await listing.save();
-
-    // Send the standard "Property Published" email (same as normal verification flow)
-    const propertyOwner = listing.userRef;
-    if (propertyOwner && propertyOwner.email) {
-      try {
-        const listingDetails = {
-          propertyName: listing.name,
-          propertyId: listing._id,
-          propertyDescription: listing.description,
-          propertyAddress: listing.address,
-          propertyPrice: listing.offer ? listing.discountPrice : listing.regularPrice,
-          propertyImages: listing.imageUrls || [],
-          city: listing.city,
-          state: listing.state
-        };
-
-        await sendPropertyPublishedAfterVerificationEmail(propertyOwner.email, listingDetails);
-        console.log(`✅ Root Bypass: verification email sent to ${propertyOwner.email}`);
-      } catch (emailError) {
-        console.error('Failed to send verification email (root bypass):', emailError);
-      }
+    if (listing.isVerified) {
+      return next(errorHandler(400, 'Property is already verified'));
     }
 
-    // Create Notification
-    try {
-      const notification = await Notification.create({
-        userId: propertyOwner._id,
-        type: 'property_verified',
-        title: 'Property Verified & Published',
-        message: `Your property "${listing.name}" has been verified and published by Root Admin.`,
+    // 1. Create or Update PropertyVerification Record
+    let verification = await PropertyVerification.findOne({ listingId: listing._id });
+
+    if (!verification) {
+      verification = new PropertyVerification({
         listingId: listing._id,
-        adminId: req.user.id
+        landlordId: listing.userRef || listing.sellerId,
+        verificationFee: 0,
+        paymentStatus: 'completed',
       });
-    } catch (notifError) {
-      console.error('Failed to create notification', notifError);
+    }
+
+    // 2. Set ALL verification fields to TRUE
+    verification.status = 'verified';
+    verification.adminNotes = `ROOT ADMIN BYPASS: ${verificationReason}`;
+
+    verification.documents.ownershipProof.verified = true;
+    verification.documents.ownershipProof.verifiedAt = new Date();
+    verification.documents.ownershipProof.verifiedBy = req.user.id;
+
+    verification.documents.identityProof.verified = true;
+    verification.documents.identityProof.verifiedAt = new Date();
+    verification.documents.identityProof.verifiedBy = req.user.id;
+
+    verification.documents.addressProof.verified = true;
+    verification.documents.addressProof.verifiedAt = new Date();
+    verification.documents.addressProof.verifiedBy = req.user.id;
+
+    verification.photosVerified = true;
+    verification.locationVerified = true;
+    verification.amenitiesVerified = true;
+
+    verification.verifiedBadgeIssued = true;
+
+    await verification.save();
+
+    // 3. Update Listing
+    listing.isVerified = true;
+    listing.verificationId = verification._id;
+    listing.visibility = 'public';
+    listing.availabilityStatus = 'available';
+
+    await listing.save();
+
+    // 4. Send Email & Notifications
+    const owner = await User.findById(listing.userRef || listing.sellerId);
+    if (owner) {
+      const listingDetails = {
+        propertyName: listing.name,
+        propertyId: listing._id,
+        propertyDescription: listing.description,
+        propertyAddress: listing.address,
+        propertyPrice: listing.offer ? listing.discountPrice : listing.regularPrice,
+        propertyImages: listing.imageUrls || [],
+        city: listing.city,
+        state: listing.state
+      };
+      await sendPropertyPublishedAfterVerificationEmail(owner.email, listingDetails);
     }
 
     res.status(200).json({
       success: true,
-      message: 'Property successfully verified and published (Root Bypass).',
-      listing: updatedListing
+      message: 'Property instantly verified and published by Root Admin!',
+      listing
     });
 
   } catch (error) {
