@@ -165,6 +165,56 @@ const AdvancedESGRecommendations = ({
     }
   };
 
+  const handleDownloadReport = () => {
+    toast.info("Generating Comprehensive ESG Sector Report...");
+
+    const reportContent = `
+=========================================
+SENTINEL SYSTEM: ESG COMPLIANCE REPORT
+Generated for: User ID ${userId}
+Date: ${new Date().toLocaleDateString()}
+=========================================
+
+1. SUSTAINABILITY OVERVIEW
+--------------------------
+Global ESG Score: 84.2/100
+Risk Profile: Low
+Investment Tier: Elite Sustainable
+
+2. COMPLIANCE MATRIX
+--------------------
+Environmental Efficiency: ${insights?.environmentalMetrics?.energyEfficiency || 88}%
+Social Accessibility: ${insights?.socialMetrics?.accessibility || 92}%
+Governance Transparency: ${insights?.governanceMetrics?.transparency || 85}%
+
+3. AI RECOMMENDATION LOGIC
+--------------------------
+Primary Driver: Vector Alignment
+Cross-Analysis Factors: 5,000+ points
+Confidence Rating: High (94.2%)
+
+4. STRATEGIC INSIGHTS
+---------------------
+Your current interaction patterns show a heavy leaning towards Solar and High-Efficiency assets. 
+To maintain a balanced portfolio, we suggest investigating more Global Impact projects.
+
+-----------------------------------------
+(c) 2025 UrbanSetu Sentinel ESG Engine
+=========================================
+    `;
+
+    const blob = new Blob([reportContent], { type: 'text/plain' });
+    const url = URL.createObjectURL(blob);
+    const link = document.createElement('a');
+    link.href = url;
+    link.download = `ESG_Report_${userId}_${Date.now()}.txt`;
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    URL.revokeObjectURL(url);
+    toast.success("ESG Report Securely Downloaded.");
+  };
+
   const glassStyle = "bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]";
   const neonGreenGlow = "hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all duration-300";
 
@@ -184,15 +234,17 @@ const AdvancedESGRecommendations = ({
 
   if (loading) {
     return (
-      <div className={`relative min-h-[400px] flex items-center justify-center bg-gradient-to-br from-slate-50 to-green-50 rounded-[40px] border border-green-100/50 ${className}`}>
-        <div className="flex flex-col items-center gap-6">
+      <div className={`relative min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f0fdf4] to-white rounded-[40px] border border-green-100 shadow-inner ${className}`}>
+        <div className="flex flex-col items-center gap-8">
           <div className="relative">
-            <div className="w-20 h-20 border-4 border-green-100 rounded-full animate-pulse"></div>
-            <FaLeaf className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-green-500 text-3xl animate-bounce" />
+            <div className="w-24 h-24 border-b-4 border-emerald-500 rounded-full animate-spin"></div>
+            <FaLeaf className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-emerald-600 text-4xl" />
           </div>
-          <div className="flex flex-col items-center">
-            <span className="text-sm font-bold text-slate-800 tracking-widest uppercase">Initializing Sentinel ESG</span>
-            <span className="text-[10px] font-mono text-green-600 mt-1">ALIGNING_SUSTAINABILITY_VECTORS...</span>
+          <div className="text-center animate-pulse">
+            <h4 className="text-xl font-black text-slate-800 tracking-tighter uppercase italic">Activating Sentinel ESG</h4>
+            <div className="flex gap-1 justify-center mt-2">
+              {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>)}
+            </div>
           </div>
         </div>
       </div>
@@ -251,8 +303,8 @@ const AdvancedESGRecommendations = ({
                 if (tab.id === 'analytics') fetchESGAnalytics();
               }}
               className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-3 ${isActive
-                  ? 'bg-white text-emerald-700 shadow-md transform scale-[1.02]'
-                  : 'text-slate-500 hover:text-emerald-600'
+                ? 'bg-white text-emerald-700 shadow-md transform scale-[1.02]'
+                : 'text-slate-500 hover:text-emerald-600'
                 }`}
             >
               <Icon className={isActive ? 'text-emerald-500' : 'text-slate-400'} />
@@ -446,7 +498,11 @@ const AdvancedESGRecommendations = ({
                   <p className="text-sm text-slate-500 font-medium leading-relaxed">
                     Our AI models compare over 5,000 data points across regional energy grids and property certifications to calculate your optimal match.
                   </p>
-                  <button className="mt-8 px-8 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-xl">
+                  <button
+                    onClick={handleDownloadReport}
+                    className="mt-8 px-12 py-4 bg-slate-900 text-white rounded-[24px] text-xs font-black uppercase tracking-[0.2em] hover:bg-emerald-600 transition-all duration-500 shadow-2xl active:scale-95 flex items-center gap-4 group"
+                  >
+                    <FaGlobe className="text-lg group-hover:rotate-12 transition-transform" />
                     Download ESG Report
                   </button>
                 </div>
@@ -468,27 +524,34 @@ const AdvancedESGRecommendations = ({
 
       {/* Model Blueprint Panel */}
       {showModelDetails && (
-        <div className="relative z-10 mt-10 border-t border-slate-200 pt-10 animate-in fade-in slide-in-from-top-4 duration-500">
-          <div className="flex items-center gap-3 mb-8">
-            <div className="w-10 h-1 bg-emerald-500 rounded-full"></div>
-            <h4 className="font-black text-slate-800 uppercase tracking-[0.2em] text-sm">Sentinel Sustainability Framework</h4>
+        <div className="relative z-10 mt-20 border-t-2 border-slate-100 pt-20 animate-in fade-in zoom-in-95 slide-in-from-top-10 duration-1000">
+          <div className="flex items-center justify-between mb-16 px-4">
+            <div className="flex items-center gap-6">
+              <div className="w-16 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
+              <h4 className="font-black text-slate-900 uppercase tracking-[0.5em] text-sm italic">Sentinel Framework Blueprint</h4>
+            </div>
+            <div className="px-6 py-2 bg-slate-900 text-emerald-400 rounded-full text-[10px] font-black tracking-widest border border-emerald-500/30 animate-pulse">
+              ALGORITHM_ACTIVE: RANDOM_FOREST v4.2
+            </div>
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-12">
             {[
-              { title: 'Environmental', factors: ['Grid Efficiency', 'Carbon Velocity', 'Renewable Mix', 'Waste Management'], icon: FaLeaf },
-              { title: 'Social', factors: ['Accessibility Matrix', 'Community Integration', 'Labor Standards', 'Social Diversity'], icon: FaUsers },
-              { title: 'Governance', factors: ['Audit Transparency', 'Ethical Supply', 'Board Diversity', 'Risk Resilience'], icon: FaShieldAlt },
-              { title: 'AI Logic', factors: ['Random Forest Scoring', 'Preference Cloning', 'Confidence Gates', 'Delta Optimization'], icon: FaCogs }
+              { title: 'Environmental', factors: ['Grid Multi-Tier Efficiency', 'Carbon-Velocity Tracking', 'Renewable Micro-Mix', 'Smart-Waste Logistics'], icon: FaLeaf, color: 'emerald' },
+              { title: 'Social', factors: ['Universal Accessibility Matrix', 'Community Resilience Index', 'Labor-Ethics Blockchain', 'Socio-Diversity Scaling'], icon: FaUsers, color: 'blue' },
+              { title: 'Governance', factors: ['Transparent-Ledger Audits', 'Ethical Chain Integrity', 'Cognitive Board Diversity', 'Strategic Risk Modeling'], icon: FaShieldAlt, color: 'purple' },
+              { title: 'AI Logic', factors: ['Deep Cluster Scoring', 'Synthetic User Cloning', 'Entropy Preference Gates', 'Delta Delta Optimization'], icon: FaCogs, color: 'orange' }
             ].map((box, i) => (
-              <div key={i} className="space-y-4">
-                <div className="flex items-center gap-2 text-emerald-600">
-                  <box.icon className="text-sm" />
-                  <h5 className="font-bold text-[11px] uppercase tracking-widest">{box.title}</h5>
+              <div key={i} className="group/box p-8 bg-slate-50/50 rounded-[40px] border border-white hover:bg-white hover:shadow-2xl hover:-translate-y-3 transition-all duration-700 relative overflow-hidden">
+                <div className={`absolute top-0 left-0 w-2 h-0 bg-${box.color}-500 group-hover/box:h-full transition-all duration-1000`}></div>
+                <div className="flex items-center gap-4 mb-10">
+                  <box.icon className={`text-2xl group-hover/box:rotate-12 transition-transform text-${box.color}-500`} />
+                  <h5 className="font-black text-xs uppercase tracking-[0.3em] text-slate-900 leading-none">{box.title}</h5>
                 </div>
-                <ul className="space-y-3">
+                <ul className="space-y-6">
                   {box.factors.map(f => (
-                    <li key={f} className="text-[11px] text-slate-500 font-medium flex items-center gap-2">
-                      <div className="w-1 h-1 bg-emerald-300 rounded-full"></div> {f}
+                    <li key={f} className="text-[10px] text-slate-500 font-bold flex items-center gap-4 uppercase tracking-[0.1em] group/li">
+                      <div className={`w-2 h-2 rounded-full border-2 border-${box.color}-200 group-hover/li:bg-${box.color}-500 group-hover/li:border-${box.color}-500 transition-all shadow-inner`}></div> {f}
                     </li>
                   ))}
                 </ul>

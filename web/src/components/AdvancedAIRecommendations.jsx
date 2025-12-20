@@ -31,7 +31,7 @@ const AdvancedAIRecommendations = ({
   const models = [
     {
       id: 'ensemble',
-      name: 'Super Ensemble AI',
+      name: 'Super-AI',
       icon: FaBrain,
       description: 'Combines all models for 95-98% accuracy',
       accuracy: '95-98%',
@@ -57,7 +57,7 @@ const AdvancedAIRecommendations = ({
     },
     {
       id: 'matrix-factorization',
-      name: 'Enhanced Collaborative',
+      name: 'Matrix-Factors',
       icon: FaChartLine,
       description: 'Users with similar preferences - 90-95% accuracy',
       accuracy: '90-95%',
@@ -70,7 +70,7 @@ const AdvancedAIRecommendations = ({
     },
     {
       id: 'random-forest',
-      name: 'Enhanced Content-Based',
+      name: 'Random-Forest',
       icon: FaCogs,
       description: 'Property features matching - 90-95% accuracy',
       accuracy: '90-95%',
@@ -83,7 +83,7 @@ const AdvancedAIRecommendations = ({
     },
     {
       id: 'neural-network',
-      name: 'Deep Learning',
+      name: 'Deep-Neural',
       icon: FaRobot,
       description: 'Complex pattern recognition - 90-95% accuracy',
       accuracy: '90-95%',
@@ -96,7 +96,7 @@ const AdvancedAIRecommendations = ({
     },
     {
       id: 'k-means',
-      name: 'K-Means Clustering',
+      name: 'K-Means',
       icon: FaShieldAlt,
       description: 'User behavior clustering - 95-100% accuracy',
       accuracy: '95-100%',
@@ -109,7 +109,7 @@ const AdvancedAIRecommendations = ({
     },
     {
       id: 'time-series',
-      name: 'Time Series Analysis',
+      name: 'Future-Trends',
       icon: FaRocket,
       description: 'Market trend prediction - 95-100% accuracy',
       accuracy: '95-100%',
@@ -220,10 +220,35 @@ const AdvancedAIRecommendations = ({
 
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 p-8 rounded-lg shadow-md border border-blue-200 text-center">
-        <FaSpinner className="animate-spin text-blue-600 text-4xl mx-auto mb-4" />
-        <p className="text-blue-700 font-semibold text-lg">Advanced AI is analyzing your preferences...</p>
-        <p className="text-blue-500 text-sm mt-2">Running multiple machine learning models for personalized recommendations</p>
+      <div className={`relative min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8faff] to-[#eef2ff] rounded-[40px] border border-blue-100 shadow-inner ${className} overflow-hidden`}>
+        {/* Decorative scan lines */}
+        <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
+
+        <div className="relative flex flex-col items-center gap-10">
+          <div className="relative">
+            <div className="w-32 h-32 border-4 border-blue-100 rounded-full animate-pulse"></div>
+            <div className="absolute inset-0 border-t-4 border-blue-600 rounded-full animate-spin"></div>
+            <div className="absolute inset-0 flex items-center justify-center">
+              <FaBrain className="text-blue-600 text-5xl animate-bounce" />
+            </div>
+          </div>
+
+          <div className="text-center">
+            <h4 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-3 flex items-center justify-center gap-4">
+              <span className="w-10 h-px bg-blue-600/30"></span>
+              Sentinel AI Activation
+              <span className="w-10 h-px bg-blue-600/30"></span>
+            </h4>
+            <div className="flex flex-col items-center gap-2">
+              <span className="text-[10px] font-mono text-blue-500 font-bold tracking-[0.3em]">NEURAL_SYNC_INITIALIZED</span>
+              <div className="flex gap-1.5 mt-2">
+                {[1, 2, 3, 4, 5].map(i => (
+                  <div key={i} className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }}></div>
+                ))}
+              </div>
+            </div>
+          </div>
+        </div>
       </div>
     );
   }
@@ -307,27 +332,43 @@ const AdvancedAIRecommendations = ({
       )}
 
       {/* Futuristic Model Selection Slider */}
-      <div className="relative z-10 mb-8 pb-4 overflow-x-auto no-scrollbar">
-        <div className="flex gap-4 min-w-max px-2">
+      <div className="relative z-10 mb-10 pb-6 overflow-x-auto no-scrollbar">
+        <div className="flex gap-6 min-w-max px-4">
           {models.map((model) => {
             const IconComponent = model.icon;
             const isActive = activeTab === model.id;
+            const [firstName, secondName] = model.name.split('-');
+
             return (
               <button
                 key={model.id}
                 onClick={() => setActiveTab(model.id)}
-                className={`flex flex-col items-center gap-3 p-4 min-w-[140px] rounded-2xl transition-all duration-500 border-2 ${isActive
-                  ? 'bg-white border-blue-600 shadow-xl -translate-y-1'
-                  : 'bg-white border-transparent text-slate-500 hover:border-blue-200'
+                className={`flex flex-col items-center gap-4 p-5 min-w-[160px] rounded-[32px] transition-all duration-700 border-2 ${isActive
+                  ? 'bg-white border-blue-600 shadow-[0_20px_40px_-15px_rgba(37,99,235,0.2)] -translate-y-2 scale-105'
+                  : 'bg-white/50 border-transparent text-slate-500 hover:border-blue-200 hover:bg-white'
                   }`}
               >
-                <div className={`p-3 rounded-xl ${isActive ? 'bg-blue-600 text-white animate-bounce' : 'bg-slate-100 text-slate-400'}`}>
-                  <IconComponent className="text-xl" />
+                <div className={`p-4 rounded-2xl transition-all duration-500 ${isActive ? 'bg-blue-600 text-white shadow-lg rotate-12' : 'bg-slate-100 text-slate-400'}`}>
+                  <IconComponent className="text-2xl" />
                 </div>
                 <div className="text-center">
-                  <div className={`text-xs font-bold uppercase tracking-wider ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>{model.name.split(' ')[0]}</div>
-                  <div className="text-[10px] font-semibold text-slate-400 mt-0.5">{model.accuracy} Accuracy</div>
+                  <div className="flex flex-col">
+                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>
+                      {firstName}
+                    </span>
+                    {secondName && (
+                      <span className={`text-xs font-bold -mt-1 ${isActive ? 'text-slate-700' : 'text-slate-300'}`}>
+                        {secondName}
+                      </span>
+                    )}
+                  </div>
+                  <div className={`text-[9px] font-black mt-2 px-3 py-0.5 rounded-full ${isActive ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-400'}`}>
+                    {model.accuracy} ACC
+                  </div>
                 </div>
+                {isActive && (
+                  <div className="absolute -bottom-2 w-8 h-1 bg-blue-600 rounded-full animate-pulse"></div>
+                )}
               </button>
             );
           })}
