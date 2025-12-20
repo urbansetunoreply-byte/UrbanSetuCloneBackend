@@ -939,3 +939,81 @@ export const republishListing = async (req, res, next) => {
     next(error);
   }
 };
+
+// Root Admin Bypass Verification & Publish
+export const rootAdminBypassVerification = async (req, res, next) => {
+  try {
+    const { id } = req.params;
+
+    // Strict Check: Only RootAdmin
+    if (req.user.role !== 'rootadmin') {
+      return next(errorHandler(403, 'Access Denied: Only Root Admins can bypass verification.'));
+    }
+
+    const listing = await Listing.findById(id).populate('userRef');
+    if (!listing) {
+      return next(errorHandler(404, 'Listing not found'));
+    }
+
+    // Update status
+    listing.isVerified = true;
+    listing.visibility = 'public';
+    listing.availabilityStatus = 'available'; // Ensure it's available
+
+    // Clear any lock metadata if present, to be clean
+    listing.availabilityMeta = {
+      lockReason: null,
+      lockDescription: null,
+      lockedAt: null,
+      bookingId: null,
+      contractId: null
+    };
+
+    const updatedListing = await listing.save();
+
+    // Send the standard "Property Published" email (same as normal verification flow)
+    const propertyOwner = listing.userRef;
+    if (propertyOwner && propertyOwner.email) {
+      try {
+        const listingDetails = {
+          propertyName: listing.name,
+          propertyId: listing._id,
+          propertyDescription: listing.description,
+          propertyAddress: listing.address,
+          propertyPrice: listing.offer ? listing.discountPrice : listing.regularPrice,
+          propertyImages: listing.imageUrls || [],
+          city: listing.city,
+          state: listing.state
+        };
+
+        await sendPropertyPublishedAfterVerificationEmail(propertyOwner.email, listingDetails);
+        console.log(`✅ Root Bypass: verification email sent to ${propertyOwner.email}`);
+      } catch (emailError) {
+        console.error('Failed to send verification email (root bypass):', emailError);
+      }
+    }
+
+    // Create Notification
+    try {
+      const notification = await Notification.create({
+        userId: propertyOwner._id,
+        type: 'property_verified',
+        title: 'Property Verified & Published',
+        message: `Your property "${listing.name}" has been verified and published by Root Admin.`,
+        listingId: listing._id,
+        adminId: req.user.id
+      });
+    } catch (notifError) {
+      console.error('Failed to create notification', notifError);
+    }
+
+    res.status(200).json({
+      success: true,
+      message: 'Property successfully verified and published (Root Bypass).',
+      listing: updatedListing
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};

@@ -413,8 +413,31 @@ export default function Listing() {
     }
   };
 
-  const confirmYes = () => {
+  const confirmYes = async () => {
     const { type, propertyId, origin } = confirmModal;
+
+    if (type === 'root-verify') {
+      try {
+        const res = await fetch(`${API_BASE_URL}/api/listing/root-verify/${listing._id}`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          credentials: 'include'
+        });
+        const data = await res.json();
+        if (res.ok) {
+          toast.success('Property verified and published successfully!');
+          window.location.reload();
+        } else {
+          toast.error(data.message || 'Failed to verify property');
+        }
+      } catch (error) {
+        console.error(error);
+        toast.error('Error connecting to server');
+      }
+    }
+
     if (type === 'remove-one' && propertyId) {
       removeFromComparison(propertyId);
     }
@@ -1538,6 +1561,21 @@ export default function Listing() {
                   <FaEdit className="text-sm" />
                   <span className="hidden sm:inline">Edit Property</span>
                 </Link>
+                {/* Root Admin verification bypass button */}
+                {currentUser?.role === 'rootadmin' && (!listing.isVerified || listing.visibility !== 'public') && (
+                  <button
+                    onClick={() => setConfirmModal({
+                      open: true,
+                      type: 'root-verify',
+                      message: 'Are you sure you want to BYPASS verification? This will instantly verify and publish this property, and notify the owner.'
+                    })}
+                    className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-3 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base animate-pulse"
+                    title="Root Admin Privilege: Instantly Verify & Publish"
+                  >
+                    <FaCheckCircle className="text-sm" />
+                    <span className="hidden sm:inline">Root Verify & Publish</span>
+                  </button>
+                )}
                 <button
                   onClick={handleDelete}
                   className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-3 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
