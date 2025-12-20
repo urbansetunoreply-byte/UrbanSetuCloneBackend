@@ -1276,7 +1276,7 @@ export default function Community() {
                                                                             </div>
                                                                         </form>
                                                                     ) : (
-                                                                        <p className="text-sm text-gray-700 leading-relaxed">
+                                                                        <p className="text-sm text-gray-700 leading-relaxed break-words overflow-hidden">
                                                                             {formatContent(comment.content)}
                                                                             {comment.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
                                                                         </p>
@@ -1420,10 +1420,10 @@ export default function Community() {
 
                                                                 {/* Infinite Recursive Replies */}
                                                                 {expandedReplies[comment._id] && comment.replies && (
-                                                                    <div className="mt-2 space-y-3 pl-4 border-l-2 border-gray-100 ml-2">
+                                                                    <div className="mt-2 space-y-3 pl-2 sm:pl-4 border-l-2 border-gray-100 ml-1 sm:ml-2">
                                                                         {(() => {
                                                                             // Small indentation test
-                                                                            const renderReplies = (parentId) => {
+                                                                            const renderReplies = (parentId, depth = 0) => {
                                                                                 const currentReplies = comment.replies.filter(r => (r.parentReplyId || null) === (parentId || null));
                                                                                 if (!currentReplies.length) return null;
 
@@ -1493,7 +1493,7 @@ export default function Community() {
                                                                                                                 </div>
                                                                                                             </form>
                                                                                                         ) : (
-                                                                                                            <p className="text-sm text-gray-700 leading-relaxed">
+                                                                                                            <p className="text-sm text-gray-700 leading-relaxed break-words overflow-hidden">
                                                                                                                 {formatContent(reply.content)}
                                                                                                                 {reply.isEdited && <span className="text-xs text-gray-400 italic font-normal ml-2">(edited)</span>}
                                                                                                             </p>
@@ -1630,8 +1630,8 @@ export default function Community() {
                                                                                                     )}
                                                                                                     {/* Recursion: Render replies to this reply */}
                                                                                                     {expandedReplies[reply._id] && (
-                                                                                                        <div className="ml-4 border-l-2 border-gray-100 pl-2 mt-2 animate-fade-in">
-                                                                                                            {renderReplies(reply._id)}
+                                                                                                        <div className={`border-l-2 border-gray-100 mt-2 animate-fade-in ${depth < 2 ? 'ml-2 sm:ml-4 pl-2 sm:pl-4' : 'ml-1 pl-1'}`}>
+                                                                                                            {renderReplies(reply._id, depth + 1)}
                                                                                                         </div>
                                                                                                     )}
                                                                                                 </div>
