@@ -127,6 +127,10 @@ export const adminAdjustCoins = async (req, res, next) => {
 
         res.status(200).json({ success: true, ...result });
     } catch (error) {
+        // Handle specific business logic errors clearly
+        if (error.message === 'Insufficient SetuCoins balance') {
+            return next(errorHandler(400, "User does not have enough coins for this deduction."));
+        }
         next(error);
     }
 };
