@@ -146,12 +146,7 @@ export const sendOTP = async (req, res, next) => {
       requiresCaptcha
     });
 
-    // Log successful forgot password OTP request
-    logSecurityEvent('forgot_password_otp_request_successful', {
-      email: emailLower,
-      ip: req.ip,
-      requiresCaptcha
-    });
+
 
     res.status(200).json({
       success: true,
