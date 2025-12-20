@@ -1373,7 +1373,7 @@ export default function Profile() {
                 </div>
 
                 {/* Profile Completion Status */}
-                {(!currentUser.gender || !currentUser.address || !currentUser.mobileNumber) && (
+                {currentUser.role === 'user' && (!currentUser.gender || !currentUser.address || !currentUser.mobileNumber) && (
                   <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
                     <p className="text-sm text-amber-700 font-medium text-center sm:text-left">
                       ⚠️ Add details & earn 20 SetuCoins to unlock rewards!

@@ -130,7 +130,7 @@ export const updateUser = async (req, res, next) => {
 
         const bonusAlreadyReceived = user.gamification?.hasReceivedProfileCompletionBonus;
 
-        if (isProfileComplete && !bonusAlreadyReceived) {
+        if (isProfileComplete && !bonusAlreadyReceived && user.role === 'user') {
             // Award 20 coins
             await awardSetuCoins(user._id, 20, 'profile_completion', 'Profile Completion Bonus');
             updateFields['gamification.hasReceivedProfileCompletionBonus'] = true;
