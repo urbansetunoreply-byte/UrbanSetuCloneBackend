@@ -110,13 +110,13 @@ const ActiveCallModal = ({
       if (screenShareStream && screenShareVideoRef.current) {
         if (screenShareVideoRef.current.srcObject !== screenShareStream) {
           screenShareVideoRef.current.srcObject = screenShareStream;
-          screenShareVideoRef.current.play().catch(err => console.error('Error playing screen share:', err));
+          screenShareVideoRef.current.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing screen share:', err); });
         }
       }
       if (cameraStreamDuringScreenShare && cameraVideoSmallRef.current) {
         if (cameraVideoSmallRef.current.srcObject !== cameraStreamDuringScreenShare) {
           cameraVideoSmallRef.current.srcObject = cameraStreamDuringScreenShare;
-          cameraVideoSmallRef.current.play().catch(err => console.error('Error playing camera stream:', err));
+          cameraVideoSmallRef.current.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing camera stream:', err); });
         }
       }
     } else {
@@ -125,7 +125,7 @@ const ActiveCallModal = ({
         if (localVideoRef.current.srcObject !== localStream) {
           localVideoRef.current.srcObject = localStream;
           localVideoRef.current.muted = true;
-          localVideoRef.current.play().catch(err => console.error('Error playing local video after screen share:', err));
+          localVideoRef.current.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing local video after screen share:', err); });
         }
       }
       // Reset zoom/pan when screen sharing stops
@@ -152,7 +152,7 @@ const ActiveCallModal = ({
           remoteVideoRef.current.srcObject = remoteStream;
           remoteVideoRef.current.muted = isRemoteAudioLocallyMuted;
           remoteVideoRef.current.play().catch(err => {
-            console.error('Error playing remote video after screen share ends:', err);
+            if (err.name !== 'AbortError') console.error('Error playing remote video after screen share ends:', err);
           });
         }
       }
@@ -240,14 +240,14 @@ const ActiveCallModal = ({
             localVideoRef.current.srcObject = localStreamObj;
             localVideoRef.current.muted = true;
           }
-          localVideoRef.current.play().catch(err => console.error('Error playing local video after swap:', err));
+          localVideoRef.current.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing local video after swap:', err); });
         }
         if (remoteVideoRef.current && remoteStreamObj) {
           if (remoteVideoRef.current.srcObject !== remoteStreamObj) {
             remoteVideoRef.current.srcObject = remoteStreamObj;
             remoteVideoRef.current.muted = isRemoteAudioLocallyMuted;
           }
-          remoteVideoRef.current.play().catch(err => console.error('Error playing remote video after swap:', err));
+          remoteVideoRef.current.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing remote video after swap:', err); });
         }
       } else {
         // Remote is in large view, local is in small view (default)
@@ -256,14 +256,14 @@ const ActiveCallModal = ({
             remoteVideoRef.current.srcObject = remoteStreamObj;
             remoteVideoRef.current.muted = isRemoteAudioLocallyMuted;
           }
-          remoteVideoRef.current.play().catch(err => console.error('Error playing remote video after swap:', err));
+          remoteVideoRef.current.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing remote video after swap:', err); });
         }
         if (localVideoRef.current && localStreamObj) {
           if (localVideoRef.current.srcObject !== localStreamObj) {
             localVideoRef.current.srcObject = localStreamObj;
             localVideoRef.current.muted = true;
           }
-          localVideoRef.current.play().catch(err => console.error('Error playing local video after swap:', err));
+          localVideoRef.current.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing local video after swap:', err); });
         }
       }
     }, 100); // Slightly longer delay to ensure DOM is ready
@@ -456,7 +456,7 @@ const ActiveCallModal = ({
                       muted
                       className="w-full h-full object-contain max-w-full max-h-full"
                       onLoadedMetadata={(e) => {
-                        e.target.play().catch(err => console.error('Error playing screen share:', err));
+                        e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing screen share:', err); });
                       }}
                     />
                   ) : (
@@ -469,7 +469,7 @@ const ActiveCallModal = ({
                       className="w-full h-full object-contain max-w-full max-h-full"
                       onLoadedMetadata={(e) => {
                         e.target.muted = isRemoteAudioLocallyMuted;
-                        e.target.play().catch(err => console.error('Error playing remote screen share:', err));
+                        e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing remote screen share:', err); });
                       }}
                     />
                   )}
@@ -510,7 +510,7 @@ const ActiveCallModal = ({
                     className="w-full h-full object-contain max-w-full max-h-full"
                     style={{ transform: 'scaleX(-1)' }}
                     onLoadedMetadata={(e) => {
-                      e.target.play().catch(err => console.error('Error playing local video:', err));
+                      e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing local video:', err); });
                     }}
                   />
                 </div>
@@ -546,7 +546,7 @@ const ActiveCallModal = ({
                     className="w-full h-full object-contain max-w-full max-h-full"
                     onLoadedMetadata={(e) => {
                       e.target.muted = isRemoteAudioLocallyMuted; // Ensure audio respects local mute state
-                      e.target.play().catch(err => console.error('Error playing remote video:', err));
+                      e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing remote video:', err); });
                     }}
                   />
                 </div>
@@ -699,7 +699,7 @@ const ActiveCallModal = ({
                     className="w-full h-full object-cover"
                     onLoadedMetadata={(e) => {
                       e.target.muted = isRemoteAudioLocallyMuted;
-                      e.target.play().catch(err => console.error('Error playing remote video:', err));
+                      e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing remote video:', err); });
                     }}
                   />
                   {!remoteVideoEnabled && (
@@ -730,7 +730,7 @@ const ActiveCallModal = ({
                       className="w-full h-full object-cover"
                       style={{ transform: 'scaleX(-1)' }}
                       onLoadedMetadata={(e) => {
-                        e.target.play().catch(err => console.error('Error playing camera video:', err));
+                        e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing camera video:', err); });
                       }}
                     />
                   ) : (
@@ -743,7 +743,7 @@ const ActiveCallModal = ({
                       className="w-full h-full object-cover"
                       style={{ transform: 'scaleX(-1)' }}
                       onLoadedMetadata={(e) => {
-                        e.target.play().catch(err => console.error('Error playing local video:', err));
+                        e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing local video:', err); });
                       }}
                     />
                   )}
@@ -774,7 +774,7 @@ const ActiveCallModal = ({
                   className="w-full h-full object-cover"
                   onLoadedMetadata={(e) => {
                     e.target.muted = isRemoteAudioLocallyMuted;
-                    e.target.play().catch(err => console.error('Error playing remote video:', err));
+                    e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing remote video:', err); });
                   }}
                 />
                 {!remoteVideoEnabled && (
@@ -803,7 +803,7 @@ const ActiveCallModal = ({
                   className="w-full h-full object-cover"
                   style={{ transform: 'scaleX(-1)' }}
                   onLoadedMetadata={(e) => {
-                    e.target.play().catch(err => console.error('Error playing local video:', err));
+                    e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing local video:', err); });
                   }}
                 />
                 {!isVideoEnabled && (

@@ -6,6 +6,6 @@ const router = express.Router();
 
 // Endpoint to secure TURN credentials
 // Protected by verifyToken to ensuring only logged-in users drain your quota
-router.get('/turn-credentials', verifyToken, getTurnCredentials);
+router.get('/', verifyToken, getTurnCredentials);
 
 export default router;
