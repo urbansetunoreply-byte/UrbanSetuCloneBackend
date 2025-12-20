@@ -1,6 +1,6 @@
-const axios = require('axios');
+import axios from 'axios';
 
-exports.getTurnCredentials = async (req, res) => {
+export const getTurnCredentials = async (req, res) => {
     try {
         // Metered.ca API endpoint
         const response = await axios.get(`https://${process.env.METERED_DOMAIN}/api/v1/turn/credentials?apiKey=${process.env.METERED_API_KEY}`);

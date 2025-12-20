@@ -1,10 +1,11 @@
-const express = require('express');
+import express from 'express';
+import { getTurnCredentials } from '../controllers/turn.controller.js';
+import { verifyToken } from '../utils/verifyUser.js'; // Updated to match likely verifying middleware location/name from user.route.js pattern or standard imports
+
 const router = express.Router();
-const turnController = require('../controllers/turn.controller');
-const { verifyToken } = require('../middleware/auth.middleware'); // Assuming you have auth middleware
 
 // Endpoint to secure TURN credentials
 // Protected by verifyToken to ensuring only logged-in users drain your quota
-router.get('/turn-credentials', verifyToken, turnController.getTurnCredentials);
+router.get('/turn-credentials', verifyToken, getTurnCredentials);
 
-module.exports = router;
+export default router;
