@@ -132,7 +132,7 @@ export const adminAdjustCoins = async (req, res, next) => {
             source: 'admin_adjustment',
             description: reason,
             adminId: req.user.id,
-            referenceModel: 'AdminLog'
+            referenceModel: null
         });
 
         // Send notification email
