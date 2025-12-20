@@ -487,7 +487,13 @@ export const verifyOTP = async (req, res, next) => {
     }
 
     // OTP is valid
-    if (storedData.type === 'forgotPassword') {
+    if (storedData.type === 'signup') {
+      otpStore.delete(emailLower);
+      return res.status(200).json({
+        success: true,
+        message: "Email verified successfully"
+      });
+    } else if (storedData.type === 'forgotPassword') {
       // For forgot password, return success with user ID for password reset
       const { userId } = storedData;
       otpStore.delete(emailLower);
@@ -548,6 +554,13 @@ export const verifyOTP = async (req, res, next) => {
         success: true,
         message: "OTP verified successfully",
         type: 'transfer_rights'
+      });
+    } else {
+      // Fallback for unknown OTP types to prevent hanging
+      otpStore.delete(emailLower);
+      return res.status(400).json({
+        success: false,
+        message: "Invalid verification type"
       });
     }
 
