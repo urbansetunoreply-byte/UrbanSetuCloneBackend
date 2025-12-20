@@ -17,12 +17,20 @@ export const getBalance = async (req, res, next) => {
 /**
  * Get transaction history for logged-in user
  */
+// Get transaction history (User sees own, Admin can see anyone's via query param)
 export const getHistory = async (req, res, next) => {
     try {
         const page = parseInt(req.query.page) || 1;
         const limit = parseInt(req.query.limit) || 10;
 
-        const history = await CoinService.getHistory(req.user.id, page, limit);
+        let targetUserId = req.user.id;
+
+        // Allow admins to view other users' history
+        if ((req.user.role === 'admin' || req.user.role === 'rootadmin') && req.query.userId) {
+            targetUserId = req.query.userId;
+        }
+
+        const history = await CoinService.getHistory(targetUserId, page, limit);
         res.status(200).json({ success: true, ...history });
     } catch (error) {
         next(error);
