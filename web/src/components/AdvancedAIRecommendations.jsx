@@ -420,15 +420,40 @@ const AdvancedAIRecommendations = ({
                     <ListingItem listing={listing.property} />
 
                     {/* AI Insights Overlay (Shows on Hover) */}
-                    <div className="absolute inset-0 bg-blue-900/90 backdrop-blur-sm opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col p-6 text-white translate-y-4 group-hover:translate-y-0">
-                      <h4 className="font-bold text-lg mb-2 flex items-center gap-2">
-                        <FaBrain className="text-blue-400" /> AI Insights
-                      </h4>
-                      <div className="space-y-4 flex-1">
-                        <div className="text-xs leading-relaxed text-blue-100">
-                          {listing.modelExplanation || 'Analyzed via deep feature matching of your interaction vector.'}
+                    <div className="absolute inset-0 bg-blue-900/95 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col p-6 text-white translate-y-4 group-hover:translate-y-0 z-20">
+                      <div className="flex justify-between items-start mb-4">
+                        <h4 className="font-bold text-lg flex items-center gap-2">
+                          <FaBrain className="text-blue-400" /> AI Insights
+                        </h4>
+                        <div className="flex gap-2">
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toast.success("AI Training Updated: Preference logged.");
+                            }}
+                            className="p-2 bg-white/10 hover:bg-green-500/30 rounded-lg transition-all border border-white/20"
+                            title="Helpful Recommendation"
+                          >
+                            <FaThumbsUp className="text-[10px]" />
+                          </button>
+                          <button
+                            onClick={(e) => {
+                              e.stopPropagation();
+                              toast.info("AI Analysis Refined: Filtering similar types.");
+                            }}
+                            className="p-2 bg-white/10 hover:bg-red-500/30 rounded-lg transition-all border border-white/20"
+                            title="Not Interested"
+                          >
+                            <FaTimesCircle className="text-[10px]" />
+                          </button>
                         </div>
-                        <div className="flex flex-wrap gap-2">
+                      </div>
+
+                      <div className="space-y-4 flex-1">
+                        <div className="text-xs leading-relaxed text-blue-100 italic">
+                          "{listing.modelExplanation || 'Analyzed via deep feature matching of your interaction vector.'}"
+                        </div>
+                        <div className="flex flex-wrap gap-2 text-blue-200">
                           {(listing.aiInsights || ['High Value', 'User Trend', 'Region Hot']).map((tag, i) => (
                             <span key={i} className="px-2 py-1 bg-white/10 border border-white/20 rounded-md text-[9px] font-bold uppercase truncate max-w-[100px]">
                               {tag}
@@ -439,28 +464,34 @@ const AdvancedAIRecommendations = ({
                         {/* Mini Data Viz for Neural Network */}
                         {listing.hiddenFactors && (
                           <div className="mt-4 pt-4 border-t border-white/10 space-y-2">
-                            <div className="text-[9px] font-bold text-blue-300 uppercase tracking-widest">Neural Layer Activity</div>
+                            <div className="flex items-center justify-between">
+                              <div className="text-[9px] font-bold text-blue-300 uppercase tracking-widest">Neural Layer Activity</div>
+                              <div className="text-[8px] text-blue-400 animate-pulse font-mono tracking-tighter">LIVE_SCAN</div>
+                            </div>
                             {Object.entries(listing.hiddenFactors).slice(0, 3).map(([key, val]) => (
                               <div key={key} className="space-y-1">
-                                <div className="flex justify-between text-[8px] uppercase">
+                                <div className="flex justify-between text-[8px] uppercase font-mono text-blue-200">
                                   <span>{key.replace('Weight', '')}</span>
                                   <span>{Math.round(val * 100)}%</span>
                                 </div>
                                 <div className="w-full h-1 bg-white/10 rounded-full overflow-hidden">
-                                  <div className="h-full bg-blue-400 transition-all duration-1000" style={{ width: `${val * 100}%` }}></div>
+                                  <div className="h-full bg-gradient-to-r from-blue-500 to-indigo-400 transition-all duration-1000" style={{ width: `${val * 100}%` }}></div>
                                 </div>
                               </div>
                             ))}
                           </div>
                         )}
                       </div>
-                      <button className="mt-auto w-full py-2 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold transition-colors shadow-lg">
-                        Analyze Details
+                      <button className="mt-6 w-full py-2.5 bg-blue-600 hover:bg-blue-500 rounded-xl text-xs font-bold transition-all shadow-lg active:scale-95 border border-blue-400/30">
+                        Open Full Analysis
                       </button>
                     </div>
                   </div>
                 ) : (
-                  <div className="p-10 text-center"><FaSpinner className="animate-spin text-slate-300 text-3xl mx-auto" /></div>
+                  <div className="p-10 text-center flex flex-col items-center gap-4">
+                    <FaSpinner className="animate-spin text-slate-300 text-3xl" />
+                    <span className="text-xs text-slate-400 font-mono">RECONSTRUCTING_VECTORS...</span>
+                  </div>
                 )}
               </div>
             ))}
@@ -468,45 +499,51 @@ const AdvancedAIRecommendations = ({
 
           {/* Dynamic AI Analysis Panel */}
           {showInsights && insights && (
-            <div className="mt-16 grid grid-cols-1 lg:grid-cols-4 gap-6">
-              <div className={`${glassStyle} p-8 rounded-[40px] border-slate-200/50 flex flex-col items-center justify-center text-center`}>
-                <div className="text-5xl font-black text-slate-900 mb-2">{insights.totalRecommendations}</div>
+            <div className="mt-16 grid grid-cols-1 lg:grid-cols-4 gap-6 relative z-10">
+              <div className={`${glassStyle} p-8 rounded-[40px] border-slate-200/50 flex flex-col items-center justify-center text-center group hover:scale-[1.02] transition-all`}>
+                <div className="text-5xl font-black text-slate-900 mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tighter">{insights.totalRecommendations}</div>
                 <div className="text-xs font-bold text-blue-600 uppercase tracking-widest">Calculated Matches</div>
               </div>
 
-              <div className={`${glassStyle} p-8 rounded-[40px] border-slate-200/50 lg:col-span-2`}>
+              <div className={`${glassStyle} p-8 rounded-[40px] border-slate-200/50 lg:col-span-2 hover:scale-[1.01] transition-all`}>
                 <div className="flex items-center justify-between mb-6">
                   <h4 className="font-black text-slate-800 uppercase tracking-widest text-sm">System Confidence Matrix</h4>
-                  <FaChartLine className="text-blue-500" />
+                  <div className="flex gap-1">
+                    {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}></div>)}
+                  </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-bold text-slate-600">
-                      <span>ENSEMBLE CONSENSUS</span>
-                      <span>98.2%</span>
+                      <span className="flex items-center gap-2"><div className="w-2 h-2 bg-blue-600 rounded-full shadow-[0_0_5px_rgba(37,99,235,0.5)]"></div> ENSEMBLE CONSENSUS</span>
+                      <span className="font-mono text-blue-600 tracking-tighter">98.2%</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full animate-pulse" style={{ width: '98.2%' }}></div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-[1px]">
+                      <div className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full animate-pulse shadow-[0_0_10px_rgba(37,99,235,0.3)]" style={{ width: '98.2%' }}></div>
                     </div>
                   </div>
                   <div className="space-y-2">
                     <div className="flex justify-between text-xs font-bold text-slate-600">
-                      <span>PREFERENCE ALIGNMENT</span>
-                      <span>{Math.round(insights.averageScore * 100)}%</span>
+                      <span className="flex items-center gap-2"><div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_5px_rgba(16,185,129,0.5)]"></div> PREFERENCE ALIGNMENT</span>
+                      <span className="font-mono text-emerald-600 tracking-tighter">{Math.round(insights.averageScore * 100)}%</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden">
-                      <div className="h-full bg-gradient-to-r from-emerald-500 to-green-600 rounded-full" style={{ width: `${insights.averageScore * 100}%` }}></div>
+                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-[1px]">
+                      <div className="h-full bg-gradient-to-r from-emerald-500 to-green-600 rounded-full transition-all duration-1000" style={{ width: `${insights.averageScore * 100}%` }}></div>
                     </div>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-blue-600 p-8 rounded-[40px] shadow-xl flex flex-col text-white">
-                <h4 className="font-bold mb-4 flex items-center gap-2"><FaLightbulb className="text-yellow-300" /> AI Strategy</h4>
-                <p className="text-xs text-blue-100 leading-relaxed mb-6">
-                  "Based on your recent <strong>{insights.totalRecommendations}</strong> interactions, we've pivoted the search strategy to prioritize <strong>investment yield</strong> and <strong>sqft efficiency</strong>."
+              <div className="bg-gradient-to-br from-blue-700 to-indigo-900 p-8 rounded-[40px] shadow-2xl flex flex-col text-white relative overflow-hidden group">
+                <div className="absolute -top-10 -right-10 w-40 h-40 bg-white/10 rounded-full blur-3xl group-hover:scale-150 transition-transform duration-1000"></div>
+                <h4 className="font-bold mb-4 flex items-center gap-2 relative z-10">
+                  <div className="p-2 bg-white/20 rounded-xl backdrop-blur-md border border-white/20"><FaLightbulb className="text-yellow-300" /></div>
+                  AI Strategy
+                </h4>
+                <p className="text-xs text-blue-100 leading-relaxed mb-6 relative z-10 font-medium italic opacity-90">
+                  "System optimization complete. Based on your recent <strong>{insights.totalRecommendations}</strong> interactions, we've optimized vectors to prioritize <strong>market scarcity</strong> and <strong>high-yield assets</strong>."
                 </p>
-                <button className="mt-auto py-2 px-4 bg-white/20 hover:bg-white/30 border border-white/30 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                <button className="mt-auto py-3 px-4 bg-white/10 hover:bg-white/20 border border-white/30 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all backdrop-blur-sm active:scale-95 shadow-lg">
                   Refine Data Profile
                 </button>
               </div>

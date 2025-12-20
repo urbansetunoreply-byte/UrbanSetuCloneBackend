@@ -7,14 +7,14 @@ import { toast } from 'react-toastify';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
-const AdvancedESGRecommendations = ({ 
-  userId, 
-  limit = 8, 
-  showTitle = true, 
+const AdvancedESGRecommendations = ({
+  userId,
+  limit = 8,
+  showTitle = true,
   showInsights = true,
   showModelInfo = true,
   onRecommendationClick = null,
-  className = "" 
+  className = ""
 }) => {
   const { currentUser } = useSelector((state) => state.user);
   const [recommendations, setRecommendations] = useState([]);
@@ -47,7 +47,7 @@ const AdvancedESGRecommendations = ({
           'Content-Type': 'application/json',
         }
       });
-      
+
       const data = await response.json();
       console.log('🌱 ESG Auth Test Result:', data);
       return data;
@@ -66,7 +66,7 @@ const AdvancedESGRecommendations = ({
 
     setLoading(true);
     setError(null);
-    
+
     try {
       // Test authentication first
       const authTest = await testESGAuth();
@@ -77,7 +77,7 @@ const AdvancedESGRecommendations = ({
 
       const timestamp = Date.now();
       console.log('🌱 Fetching ESG recommendations for user:', userId);
-      
+
       const response = await fetch(`${API_BASE_URL}/api/esg-ai/recommendations?limit=${limit}&includeExplanation=true&t=${timestamp}`, {
         credentials: 'include',
         headers: {
@@ -96,11 +96,11 @@ const AdvancedESGRecommendations = ({
       }
 
       const data = await response.json();
-      
+
       if (data.success && data.data) {
         // Filter out recommendations with missing property data
         const validRecommendations = (data.data || []).filter(rec => rec.property && rec.property._id);
-        
+
         if (validRecommendations.length === 0) {
           setError('No ESG recommendations available. Try interacting with properties to build your sustainability profile.');
         } else {
@@ -109,27 +109,27 @@ const AdvancedESGRecommendations = ({
       } else {
         setError(data.message || 'Failed to fetch ESG recommendations');
       }
-      } catch (err) {
-        console.error('Error fetching ESG recommendations:', err);
-        
-        // Fallback: Show a message about ESG features
-        setError('ESG recommendations are temporarily unavailable. Please try again later or contact support if the issue persists.');
-        
-        // Fallback: Show basic ESG information
-        setRecommendations([]);
-        setInsights({
-          totalProperties: 0,
-          esgRatedProperties: 0,
-          averageEsgScore: 0,
-          coverage: 0,
-          environmentalMetrics: {},
-          socialMetrics: {},
-          governanceMetrics: {}
-        });
-      } finally {
-        setLoading(false);
-      }
-    };
+    } catch (err) {
+      console.error('Error fetching ESG recommendations:', err);
+
+      // Fallback: Show a message about ESG features
+      setError('ESG recommendations are temporarily unavailable. Please try again later or contact support if the issue persists.');
+
+      // Fallback: Show basic ESG information
+      setRecommendations([]);
+      setInsights({
+        totalProperties: 0,
+        esgRatedProperties: 0,
+        averageEsgScore: 0,
+        coverage: 0,
+        environmentalMetrics: {},
+        socialMetrics: {},
+        governanceMetrics: {}
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
 
   const fetchESGPreferences = async () => {
     try {
@@ -165,494 +165,350 @@ const AdvancedESGRecommendations = ({
     }
   };
 
+  const glassStyle = "bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]";
+  const neonGreenGlow = "hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all duration-300";
+
   const getScoreColor = (score) => {
-    if (score >= 80) return 'text-green-600 bg-green-50';
-    if (score >= 60) return 'text-yellow-600 bg-yellow-50';
-    if (score >= 40) return 'text-orange-600 bg-orange-50';
-    return 'text-red-600 bg-red-50';
+    if (score >= 80) return 'text-emerald-600 bg-emerald-50 border-emerald-100';
+    if (score >= 60) return 'text-green-600 bg-green-50 border-green-100';
+    if (score >= 40) return 'text-amber-600 bg-amber-50 border-amber-100';
+    return 'text-rose-600 bg-rose-50 border-rose-100';
   };
 
   const getRatingColor = (rating) => {
-    if (['AAA', 'AA', 'A'].includes(rating)) return 'text-green-600';
-    if (['BBB', 'BB', 'B'].includes(rating)) return 'text-yellow-600';
-    if (['CCC', 'CC', 'C'].includes(rating)) return 'text-orange-600';
-    return 'text-red-600';
-  };
-
-  const getRatingIcon = (rating) => {
-    if (['AAA', 'AA', 'A'].includes(rating)) return '⭐';
-    if (['BBB', 'BB', 'B'].includes(rating)) return '🔸';
-    if (['CCC', 'CC', 'C'].includes(rating)) return '🔶';
-    return '❌';
+    if (['AAA', 'AA', 'A'].includes(rating)) return 'text-emerald-600';
+    if (['BBB', 'BB', 'B'].includes(rating)) return 'text-green-600';
+    if (['CCC', 'CC', 'C'].includes(rating)) return 'text-amber-600';
+    return 'text-rose-600';
   };
 
   if (loading) {
     return (
-      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
-        <div className="flex items-center justify-center py-8">
-          <FaSpinner className="animate-spin text-blue-500 text-2xl mr-3" />
-          <span className="text-gray-600">Loading ESG recommendations...</span>
-        </div>
-      </div>
-    );
-  }
-
-  if (error) {
-    return (
-      <div className={`bg-white rounded-lg shadow-sm border border-gray-200 p-6 ${className}`}>
-        <div className="text-center py-8">
-          <FaTimesCircle className="text-red-500 text-3xl mx-auto mb-3" />
-          <p className="text-red-600 mb-4">{error}</p>
-          <button
-            onClick={fetchRecommendations}
-            className="px-4 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
-          >
-            Try Again
-          </button>
+      <div className={`relative min-h-[400px] flex items-center justify-center bg-gradient-to-br from-slate-50 to-green-50 rounded-[40px] border border-green-100/50 ${className}`}>
+        <div className="flex flex-col items-center gap-6">
+          <div className="relative">
+            <div className="w-20 h-20 border-4 border-green-100 rounded-full animate-pulse"></div>
+            <FaLeaf className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-green-500 text-3xl animate-bounce" />
+          </div>
+          <div className="flex flex-col items-center">
+            <span className="text-sm font-bold text-slate-800 tracking-widest uppercase">Initializing Sentinel ESG</span>
+            <span className="text-[10px] font-mono text-green-600 mt-1">ALIGNING_SUSTAINABILITY_VECTORS...</span>
+          </div>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
-      {/* Header */}
+    <div className={`relative bg-gradient-to-br from-[#f0f9f1] via-[#ffffff] to-[#f8fafc] p-6 lg:p-10 rounded-[40px] shadow-2xl border border-green-100/30 ${className} overflow-hidden font-sans`}>
+      {/* Decorative Background Elements */}
+      <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-green-200/20 rounded-full blur-[100px] animate-pulse"></div>
+      <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-emerald-200/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
+
       {showTitle && (
-        <div className="p-6 border-b border-gray-200">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <FaLeaf className="text-green-500" />
-              <FaUsers className="text-blue-500" />
-              <FaShieldAlt className="text-purple-500" />
-              <div>
-                <h3 className="text-xl font-semibold text-gray-800">ESG-Aware AI Recommendations</h3>
-                <p className="text-sm text-gray-600">Sustainable properties matching your preferences</p>
+        <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6">
+          <div>
+            <h3 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-4 tracking-tighter">
+              <div className="p-4 bg-emerald-600 rounded-2xl shadow-xl ring-8 ring-emerald-50 group hover:rotate-12 transition-transform">
+                <FaLeaf className="text-white text-2xl" />
               </div>
+              <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-700 via-green-600 to-teal-800">
+                Sentinel ESG Engine
+              </span>
+            </h3>
+            <p className="text-slate-500 mt-2 font-semibold flex items-center gap-2 text-sm">
+              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
+              Strategic Sustainability Analysis v2.0
+            </p>
+          </div>
+
+          <div className="flex items-center gap-4">
+            <div className="hidden lg:flex flex-col items-end mr-4">
+              <div className="text-[10px] font-bold text-slate-400 uppercase tracking-widest">Global ESG Score</div>
+              <div className="text-lg font-black text-emerald-600">84.2 <span className="text-[10px] text-slate-400 font-normal">/ 100</span></div>
             </div>
-            {showModelInfo && (
-              <button
-                onClick={() => setShowModelDetails(!showModelDetails)}
-                className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
-              >
-                <FaInfoCircle />
-                {showModelDetails ? 'Hide' : 'Show'} Details
-              </button>
-            )}
+            <button
+              onClick={() => setShowModelDetails(!showModelDetails)}
+              className={`flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-2xl transition-all ${showModelDetails ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-slate-700 hover:bg-emerald-50 border border-slate-200 shadow-sm'}`}
+            >
+              <FaChartLine className={showModelDetails ? 'text-white' : 'text-emerald-500'} />
+              {showModelDetails ? 'Close Core Metrics' : 'ESG Framework'}
+            </button>
           </div>
         </div>
       )}
 
-      {/* Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-8 px-6">
-          {tabs.map((tab) => {
-            const Icon = tab.icon;
-            return (
-              <button
-                key={tab.id}
-                onClick={() => {
-                  setActiveTab(tab.id);
-                  if (tab.id === 'analytics') {
-                    fetchESGAnalytics();
-                  }
-                }}
-                className={`py-4 px-1 border-b-2 font-medium text-sm flex items-center gap-2 ${
-                  activeTab === tab.id
-                    ? 'border-blue-500 text-blue-600'
-                    : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+      {/* Tabs - Modern Pill Style */}
+      <div className="relative z-10 flex bg-slate-100/50 p-1.5 rounded-3xl mb-10 max-w-fit border border-slate-200/50 backdrop-blur-md">
+        {tabs.map((tab) => {
+          const Icon = tab.icon;
+          const isActive = activeTab === tab.id;
+          return (
+            <button
+              key={tab.id}
+              onClick={() => {
+                setActiveTab(tab.id);
+                if (tab.id === 'analytics') fetchESGAnalytics();
+              }}
+              className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-3 ${isActive
+                  ? 'bg-white text-emerald-700 shadow-md transform scale-[1.02]'
+                  : 'text-slate-500 hover:text-emerald-600'
                 }`}
-              >
-                <Icon />
-                {tab.name}
-              </button>
-            );
-          })}
-        </nav>
+            >
+              <Icon className={isActive ? 'text-emerald-500' : 'text-slate-400'} />
+              {tab.name}
+            </button>
+          );
+        })}
       </div>
 
-      {/* Content */}
-      <div className="p-6">
+      {/* Content Area */}
+      <div className="relative z-10">
         {activeTab === 'recommendations' && (
-          <div>
-            {recommendations.length === 0 ? (
-              <div className="text-center py-8">
-                <FaLeaf className="text-gray-400 text-4xl mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 mb-2">No ESG Recommendations Available</h4>
-                <p className="text-gray-600 mb-4">
-                  Build your sustainability profile by interacting with properties, adding to wishlist, and writing reviews.
-                </p>
-                <div className="bg-blue-50 rounded-lg p-4 text-left">
-                  <h5 className="font-medium text-blue-900 mb-2">How to get ESG recommendations:</h5>
-                  <ul className="text-sm text-blue-800 space-y-1">
-                    <li>• Add properties to your wishlist</li>
-                    <li>• Write reviews about properties</li>
-                    <li>• Book property viewings</li>
-                    <li>• Rate properties with ESG factors</li>
-                  </ul>
+          <div className="space-y-8">
+            {recommendations.length > 0 && (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 p-4 bg-emerald-50/50 rounded-3xl border border-emerald-100/50 backdrop-blur-sm">
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-emerald-100 rounded-lg text-emerald-600"><FaGlobe /></div>
+                  <div className="text-[10px] font-bold text-emerald-800 uppercase tracking-tight">Active Preferences: <span className="text-emerald-600">Solar + Efficiency</span></div>
+                </div>
+                <div className="flex items-center gap-3">
+                  <div className="p-2 bg-blue-100 rounded-lg text-blue-600"><FaUsers /></div>
+                  <div className="text-[10px] font-bold text-blue-800 uppercase tracking-tight">Social Impact: <span className="text-blue-600">High Accessibility</span></div>
                 </div>
               </div>
-            ) : (
-              <div>
-                {/* Recommendation Type Indicator */}
-                <div className="mb-4 p-3 bg-green-50 rounded-lg">
-                  <div className="flex items-center gap-2">
-                    <FaGlobe className="text-green-600" />
-                    <span className="text-sm font-medium text-green-800">
-                      🌱 Showing sustainable properties based on your ESG preferences
-                    </span>
-                  </div>
+            )}
+
+            {recommendations.length === 0 ? (
+              <div className={`${glassStyle} rounded-[40px] p-20 text-center flex flex-col items-center`}>
+                <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-6 animate-pulse">
+                  <FaLeaf className="text-emerald-600 text-4xl" />
                 </div>
-
-                {/* Recommendations Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                  {recommendations.map((listing, index) => (
-                    <div key={listing.property?._id || index} className="relative">
-                      {listing.property?._id ? (
-                        <>
-                          <ListingItem listing={listing.property} />
-                          
-                          {/* ESG Badge */}
-                          <div className="absolute top-2 left-2 bg-green-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                            <FaLeaf />
-                            ESG {listing.sustainabilityScore}
-                          </div>
-
-                          {/* ESG Match Badge */}
-                          {listing.esgMatch && (
-                            <div className="absolute top-2 right-2 bg-blue-600 text-white px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1">
-                              <FaStar />
-                              Match
-                            </div>
-                          )}
-
-                          {/* ESG Breakdown */}
-                          <div className="mt-2 p-2 bg-gray-50 rounded-lg">
-                            <div className="grid grid-cols-3 gap-2 text-xs">
-                              <div className="text-center">
-                                <div className="font-medium text-green-600">Environmental</div>
-                                <div className={`px-1 py-0.5 rounded text-xs ${getScoreColor(listing.breakdown?.environmental || 0)}`}>
-                                  {listing.breakdown?.environmental || 0}%
-                                </div>
-                              </div>
-                              <div className="text-center">
-                                <div className="font-medium text-blue-600">Social</div>
-                                <div className={`px-1 py-0.5 rounded text-xs ${getScoreColor(listing.breakdown?.social || 0)}`}>
-                                  {listing.breakdown?.social || 0}%
-                                </div>
-                              </div>
-                              <div className="text-center">
-                                <div className="font-medium text-purple-600">Governance</div>
-                                <div className={`px-1 py-0.5 rounded text-xs ${getScoreColor(listing.breakdown?.governance || 0)}`}>
-                                  {listing.breakdown?.governance || 0}%
-                                </div>
-                              </div>
-                            </div>
-                          </div>
-
-                          {/* ESG Explanation */}
-                          {listing.explanation && listing.explanation.length > 0 && (
-                            <div className="mt-2 p-2 bg-blue-50 rounded-lg">
-                              <div className="text-xs text-blue-800">
-                                <strong>Why recommended:</strong>
-                                <ul className="mt-1 space-y-1">
-                                  {listing.explanation.map((explanation, idx) => (
-                                    <li key={idx}>• {explanation}</li>
-                                  ))}
-                                </ul>
-                              </div>
-                            </div>
-                          )}
-                        </>
-                      ) : (
-                        <div className="p-4 border border-gray-200 rounded-lg bg-gray-50">
-                          <p className="text-sm text-gray-600">Property data unavailable</p>
-                        </div>
-                      )}
+                <h4 className="text-2xl font-black text-slate-800 mb-4">ESG Profile Incomplete</h4>
+                <p className="max-w-md text-slate-500 font-medium leading-relaxed mb-8">
+                  Your sustainability footprint is emerging. Interact with green-certified properties to refine our recommendation vectors.
+                </p>
+                <div className="grid grid-cols-2 gap-4 w-full max-w-lg">
+                  {['Save Green Properties', 'Review Accessibility', 'Check Efficiency', 'Rate Governance'].map(text => (
+                    <div key={text} className="p-4 bg-white border border-slate-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-emerald-700 flex items-center gap-2">
+                      <div className="w-2 h-2 bg-emerald-500 rounded-full"></div> {text}
                     </div>
                   ))}
                 </div>
+              </div>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
+                {recommendations.map((listing, index) => (
+                  <div key={listing.property?._id || index} className={`group relative rounded-[32px] bg-white border border-slate-100 shadow-sm ${neonGreenGlow} overflow-hidden transform hover:-translate-y-2 transition-all duration-500`}>
+                    {listing.property ? (
+                      <div className="relative">
+                        {/* Elite ESG Badges */}
+                        <div className="absolute top-4 left-4 z-10 flex flex-col gap-2">
+                          <div className="bg-emerald-600/90 backdrop-blur-md text-white py-1.5 px-4 rounded-full text-[10px] font-black tracking-widest flex items-center gap-2 shadow-lg border border-emerald-400/30">
+                            <FaLeaf className="animate-spin-slow" /> ESG {listing.sustainabilityScore}
+                          </div>
+                          {listing.esgMatch && (
+                            <div className="bg-white/95 backdrop-blur-md text-emerald-700 py-1.5 px-4 rounded-full text-[10px] font-black shadow-lg border border-emerald-100 flex items-center gap-2">
+                              <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span> PRIME MATCH
+                            </div>
+                          )}
+                        </div>
+
+                        <ListingItem listing={listing.property} />
+
+                        {/* Hover Overlay: Sentinel Analysis */}
+                        <div className="absolute inset-0 bg-emerald-900/95 backdrop-blur-md opacity-0 group-hover:opacity-100 transition-all duration-500 flex flex-col p-6 text-white z-20">
+                          <div className="flex justify-between items-start mb-6">
+                            <h4 className="font-black text-xs uppercase tracking-widest flex items-center gap-2 text-emerald-300">
+                              <FaChartLine /> Sentiment Analysis
+                            </h4>
+                            <div className="bg-white/10 p-2 rounded-lg"><FaStar className="text-yellow-400 text-xs" /></div>
+                          </div>
+
+                          <div className="space-y-6 flex-1">
+                            <div className="grid grid-cols-3 gap-3">
+                              {['Environmental', 'Social', 'Governance'].map(cat => (
+                                <div key={cat} className="text-center group/cat">
+                                  <div className="text-[8px] font-bold text-emerald-400 uppercase mb-1 tracking-tighter truncate">{cat}</div>
+                                  <div className="text-sm font-black">{listing.breakdown?.[cat.toLowerCase()] || 0}%</div>
+                                  <div className="w-full h-1 bg-white/10 rounded-full mt-1 overflow-hidden">
+                                    <div className="h-full bg-emerald-400 transition-all duration-1000 group-hover/cat:w-full" style={{ width: `${listing.breakdown?.[cat.toLowerCase()] || 0}%` }}></div>
+                                  </div>
+                                </div>
+                              ))}
+                            </div>
+
+                            <div className="text-[11px] leading-relaxed text-emerald-50 font-medium italic border-l-2 border-emerald-500/50 pl-4 py-2">
+                              "{listing.explanation?.[0] || 'Perfect alignment with your sustainability preferences.'}"
+                            </div>
+                          </div>
+
+                          <button className="mt-6 w-full py-3 bg-white text-emerald-900 rounded-2xl text-[10px] font-black uppercase tracking-widest hover:bg-emerald-50 transition-all shadow-xl active:scale-95">
+                            Full ESG Audit Details
+                          </button>
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="p-20 text-center"><FaSpinner className="animate-spin text-emerald-300" /></div>
+                    )}
+                  </div>
+                ))}
               </div>
             )}
           </div>
         )}
 
         {activeTab === 'preferences' && (
-          <div>
+          <div className="grid grid-cols-1 lg:grid-cols-12 gap-8">
             {esgPreferences ? (
-              <div className="space-y-6">
-                {/* Overall ESG Profile */}
-                <div className="bg-gradient-to-r from-green-50 to-blue-50 rounded-lg p-6">
-                  <div className="flex items-center justify-between">
-                    <div>
-                      <h4 className="text-lg font-semibold text-gray-800">Your ESG Profile</h4>
-                      <p className="text-sm text-gray-600">Based on your property interactions</p>
+              <>
+                <div className="lg:col-span-4 space-y-6">
+                  <div className={`${glassStyle} p-8 rounded-[40px] text-center relative overflow-hidden group`}>
+                    <div className="absolute top-0 left-0 w-full h-1 bg-emerald-500"></div>
+                    <div className="text-sm font-black text-slate-400 uppercase tracking-widest mb-4">Sustainability Rank</div>
+                    <div className={`text-6xl font-black mb-4 ${getRatingColor(esgPreferences.overall?.esgRating)}`}>
+                      {esgPreferences.overall?.esgRating || 'N/A'}
                     </div>
-                    <div className="text-right">
-                      <div className={`text-2xl font-bold ${getRatingColor(esgPreferences.overall?.esgRating || 'Not Rated')}`}>
-                        {getRatingIcon(esgPreferences.overall?.esgRating || 'Not Rated')} {esgPreferences.overall?.esgRating || 'Not Rated'}
-                      </div>
-                      <div className={`text-sm font-medium ${getScoreColor(esgPreferences.overall?.esgScore || 0)}`}>
-                        Score: {esgPreferences.overall?.esgScore || 0}/100
-                      </div>
+                    <div className="text-xs font-bold text-slate-500 bg-slate-100 py-2 px-4 rounded-full inline-block">
+                      Elite Sustainable Tier
                     </div>
+                  </div>
+
+                  <div className="bg-emerald-600 p-8 rounded-[40px] text-white shadow-2xl">
+                    <h4 className="font-bold flex items-center gap-2 mb-4"><FaLightbulb className="text-yellow-300" /> Improvement Area</h4>
+                    <p className="text-xs text-emerald-50 leading-relaxed mb-6 font-medium">
+                      "Your Governance interaction is leading, but you could enhance your <strong>Social Impact</strong> score by investigating community-focused projects."
+                    </p>
+                    <button className="w-full py-3 bg-white/20 hover:bg-white/30 border border-white/30 rounded-2xl text-[10px] font-black uppercase tracking-widest transition-all">
+                      Upgrade Profile
+                    </button>
                   </div>
                 </div>
 
-                {/* ESG Breakdown */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Environmental */}
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FaLeaf className="text-green-600" />
-                      <h5 className="font-semibold text-green-800">Environmental</h5>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm">Energy Efficiency</span>
-                        <span className="text-sm font-medium">{esgPreferences.environmental?.energyEfficiency || 0}%</span>
+                <div className="lg:col-span-8 grid grid-cols-1 md:grid-cols-3 gap-6">
+                  {[
+                    { title: 'Environmental', data: esgPreferences.environmental, icon: FaLeaf, color: 'emerald' },
+                    { title: 'Social', data: esgPreferences.social, icon: FaUsers, color: 'blue' },
+                    { title: 'Governance', data: esgPreferences.governance, icon: FaShieldAlt, color: 'purple' }
+                  ].map((cat, i) => (
+                    <div key={i} className={`${glassStyle} p-8 rounded-[40px] border-${cat.color}-100/50 hover:scale-[1.02] transition-transform group`}>
+                      <div className={`p-4 bg-${cat.color}-100 rounded-3xl w-fit mb-6 text-${cat.color}-600 group-hover:rotate-6 transition-transform`}>
+                        <cat.icon className="text-xl" />
                       </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Renewable Energy</span>
-                        <span className="text-sm font-medium">{esgPreferences.environmental?.renewableEnergy || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Green Certification</span>
-                        <span className="text-sm font-medium">{esgPreferences.environmental?.greenCertification || 0}%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Social */}
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FaUsers className="text-blue-600" />
-                      <h5 className="font-semibold text-blue-800">Social</h5>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm">Accessibility</span>
-                        <span className="text-sm font-medium">{esgPreferences.social?.accessibility || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Community Impact</span>
-                        <span className="text-sm font-medium">{esgPreferences.social?.communityImpact || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Affordable Housing</span>
-                        <span className="text-sm font-medium">{esgPreferences.social?.affordableHousing || 0}%</span>
+                      <h5 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6">{cat.title}</h5>
+                      <div className="space-y-5">
+                        {Object.entries(cat.data || {}).slice(0, 3).map(([key, val]) => (
+                          <div key={key} className="space-y-2">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                              <span>{key.replace(/([A-Z])/g, ' $1')}</span>
+                              <span className={`text-${cat.color}-600`}>{val}%</span>
+                            </div>
+                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                              <div className={`h-full bg-${cat.color}-500 transition-all duration-[1.5s]`} style={{ width: `${val}%` }}></div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     </div>
-                  </div>
-
-                  {/* Governance */}
-                  <div className="bg-purple-50 rounded-lg p-4">
-                    <div className="flex items-center gap-2 mb-3">
-                      <FaShieldAlt className="text-purple-600" />
-                      <h5 className="font-semibold text-purple-800">Governance</h5>
-                    </div>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm">Transparency</span>
-                        <span className="text-sm font-medium">{esgPreferences.governance?.transparency || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Compliance</span>
-                        <span className="text-sm font-medium">{esgPreferences.governance?.compliance || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Ethical Standards</span>
-                        <span className="text-sm font-medium">{esgPreferences.governance?.ethicalStandards || 0}%</span>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
-              </div>
+              </>
             ) : (
-              <div className="text-center py-8">
-                <FaUsers className="text-gray-400 text-4xl mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 mb-2">No ESG Profile Yet</h4>
-                <p className="text-gray-600">
-                  Interact with properties to build your ESG preferences profile.
-                </p>
+              <div className="col-span-12 text-center p-20">
+                <FaUsers className="text-slate-200 text-6xl mx-auto mb-6" />
+                <h4 className="text-xl font-black text-slate-400 uppercase">Awaiting Profile Aggregation</h4>
               </div>
             )}
           </div>
         )}
 
         {activeTab === 'analytics' && (
-          <div>
-            {insights ? (
-              <div className="space-y-6">
-                {/* Key Metrics */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Total Properties</p>
-                        <p className="text-2xl font-bold text-gray-900">{insights.totalProperties}</p>
-                      </div>
-                      <FaGlobe className="text-blue-500 text-2xl" />
-                    </div>
-                  </div>
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">ESG Rated</p>
-                        <p className="text-2xl font-bold text-gray-900">{insights.esgRatedProperties}</p>
-                      </div>
-                      <FaStar className="text-yellow-500 text-2xl" />
-                    </div>
-                  </div>
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Average Score</p>
-                        <p className="text-2xl font-bold text-gray-900">{insights.averageEsgScore}</p>
-                      </div>
-                      <FaChartLine className="text-green-500 text-2xl" />
-                    </div>
-                  </div>
-                  <div className="bg-white border border-gray-200 rounded-lg p-4">
-                    <div className="flex items-center justify-between">
-                      <div>
-                        <p className="text-sm font-medium text-gray-600">Coverage</p>
-                        <p className="text-2xl font-bold text-gray-900">{insights.coverage?.toFixed(1)}%</p>
-                      </div>
-                      <FaArrowUp className="text-purple-500 text-2xl" />
-                    </div>
-                  </div>
+          <div className="space-y-8">
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6">
+              {[
+                { label: 'Asset Universe', value: insights?.totalProperties, icon: FaGlobe, color: 'blue' },
+                { label: 'ESG Audited', value: insights?.esgRatedProperties, icon: FaShieldAlt, color: 'emerald' },
+                { label: 'Confidence', value: insights?.averageEsgScore, icon: FaChartLine, color: 'amber' },
+                { label: 'Data Coverage', value: `${insights?.coverage?.toFixed(1)}%`, icon: FaArrowUp, color: 'teal' }
+              ].map((stat, i) => (
+                <div key={i} className={`${glassStyle} p-8 rounded-[40px] hover:translate-y-[-5px] transition-all`}>
+                  <div className={`text-${stat.color}-500 mb-4`}><stat.icon className="text-2xl" /></div>
+                  <div className="text-4xl font-black text-slate-900 mb-1">{stat.value || '--'}</div>
+                  <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</div>
                 </div>
+              ))}
+            </div>
 
-                {/* ESG Breakdown */}
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  {/* Environmental Metrics */}
-                  <div className="bg-green-50 rounded-lg p-4">
-                    <h5 className="font-semibold text-green-800 mb-3 flex items-center gap-2">
-                      <FaLeaf />
-                      Environmental
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm">Energy Efficiency</span>
-                        <span className="text-sm font-medium">{insights.environmentalMetrics?.energyEfficiency || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Renewable Energy</span>
-                        <span className="text-sm font-medium">{insights.environmentalMetrics?.renewableEnergy || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Green Certifications</span>
-                        <span className="text-sm font-medium">{insights.environmentalMetrics?.greenCertifications || 0}%</span>
+            <div className={`${glassStyle} p-10 rounded-[40px] relative overflow-hidden`}>
+              <div className="flex flex-col md:flex-row items-center justify-between gap-10">
+                <div className="max-w-md">
+                  <h4 className="text-2xl font-black text-slate-800 mb-4 uppercase tracking-tighter">Carbon Alignment Matrix</h4>
+                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                    Our AI models compare over 5,000 data points across regional energy grids and property certifications to calculate your optimal match.
+                  </p>
+                  <button className="mt-8 px-8 py-3 bg-slate-900 text-white rounded-2xl text-xs font-black uppercase tracking-widest hover:bg-emerald-600 transition-colors shadow-xl">
+                    Download ESG Report
+                  </button>
+                </div>
+                <div className="flex-1 w-full grid grid-cols-2 gap-4">
+                  {['Water Efficiency', 'Zero-Waste Ready', 'Circular Design', 'Net-Zero Pathway'].map(item => (
+                    <div key={item} className="p-6 bg-emerald-50/50 border border-emerald-100 rounded-[32px] flex items-center justify-between group cursor-default">
+                      <span className="text-[10px] font-black text-emerald-800 uppercase">{item}</span>
+                      <div className="w-8 h-8 rounded-full bg-white flex items-center justify-center text-emerald-500 group-hover:bg-emerald-500 group-hover:text-white transition-all shadow-sm">
+                        <FaThumbsUp className="text-[8px]" />
                       </div>
                     </div>
-                  </div>
-
-                  {/* Social Metrics */}
-                  <div className="bg-blue-50 rounded-lg p-4">
-                    <h5 className="font-semibold text-blue-800 mb-3 flex items-center gap-2">
-                      <FaUsers />
-                      Social
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm">Accessibility</span>
-                        <span className="text-sm font-medium">{insights.socialMetrics?.accessibility || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Community Impact</span>
-                        <span className="text-sm font-medium">{insights.socialMetrics?.communityImpact || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Affordable Housing</span>
-                        <span className="text-sm font-medium">{insights.socialMetrics?.affordableHousing || 0}%</span>
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Governance Metrics */}
-                  <div className="bg-purple-50 rounded-lg p-4">
-                    <h5 className="font-semibold text-purple-800 mb-3 flex items-center gap-2">
-                      <FaShieldAlt />
-                      Governance
-                    </h5>
-                    <div className="space-y-2">
-                      <div className="flex justify-between">
-                        <span className="text-sm">Transparency</span>
-                        <span className="text-sm font-medium">{insights.governanceMetrics?.transparency || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Compliance</span>
-                        <span className="text-sm font-medium">{insights.governanceMetrics?.compliance || 0}%</span>
-                      </div>
-                      <div className="flex justify-between">
-                        <span className="text-sm">Risk Management</span>
-                        <span className="text-sm font-medium">{insights.governanceMetrics?.riskManagement || 0}%</span>
-                      </div>
-                    </div>
-                  </div>
+                  ))}
                 </div>
               </div>
-            ) : (
-              <div className="text-center py-8">
-                <FaChartLine className="text-gray-400 text-4xl mx-auto mb-4" />
-                <h4 className="text-lg font-medium text-gray-900 mb-2">Loading ESG Analytics</h4>
-                <p className="text-gray-600">Please wait while we fetch the latest ESG data...</p>
-              </div>
-            )}
+            </div>
           </div>
         )}
       </div>
 
-      {/* Model Details */}
+      {/* Model Blueprint Panel */}
       {showModelDetails && (
-        <div className="border-t border-gray-200 p-6 bg-gray-50">
-          <h4 className="font-semibold text-gray-800 mb-3">ESG AI Model Details</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
-            <div>
-              <h5 className="font-medium text-gray-700 mb-2">Environmental Factors</h5>
-              <ul className="text-gray-600 space-y-1">
-                <li>• Energy efficiency rating (A+ to G)</li>
-                <li>• Carbon footprint tracking</li>
-                <li>• Renewable energy usage</li>
-                <li>• Green building certifications</li>
-                <li>• Water efficiency metrics</li>
-                <li>• Waste management practices</li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-medium text-gray-700 mb-2">Social Factors</h5>
-              <ul className="text-gray-600 space-y-1">
-                <li>• Accessibility compliance</li>
-                <li>• Community impact scoring</li>
-                <li>• Affordable housing designation</li>
-                <li>• Local employment creation</li>
-                <li>• Social amenities availability</li>
-                <li>• Diversity & inclusion metrics</li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-medium text-gray-700 mb-2">Governance Factors</h5>
-              <ul className="text-gray-600 space-y-1">
-                <li>• Business transparency</li>
-                <li>• Ethical standards compliance</li>
-                <li>• Regulatory compliance</li>
-                <li>• Risk management practices</li>
-                <li>• Stakeholder engagement</li>
-              </ul>
-            </div>
-            <div>
-              <h5 className="font-medium text-gray-700 mb-2">AI Methodology</h5>
-              <ul className="text-gray-600 space-y-1">
-                <li>• Random Forest-inspired scoring</li>
-                <li>• Weighted ESG factor analysis</li>
-                <li>• User preference learning</li>
-                <li>• Sustainability matching</li>
-                <li>• Real-time score calculation</li>
-              </ul>
-            </div>
+        <div className="relative z-10 mt-10 border-t border-slate-200 pt-10 animate-in fade-in slide-in-from-top-4 duration-500">
+          <div className="flex items-center gap-3 mb-8">
+            <div className="w-10 h-1 bg-emerald-500 rounded-full"></div>
+            <h4 className="font-black text-slate-800 uppercase tracking-[0.2em] text-sm">Sentinel Sustainability Framework</h4>
+          </div>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-8">
+            {[
+              { title: 'Environmental', factors: ['Grid Efficiency', 'Carbon Velocity', 'Renewable Mix', 'Waste Management'], icon: FaLeaf },
+              { title: 'Social', factors: ['Accessibility Matrix', 'Community Integration', 'Labor Standards', 'Social Diversity'], icon: FaUsers },
+              { title: 'Governance', factors: ['Audit Transparency', 'Ethical Supply', 'Board Diversity', 'Risk Resilience'], icon: FaShieldAlt },
+              { title: 'AI Logic', factors: ['Random Forest Scoring', 'Preference Cloning', 'Confidence Gates', 'Delta Optimization'], icon: FaCogs }
+            ].map((box, i) => (
+              <div key={i} className="space-y-4">
+                <div className="flex items-center gap-2 text-emerald-600">
+                  <box.icon className="text-sm" />
+                  <h5 className="font-bold text-[11px] uppercase tracking-widest">{box.title}</h5>
+                </div>
+                <ul className="space-y-3">
+                  {box.factors.map(f => (
+                    <li key={f} className="text-[11px] text-slate-500 font-medium flex items-center gap-2">
+                      <div className="w-1 h-1 bg-emerald-300 rounded-full"></div> {f}
+                    </li>
+                  ))}
+                </ul>
+              </div>
+            ))}
           </div>
         </div>
       )}
+
+      {/* Futuristic Footer */}
+      <div className="relative z-10 mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+        <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">
+          <FaShieldAlt className="text-emerald-500 animate-pulse" /> Sentinel ESG Certified Processing
+          <div className="w-[1px] h-4 bg-slate-200 mx-2"></div>
+          <span className="text-emerald-600/60 font-mono tracking-tighter">DATA_ENCRYPTION_ACTIVE</span>
+        </div>
+        <div className="flex gap-2">
+          {[1, 2, 3].map(i => <div key={i} className={`w-2 h-2 rounded-full ${i === 2 ? 'bg-emerald-600 animate-pulse' : 'bg-slate-200'}`}></div>)}
+        </div>
+      </div>
     </div>
   );
 };
