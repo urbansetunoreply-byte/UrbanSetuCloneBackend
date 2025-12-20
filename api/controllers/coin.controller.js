@@ -98,6 +98,12 @@ export const adminAdjustCoins = async (req, res, next) => {
             return next(errorHandler(400, 'Amount must be positive'));
         }
 
+        // Limit grant amount for regular admins (e.g., max 5000 coins)
+        const ADMIN_GRANT_LIMIT = 5000;
+        if (type === 'credit' && req.user.role !== 'rootadmin' && amount > ADMIN_GRANT_LIMIT) {
+            return next(errorHandler(403, `Regular admins can only grant up to ${ADMIN_GRANT_LIMIT} coins. Please contact a Root Admin for higher amounts.`));
+        }
+
         const result = await (type === 'credit' ? CoinService.credit : CoinService.debit)({
             userId,
             amount,
