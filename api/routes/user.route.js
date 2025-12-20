@@ -1,5 +1,6 @@
 import express from 'express'
-import {test,updateUser,deleteUser,getUserListings,getUserByEmail,changePassword,getApprovedAdmins,transferDefaultAdminRights,deleteUserAfterTransfer,verifyPassword,getAllUsersForAutocomplete,getUserByEmailForAssignment,checkEmailAvailability,checkMobileAvailability,exportData,exportDataCache} from '../controllers/user.controller.js'
+import { test, updateUser, deleteUser, getUserListings, getUserByEmail, changePassword, getApprovedAdmins, transferDefaultAdminRights, deleteUserAfterTransfer, verifyPassword, getAllUsersForAutocomplete, getUserByEmailForAssignment, checkEmailAvailability, checkMobileAvailability, exportData, exportDataCache, searchUsers } from '../controllers/user.controller.js'
+
 import { verifyToken } from '../utils/verify.js'
 import { dataExportRateLimit } from '../middleware/rateLimiter.js'
 import bcryptjs from 'bcryptjs'
@@ -7,29 +8,29 @@ import jwt from 'jsonwebtoken'
 import User from '../models/user.model.js'
 import { errorHandler } from '../utils/error.js'
 
-const router=express.Router()
+const router = express.Router()
 
-router.get("/test",test)
-router.post("/update/:id",verifyToken,updateUser)
-router.delete("/delete/:id",verifyToken,deleteUser)
-router.get("/listing/:id",verifyToken,getUserListings)
-router.get("/email/:email",getUserByEmail)
+router.get("/test", test)
+router.post("/update/:id", verifyToken, updateUser)
+router.delete("/delete/:id", verifyToken, deleteUser)
+router.get("/listing/:id", verifyToken, getUserListings)
+router.get("/email/:email", getUserByEmail)
 router.get("/id/:id", async (req, res, next) => {
   try {
     const { id } = req.params;
     const user = await User.findById(id).select('-password');
-    
+
     if (!user) {
       return next(errorHandler(404, "User not found"));
     }
-    
+
     res.status(200).json(user);
   } catch (error) {
     next(error);
   }
 })
-router.post("/change-password/:id",verifyToken,changePassword)
-router.post("/verify-password/:id",verifyToken,verifyPassword)
+router.post("/change-password/:id", verifyToken, changePassword)
+router.post("/verify-password/:id", verifyToken, verifyPassword)
 
 router.post("/signup", async (req, res, next) => {
   const { username, email, password } = req.body;
@@ -185,39 +186,39 @@ router.post("/export-data", verifyToken, dataExportRateLimit, exportData);
 
 // Data export download routes (no auth required - token-based access)
 router.get("/export-data/:token/json", async (req, res, next) => {
-    try {
-        const { token } = req.params;
-        const cached = exportDataCache.get(token);
-        
-        if (!cached || Date.now() > cached.expiresAt) {
-            if (cached) exportDataCache.delete(token);
-            return res.status(404).json({ message: "Export link expired or invalid" });
-        }
+  try {
+    const { token } = req.params;
+    const cached = exportDataCache.get(token);
 
-        res.setHeader('Content-Type', 'application/json');
-        res.setHeader('Content-Disposition', `attachment; filename="urbansetu-data-${cached.username}-${Date.now()}.json"`);
-        res.send(cached.data);
-    } catch (error) {
-        next(error);
+    if (!cached || Date.now() > cached.expiresAt) {
+      if (cached) exportDataCache.delete(token);
+      return res.status(404).json({ message: "Export link expired or invalid" });
     }
+
+    res.setHeader('Content-Type', 'application/json');
+    res.setHeader('Content-Disposition', `attachment; filename="urbansetu-data-${cached.username}-${Date.now()}.json"`);
+    res.send(cached.data);
+  } catch (error) {
+    next(error);
+  }
 });
 
 router.get("/export-data/:token/txt", async (req, res, next) => {
-    try {
-        const { token } = req.params;
-        const cached = exportDataCache.get(token);
-        
-        if (!cached || Date.now() > cached.expiresAt) {
-            if (cached) exportDataCache.delete(token);
-            return res.status(404).json({ message: "Export link expired or invalid" });
-        }
+  try {
+    const { token } = req.params;
+    const cached = exportDataCache.get(token);
 
-        res.setHeader('Content-Type', 'text/plain');
-        res.setHeader('Content-Disposition', `attachment; filename="urbansetu-data-${cached.username}-${Date.now()}.txt"`);
-        res.send(cached.data);
-    } catch (error) {
-        next(error);
+    if (!cached || Date.now() > cached.expiresAt) {
+      if (cached) exportDataCache.delete(token);
+      return res.status(404).json({ message: "Export link expired or invalid" });
     }
+
+    res.setHeader('Content-Type', 'text/plain');
+    res.setHeader('Content-Disposition', `attachment; filename="urbansetu-data-${cached.username}-${Date.now()}.txt"`);
+    res.send(cached.data);
+  } catch (error) {
+    next(error);
+  }
 });
 
 // Count users
@@ -229,5 +230,9 @@ router.get('/count', async (req, res) => {
     res.status(500).json({ message: 'Failed to count users' });
   }
 });
+
+
+// Admin Search Route
+router.get("/search", verifyToken, searchUsers);
 
 export default router

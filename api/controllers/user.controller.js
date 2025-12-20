@@ -744,3 +744,31 @@ export const exportData = async (req, res, next) => {
         next(error);
     }
 };
+
+// Search users by name or email (for Admin Panel)
+export const searchUsers = async (req, res, next) => {
+    try {
+        // Strict admin check
+        if (req.user.role !== 'admin' && req.user.role !== 'rootadmin') {
+            return next(errorHandler(403, 'Forbidden'));
+        }
+
+        const { q } = req.query;
+        if (!q || q.length < 2) {
+            return res.status(200).json({ success: true, users: [] });
+        }
+
+        const users = await User.find({
+            $or: [
+                { username: { $regex: q, $options: 'i' } },
+                { email: { $regex: q, $options: 'i' } }
+            ]
+        })
+            .select('username email _id avatar')
+            .limit(10);
+
+        res.status(200).json({ success: true, users });
+    } catch (error) {
+        next(error);
+    }
+};

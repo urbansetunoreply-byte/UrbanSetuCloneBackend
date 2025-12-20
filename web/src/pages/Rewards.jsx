@@ -4,7 +4,7 @@ import { useLocation, useNavigate, Link } from 'react-router-dom';
 import {
     FaCoins, FaFire, FaHistory, FaGift, FaTrophy, FaArrowUp,
     FaArrowDown, FaRocket, FaStar, FaChevronRight, FaInfoCircle,
-    FaCalendarAlt, FaCheckCircle, FaUserFriends, FaHome, FaBolt, FaShoppingBag, FaReceipt
+    FaCalendarAlt, FaCheckCircle, FaUserFriends, FaHome, FaBolt, FaShoppingBag, FaReceipt, FaCheck, FaLock
 } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
@@ -41,6 +41,8 @@ export default function Rewards() {
         const currentTab = new URLSearchParams(location.search).get('tab') || 'overview';
         setActiveTab(currentTab);
     }, [location.search]);
+
+    const isProfileComplete = currentUser && currentUser.gender && currentUser.address && currentUser.mobileNumber;
 
     const [coinData, setCoinData] = useState({ balance: 0, totalEarned: 0, streak: 0, loading: true });
     const [history, setHistory] = useState([]);
@@ -366,12 +368,24 @@ export default function Rewards() {
                                     <h3 className="font-bold text-slate-800 mb-1">{opt.title}</h3>
                                     <p className="text-xs font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-3 uppercase tracking-tighter">{opt.rate}</p>
                                     <p className="text-sm text-slate-500 mb-6">{opt.desc}</p>
-                                    <button
-                                        onClick={() => navigate(opt.link)}
-                                        className="w-full py-3 bg-slate-900 text-white rounded-2xl font-bold hover:bg-slate-800 transition-colors flex items-center justify-center gap-2 shadow-lg shadow-slate-200"
-                                    >
-                                        <FaGift className="text-pink-400" /> Use Coins
-                                    </button>
+                                    <div className="relative group/btn w-full">
+                                        {!isProfileComplete && (
+                                            <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl">
+                                                Complete profile to unlock rewards
+                                                <div className="absolute top-full left-1/2 -translate-x-1/2 border-4 border-transparent border-t-gray-900"></div>
+                                            </div>
+                                        )}
+                                        <button
+                                            onClick={() => isProfileComplete && navigate(opt.link)}
+                                            disabled={!isProfileComplete}
+                                            className={`w-full py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all ${isProfileComplete
+                                                ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
+                                                : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                                                }`}
+                                        >
+                                            {isProfileComplete ? <FaGift className="text-pink-400" /> : <FaLock />} Use Coins
+                                        </button>
+                                    </div>
                                 </div>
                             ))}
                             {/* Removed coming soon message as new rewards are added */}
@@ -404,12 +418,14 @@ export default function Rewards() {
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
                                                             <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.source === 'referral' ? 'bg-purple-100 text-purple-600' :
-                                                                tx.source === 'admin_adjustment' ? 'bg-amber-100 text-amber-600' :
-                                                                    tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                                                tx.source === 'profile_completion' ? 'bg-blue-100 text-blue-600' :
+                                                                    tx.source === 'admin_adjustment' ? 'bg-amber-100 text-amber-600' :
+                                                                        tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                                                                 }`}>
                                                                 {tx.source === 'referral' ? <FaUserFriends /> :
-                                                                    tx.source === 'admin_adjustment' ? <FaStar /> :
-                                                                        tx.type === 'credit' ? <FaArrowUp /> : <FaArrowDown />}
+                                                                    tx.source === 'profile_completion' ? <FaCheck /> :
+                                                                        tx.source === 'admin_adjustment' ? <FaStar /> :
+                                                                            tx.type === 'credit' ? <FaArrowUp /> : <FaArrowDown />}
                                                             </div>
                                                             <div>
                                                                 <p className="font-bold text-slate-800 text-sm">{tx.description}</p>

@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { FaArrowUp, FaArrowDown, FaExchangeAlt, FaHistory, FaCalendarAlt, FaChevronDown, FaChevronUp, FaUserFriends, FaStar } from 'react-icons/fa';
+import { FaArrowUp, FaArrowDown, FaExchangeAlt, FaHistory, FaCalendarAlt, FaChevronDown, FaChevronUp, FaUserFriends, FaStar, FaCheck } from 'react-icons/fa';
 import { useNavigate } from 'react-router-dom';
 import { toast } from 'react-toastify';
 
@@ -68,12 +68,14 @@ const CoinHistory = ({ initialOpen = false }) => {
                             <li key={tx._id} className="p-4 hover:bg-gray-50 transition-colors flex items-center justify-between group">
                                 <div className="flex items-start gap-3">
                                     <div className={`mt-1 p-2 rounded-lg ${tx.source === 'referral' ? 'bg-purple-100 text-purple-600' :
-                                        tx.source === 'admin_adjustment' ? 'bg-amber-100 text-amber-600' :
-                                            tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                        tx.source === 'profile_completion' ? 'bg-blue-100 text-blue-600' :
+                                            tx.source === 'admin_adjustment' ? 'bg-amber-100 text-amber-600' :
+                                                tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
                                         }`}>
                                         {tx.source === 'referral' ? <FaUserFriends size={14} /> :
-                                            tx.source === 'admin_adjustment' ? <FaStar size={14} /> :
-                                                tx.type === 'credit' ? <FaArrowUp className="text-xs" /> : <FaArrowDown className="text-xs" />}
+                                            tx.source === 'profile_completion' ? <FaCheck size={14} /> :
+                                                tx.source === 'admin_adjustment' ? <FaStar size={14} /> :
+                                                    tx.type === 'credit' ? <FaArrowUp className="text-xs" /> : <FaArrowDown className="text-xs" />}
                                     </div>
                                     <div>
                                         <p className="font-medium text-gray-800">{tx.description}</p>
