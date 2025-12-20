@@ -283,34 +283,40 @@ export default function MyAppointments() {
 
   // Separate useEffect for pagination and filtering
   useEffect(() => {
-    if (allAppointments.length === 0) return;
-
     // Apply filters
-    let filteredAppts = allAppointments.filter((appt) => {
+    let filteredAppts = (allAppointments || []).filter((appt) => {
+      // Create a safely typed version of appt for checking
+      if (!appt) return false;
+
       if (currentUser._id === appt.buyerId?._id?.toString() && appt.visibleToBuyer === false) return false;
       if (currentUser._id === appt.sellerId?._id?.toString() && appt.visibleToSeller === false) return false;
-      const isOutdated = new Date(appt.date) < new Date() || (new Date(appt.date).toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+
+      const apptDate = appt.date ? new Date(appt.date) : new Date();
+      const isOutdated = apptDate < new Date() || (apptDate.toDateString() === new Date().toDateString() && appt.time && appt.time < new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }));
+
       if (statusFilter === 'outdated') {
         return isOutdated;
       }
+
       const matchesStatus = statusFilter === "all" ? true : appt.status === statusFilter;
       const matchesRole = roleFilter === "all" ? true : appt.role === roleFilter;
       const matchesSearch =
-        appt.propertyName?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.buyerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.sellerId?.email?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.buyerId?.username?.toLowerCase().includes(search.toLowerCase()) ||
-        appt.sellerId?.username?.toLowerCase().includes(search.toLowerCase());
+        (appt.propertyName?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (appt.buyerId?.email?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (appt.sellerId?.email?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (appt.buyerId?.username?.toLowerCase() || '').includes(search.toLowerCase()) ||
+        (appt.sellerId?.username?.toLowerCase() || '').includes(search.toLowerCase());
+
       const matchesDateRange =
-        (!startDate || new Date(appt.date) >= new Date(startDate)) &&
-        (!endDate || new Date(appt.date) <= new Date(endDate));
+        (!startDate || apptDate >= new Date(startDate)) &&
+        (!endDate || apptDate <= new Date(endDate));
 
       return matchesStatus && matchesRole && matchesSearch && matchesDateRange;
     });
 
     // Calculate pagination
     const itemsPerPage = 10;
-    const totalPages = Math.ceil(filteredAppts.length / itemsPerPage);
+    const totalPages = Math.max(1, Math.ceil(filteredAppts.length / itemsPerPage));
     setTotalPages(totalPages);
 
     // Get current page items
@@ -318,9 +324,19 @@ export default function MyAppointments() {
     const endIndex = startIndex + itemsPerPage;
     const currentPageAppts = filteredAppts.slice(startIndex, endIndex);
 
+    // IMPORTANT: If we are trying to open a specific chat from notification/link,
+    // ensure it is visible in the list even if filters/pagination would hide it.
+    if (shouldOpenChatFromNotification && notificationChatData) {
+      const isPresent = currentPageAppts.some(a => a._id === notificationChatData._id);
+      if (!isPresent) {
+        // Prepend to the list so it's visible at the top
+        currentPageAppts.unshift(notificationChatData);
+      }
+    }
+
     console.log(`Page ${currentPage} of ${totalPages}, showing ${currentPageAppts.length} appointments`);
     setAppointments(currentPageAppts);
-  }, [allAppointments, currentPage, search, statusFilter, roleFilter, startDate, endDate, currentUser]);
+  }, [allAppointments, currentPage, search, statusFilter, roleFilter, startDate, endDate, currentUser, shouldOpenChatFromNotification, notificationChatData]);
 
   // Separate useEffect for archived appointments pagination and filtering
   useEffect(() => {
