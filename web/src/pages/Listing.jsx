@@ -3534,10 +3534,35 @@ export default function Listing() {
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999] p-4">
           <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
             <div className="px-4 py-3 border-b border-gray-200 font-semibold">Confirm</div>
-            <div className="px-4 py-4 text-gray-700 text-sm">{confirmModal.message}</div>
+            <div className="px-4 py-4 text-gray-700 text-sm">
+              <p>{confirmModal.message}</p>
+              {confirmModal.type === 'root-verify' && (
+                <div className="mt-3">
+                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                    Verification Reason <span className="text-red-500">*</span>
+                  </label>
+                  <textarea
+                    className="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    placeholder="Enter reason for bypassing verification..."
+                    rows={3}
+                    value={rootVerificationReason}
+                    onChange={(e) => setRootVerificationReason(e.target.value)}
+                  />
+                </div>
+              )}
+            </div>
             <div className="px-4 py-3 border-t border-gray-200 flex gap-2 justify-end">
               <button onClick={closeConfirm} className="px-4 py-2 rounded bg-gray-200 text-gray-800 text-sm">Cancel</button>
-              <button onClick={confirmYes} className="px-4 py-2 rounded bg-red-600 text-white text-sm">Yes</button>
+              <button
+                onClick={confirmYes}
+                disabled={confirmModal.type === 'root-verify' && !rootVerificationReason.trim()}
+                className={`px-4 py-2 rounded text-white text-sm ${confirmModal.type === 'root-verify' && !rootVerificationReason.trim()
+                  ? 'bg-red-300 cursor-not-allowed'
+                  : 'bg-red-600 hover:bg-red-700'
+                  }`}
+              >
+                Yes
+              </button>
             </div>
           </div>
         </div>
