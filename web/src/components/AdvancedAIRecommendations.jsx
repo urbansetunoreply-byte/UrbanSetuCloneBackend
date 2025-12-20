@@ -236,11 +236,11 @@ const AdvancedAIRecommendations = ({
           <div className="text-center">
             <h4 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-3 flex items-center justify-center gap-4">
               <span className="w-10 h-px bg-blue-600/30"></span>
-              Sentinel AI Activation
+              Setu AI Activation
               <span className="w-10 h-px bg-blue-600/30"></span>
             </h4>
             <div className="flex flex-col items-center gap-2">
-              <span className="text-[10px] font-mono text-blue-500 font-bold tracking-[0.3em]">NEURAL_SYNC_INITIALIZED</span>
+              <span className="text-[10px] font-mono text-blue-500 font-bold tracking-[0.3em]">SENTINEL_V2_SYNC_PROTOCOL_ACTIVE</span>
               <div className="flex gap-1.5 mt-2">
                 {[1, 2, 3, 4, 5].map(i => (
                   <div key={i} className="w-1.5 h-1.5 bg-blue-600 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.15}s` }}></div>
@@ -300,11 +300,11 @@ const AdvancedAIRecommendations = ({
                 <FaBrain className="text-white" />
               </div>
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-blue-700 to-indigo-800">
-                Sentinel AI Engine
+                Setu AI
               </span>
             </h3>
-            <p className="text-slate-500 mt-2 font-medium flex items-center gap-2">
-              <FaRobot className="text-blue-500" /> Real-time Personalized Property Intelligence
+            <p className="text-slate-500 mt-2 font-medium flex items-center gap-2 italic">
+              <FaRobot className="text-blue-500" /> Powered by Sentinel v2.0 Neural Engine
             </p>
           </div>
 
@@ -407,7 +407,7 @@ const AdvancedAIRecommendations = ({
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-4">
                   <p className="text-slate-600 leading-relaxed">
-                    Our <span className="text-blue-600 font-bold">Sentinel AI</span> doesn't just look at filters. It analyzes cross-user behavioral vectors, semantic wishlist patterns, and micro-market trends to predict your next home with surgical precision.
+                    Our <span className="text-blue-600 font-bold">Setu AI</span> engine (Powered by Sentinel) doesn't just look at filters. It analyzes cross-user behavioral vectors, semantic wishlist patterns, and micro-market trends to predict your next home with surgical precision.
                   </p>
                   <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
                     <h5 className="font-bold text-blue-800 text-sm mb-2 flex items-center gap-2">

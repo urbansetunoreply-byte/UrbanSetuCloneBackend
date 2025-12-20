@@ -170,7 +170,7 @@ const AdvancedESGRecommendations = ({
 
     const reportContent = `
 =========================================
-SENTINEL SYSTEM: ESG COMPLIANCE REPORT
+SETU AI: ESG COMPLIANCE REPORT
 Generated for: User ID ${userId}
 Date: ${new Date().toLocaleDateString()}
 =========================================
@@ -199,7 +199,7 @@ Your current interaction patterns show a heavy leaning towards Solar and High-Ef
 To maintain a balanced portfolio, we suggest investigating more Global Impact projects.
 
 -----------------------------------------
-(c) ${new Date().getFullYear()} UrbanSetu Sentinel ESG Engine
+(c) ${new Date().getFullYear()} UrbanSetu [Setu AI Engine]
 =========================================
     `;
 
@@ -241,7 +241,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
             <FaLeaf className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-emerald-600 text-4xl" />
           </div>
           <div className="text-center animate-pulse">
-            <h4 className="text-xl font-black text-slate-800 tracking-tighter uppercase italic">Activating Sentinel ESG</h4>
+            <h4 className="text-xl font-black text-slate-800 tracking-tighter uppercase italic">Activating Setu AI</h4>
             <div className="flex gap-1 justify-center mt-2">
               {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>)}
             </div>
@@ -265,12 +265,12 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
                 <FaLeaf className="text-white text-2xl" />
               </div>
               <span className="bg-clip-text text-transparent bg-gradient-to-r from-emerald-700 via-green-600 to-teal-800">
-                Sentinel ESG Engine
+                Setu ESG-Aware AI
               </span>
             </h3>
-            <p className="text-slate-500 mt-2 font-semibold flex items-center gap-2 text-sm">
+            <p className="text-slate-500 mt-2 font-semibold flex items-center gap-2 text-sm italic">
               <span className="w-2 h-2 bg-emerald-500 rounded-full animate-ping"></span>
-              Strategic Sustainability Analysis v2.0
+              Powered by Sentinel v2.0 Deep Logic
             </p>
           </div>
 
@@ -528,7 +528,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
           <div className="flex items-center justify-between mb-16 px-4">
             <div className="flex items-center gap-6">
               <div className="w-16 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
-              <h4 className="font-black text-slate-900 uppercase tracking-[0.5em] text-sm italic">Sentinel Framework Blueprint</h4>
+              <h4 className="font-black text-slate-900 uppercase tracking-[0.5em] text-sm italic">Setu AI Framework Blueprint</h4>
             </div>
             <div className="px-6 py-2 bg-slate-900 text-emerald-400 rounded-full text-[10px] font-black tracking-widest border border-emerald-500/30 animate-pulse">
               ALGORITHM_ACTIVE: RANDOM_FOREST v4.2
