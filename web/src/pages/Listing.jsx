@@ -1561,21 +1561,6 @@ export default function Listing() {
                   <FaEdit className="text-sm" />
                   <span className="hidden sm:inline">Edit Property</span>
                 </Link>
-                {/* Root Admin verification bypass button */}
-                {currentUser?.role === 'rootadmin' && (!listing.isVerified || listing.visibility !== 'public') && (
-                  <button
-                    onClick={() => setConfirmModal({
-                      open: true,
-                      type: 'root-verify',
-                      message: 'Are you sure you want to BYPASS verification? This will instantly verify and publish this property, and notify the owner.'
-                    })}
-                    className="bg-gradient-to-r from-orange-500 to-red-500 text-white px-4 py-3 rounded-lg hover:from-orange-600 hover:to-red-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base animate-pulse"
-                    title="Root Admin Privilege: Instantly Verify & Publish"
-                  >
-                    <FaCheckCircle className="text-sm" />
-                    <span className="hidden sm:inline">Root Verify & Publish</span>
-                  </button>
-                )}
                 <button
                   onClick={handleDelete}
                   className="bg-gradient-to-r from-red-500 to-pink-500 text-white px-4 py-3 rounded-lg hover:from-red-600 hover:to-pink-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-center justify-center text-sm sm:text-base"
@@ -1811,6 +1796,23 @@ export default function Listing() {
                   <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
                     <FaCheckCircle /> Verified Property
                   </span>
+                )}
+                {/* Root Admin verification bypass button - ONLY for NOT verified */}
+                {currentUser?.role === 'rootadmin' && !listing.isVerified && (
+                  <button
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      setConfirmModal({
+                        open: true,
+                        type: 'root-verify',
+                        message: 'Are you sure you want to BYPASS verification? This will instantly verify and publish this property, and notify the owner.'
+                      });
+                    }}
+                    className="ml-3 px-3 py-1 bg-gradient-to-r from-orange-500 to-red-600 text-white rounded-full text-xs sm:text-sm font-bold flex items-center gap-1 shadow-md hover:scale-105 transition-transform animate-pulse"
+                    title="Root Admin Privilege: Instantly Verify & Publish"
+                  >
+                    <FaRocket className="text-xs" /> Root Verify
+                  </button>
                 )}
                 {/* Wishlist Heart Icon - hide for admins */}
                 {(!currentUser || (currentUser && !(currentUser.role === 'admin' || currentUser.role === 'rootadmin'))) && (
