@@ -104,6 +104,28 @@ export const adminAdjustCoins = async (req, res, next) => {
             return next(errorHandler(403, `Regular admins can only grant up to ${ADMIN_GRANT_LIMIT} coins. Please contact a Root Admin for higher amounts.`));
         }
 
+        // Rate Limit: Check if THIS admin (or any admin? User request implies "if granted... should not be able to grant *for that user*")
+        // Let's implement: A specific user cannot receive an admin grant more than once in 24h.
+        if (type === 'credit' && req.user.role !== 'rootadmin') {
+            const twentyFourHoursAgo = new Date(Date.now() - 24 * 60 * 60 * 1000);
+
+            // We need to import CoinTransaction model dynamically or assume it's available via CoinService (it's not direct there)
+            // Ideally CoinService should handle this check, but for now we'll do it here or via a service method.
+            // Let's import the model here cleanly.
+            const CoinTransaction = (await import("../models/coinTransaction.model.js")).default;
+
+            const recentGrant = await CoinTransaction.findOne({
+                userId,
+                type: 'credit',
+                source: 'admin_adjustment',
+                createdAt: { $gte: twentyFourHoursAgo }
+            });
+
+            if (recentGrant) {
+                return next(errorHandler(429, "This user has already received an admin coin grant in the last 24 hours. Please wait before granting again."));
+            }
+        }
+
         const result = await (type === 'credit' ? CoinService.credit : CoinService.debit)({
             userId,
             amount,

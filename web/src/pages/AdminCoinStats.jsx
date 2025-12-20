@@ -129,7 +129,33 @@ export default function AdminCoinStats() {
         fetchStats();
     }, []);
 
-    if (loading) return <div className="p-10 text-center animate-pulse">Loading Analytics & Management...</div>;
+    if (loading) return (
+        <div className="p-6 max-w-7xl mx-auto space-y-8 pb-20">
+            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-pulse">
+                <div className="h-10 w-64 bg-gray-200 rounded-xl"></div>
+                <div className="h-12 w-96 bg-gray-200 rounded-xl"></div>
+            </div>
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+                {[1, 2, 3, 4].map((i) => (
+                    <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-32 animate-pulse flex justify-between">
+                        <div className="space-y-3 w-1/2">
+                            <div className="h-3 w-20 bg-gray-200 rounded"></div>
+                            <div className="h-8 w-24 bg-gray-200 rounded"></div>
+                        </div>
+                        <div className="h-12 w-12 bg-gray-200 rounded-2xl"></div>
+                    </div>
+                ))}
+            </div>
+            <div className="h-96 bg-white rounded-3xl shadow-sm border border-gray-100 p-6 animate-pulse">
+                <div className="h-6 w-48 bg-gray-200 rounded mb-6"></div>
+                <div className="space-y-4">
+                    {[1, 2, 3, 4, 5].map(i => (
+                        <div key={i} className="h-12 w-full bg-gray-100 rounded-xl"></div>
+                    ))}
+                </div>
+            </div>
+        </div>
+    );
     if (!stats) return <div className="p-10 text-center">No data available.</div>;
 
     return (
