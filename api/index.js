@@ -848,7 +848,7 @@ io.on('connection', (socket) => {
   });
 
   // Handle call status updates (mute/video)
-  socket.on('call-status-update', ({ callId, isMuted, isVideoEnabled }) => {
+  socket.on('call-status-update', ({ callId, isMuted, isVideoEnabled, isScreenSharing }) => {
     const activeCall = activeCalls.get(callId);
     if (activeCall) {
       // Forward status update to the other party
@@ -859,7 +859,8 @@ io.on('connection', (socket) => {
         io.to(targetSocketId).emit('remote-status-update', {
           callId,
           isMuted,
-          isVideoEnabled
+          isVideoEnabled,
+          isScreenSharing
         });
       }
     }
