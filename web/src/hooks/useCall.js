@@ -1097,6 +1097,16 @@ export const useCall = () => {
           credentials: 'include',
           body: JSON.stringify({ callId: activeCall.callId })
         });
+
+        // Ensure screen share is stopped if active
+        if (screenShareStreamRef.current) {
+          screenShareStreamRef.current.getTracks().forEach(track => track.stop());
+          screenShareStreamRef.current = null;
+        }
+        if (isScreenSharing) {
+          setIsScreenSharing(false);
+        }
+
         // Play end call sound when user ends the call
         // Only play if this is the first time ending (not from handleCallEnded)
         if (!wasEndingCall) {
@@ -1225,6 +1235,15 @@ export const useCall = () => {
         screenShareStreamRef.current = screenStream;
         setIsScreenSharing(true);
 
+        if (activeCall?.callId) {
+          socket.emit('call-status-update', {
+            callId: activeCall.callId,
+            isMuted: isMuted,
+            isVideoEnabled: isVideoEnabled,
+            isScreenSharing: true
+          });
+        }
+
         // Replace video track in peer connection (send screen share to remote)
         if (localStream && peerRef.current) {
           const videoTracks = screenStream.getVideoTracks();
@@ -1261,6 +1280,15 @@ export const useCall = () => {
           }
           setIsScreenSharing(false);
 
+          if (activeCall?.callId) {
+            socket.emit('call-status-update', {
+              callId: activeCall.callId,
+              isMuted: isMuted,
+              isVideoEnabled: isVideoEnabled,
+              isScreenSharing: false
+            });
+          }
+
           // Restore camera video in peer connection
           if (localStream && peerRef.current && originalCameraStreamRef.current) {
             const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
@@ -1289,6 +1317,15 @@ export const useCall = () => {
 
         setIsScreenSharing(false);
 
+        if (activeCall?.callId) {
+          socket.emit('call-status-update', {
+            callId: activeCall.callId,
+            isMuted: isMuted,
+            isVideoEnabled: isVideoEnabled,
+            isScreenSharing: false
+          });
+        }
+
         // Restore camera video in peer connection
         if (localStream && peerRef.current && originalCameraStreamRef.current) {
           const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
@@ -1314,15 +1351,10 @@ export const useCall = () => {
             }
           }
 
-          // Clean up original camera stream ref
-          if (originalCameraStreamRef.current) {
-            originalCameraStreamRef.current.getTracks().forEach(track => {
-              if (track.readyState !== 'ended') {
-                track.stop();
-              }
-            });
-            originalCameraStreamRef.current = null;
-          }
+          // Clean up original camera stream ref - BUT DO NOT STOP TRACKS
+          // The tracks in originalCameraStreamRef are references to the tracks in localStream.
+          // Stopping them here would revoke camera access. We just null the ref.
+          originalCameraStreamRef.current = null;
           setCameraStreamDuringScreenShare(null);
 
           // Force update local video element to show camera again
