@@ -1,6 +1,6 @@
 import express from 'express';
 import { getTurnCredentials } from '../controllers/turn.controller.js';
-import { verifyToken } from '../utils/verifyUser.js'; // Updated to match likely verifying middleware location/name from user.route.js pattern or standard imports
+import { verifyToken } from '../utils/verify.js';
 
 const router = express.Router();
 
