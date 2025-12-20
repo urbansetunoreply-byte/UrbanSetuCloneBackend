@@ -152,10 +152,11 @@ export const useCall = () => {
   }, []);
 
   // Handle remote mute/video status updates
-  const handleRemoteStatusUpdate = useCallback(({ callId, isMuted: remoteMuted, isVideoEnabled: remoteVideo }) => {
+  const handleRemoteStatusUpdate = useCallback(({ callId, isMuted: remoteMuted, isVideoEnabled: remoteVideo, isScreenSharing: remoteScreenSharing }) => {
     if (activeCall?.callId === callId) {
-      setRemoteIsMuted(remoteMuted);
-      setRemoteVideoEnabled(remoteVideo);
+      if (remoteMuted !== undefined) setRemoteIsMuted(remoteMuted);
+      if (remoteVideo !== undefined) setRemoteVideoEnabled(remoteVideo);
+      if (remoteScreenSharing !== undefined) setRemoteIsScreenSharing(remoteScreenSharing);
     }
   }, [activeCall]);
 

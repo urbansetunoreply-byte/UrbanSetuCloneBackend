@@ -62,6 +62,21 @@ const ActiveCallModal = ({
   const isRemoteSpeaking = useAudioActivity(remoteStream);
 
   const [isRemoteAudioLocallyMuted, setIsRemoteAudioLocallyMuted] = useState(false);
+  const [presentationAlert, setPresentationAlert] = useState(null); // State for "X is presenting" animation
+
+  // Check for SinkId support (audio output selection)
+  const supportsSetSinkId = typeof HTMLMediaElement !== 'undefined' && 'setSinkId' in HTMLMediaElement.prototype;
+
+  // Handle screen share alerts
+  useEffect(() => {
+    if (isScreenSharing) {
+      setPresentationAlert({ text: 'You are presenting', color: 'bg-blue-600' });
+      setTimeout(() => setPresentationAlert(null), 3000);
+    } else if (remoteIsScreenSharing) {
+      setPresentationAlert({ text: `${otherPartyName || 'Caller'} is presenting`, color: 'bg-purple-600' });
+      setTimeout(() => setPresentationAlert(null), 3000);
+    }
+  }, [isScreenSharing, remoteIsScreenSharing, otherPartyName]);
 
   // Apply local mute to remote streams whenever the state or refs change
   useEffect(() => {
@@ -347,7 +362,22 @@ const ActiveCallModal = ({
           from { transform: translateY(100%); }
           to { transform: translateY(0); }
         }
+        @keyframes popIn {
+          0% { transform: scale(0.8); opacity: 0; }
+          50% { transform: scale(1.1); opacity: 1; }
+          100% { transform: scale(1); opacity: 1; }
+        }
       `}</style>
+
+      {/* Presentation Alert Overlay */}
+      {presentationAlert && (
+        <div className="absolute top-1/4 left-1/2 transform -translate-x-1/2 -translate-y-1/2 z-50 animate-[popIn_0.5s_ease-out_forwards]">
+          <div className={`${presentationAlert.color} text-white px-8 py-4 rounded-2xl shadow-2xl flex items-center gap-3 border-2 border-white/20`}>
+            <FaDesktop className="text-2xl animate-pulse" />
+            <span className="text-xl font-bold">{presentationAlert.text}</span>
+          </div>
+        </div>
+      )}
 
       {/* Connection Quality Indicator - positioned below timer */}
       {connectionQuality && (
@@ -444,11 +474,21 @@ const ActiveCallModal = ({
                     />
                   )}
                 </div>
-                {/* Screen share label */}
-                <div className="absolute bottom-24 left-4 bg-black bg-opacity-70 rounded-full px-4 py-2 z-20">
-                  <p className="text-white text-sm font-medium">
-                    {isScreenSharing ? 'Screen Share (You)' : `${otherPartyName || 'Caller'}'s Screen Share`}
-                  </p>
+                {/* Screen share label - Responsive "Name - Presenting" */}
+                <div className="absolute bottom-24 left-4 z-20">
+                  <div className="bg-black bg-opacity-70 backdrop-blur-md rounded-full px-5 py-2.5 flex items-center gap-3 border border-white/10 shadow-lg transition-all hover:bg-opacity-80">
+                    <div className={`p-1.5 rounded-full ${isScreenSharing ? 'bg-blue-500' : 'bg-purple-500'}`}>
+                      <FaDesktop className="text-white text-xs" />
+                    </div>
+                    <div className="flex flex-col">
+                      <span className="text-white text-sm font-bold leading-tight">
+                        {isScreenSharing ? 'You' : (otherPartyName || 'Caller')}
+                      </span>
+                      <span className="text-gray-300 text-[10px] font-medium uppercase tracking-wider leading-tight">
+                        Presenting
+                      </span>
+                    </div>
+                  </div>
                 </div>
                 {/* Zoom indicator */}
                 {videoZoom > 1 && (
@@ -853,7 +893,7 @@ const ActiveCallModal = ({
                 {isRemoteAudioLocallyMuted ? <FaVolumeMute className="text-xl" /> : <FaVolumeUp className="text-xl" />}
               </button>
 
-              {((availableMicrophones && availableMicrophones.length > 1) || (availableSpeakers && availableSpeakers.length > 1)) && (
+              {((availableMicrophones && availableMicrophones.length > 1) || (supportsSetSinkId && availableSpeakers && availableSpeakers.length > 1)) && (
                 <>
                   <div className="w-[1px] h-6 bg-white/20"></div>
                   <button
@@ -904,8 +944,8 @@ const ActiveCallModal = ({
                     </>
                   )}
 
-                  {/* Speakers */}
-                  {availableSpeakers && availableSpeakers.length > 1 && (
+                  {/* Speakers - Only show if supported */}
+                  {supportsSetSinkId && availableSpeakers && availableSpeakers.length > 1 && (
                     <>
                       <div className="px-3 py-2 border-t border-b border-white border-opacity-10 mt-1">
                         <p className="text-xs font-semibold text-white text-opacity-80 uppercase tracking-wide">Speaker</p>
