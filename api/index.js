@@ -54,6 +54,7 @@ import CallHistory from "./models/callHistory.model.js";
 import { sendCallMissedEmail, sendCallInitiatedEmail } from "./utils/emailService.js";
 import rentalRouter from "./routes/rental.route.js";
 import coinRouter from "./routes/coin.route.js";
+import turnRouter from "./routes/turn.route.js"; // Import TURN route
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -1147,6 +1148,7 @@ app.use("/api/upload", uploadRouter);
 app.use("/api/speech", speechToTextRouter);
 app.use("/api/ai", aiRouter);
 app.use("/api/payments", paymentRouter);
+app.use("/api/turn-credentials", turnRouter); // Register TURN route
 app.use("/api/sessions", sessionRouter);
 app.use("/api/session-management", sessionManagementRouter);
 app.use("/api/visitors", visitorRouter);

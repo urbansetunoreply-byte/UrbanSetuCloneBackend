@@ -7,11 +7,32 @@ import { getAuthToken } from '../utils/auth';
 import { useSoundEffects } from '../components/SoundEffects';
 
 // STUN servers for WebRTC
-const STUN_SERVERS = [
+// Default STUN servers as fallback
+const DEFAULT_ICE_SERVERS = [
   { urls: 'stun:stun.l.google.com:19302' },
-  { urls: 'stun:stun1.l.google.com:19302' },
-  { urls: 'stun:stun2.l.google.com:19302' }
+  { urls: 'stun:stun1.l.google.com:19302' }
 ];
+
+// Helper to fetch TURN credentials securely
+const fetchIceServers = async () => {
+  try {
+    const token = getAuthToken();
+    if (!token) return DEFAULT_ICE_SERVERS;
+
+    const response = await fetch(`${API_BASE_URL}/api/turn-credentials`, {
+      headers: { 'Authorization': `Bearer ${token}` }
+    });
+
+    if (response.ok) {
+      const data = await response.json();
+      return data.iceServers || DEFAULT_ICE_SERVERS;
+    }
+    return DEFAULT_ICE_SERVERS;
+  } catch (error) {
+    console.warn('Failed to fetch TURN credentials, falling back to STUN:', error);
+    return DEFAULT_ICE_SERVERS;
+  }
+};
 
 export const useCall = () => {
   // Sound effects for call tones
@@ -568,7 +589,7 @@ export const useCall = () => {
           trickle: true,
           stream: localStreamRef.current, // Send our local stream to admin
           config: {
-            iceServers: STUN_SERVERS
+            iceServers: await fetchIceServers()
           }
         });
 
@@ -784,55 +805,60 @@ export const useCall = () => {
           callingSoundRef.current = playCalling();
 
           // Create peer connection AFTER we have the callId
-          const peer = new SimplePeer({
-            initiator: true,
-            trickle: true,
-            stream: stream, // SimplePeer will automatically add stream tracks
-            config: {
-              iceServers: STUN_SERVERS
-            }
-          });
-
-          // Track peer connection state changes
-          if (peer._pc) {
-            peer._pc.addEventListener('track', (event) => {
-              if (event.streams && event.streams[0]) {
-                setRemoteStream(event.streams[0]);
+          // Fetch ICE servers first
+          fetchIceServers().then((iceServers) => {
+            const peer = new SimplePeer({
+              initiator: true,
+              trickle: true,
+              stream: stream, // SimplePeer will automatically add stream tracks
+              config: {
+                iceServers: iceServers
               }
             });
-          }
 
-          peer.on('signal', (data) => {
-            if (data.type === 'offer') {
-              socket.emit('webrtc-offer', {
-                callId: callId,
-                offer: data
-              });
-            } else if (data.type === 'candidate') {
-              socket.emit('ice-candidate', {
-                callId: callId,
-                candidate: data
+            // Track peer connection state changes
+            if (peer._pc) {
+              peer._pc.addEventListener('track', (event) => {
+                if (event.streams && event.streams[0]) {
+                  setRemoteStream(event.streams[0]);
+                }
               });
             }
-          });
 
-          peer.on('stream', (remoteStream) => {
-            setRemoteStream(remoteStream);
-            // Stream attachment will be handled by useEffect when remoteStream state updates
-          });
+            peer.on('signal', (data) => {
+              if (data.type === 'offer') {
+                socket.emit('webrtc-offer', {
+                  callId: callId,
+                  offer: data
+                });
+              } else if (data.type === 'candidate') {
+                socket.emit('ice-candidate', {
+                  callId: callId,
+                  candidate: data
+                });
+              }
+            });
 
-          peer.on('connect', () => {
-            // Connection established
-          });
+            peer.on('stream', (remoteStream) => {
+              setRemoteStream(remoteStream);
+              // Stream attachment will be handled by useEffect when remoteStream state updates
+            });
 
-          peer.on('error', (err) => {
-            console.error('Peer connection error:', err);
-            toast.error('Connection error occurred');
-            endCall();
-          });
+            peer.on('connect', () => {
+              // Connection established
+            });
 
-          peerRef.current = peer;
-          socket.off('call-initiated', handleCallInitiated);
+            peer.on('error', (err) => {
+              console.error('Peer connection error:', err);
+              // Only end call if connection fails completely and no stream
+              if (!remoteStream) {
+                toast.error('Connection failed');
+                endCall();
+              }
+            });
+
+            peerRef.current = peer;
+          });
         }
       };
 
@@ -881,46 +907,62 @@ export const useCall = () => {
         localVideoRef.current.srcObject = stream;
       }
 
-      // Create peer connection as receiver (non-initiator)
-      const peer = new SimplePeer({
-        initiator: false,
-        trickle: true,
-        stream: stream, // SimplePeer will automatically add stream tracks
-        config: {
-          iceServers: STUN_SERVERS
-        }
-      });
-
-      // Track peer connection state changes
-      if (peer._pc) {
-        peer._pc.addEventListener('track', (event) => {
-          if (event.streams && event.streams[0]) {
-            setRemoteStream(event.streams[0]);
+      // Fetch ICE servers first
+      fetchIceServers().then((iceServers) => {
+        const peer = new SimplePeer({
+          initiator: false,
+          trickle: true,
+          stream: stream, // SimplePeer will automatically add stream tracks
+          config: {
+            iceServers: iceServers
           }
         });
-      }
 
-      peer.on('signal', (data) => {
-        if (data.type === 'answer') {
-          socket.emit('webrtc-answer', {
-            callId: incomingCall.callId,
-            answer: data
-          });
-        } else if (data.type === 'candidate') {
-          socket.emit('ice-candidate', {
-            callId: incomingCall.callId,
-            candidate: data
+        // Track peer connection state changes
+        if (peer._pc) {
+          peer._pc.addEventListener('track', (event) => {
+            if (event.streams && event.streams[0]) {
+              setRemoteStream(event.streams[0]);
+            }
           });
         }
-      });
 
-      peer.on('stream', (remoteStream) => {
-        setRemoteStream(remoteStream);
-        // Stream attachment will be handled by useEffect when remoteStream state updates
-      });
+        peer.on('signal', (data) => {
+          if (data.type === 'answer') {
+            socket.emit('webrtc-answer', {
+              callId: incomingCall.callId,
+              answer: data
+            });
+          } else if (data.type === 'candidate') {
+            socket.emit('ice-candidate', {
+              callId: incomingCall.callId,
+              candidate: data
+            });
+          }
+        });
 
-      peer.on('connect', () => {
-        // Connection established
+        peer.on('stream', (remoteStream) => {
+          setRemoteStream(remoteStream);
+          // Stream attachment will be handled by useEffect when remoteStream state updates
+        });
+
+        peer.on('connect', () => {
+          // Connection established
+        });
+
+        peer.on('error', (err) => {
+          console.error('Peer connection error:', err);
+          toast.error('Connection error occurred');
+          endCall();
+        });
+
+        // If we have a pending offer, signal it now
+        if (pendingOfferRef.current && pendingOfferRef.current.callId === incomingCall.callId) {
+          peer.signal(pendingOfferRef.current.offer);
+          pendingOfferRef.current = null;
+        }
+
+        peerRef.current = peer;
       });
 
       peer.on('error', (err) => {
@@ -1612,7 +1654,7 @@ export const useCall = () => {
     enumerateAudioDevices,
     switchMicrophone,
     switchSpeaker
-  };
-};
+  }; // End of return
+}; // End of useCall
 
 export default useCall;
