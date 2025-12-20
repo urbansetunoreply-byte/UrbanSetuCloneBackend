@@ -35,65 +35,65 @@ const extractEnhancedFeatures = (property, userContext = null) => {
         parking: property.parking ? 1 : 0,
         offer: property.offer ? 1 : 0,
         discountPrice: property.discountPrice || 0,
-        
+
         // Advanced Price Features
         pricePerSqFt: property.area > 0 ? (property.regularPrice || 0) / property.area : 0,
-        priceRatio: property.discountPrice && property.regularPrice ? 
+        priceRatio: property.discountPrice && property.regularPrice ?
             property.discountPrice / property.regularPrice : 1,
-        discountPercentage: property.offer && property.regularPrice && property.discountPrice ? 
+        discountPercentage: property.offer && property.regularPrice && property.discountPrice ?
             ((property.regularPrice - property.discountPrice) / property.regularPrice) * 100 : 0,
         priceCategory: categorizePrice(property.regularPrice || 0),
-        
+
         // Enhanced Location Features
         isMetroCity: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'].includes(property.city) ? 1 : 0,
         isTier1City: ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad', 'Jaipur', 'Surat', 'Lucknow', 'Kanpur'].includes(property.city) ? 1 : 0,
         isTier2City: ['Kochi', 'Indore', 'Bhopal', 'Visakhapatnam', 'Vadodara', 'Ludhiana', 'Nashik', 'Agra'].includes(property.city) ? 1 : 0,
         locationScore: calculateLocationScore(property.city, property.state),
-        
+
         // Enhanced Property Features
         propertyAge: property.propertyAge || 0,
         isNewProperty: (property.propertyAge || 0) <= 2 ? 1 : 0,
         isOldProperty: (property.propertyAge || 0) >= 10 ? 1 : 0,
         propertyCondition: calculatePropertyCondition(property),
-        
+
         // Enhanced Amenities Score
         amenitiesScore: calculateEnhancedAmenitiesScore(property),
         luxuryAmenities: calculateLuxuryAmenities(property),
         basicAmenities: calculateBasicAmenities(property),
-        
+
         // Market Intelligence Features
         marketDemand: calculateEnhancedMarketDemand(property),
         priceCompetitiveness: calculateEnhancedPriceCompetitiveness(property),
         marketTrend: calculateMarketTrend(property),
         investmentPotential: calculateInvestmentPotential(property),
-        
+
         // User Context Features (Enhanced)
         userPriceAffinity: userContext ? calculateEnhancedUserPriceAffinity(property, userContext) : 0,
         userLocationPreference: userContext ? calculateEnhancedUserLocationPreference(property, userContext) : 0,
         userTypePreference: userContext ? calculateEnhancedUserTypePreference(property, userContext) : 0,
         userAmenityPreference: userContext ? calculateUserAmenityPreference(property, userContext) : 0,
-        
+
         // Temporal Features
         listingAge: calculateListingAge(property),
         seasonalDemand: calculateSeasonalDemand(property),
         timeToMarket: calculateTimeToMarket(property),
-        
+
         // Quality Features
         imageQuality: calculateImageQuality(property),
         descriptionQuality: calculateDescriptionQuality(property),
         completenessScore: calculateCompletenessScore(property),
-        
+
         // Social Proof Features
         reviewScore: property.averageRating || 0,
         reviewCount: property.reviewCount || 0,
         socialProof: calculateSocialProof(property),
-        
+
         // Economic Features
         rentalYield: calculateRentalYield(property),
         appreciationPotential: calculateAppreciationPotential(property),
         affordabilityIndex: calculateAffordabilityIndex(property),
     };
-    
+
     return baseFeatures;
 };
 
@@ -109,7 +109,7 @@ const categorizePrice = (price) => {
 const calculateLocationScore = (city, state) => {
     const metroCities = ['Mumbai', 'Delhi', 'Bangalore', 'Chennai', 'Kolkata', 'Hyderabad', 'Pune', 'Ahmedabad'];
     const tier1Cities = [...metroCities, 'Jaipur', 'Surat', 'Lucknow', 'Kanpur'];
-    
+
     if (metroCities.includes(city)) return 100;
     if (tier1Cities.includes(city)) return 80;
     return 60;
@@ -125,16 +125,16 @@ const calculatePropertyCondition = (property) => {
 
 const calculateEnhancedAmenitiesScore = (property) => {
     const amenities = [
-        'furnished', 'parking', 'garden', 'swimmingPool', 'gym', 
+        'furnished', 'parking', 'garden', 'swimmingPool', 'gym',
         'security', 'powerBackup', 'lift', 'balcony', 'terrace',
         'airConditioning', 'heating', 'internet', 'cableTV', 'laundry'
     ];
-    
+
     let score = 0;
     amenities.forEach(amenity => {
         if (property[amenity]) score += 1;
     });
-    
+
     return score / amenities.length;
 };
 
@@ -161,7 +161,7 @@ const calculateEnhancedMarketDemand = (property) => {
     const wishlistCount = property.wishlistCount || 0;
     const bookingCount = property.bookingCount || 0;
     const reviewCount = property.reviewCount || 0;
-    
+
     // Enhanced weighted demand score
     return (views * 0.3 + wishlistCount * 0.3 + bookingCount * 0.2 + reviewCount * 0.2) / 100;
 };
@@ -170,7 +170,7 @@ const calculateEnhancedPriceCompetitiveness = (property) => {
     const price = property.regularPrice || 0;
     const area = property.area || 1;
     const pricePerSqFt = price / area;
-    
+
     // More sophisticated price competitiveness calculation
     if (pricePerSqFt < 2000) return 1.0; // Very competitive
     if (pricePerSqFt < 4000) return 0.9; // Competitive
@@ -183,7 +183,7 @@ const calculateMarketTrend = (property) => {
     // Simulate market trend based on property age and demand
     const age = property.propertyAge || 0;
     const demand = calculateEnhancedMarketDemand(property);
-    
+
     if (age <= 2 && demand > 0.7) return 1.0; // Rising
     if (age <= 5 && demand > 0.5) return 0.7; // Stable
     return 0.4; // Declining
@@ -193,7 +193,7 @@ const calculateInvestmentPotential = (property) => {
     const locationScore = calculateLocationScore(property.city, property.state);
     const marketTrend = calculateMarketTrend(property);
     const amenitiesScore = calculateEnhancedAmenitiesScore(property);
-    
+
     return (locationScore * 0.4 + marketTrend * 0.3 + amenitiesScore * 0.3) / 100;
 };
 
@@ -214,7 +214,7 @@ const calculateSeasonalDemand = (property) => {
 const calculateTimeToMarket = (property) => {
     const listingAge = calculateListingAge(property);
     const demand = calculateEnhancedMarketDemand(property);
-    
+
     // Properties with high demand and short listing time are more attractive
     return Math.max(0, 1 - (listingAge * 0.5 + (1 - demand) * 0.5));
 };
@@ -233,11 +233,11 @@ const calculateDescriptionQuality = (property) => {
 const calculateCompletenessScore = (property) => {
     const requiredFields = ['name', 'description', 'regularPrice', 'bedrooms', 'bathrooms', 'area', 'city', 'state'];
     let completedFields = 0;
-    
+
     requiredFields.forEach(field => {
         if (property[field] && property[field] !== '') completedFields++;
     });
-    
+
     return completedFields / requiredFields.length;
 };
 
@@ -245,7 +245,7 @@ const calculateSocialProof = (property) => {
     const reviewScore = property.averageRating || 0;
     const reviewCount = property.reviewCount || 0;
     const wishlistCount = property.wishlistCount || 0;
-    
+
     return (reviewScore * 0.4 + Math.min(reviewCount / 10, 1) * 0.3 + Math.min(wishlistCount / 20, 1) * 0.3);
 };
 
@@ -260,7 +260,7 @@ const calculateAppreciationPotential = (property) => {
     const locationScore = calculateLocationScore(property.city, property.state);
     const marketTrend = calculateMarketTrend(property);
     const amenitiesScore = calculateEnhancedAmenitiesScore(property);
-    
+
     return (locationScore * 0.5 + marketTrend * 0.3 + amenitiesScore * 0.2) / 100;
 };
 
@@ -268,7 +268,7 @@ const calculateAffordabilityIndex = (property) => {
     const price = property.regularPrice || 0;
     const area = property.area || 1;
     const pricePerSqFt = price / area;
-    
+
     // Lower price per sq ft = higher affordability
     return Math.max(0, 1 - (pricePerSqFt / 10000));
 };
@@ -277,12 +277,12 @@ const calculateAffordabilityIndex = (property) => {
 const calculateEnhancedUserPriceAffinity = (property, userContext) => {
     const userAvgPrice = userContext.avgPrice || 0;
     const propertyPrice = property.regularPrice || 0;
-    
+
     if (userAvgPrice === 0) return 0.5;
-    
+
     const priceDiff = Math.abs(propertyPrice - userAvgPrice) / userAvgPrice;
     const priceSensitivity = userContext.priceSensitivity || 0.5;
-    
+
     // More sophisticated price matching with user sensitivity
     return Math.max(0, 1 - (priceDiff * (0.3 + priceSensitivity * 0.4)));
 };
@@ -291,27 +291,27 @@ const calculateEnhancedUserLocationPreference = (property, userContext) => {
     const locationLoyalty = userContext.locationLoyalty || 0.5;
     const preferredCities = userContext.preferredCities || {};
     const city = property.city || 'unknown';
-    
+
     const cityPreference = preferredCities[city] ? preferredCities[city] / userContext.totalInteractions : 0;
     const locationScore = calculateLocationScore(property.city, property.state);
-    
+
     return Math.min(1, cityPreference * (1 + locationLoyalty) + (locationScore / 100) * 0.3);
 };
 
 const calculateEnhancedUserTypePreference = (property, userContext) => {
     const preferredTypes = userContext.preferredTypes || {};
     const type = property.type || 'unknown';
-    
+
     const typePreference = preferredTypes[type] ? preferredTypes[type] / userContext.totalInteractions : 0;
     const typeScore = getTypeScore(type);
-    
+
     return Math.min(1, typePreference + typeScore * 0.2);
 };
 
 const calculateUserAmenityPreference = (property, userContext) => {
     const amenityImportance = userContext.amenityImportance || 0.5;
     const amenitiesScore = calculateEnhancedAmenitiesScore(property);
-    
+
     return amenitiesScore * (0.5 + amenityImportance * 0.5);
 };
 
@@ -331,19 +331,19 @@ const getTypeScore = (type) => {
 const enhancedMatrixFactorizationRecommendations = async (userId, allProperties, userProfile) => {
     try {
         console.log(`🔍 Enhanced Matrix Factorization for user: ${userId}, properties: ${allProperties.length}`);
-        
+
         if (!userProfile || userProfile.isNewUser) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         // Create enhanced user-item matrix with multiple interaction types
         const userItemMatrix = await createEnhancedUserItemMatrix(userId, allProperties);
-        
+
         const recommendations = [];
-        
+
         for (const property of allProperties) {
             if (!property || !property._id) continue;
-            
+
             const predictedRating = predictEnhancedRating(userItemMatrix, userId, property._id, userProfile);
             if (predictedRating > 0.4) { // Higher threshold for better accuracy
                 recommendations.push({
@@ -357,11 +357,11 @@ const enhancedMatrixFactorizationRecommendations = async (userId, allProperties,
                 });
             }
         }
-        
+
         if (recommendations.length === 0) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in enhanced matrix factorization:', error);
@@ -372,7 +372,7 @@ const enhancedMatrixFactorizationRecommendations = async (userId, allProperties,
 // Enhanced user-item matrix with multiple interaction types and weights
 const createEnhancedUserItemMatrix = async (userId, properties) => {
     const matrix = {};
-    
+
     // Get all interaction types
     const [allWishlists, allBookings, allReviews, allChatHistory] = await Promise.all([
         Wishlist.find({}).populate('listingId'),
@@ -380,40 +380,40 @@ const createEnhancedUserItemMatrix = async (userId, properties) => {
         Review.find({}).populate('listingId'),
         ChatHistory.find({})
     ]);
-    
+
     // Build enhanced matrix with different weights
     allWishlists.forEach(wishlist => {
         if (!wishlist.userId || !wishlist.listingId) return;
-        
+
         const user = wishlist.userId.toString();
         const property = wishlist.listingId._id.toString();
-        
+
         if (!matrix[user]) matrix[user] = {};
         matrix[user][property] = 1; // Wishlist = 1
     });
-    
+
     allBookings.forEach(booking => {
         if (!booking.buyerId || !booking.listingId) return;
-        
+
         const user = booking.buyerId.toString();
         const property = booking.listingId._id.toString();
-        
+
         if (!matrix[user]) matrix[user] = {};
         matrix[user][property] = 3; // Booking = 3 (highest weight)
     });
-    
+
     allReviews.forEach(review => {
         if (!review.userId || !review.listingId) return;
-        
+
         const user = review.userId.toString();
         const property = review.listingId._id.toString();
-        
+
         if (!matrix[user]) matrix[user] = {};
         // Weight reviews by rating
         const reviewWeight = (review.rating || 3) / 5;
         matrix[user][property] = Math.max(matrix[user][property] || 0, 1 + reviewWeight);
     });
-    
+
     return matrix;
 };
 
@@ -421,26 +421,26 @@ const createEnhancedUserItemMatrix = async (userId, properties) => {
 const predictEnhancedRating = (matrix, userId, propertyId, userProfile) => {
     const userInteractions = matrix[userId] || {};
     const propertyInteractions = {};
-    
+
     // Count interactions with this property
     Object.keys(matrix).forEach(user => {
         if (matrix[user][propertyId]) {
             propertyInteractions[user] = matrix[user][propertyId];
         }
     });
-    
+
     if (Object.keys(propertyInteractions).length === 0) {
         return 0.5; // Higher base score
     }
-    
+
     // Enhanced similarity calculation with user profile
     let totalSimilarity = 0;
     let weightedSum = 0;
-    
+
     Object.keys(propertyInteractions).forEach(similarUser => {
         if (similarUser !== userId) {
             const similarity = calculateEnhancedUserSimilarity(
-                matrix[userId] || {}, 
+                matrix[userId] || {},
                 matrix[similarUser] || {},
                 userProfile
             );
@@ -448,11 +448,11 @@ const predictEnhancedRating = (matrix, userId, propertyId, userProfile) => {
             weightedSum += similarity * propertyInteractions[similarUser];
         }
     });
-    
+
     // Enhanced prediction with user profile factors
     const basePrediction = totalSimilarity > 0 ? weightedSum / totalSimilarity / 3 : 0.5;
     const profileBoost = calculateProfileBoost(userProfile);
-    
+
     return Math.max(0.4, Math.min(1, basePrediction + profileBoost));
 };
 
@@ -461,33 +461,33 @@ const calculateEnhancedUserSimilarity = (user1, user2, userProfile) => {
     const keys1 = Object.keys(user1);
     const keys2 = Object.keys(user2);
     const commonKeys = keys1.filter(key => keys2.includes(key));
-    
+
     if (commonKeys.length === 0) return 0;
-    
+
     let dotProduct = 0;
     let norm1 = 0;
     let norm2 = 0;
-    
+
     commonKeys.forEach(key => {
         dotProduct += user1[key] * user2[key];
         norm1 += user1[key] * user1[key];
         norm2 += user2[key] * user2[key];
     });
-    
+
     const cosineSim = dotProduct / (Math.sqrt(norm1) * Math.sqrt(norm2));
-    
+
     // Apply user profile weighting
     const profileWeight = userProfile ? (userProfile.totalInteractions / 100) : 1;
-    
+
     return cosineSim * Math.min(profileWeight, 1.5);
 };
 
 const calculateProfileBoost = (userProfile) => {
     if (!userProfile) return 0;
-    
+
     const interactionBoost = Math.min(userProfile.totalInteractions / 50, 0.2);
     const preferenceBoost = userProfile.priceSensitivity * 0.1;
-    
+
     return interactionBoost + preferenceBoost;
 };
 
@@ -495,19 +495,19 @@ const calculateProfileBoost = (userProfile) => {
 const enhancedRandomForestRecommendations = async (userProfile, allProperties) => {
     try {
         console.log(`🔍 Enhanced Random Forest for profile: ${!!userProfile}, properties: ${allProperties.length}`);
-        
+
         if (!userProfile || userProfile.isNewUser) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         const recommendations = [];
-        
+
         for (const property of allProperties) {
             if (!property || !property._id) continue;
-            
+
             const features = extractEnhancedFeatures(property, userProfile);
             const prediction = predictWithEnhancedRandomForest(features, userProfile);
-            
+
             if (prediction.score > 0.35) { // Higher threshold for better accuracy
                 recommendations.push({
                     property: property,
@@ -521,11 +521,11 @@ const enhancedRandomForestRecommendations = async (userProfile, allProperties) =
                 });
             }
         }
-        
+
         if (recommendations.length === 0) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in enhanced random forest:', error);
@@ -538,54 +538,54 @@ const predictWithEnhancedRandomForest = (features, userProfile) => {
     let score = 0;
     let confidence = 0;
     const reasons = [];
-    
+
     // Enhanced price compatibility with multiple factors
     const priceScore = calculateEnhancedPriceCompatibility(features, userProfile);
     score += priceScore * 0.25;
     confidence += 0.25;
     if (priceScore > 0.7) reasons.push('Excellent price match');
-    
+
     // Enhanced location compatibility
     const locationScore = calculateEnhancedLocationCompatibility(features, userProfile);
     score += locationScore * 0.20;
     confidence += 0.20;
     if (locationScore > 0.6) reasons.push('Perfect location match');
-    
+
     // Enhanced type compatibility
     const typeScore = calculateEnhancedTypeCompatibility(features, userProfile);
     score += typeScore * 0.15;
     confidence += 0.15;
     if (typeScore > 0.5) reasons.push('Property type preference match');
-    
+
     // Enhanced amenity compatibility
     const amenityScore = calculateEnhancedAmenityCompatibility(features, userProfile);
     score += amenityScore * 0.15;
     confidence += 0.15;
     if (amenityScore > 0.6) reasons.push('Amenities match your requirements');
-    
+
     // Enhanced market compatibility
     const marketScore = calculateEnhancedMarketCompatibility(features, userProfile);
     score += marketScore * 0.10;
     confidence += 0.10;
     if (marketScore > 0.7) reasons.push('Excellent market value');
-    
+
     // Enhanced investment potential
     const investmentScore = calculateInvestmentCompatibility(features, userProfile);
     score += investmentScore * 0.10;
     confidence += 0.10;
     if (investmentScore > 0.6) reasons.push('High investment potential');
-    
+
     // Enhanced social proof
     const socialScore = calculateSocialCompatibility(features, userProfile);
     score += socialScore * 0.05;
     confidence += 0.05;
     if (socialScore > 0.7) reasons.push('Highly rated by others');
-    
+
     // Apply user profile weighting
     const profileWeight = userProfile ? (1 + userProfile.totalInteractions / 100) : 1;
     const finalScore = Math.max(0.3, Math.min(1, score * profileWeight));
     const finalConfidence = Math.max(0.6, Math.min(1, confidence * profileWeight));
-    
+
     return {
         score: finalScore,
         confidence: finalConfidence,
@@ -597,17 +597,17 @@ const predictWithEnhancedRandomForest = (features, userProfile) => {
 const calculateEnhancedPriceCompatibility = (features, userProfile) => {
     const userAvgPrice = userProfile.avgPrice || 0;
     const propertyPrice = features.price || 0;
-    
+
     if (userAvgPrice === 0) return 0.7; // Higher base score for new users
-    
+
     const priceDiff = Math.abs(propertyPrice - userAvgPrice) / userAvgPrice;
     const priceSensitivity = userProfile.priceSensitivity || 0.5;
     const budgetFlexibility = userProfile.budgetFlexibility || 0.5;
-    
+
     // More sophisticated price matching
     const baseCompatibility = Math.max(0.2, 1 - (priceDiff * (0.2 + priceSensitivity * 0.3)));
     const flexibilityBonus = budgetFlexibility * 0.2;
-    
+
     return Math.min(1, baseCompatibility + flexibilityBonus);
 };
 
@@ -615,28 +615,28 @@ const calculateEnhancedLocationCompatibility = (features, userProfile) => {
     const locationLoyalty = userProfile.locationLoyalty || 0.5;
     const preferredCities = userProfile.preferredCities || {};
     const city = features.city || 'unknown';
-    
+
     const cityPreference = preferredCities[city] ? preferredCities[city] / userProfile.totalInteractions : 0;
     const locationScore = features.locationScore || 0;
-    
+
     const baseScore = 0.5;
     const cityBonus = cityPreference * (1 + locationLoyalty);
     const locationBonus = (locationScore / 100) * 0.3;
-    
+
     return Math.min(1, baseScore + cityBonus + locationBonus);
 };
 
 const calculateEnhancedTypeCompatibility = (features, userProfile) => {
     const preferredTypes = userProfile.preferredTypes || {};
     const type = features.type || 'unknown';
-    
+
     const typePreference = preferredTypes[type] ? preferredTypes[type] / userProfile.totalInteractions : 0;
     const typeScore = getTypeScore(type);
-    
+
     const baseScore = 0.4;
     const preferenceBonus = typePreference;
     const typeBonus = typeScore * 0.3;
-    
+
     return Math.min(1, baseScore + preferenceBonus + typeBonus);
 };
 
@@ -644,11 +644,11 @@ const calculateEnhancedAmenityCompatibility = (features, userProfile) => {
     const amenityImportance = userProfile.amenityImportance || 0.5;
     const amenitiesScore = features.amenitiesScore || 0;
     const luxuryAmenities = features.luxuryAmenities || 0;
-    
+
     const baseScore = 0.5;
     const amenityBonus = amenitiesScore * (0.3 + amenityImportance * 0.4);
     const luxuryBonus = luxuryAmenities * 0.2;
-    
+
     return Math.min(1, baseScore + amenityBonus + luxuryBonus);
 };
 
@@ -656,10 +656,10 @@ const calculateEnhancedMarketCompatibility = (features, userProfile) => {
     const marketDemand = features.marketDemand || 0;
     const priceCompetitiveness = features.priceCompetitiveness || 0;
     const marketTrend = features.marketTrend || 0;
-    
+
     const baseScore = 0.6;
     const marketScore = (marketDemand + priceCompetitiveness + marketTrend) / 3;
-    
+
     return Math.min(1, baseScore + marketScore * 0.4);
 };
 
@@ -667,7 +667,7 @@ const calculateInvestmentCompatibility = (features, userProfile) => {
     const investmentPotential = features.investmentPotential || 0;
     const appreciationPotential = features.appreciationPotential || 0;
     const rentalYield = features.rentalYield || 0;
-    
+
     return (investmentPotential + appreciationPotential + (rentalYield / 100)) / 3;
 };
 
@@ -675,11 +675,11 @@ const calculateSocialCompatibility = (features, userProfile) => {
     const socialProof = features.socialProof || 0;
     const reviewScore = features.reviewScore || 0;
     const reviewCount = features.reviewCount || 0;
-    
+
     const baseScore = 0.5;
     const socialBonus = socialProof * 0.3;
     const reviewBonus = (reviewScore / 5) * 0.2;
-    
+
     return Math.min(1, baseScore + socialBonus + reviewBonus);
 };
 
@@ -687,19 +687,19 @@ const calculateSocialCompatibility = (features, userProfile) => {
 const enhancedNeuralNetworkRecommendations = async (userProfile, allProperties) => {
     try {
         console.log(`🔍 Enhanced Neural Network for profile: ${!!userProfile}, properties: ${allProperties.length}`);
-        
+
         if (!userProfile || userProfile.isNewUser) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         const recommendations = [];
-        
+
         for (const property of allProperties) {
             if (!property || !property._id) continue;
-            
+
             const features = extractEnhancedFeatures(property, userProfile);
             const prediction = predictWithEnhancedNeuralNetwork(features, userProfile);
-            
+
             if (prediction.score > 0.35) { // Higher threshold for better accuracy
                 recommendations.push({
                     property: property,
@@ -713,11 +713,11 @@ const enhancedNeuralNetworkRecommendations = async (userProfile, allProperties) 
                 });
             }
         }
-        
+
         if (recommendations.length === 0) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in enhanced neural network:', error);
@@ -725,11 +725,14 @@ const enhancedNeuralNetworkRecommendations = async (userProfile, allProperties) 
     }
 };
 
-// Enhanced Neural Network with deeper architecture
+// Helper: Sigmoid Activation Function for non-linear neuron behavior
+const sigmoid = (x) => 1 / (1 + Math.exp(-x));
+
+// Enhanced Neural Network with deeper architecture and non-linear activation
 const predictWithEnhancedNeuralNetwork = (features, userProfile) => {
-    // Enhanced input features (normalized and bounded)
+    // Input features (Normalized 0-1)
     const inputFeatures = [
-        Math.min(1, Math.max(0, features.price / 20000000)), // Normalize price
+        Math.min(1, Math.max(0, features.price / 20000000)),
         Math.min(1, Math.max(0, features.bedrooms / 10)),
         Math.min(1, Math.max(0, features.bathrooms / 10)),
         Math.min(1, Math.max(0, features.area / 20000)),
@@ -740,45 +743,38 @@ const predictWithEnhancedNeuralNetwork = (features, userProfile) => {
         Math.min(1, Math.max(0, features.locationScore / 100)),
         Math.min(1, Math.max(0, features.investmentPotential)),
         Math.min(1, Math.max(0, features.socialProof)),
+        // User Profile Inputs
         Math.min(1, Math.max(0, userProfile.priceSensitivity)),
         Math.min(1, Math.max(0, userProfile.locationLoyalty)),
         Math.min(1, Math.max(0, userProfile.amenityImportance)),
-        Math.min(1, Math.max(0, userProfile.budgetFlexibility)),
-        Math.min(1, Math.max(0, features.luxuryAmenities)),
-        Math.min(1, Math.max(0, features.marketTrend)),
-        Math.min(1, Math.max(0, features.appreciationPotential)),
-        Math.min(1, Math.max(0, features.affordabilityIndex)),
-        Math.min(1, Math.max(0, features.completenessScore))
+        Math.min(1, Math.max(0, userProfile.budgetFlexibility))
     ];
-    
-    // Enhanced hidden layer 1 with more neurons
-    const hidden1 = inputFeatures.map(feature => 
-        Math.max(0, feature * 0.9 + 0.4) // ReLU with higher weights and bias
-    );
-    
-    // Enhanced hidden layer 2
-    const hidden2 = hidden1.map(feature => 
-        Math.max(0, feature * 0.7 + 0.3)
-    );
-    
-    // Enhanced hidden layer 3
-    const hidden3 = hidden2.map(feature => 
-        Math.max(0, feature * 0.6 + 0.2)
-    );
-    
-    // Enhanced output layer with weighted combination
-    const output = hidden3.reduce((sum, feature, index) => {
-        const weight = 1 / hidden3.length;
-        return sum + feature * weight;
-    }, 0);
-    
-    // Apply user profile weighting
-    const profileWeight = userProfile ? (1 + userProfile.totalInteractions / 200) : 1;
-    const finalScore = Math.max(0.3, Math.min(1, output * profileWeight));
-    
+
+    // Hidden Layer 1 (Dense): Cross-referencing property features with user preferences
+    // We simulate "weights" by combining specific inputs
+    const hidden1 = [
+        sigmoid((inputFeatures[0] * 0.8) - (inputFeatures[11] * 0.5)), // Price vs Sensitivity
+        sigmoid(inputFeatures[8] + inputFeatures[12]), // Location vs Loyalty
+        sigmoid(inputFeatures[5] + inputFeatures[13]), // Amenities vs Importance
+        sigmoid(inputFeatures[9] + inputFeatures[6]), // Investment + Demand
+        sigmoid(inputFeatures[10] + inputFeatures[7]) // Social + Competitiveness
+    ];
+
+    // Hidden Layer 2 (Abstract): Finding complex patterns
+    const hidden2 = hidden1.map(val => sigmoid(val * 1.5 - 0.5));
+
+    // Output Neuron: Final Propensity Score
+    const output = hidden2.reduce((sum, val) => sum + val, 0) / hidden2.length;
+
+    // Apply User Interaction weighting (Bias)
+    const profileBias = userProfile ? (1 + Math.min(0.2, userProfile.totalInteractions / 100)) : 1.0;
+
+    // Final Confidence Score
+    const finalScore = Math.min(0.99, output * profileBias);
+
     return {
         score: finalScore,
-        confidence: Math.max(0.7, Math.min(1, finalScore + 0.3)),
+        confidence: Math.min(0.99, finalScore + 0.1), // Confidence is slightly higher than raw score usually
         hiddenFactors: {
             priceWeight: hidden1[0],
             locationWeight: hidden1[1],
@@ -793,27 +789,27 @@ const predictWithEnhancedNeuralNetwork = (features, userProfile) => {
 const enhancedKMeansRecommendations = async (userId, allProperties, userProfile) => {
     try {
         console.log(`🔍 Enhanced K-Means for user: ${userId}, properties: ${allProperties.length}`);
-        
+
         if (!userProfile || userProfile.isNewUser) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         // Create user clusters based on enhanced features
         const userClusters = await createEnhancedUserClusters();
         const userCluster = findUserCluster(userId, userClusters);
-        
+
         if (!userCluster) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         const recommendations = [];
-        
+
         for (const property of allProperties) {
             if (!property || !property._id) continue;
-            
+
             const features = extractEnhancedFeatures(property, userProfile);
             const clusterScore = calculateClusterCompatibility(features, userCluster);
-            
+
             if (clusterScore > 0.7) { // Higher threshold for 95%+ accuracy
                 recommendations.push({
                     property: property, // Ensure property is properly included
@@ -827,11 +823,11 @@ const enhancedKMeansRecommendations = async (userId, allProperties, userProfile)
                 });
             }
         }
-        
+
         if (recommendations.length === 0) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in enhanced K-means:', error);
@@ -843,7 +839,7 @@ const enhancedKMeansRecommendations = async (userId, allProperties, userProfile)
 const createEnhancedUserClusters = async () => {
     const users = await User.find({}).limit(1000);
     const clusters = [];
-    
+
     // Create clusters based on user behavior patterns
     const behaviorClusters = [
         { id: 'budget-conscious', features: { priceSensitivity: 0.8, amenityImportance: 0.3 } },
@@ -852,7 +848,7 @@ const createEnhancedUserClusters = async () => {
         { id: 'investment-focused', features: { priceSensitivity: 0.6, amenityImportance: 0.7 } },
         { id: 'balanced', features: { priceSensitivity: 0.5, amenityImportance: 0.5 } }
     ];
-    
+
     return behaviorClusters;
 };
 
@@ -865,30 +861,30 @@ const findUserCluster = (userId, clusters) => {
 const calculateClusterCompatibility = (features, cluster) => {
     const clusterFeatures = cluster.features;
     let compatibility = 0;
-    
+
     // Enhanced price sensitivity compatibility with better scoring
     const priceCompatibility = Math.max(0, 1 - Math.abs(features.priceCategory - (clusterFeatures.priceSensitivity * 5)) / 5);
     compatibility += priceCompatibility * 0.25;
-    
+
     // Enhanced amenity compatibility
     const amenityCompatibility = Math.max(0, 1 - Math.abs(features.amenitiesScore - clusterFeatures.amenityImportance));
     compatibility += amenityCompatibility * 0.25;
-    
+
     // Enhanced location compatibility
     const locationCompatibility = features.locationScore / 100;
     compatibility += locationCompatibility * 0.2;
-    
+
     // Enhanced market compatibility
     const marketCompatibility = (features.marketDemand + features.priceCompetitiveness) / 2;
     compatibility += marketCompatibility * 0.15;
-    
+
     // Enhanced investment compatibility
     const investmentCompatibility = features.investmentPotential || 0;
     compatibility += investmentCompatibility * 0.15;
-    
+
     // Apply cluster-specific boost
     const clusterBoost = 0.1;
-    
+
     return Math.min(0.98, Math.max(0.6, compatibility + clusterBoost));
 };
 
@@ -896,19 +892,19 @@ const calculateClusterCompatibility = (features, cluster) => {
 const enhancedTimeSeriesRecommendations = async (userId, allProperties, userProfile) => {
     try {
         console.log(`🔍 Enhanced Time Series for user: ${userId}, properties: ${allProperties.length}`);
-        
+
         if (!userProfile || userProfile.isNewUser) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         const recommendations = [];
-        
+
         for (const property of allProperties) {
             if (!property || !property._id) continue;
-            
+
             const features = extractEnhancedFeatures(property, userProfile);
             const trendScore = calculateEnhancedTrendScore(features, userProfile);
-            
+
             if (trendScore > 0.75) { // Higher threshold for 95%+ accuracy
                 recommendations.push({
                     property: property,
@@ -922,11 +918,11 @@ const enhancedTimeSeriesRecommendations = async (userId, allProperties, userProf
                 });
             }
         }
-        
+
         if (recommendations.length === 0) {
             return getEnhancedFallbackRecommendations(allProperties, 10);
         }
-        
+
         return recommendations.sort((a, b) => b.score - a.score);
     } catch (error) {
         console.error('Error in enhanced time series:', error);
@@ -941,21 +937,21 @@ const calculateEnhancedTrendScore = (features, userProfile) => {
     const listingAge = features.listingAge || 0;
     const investmentPotential = features.investmentPotential || 0;
     const priceCompetitiveness = features.priceCompetitiveness || 0;
-    
+
     // Enhanced trend calculation with more factors
     const baseTrendScore = (marketTrend * 0.3 + seasonalDemand * 0.25 + timeToMarket * 0.2 + (1 - listingAge) * 0.1);
     const investmentScore = investmentPotential * 0.1;
     const priceScore = priceCompetitiveness * 0.05;
-    
+
     const trendScore = baseTrendScore + investmentScore + priceScore;
-    
+
     // Apply user profile weighting with better scaling
     const profileWeight = userProfile ? (1 + userProfile.totalInteractions / 100) : 1;
     const trendFollowing = userProfile?.trendFollowing || 0.5;
-    
+
     // Apply trend following boost
     const trendBoost = trendFollowing * 0.2;
-    
+
     return Math.min(0.98, Math.max(0.7, trendScore * profileWeight + trendBoost));
 };
 
@@ -972,21 +968,21 @@ const calculateTrendFactors = (features) => {
 const superEnsembleRecommendations = async (userId, limit = 10) => {
     try {
         console.log(`🧠 Super Ensemble Learning for user: ${userId}`);
-        
+
         const userProfile = await createEnhancedUserProfile(userId);
         const allProperties = await Listing.find({}).limit(2000); // Increased limit for better accuracy
-        
+
         if (allProperties.length === 0) {
             return [];
         }
-        
+
         // Get user's current wishlist to exclude
         const userWishlist = await Wishlist.find({ userId });
         const wishlistPropertyIds = userWishlist.map(item => item.listingId.toString());
         const availableProperties = allProperties.filter(
             property => !wishlistPropertyIds.includes(property._id.toString())
         );
-        
+
         // Run all enhanced models in parallel
         const [
             matrixFactorizationRecs,
@@ -1001,7 +997,7 @@ const superEnsembleRecommendations = async (userId, limit = 10) => {
             enhancedKMeansRecommendations(userId, availableProperties, userProfile),
             enhancedTimeSeriesRecommendations(userId, availableProperties, userProfile)
         ]);
-        
+
         // Enhanced ensemble combination with dynamic weights
         const modelResults = [
             { recs: matrixFactorizationRecs, weight: 0.20, name: 'Matrix Factorization', accuracy: 0.92 },
@@ -1010,9 +1006,9 @@ const superEnsembleRecommendations = async (userId, limit = 10) => {
             { recs: kMeansRecs, weight: 0.15, name: 'K-Means Clustering', accuracy: 0.91 },
             { recs: timeSeriesRecs, weight: 0.15, name: 'Time Series', accuracy: 0.91 }
         ];
-        
+
         const combinedRecommendations = combineEnhancedRecommendations(modelResults);
-        
+
         // Add advanced insights and explanations
         const finalRecommendations = combinedRecommendations
             .filter(rec => rec.property && rec.property._id)
@@ -1027,13 +1023,13 @@ const superEnsembleRecommendations = async (userId, limit = 10) => {
                 accuracyEstimate: calculateAccuracyEstimate(rec),
                 modelVersion: '3.0'
             }));
-        
+
         if (finalRecommendations.length === 0) {
             return getEnhancedFallbackRecommendations(allProperties, limit);
         }
-        
+
         return finalRecommendations.slice(0, limit);
-        
+
     } catch (error) {
         console.error('Error in super ensemble recommendations:', error);
         return getEnhancedFallbackRecommendations(allProperties, limit);
@@ -1043,15 +1039,15 @@ const superEnsembleRecommendations = async (userId, limit = 10) => {
 // Enhanced recommendation combination
 const combineEnhancedRecommendations = (modelResults) => {
     const propertyScores = {};
-    
+
     modelResults.forEach(({ recs, weight, name, accuracy }) => {
         if (!recs || !Array.isArray(recs)) return;
-        
+
         recs.forEach(rec => {
             if (!rec || !rec.property || !rec.property._id) return;
-            
+
             const propertyId = rec.property._id.toString();
-            
+
             if (!propertyScores[propertyId]) {
                 propertyScores[propertyId] = {
                     property: rec.property,
@@ -1061,12 +1057,12 @@ const combineEnhancedRecommendations = (modelResults) => {
                     accuracySum: 0
                 };
             }
-            
+
             // Apply enhanced weighting with boost for ensemble
             const accuracyWeight = weight * accuracy;
             const ensembleBoost = 1.2; // Boost ensemble scores
             const finalScore = (rec.score || 0) * accuracyWeight * ensembleBoost;
-            
+
             propertyScores[propertyId].scores[name] = finalScore;
             propertyScores[propertyId].totalScore += finalScore;
             propertyScores[propertyId].accuracySum += accuracy;
@@ -1079,34 +1075,34 @@ const combineEnhancedRecommendations = (modelResults) => {
             });
         });
     });
-    
-        return Object.values(propertyScores)
-            .map(rec => {
-                // Enhanced final score calculation
-                const baseScore = rec.totalScore;
-                const modelCount = rec.models.length;
-                const diversityBonus = Math.min(0.1, modelCount * 0.02); // Bonus for multiple models agreeing
-                const finalScore = Math.min(0.98, baseScore + diversityBonus);
-                
-                return {
-                    property: rec.property,
-                    score: finalScore,
-                    type: 'ensemble',
-                    confidence: Math.min(0.98, rec.models.reduce((sum, model) => sum + model.confidence, 0) / rec.models.length + 0.1),
-                    modelBreakdown: rec.scores,
-                    contributingModels: rec.models,
-                    averageAccuracy: rec.accuracySum / rec.models.length,
-                    recommendationScore: finalScore,
-                    recommendationType: 'super-ensemble'
-                };
-            })
-            .sort((a, b) => b.score - a.score);
+
+    return Object.values(propertyScores)
+        .map(rec => {
+            // Enhanced final score calculation
+            const baseScore = rec.totalScore;
+            const modelCount = rec.models.length;
+            const diversityBonus = Math.min(0.1, modelCount * 0.02); // Bonus for multiple models agreeing
+            const finalScore = Math.min(0.98, baseScore + diversityBonus);
+
+            return {
+                property: rec.property,
+                score: finalScore,
+                type: 'ensemble',
+                confidence: Math.min(0.98, rec.models.reduce((sum, model) => sum + model.confidence, 0) / rec.models.length + 0.1),
+                modelBreakdown: rec.scores,
+                contributingModels: rec.models,
+                averageAccuracy: rec.accuracySum / rec.models.length,
+                recommendationScore: finalScore,
+                recommendationType: 'super-ensemble'
+            };
+        })
+        .sort((a, b) => b.score - a.score);
 };
 
 // Enhanced AI insights generation
 const generateEnhancedAIInsights = (recommendation, userProfile) => {
     const insights = [];
-    
+
     // Price insights
     if (recommendation.modelBreakdown) {
         const priceMatch = recommendation.modelBreakdown['Random Forest'] || 0;
@@ -1116,7 +1112,7 @@ const generateEnhancedAIInsights = (recommendation, userProfile) => {
             insights.push('Good price alignment with your preferences');
         }
     }
-    
+
     // Location insights
     const locationScore = recommendation.property?.locationScore || 0;
     if (locationScore > 80) {
@@ -1124,7 +1120,7 @@ const generateEnhancedAIInsights = (recommendation, userProfile) => {
     } else if (locationScore > 60) {
         insights.push('Good location with decent connectivity');
     }
-    
+
     // Market insights
     const marketScore = (recommendation.property?.marketDemand || 0) + (recommendation.property?.priceCompetitiveness || 0);
     if (marketScore > 1.5) {
@@ -1132,7 +1128,7 @@ const generateEnhancedAIInsights = (recommendation, userProfile) => {
     } else if (marketScore > 1.0) {
         insights.push('Good market value and demand');
     }
-    
+
     // Investment insights
     const investmentScore = recommendation.property?.investmentPotential || 0;
     if (investmentScore > 0.8) {
@@ -1140,7 +1136,7 @@ const generateEnhancedAIInsights = (recommendation, userProfile) => {
     } else if (investmentScore > 0.6) {
         insights.push('Good investment opportunity');
     }
-    
+
     // Amenity insights
     const amenityScore = recommendation.property?.amenitiesScore || 0;
     if (amenityScore > 0.8) {
@@ -1148,7 +1144,7 @@ const generateEnhancedAIInsights = (recommendation, userProfile) => {
     } else if (amenityScore > 0.6) {
         insights.push('Good amenities for your needs');
     }
-    
+
     return insights.length > 0 ? insights : ['AI-powered recommendation based on advanced analysis'];
 };
 
@@ -1157,9 +1153,9 @@ const generateEnhancedModelExplanation = (recommendation) => {
     if (recommendation.contributingModels) {
         const topModel = recommendation.contributingModels
             .sort((a, b) => b.score - a.score)[0];
-        
+
         const accuracy = Math.round((topModel.accuracy || 0) * 100);
-        
+
         switch (topModel.name) {
             case 'Matrix Factorization':
                 return `Users with similar preferences (${accuracy}% accuracy) also liked this property`;
@@ -1175,7 +1171,7 @@ const generateEnhancedModelExplanation = (recommendation) => {
                 return `Multiple AI models recommend this property (${accuracy}% average accuracy)`;
         }
     }
-    
+
     return 'Advanced AI recommendation with 95%+ accuracy';
 };
 
@@ -1195,13 +1191,13 @@ const createEnhancedUserProfile = async (userId) => {
             Review.find({ userId }).populate('listingId'),
             ChatHistory.find({ userId })
         ]);
-        
+
         const allProperties = [
             ...wishlistItems.map(item => item.listingId).filter(Boolean),
             ...bookings.map(booking => booking.listingId).filter(Boolean),
             ...reviews.map(review => review.listingId).filter(Boolean)
         ];
-        
+
         if (allProperties.length === 0) {
             return {
                 avgPrice: 0,
@@ -1227,7 +1223,7 @@ const createEnhancedUserProfile = async (userId) => {
                 isNewUser: true
             };
         }
-        
+
         // Enhanced profile calculation
         const profile = {
             avgPrice: 0,
@@ -1252,10 +1248,10 @@ const createEnhancedUserProfile = async (userId) => {
             satisfactionLevel: 0,
             isNewUser: false
         };
-        
+
         // Calculate basic preferences
         let totalPrice = 0, totalBedrooms = 0, totalBathrooms = 0, totalArea = 0;
-        
+
         allProperties.forEach(property => {
             if (property) {
                 const price = property.regularPrice || 0;
@@ -1263,21 +1259,21 @@ const createEnhancedUserProfile = async (userId) => {
                 totalBedrooms += property.bedrooms || 0;
                 totalBathrooms += property.bathrooms || 0;
                 totalArea += property.area || 0;
-                
+
                 profile.preferredTypes[property.type] = (profile.preferredTypes[property.type] || 0) + 1;
                 profile.preferredCities[property.city] = (profile.preferredCities[property.city] || 0) + 1;
                 profile.preferredStates[property.state] = (profile.preferredStates[property.state] || 0) + 1;
-                
+
                 profile.priceRange.min = Math.min(profile.priceRange.min, price);
                 profile.priceRange.max = Math.max(profile.priceRange.max, price);
             }
         });
-        
+
         profile.avgPrice = totalPrice / allProperties.length;
         profile.avgBedrooms = totalBedrooms / allProperties.length;
         profile.avgBathrooms = totalBathrooms / allProperties.length;
         profile.avgArea = totalArea / allProperties.length;
-        
+
         // Calculate enhanced ML features
         profile.priceSensitivity = calculateEnhancedPriceSensitivity(allProperties);
         profile.locationLoyalty = calculateEnhancedLocationLoyalty(allProperties);
@@ -1285,7 +1281,7 @@ const createEnhancedUserProfile = async (userId) => {
         profile.budgetFlexibility = calculateEnhancedBudgetFlexibility(allProperties);
         profile.riskTolerance = calculateRiskTolerance(allProperties);
         profile.trendFollowing = calculateTrendFollowing(allProperties);
-        
+
         return profile;
     } catch (error) {
         console.error('Error creating enhanced user profile:', error);
@@ -1296,44 +1292,44 @@ const createEnhancedUserProfile = async (userId) => {
 // Enhanced ML feature calculations
 const calculateEnhancedPriceSensitivity = (properties) => {
     if (properties.length < 2) return 0.5;
-    
+
     const prices = properties.map(p => p.regularPrice || 0).sort((a, b) => a - b);
     const priceVariance = prices.reduce((acc, price, i) => {
         const mean = prices.reduce((sum, p) => sum + p, 0) / prices.length;
         return acc + Math.pow(price - mean, 2);
     }, 0) / prices.length;
-    
+
     return Math.min(1, priceVariance / (prices[0] * 0.05));
 };
 
 const calculateEnhancedLocationLoyalty = (properties) => {
     if (properties.length === 0) return 0;
-    
+
     const cities = properties.map(p => p.city).filter(Boolean);
     const uniqueCities = new Set(cities).size;
-    
+
     return 1 - (uniqueCities - 1) / Math.max(cities.length - 1, 1);
 };
 
 const calculateEnhancedAmenityImportance = (properties) => {
     if (properties.length === 0) return 0;
-    
+
     const totalAmenities = properties.reduce((sum, property) => {
         return sum + calculateEnhancedAmenitiesScore(property);
     }, 0);
-    
+
     return totalAmenities / properties.length;
 };
 
 const calculateEnhancedBudgetFlexibility = (properties) => {
     if (properties.length < 2) return 0.5;
-    
+
     const prices = properties.map(p => p.regularPrice || 0);
     const minPrice = Math.min(...prices);
     const maxPrice = Math.max(...prices);
-    
+
     if (minPrice === 0) return 0.5;
-    
+
     return Math.min(1, (maxPrice - minPrice) / minPrice);
 };
 
@@ -1341,7 +1337,7 @@ const calculateRiskTolerance = (properties) => {
     // Risk tolerance based on property diversity and price range
     const priceRange = calculateEnhancedBudgetFlexibility(properties);
     const locationDiversity = 1 - calculateEnhancedLocationLoyalty(properties);
-    
+
     return (priceRange + locationDiversity) / 2;
 };
 
@@ -1349,10 +1345,10 @@ const calculateTrendFollowing = (properties) => {
     // Trend following based on property age and market demand
     const avgAge = properties.reduce((sum, p) => sum + (p.propertyAge || 0), 0) / properties.length;
     const avgDemand = properties.reduce((sum, p) => sum + (p.views || 0), 0) / properties.length;
-    
+
     const ageFactor = Math.max(0, 1 - avgAge / 10);
     const demandFactor = Math.min(1, avgDemand / 100);
-    
+
     return (ageFactor + demandFactor) / 2;
 };
 
@@ -1394,7 +1390,7 @@ const getEnhancedFallbackRecommendations = async (allProperties, limit = 10) => 
                 $limit: limit
             }
         ]);
-        
+
         return trendingProperties
             .filter(property => property && property._id)
             .map(property => ({
@@ -1408,7 +1404,7 @@ const getEnhancedFallbackRecommendations = async (allProperties, limit = 10) => 
                 modelExplanation: 'Recommended based on enhanced popularity analysis - add properties to your wishlist for personalized recommendations!',
                 modelVersion: '2.0'
             }));
-        
+
     } catch (error) {
         console.error('Error in enhanced fallback recommendations:', error);
         return [];
