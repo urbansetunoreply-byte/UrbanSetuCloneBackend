@@ -964,7 +964,12 @@ export const rootAdminBypassVerification = async (req, res, next) => {
     let verification = await PropertyVerification.findOne({ listingId: listing._id });
 
     if (!verification) {
+      const timestamp = Date.now();
+      const random = Math.random().toString(36).substring(2, 9).toUpperCase();
+      const verificationId = `VERIFY-${timestamp}-${random}`;
+
       verification = new PropertyVerification({
+        verificationId,
         listingId: listing._id,
         landlordId: listing.userRef || listing.sellerId,
         verificationFee: 0,
