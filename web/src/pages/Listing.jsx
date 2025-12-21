@@ -149,6 +149,7 @@ export default function Listing() {
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
   const [showVirtualStaging, setShowVirtualStaging] = useState(false); // State for Virtual Staging
   const [showVirtualStagingTooltip, setShowVirtualStagingTooltip] = useState(false);
+  const [activeVirtualTourIndex, setActiveVirtualTourIndex] = useState(0);
   const [propertyRatings, setPropertyRatings] = useState(null);
   const [showPropertyRatings, setShowPropertyRatings] = useState(false);
   const [ratingsLoading, setRatingsLoading] = useState(false);
@@ -2029,46 +2030,70 @@ export default function Listing() {
                     <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                       <FaCompass className="text-indigo-600" /> 360° Virtual Tour ({listing.virtualTourImages.length})
                     </h4>
-                    <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                      {listing.virtualTourImages.map((imgUrl, idx) => (
-                        <div key={idx} className="relative w-full h-80 rounded-lg overflow-hidden border border-gray-200 group">
-                          {/* 360 Viewer with conditional blur if not logged in */}
-                          <div className={`w-full h-full ${!currentUser ? "filter blur-sm pointer-events-none select-none opacity-50" : ""}`}>
-                            <VirtualTourViewer imageUrl={imgUrl} autoLoad={idx === 0 && !!currentUser} />
-                          </div>
+                    {/* Main Active Viewer */}
+                    <div className="relative w-full h-[500px] rounded-xl overflow-hidden border border-gray-200 shadow-md group mb-4">
+                      {/* 360 Viewer with conditional blur if not logged in */}
+                      <div className={`w-full h-full ${!currentUser ? "filter blur-sm pointer-events-none select-none opacity-50" : ""}`}>
+                        <VirtualTourViewer
+                          imageUrl={listing.virtualTourImages[activeVirtualTourIndex]}
+                          autoLoad={!!currentUser}
+                          key={listing.virtualTourImages[activeVirtualTourIndex]} // Force re-mount on change
+                        />
+                      </div>
 
-                          {/* Login Overlay for non-logged in users */}
-                          {!currentUser && (
-                            <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black/10">
-                              <div className="bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl text-center transform transition-transform border border-white/20">
-                                <div className="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
-                                  <FaLock className="text-indigo-600 w-5 h-5" />
-                                </div>
-                                <h5 className="text-gray-900 font-bold text-base mb-1">Restricted View</h5>
-                                <p className="text-gray-500 text-xs mb-4 max-w-[200px] mx-auto leading-relaxed">
-                                  Login to explore this property in immersive 360° detail.
-                                </p>
-                                <button
-                                  onClick={(e) => {
-                                    e.preventDefault();
-                                    navigate(`/sign-in?redirect=${encodeURIComponent(location.pathname + location.search)}`);
-                                  }}
-                                  className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30 flex items-center justify-center gap-2 w-full"
-                                >
-                                  <span>Sign In to Unlock</span>
-                                </button>
-                              </div>
+                      {/* Login Overlay for non-logged in users */}
+                      {!currentUser && (
+                        <div className="absolute inset-0 flex flex-col items-center justify-center z-20 bg-black/10">
+                          <div className="bg-white/95 backdrop-blur-md p-5 rounded-2xl shadow-xl text-center transform transition-transform border border-white/20">
+                            <div className="bg-indigo-100 w-12 h-12 rounded-full flex items-center justify-center mx-auto mb-3">
+                              <FaLock className="text-indigo-600 w-5 h-5" />
                             </div>
-                          )}
-
-                          {listing.virtualTourImages.length > 1 && (
-                            <p className="absolute bottom-2 right-2 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur-sm">
-                              View {idx + 1}
+                            <h5 className="text-gray-900 font-bold text-base mb-1">Restricted View</h5>
+                            <p className="text-gray-500 text-xs mb-4 max-w-[200px] mx-auto leading-relaxed">
+                              Login to explore this property in immersive 360° detail.
                             </p>
-                          )}
+                            <button
+                              onClick={(e) => {
+                                e.preventDefault();
+                                navigate(`/sign-in?redirect=${encodeURIComponent(location.pathname + location.search)}`);
+                              }}
+                              className="bg-indigo-600 text-white px-5 py-2.5 rounded-xl text-sm font-semibold hover:bg-indigo-700 transition-all shadow-lg hover:shadow-indigo-500/30 flex items-center justify-center gap-2 w-full"
+                            >
+                              <span>Sign In to Unlock</span>
+                            </button>
+                          </div>
                         </div>
-                      ))}
+                      )}
                     </div>
+
+                    {/* Thumbnails Slider if > 1 image */}
+                    {listing.virtualTourImages.length > 1 && (
+                      <div className="relative">
+                        <div className="flex gap-2 overflow-x-auto pb-2 scrollbar-hide snap-x">
+                          {listing.virtualTourImages.map((imgUrl, idx) => (
+                            <button
+                              key={idx}
+                              onClick={() => setActiveVirtualTourIndex(idx)}
+                              className={`flex-shrink-0 relative w-24 h-16 rounded-lg overflow-hidden border-2 transition-all snap-start ${activeVirtualTourIndex === idx
+                                  ? 'border-indigo-600 ring-2 ring-indigo-100 scale-105'
+                                  : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-indigo-300'
+                                }`}
+                            >
+                              <img
+                                src={imgUrl}
+                                alt={`View ${idx + 1}`}
+                                className="w-full h-full object-cover"
+                                crossOrigin="anonymous"
+                              />
+                              <div className="absolute bottom-0 right-0 bg-black/50 text-white text-[10px] px-1.5 py-0.5 rounded-tl-md backdrop-blur-sm">
+                                {idx + 1}
+                              </div>
+                            </button>
+                          ))}
+                        </div>
+                        <p className="text-xs text-gray-400 mt-2 text-center">Select a scene to explore</p>
+                      </div>
+                    )}
                   </div>
                 )}
 
