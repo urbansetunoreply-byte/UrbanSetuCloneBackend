@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
 import DigitalSignature from '../components/rental/DigitalSignature';
+import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -80,10 +81,9 @@ export default function RentProperty() {
 
     try {
       setDraftingClause(true);
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/draft-clause`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/draft-clause`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ userInput: newClauseInput })
       });
 
@@ -120,8 +120,7 @@ export default function RentProperty() {
         setLoading(true);
 
         // Fetch listing
-        const res = await fetch(`${API_BASE_URL}/api/listing/get/${listingId}`, {
-          credentials: 'include'
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/listing/get/${listingId}`, {
         });
 
         if (!res.ok) {
@@ -160,8 +159,7 @@ export default function RentProperty() {
         // 1. Try to fetch contract if ID is provided
         if (contractIdParam) {
           try {
-            const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractIdParam}`, {
-              credentials: 'include'
+            const contractRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractIdParam}`, {
             });
 
             if (contractRes.ok) {
@@ -175,8 +173,7 @@ export default function RentProperty() {
         // 2. If no ID provided, try to find an active contract for this listing user
         else {
           try {
-            const contractsRes = await fetch(`${API_BASE_URL}/api/rental/contracts?role=tenant`, {
-              credentials: 'include'
+            const contractsRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts?role=tenant`, {
             });
 
             if (contractsRes.ok) {
@@ -237,8 +234,7 @@ export default function RentProperty() {
               } else {
                 // Otherwise fetch it
                 const bookingId = existingContract.bookingId?._id || existingContract.bookingId;
-                const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
-                  credentials: 'include'
+                const bookingRes = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
                 });
                 if (bookingRes.ok) {
                   const data = await bookingRes.json();
@@ -330,8 +326,7 @@ export default function RentProperty() {
             if (existingContract.bookingId) {
               try {
                 const bookingId = existingContract.bookingId?._id || existingContract.bookingId;
-                const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
-                  credentials: 'include'
+                const bookingRes = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${bookingId}`, {
                 });
                 if (bookingRes.ok) {
                   const bookingData = await bookingRes.json();
@@ -386,8 +381,7 @@ export default function RentProperty() {
     let cancelled = false;
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractIdentifier}`, {
-          credentials: 'include'
+        const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractIdentifier}`, {
         });
         if (!res.ok) {
           return;
@@ -429,10 +423,9 @@ export default function RentProperty() {
   const handleStartContractConfirmation = async () => {
     try {
       setLoading(true);
-      const res = await fetch(`${API_BASE_URL}/api/auth/send-contract-confirmation-otp`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-contract-confirmation-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
+        headers: { 'Content-Type': 'application/json' }
       });
       const data = await res.json();
       if (!res.ok) {
@@ -456,10 +449,9 @@ export default function RentProperty() {
     if (otpTimer > 0 || otpResending) return;
     try {
       setOtpResending(true);
-      const res = await fetch(`${API_BASE_URL}/api/auth/send-contract-confirmation-otp`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-contract-confirmation-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        credentials: 'include'
+        headers: { 'Content-Type': 'application/json' }
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to resend code");
@@ -480,10 +472,9 @@ export default function RentProperty() {
     }
     try {
       setOtpVerifying(true);
-      const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/verify-otp`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({ email: currentUser.email, otp: otpValue })
       });
       const data = await res.json();
@@ -502,10 +493,9 @@ export default function RentProperty() {
     setShowInitConfirmation(false);
     try {
       setLoading(true);
-      const bookingRes = await fetch(`${API_BASE_URL}/api/bookings`, {
+      const bookingRes = await authenticatedFetch(`${API_BASE_URL}/api/bookings`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           listingId,
           date: formData.moveInDate || new Date().toISOString().split('T')[0],
@@ -553,10 +543,9 @@ export default function RentProperty() {
       const endDate = new Date(startDate);
       endDate.setMonth(endDate.getMonth() + lockDuration);
 
-      const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/create`, {
+      const contractRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/create`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           bookingId: booking._id,
           rentLockPlan: formData.rentLockPlan,
@@ -596,8 +585,7 @@ export default function RentProperty() {
 
       // Fetch full contract details with populated fields
       try {
-        const fullContractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
-          credentials: 'include'
+        const fullContractRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
         });
 
         if (fullContractRes.ok) {
@@ -725,10 +713,9 @@ export default function RentProperty() {
 
       console.log('Signing contract with ID:', contractId, 'Contract:', contract);
 
-      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}/sign`, {
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractId}/sign`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        credentials: 'include',
         body: JSON.stringify({
           signatureData: signatureData
         })
@@ -744,8 +731,7 @@ export default function RentProperty() {
         setContract(data.contract);
       } else {
         // If contract not in response, fetch it again
-        const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
-          credentials: 'include'
+        const contractRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contractId}`, {
         });
         if (contractRes.ok) {
           const contractData = await contractRes.json();
@@ -784,10 +770,9 @@ export default function RentProperty() {
     // Make booking visible after payment succeeds
     if (booking?._id) {
       try {
-        await fetch(`${API_BASE_URL}/api/bookings/${booking._id}`, {
+        await authenticatedFetch(`${API_BASE_URL}/api/bookings/${booking._id}`, {
           method: 'PUT',
           headers: { 'Content-Type': 'application/json' },
-          credentials: 'include',
           body: JSON.stringify({
             visibleToBuyer: true,
             visibleToSeller: true,
@@ -803,8 +788,7 @@ export default function RentProperty() {
     if (contract?._id && payment?.contractId) {
       try {
         // Refresh contract to get updated payment status
-        const contractRes = await fetch(`${API_BASE_URL}/api/rental/contracts/${contract._id}`, {
-          credentials: 'include'
+        const contractRes = await authenticatedFetch(`${API_BASE_URL}/api/rental/contracts/${contract._id}`, {
         });
         if (contractRes.ok) {
           const contractData = await contractRes.json();
@@ -836,8 +820,7 @@ export default function RentProperty() {
     // Refresh booking and contract data
     if (booking?._id) {
       try {
-        const bookingRes = await fetch(`${API_BASE_URL}/api/bookings/${booking._id}`, {
-          credentials: 'include'
+        const bookingRes = await authenticatedFetch(`${API_BASE_URL}/api/bookings/${booking._id}`, {
         });
         if (bookingRes.ok) {
           const bookingData = await bookingRes.json();
