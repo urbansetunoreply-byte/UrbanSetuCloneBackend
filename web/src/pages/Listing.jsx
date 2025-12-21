@@ -2006,8 +2006,6 @@ export default function Listing() {
                   )}
                 </>
               )}
-
-
             </div>
 
             <p className="text-gray-700 mb-4 leading-relaxed">
