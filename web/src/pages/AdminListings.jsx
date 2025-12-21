@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { FaEdit, FaTrash, FaEye, FaPlus, FaLock, FaFlag, FaTimes, FaSync, FaCheckCircle } from "react-icons/fa";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
@@ -8,6 +8,7 @@ import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../red
 import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { isMobileDevice } from '../utils/mobileUtils';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminListings() {
@@ -30,6 +31,9 @@ export default function AdminListings() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const reasonInputRef = useRef(null);
+  const passwordInputRef = useRef(null);
 
   // Property Reports state
   const [showPropertyReportsModal, setShowPropertyReportsModal] = useState(false);
@@ -58,6 +62,35 @@ export default function AdminListings() {
       document.body.classList.remove('modal-open');
     };
   }, [showReasonModal, showPasswordModal, showPropertyReportsModal]);
+
+  // Handle mobile state updates
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Autofocus reason input when modal opens (desktop only)
+  useEffect(() => {
+    if (showReasonModal && !isMobile && reasonInputRef.current) {
+      const timer = setTimeout(() => {
+        reasonInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showReasonModal, isMobile]);
+
+  // Autofocus password input when modal opens (desktop only)
+  useEffect(() => {
+    if (showPasswordModal && !isMobile && passwordInputRef.current) {
+      const timer = setTimeout(() => {
+        passwordInputRef.current?.focus();
+      }, 100);
+      return () => clearTimeout(timer);
+    }
+  }, [showPasswordModal, isMobile]);
 
   const [filters, setFilters] = useState({
     searchTerm: '',
@@ -619,12 +652,12 @@ export default function AdminListings() {
           <form onSubmit={handleReasonSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
             <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaTrash /> Reason for Deletion</h3>
             <textarea
+              ref={reasonInputRef}
               className="border rounded p-2 w-full"
               placeholder="Enter reason for deleting this property"
               value={deleteReason}
               onChange={e => setDeleteReason(e.target.value)}
               rows={3}
-              autoFocus
             />
             {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
             <div className="flex gap-2 justify-end">
@@ -640,12 +673,12 @@ export default function AdminListings() {
           <form onSubmit={handlePasswordSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
             <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
             <input
+              ref={passwordInputRef}
               type="password"
               className="border rounded p-2 w-full"
               placeholder="Enter your password"
               value={deletePassword}
               onChange={e => setDeletePassword(e.target.value)}
-              autoFocus
             />
             {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
             <div className="flex gap-2 justify-end">
