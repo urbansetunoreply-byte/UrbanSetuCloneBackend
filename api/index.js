@@ -573,6 +573,27 @@ io.on('connection', (socket) => {
         return socket.emit('call-error', { message: 'Invalid receiver' });
       }
 
+      // Check if receiver is already in an active call (as caller or receiver)
+      let isReceiverBusy = false;
+      for (const [_, activeCall] of activeCalls.entries()) {
+        // Check if user is receiving a call
+        if (activeCall.receiverId === actualReceiverId) {
+          isReceiverBusy = true;
+          break;
+        }
+        // Check if user is initiating/in a call as caller
+        // We need to look up the socket to get the user ID
+        const callerSocket = io.sockets.sockets.get(activeCall.callerSocketId);
+        if (callerSocket && callerSocket.user && callerSocket.user._id.toString() === actualReceiverId) {
+          isReceiverBusy = true;
+          break;
+        }
+      }
+
+      if (isReceiverBusy) {
+        return socket.emit('call-error', { message: 'User is currently in another call' });
+      }
+
       // Create call record
       const callId = generateCallId();
       const callHistory = new CallHistory({

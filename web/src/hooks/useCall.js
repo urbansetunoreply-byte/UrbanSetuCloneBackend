@@ -431,6 +431,13 @@ export const useCall = () => {
   // Listen for incoming calls and WebRTC events
   useEffect(() => {
     const handleIncomingCall = (data) => {
+      // Prevent handling new incoming call if already in a call or receiving one
+      if (activeCallRef.current || incomingCallRef.current || callStateRef.current) {
+        console.warn('Blocking concurrent incoming call:', data.callId);
+        // Optionally emit 'busy' back to server if needed, but server should handle this.
+        return;
+      }
+
       setIncomingCall(data);
       // Play ringtone when receiving incoming call
       stopCalling(); // Stop any calling sound that might be playing
@@ -1123,25 +1130,31 @@ export const useCall = () => {
         }
         toast.info('Call ended.');
       }
-    } else if (activeCall?.callId) {
-      // Play end call sound even if call wasn't active yet (ringing state)
-      // Only play if this is the first time ending (not from handleCallEnded)
+    } else if (activeCall?.callId || incomingCall?.callId) {
+      // Play end call sound even if call wasn't active yet (ringing/incoming state)
       if (!wasEndingCall) {
         playEndCall();
       }
-      // Show message even if call wasn't active yet (ringing state)
       toast.info('Call ended.');
     }
 
-    // Clear all call state
+    // Force clear all call-related state immediately
     setCallState(null);
     setCallDuration(0);
     callStartTimeRef.current = null;
     setActiveCall(null);
-    setIncomingCall(null); // Clear incoming call if present (for receiver side)
+    setIncomingCall(null);
     pendingOfferRef.current = null;
+
     setRemoteIsMuted(false);
     setRemoteVideoEnabled(true);
+    setIsScreenSharing(false);
+    setRemoteIsScreenSharing(false);
+
+    // Sync refs immediately to prevent race conditions
+    activeCallRef.current = null;
+    incomingCallRef.current = null;
+    callStateRef.current = null;
 
     // Reset flag after a short delay to allow for cleanup
     setTimeout(() => {
@@ -1193,6 +1206,12 @@ export const useCall = () => {
 
   // Toggle screen sharing (video calls only)
   const toggleScreenShare = async () => {
+    // Check for screen sharing support
+    if (!navigator.mediaDevices || !navigator.mediaDevices.getDisplayMedia) {
+      toast.error('Screen sharing is not supported on this device or browser (common on mobile).');
+      return;
+    }
+
     try {
       if (!isScreenSharing) {
         // Check if remote is already screen sharing

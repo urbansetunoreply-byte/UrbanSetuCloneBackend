@@ -757,29 +757,30 @@ const ActiveCallModal = ({
                   </div>
                 </>
               ) : (
-                // Remote is sharing: show Presenter (Remote Stream) in small window to mimic "seeing the presenter"
-                // Note: Since we only have 1 track (screen), this will mirror the screen share in the small window.
-                // This is the desired behavior requested to replace the "You" view.
+                // Remote is sharing: show Local User (You) in small window
+                // Since we use track replacement for screen sharing, we don't receive the presenter's camera feed.
+                // So we show the local user instead to avoid duplicating the presentation view.
                 <>
                   <video
-                    key="remote-small-mirror"
-                    ref={smallRemoteVideoRef}
+                    key="local-small-during-remote-share"
+                    ref={localVideoRef}
                     autoPlay
                     playsInline
                     muted
                     className="w-full h-full object-cover"
+                    style={{ transform: 'scaleX(-1)' }}
                     onLoadedMetadata={(e) => {
-                      e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing small remote video:', err); });
+                      e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing local video:', err); });
                     }}
                   />
-                  {!remoteVideoEnabled && (
+                  {!isVideoEnabled && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                       <FaVideoSlash className="text-white text-xl" />
                     </div>
                   )}
                   <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1 flex items-center gap-1">
-                    <p className="text-white text-xs font-medium">{otherPartyName || 'Caller'}</p>
-                    {isRemoteSpeaking && !remoteIsMuted && (
+                    <p className="text-white text-xs font-medium">You</p>
+                    {isLocalSpeaking && !isMuted && (
                       <div className="bg-green-500 rounded-full p-0.5 animate-pulse">
                         <FaVolumeUp className="text-white text-[8px]" />
                       </div>
