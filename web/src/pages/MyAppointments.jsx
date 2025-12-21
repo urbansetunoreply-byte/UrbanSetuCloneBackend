@@ -1981,8 +1981,8 @@ export default function MyAppointments() {
 
         {/* Missing Chatbox Error Modal */}
         {missingChatbookError && (
-          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200] p-4">
-            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full animate-fadeIn">
+          <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[200] p-4 animate-fade-in">
+            <div className="bg-white rounded-xl shadow-2xl p-8 max-w-md w-full animate-fade-in-up">
               <div className="text-center">
                 <div className="text-red-500 text-5xl mb-4">❌</div>
                 <h2 className="text-2xl font-bold text-gray-800 mb-2">Appointment Not Found</h2>
