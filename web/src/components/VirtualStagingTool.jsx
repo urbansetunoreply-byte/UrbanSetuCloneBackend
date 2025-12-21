@@ -30,10 +30,22 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
     const [generatedImage, setGeneratedImage] = useState(null);
 
     const handleLoadMoreStyles = () => {
+        // Valid Unsplash IDs for interior/furniture
+        const IMG_IDS = [
+            '1618221195710-dd6b41faaea6', '1616486338812-3dadae4b4f9d', '1593696112151-5374b30cdef1',
+            '1556228453-efd6c1ff04f6', '1586023492125-27b2c045efd7', '1524758631624-e2822e304c36',
+            '1502005229766-c3522933fac4', '1617325247661-675ab4b6cfdf', '1615876234838-d64b7b8a7c58',
+            '1583847268964-b8bc29d0e3ec', '1554995207-c18c203602cb', '1505693510295-455b51ae5e92',
+            '1513694203232-719a286e2969', '1493663284049-50c2269a9b73', '1533090161767-16a752d67fe2'
+        ];
+
         // Generate pseudo-random styles
         const newStyles = Array(4).fill(null).map((_, i) => {
             const seed = availableStyles.length + i;
             const name = STYLE_NAMES[seed % STYLE_NAMES.length] + (Math.floor(seed / 10) > 0 ? ` ${Math.floor(seed / 10) + 1}` : '');
+
+            // Pick a valid image cyclically based on seed
+            const imgId = IMG_IDS[seed % IMG_IDS.length];
 
             // Randomish filters
             const contrast = 0.8 + Math.random() * 0.5;
@@ -45,7 +57,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
             return {
                 id: `gen-${seed}`,
                 name: name,
-                image: `https://images.unsplash.com/photo-${1500000000000 + (seed * 123456) % 10000000}?auto=format&fit=crop&w=300&q=80`, // Random unsplash
+                image: `https://images.unsplash.com/photo-${imgId}?auto=format&fit=crop&w=300&q=80`,
                 filter: `contrast(${contrast.toFixed(2)}) brightness(${brightness.toFixed(2)}) sepia(${sepia.toFixed(2)}) saturate(${saturate.toFixed(2)}) hue-rotate(${hue}deg)`
             };
         });
