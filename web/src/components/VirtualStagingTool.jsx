@@ -2,12 +2,14 @@ import React, { useState, useRef } from 'react';
 import { Sparkles, Upload, ArrowRight, RefreshCw, Download } from 'lucide-react';
 import html2canvas from 'html2canvas';
 
-const STYLES = [
+const INITIAL_STYLES = [
     { id: 'modern', name: 'Modern Minimalist', image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=300&q=80', filter: 'brightness(1.1) contrast(1.1) saturate(0.0)' },
     { id: 'scandi', name: 'Scandinavian', image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=300&q=80', filter: 'brightness(1.15) sepia(0.05) saturate(0.8)' },
     { id: 'industrial', name: 'Industrial Lofts', image: 'https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&w=300&q=80', filter: 'contrast(1.2) sepia(0.2) brightness(0.9)' },
     { id: 'boho', name: 'Bohemian Chic', image: 'https://images.unsplash.com/photo-1522444195799-478538b28823?auto=format&fit=crop&w=300&q=80', filter: 'saturate(1.3) contrast(1.1) brightness(1.05)' },
 ];
+
+const STYLE_NAMES = ['Rustic', 'Zen', 'Art Deco', 'Coastal', 'Mid-Century', 'Glam', 'Farmhouse', 'Cyberpunk', 'Tropical', 'Vintage'];
 
 const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
     const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
@@ -22,9 +24,33 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
     // Update selectedImage if props change significantly (optional, but good for stability)
     // useEffect(() => { if(originalImage) setSelectedImage(originalImage) }, [originalImage]);
 
-    const [selectedStyle, setSelectedStyle] = useState(STYLES[0].id);
+    const [availableStyles, setAvailableStyles] = useState(INITIAL_STYLES);
+    const [selectedStyle, setSelectedStyle] = useState(INITIAL_STYLES[0].id);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedImage, setGeneratedImage] = useState(null);
+
+    const handleLoadMoreStyles = () => {
+        // Generate pseudo-random styles
+        const newStyles = Array(4).fill(null).map((_, i) => {
+            const seed = availableStyles.length + i;
+            const name = STYLE_NAMES[seed % STYLE_NAMES.length] + (Math.floor(seed / 10) > 0 ? ` ${Math.floor(seed / 10) + 1}` : '');
+
+            // Randomish filters
+            const contrast = 0.8 + Math.random() * 0.5;
+            const brightness = 0.9 + Math.random() * 0.3;
+            const sepia = Math.random() * 0.4;
+            const saturate = 0.5 + Math.random() * 1.0;
+            const hue = Math.floor(Math.random() * 60) - 30;
+
+            return {
+                id: `gen-${seed}`,
+                name: name,
+                image: `https://images.unsplash.com/photo-${1500000000000 + (seed * 123456) % 10000000}?auto=format&fit=crop&w=300&q=80`, // Random unsplash
+                filter: `contrast(${contrast.toFixed(2)}) brightness(${brightness.toFixed(2)}) sepia(${sepia.toFixed(2)}) saturate(${saturate.toFixed(2)}) hue-rotate(${hue}deg)`
+            };
+        });
+        setAvailableStyles(prev => [...prev, ...newStyles]);
+    };
 
     const [activeFilter, setActiveFilter] = useState('');
 
@@ -35,9 +61,9 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
         setTimeout(() => {
             // SIMULATION: In a real app, this would use Stable Diffusion to generate new furniture.
             // For now, we apply a "Vibe Filter" to the original image to simulate the mood.
-            const style = STYLES.find(s => s.id === selectedStyle);
+            const style = availableStyles.find(s => s.id === selectedStyle);
             setGeneratedImage(selectedImage); // Keep the selected room
-            setActiveFilter(style.filter);    // Apply the style filter
+            setActiveFilter(style?.filter || '');    // Apply the style filter
             setIsGenerating(false);
         }, 1500); // Faster feedback for simulation
     };
@@ -201,8 +227,8 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                 {/* Style Selection */}
                 <div className="mb-6">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Select Style</h4>
-                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
-                        {STYLES.map((style) => (
+                    <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
+                        {availableStyles.map((style) => (
                             <div
                                 key={style.id}
                                 onClick={() => setSelectedStyle(style.id)}
@@ -220,6 +246,13 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                             </div>
                         ))}
                     </div>
+
+                    <button
+                        onClick={handleLoadMoreStyles}
+                        className="w-full py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition-colors flex items-center justify-center gap-2"
+                    >
+                        <RefreshCw className="w-3 h-3" /> Load More Styles
+                    </button>
                 </div>
 
                 {/* Visualization Area */}
@@ -247,7 +280,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                             <div className="text-center px-4">
                                 <div className="w-12 h-12 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin mx-auto mb-4"></div>
                                 <p className="text-sm font-medium text-gray-600 animate-pulse">Designing your room...</p>
-                                <p className="text-xs text-gray-400 mt-1">Applying {STYLES.find(s => s.id === selectedStyle).name} style</p>
+                                <p className="text-xs text-gray-400 mt-1">Applying {availableStyles.find(s => s.id === selectedStyle)?.name || 'Custom'} style</p>
                             </div>
                         ) : generatedImage ? (
                             <div className="relative w-full h-full group">
@@ -298,7 +331,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                     className="w-full mt-6 bg-violet-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-violet-200 hover:bg-violet-700 transition-colors flex items-center justify-center gap-2 md:hidden"
                 >
                     {isGenerating ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
-                    Generate {STYLES.find(s => s.id === selectedStyle).name} Design
+                    Generate {availableStyles.find(s => s.id === selectedStyle)?.name || 'Selected'} Design
                 </button>
 
             </div>
