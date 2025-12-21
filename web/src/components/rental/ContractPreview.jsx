@@ -25,7 +25,7 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
       a.click();
       a.remove();
       window.URL.revokeObjectURL(url);
-      
+
       if (onDownload) {
         onDownload();
       }
@@ -54,12 +54,11 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
           <p className="text-sm text-gray-600">Contract ID</p>
           <p className="font-mono font-semibold text-lg">{contract.contractId || contract._id}</p>
           <p className="text-xs text-gray-500 mt-1">
-            Status: <span className={`font-semibold ${
-              contract.status === 'active' ? 'text-green-600' :
-              contract.status === 'pending_signature' ? 'text-yellow-600' :
-              contract.status === 'draft' ? 'text-gray-600' :
-              'text-red-600'
-            }`}>
+            Status: <span className={`font-semibold ${contract.status === 'active' ? 'text-green-600' :
+                contract.status === 'pending_signature' ? 'text-yellow-600' :
+                  contract.status === 'draft' ? 'text-gray-600' :
+                    'text-red-600'
+              }`}>
               {contract.status?.replace('_', ' ').toUpperCase()}
             </span>
           </p>
@@ -187,20 +186,20 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
             <div>
               <p className="text-gray-600">Start Date</p>
               <p className="font-semibold">
-                {contract.startDate ? new Date(contract.startDate).toLocaleDateString('en-GB', { 
-                  day: 'numeric', 
-                  month: 'long', 
-                  year: 'numeric' 
+                {contract.startDate ? new Date(contract.startDate).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
                 }) : 'N/A'}
               </p>
             </div>
             <div>
               <p className="text-gray-600">End Date</p>
               <p className="font-semibold">
-                {contract.endDate ? new Date(contract.endDate).toLocaleDateString('en-GB', { 
-                  day: 'numeric', 
-                  month: 'long', 
-                  year: 'numeric' 
+                {contract.endDate ? new Date(contract.endDate).toLocaleDateString('en-GB', {
+                  day: 'numeric',
+                  month: 'long',
+                  year: 'numeric'
                 }) : 'N/A'}
               </p>
             </div>
@@ -208,10 +207,10 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
               <div>
                 <p className="text-gray-600">Move-In Date</p>
                 <p className="font-semibold">
-                  {new Date(contract.moveInDate).toLocaleDateString('en-GB', { 
-                    day: 'numeric', 
-                    month: 'long', 
-                    year: 'numeric' 
+                  {new Date(contract.moveInDate).toLocaleDateString('en-GB', {
+                    day: 'numeric',
+                    month: 'long',
+                    year: 'numeric'
                   })}
                 </p>
               </div>
@@ -234,6 +233,23 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
             )}
           </ul>
         </div>
+
+        {/* Custom Clauses (AI Drafted) */}
+        {contract.customClauses && contract.customClauses.length > 0 && (
+          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
+            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
+              <FaFileContract className="text-purple-600" /> Additional Terms & Conditions
+            </h3>
+            <ul className="list-decimal list-inside space-y-2 text-sm text-gray-800">
+              {contract.customClauses.map((clause, index) => (
+                <li key={index} className="pl-2">{clause}</li>
+              ))}
+            </ul>
+            <p className="text-xs text-gray-500 mt-3 border-t border-purple-200 pt-2">
+              Drafted by SetuAI Legal Assistant
+            </p>
+          </div>
+        )}
 
         {/* Signatures Status */}
         <div className="bg-gray-50 p-4 rounded-lg">
