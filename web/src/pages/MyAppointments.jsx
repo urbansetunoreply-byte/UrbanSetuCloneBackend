@@ -1590,7 +1590,7 @@ export default function MyAppointments() {
             selectedAppointment.status !== 'cancelledByBuyer' && selectedAppointment.status !== 'cancelledBySeller' &&
             selectedAppointment.status !== 'cancelledByAdmin' && selectedAppointment.status !== 'rejected' &&
             selectedAppointment.status !== 'deletedByAdmin' &&
-            selectedOtherParty.profileVisibility !== 'private';
+            ['public', 'friends'].includes(selectedOtherParty.profileVisibility);
 
           return (
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-2 sm:p-4" style={{ overflow: 'hidden' }}>
@@ -4119,7 +4119,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     appt.status !== 'cancelledByBuyer' && appt.status !== 'cancelledBySeller' &&
     appt.status !== 'cancelledByAdmin' && appt.status !== 'rejected' &&
     appt.status !== 'deletedByAdmin' &&
-    otherParty?.profileVisibility !== 'private';
+    ['public', 'friends'].includes(otherParty?.profileVisibility);
 
   // Handle delete confirmation modal
   const handleDeleteClick = (message) => {
