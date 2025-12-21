@@ -269,7 +269,7 @@ const ActiveCallModal = ({
     }, 100); // Slightly longer delay to ensure DOM is ready
 
     return () => clearTimeout(timeoutId);
-  }, [videoSwapped, callType, localStream, remoteStream, localVideoRef, remoteVideoRef]);
+  }, [videoSwapped, callType, localStream, remoteStream, localVideoRef, remoteVideoRef, isScreenSharing, remoteIsScreenSharing]);
 
   // Show controls on mouse movement and auto-hide after 3 seconds of inactivity
   useEffect(() => {
