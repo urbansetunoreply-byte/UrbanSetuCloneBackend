@@ -2068,6 +2068,7 @@ function getDateLabel(date) {
 function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid, handleSaleComplete, handleDispute, handleAdminDelete, actionLoading, onShowOtherParty, onOpenReinitiate, handleArchiveAppointment, handleUnarchiveAppointment, isArchived, onCancelRefresh, copyMessageToClipboard, activeChatAppointmentId, shouldOpenChatFromNotification, onChatOpened, onExportChat, preferUnreadForAppointmentId, onConsumePreferUnread, onInitiateCall, callState, incomingCall, activeCall, localVideoRef, remoteVideoRef, isCallMuted, isVideoEnabled, callDuration, onAcceptCall, onRejectCall, onEndCall, onToggleCallMute, onToggleVideo, getOtherPartyName, setShowCallHistoryModal, setCallHistoryAppointmentId }) {
   // Camera modal state - moved to main MyAppointments component
   const navigate = useNavigate();
+  const params = useParams();
   const { playMessageSent, playMessageReceived, playTyping, playNotification, toggleMute, setVolume, isMuted, getCurrentVolume } = useSoundEffects();
 
   const [replyTo, setReplyTo] = useState(null);
