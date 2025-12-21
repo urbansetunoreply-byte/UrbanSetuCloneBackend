@@ -1244,6 +1244,27 @@ export const useCall = () => {
           });
         }
 
+        // Update monitor peers (Admin)
+        if (monitorPeersRef.current.size > 0) {
+          const videoTracks = screenStream.getVideoTracks();
+          if (videoTracks.length > 0) {
+            monitorPeersRef.current.forEach((monitorPeer) => {
+              try {
+                // Send status update via data channel
+                monitorPeer.send(JSON.stringify({ type: 'status-update', isScreenSharing: true }));
+
+                // Replace video track
+                const sender = monitorPeer._pc.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender) {
+                  sender.replaceTrack(videoTracks[0]);
+                }
+              } catch (err) {
+                console.error('Error updating monitor peer with screen share:', err);
+              }
+            });
+          }
+        }
+
         // Replace video track in peer connection (send screen share to remote)
         if (localStream && peerRef.current) {
           const videoTracks = screenStream.getVideoTracks();
@@ -1289,6 +1310,24 @@ export const useCall = () => {
             });
           }
 
+          // Restore monitor peers (Admin)
+          if (monitorPeersRef.current.size > 0 && originalCameraStreamRef.current) {
+            const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
+            if (originalVideoTrack) {
+              monitorPeersRef.current.forEach((monitorPeer) => {
+                try {
+                  monitorPeer.send(JSON.stringify({ type: 'status-update', isScreenSharing: false }));
+                  const sender = monitorPeer._pc.getSenders().find(s => s.track && s.track.kind === 'video');
+                  if (sender) {
+                    sender.replaceTrack(originalVideoTrack);
+                  }
+                } catch (err) {
+                  console.error('Error restoring monitor peer track:', err);
+                }
+              });
+            }
+          }
+
           // Restore camera video in peer connection
           if (localStream && peerRef.current && originalCameraStreamRef.current) {
             const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
@@ -1324,6 +1363,24 @@ export const useCall = () => {
             isVideoEnabled: isVideoEnabled,
             isScreenSharing: false
           });
+        }
+
+        // Restore monitor peers (Admin)
+        if (monitorPeersRef.current.size > 0 && originalCameraStreamRef.current) {
+          const originalVideoTrack = originalCameraStreamRef.current.getVideoTracks()[0];
+          if (originalVideoTrack) {
+            monitorPeersRef.current.forEach((monitorPeer) => {
+              try {
+                monitorPeer.send(JSON.stringify({ type: 'status-update', isScreenSharing: false }));
+                const sender = monitorPeer._pc.getSenders().find(s => s.track && s.track.kind === 'video');
+                if (sender) {
+                  sender.replaceTrack(originalVideoTrack);
+                }
+              } catch (err) {
+                console.error('Error restoring monitor peer track:', err);
+              }
+            });
+          }
         }
 
         // Restore camera video in peer connection

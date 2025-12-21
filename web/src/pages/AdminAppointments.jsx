@@ -2931,6 +2931,7 @@ function AdminAppointmentRow({
   const [showForceTerminateModal, setShowForceTerminateModal] = useLocalState(false);
   const [forceTerminateReason, setForceTerminateReason] = useLocalState('');
   const [forceTerminateLoading, setForceTerminateLoading] = useLocalState(false);
+  const [screenSharingStatus, setScreenSharingStatus] = useLocalState({ buyer: false, seller: false });
 
   // Audio activity detection for monitor
   const isBuyerSpeaking = useAudioActivity(buyerMonitorStream);
@@ -3079,7 +3080,8 @@ function AdminAppointmentRow({
     setFocusedMonitorView(null);
     setMonitorAudioMuted({ buyer: true, seller: true });
     setMonitorVideoHidden({ buyer: false, seller: false });
-  }, [setBuyerMonitorStream, setSellerMonitorStream, setMonitorCallId, setFocusedMonitorView, setMonitorAudioMuted, setMonitorVideoHidden]);
+    setScreenSharingStatus({ buyer: false, seller: false });
+  }, [setBuyerMonitorStream, setSellerMonitorStream, setMonitorCallId, setFocusedMonitorView, setMonitorAudioMuted, setMonitorVideoHidden, setScreenSharingStatus]);
 
   // Listen for monitor signaling events relevant to this appointment
   React.useEffect(() => {
@@ -3127,6 +3129,22 @@ function AdminAppointmentRow({
             setBuyerMonitorStream(remoteStream);
           } else if (role === monitorRoles.sellerRole) {
             setSellerMonitorStream(remoteStream);
+          }
+        });
+
+        // Listen for data channel messages (status updates)
+        peer.on('data', (data) => {
+          try {
+            const msg = JSON.parse(data.toString());
+            if (msg.type === 'status-update') {
+              if (role === monitorRoles.buyerRole) {
+                setScreenSharingStatus(prev => ({ ...prev, buyer: msg.isScreenSharing }));
+              } else if (role === monitorRoles.sellerRole) {
+                setScreenSharingStatus(prev => ({ ...prev, seller: msg.isScreenSharing }));
+              }
+            }
+          } catch (err) {
+            console.error('[Admin Monitor] Error parsing data channel message:', err);
           }
         });
 
@@ -3197,7 +3215,7 @@ function AdminAppointmentRow({
       socket.off('call-ended', handleCallEndedForMonitor);
       socket.off('call-monitor-error', handleMonitorError);
     };
-  }, [appt?._id, activeLiveCall, showLiveMonitorModal, MONITOR_STUN_SERVERS, cleanupMonitorPeers, setMonitorCallId, setShowLiveMonitorModal]);
+  }, [appt?._id, activeLiveCall, showLiveMonitorModal, MONITOR_STUN_SERVERS, cleanupMonitorPeers, setMonitorCallId, setShowLiveMonitorModal, monitorRoles, setScreenSharingStatus]);
 
   React.useEffect(() => {
     if (!showLiveMonitorModal) {
@@ -11225,6 +11243,20 @@ function AdminAppointmentRow({
                       >
                         <FaUserShield className="text-[10px]" /> Focus Seller
                       </button>
+                      <button
+                        onClick={() => {
+                          if (screenSharingStatus.buyer) toggleFocusView('buyer');
+                          else if (screenSharingStatus.seller) toggleFocusView('seller');
+                          else toast.info('No active presentation to focus on');
+                        }}
+                        className={`inline-flex items-center gap-1 text-xs font-semibold px-3 py-1 rounded-full border ${focusedMonitorView && ((focusedMonitorView === 'buyer' && screenSharingStatus.buyer) || (focusedMonitorView === 'seller' && screenSharingStatus.seller))
+                          ? 'bg-blue-500 text-white border-blue-400'
+                          : 'bg-transparent text-white/70 border-white/30 hover:border-white/70'
+                          }`}
+                        disabled={!screenSharingStatus.buyer && !screenSharingStatus.seller}
+                      >
+                        <FaVideo className="text-[10px]" /> Presentation View
+                      </button>
                     </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <span className="text-[10px] uppercase tracking-wide text-white/60">Controls</span>
@@ -11301,6 +11333,11 @@ function AdminAppointmentRow({
                                   <FaVolumeUp className="text-white text-xs" />
                                 </div>
                               )}
+                              {screenSharingStatus.buyer && (
+                                <div className="flex items-center gap-1 bg-blue-600/90 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm animate-pulse ml-2">
+                                  <FaVideo className="text-[10px]" /> Presenting
+                                </div>
+                              )}
                             </div>
                           </div>
                         </div>
@@ -11364,6 +11401,11 @@ function AdminAppointmentRow({
                               {isSellerSpeaking && !monitorAudioMuted.seller && (
                                 <div className="bg-green-500 rounded-full p-1 animate-pulse ml-2">
                                   <FaVolumeUp className="text-white text-xs" />
+                                </div>
+                              )}
+                              {screenSharingStatus.seller && (
+                                <div className="flex items-center gap-1 bg-blue-600/90 text-white text-[10px] px-2 py-0.5 rounded-full shadow-sm animate-pulse ml-2">
+                                  <FaVideo className="text-[10px]" /> Presenting
                                 </div>
                               )}
                             </div>
