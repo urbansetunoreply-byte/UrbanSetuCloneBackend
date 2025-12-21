@@ -3290,6 +3290,15 @@ function AdminAppointmentRow({
     };
 
     const handleMonitorError = ({ message }) => {
+      // Handle specific error when peers are not ready
+      if (message && message.toLowerCase().includes('call peers are not ready for monitoring')) {
+        console.warn('[Admin Monitor] Peers not ready:', message);
+        // Do not show error toast and do not close modal
+        // But ensure monitoring state is cleared so it shows "Not Live"
+        cleanupMonitorPeers();
+        return;
+      }
+
       console.error('[Admin Monitor] Error:', message);
       // Wrap in setTimeout to avoid potential race conditions with toast removal/updates
       setTimeout(() => {
