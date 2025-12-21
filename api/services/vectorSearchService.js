@@ -11,7 +11,7 @@ dotenv.config();
  */
 
 const HF_TOKEN = process.env.HUGGINGFACE_TOKEN;
-const HF_API_URL = "https://router.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
+const HF_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
 
 /**
  * Generate embedding for a single text string
