@@ -425,7 +425,8 @@ export default function RentProperty() {
       setLoading(true);
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-contract-confirmation-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentUser.email })
       });
       const data = await res.json();
       if (!res.ok) {
@@ -451,7 +452,8 @@ export default function RentProperty() {
       setOtpResending(true);
       const res = await authenticatedFetch(`${API_BASE_URL}/api/auth/send-contract-confirmation-otp`, {
         method: 'POST',
-        headers: { 'Content-Type': 'application/json' }
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: currentUser.email })
       });
       const data = await res.json();
       if (!res.ok) throw new Error(data.message || "Failed to resend code");
