@@ -1086,20 +1086,20 @@ export default function RentProperty() {
                 <p className="text-sm text-purple-800 mb-2">
                   Need specific terms? Describe them (e.g., "No loud music after 10 PM", "Tenant pays water bill") and our AI will draft a formal legal clause for you.
                 </p>
-                <div className="flex gap-2">
+                <div className="flex flex-col sm:flex-row gap-2">
                   <input
                     type="text"
                     value={newClauseInput}
                     onChange={(e) => setNewClauseInput(e.target.value)}
                     placeholder="Describe your custom condition..."
-                    className="flex-1 p-3 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    className="flex-1 p-3 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 w-full"
                     disabled={draftingClause || !!contract}
                     onKeyDown={(e) => e.key === 'Enter' && handleDraftClause()}
                   />
                   <button
                     onClick={handleDraftClause}
                     disabled={draftingClause || !newClauseInput.trim() || !!contract}
-                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
+                    className="bg-purple-600 text-white px-4 py-3 sm:py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2 font-medium w-full sm:w-auto"
                   >
                     {draftingClause ? (
                       <>
