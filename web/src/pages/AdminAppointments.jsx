@@ -1987,6 +1987,7 @@ export default function AdminAppointments() {
                       // Call History Modal props
                       setShowCallHistoryModal={setShowCallHistoryModal}
                       setCallHistoryAppointmentId={setCallHistoryAppointmentId}
+                      isMobile={isMobile}
                     />
                   ))}
                 </tbody>
@@ -2074,6 +2075,7 @@ export default function AdminAppointments() {
                       // Call History Modal props
                       setShowCallHistoryModal={setShowCallHistoryModal}
                       setCallHistoryAppointmentId={setCallHistoryAppointmentId}
+                      isMobile={isMobile}
                     />
                   ))}
                 </tbody>
@@ -2803,7 +2805,8 @@ function AdminAppointmentRow({
   onChatOpened,
   // Call History Modal props
   setShowCallHistoryModal,
-  setCallHistoryAppointmentId
+  setCallHistoryAppointmentId,
+  isMobile
 }) {
   const navigate = useNavigate();
   const params = useParams();
@@ -2842,6 +2845,7 @@ function AdminAppointmentRow({
   const chatEndRef = React.useRef(null);
   const chatContainerRef = React.useRef(null);
   const inputRef = React.useRef(null);
+  const passwordInputRef = React.useRef(null);
   const prevServerCommentsLengthRef = React.useRef(0);
   const [allProperties, setAllProperties] = useState([]);
   const [propertiesLoaded, setPropertiesLoaded] = useState(false);
@@ -3780,6 +3784,15 @@ function AdminAppointmentRow({
       document.body.style.overflow = 'unset';
     };
   }, [showPasswordModal]);
+
+  // Autofocus password input when modal opens (desktop only)
+  React.useEffect(() => {
+    if (showPasswordModal && !isMobile && passwordInputRef.current) {
+      setTimeout(() => {
+        passwordInputRef.current?.focus();
+      }, 100);
+    }
+  }, [showPasswordModal, isMobile]);
 
   // Ensure password modal closes once chat unlocks - with proper timing
   React.useEffect(() => {
@@ -6191,13 +6204,13 @@ function AdminAppointmentRow({
               <form onSubmit={handlePasswordSubmit} className="w-full flex flex-col gap-3">
                 <div>
                   <input
+                    ref={passwordInputRef}
                     type="password"
                     className="border rounded px-3 py-2 w-full focus:ring-2 focus:ring-blue-200"
                     placeholder="Enter your password"
                     value={adminPassword}
                     onChange={e => setAdminPassword(e.target.value)}
                     required
-                    autoFocus
                   />
                   {passwordError && (
                     <div className="text-red-600 text-sm mt-1">{passwordError}</div>
