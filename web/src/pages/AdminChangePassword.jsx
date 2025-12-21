@@ -5,7 +5,6 @@ import { FaEye, FaEyeSlash, FaCheck, FaEdit } from "react-icons/fa";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
 import { reconnectSocket } from "../utils/socket";
 import { toast } from 'react-toastify';
-import { focusWithoutKeyboard } from '../utils/mobileUtils';
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch } from '../utils/csrf';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
@@ -46,12 +45,6 @@ export default function AdminChangePassword() {
     feedback: []
   });
 
-  // Autofocus current password field on mount
-  useEffect(() => {
-    if (currentPasswordRef.current) {
-      focusWithoutKeyboard(currentPasswordRef.current);
-    }
-  }, []);
 
   const checkPasswordStrength = (password) => {
     const strength = calculatePasswordStrength(password);
