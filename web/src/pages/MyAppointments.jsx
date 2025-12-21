@@ -1980,21 +1980,15 @@ export default function MyAppointments() {
                 <p className="text-gray-600 mb-6">
                   The appointment you're looking for doesn't exist or you don't have access to it. It may have been deleted or archived.
                 </p>
-                <div className="flex gap-3">
+                <div className="flex justify-center">
                   <button
                     onClick={() => {
                       setMissingChatbookError(null);
                       navigate('/user/my-appointments', { replace: true });
                     }}
-                    className="flex-1 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 px-4 rounded-lg transition-colors"
+                    className="px-6 py-2.5 bg-blue-600 hover:bg-blue-700 text-white font-semibold rounded-lg transition-colors shadow-md hover:shadow-lg"
                   >
-                    Back to Appointments
-                  </button>
-                  <button
-                    onClick={() => setMissingChatbookError(null)}
-                    className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-                  >
-                    Dismiss
+                    Close
                   </button>
                 </div>
               </div>
@@ -3559,7 +3553,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
   const handleChatModalClose = async () => {
     setShowChatModal(false);
     // Revert URL when closing chatbox
-    navigate(`/user/my-appointments`, { replace: false });
+    if (params.chatId) {
+      navigate(`/user/my-appointments`, { replace: true });
+    }
 
     // Dispatch event to notify App.jsx that chat is closed
     window.dispatchEvent(new CustomEvent('chatClosed'));
@@ -6160,7 +6156,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
         }
       } else if (event.key === 'Escape') {
         event.preventDefault();
-        setShowChatModal(false);
+        handleChatModalClose();
       }
     };
 

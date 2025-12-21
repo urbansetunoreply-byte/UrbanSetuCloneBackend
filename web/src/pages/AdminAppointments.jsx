@@ -2531,6 +2531,7 @@ export default function AdminAppointments() {
                 <button
                   onClick={() => {
                     setMissingChatbookError(null);
+                    navigate('/admin/appointments', { replace: true });
                   }}
                   className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
                 >
@@ -4526,6 +4527,9 @@ function AdminAppointmentRow({
       } else if (event.key === 'Escape') {
         event.preventDefault();
         setShowChatModal(false);
+        if (params.chatId) {
+          navigate('/admin/appointments', { replace: true });
+        }
       }
     };
 
