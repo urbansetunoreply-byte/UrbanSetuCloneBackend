@@ -91,6 +91,7 @@ export default function AdminAppointments() {
   const [showArchived, setShowArchived] = useState(false);
   const [startDate, setStartDate] = useState("");
   const [endDate, setEndDate] = useState("");
+  const [isMobile, setIsMobile] = useLocalState(window.innerWidth <= 768);
 
   // State for appointment action modals
   const [appointmentToHandle, setAppointmentToHandle] = useState(null);
@@ -108,6 +109,15 @@ export default function AdminAppointments() {
   // Compute theme colors and dark mode from settings
   const themeColors = useMemo(() => getThemeColors(settings.themeColor || 'blue'), [settings.themeColor]);
   const isDarkMode = settings.theme === 'dark';
+
+  // Handle mobile state updates
+  React.useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
 
   // Reactions state
   const [showReactionsBar, setShowReactionsBar] = useState(false);
@@ -4502,16 +4512,18 @@ function AdminAppointmentRow({
   React.useEffect(() => {
     if (!showChatModal) return;
 
-    // Focus input when chat modal opens
+    // Focus input when chat modal opens (desktop only)
     const focusInput = () => {
-      if (inputRef.current) {
+      if (inputRef.current && !isMobile) {
         // Use focusWithoutKeyboard to prevent keyboard from opening on mobile
         focusWithoutKeyboard(inputRef.current, inputRef.current.value.length);
       }
     };
 
-    // Focus input after a short delay to ensure modal is fully rendered
-    setTimeout(focusInput, 100);
+    // Focus input after a short delay to ensure modal is fully rendered (desktop only)
+    if (!isMobile) {
+      setTimeout(focusInput, 100);
+    }
 
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === 'f') {

@@ -6136,16 +6136,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
   useEffect(() => {
     if (!showChatModal) return;
 
-    // Focus input when chat modal opens
+    // Focus input when chat modal opens (desktop only)
     const focusInput = () => {
-      if (inputRef.current) {
+      if (inputRef.current && !isMobile) {
         // Use focusWithoutKeyboard to prevent keyboard from opening on mobile
         focusWithoutKeyboard(inputRef.current, inputRef.current.value.length);
       }
     };
 
-    // Focus input after a short delay to ensure modal is fully rendered
-    setTimeout(focusInput, 100);
+    // Focus input after a short delay to ensure modal is fully rendered (desktop only)
+    if (!isMobile) {
+      setTimeout(focusInput, 100);
+    }
 
     const handleKeyDown = (event) => {
       if (event.ctrlKey && event.key === 'f') {
