@@ -3,6 +3,49 @@ import User from '../models/user.model.js';
 import { errorHandler } from '../utils/error.js';
 import { sendCommunityPostConfirmationEmail, sendCommunityReportAcknowledgementEmail } from '../utils/emailService.js';
 
+const maskUser = (user) => {
+    if (user && (user.profileVisibility === 'private' || user.profileVisibility === 'friends')) {
+        return {
+            ...user,
+            username: 'UrbanSetu Member',
+            avatar: 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png',
+            email: undefined,
+            isVerified: false,
+            profileVisibility: 'private' // Treat friends only as private for public forum
+        };
+    }
+    return user;
+};
+
+const processReplyPrivacy = (reply) => {
+    if (!reply) return reply;
+    const r = reply.toObject ? reply.toObject() : reply;
+    if (r.user) r.user = maskUser(r.user);
+    if (r.replyToUser) r.replyToUser = maskUser(r.replyToUser);
+    return r;
+};
+
+const processCommentPrivacy = (comment) => {
+    if (!comment) return comment;
+    const c = comment.toObject ? comment.toObject() : comment;
+    if (c.user) c.user = maskUser(c.user);
+    if (c.replies) {
+        c.replies = c.replies.map(processReplyPrivacy);
+    }
+    return c;
+};
+
+const processPostPrivacy = (post) => {
+    if (!post) return post;
+    const p = post.toObject ? post.toObject() : post;
+
+    if (p.author) p.author = maskUser(p.author);
+    if (p.comments) {
+        p.comments = p.comments.map(processCommentPrivacy);
+    }
+    return p;
+};
+
 export const createPost = async (req, res, next) => {
     try {
         const { title, content, category, location, images } = req.body;
@@ -20,7 +63,7 @@ export const createPost = async (req, res, next) => {
 
         // Populate author details
         const populatedPost = await ForumPost.findById(savedPost._id)
-            .populate('author', 'username avatar email type isVerified')
+            .populate('author', 'username avatar email type isVerified profileVisibility')
             .exec();
 
         req.app.get('io').emit('forum:postCreated', populatedPost);
@@ -33,7 +76,7 @@ export const createPost = async (req, res, next) => {
             populatedPost._id
         ).catch(err => console.error("Failed to send community post email:", err));
 
-        res.status(201).json(populatedPost);
+        res.status(201).json(processPostPrivacy(populatedPost));
     } catch (error) {
         next(error);
     }
@@ -66,17 +109,17 @@ export const getPosts = async (req, res, next) => {
         const sortOption = sort === 'popular' ? { 'likes': -1, createdAt: -1 } : { createdAt: -1 };
 
         const posts = await ForumPost.find(query)
-            .populate('author', 'username avatar email type isVerified')
-            .populate('comments.user', 'username avatar')
-            .populate('comments.replies.user', 'username avatar')
-            .populate('comments.replies.replyToUser', 'username')
+            .populate('author', 'username avatar email type isVerified profileVisibility')
+            .populate('comments.user', 'username avatar profileVisibility')
+            .populate('comments.replies.user', 'username avatar profileVisibility')
+            .populate('comments.replies.replyToUser', 'username profileVisibility')
             .sort(sortOption)
             .limit(parseInt(limit))
             .skip(parseInt(skip));
 
         const total = await ForumPost.countDocuments(query);
 
-        res.status(200).json({ posts, total, hasMore: total > parseInt(skip) + posts.length });
+        res.status(200).json({ posts: posts.map(processPostPrivacy), total, hasMore: total > parseInt(skip) + posts.length });
     } catch (error) {
         next(error);
     }
@@ -85,10 +128,10 @@ export const getPosts = async (req, res, next) => {
 export const getPostById = async (req, res, next) => {
     try {
         const post = await ForumPost.findById(req.params.id)
-            .populate('author', 'username avatar email type isVerified')
+            .populate('author', 'username avatar email type isVerified profileVisibility')
             .populate('comments.user', 'username avatar')
-            .populate('comments.replies.user', 'username avatar')
-            .populate('comments.replies.replyToUser', 'username');
+            .populate('comments.replies.user', 'username avatar profileVisibility')
+            .populate('comments.replies.replyToUser', 'username profileVisibility');
 
         if (!post) return next(errorHandler(404, 'Post not found'));
 
@@ -96,7 +139,7 @@ export const getPostById = async (req, res, next) => {
         post.viewCount += 1;
         await post.save();
 
-        res.status(200).json(post);
+        res.status(200).json(processPostPrivacy(post));
     } catch (error) {
         next(error);
     }
@@ -130,9 +173,9 @@ export const togglePin = async (req, res, next) => {
 
         post.isPinned = !post.isPinned;
         await post.save();
-        await post.populate('author', 'username avatar email type isVerified');
+        await post.populate('author', 'username avatar email type isVerified profileVisibility');
         req.app.get('io').emit('forum:postUpdated', post);
-        res.status(200).json(post);
+        res.status(200).json(processPostPrivacy(post));
     } catch (error) {
         next(error);
     }
@@ -157,9 +200,9 @@ export const likePost = async (req, res, next) => {
         }
 
         await post.save();
-        await post.populate('author', 'username avatar type');
+        await post.populate('author', 'username avatar type profileVisibility');
         req.app.get('io').emit('forum:postUpdated', post);
-        res.status(200).json(post);
+        res.status(200).json(processPostPrivacy(post));
     } catch (error) {
         next(error);
     }
@@ -184,7 +227,7 @@ export const dislikePost = async (req, res, next) => {
         }
 
         await post.save();
-        await post.populate('author', 'username avatar type');
+        await post.populate('author', 'username avatar type profileVisibility');
         req.app.get('io').emit('forum:postUpdated', post);
         res.status(200).json(post);
     } catch (error) {
@@ -211,14 +254,14 @@ export const addComment = async (req, res, next) => {
 
         // Re-fetch to populate user
         const updatedPost = await ForumPost.findById(req.params.id)
-            .populate('comments.user', 'username avatar');
+            .populate('comments.user', 'username avatar profileVisibility');
 
         // Return the last added comment (which is now populated)
         const addedComment = updatedPost.comments[updatedPost.comments.length - 1];
 
         req.app.get('io').emit('forum:commentAdded', { postId: req.params.id, comment: addedComment });
 
-        res.status(200).json(addedComment);
+        res.status(200).json(processCommentPrivacy(addedComment));
     } catch (error) {
         next(error);
     }
@@ -268,7 +311,7 @@ export const updateComment = async (req, res, next) => {
         const updatedComment = updatedPost.comments.id(req.params.commentId);
 
         req.app.get('io').emit('forum:commentUpdated', { postId: req.params.id, comment: updatedComment });
-        res.status(200).json(updatedComment);
+        res.status(200).json(processCommentPrivacy(updatedComment));
     } catch (error) {
         next(error);
     }
@@ -298,15 +341,15 @@ export const addReply = async (req, res, next) => {
         await post.save();
 
         const updatedPost = await ForumPost.findById(req.params.id)
-            .populate('comments.replies.user', 'username avatar')
-            .populate('comments.replies.replyToUser', 'username');
+            .populate('comments.replies.user', 'username avatar profileVisibility')
+            .populate('comments.replies.replyToUser', 'username profileVisibility');
 
         const updatedComment = updatedPost.comments.id(req.params.commentId);
         const addedReply = updatedComment.replies[updatedComment.replies.length - 1];
 
         req.app.get('io').emit('forum:replyAdded', { postId: req.params.id, commentId: req.params.commentId, reply: addedReply });
 
-        res.status(200).json(addedReply);
+        res.status(200).json(processReplyPrivacy(addedReply));
     } catch (error) {
         next(error);
     }
@@ -358,13 +401,13 @@ export const updateReply = async (req, res, next) => {
         await post.save();
 
         const updatedPost = await ForumPost.findById(req.params.id)
-            .populate('comments.replies.user', 'username avatar');
+            .populate('comments.replies.user', 'username avatar profileVisibility');
 
         const updatedComment = updatedPost.comments.id(req.params.commentId);
         const updatedReply = updatedComment.replies.id(req.params.replyId);
 
         req.app.get('io').emit('forum:replyUpdated', { postId: req.params.id, commentId: req.params.commentId, reply: updatedReply });
-        res.status(200).json(updatedReply);
+        res.status(200).json(processReplyPrivacy(updatedReply));
     } catch (error) {
         next(error);
     }
@@ -391,12 +434,12 @@ export const likeComment = async (req, res, next) => {
         }
 
         await post.save();
-        await post.populate('author', 'username avatar email type isVerified');
-        await post.populate('comments.user', 'username avatar');
-        await post.populate('comments.replies.user', 'username avatar');
-        await post.populate('comments.replies.replyToUser', 'username');
+        await post.populate('author', 'username avatar email type isVerified profileVisibility');
+        await post.populate('comments.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.replyToUser', 'username profileVisibility');
         req.app.get('io').emit('forum:postUpdated', post);
-        res.status(200).json(post);
+        res.status(200).json(processPostPrivacy(post));
     } catch (error) {
         next(error);
     }
@@ -423,12 +466,12 @@ export const dislikeComment = async (req, res, next) => {
         }
 
         await post.save();
-        await post.populate('author', 'username avatar email type isVerified');
-        await post.populate('comments.user', 'username avatar');
-        await post.populate('comments.replies.user', 'username avatar');
-        await post.populate('comments.replies.replyToUser', 'username');
+        await post.populate('author', 'username avatar email type isVerified profileVisibility');
+        await post.populate('comments.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.replyToUser', 'username profileVisibility');
         req.app.get('io').emit('forum:postUpdated', post);
-        res.status(200).json(post);
+        res.status(200).json(processPostPrivacy(post));
     } catch (error) {
         next(error);
     }
@@ -458,12 +501,12 @@ export const likeReply = async (req, res, next) => {
         }
 
         await post.save();
-        await post.populate('author', 'username avatar email type isVerified');
-        await post.populate('comments.user', 'username avatar');
-        await post.populate('comments.replies.user', 'username avatar');
-        await post.populate('comments.replies.replyToUser', 'username');
+        await post.populate('author', 'username avatar email type isVerified profileVisibility');
+        await post.populate('comments.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.replyToUser', 'username profileVisibility');
         req.app.get('io').emit('forum:postUpdated', post);
-        res.status(200).json(post);
+        res.status(200).json(processPostPrivacy(post));
     } catch (error) {
         next(error);
     }
@@ -493,12 +536,12 @@ export const dislikeReply = async (req, res, next) => {
         }
 
         await post.save();
-        await post.populate('author', 'username avatar email type isVerified');
-        await post.populate('comments.user', 'username avatar');
-        await post.populate('comments.replies.user', 'username avatar');
-        await post.populate('comments.replies.replyToUser', 'username');
+        await post.populate('author', 'username avatar email type isVerified profileVisibility');
+        await post.populate('comments.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.replyToUser', 'username profileVisibility');
         req.app.get('io').emit('forum:postUpdated', post);
-        res.status(200).json(post);
+        res.status(200).json(processPostPrivacy(post));
     } catch (error) {
         next(error);
     }
@@ -705,13 +748,13 @@ export const updatePost = async (req, res, next) => {
         await post.save();
 
         // Fully populate to prevent data loss on frontend
-        await post.populate('author', 'username avatar email type isVerified');
-        await post.populate('comments.user', 'username avatar');
-        await post.populate('comments.replies.user', 'username avatar');
-        await post.populate('comments.replies.replyToUser', 'username');
+        await post.populate('author', 'username avatar email type isVerified profileVisibility');
+        await post.populate('comments.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.user', 'username avatar profileVisibility');
+        await post.populate('comments.replies.replyToUser', 'username profileVisibility');
 
         req.app.get('io').emit('forum:postUpdated', post);
-        res.status(200).json(post);
+        res.status(200).json(processPostPrivacy(post));
     } catch (error) {
         next(error);
     }

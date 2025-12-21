@@ -142,6 +142,12 @@ const userSchema = new mongoose.Schema({
     default: null
   },
 
+  profileVisibility: {
+    type: String,
+    enum: ['public', 'private', 'friends'],
+    default: 'public'
+  },
+
   // Rental Profile
   rentalProfile: {
     isTenant: {

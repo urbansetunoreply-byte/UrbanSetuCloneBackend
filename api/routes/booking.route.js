@@ -263,17 +263,39 @@ router.get("/my", verifyToken, async (req, res) => {
         { sellerId: userId, archivedBySeller: { $ne: true } }
       ]
     })
-      .populate('buyerId', 'username email mobileNumber avatar')
-      .populate('sellerId', 'username email mobileNumber avatar')
+      .populate('buyerId', 'username email mobileNumber avatar profileVisibility')
+      .populate('sellerId', 'username email mobileNumber avatar profileVisibility')
       .populate('listingId', '_id name address')
       .sort({ createdAt: -1 });
 
-    // Add role information to each booking
+    // Add role information to each booking and apply privacy masking
     const bookingsWithRole = bookings
       .filter(booking => booking.buyerId && booking.buyerId._id && booking.sellerId && booking.sellerId._id) // skip if any is null
       .map(booking => {
         const bookingObj = booking.toObject();
-        bookingObj.role = booking.buyerId._id.toString() === userId ? 'buyer' : 'seller';
+        const role = booking.buyerId._id.toString() === userId ? 'buyer' : 'seller';
+        bookingObj.role = role;
+
+        // Determine if we need to mask the other party
+        // For MyAppointments: 'public' AND 'friends' are VISIBLE. Only 'private' is HIDDEN.
+        if (role === 'buyer') {
+          // User is buyer, check seller privacy
+          if (bookingObj.sellerId.profileVisibility === 'private') {
+            bookingObj.sellerId.username = 'UrbanSetu Member';
+            bookingObj.sellerId.email = undefined;
+            bookingObj.sellerId.mobileNumber = undefined;
+            bookingObj.sellerId.avatar = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+          }
+        } else {
+          // User is seller, check buyer privacy
+          if (bookingObj.buyerId.profileVisibility === 'private') {
+            bookingObj.buyerId.username = 'UrbanSetu Member';
+            bookingObj.buyerId.email = undefined;
+            bookingObj.buyerId.mobileNumber = undefined;
+            bookingObj.buyerId.avatar = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png';
+          }
+        }
+
         return bookingObj;
       });
 

@@ -1589,7 +1589,8 @@ export default function MyAppointments() {
           const canSeeContactInfo = (isAdmin || selectedAppointment.status === 'accepted') && isUpcoming &&
             selectedAppointment.status !== 'cancelledByBuyer' && selectedAppointment.status !== 'cancelledBySeller' &&
             selectedAppointment.status !== 'cancelledByAdmin' && selectedAppointment.status !== 'rejected' &&
-            selectedAppointment.status !== 'deletedByAdmin';
+            selectedAppointment.status !== 'deletedByAdmin' &&
+            selectedOtherParty.profileVisibility !== 'private';
 
           return (
             <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-2 sm:p-4" style={{ overflow: 'hidden' }}>
@@ -1610,6 +1611,7 @@ export default function MyAppointments() {
                     <div className="relative">
                       <UserAvatar
                         user={{ username: selectedOtherParty.username, avatar: selectedOtherParty.avatar }}
+                        profileVisibility={selectedOtherParty.profileVisibility}
                         size="w-16 h-16"
                         textSize="text-lg"
                         showBorder={true}
@@ -4110,11 +4112,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
   // Status indicators: hide for pending and frozen appointments
   const isStatusHidden = appt.status === 'pending' || appt.status === 'rejected' || appt.status === 'cancelledByAdmin' || appt.status === 'cancelledByBuyer' || appt.status === 'cancelledBySeller' || appt.status === 'deletedByAdmin';
 
+  const otherParty = isSeller ? appt.buyerId : appt.sellerId;
+
   const canSeeContactInfo = (isAdmin || appt.status === 'accepted') && isUpcoming &&
     appt.status !== 'cancelledByBuyer' && appt.status !== 'cancelledBySeller' &&
     appt.status !== 'cancelledByAdmin' && appt.status !== 'rejected' &&
-    appt.status !== 'deletedByAdmin';
-  const otherParty = isSeller ? appt.buyerId : appt.sellerId;
+    appt.status !== 'deletedByAdmin' &&
+    otherParty?.profileVisibility !== 'private';
 
   // Handle delete confirmation modal
   const handleDeleteClick = (message) => {

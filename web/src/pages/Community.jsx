@@ -8,6 +8,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { socket } from '../utils/socket';
 import ReportModal from '../components/ReportModal';
+import UserAvatar from '../components/UserAvatar';
 
 export default function Community() {
     usePageTitle("Community Hub - Neighborhood Forum");
@@ -1023,10 +1024,10 @@ export default function Community() {
                                     <div className="flex justify-between items-start mb-4">
                                         <div className="flex items-center gap-3">
                                             <div className="relative">
-                                                <img
-                                                    src={post.author?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                                                    alt={post.author?.username}
-                                                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                                                <UserAvatar
+                                                    user={post.author}
+                                                    size="w-12 h-12"
+                                                    className="border-2 border-white shadow-md text-2xl"
                                                 />
                                                 {post.author?.type === 'agent' && (
                                                     <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[10px] p-1 rounded-full border-2 border-white" title="Agent">
@@ -1213,10 +1214,10 @@ export default function Community() {
                                                     post.comments.map((comment, idx) => (
                                                         <div key={idx} className="flex gap-3 relative group/comment">
                                                             <div className="flex-shrink-0">
-                                                                <img
-                                                                    src={comment.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                                                                    alt="User"
-                                                                    className="w-8 h-8 rounded-full object-cover mt-1"
+                                                                <UserAvatar
+                                                                    user={comment.user}
+                                                                    size="w-8 h-8"
+                                                                    className="mt-1 text-sm"
                                                                 />
                                                             </div>
                                                             <div className="flex-1">
@@ -1358,9 +1359,9 @@ export default function Community() {
                                                                 {/* Top level Reply Input (Directly to comment) */}
                                                                 {activeReplyInput === comment._id && (
                                                                     <div className="mt-2 flex gap-2 animate-fade-in pl-2">
-                                                                        <img
-                                                                            src={currentUser?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                                                                            className="w-6 h-6 rounded-full object-cover"
+                                                                        <UserAvatar
+                                                                            user={currentUser}
+                                                                            size="w-6 h-6"
                                                                         />
                                                                         <form onSubmit={(e) => handleAddReply(e, post._id, comment._id, null)} className="flex-1 flex gap-2">
                                                                             <div className="relative flex-1">
@@ -1432,9 +1433,10 @@ export default function Community() {
                                                                                     return (
                                                                                         <div key={reply._id} className="flex gap-2 relative group/reply flex-col mb-2 animate-fade-in">
                                                                                             <div className="flex gap-2">
-                                                                                                <img
-                                                                                                    src={reply.user?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
-                                                                                                    className="w-6 h-6 rounded-full object-cover mt-1"
+                                                                                                <UserAvatar
+                                                                                                    user={reply.user}
+                                                                                                    size="w-6 h-6"
+                                                                                                    className="mt-1 text-xs"
                                                                                                 />
                                                                                                 <div className="flex-1">
                                                                                                     <div className="bg-gray-50/50 p-2 rounded-lg relative">

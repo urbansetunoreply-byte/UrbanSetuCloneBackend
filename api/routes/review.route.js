@@ -10,6 +10,35 @@ import ReviewReply from '../models/reviewReply.model.js';
 
 const router = express.Router();
 
+const genericAvatar = "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png";
+
+const maskReviewSync = (review) => {
+  if (!review) return review;
+  const r = review.toObject ? review.toObject() : review;
+
+  if (r.userId && typeof r.userId === 'object' && (r.userId.profileVisibility === 'private' || r.userId.profileVisibility === 'friends')) {
+    r.userName = "Anonymous User";
+    r.userAvatar = genericAvatar;
+    r.profileVisibility = 'private';
+  }
+  // Restore userId to string to avoid breaking frontend checks
+  if (r.userId && r.userId._id) {
+    r.userId = r.userId._id;
+  }
+  return r;
+};
+
+const maskReviewWithUser = (review, user) => {
+  if (!review || !user) return review;
+  const r = review.toObject ? review.toObject() : review;
+  if (user.profileVisibility === 'private' || user.profileVisibility === 'friends') {
+    r.userName = "Anonymous User";
+    r.userAvatar = genericAvatar;
+    r.profileVisibility = 'private';
+  }
+  return r;
+};
+
 // Create a review
 router.post('/create', verifyToken, async (req, res, next) => {
   try {
@@ -106,14 +135,17 @@ router.post('/create', verifyToken, async (req, res, next) => {
       console.error('Failed to send admin notifications:', adminNotificationError);
     }
 
+    // Implement masking for socket and response
+    const maskedReview = maskReviewWithUser(newReview, user);
+
     // Emit socket event for real-time review creation
     const io = req.app.get('io');
-    if (io) io.emit('reviewUpdated', newReview);
+    if (io) io.emit('reviewUpdated', maskedReview);
 
     res.status(201).json({
       success: true,
       message: 'Review submitted successfully and pending approval',
-      review: newReview
+      review: maskedReview
     });
   } catch (error) {
     // Handle duplicate key error for unique userId+listingId
@@ -145,9 +177,9 @@ router.get('/listing/:listingId', async (req, res, next) => {
     const reviews = await Review.find({
       listingId,
       status: status
-    }).sort(sortQuery);
+    }).sort(sortQuery).populate('userId', 'profileVisibility');
 
-    res.status(200).json(reviews);
+    res.status(200).json(reviews.map(maskReviewSync));
   } catch (error) {
     next(error);
   }
@@ -198,14 +230,26 @@ router.put('/update/:reviewId', verifyToken, async (req, res, next) => {
       { new: true }
     );
 
+    // For update, we need to know if we should mask. We can fetch user or check current req.user (since it is own review)
+    // updateUser in DB returns updated doc. userId is ID string.
+    // We can use req.user for privacy check since only owner can update
+
+    // Check privacy using req.user (it has profileVisibility if we assume populated, otherwise fetch)
+    // Actually req.user from verifyToken might NOT have profileVisibility.
+    // Better to fetch user or trust populated userId if we populated it.
+    // But findByIdAndUpdate doesn't populate.
+
+    const user = await User.findById(req.user.id).select('profileVisibility');
+    const maskedReview = maskReviewWithUser(updatedReview, user);
+
     // Emit socket event for real-time review update
     const io = req.app.get('io');
-    if (io) io.emit('reviewUpdated', updatedReview);
+    if (io) io.emit('reviewUpdated', maskedReview);
 
     res.status(200).json({
       success: true,
       message: 'Review updated successfully',
-      review: updatedReview
+      review: maskedReview
     });
   } catch (error) {
     next(error);
@@ -721,10 +765,14 @@ router.post('/reply/:reviewId', verifyToken, async (req, res, next) => {
       dislikes: []
     });
     await reply.save();
+
+    // Mask reply for socket and response
+    const maskedReply = maskReviewWithUser(reply, user);
+
     // Emit socket event for real-time reply creation
     const io = req.app.get('io');
-    if (io) io.emit('reviewReplyUpdated', { action: 'created', reply });
-    res.status(201).json({ success: true, message: 'Reply added successfully', reply });
+    if (io) io.emit('reviewReplyUpdated', { action: 'created', reply: maskedReply });
+    res.status(201).json({ success: true, message: 'Reply added successfully', reply: maskedReply });
   } catch (error) {
     next(error);
   }
@@ -806,8 +854,8 @@ router.post('/report/:reviewId', verifyToken, async (req, res, next) => {
 router.get('/reply/:reviewId', async (req, res, next) => {
   try {
     const { reviewId } = req.params;
-    const replies = await ReviewReply.find({ reviewId }).sort({ createdAt: 1 });
-    res.status(200).json(replies);
+    const replies = await ReviewReply.find({ reviewId }).sort({ createdAt: 1 }).populate('userId', 'profileVisibility');
+    res.status(200).json(replies.map(maskReviewSync));
   } catch (error) {
     next(error);
   }

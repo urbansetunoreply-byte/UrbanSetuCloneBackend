@@ -92,7 +92,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       }
     };
     socket.on('reviewReplyUpdated', handleSocketReplyUpdate);
-    
+
     // Listen for profile updates to update user info in reviews and replies
     const handleProfileUpdate = (profileData) => {
       setReviews(prevReviews => {
@@ -108,7 +108,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         });
         return updated;
       });
-      
+
       setReplies(prevReplies => {
         const updated = { ...prevReplies };
         Object.keys(updated).forEach(reviewId => {
@@ -128,10 +128,10 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
     };
     socket.on('profileUpdated', handleProfileUpdate);
 
-    
+
     // Test socket connection with a simple event
     socket.emit('testConnection', { message: 'ReviewList component connected' });
-    
+
     return () => {
       socket.off('reviewUpdated', handleSocketReviewUpdate);
       socket.off('reviewReplyUpdated', handleSocketReplyUpdate);
@@ -167,7 +167,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
   useEffect(() => {
     const pollInterval = setInterval(async () => {
       if (!currentUser) return;
-      
+
       try {
         const res = await fetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
         if (res.ok) {
@@ -207,7 +207,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         credentials: 'include',
       });
       const data = await res.json();
-      
+
       if (res.ok) {
         setReviews(data);
       } else {
@@ -259,16 +259,16 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ 
-          reason: removalReason, 
-          note: removalNote 
+        body: JSON.stringify({
+          reason: removalReason,
+          note: removalNote
         }),
       });
       const data = await res.json();
       if (res.ok) {
-        setReviews(reviews.map(review => 
-          review._id === reviewToRemove._id 
-            ? { ...review, status: 'removed', removalReason, removalNote } 
+        setReviews(reviews.map(review =>
+          review._id === reviewToRemove._id
+            ? { ...review, status: 'removed', removalReason, removalNote }
             : review
         ));
         setShowRemovalModal(false);
@@ -395,9 +395,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
     return [...Array(5)].map((_, index) => (
       <FaStar
         key={index}
-        className={`text-lg ${
-          index < rating ? 'text-yellow-400' : 'text-gray-300'
-        }`}
+        className={`text-lg ${index < rating ? 'text-yellow-400' : 'text-gray-300'
+          }`}
       />
     ));
   };
@@ -462,7 +461,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         const data = await res.json();
         setReplies(prev => ({ ...prev, [reviewId]: data }));
       }
-    } catch {}
+    } catch { }
   };
 
   useEffect(() => {
@@ -500,10 +499,10 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               [parentReviewId]: prev[parentReviewId].map(r =>
                 r._id === replyId
                   ? {
-                      ...r,
-                      likes: [...(r.likes || []), currentUser._id],
-                      dislikes: r.dislikes?.filter(id => id !== currentUser._id),
-                    }
+                    ...r,
+                    likes: [...(r.likes || []), currentUser._id],
+                    dislikes: r.dislikes?.filter(id => id !== currentUser._id),
+                  }
                   : r
               ),
             }));
@@ -527,10 +526,10 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               [parentReviewId]: prev[parentReviewId].map(r =>
                 r._id === replyId
                   ? {
-                      ...r,
-                      dislikes: [...(r.dislikes || []), currentUser._id],
-                      likes: r.likes?.filter(id => id !== currentUser._id),
-                    }
+                    ...r,
+                    dislikes: [...(r.dislikes || []), currentUser._id],
+                    likes: r.likes?.filter(id => id !== currentUser._id),
+                  }
                   : r
               ),
             }));
@@ -674,7 +673,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         credentials: 'include',
         body: JSON.stringify({ action }),
       });
-    } catch {}
+    } catch { }
   };
 
   // Helper to check if a user is admin
@@ -699,9 +698,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           category: reportCategory,
-          reason: reportReason.trim() 
+          reason: reportReason.trim()
         }),
       });
       const data = await res.json();
@@ -753,7 +752,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
         <h3 className="text-xl font-semibold text-gray-800">
           Reviews ({reviews.filter(r => r.status === 'approved').length})
         </h3>
-        
+
         {/* Sort Options */}
         <div className="flex items-center gap-2">
           <span className="text-sm text-gray-600">Sort by:</span>
@@ -777,15 +776,16 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
           </button>
         </div>
       </div>
-      
+
       {reviews.filter(r => r.status === 'approved').map((review) => (
         <div key={review._id} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3 mb-3">
               {!isAdminUser(review) && (
-                <UserAvatar 
-                  user={{ username: review.userName, avatar: review.userAvatar }} 
-                  size="w-10 h-10" 
+                <UserAvatar
+                  user={{ username: review.userName, avatar: review.userAvatar }}
+                  profileVisibility={review.profileVisibility}
+                  size="w-10 h-10"
                   textSize="text-sm"
                   showBorder={false}
                 />
@@ -814,7 +814,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 </div>
               </div>
             </div>
-            
+
             {/* Action buttons for user's own reviews and admin delete for all reviews */}
             {(currentUser && (
               // User can edit/delete their own reviews (any status)
@@ -822,53 +822,52 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               // Admin can delete any review
               (isAdminUser(currentUser))
             )) && (
-              <div className="flex space-x-2">
-                {/* Edit button - only for user's own reviews */}
-                {currentUser._id === review.userId && (
+                <div className="flex space-x-2">
+                  {/* Edit button - only for user's own reviews */}
+                  {currentUser._id === review.userId && (
+                    <button
+                      onClick={() => handleEditReview(review)}
+                      className="text-blue-600 hover:text-blue-800 p-1"
+                      title="Edit review"
+                    >
+                      <FaEdit />
+                    </button>
+                  )}
+                  {/* Delete button - for user's own reviews or admin */}
                   <button
-                    onClick={() => handleEditReview(review)}
-                    className="text-blue-600 hover:text-blue-800 p-1"
-                    title="Edit review"
+                    onClick={() => {
+                      if (isAdminUser(currentUser)) {
+                        // Admin: Show removal modal
+                        setReviewToRemove(review);
+                        setShowRemovalModal(true);
+                      } else {
+                        // User: Show delete confirmation modal
+                        setReviewToDelete(review);
+                        setShowDeleteModal(true);
+                      }
+                    }}
+                    className="text-red-600 hover:text-red-800 p-1"
+                    title={isAdminUser(currentUser) ? "Remove review (Admin)" : "Delete review"}
                   >
-                    <FaEdit />
+                    <FaTrash />
                   </button>
-                )}
-                {/* Delete button - for user's own reviews or admin */}
-                <button
-                  onClick={() => {
-                    if (isAdminUser(currentUser)) {
-                      // Admin: Show removal modal
-                      setReviewToRemove(review);
-                      setShowRemovalModal(true);
-                    } else {
-                      // User: Show delete confirmation modal
-                      setReviewToDelete(review);
-                      setShowDeleteModal(true);
-                    }
-                  }}
-                  className="text-red-600 hover:text-red-800 p-1"
-                  title={isAdminUser(currentUser) ? "Remove review (Admin)" : "Delete review"}
-                >
-                  <FaTrash />
-                </button>
-              </div>
-            )}
+                </div>
+              )}
           </div>
-          
+
           <p className="text-gray-700 mb-3">{review.comment}</p>
-          
+
           <div className="flex items-center justify-between text-sm text-gray-500">
             <span>{formatDate(review.createdAt)}</span>
-            
+
             {/* Helpful Vote Button */}
             <div className="flex items-center gap-2 mt-2">
               <button
                 onClick={() => handleHelpfulVote(review._id)}
-                className={`flex items-center gap-1 px-3 py-1 rounded-lg transition-colors ${
-                  hasUserVoted(review)
+                className={`flex items-center gap-1 px-3 py-1 rounded-lg transition-colors ${hasUserVoted(review)
                     ? 'bg-blue-100 text-blue-700'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                  }`}
                 disabled={review.status !== 'approved'}
               >
                 <FaThumbsUp className={hasUserVoted(review) ? 'text-blue-600' : ''} />
@@ -879,11 +878,10 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               </button>
               <button
                 onClick={() => handleDislikeReview(review._id)}
-                className={`flex items-center gap-1 px-3 py-1 rounded-lg transition-colors ${
-                  review.dislikes?.some(d => d.userId === currentUser?._id)
+                className={`flex items-center gap-1 px-3 py-1 rounded-lg transition-colors ${review.dislikes?.some(d => d.userId === currentUser?._id)
                     ? 'bg-red-100 text-red-700'
                     : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
+                  }`}
               >
                 <span role="img" aria-label="dislike">👎</span>
                 <span>Dislike</span>
@@ -893,7 +891,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               </button>
             </div>
           </div>
-          
+
           {/* Status indicator */}
           <div className="mt-3 flex items-center gap-2">
             {getStatusBadge(review.status)}
@@ -903,7 +901,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               </span>
             )}
           </div>
-          
+
           {/* Admin note (if any) */}
           {review.adminNote && (
             <div className="mt-3 p-3 bg-gray-50 rounded-md">
@@ -993,7 +991,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 </button>
               )}
             </div>
-            
+
             {/* Collapsible Replies Content */}
             {expandedReplies[review._id] && (
               <div className="space-y-3 animate-slideDown">
@@ -1001,9 +999,10 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                   <div key={reply._id} className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-3 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
                     <div className="flex items-center gap-2 mb-2">
                       {!isAdminUser(reply) && (
-                        <UserAvatar 
-                          user={{ username: reply.userName, avatar: reply.userAvatar }} 
-                          size="w-6 h-6" 
+                        <UserAvatar
+                          user={{ username: reply.userName, avatar: reply.userAvatar }}
+                          profileVisibility={reply.profileVisibility}
+                          size="w-6 h-6"
                           textSize="text-xs"
                           showBorder={false}
                         />
@@ -1022,14 +1021,14 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                             reply.userId === currentUser._id ||
                             (isAdminUser(currentUser) && isAdminUser(reply))
                           ) && (
-                            <button
-                              onClick={() => handleEditReply(reply)}
-                              className="text-blue-600 hover:text-blue-800 transition-colors"
-                              title="Edit reply"
-                            >
-                              <FaPen size={10} />
-                            </button>
-                          )}
+                              <button
+                                onClick={() => handleEditReply(reply)}
+                                className="text-blue-600 hover:text-blue-800 transition-colors"
+                                title="Edit reply"
+                              >
+                                <FaPen size={10} />
+                              </button>
+                            )}
                           {(reply.userId === currentUser._id || isAdminUser(currentUser)) && (
                             <button
                               onClick={() => handleDeleteReply(reply._id)}
@@ -1042,7 +1041,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                         </div>
                       )}
                     </div>
-                    
+
                     {editingReply && editingReply._id === reply._id ? (
                       <div className="space-y-2">
                         <textarea
@@ -1052,14 +1051,14 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                           rows={2}
                         />
                         <div className="flex gap-2">
-                          <button 
-                            className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700 transition-colors" 
+                          <button
+                            className="bg-blue-600 text-white px-2 py-1 rounded text-xs hover:bg-blue-700 transition-colors"
                             onClick={handleUpdateReply}
                           >
                             Save
                           </button>
-                          <button 
-                            className="bg-gray-400 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 transition-colors" 
+                          <button
+                            className="bg-gray-400 text-white px-2 py-1 rounded text-xs hover:bg-gray-600 transition-colors"
                             onClick={() => setEditingReply(null)}
                           >
                             Cancel
@@ -1069,26 +1068,24 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                     ) : (
                       <div className="text-gray-700 text-sm leading-relaxed">{reply.comment}</div>
                     )}
-                    
+
                     <div className="flex gap-3 mt-2 text-xs">
                       <button
                         onClick={() => handleLikeDislikeReply(reply._id, 'like', review._id)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                          reply.likes?.includes(currentUser?._id) 
-                            ? 'bg-blue-100 text-blue-700' 
+                        className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${reply.likes?.includes(currentUser?._id)
+                            ? 'bg-blue-100 text-blue-700'
                             : 'text-gray-500 hover:bg-gray-100'
-                        }`}
+                          }`}
                         disabled={replyLikeLoading[reply._id]}
                       >
                         👍 Like {reply.likes?.length > 0 && `(${reply.likes.length})`}
                       </button>
                       <button
                         onClick={() => handleLikeDislikeReply(reply._id, 'dislike', review._id)}
-                        className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${
-                          reply.dislikes?.includes(currentUser?._id) 
-                            ? 'bg-red-100 text-red-700' 
+                        className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${reply.dislikes?.includes(currentUser?._id)
+                            ? 'bg-red-100 text-red-700'
                             : 'text-gray-500 hover:bg-gray-100'
-                        }`}
+                          }`}
                         disabled={replyLikeLoading[reply._id]}
                       >
                         👎 Dislike {reply.dislikes?.length > 0 && `(${reply.dislikes.length})`}
@@ -1096,14 +1093,14 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                     </div>
                   </div>
                 ))}
-                
+
                 {/* Reply form */}
                 <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
                   <ReplyForm reviewId={review._id} onReplyAdded={() => fetchReplies(review._id)} />
                 </div>
               </div>
             )}
-            
+
             {/* Show reply form if no replies exist */}
             {(!replies[review._id] || replies[review._id].length === 0) && (
               <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
@@ -1125,7 +1122,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
           )}
         </div>
       ))}
-      
+
       {/* Edit form modal */}
       {editingReview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
@@ -1290,7 +1287,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 <FaTrash className="text-red-500" />
                 Delete Review
               </h3>
-              
+
               <p className="text-gray-600 mb-4">
                 Are you sure you want to delete this review? This action cannot be undone.
               </p>
@@ -1310,7 +1307,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                   </p>
                 )}
               </div>
-              
+
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"

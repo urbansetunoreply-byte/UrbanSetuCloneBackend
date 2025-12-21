@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo } from "react-icons/fa";
+import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -10,7 +10,11 @@ import {
   signoutUserStart,
   signoutUserSuccess,
   signoutUserFailure,
+  updateUserStart,
+  updateUserSuccess,
+  updateUserFailure,
 } from "../redux/user/userSlice";
+
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSignout } from '../hooks/useSignout';
@@ -52,7 +56,7 @@ export default function Settings() {
 
   // Privacy Settings
   const [profileVisibility, setProfileVisibility] = useState(() => {
-    return localStorage.getItem('profileVisibility') || 'public';
+    return currentUser?.profileVisibility || localStorage.getItem('profileVisibility') || 'public';
   });
   const [showEmail, setShowEmail] = useState(() => {
     const saved = localStorage.getItem('showEmail');
@@ -135,6 +139,9 @@ export default function Settings() {
   const [transferDeletePasswordAttempts, setTransferDeletePasswordAttempts] = useState(0);
   const [transferOtp, setTransferOtp] = useState("");
   const [transferOtpSent, setTransferOtpSent] = useState(false);
+
+  // Visibility Info Modal State
+  const [showVisibilityInfoModal, setShowVisibilityInfoModal] = useState(false);
   const [transferOtpError, setTransferOtpError] = useState("");
   const [transferResendTimer, setTransferResendTimer] = useState(0);
   const [transferCanResend, setTransferCanResend] = useState(true);
@@ -757,11 +764,29 @@ export default function Settings() {
     showToast('Notification sound preference saved');
   };
 
-  const handleProfileVisibilityChange = (value) => {
+  const handleProfileVisibilityChange = async (value) => {
     scrollPositionRef.current = window.scrollY;
-    setProfileVisibility(value);
-    localStorage.setItem('profileVisibility', value);
-    showToast('Profile visibility updated');
+    try {
+      dispatch(updateUserStart());
+      const res = await authenticatedFetch(`${API_BASE_URL}/api/user/update/${currentUser._id}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ profileVisibility: value }),
+      });
+      const data = await res.json();
+      if (data.success === false) {
+        dispatch(updateUserFailure(data.message));
+        return;
+      }
+      dispatch(updateUserSuccess(data.updatedUser));
+      setProfileVisibility(value);
+      localStorage.setItem('profileVisibility', value);
+      showToast('Profile visibility updated');
+    } catch (error) {
+      dispatch(updateUserFailure(error.message));
+    }
   };
 
   const handleShowEmailChange = (value) => {
@@ -974,7 +999,7 @@ export default function Settings() {
     );
   };
 
-  const SelectOption = ({ label, value, options, onChange, description }) => {
+  const SelectOption = ({ label, value, options, onChange, description, onInfoClick }) => {
     const handleChange = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -983,7 +1008,19 @@ export default function Settings() {
     return (
       <div className="py-3 border-b border-gray-200 last:border-b-0">
         <div className="mb-2">
-          <p className="font-medium text-gray-800">{label}</p>
+          <div className="flex items-center gap-2">
+            <p className="font-medium text-gray-800">{label}</p>
+            {onInfoClick && (
+              <button
+                type="button"
+                onClick={onInfoClick}
+                className="text-blue-500 hover:text-blue-700 transition-colors"
+                title="More information"
+              >
+                <FaInfoCircle />
+              </button>
+            )}
+          </div>
           {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
         </div>
         <select
@@ -1093,6 +1130,7 @@ export default function Settings() {
               ]}
               onChange={handleProfileVisibilityChange}
               description="Control who can see your profile"
+              onInfoClick={() => setShowVisibilityInfoModal(true)}
             />
             <ToggleSwitch
               label="Show Email Address"
@@ -1866,6 +1904,73 @@ export default function Settings() {
           </div>
         </div>
       )}
+
+      {/* Visibility Info Modal */}
+      {
+        showVisibilityInfoModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-[fadeIn_0.3s_ease-out]">
+            <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn} overflow-hidden`}>
+              {/* Header */}
+              <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 flex justify-between items-center text-white">
+                <h3 className="text-lg font-bold flex items-center gap-2">
+                  <FaEye className="text-xl" />
+                  Visibility Options
+                </h3>
+                <button
+                  onClick={() => setShowVisibilityInfoModal(false)}
+                  className="text-white/80 hover:text-white hover:bg-white/20 rounded-full p-1 transition-colors"
+                >
+                  <FaTimes />
+                </button>
+              </div>
+
+              <div className="p-6 space-y-4">
+                {/* Public */}
+                <div className="flex gap-3">
+                  <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                    <FaGlobe />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">Public</h4>
+                    <p className="text-sm text-gray-600">Visible to everyone. Your name, avatar, and contact details (in accepted appointments) are shown.</p>
+                  </div>
+                </div>
+
+                {/* Friends Only */}
+                <div className="flex gap-3">
+                  <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                    <FaUsers />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">Friends Only</h4>
+                    <p className="text-sm text-gray-600">Visible to friends and appointment partners. Anonymized in public forums/reviews. Full details shown in accepted appointments.</p>
+                  </div>
+                </div>
+
+                {/* Private */}
+                <div className="flex gap-3">
+                  <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                    <FaLock />
+                  </div>
+                  <div>
+                    <h4 className="font-bold text-gray-800">Private</h4>
+                    <p className="text-sm text-gray-600">Your specific details are hidden everywhere. Displayed as "UrbanSetu Member" with a generic avatar.</p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="p-4 bg-gray-50 flex justify-end">
+                <button
+                  onClick={() => setShowVisibilityInfoModal(false)}
+                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
+                >
+                  Got it
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
     </div>
   );
 }
