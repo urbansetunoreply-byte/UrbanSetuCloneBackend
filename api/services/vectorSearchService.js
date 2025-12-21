@@ -5,42 +5,63 @@ import dotenv from 'dotenv';
 dotenv.config();
 
 /**
- * Service to handle Vector Embeddings using OpenAI
- * Model: text-embedding-3-small (Cost effective and high performance)
+ * Service to handle Vector Embeddings using Hugging Face
+ * Model: sentence-transformers/all-MiniLM-L6-v2 (384 dimensions)
+ * Free Tier Friendly!
  */
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const EMBEDDING_URL = 'https://api.openai.com/v1/embeddings';
+const HF_TOKEN = process.env.HUGGINGFACE_TOKEN;
+const HF_API_URL = "https://router.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
 
 /**
  * Generate embedding for a single text string
  * @param {string} text 
- * @returns {Promise<number[]>} 1536-dimensional vector
+ * @returns {Promise<number[]>} 384-dimensional vector
  */
 export const generateEmbedding = async (text) => {
     try {
         if (!text || !text.trim()) return null;
 
-        // Clean text to avoid newline issues
-        const cleanText = text.replace(/\n/g, ' ');
+        // Clean text
+        const cleanText = text.replace(/\n/g, ' ').trim();
+
+        const headers = {
+            'Content-Type': 'application/json'
+        };
+        // Add auth only if token is valid to avoid 401s from invalid tokens
+        if (HF_TOKEN && HF_TOKEN.startsWith('hf_')) {
+            headers['Authorization'] = `Bearer ${HF_TOKEN}`;
+        }
 
         const response = await axios.post(
-            EMBEDDING_URL,
+            HF_API_URL,
             {
-                input: cleanText,
-                model: "text-embedding-3-small"
+                inputs: cleanText,
+                options: { wait_for_model: true }
             },
-            {
-                headers: {
-                    'Authorization': `Bearer ${OPENAI_API_KEY}`,
-                    'Content-Type': 'application/json'
-                }
-            }
+            { headers }
         );
 
-        return response.data.data[0].embedding;
+        // Hugging Face returns just the array of numbers: [0.1, 0.2, ...]
+        if (Array.isArray(response.data)) {
+            // Handle edge case where it returns nested array like [[0.1, ...]] (batch mode)
+            if (Array.isArray(response.data[0])) {
+                return response.data[0];
+            }
+            return response.data;
+        }
+
+        throw new Error("Unexpected response format from Hugging Face");
+
     } catch (error) {
         console.error("Embedding Error:", error?.response?.data || error.message);
+
+        // Detailed HF Error Handling
+        if (error?.response?.data?.error?.includes("Loading")) {
+            // Model is loading (~20s wait), handled by wait_for_model: true usually, but just in case
+            throw new Error("Model is loading, please try again in 30 seconds.");
+        }
+
         throw error;
     }
 };
@@ -73,6 +94,12 @@ export const createListingDescription = (listing) => {
  * @returns {number} Score between -1 and 1 (1 = identical)
  */
 export const cosineSimilarity = (vecA, vecB) => {
+    // Safety check for dimensions mismatch
+    if (vecA.length !== vecB.length) {
+        // console.warn(`Vector dimension mismatch: ${vecA.length} vs ${vecB.length}`);
+        return -1;
+    }
+
     let dotProduct = 0;
     let normA = 0;
     let normB = 0;
@@ -83,6 +110,7 @@ export const cosineSimilarity = (vecA, vecB) => {
         normB += vecB[i] * vecB[i];
     }
 
+    if (normA === 0 || normB === 0) return 0;
     return dotProduct / (Math.sqrt(normA) * Math.sqrt(normB));
 };
 
@@ -152,8 +180,8 @@ export const seedMissingEmbeddings = async () => {
 
             console.log(`✅ Embedded: ${listing.name}`);
 
-            // Rate Limit Safety: Wait 2 seconds between requests
-            await new Promise(resolve => setTimeout(resolve, 2000));
+            // Rate Limit Safety: Wait 5 seconds between requests (HF Free Tier)
+            await new Promise(resolve => setTimeout(resolve, 5000));
 
         } catch (error) {
             console.error(`Failed to embed listing ${listing._id}:`, error.message);

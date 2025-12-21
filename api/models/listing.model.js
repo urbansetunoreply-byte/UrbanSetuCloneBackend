@@ -449,7 +449,7 @@ const listingSchema = new mongoose.Schema({
 
     // Vector Embedding for AI Search
     vectorEmbedding: {
-        type: [Number], // 1536 dimensions for text-embedding-3-small
+        type: [Number], // 384 dimensions for sentence-transformers/all-MiniLM-L6-v2
         select: false,   // Don't return by default to save bandwidth
         index: true
     }
