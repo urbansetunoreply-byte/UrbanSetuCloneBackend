@@ -1163,7 +1163,7 @@ export default function RentProperty() {
 
               <div className="mb-4">
                 <p className="text-sm text-purple-800 mb-2">
-                  Need specific terms? Describe them (e.g., "No loud music after 10 PM", "Tenant pays water bill") and our AI will draft a formal legal clause for you.
+                  Need specific terms? Describe them (e.g., "No loud music after 10 PM", "Landlord pays water bill") and our AI will draft a formal legal clause for you.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
                   <input

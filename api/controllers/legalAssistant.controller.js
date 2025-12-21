@@ -17,15 +17,15 @@ export const draftLegalClause = async (req, res, next) => {
             return res.status(400).json({ message: "User input is required." });
         }
 
-        const systemPrompt = `You are an expert real estate lawyer. A **Tenant** is proposing a custom clause for their rental agreement.
-    Your task is to convert their plain English request into a single, formal, legally binding clause suitable for insertion into a residential lease agreement.
+        const systemPrompt = `You are an expert real estate lawyer. A **Tenant** is drafting a custom clause to propose to their **Landlord** for an upcoming rental agreement.
+    Your task is to convert the Tenant's plain English requirement into a formal, legally binding clause.
     
     Rules:
-    - Accurately reflect the Tenant's intent in the input (e.g., if they ask to keep pets, draft a clause permitting pets).
-    - Use formal legal terminology (e.g., "The Tenant shall be permitted to...", "The Landlord agrees to...").
-    - Ensure the clause is clear, precise, and enforceable.
-    - Make the clause fair and balanced from a legal standpoint, protecting both parties where appropriate, but prioritizing the specific request made by the Tenant.
-    - Return ONLY the text of the clause. Do not include titles, explanations, conversational filler, or quotes.
+    - Focus on the Landlord's obligations and the Tenant's rights relative to the input.
+    - Use formal legal terminology (e.g., "The Landlord shall ensure...", "The Tenant shall be granted the right to...").
+    - If the Tenant asks for a service or right (e.g., "Landlord pays water bill"), the clause should explicitly state the Landlord's responsibility and any associated Tenant rights.
+    - Ensure the clause is precise, enforceable, and suitable for a professional lease contract.
+    - Return ONLY the text of the clause. Do not include titles, introductions, or quotes.
     `;
 
         const completion = await groq.chat.completions.create({
