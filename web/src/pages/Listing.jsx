@@ -27,6 +27,7 @@ import RentPredictionDisplay from '../components/rental/RentPredictionDisplay';
 import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
 
 import VirtualTourViewer from "../components/VirtualTourViewer"; // Import the viewer component
+import VirtualStagingTool from "../components/VirtualStagingTool"; // Import Virtual Staging Tool
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UNAVAILABLE_STATUSES = ['reserved', 'under_contract', 'rented', 'sold', 'suspended'];
@@ -146,6 +147,7 @@ export default function Listing() {
   const [watchlistCount, setWatchlistCount] = useState(0);
   const [wishlistCount, setWishlistCount] = useState(0);
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
+  const [showVirtualStaging, setShowVirtualStaging] = useState(false); // State for Virtual Staging
   const [propertyRatings, setPropertyRatings] = useState(null);
   const [showPropertyRatings, setShowPropertyRatings] = useState(false);
   const [ratingsLoading, setRatingsLoading] = useState(false);
@@ -2234,9 +2236,31 @@ export default function Listing() {
                     </div>
                   )}
                 </div>
+                <div className="relative">
+                  <button
+                    onClick={() => {
+                      if (!currentUser) {
+                        showSignInPrompt('virtualStaging');
+                        return;
+                      }
+                      setShowVirtualStaging(!showVirtualStaging);
+                    }}
+                    className="bg-gradient-to-r from-pink-500 to-rose-600 text-white p-3 rounded-lg hover:from-pink-600 hover:to-rose-700 transition-all flex items-center justify-center gap-2 w-full"
+                  >
+                    <FaChair />
+                    <span className="text-sm font-medium">AI Staging</span>
+                  </button>
+                </div>
               </div>
             </div>
           </div>
+
+          {/* Virtual Staging Section */}
+          {showVirtualStaging && currentUser && (
+            <div className="mb-6 animate-fade-in-up">
+              <VirtualStagingTool originalImage={listing.imageUrls?.[0]} />
+            </div>
+          )}
 
           {/* Amenities Section */}
           {showAmenities && (

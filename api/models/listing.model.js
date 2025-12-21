@@ -114,12 +114,18 @@ const listingSchema = new mongoose.Schema({
         required: false,
         default: []
     },
-    // 360-degree virtual tour images (equirectangular)
     virtualTourImages: {
         type: Array,
         required: false,
         default: []
     },
+    // AI Virtual Staging Results (Before/After)
+    virtualStagingResults: [{
+        originalImage: String,
+        stagedImage: String,
+        style: String,
+        timestamp: { type: Date, default: Date.now }
+    }],
     locationLink: {
         type: String,
         required: false
