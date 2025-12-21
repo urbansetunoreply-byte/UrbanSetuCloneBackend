@@ -2510,6 +2510,9 @@ export default function AdminAppointments() {
           </div>
         </div>
       )}
+
+      {/* Contact Support Wrapper (Page-level to avoid duplication) */}
+      <ContactSupportWrapper />
     </div>
   );
 }
@@ -11831,8 +11834,6 @@ function AdminAppointmentRow({
             </div>
           </div>
         )}
-
-        <ContactSupportWrapper />
       </td>
     </tr>
   );
