@@ -78,11 +78,39 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
     const handleDownload = async () => {
         if (!resultImageRef.current) return;
         try {
+            // Bypass CORS issues by fetching as blob locally
+            const imageUrl = resultImageRef.current.src;
+            const response = await fetch(imageUrl, { mode: 'cors' });
+            const blob = await response.blob();
+            const blobUrl = URL.createObjectURL(blob);
+
+            // Store original src
+            const originalSrc = resultImageRef.current.src;
+
+            // Swap to blob URL
+            resultImageRef.current.src = blobUrl;
+
+            // Wait for image to re-load
+            await new Promise((resolve) => {
+                if (resultImageRef.current.complete) {
+                    resolve();
+                } else {
+                    resultImageRef.current.onload = () => resolve();
+                    // Safety timeout
+                    setTimeout(resolve, 1000);
+                }
+            });
+
             const canvas = await html2canvas(resultImageRef.current, {
                 useCORS: true,
                 backgroundColor: null,
                 scale: 2 // Higher quality
             });
+
+            // Restore original src
+            resultImageRef.current.src = originalSrc;
+            URL.revokeObjectURL(blobUrl);
+
             const link = document.createElement('a');
             link.download = `UrbanSetu-Staged-${selectedStyle}-${Date.now()}.jpg`;
             link.href = canvas.toDataURL('image/jpeg', 0.9);
