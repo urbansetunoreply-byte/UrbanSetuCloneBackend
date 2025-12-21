@@ -11,7 +11,7 @@ dotenv.config();
  */
 
 const HF_TOKEN = process.env.HUGGINGFACE_TOKEN;
-const HF_API_URL = "https://api-inference.huggingface.co/models/sentence-transformers/all-MiniLM-L6-v2";
+const HF_API_URL = "https://router.huggingface.co/hf-inference/models/BAAI/bge-small-en-v1.5";
 
 /**
  * Generate embedding for a single text string
@@ -54,6 +54,9 @@ export const generateEmbedding = async (text) => {
         throw new Error("Unexpected response format from Hugging Face");
 
     } catch (error) {
+        if (error?.response?.data) {
+            console.error("Embedding Error Details:", JSON.stringify(error.response.data, null, 2));
+        }
         console.error("Embedding Error:", error?.response?.data || error.message);
 
         // Detailed HF Error Handling
