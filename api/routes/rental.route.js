@@ -47,11 +47,13 @@ import {
   getPublicRentalLoanDocument,
   proxyDocumentDownload
 } from '../controllers/rental.controller.js';
+import { draftLegalClause } from '../controllers/legalAssistant.controller.js';
 
 const router = express.Router();
 
 // Rent-Lock Contract Routes
 router.post("/contracts/create", verifyToken, createContract);
+router.post("/contracts/draft-clause", verifyToken, draftLegalClause); // AI Legal Assistant
 router.get("/contracts", verifyToken, listContracts);
 router.get("/contracts/all", verifyToken, listAllContracts); // Admin: List all contracts
 router.get("/contracts/:contractId", verifyToken, getContract);

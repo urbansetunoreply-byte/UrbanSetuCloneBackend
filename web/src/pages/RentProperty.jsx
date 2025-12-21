@@ -45,6 +45,46 @@ export default function RentProperty() {
   const [signingAs, setSigningAs] = useState(null); // 'tenant' or 'landlord'
   const readyForPayment = !!(contract?.tenantSignature?.signed && contract?.landlordSignature?.signed);
 
+  // AI Legal Assistant State
+  const [customClauses, setCustomClauses] = useState([]);
+  const [newClauseInput, setNewClauseInput] = useState('');
+  const [draftingClause, setDraftingClause] = useState(false);
+
+  const handleDraftClause = async () => {
+    if (!newClauseInput.trim()) {
+      toast.error('Please describe the clause you want to add.');
+      return;
+    }
+
+    try {
+      setDraftingClause(true);
+      const res = await fetch(`${API_BASE_URL}/api/rental/contracts/draft-clause`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ userInput: newClauseInput })
+      });
+
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || 'Failed to draft clause');
+      }
+
+      setCustomClauses(prev => [...prev, data.draftedClause]);
+      setNewClauseInput('');
+      toast.success('Legal clause drafted and added!');
+    } catch (error) {
+      console.error('AI Drafter Error:', error);
+      toast.error('Failed to generate clause. Please try again.');
+    } finally {
+      setDraftingClause(false);
+    }
+  };
+
+  const removeClause = (index) => {
+    setCustomClauses(prev => prev.filter((_, i) => i !== index));
+  };
+
   // Fetch listing details and resume contract if contractId is provided
   useEffect(() => {
     const fetchListingAndContract = async () => {
@@ -438,7 +478,8 @@ export default function RentProperty() {
           insuranceFee: depositDetails.insuranceFee,
           maintenanceCharges: listing?.maintenanceCharges || 0,
           advanceRent: 0,
-          moveInDate: startDate.toISOString()
+          moveInDate: startDate.toISOString(),
+          customClauses: customClauses // Pass AI-generated clauses
         })
       });
 
@@ -1032,6 +1073,67 @@ export default function RentProperty() {
                   className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                 ></textarea>
               </div>
+            </div>
+
+            {/* AI Legal Assistant Section */}
+            <div className={`mb-6 border border-purple-200 bg-purple-50 rounded-lg p-4 ${contract ? 'opacity-60 pointer-events-none' : ''}`}>
+              <div className="flex items-center gap-2 mb-3">
+                <span className="bg-purple-600 text-white text-xs px-2 py-1 rounded-full uppercase font-bold">New</span>
+                <h3 className="text-lg font-semibold text-purple-900 border-none">AI Legal Assistant</h3>
+              </div>
+
+              <div className="mb-4">
+                <p className="text-sm text-purple-800 mb-2">
+                  Need specific terms? Describe them (e.g., "No loud music after 10 PM", "Tenant pays water bill") and our AI will draft a formal legal clause for you.
+                </p>
+                <div className="flex gap-2">
+                  <input
+                    type="text"
+                    value={newClauseInput}
+                    onChange={(e) => setNewClauseInput(e.target.value)}
+                    placeholder="Describe your custom condition..."
+                    className="flex-1 p-3 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500"
+                    disabled={draftingClause || !!contract}
+                    onKeyDown={(e) => e.key === 'Enter' && handleDraftClause()}
+                  />
+                  <button
+                    onClick={handleDraftClause}
+                    disabled={draftingClause || !newClauseInput.trim() || !!contract}
+                    className="bg-purple-600 text-white px-4 py-2 rounded-lg hover:bg-purple-700 disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 font-medium"
+                  >
+                    {draftingClause ? (
+                      <>
+                        <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent"></div>
+                        Drafting...
+                      </>
+                    ) : (
+                      <>
+                        <span>✨ Draft</span>
+                      </>
+                    )}
+                  </button>
+                </div>
+              </div>
+
+              {/* List of Custom Clauses */}
+              {customClauses.length > 0 && (
+                <div className="space-y-3">
+                  <h4 className="text-sm font-semibold text-purple-900">Added Clauses:</h4>
+                  {customClauses.map((clause, index) => (
+                    <div key={index} className="bg-white p-3 rounded border border-purple-200 flex justify-between items-start gap-3 shadow-sm">
+                      <p className="text-sm text-gray-800 italic">"{clause}"</p>
+                      <button
+                        onClick={() => removeClause(index)}
+                        className="text-red-500 hover:text-red-700 p-1"
+                        title="Remove clause"
+                        disabled={!!contract}
+                      >
+                        <FaTimesCircle />
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
             </div>
 
             {/* Deposit Plan Selection */}

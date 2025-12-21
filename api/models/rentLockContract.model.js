@@ -28,7 +28,7 @@ const rentLockContractSchema = new mongoose.Schema({
     ref: 'User',
     required: true
   },
-  
+
   // Rent Lock Details
   rentLockPlan: {
     type: String,
@@ -54,7 +54,7 @@ const rentLockContractSchema = new mongoose.Schema({
     type: Date,
     required: true
   },
-  
+
   // Payment Terms
   paymentFrequency: {
     type: String,
@@ -86,7 +86,7 @@ const rentLockContractSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
-  
+
   // Penalties
   lateFeePercentage: {
     type: Number,
@@ -104,14 +104,14 @@ const rentLockContractSchema = new mongoose.Schema({
     default: 0,
     min: 0
   },
-  
+
   // Contract Status
   status: {
     type: String,
     enum: ['draft', 'pending_signature', 'active', 'expired', 'terminated', 'renewed', 'rejected'],
     default: 'draft'
   },
-  
+
   // Digital Signatures
   tenantSignature: {
     signed: {
@@ -133,7 +133,7 @@ const rentLockContractSchema = new mongoose.Schema({
     userAgent: String,
     signatureData: String
   },
-  
+
   // Auto-renewal
   autoRenew: {
     type: Boolean,
@@ -143,7 +143,7 @@ const rentLockContractSchema = new mongoose.Schema({
     type: Number,
     default: 30 // 30 days before expiry
   },
-  
+
   // Move-in/Move-out
   moveInDate: {
     type: Date,
@@ -161,7 +161,7 @@ const rentLockContractSchema = new mongoose.Schema({
     type: Boolean,
     default: false
   },
-  
+
   // Termination
   terminatedAt: Date,
   terminationReason: String,
@@ -170,7 +170,7 @@ const rentLockContractSchema = new mongoose.Schema({
     ref: 'User',
     default: null
   },
-  
+
   // Rejection (before completion)
   rejectedAt: Date,
   rejectedBy: {
@@ -179,12 +179,13 @@ const rentLockContractSchema = new mongoose.Schema({
     default: null
   },
   rejectionReason: String,
-  
+
   // Metadata
   contractDocumentUrl: String, // PDF contract
   termsAndConditions: String, // Stored text version
+  customClauses: [String], // AI-generated or manually added custom legal clauses
   notes: String, // Additional notes
-  
+
   createdAt: {
     type: Date,
     default: Date.now
@@ -204,7 +205,7 @@ rentLockContractSchema.index({ listingId: 1 });
 rentLockContractSchema.index({ endDate: 1, status: 1 }); // For expiry tracking
 
 // Generate contractId before saving
-rentLockContractSchema.pre('save', async function(next) {
+rentLockContractSchema.pre('save', async function (next) {
   if (!this.contractId) {
     const timestamp = Date.now();
     const random = Math.random().toString(36).substring(2, 9).toUpperCase();
@@ -215,15 +216,15 @@ rentLockContractSchema.pre('save', async function(next) {
 });
 
 // Virtual for checking if contract is active
-rentLockContractSchema.virtual('isActive').get(function() {
+rentLockContractSchema.virtual('isActive').get(function () {
   const now = new Date();
-  return this.status === 'active' && 
-         this.startDate <= now && 
-         this.endDate >= now;
+  return this.status === 'active' &&
+    this.startDate <= now &&
+    this.endDate >= now;
 });
 
 // Virtual for days remaining
-rentLockContractSchema.virtual('daysRemaining').get(function() {
+rentLockContractSchema.virtual('daysRemaining').get(function () {
   if (this.status !== 'active') return 0;
   const now = new Date();
   const end = new Date(this.endDate);
@@ -232,14 +233,14 @@ rentLockContractSchema.virtual('daysRemaining').get(function() {
 });
 
 // Method to check if contract can be renewed
-rentLockContractSchema.methods.canRenew = function() {
+rentLockContractSchema.methods.canRenew = function () {
   const now = new Date();
   const daysUntilExpiry = Math.ceil((new Date(this.endDate) - now) / (1000 * 60 * 60 * 24));
   return this.status === 'active' && daysUntilExpiry <= this.renewalNoticeDays;
 };
 
 // Method to check if both parties have signed
-rentLockContractSchema.methods.isFullySigned = function() {
+rentLockContractSchema.methods.isFullySigned = function () {
   return this.tenantSignature.signed && this.landlordSignature.signed;
 };
 

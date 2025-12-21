@@ -245,6 +245,7 @@ export const createContract = async (req, res, next) => {
       advanceRent: advanceRent || 0,
       lateFeePercentage: lateFeePercentage || 5,
       moveInDate: moveInDate ? new Date(moveInDate) : null,
+      customClauses: req.body.customClauses || [],
       status: 'pending_signature'
     });
     await contract.save();

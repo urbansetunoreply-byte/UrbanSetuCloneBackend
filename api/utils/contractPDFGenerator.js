@@ -145,6 +145,19 @@ export const generateRentLockContractPDF = (contract, tenant, landlord, listing,
     }
   }
 
+  // Custom Clauses (AI Drafted)
+  if (contract.customClauses && contract.customClauses.length > 0) {
+    doc.fontSize(16).fillColor('#1f2937').text('ADDITIONAL TERMS & CONDITIONS', { underline: true });
+    doc.moveDown(0.5);
+    doc.fontSize(12).fillColor('#374151');
+
+    contract.customClauses.forEach((clause, index) => {
+      doc.text(`${index + 1}. ${clause}`, { indent: 20, align: 'justify' });
+      doc.moveDown(0.5);
+    });
+    doc.moveDown(1);
+  }
+
   // Signatures Section
   doc.addPage();
   doc.fontSize(16).fillColor('#1f2937').text('SIGNATURES', { underline: true });
@@ -153,7 +166,7 @@ export const generateRentLockContractPDF = (contract, tenant, landlord, listing,
   // Landlord Signature
   doc.fontSize(14).fillColor('#374151').text('LANDLORD SIGNATURE:', { continued: false });
   doc.moveDown(0.5);
-  
+
   if (contract.landlordSignature?.signed) {
     doc.fontSize(11).fillColor('#10b981').text('✓ Signed Electronically', { indent: 20 });
     doc.fontSize(10).fillColor('#6b7280');
@@ -169,7 +182,7 @@ export const generateRentLockContractPDF = (contract, tenant, landlord, listing,
   // Tenant Signature
   doc.fontSize(14).fillColor('#374151').text('TENANT SIGNATURE:', { continued: false });
   doc.moveDown(0.5);
-  
+
   if (contract.tenantSignature?.signed) {
     doc.fontSize(11).fillColor('#10b981').text('✓ Signed Electronically', { indent: 20 });
     doc.fontSize(10).fillColor('#6b7280');
