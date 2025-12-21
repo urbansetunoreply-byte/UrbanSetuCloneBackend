@@ -13432,7 +13432,6 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       <ConnectedDisputeModal />
 
       {/* <GeminiAIWrapper /> */}
-      <ContactSupportWrapper />
     </div>
   );
 }
