@@ -7,6 +7,7 @@ import { socket } from "../utils/socket";
 import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import { isMobileDevice } from '../utils/mobileUtils';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminManagement() {
@@ -20,6 +21,8 @@ export default function AdminManagement() {
   const [admins, setAdmins] = useState([]);
   const [loading, setLoading] = useState(true);
   const [tab, setTab] = useState("users");
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const passwordInputRef = useRef(null);
   const [softbannedAccounts, setSoftbannedAccounts] = useState([]);
   const [softbannedFilters, setSoftbannedFilters] = useState({ q: '', role: 'all', softbannedBy: '', from: '', to: '' });
   const [softbannedLoading, setSoftbannedLoading] = useState(false);
@@ -908,6 +911,22 @@ export default function AdminManagement() {
     }, 5 * 60 * 1000);
   };
 
+  // Handle mobile state updates
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Autofocus management password when modal opens (Desktop only)
+  useEffect(() => {
+    if (showPasswordModal && !isMobile && passwordInputRef.current) {
+      setTimeout(() => passwordInputRef.current?.focus(), 100);
+    }
+  }, [showPasswordModal, isMobile]);
+
   // Start timer on successful password entry
   useEffect(() => {
     if (!showPasswordModal) {
@@ -1021,12 +1040,12 @@ export default function AdminManagement() {
         <form className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4" onSubmit={handleManagementPasswordSubmit}>
           <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
           <input
+            ref={passwordInputRef}
             type="password"
             className="border rounded p-2 w-full"
             placeholder="Enter your password"
             value={managementPassword}
             onChange={e => setManagementPassword(e.target.value)}
-            autoFocus
           />
           {managementPasswordError && <div className="text-red-600 text-sm">{managementPasswordError}</div>}
           <div className="flex gap-2 justify-end">
