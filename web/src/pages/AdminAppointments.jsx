@@ -791,7 +791,7 @@ export default function AdminAppointments() {
       const chatIdFromUrl = params.chatId;
 
       const tryResolveChat = () => {
-        const appointment = appointments.find(appt => appt._id === chatIdFromUrl);
+        const appointment = appointments.find(appt => appt._id === chatIdFromUrl) || allAppointments.find(appt => appt._id === chatIdFromUrl);
         if (appointment) {
           chatResolveRef.current = true;
           setShouldOpenChatFromNotification(true);
@@ -1188,7 +1188,20 @@ export default function AdminAppointments() {
     });
 
     // Calculate pagination
+    // Calculate pagination
     const itemsPerPage = 10;
+
+    // Auto-switch page if deep-linking to an appointment
+    if (shouldOpenChatFromNotification && activeChatAppointmentId) {
+      const index = filteredAppts.findIndex(a => a._id === activeChatAppointmentId);
+      if (index !== -1) {
+        const targetPage = Math.ceil((index + 1) / itemsPerPage);
+        if (targetPage !== currentPage) {
+          setCurrentPage(targetPage);
+        }
+      }
+    }
+
     const totalPages = Math.ceil(filteredAppts.length / itemsPerPage);
     setTotalPages(totalPages);
 
@@ -1196,6 +1209,17 @@ export default function AdminAppointments() {
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPageAppts = filteredAppts.slice(startIndex, endIndex);
+
+    // IMPORTANT: Ensure active chat appointment is visible
+    if (shouldOpenChatFromNotification && activeChatAppointmentId) {
+      const appt = allAppointments.find(a => a._id === activeChatAppointmentId);
+      if (appt) {
+        const isPresent = currentPageAppts.some(a => a._id === activeChatAppointmentId);
+        if (!isPresent) {
+          currentPageAppts.unshift(appt);
+        }
+      }
+    }
 
     setAppointments(currentPageAppts);
   }, [allAppointments, currentPage, search, statusFilter, startDate, endDate]);
@@ -2458,6 +2482,34 @@ export default function AdminAppointments() {
         currentUser={currentUser}
         isAdmin={true}
       />
+
+      {/* Missing Appointment Error Modal */}
+      {missingChatbookError && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black bg-opacity-50 backdrop-blur-sm p-4 animate-fade-in">
+          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative overflow-hidden transform transition-all scale-100">
+            <div className="absolute top-0 left-0 w-full h-1 bg-gradient-to-r from-red-500 to-pink-600"></div>
+            <div className="text-center">
+              <div className="bg-red-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaBan className="text-red-500 text-2xl" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-800 mb-2">Appointment Not Found</h3>
+              <p className="text-gray-600 mb-6">
+                The appointment you are trying to access could not be found. It may have been deleted, archived, or does not exist.
+              </p>
+              <div className="flex gap-3 justify-center">
+                <button
+                  onClick={() => {
+                    setMissingChatbookError(null);
+                  }}
+                  className="px-5 py-2.5 bg-gray-100 text-gray-700 rounded-lg font-medium hover:bg-gray-200 transition-colors"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }
