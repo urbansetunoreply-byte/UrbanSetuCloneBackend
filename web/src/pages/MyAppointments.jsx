@@ -2019,8 +2019,7 @@ export default function MyAppointments() {
                 exportComments,
                 currentUser,
                 otherParty,
-                includeMedia,
-                exportCallHistory
+                includeMedia
               );
               if (result.success) {
                 toast.success(`Chat transcript exported as ${result.filename}`);

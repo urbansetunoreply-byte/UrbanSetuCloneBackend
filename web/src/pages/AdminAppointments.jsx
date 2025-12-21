@@ -2484,8 +2484,7 @@ export default function AdminAppointments() {
               exportComments,
               currentUser,
               otherParty,
-              includeMedia,
-              exportCallHistory
+              includeMedia
             );
             if (result.success) {
               toast.success(`Chat transcript exported as ${result.filename}`);
@@ -2542,10 +2541,6 @@ export default function AdminAppointments() {
           </div>
         </div>
       )}
-
-      {/* Global Contact Support */}
-      <ContactSupportWrapper />
-
     </div>
   );
 }

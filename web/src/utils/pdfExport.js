@@ -53,28 +53,28 @@ const loadImageAsBase64 = (url) => {
   return new Promise((resolve, reject) => {
     const img = new Image();
     img.crossOrigin = 'anonymous';
-    
+
     img.onload = () => {
       const canvas = document.createElement('canvas');
       const ctx = canvas.getContext('2d');
-      
+
       // Calculate dimensions to fit within reasonable bounds
       const maxWidth = 400;
       const maxHeight = 300;
-      
+
       let { width, height } = img;
-      
+
       if (width > maxWidth || height > maxHeight) {
         const ratio = Math.min(maxWidth / width, maxHeight / height);
         width = width * ratio;
         height = height * ratio;
       }
-      
+
       canvas.width = width;
       canvas.height = height;
-      
+
       ctx.drawImage(img, 0, 0, width, height);
-      
+
       try {
         const base64 = canvas.toDataURL('image/jpeg', 0.7);
         resolve({ base64, width, height });
@@ -83,12 +83,12 @@ const loadImageAsBase64 = (url) => {
         resolve(null);
       }
     };
-    
+
     img.onerror = () => {
       console.warn('Failed to load image:', url);
       resolve(null);
     };
-    
+
     img.src = url;
   });
 };
@@ -99,7 +99,7 @@ const loadImageAsBase64 = (url) => {
 const convertEmojiToText = (emoji) => {
   const emojiToText = {
     '👍': 'Like',
-    '❤️': 'Love', 
+    '❤️': 'Love',
     '😂': 'Laugh',
     '😮': 'Wow',
     '😢': 'Sad',
@@ -120,7 +120,7 @@ const convertEmojiToText = (emoji) => {
 const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
   // URL regex pattern to match various link formats
   const urlRegex = /(https?:\/\/[^\s]+|www\.[^\s]+|[^\s]+\.[^\s]{2,})/gi;
-  
+
   // Markdown patterns
   const markdownPatterns = [
     { regex: /\*\*(.*?)\*\*/g, type: 'bold' },
@@ -128,11 +128,11 @@ const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
     { regex: /__(.*?)__/g, type: 'underline' },
     { regex: /~~(.*?)~~/g, type: 'strikethrough' },
   ];
-  
+
   // First, process markdown formatting
   let processedText = message;
   const markdownElements = [];
-  
+
   markdownPatterns.forEach(pattern => {
     let match;
     while ((match = pattern.regex.exec(processedText)) !== null) {
@@ -145,14 +145,14 @@ const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
       });
     }
   });
-  
+
   // Sort markdown elements by position
   markdownElements.sort((a, b) => a.start - b.start);
-  
+
   // Process non-overlapping markdown elements
   const validMarkdownElements = [];
   markdownElements.forEach(element => {
-    const overlaps = validMarkdownElements.some(vm => 
+    const overlaps = validMarkdownElements.some(vm =>
       (element.start >= vm.start && element.start < vm.end) ||
       (element.end > vm.start && element.end <= vm.end)
     );
@@ -160,11 +160,11 @@ const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
       validMarkdownElements.push(element);
     }
   });
-  
+
   // Build the formatted text with markdown
   const textParts = [];
   let currentIndex = 0;
-  
+
   validMarkdownElements.forEach((element, idx) => {
     // Add text before the element
     if (element.start > currentIndex) {
@@ -173,16 +173,16 @@ const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
         content: processedText.slice(currentIndex, element.start)
       });
     }
-    
+
     // Add the formatted element
     textParts.push({
       type: element.type,
       content: element.content
     });
-    
+
     currentIndex = element.end;
   });
-  
+
   // Add remaining text
   if (currentIndex < processedText.length) {
     textParts.push({
@@ -190,16 +190,16 @@ const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
       content: processedText.slice(currentIndex)
     });
   }
-  
+
   // Now process each text part for URLs
   const lines = [];
   let currentLine = '';
-  
+
   textParts.forEach(part => {
     if (part.type === 'text') {
       // Process URLs in text parts
       const urlParts = part.content.split(urlRegex);
-      
+
       urlParts.forEach((urlPart, index) => {
         if (urlRegex.test(urlPart)) {
           // This is a URL
@@ -207,7 +207,7 @@ const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
           if (!url.startsWith('http://') && !url.startsWith('https://')) {
             url = 'https://' + url;
           }
-          
+
           if (currentLine.length + urlPart.length <= maxWidth) {
             currentLine += urlPart;
           } else {
@@ -216,7 +216,7 @@ const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
             }
             currentLine = urlPart;
           }
-          
+
           lines.push({ type: 'url', content: urlPart, url: url });
           currentLine = '';
         } else {
@@ -241,20 +241,20 @@ const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
         }
         currentLine = part.content;
       }
-      
-      lines.push({ 
-        type: part.type, 
-        content: part.content 
+
+      lines.push({
+        type: part.type,
+        content: part.content
       });
       currentLine = '';
     }
   });
-  
+
   // Add remaining text
   if (currentLine.trim()) {
     lines.push({ type: 'text', content: currentLine.trim() });
   }
-  
+
   return { lines, height: lines.length * 4 };
 };
 
@@ -263,30 +263,30 @@ const processMessageWithMarkdownAndLinks = (message, pdf, maxWidth) => {
  */
 const renderMessageWithMarkdownAndLinks = (pdf, lines, startX, startY, isCurrentUser) => {
   let currentY = startY;
-  
+
   lines.forEach((line, lineIndex) => {
     if (line.type === 'url') {
       // Render clickable link
       const linkColor = isCurrentUser ? [255, 255, 255] : [59, 130, 246]; // White for current user, blue for other
-      
+
       pdf.setTextColor(...linkColor);
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
-      
+
       // Add underline for links
       const textWidth = pdf.getTextWidth(line.content);
       const underlineY = currentY + 1;
-      
+
       // Draw underline
       pdf.setDrawColor(...linkColor);
       pdf.line(startX, underlineY, startX + textWidth, underlineY);
-      
+
       // Add clickable link
       pdf.link(startX, currentY - 3, textWidth, 4, { url: line.url });
-      
+
       // Render link text
       pdf.text(line.content, startX, currentY);
-      
+
       currentY += 4;
     } else if (line.type === 'bold') {
       // Render bold text
@@ -294,7 +294,7 @@ const renderMessageWithMarkdownAndLinks = (pdf, lines, startX, startY, isCurrent
       pdf.setTextColor(...textColor);
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'bold');
-      
+
       pdf.text(line.content, startX, currentY);
       currentY += 4;
     } else if (line.type === 'italic') {
@@ -303,7 +303,7 @@ const renderMessageWithMarkdownAndLinks = (pdf, lines, startX, startY, isCurrent
       pdf.setTextColor(...textColor);
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'italic');
-      
+
       pdf.text(line.content, startX, currentY);
       currentY += 4;
     } else if (line.type === 'underline') {
@@ -312,14 +312,14 @@ const renderMessageWithMarkdownAndLinks = (pdf, lines, startX, startY, isCurrent
       pdf.setTextColor(...textColor);
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
-      
+
       const textWidth = pdf.getTextWidth(line.content);
       const underlineY = currentY + 1;
-      
+
       // Draw underline
       pdf.setDrawColor(...textColor);
       pdf.line(startX, underlineY, startX + textWidth, underlineY);
-      
+
       // Render text
       pdf.text(line.content, startX, currentY);
       currentY += 4;
@@ -329,14 +329,14 @@ const renderMessageWithMarkdownAndLinks = (pdf, lines, startX, startY, isCurrent
       pdf.setTextColor(...textColor);
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
-      
+
       const textWidth = pdf.getTextWidth(line.content);
       const strikethroughY = currentY - 1;
-      
+
       // Draw strikethrough line
       pdf.setDrawColor(...textColor);
       pdf.line(startX, strikethroughY, startX + textWidth, strikethroughY);
-      
+
       // Render text
       pdf.text(line.content, startX, currentY);
       currentY += 4;
@@ -346,7 +346,7 @@ const renderMessageWithMarkdownAndLinks = (pdf, lines, startX, startY, isCurrent
       pdf.setTextColor(...textColor);
       pdf.setFontSize(9);
       pdf.setFont('helvetica', 'normal');
-      
+
       pdf.text(line.content, startX, currentY);
       currentY += 4;
     }
@@ -360,9 +360,8 @@ const renderMessageWithMarkdownAndLinks = (pdf, lines, startX, startY, isCurrent
  * @param {Object} currentUser - Current user object
  * @param {Object} otherParty - Other party user object
  * @param {boolean} includeMedia - Whether to include images in the PDF
- * @param {Array} callHistory - Array of call history items to include in chronological order
  */
-export const exportEnhancedChatToPDF = async (appointment, comments, currentUser, otherParty, includeMedia = false, callHistory = []) => {
+export const exportEnhancedChatToPDF = async (appointment, comments, currentUser, otherParty, includeMedia = false) => {
   try {
     const pdf = new jsPDF('p', 'mm', 'a4');
     const pageWidth = pdf.internal.pageSize.getWidth();
@@ -388,12 +387,12 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
     // Header with gradient effect
     pdf.setFillColor(...primaryColor);
     pdf.rect(0, 0, pageWidth, 40, 'F');
-    
+
     pdf.setTextColor(255, 255, 255);
     pdf.setFontSize(20);
     pdf.setFont('helvetica', 'bold');
     pdf.text('UrbanSetu Chat Transcript', pageWidth / 2, 25, { align: 'center' });
-    
+
     yPosition = 50;
 
     // Reset text color
@@ -402,7 +401,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
     // Appointment info box
     pdf.setFillColor(...lightGray);
     pdf.roundedRect(margin, yPosition, pageWidth - (margin * 2), 45, 3, 3, 'F');
-    
+
     yPosition += 8;
     pdf.setFontSize(14);
     pdf.setFont('helvetica', 'bold');
@@ -411,7 +410,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
 
     pdf.setFontSize(10);
     pdf.setFont('helvetica', 'normal');
-    
+
     const imageCount = comments.filter(msg => msg.imageUrl && !msg.deleted).length;
     const audioCount = comments.filter(msg => msg.audioUrl && !msg.deleted).length;
     const infoLines = [
@@ -439,36 +438,24 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
     pdf.setTextColor(...textColor);
     yPosition += 10;
 
-    // Merge call history with messages chronologically (same as in chat UI)
-    const timelineItems = [
-      // Convert call history to timeline items
-      ...(callHistory || []).map(call => ({
-        type: 'call',
-        id: call._id || call.callId,
-        timestamp: new Date(call.startTime || call.createdAt),
-        call: call,
-        sortTime: new Date(call.startTime || call.createdAt).getTime()
-      })),
-      // Convert chat messages to timeline items
-      ...(comments || []).map(msg => ({
-        type: 'message',
-        id: msg._id,
-        timestamp: new Date(msg.timestamp),
-        message: msg,
-        sortTime: new Date(msg.timestamp).getTime()
-      }))
-    ].sort((a, b) => a.sortTime - b.sortTime); // Sort chronologically
+    // List only chat messages chronologically
+    const timelineItems = (comments || []).map(msg => ({
+      type: 'message',
+      id: msg._id,
+      timestamp: new Date(msg.timestamp),
+      message: msg,
+      sortTime: new Date(msg.timestamp).getTime()
+    })).sort((a, b) => a.sortTime - b.sortTime); // Sort chronologically
 
     if (timelineItems.length === 0) {
       pdf.setFontSize(10);
       pdf.setFont('helvetica', 'italic');
-      pdf.text('No messages or calls in this conversation.', margin, yPosition);
+      pdf.text('No messages in this conversation.', margin, yPosition);
     } else {
-      // Filter valid messages (calls are always valid)
+      // Filter valid messages
       const validItems = timelineItems.filter(item => {
-        if (item.type === 'call') return true; // Always include calls
         const msg = item.message;
-        return !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl);
+        return msg && !msg.deleted && (msg.message?.trim() || msg.imageUrl || msg.audioUrl || msg.videoUrl || msg.documentUrl);
       });
 
       let currentDate = '';
@@ -491,137 +478,32 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
         }
       }
 
-      // Helper function to format call duration
-      const formatCallDuration = (seconds) => {
-        if (!seconds || seconds === 0) return '';
-        const hours = Math.floor(seconds / 3600);
-        const minutes = Math.floor((seconds % 3600) / 60);
-        const secs = Math.floor(seconds % 60);
-        if (hours > 0) {
-          return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-        }
-        return `${minutes}:${secs.toString().padStart(2, '0')}`;
-      };
 
       for (const item of validItems) {
         const itemDate = item.timestamp.toDateString();
-        
-        // Handle call history items
-        if (item.type === 'call') {
-          const call = item.call;
-          const isCaller = call.callerId?._id === currentUser._id || call.callerId === currentUser._id;
-          const callerName = call.callerId?.username || 'Unknown';
-          const receiverName = call.receiverId?.username || 'Unknown';
-          
-          // Add date separator if new day
-          if (itemDate !== currentDate) {
-            checkPageBreak(15);
-            currentDate = itemDate;
-            
-            pdf.setFillColor(240, 240, 240);
-            pdf.rect(margin, yPosition - 2, pageWidth - (margin * 2), 8, 'F');
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'bold');
-            pdf.text(item.timestamp.toLocaleDateString('en-US', { 
-              weekday: 'long', 
-              year: 'numeric', 
-              month: 'long', 
-              day: 'numeric' 
-            }), pageWidth / 2, yPosition + 3, { align: 'center' });
-            yPosition += 12;
-          }
-
-          // Render call bubble (similar to message bubble)
-          checkPageBreak(20);
-          const bubbleWidth = Math.min(120, pageWidth - (margin * 2) - 20);
-          const callTypeText = call.callType === 'video' ? 'Video Call' : 'Audio Call';
-          const callStatusText = call.status === 'missed' ? ' (Missed)' : 
-                                 call.status === 'rejected' ? ' (Rejected)' :
-                                 call.status === 'cancelled' ? ' (Cancelled)' : '';
-          const callDurationText = call.duration > 0 ? ` • ${formatCallDuration(call.duration)}` : '';
-          
-          // Determine call text based on user role
-          // For admin, show third-person format (Vishal called Varun)
-          const isAdmin = currentUser.role === 'admin' || currentUser.role === 'rootadmin';
-          let callText;
-          if (isAdmin) {
-            // Admin view: third-person format
-            callText = `${callerName} called ${receiverName}${callDurationText}${callStatusText}`;
-          } else if (isCaller) {
-            callText = `You called ${receiverName}${callDurationText}${callStatusText}`;
-          } else {
-            callText = `${callerName} called you${callDurationText}${callStatusText}`;
-          }
-          
-          // For admin, always show on left side (observer view)
-          const isCallerForBubble = isAdmin ? false : isCaller;
-
-          const bubbleHeight = 20;
-
-          if (isCallerForBubble) {
-            // Right-aligned bubble (caller - blue)
-            pdf.setFillColor(...primaryColor);
-            pdf.roundedRect(pageWidth - margin - bubbleWidth, yPosition, bubbleWidth, bubbleHeight, 2, 2, 'F');
-            pdf.setTextColor(255, 255, 255);
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'normal');
-            pdf.text(callTypeText, pageWidth - margin - bubbleWidth + 5, yPosition + 8);
-            pdf.setFontSize(8);
-            pdf.text(callText, pageWidth - margin - bubbleWidth + 5, yPosition + 15);
-          } else {
-            // Left-aligned bubble (receiver - white)
-            pdf.setFillColor(250, 250, 250);
-            pdf.roundedRect(margin + 20, yPosition, bubbleWidth, bubbleHeight, 2, 2, 'F');
-            pdf.setTextColor(51, 51, 51);
-            pdf.setFontSize(9);
-            pdf.setFont('helvetica', 'normal');
-            pdf.text(callTypeText, margin + 25, yPosition + 8);
-            pdf.setFontSize(8);
-            pdf.text(callText, margin + 25, yPosition + 15);
-          }
-
-          // Timestamp
-          pdf.setTextColor(128, 128, 128);
-          pdf.setFontSize(7);
-          const timestamp = item.timestamp.toLocaleTimeString('en-US', {
-            hour: '2-digit',
-            minute: '2-digit'
-          });
-          
-          if (isCallerForBubble) {
-            pdf.text(timestamp, pageWidth - margin - bubbleWidth + 5, yPosition - 2);
-          } else {
-            pdf.text(timestamp, margin + 25, yPosition - 2);
-          }
-
-          yPosition += bubbleHeight + 8;
-          continue; // Skip to next item
-        }
-
-        // Handle regular messages (existing logic)
         const message = item.message;
         const messageDate = new Date(message.timestamp).toDateString();
-        
+
         // Add date separator if new day
         if (messageDate !== currentDate) {
           checkPageBreak(15);
           currentDate = messageDate;
-          
+
           pdf.setFillColor(240, 240, 240);
           pdf.rect(margin, yPosition - 2, pageWidth - (margin * 2), 8, 'F');
           pdf.setFontSize(9);
           pdf.setFont('helvetica', 'bold');
-          pdf.text(new Date(message.timestamp).toLocaleDateString('en-US', { 
-            weekday: 'long', 
-            year: 'numeric', 
-            month: 'long', 
-            day: 'numeric' 
+          pdf.text(new Date(message.timestamp).toLocaleDateString('en-US', {
+            weekday: 'long',
+            year: 'numeric',
+            month: 'long',
+            day: 'numeric'
           }), pageWidth / 2, yPosition + 3, { align: 'center' });
           yPosition += 12;
         }
 
         const isCurrentUser = message.senderEmail === currentUser.email;
-        const senderName = isCurrentUser ? 'You' : 
+        const senderName = isCurrentUser ? 'You' :
           (otherParty?.username || 'Other Party');
 
         // Handle image messages
@@ -636,11 +518,11 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             hour: '2-digit',
             minute: '2-digit'
           });
-          
+
           // Add edited indicator to timestamp if message was edited
           const editedText = message.edited ? ' (Edited)' : '';
           const timestampText = `${senderName} ${timestamp}${editedText}`;
-          
+
           if (isCurrentUser) {
             pdf.text(timestampText, pageWidth - margin - 60, yPosition - 2);
           } else {
@@ -652,7 +534,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             const imageData = imageCache[message.imageUrl];
             const imgWidth = Math.min(60, imageData.width * 0.2);
             const imgHeight = (imageData.height * imgWidth) / imageData.width;
-            
+
             try {
               if (isCurrentUser) {
                 pdf.addImage(imageData.base64, 'JPEG', pageWidth - margin - imgWidth - 5, yPosition, imgWidth, imgHeight);
@@ -663,7 +545,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
 
               // Add clickable image URL below the embedded image when includeMedia is true
               checkPageBreak();
-              
+
               // Add "Image Source:" label
               pdf.setTextColor(128, 128, 128);
               pdf.setFontSize(7);
@@ -671,35 +553,35 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
               const labelX = isCurrentUser ? pageWidth - margin - imgWidth - 5 : margin + 25;
               pdf.text(labelText, labelX, yPosition);
               yPosition += 4;
-              
+
               // Add clickable image URL
               const linkColor = [59, 130, 246]; // Blue color for links
               pdf.setTextColor(...linkColor);
               pdf.setFontSize(7);
               pdf.setFont('helvetica', 'normal');
-              
+
               // Shorten URL for display if too long
               let displayUrl = message.imageUrl;
               const maxUrlLength = 45;
               if (displayUrl.length > maxUrlLength) {
                 displayUrl = displayUrl.substring(0, maxUrlLength - 3) + '...';
               }
-              
+
               const urlX = isCurrentUser ? pageWidth - margin - imgWidth - 5 : margin + 25;
               const textWidth = pdf.getTextWidth(displayUrl);
               const underlineY = yPosition + 1;
-              
+
               // Draw underline for the link
               pdf.setDrawColor(...linkColor);
               pdf.line(urlX, underlineY, urlX + textWidth, underlineY);
-              
+
               // Add clickable link
               pdf.link(urlX, yPosition - 3, textWidth, 4, { url: message.imageUrl });
-              
+
               // Render link text
               pdf.text(displayUrl, urlX, yPosition);
               yPosition += 6;
-              
+
             } catch (error) {
               console.warn('Failed to add image to PDF:', error);
               // Fall back to placeholder
@@ -721,7 +603,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             pdf.setFillColor(240, 240, 240);
             const placeholderWidth = 60;
             const placeholderHeight = 40;
-            
+
             if (isCurrentUser) {
               pdf.rect(pageWidth - margin - placeholderWidth - 5, yPosition, placeholderWidth, placeholderHeight, 'F');
               pdf.setDrawColor(200, 200, 200);
@@ -731,7 +613,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
               pdf.setDrawColor(200, 200, 200);
               pdf.rect(margin + 25, yPosition, placeholderWidth, placeholderHeight);
             }
-            
+
             pdf.setTextColor(...textColor);
             pdf.setFontSize(8);
             pdf.text('📷 Image', isCurrentUser ? pageWidth - margin - 35 : margin + 55, yPosition + 22, { align: 'center' });
@@ -740,7 +622,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             // Add clickable image URL below the placeholder (for text-only export)
             if (message.imageUrl) {
               checkPageBreak();
-              
+
               // Add "View Image:" label
               pdf.setTextColor(128, 128, 128);
               pdf.setFontSize(7);
@@ -748,31 +630,31 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
               const labelX = isCurrentUser ? pageWidth - margin - placeholderWidth - 5 : margin + 25;
               pdf.text(labelText, labelX, yPosition);
               yPosition += 4;
-              
+
               // Add clickable image URL
               const linkColor = [59, 130, 246]; // Blue color for links
               pdf.setTextColor(...linkColor);
               pdf.setFontSize(7);
               pdf.setFont('helvetica', 'normal');
-              
+
               // Shorten URL for display if too long
               let displayUrl = message.imageUrl;
               const maxUrlLength = 45;
               if (displayUrl.length > maxUrlLength) {
                 displayUrl = displayUrl.substring(0, maxUrlLength - 3) + '...';
               }
-              
+
               const urlX = isCurrentUser ? pageWidth - margin - placeholderWidth - 5 : margin + 25;
               const textWidth = pdf.getTextWidth(displayUrl);
               const underlineY = yPosition + 1;
-              
+
               // Draw underline for the link
               pdf.setDrawColor(...linkColor);
               pdf.line(urlX, underlineY, urlX + textWidth, underlineY);
-              
+
               // Add clickable link
               pdf.link(urlX, yPosition - 3, textWidth, 4, { url: message.imageUrl });
-              
+
               // Render link text
               pdf.text(displayUrl, urlX, yPosition);
               yPosition += 6;
@@ -783,26 +665,26 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           if (message.message && message.message.trim()) {
             // Process caption with markdown and link support
             const processedCaption = processMessageWithMarkdownAndLinks(message.message.trim(), pdf, 60);
-            
+
             processedCaption.lines.forEach(line => {
               checkPageBreak();
               const startX = isCurrentUser ? pageWidth - margin - 65 : margin + 25;
-              
+
               if (line.type === 'url') {
                 // Render clickable link in caption
                 const linkColor = isCurrentUser ? [255, 255, 255] : [59, 130, 246];
                 pdf.setTextColor(...linkColor);
                 pdf.setFontSize(8);
                 pdf.setFont('helvetica', 'normal');
-                
+
                 // Add underline for links
                 const textWidth = pdf.getTextWidth(line.content);
                 const underlineY = yPosition + 1;
-                
+
                 // Draw underline
                 pdf.setDrawColor(...linkColor);
                 pdf.line(startX, underlineY, startX + textWidth, underlineY);
-                
+
                 // Add clickable link
                 pdf.link(startX, yPosition - 3, textWidth, 4, { url: line.url });
                 pdf.text(line.content, startX, yPosition);
@@ -826,10 +708,10 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
                 pdf.setTextColor(...textColor);
                 pdf.setFontSize(8);
                 pdf.setFont('helvetica', 'normal');
-                
+
                 const textWidth = pdf.getTextWidth(line.content);
                 const underlineY = yPosition + 1;
-                
+
                 // Draw underline
                 pdf.setDrawColor(...textColor);
                 pdf.line(startX, underlineY, startX + textWidth, underlineY);
@@ -840,10 +722,10 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
                 pdf.setTextColor(...textColor);
                 pdf.setFontSize(8);
                 pdf.setFont('helvetica', 'normal');
-                
+
                 const textWidth = pdf.getTextWidth(line.content);
                 const strikethroughY = yPosition - 1;
-                
+
                 // Draw strikethrough line
                 pdf.setDrawColor(...textColor);
                 pdf.line(startX, strikethroughY, startX + textWidth, strikethroughY);
@@ -868,10 +750,10 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
               pdf.setTextColor(128, 128, 128);
               pdf.setFontSize(7);
               pdf.setFont('helvetica', 'italic');
-              
+
               const replyText = `Reply to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
               const replyX = isCurrentUser ? pageWidth - margin - 60 : margin + 25;
-              
+
               pdf.text(replyText, replyX, yPosition);
               yPosition += 6;
             }
@@ -880,7 +762,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           // Add reactions if present
           if (message.reactions && message.reactions.length > 0) {
             checkPageBreak(8);
-            
+
             // Group reactions by emoji
             const groupedReactions = {};
             message.reactions.forEach(reaction => {
@@ -893,21 +775,21 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             pdf.setTextColor(100, 100, 100);
             pdf.setFontSize(7);
             pdf.setFont('helvetica', 'normal');
-            
+
             const reactionsText = Object.entries(groupedReactions)
               .map(([emoji, reactions]) => {
                 const displayText = convertEmojiToText(emoji);
                 return `${displayText}(${reactions.length})`;
               })
               .join('  ');
-            
+
             const reactionsX = isCurrentUser ? pageWidth - margin - 60 : margin + 25;
             pdf.text(`Reactions: ${reactionsText}`, reactionsX, yPosition);
             yPosition += 6;
           }
 
           yPosition += 8;
-        } 
+        }
         // Handle video/doc/audio placeholders with links
         else if (message.videoUrl || message.documentUrl || message.audioUrl) {
           checkPageBreak(28);
@@ -916,9 +798,9 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           const isAudio = !!message.audioUrl && !isVideo && !isDocument;
           const label = isVideo ? '🎬 Video' : isDocument ? '📄 Document' : '🎧 Audio';
           const rawLink = isVideo ? message.videoUrl : isDocument ? message.documentUrl : message.audioUrl;
-          const name = isAudio ? (message.audioName || 'Audio') : 
-                       isVideo ? (message.videoName || 'Video') : 
-                       isDocument ? (message.documentName || 'Document') : 'Media';
+          const name = isAudio ? (message.audioName || 'Audio') :
+            isVideo ? (message.videoName || 'Video') :
+              isDocument ? (message.documentName || 'Document') : 'Media';
           // For videos/audio: keep original URL to allow preview on Cloudinary
           // For documents: transform to force download with correct filename/type
           const link = (isVideo || isAudio) ? rawLink : buildCloudinaryDownloadLink(rawLink, name);
@@ -1003,10 +885,10 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
               pdf.setTextColor(128, 128, 128);
               pdf.setFontSize(7);
               pdf.setFont('helvetica', 'italic');
-              
+
               const replyText = `Reply to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
               const replyX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
-              
+
               pdf.text(replyText, replyX, yPosition);
               yPosition += 6;
             }
@@ -1015,7 +897,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           // Add reactions if present
           if (message.reactions && message.reactions.length > 0) {
             checkPageBreak(8);
-            
+
             // Group reactions by emoji
             const groupedReactions = {};
             message.reactions.forEach(reaction => {
@@ -1028,14 +910,14 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             pdf.setTextColor(100, 100, 100);
             pdf.setFontSize(7);
             pdf.setFont('helvetica', 'normal');
-            
+
             const reactionsText = Object.entries(groupedReactions)
               .map(([emoji, reactions]) => {
                 const displayText = convertEmojiToText(emoji);
                 return `${displayText}(${reactions.length})`;
               })
               .join('  ');
-            
+
             const reactionsX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
             pdf.text(`Reactions: ${reactionsText}`, reactionsX, yPosition);
             yPosition += 6;
@@ -1049,7 +931,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
 
           // Message bubble effect
           const bubbleWidth = Math.min(120, pageWidth - (margin * 2) - 20);
-          
+
           // Process message to handle markdown and links
           const processedMessage = processMessageWithMarkdownAndLinks(message.message.trim(), pdf, bubbleWidth - 10);
           const messageLines = processedMessage.lines;
@@ -1059,14 +941,14 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             // Right-aligned bubble (current user)
             pdf.setFillColor(...primaryColor);
             pdf.roundedRect(pageWidth - margin - bubbleWidth, yPosition, bubbleWidth, bubbleHeight, 2, 2, 'F');
-            
+
             // Render message lines with markdown and link support
             renderMessageWithMarkdownAndLinks(pdf, messageLines, pageWidth - margin - bubbleWidth + 5, yPosition + 8, true);
           } else {
             // Left-aligned bubble (other party)
             pdf.setFillColor(250, 250, 250);
             pdf.roundedRect(margin + 20, yPosition, bubbleWidth, bubbleHeight, 2, 2, 'F');
-            
+
             // Render message lines with markdown and link support
             renderMessageWithMarkdownAndLinks(pdf, messageLines, margin + 25, yPosition + 8, false);
           }
@@ -1078,11 +960,11 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             hour: '2-digit',
             minute: '2-digit'
           });
-          
+
           // Add edited indicator to timestamp if message was edited
           const editedText = message.edited ? ' (Edited)' : '';
           const timestampText = `${senderName} ${timestamp}${editedText}`;
-          
+
           if (isCurrentUser) {
             pdf.text(timestampText, pageWidth - margin - bubbleWidth + 5, yPosition - 2);
           } else {
@@ -1099,10 +981,10 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
               pdf.setTextColor(128, 128, 128);
               pdf.setFontSize(7);
               pdf.setFont('helvetica', 'italic');
-              
+
               const replyText = `Reply to: "${(replyToMessage.message || 'Media message').substring(0, 50)}${(replyToMessage.message || '').length > 50 ? '...' : ''}"`;
               const replyX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
-              
+
               pdf.text(replyText, replyX, yPosition);
               yPosition += 6;
             }
@@ -1111,7 +993,7 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
           // Add reactions if present
           if (message.reactions && message.reactions.length > 0) {
             checkPageBreak(8);
-            
+
             // Group reactions by emoji
             const groupedReactions = {};
             message.reactions.forEach(reaction => {
@@ -1124,14 +1006,14 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
             pdf.setTextColor(100, 100, 100);
             pdf.setFontSize(7);
             pdf.setFont('helvetica', 'normal');
-            
+
             const reactionsText = Object.entries(groupedReactions)
               .map(([emoji, reactions]) => {
                 const displayText = convertEmojiToText(emoji);
                 return `${displayText}(${reactions.length})`;
               })
               .join('  ');
-            
+
             const reactionsX = isCurrentUser ? pageWidth - margin - bubbleWidth + 5 : margin + 25;
             pdf.text(`Reactions: ${reactionsText}`, reactionsX, yPosition);
             yPosition += 6;
@@ -1147,26 +1029,26 @@ export const exportEnhancedChatToPDF = async (appointment, comments, currentUser
     const totalPages = pdf.internal.getNumberOfPages();
     for (let i = 1; i <= totalPages; i++) {
       pdf.setPage(i);
-      
+
       // Footer background
       pdf.setFillColor(...primaryColor);
       pdf.rect(0, pageHeight - 15, pageWidth, 15, 'F');
-      
+
       pdf.setTextColor(255, 255, 255);
       pdf.setFontSize(8);
       pdf.setFont('helvetica', 'normal');
-      
+
       // Page number
       pdf.text(`${i} / ${totalPages}`, pageWidth - margin, pageHeight - 5, { align: 'right' });
-      
+
       // Export info
       const exportInfo = `${includeMedia ? 'With Media' : 'Text Only'} - Exported by ${currentUser.username}`;
       pdf.text(exportInfo, margin, pageHeight - 5);
     }
 
     // Generate filename
-    const propertyName = appointment.propertyName ? 
-      appointment.propertyName.replace(/[^a-zA-Z0-9]/g, '_') : 
+    const propertyName = appointment.propertyName ?
+      appointment.propertyName.replace(/[^a-zA-Z0-9]/g, '_') :
       'Chat';
     const dateStr = new Date().toISOString().split('T')[0];
     const mediaType = includeMedia ? 'WithMedia' : 'TextOnly';
