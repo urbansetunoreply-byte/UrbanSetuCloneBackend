@@ -4,7 +4,7 @@ import html2canvas from 'html2canvas';
 
 const STYLES = [
     { id: 'modern', name: 'Modern Minimalist', image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=300&q=80', filter: 'brightness(1.1) contrast(1.1) saturate(0.0)' },
-    { id: 'scandi', name: 'Scandinavian', image: 'https://images.unsplash.com/photo-1595855709940-a102914dbd71?auto=format&fit=crop&w=300&q=80', filter: 'brightness(1.15) sepia(0.05) saturate(0.8)' },
+    { id: 'scandi', name: 'Scandinavian', image: 'https://images.unsplash.com/photo-1502672260266-1c1ef2d93688?auto=format&fit=crop&w=300&q=80', filter: 'brightness(1.15) sepia(0.05) saturate(0.8)' },
     { id: 'industrial', name: 'Industrial Lofts', image: 'https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&w=300&q=80', filter: 'contrast(1.2) sepia(0.2) brightness(0.9)' },
     { id: 'boho', name: 'Bohemian Chic', image: 'https://images.unsplash.com/photo-1522444195799-478538b28823?auto=format&fit=crop&w=300&q=80', filter: 'saturate(1.3) contrast(1.1) brightness(1.05)' },
 ];
