@@ -2499,6 +2499,15 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
     return () => window.removeEventListener('resize', handleResize);
   }, []);
 
+  const unlockPasswordRef = useRef(null);
+
+  // Autofocus unlock password when modal opens (Desktop only)
+  useEffect(() => {
+    if (showChatUnlockModal && !isMobile && unlockPasswordRef.current) {
+      setTimeout(() => unlockPasswordRef.current?.focus(), 100);
+    }
+  }, [showChatUnlockModal, isMobile]);
+
   // Message info modal state
   const [showMessageInfoModal, setShowMessageInfoModal] = useState(false);
   const [selectedMessageForInfo, setSelectedMessageForInfo] = useState(null);
@@ -10897,6 +10906,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               </label>
               <div className="relative">
                 <input
+                  ref={unlockPasswordRef}
                   type={showUnlockPassword ? "text" : "password"}
                   value={unlockPassword}
                   onChange={(e) => setUnlockPassword(e.target.value)}

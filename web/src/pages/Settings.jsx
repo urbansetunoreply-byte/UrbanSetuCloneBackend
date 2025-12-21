@@ -14,6 +14,7 @@ import {
 import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSignout } from '../hooks/useSignout';
+import { isMobileDevice } from '../utils/mobileUtils';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -110,6 +111,10 @@ export default function Settings() {
   const [deleteVerifying, setDeleteVerifying] = useState(false);
   const [deleteProcessing, setDeleteProcessing] = useState(false);
   const [deleteDeleting, setDeleteDeleting] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const deletePasswordRef = useRef(null);
+  const transferDeletePasswordRef = useRef(null);
+  const exportPasswordRef = useRef(null);
   const [deleteResending, setDeleteResending] = useState(false);
   const [deletePasswordVerified, setDeletePasswordVerified] = useState(false);
   const [deletePasswordAttempts, setDeletePasswordAttempts] = useState(0);
@@ -163,6 +168,37 @@ export default function Settings() {
     };
   }, [showPasswordModal, showTransferPasswordModal, showTransferModal, showAdminModal]);
 
+  // Handle mobile state updates
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Autofocus deletion password when modal opens (Desktop only)
+  useEffect(() => {
+    if (showPasswordModal && !isMobile && deletePasswordRef.current) {
+      setTimeout(() => deletePasswordRef.current?.focus(), 100);
+    }
+  }, [showPasswordModal, isMobile]);
+
+  // Autofocus transfer deletion password when modal opens (Desktop only)
+  useEffect(() => {
+    if (showTransferPasswordModal && !isMobile && transferDeletePasswordRef.current) {
+      setTimeout(() => transferDeletePasswordRef.current?.focus(), 100);
+    }
+  }, [showTransferPasswordModal, isMobile]);
+
+  // Autofocus export password when modal opens (Desktop only)
+  useEffect(() => {
+    if (showExportPasswordModal && !isMobile && exportPasswordRef.current) {
+      setTimeout(() => exportPasswordRef.current?.focus(), 100);
+    }
+  }, [showExportPasswordModal, isMobile]);
+
   // OTP resend timers
   useEffect(() => {
     let t1; if (deleteResendTimer > 0) t1 = setTimeout(() => setDeleteResendTimer(x => x - 1), 1000);
@@ -181,20 +217,20 @@ export default function Settings() {
 
   // Auto-focus OTP input fields
   useEffect(() => {
-    if (deleteOtpSent && deleteOtpRef.current) {
+    if (deleteOtpSent && deleteOtpRef.current && !isMobile) {
       deleteOtpRef.current.focus();
     }
-  }, [deleteOtpSent]);
+  }, [deleteOtpSent, isMobile]);
   useEffect(() => {
-    if (transferOtpSent && transferDeleteOtpRef.current) {
+    if (transferOtpSent && transferDeleteOtpRef.current && !isMobile) {
       transferDeleteOtpRef.current.focus();
     }
-  }, [transferOtpSent]);
+  }, [transferOtpSent, isMobile]);
   useEffect(() => {
-    if (transferOtpSent && transferRightsOtpRef.current) {
+    if (transferOtpSent && transferRightsOtpRef.current && !isMobile) {
       transferRightsOtpRef.current.focus();
     }
-  }, [transferOtpSent]);
+  }, [transferOtpSent, isMobile]);
 
   // Load admins when modal opens
   useEffect(() => {
@@ -1425,6 +1461,7 @@ export default function Settings() {
               <form onSubmit={async e => { e.preventDefault(); if (!deleteOtpSent && !deleteReasonOpen) { await handleConfirmDelete(); } else if (!deleteOtpSent && deleteReasonOpen) { await handleContinueAfterReason(); } else { await handleFinalDeleteWithOtp(); } }}>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
                 <input
+                  ref={deletePasswordRef}
                   type="password"
                   className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${deletePasswordVerified || deleteVerifying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   placeholder="Enter your password"
@@ -1507,7 +1544,7 @@ export default function Settings() {
                       setDeleteProcessing(false);
                       setDeleteDeleting(false);
                       setDeleteResending(false);
-                    setDeletePasswordAttempts(0);
+                      setDeletePasswordAttempts(0);
                     }}
                     className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                   >Cancel</button>
@@ -1533,6 +1570,7 @@ export default function Settings() {
               <form onSubmit={async e => { e.preventDefault(); if (!transferOtpSent) { await handleConfirmTransferAndDelete(); } else { await handleFinalTransferDeleteWithOtp(); } }}>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
                 <input
+                  ref={transferDeletePasswordRef}
                   type="password"
                   className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeletePasswordVerified || transferLoading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   placeholder="Enter your password"
@@ -1689,7 +1727,7 @@ export default function Settings() {
                         setTransferTransferring(false);
                         setTransferCanResend(true);
                         setTransferResendTimer(0);
-                      setTransferPasswordAttempts(0);
+                        setTransferPasswordAttempts(0);
                       }}
                       className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
                     >Cancel</button>
@@ -1733,13 +1771,13 @@ export default function Settings() {
               <form onSubmit={(e) => { e.preventDefault(); handleVerifyExportPassword(); }}>
                 <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
                 <input
+                  ref={exportPasswordRef}
                   type="password"
                   className={`w-full p-3 border border-gray-300 rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-green-500 ${exportPasswordVerifying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
                   placeholder="Enter your password"
                   value={exportPassword}
                   onChange={e => setExportPassword(e.target.value)}
                   disabled={exportPasswordVerifying}
-                  autoFocus
                 />
                 <div className="flex justify-end mb-3">
                   <button

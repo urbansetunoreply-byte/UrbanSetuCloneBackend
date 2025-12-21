@@ -4,6 +4,7 @@ import EqualizerButton from './EqualizerButton';
 import ShareChatModal from './ShareChatModal';
 import { toast } from 'react-toastify';
 // import { FormattedTextWithLinks } from '../utils/linkFormatter.jsx';
+import { isMobileDevice } from '../utils/mobileUtils';
 import { useSelector } from 'react-redux';
 import { useNavigate, useLocation } from 'react-router-dom';
 import Prism from 'prismjs';
@@ -1549,7 +1550,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const handleKeyDown = (event) => {
             if (event.ctrlKey && event.key === 'f') {
                 event.preventDefault(); // Prevent browser find dialog
-                inputRef.current?.focus();
+                if (!isMobileDevice()) {
+                    inputRef.current?.focus();
+                }
             } else if (event.key === 'Escape') {
                 setIsOpen(false);
             }
@@ -1616,9 +1619,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         }
     }, [isOpen]);
 
-    // Autofocus input when opening
+    // Autofocus input when opening (Desktop only)
     useEffect(() => {
-        if (isOpen) {
+        if (isOpen && !isMobileDevice()) {
             setTimeout(() => inputRef.current?.focus(), 50);
         }
     }, [isOpen]);
