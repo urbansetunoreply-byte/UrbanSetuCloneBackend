@@ -6,23 +6,14 @@ import jsPDF from 'jspdf';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function RentPaymentHistory({ wallet, contract }) {
-  const [filter, setFilter] = useState('all'); // 'all', 'completed', 'pending', 'failed', 'overdue'
+  // No status filter needed as we only show completed payments
   const [searchTerm, setSearchTerm] = useState('');
 
   const payments = useMemo(() => {
     if (!wallet?.paymentSchedule) return [];
 
-    let filtered = wallet.paymentSchedule;
-
-    // Apply status filter
-    if (filter !== 'all') {
-      filtered = filtered.filter(p => {
-        if (filter === 'overdue') {
-          return (p.status === 'pending' || p.status === 'overdue') && new Date(p.dueDate) < new Date();
-        }
-        return p.status === filter;
-      });
-    }
+    // Only show completed/paid payments in history
+    let filtered = wallet.paymentSchedule.filter(p => p.status === 'completed' || p.status === 'paid');
 
     // Apply search filter
     if (searchTerm) {
@@ -35,8 +26,8 @@ export default function RentPaymentHistory({ wallet, contract }) {
       });
     }
 
-    return filtered.sort((a, b) => new Date(a.dueDate) - new Date(b.dueDate));
-  }, [wallet, filter, searchTerm]);
+    return filtered.sort((a, b) => new Date(b.dueDate) - new Date(a.dueDate)); // Show most recent first in history
+  }, [wallet, searchTerm]);
 
   const getStatusIcon = (payment) => {
     switch (payment.status) {
@@ -307,18 +298,13 @@ export default function RentPaymentHistory({ wallet, contract }) {
 
   // Calculate statistics
   const stats = useMemo(() => {
-    if (!wallet?.paymentSchedule) return { total: 0, totalPaid: 0, totalDue: 0 };
+    if (!wallet?.paymentSchedule) return { total: 0, totalPaid: 0 };
 
-    const allPayments = wallet.paymentSchedule;
-    const completed = allPayments.filter(p => p.status === 'completed' || p.status === 'paid');
-    const pending = allPayments.filter(p => p.status === 'pending' || p.status === 'overdue' || p.status === 'processing');
+    const completed = wallet.paymentSchedule.filter(p => p.status === 'completed' || p.status === 'paid');
 
     return {
-      total: allPayments.length,
-      totalPaid: completed.reduce((sum, p) => sum + p.amount + (p.penaltyAmount || 0), 0),
-      totalDue: pending.reduce((sum, p) => sum + p.amount + (p.penaltyAmount || 0), 0),
-      completed: completed.length,
-      pending: pending.length
+      total: completed.length,
+      totalPaid: completed.reduce((sum, p) => sum + p.amount + (p.penaltyAmount || 0), 0)
     };
   }, [wallet]);
 
@@ -330,53 +316,25 @@ export default function RentPaymentHistory({ wallet, contract }) {
       </h2>
 
       {/* Statistics */}
-      <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Total Payments</p>
-          <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
+        <div className="bg-blue-50 p-4 rounded-lg">
+          <p className="text-sm text-gray-600 mb-1">Completed Payments</p>
+          <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
         </div>
         <div className="bg-green-50 p-4 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Total Paid</p>
+          <p className="text-sm text-gray-600 mb-1">Total Rent Paid</p>
           <p className="text-2xl font-bold text-green-600">
             ₹{stats.totalPaid.toLocaleString('en-IN')}
           </p>
-        </div>
-        <div className="bg-yellow-50 p-4 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Total Due</p>
-          <p className="text-2xl font-bold text-yellow-600">
-            ₹{stats.totalDue.toLocaleString('en-IN')}
-          </p>
-        </div>
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Completed</p>
-          <p className="text-2xl font-bold text-blue-600">{stats.completed}</p>
         </div>
       </div>
 
       {/* Filters */}
       <div className="flex flex-col md:flex-row gap-4 mb-6">
         {/* Status Filter */}
-        <div className="flex-1">
-          <label className="block text-gray-700 font-medium mb-2">
-            <FaFilter className="inline mr-2" />
-            Filter by Status
-          </label>
-          <select
-            value={filter}
-            onChange={(e) => setFilter(e.target.value)}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-          >
-            <option value="all">All Payments</option>
-            <option value="completed">Completed</option>
-            <option value="pending">Pending</option>
-            <option value="overdue">Overdue</option>
-            <option value="failed">Failed</option>
-            <option value="processing">Processing</option>
-          </select>
-        </div>
 
         {/* Search */}
-        <div className="flex-1">
+        <div className="w-full">
           <label className="block text-gray-700 font-medium mb-2">
             <FaSearch className="inline mr-2" />
             Search
