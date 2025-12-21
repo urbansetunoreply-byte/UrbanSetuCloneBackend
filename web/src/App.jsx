@@ -833,9 +833,6 @@ function AppRoutes({ bootstrapped }) {
       {/* Global Call Modals - Shows on any page */}
       <GlobalCallModals />
 
-      {/* Global Contact Support */}
-      <ContactSupportWrapper />
-
       {/* Global Signout Loading Modal */}
       {isSigningOut && (
         <SignoutModal />

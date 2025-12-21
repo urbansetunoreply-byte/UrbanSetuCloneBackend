@@ -13428,9 +13428,9 @@ function PaymentStatusCell({ appointment, isBuyer }) {
       <ConnectedSaleModals />
 
       {/* Dispute Reporting Modal */}
-      {/* Dispute Reporting Modal */}
       <ConnectedDisputeModal />
 
+      {/* Global Contact Support */}
     </div>
   );
 }

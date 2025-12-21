@@ -2542,6 +2542,9 @@ export default function AdminAppointments() {
         </div>
       )}
 
+      {/* Global Contact Support */}
+      <ContactSupportWrapper />
+
     </div>
   );
 }
