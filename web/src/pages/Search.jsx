@@ -11,7 +11,7 @@ import FormField from "../components/ui/FormField";
 import SelectField from "../components/ui/SelectField";
 import ListingSkeletonGrid from "../components/skeletons/ListingSkeletonGrid";
 import FilterChips from "../components/search/FilterChips";
-import { Search as SearchIcon, IndianRupee, Filter, MapPin, Home, DollarSign, GripVertical, ChevronDown, RefreshCw } from "lucide-react";
+import { Search as SearchIcon, IndianRupee, Filter, MapPin, Home, DollarSign, GripVertical, ChevronDown, RefreshCw, Sparkles } from "lucide-react";
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -46,6 +46,7 @@ export default function Search() {
     const [smartQuery, setSmartQuery] = useState("");
     const [showSuggestions, setShowSuggestions] = useState(false);
     const [isFiltersOpen, setIsFiltersOpen] = useState(false); // Mobile filter toggle
+    const [useAI, setUseAI] = useState(false); // AI Search Toggle
 
     useEffect(() => {
         const urlParams = new URLSearchParams(location.search);
@@ -76,13 +77,25 @@ export default function Search() {
             try {
                 const fetchParams = new URLSearchParams(urlParams);
                 fetchParams.set('visibility', 'public');
-                const res = await fetch(`${API_BASE_URL}/api/listing/get?${fetchParams.toString()}`);
+
+                let endpoint = `${API_BASE_URL}/api/listing/get?${fetchParams.toString()}`;
+
+                // If AI Search is enabled and we have a search term
+                if (useAI && fetchParams.get('searchTerm')) {
+                    endpoint = `${API_BASE_URL}/api/listing/ai-search?query=${fetchParams.get('searchTerm')}`;
+                }
+
+                const res = await fetch(endpoint);
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
-                const data = await res.json();
+                const responseData = await res.json();
+
+                // Handle different response structures
+                const data = useAI ? responseData.data : responseData;
+
                 setListings(Array.isArray(data) ? data : []);
-                setShowMoreListing(Array.isArray(data) && data.length > 8);
+                setShowMoreListing(!useAI && Array.isArray(data) && data.length > 8); // Backend AI search handles limit differently
             } catch (error) {
                 console.error("Error fetching listings:", error);
                 setError("Failed to load listings. Please try again.");
@@ -903,8 +916,11 @@ export default function Search() {
                                     onChange={handleChanges}
                                     onFocus={handleSearchInputFocus}
                                     onBlur={handleSearchInputBlur}
-                                    placeholder="Search by name, location, or features..."
-                                    className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all outline-none"
+                                    placeholder={useAI ? "Describe your dream home... (e.g. cozy vibe with sunset view 🌅)" : "Search by name, location, or features..."}
+                                    className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all outline-none ${useAI
+                                            ? "bg-indigo-50 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-100 text-indigo-900 placeholder-indigo-300"
+                                            : "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-blue-100"
+                                        }`}
                                 />
                                 <SearchSuggestions
                                     searchTerm={formData.searchTerm}
@@ -913,6 +929,24 @@ export default function Search() {
                                     isVisible={showSuggestions}
                                     className="mt-1"
                                 />
+                            </div>
+
+                            {/* AI Search Toggle */}
+                            <div className="mt-3 flex items-center justify-between">
+                                <p className="text-xs text-gray-400">
+                                    {useAI ? "💡 AI will analyze the 'vibe' of properties based on your description." : "Standard keyword search."}
+                                </p>
+                                <button
+                                    type="button"
+                                    onClick={() => setUseAI(!useAI)}
+                                    className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold transition-all duration-300 ${useAI
+                                            ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg scale-105"
+                                            : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                        }`}
+                                >
+                                    <Sparkles className={`w-4 h-4 ${useAI ? "text-yellow-300 animate-pulse" : ""}`} />
+                                    {useAI ? "AI Search Active" : "Enable AI Search"}
+                                </button>
                             </div>
                         </div>
 

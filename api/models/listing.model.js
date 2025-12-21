@@ -445,6 +445,13 @@ const listingSchema = new mongoose.Schema({
             ref: 'RentPrediction',
             default: null
         }
+    },
+
+    // Vector Embedding for AI Search
+    vectorEmbedding: {
+        type: [Number], // 1536 dimensions for text-embedding-3-small
+        select: false,   // Don't return by default to save bandwidth
+        index: true
     }
 }, { timestamps: true });
 

@@ -10,6 +10,7 @@ import { sendPropertyListingPublishedEmail, sendPropertyEditNotificationEmail, s
 import DeletedListing from "../models/deletedListing.model.js"
 import crypto from 'crypto'
 import PropertyVerification from "../models/propertyVerification.model.js";
+import { vectorSearchListings } from "../services/vectorSearchService.js";
 
 
 export const createListing = async (req, res, next) => {
@@ -737,6 +738,31 @@ export const getListings = async (req, res, next) => {
     return res.status(500).json([]);
   }
 }
+
+// AI Vector Search Controller
+export const getAIRecommendations = async (req, res, next) => {
+  try {
+    const { query } = req.query;
+
+    if (!query) {
+      return next(errorHandler(400, "Search query is required"));
+    }
+
+    console.log(`🤖 AI Searching for: "${query}"`);
+
+    const recommendations = await vectorSearchListings(query, 6);
+
+    res.status(200).json({
+      success: true,
+      count: recommendations.length,
+      data: recommendations
+    });
+
+  } catch (error) {
+    next(error);
+  }
+};
+
 
 export const reassignPropertyOwner = async (req, res, next) => {
   try {
