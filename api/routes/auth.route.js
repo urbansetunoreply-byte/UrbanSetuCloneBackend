@@ -1,30 +1,30 @@
 import express from 'express'
-import { SignUp,SignIn,Google,Signout,verifyAuth,forgotPassword,resetPassword,sendLoginOTP,verifyLoginOTP} from '../controllers/auth.controller.js'
+import { SignUp, SignIn, Google, Signout, verifyAuth, forgotPassword, resetPassword, sendLoginOTP, verifyLoginOTP } from '../controllers/auth.controller.js'
 import { validateRecaptcha } from '../middleware/recaptcha.js';
 import OtpTracking from '../models/otpTracking.model.js';
 import bcryptjs from 'bcryptjs';
 import User from '../models/user.model.js';
 import { verifyToken } from '../utils/verify.js';
-import { sendOTP, verifyOTP, sendForgotPasswordOTP, sendProfileEmailOTP, sendAccountDeletionOTP, sendTransferRightsOTP } from '../controllers/emailVerification.controller.js';
+import { sendOTP, verifyOTP, sendForgotPasswordOTP, sendProfileEmailOTP, sendAccountDeletionOTP, sendTransferRightsOTP, sendContractConfirmationOTP } from '../controllers/emailVerification.controller.js';
 import { signInRateLimit, signUpRateLimit, forgotPasswordRateLimit, otpRateLimit, otpVerifyRateLimit } from '../middleware/rateLimiter.js';
 import { generateCSRFToken, verifyCSRFToken, getCSRFToken } from '../middleware/csrf.js';
 import { bruteForceProtection, getFailedAttempts } from '../middleware/security.js';
 import PasswordLockout from '../models/passwordLockout.model.js';
 import { conditionalRecaptcha, captchaRateLimit } from '../middleware/recaptcha.js';
 import { otpRecaptchaMiddleware } from '../middleware/otpRecaptcha.js';
-const router=express.Router()
+const router = express.Router()
 
 // CSRF token endpoint
 router.get("/csrf-token", getCSRFToken)
 
 router.post("/signup", signUpRateLimit, verifyCSRFToken, validateRecaptcha({ required: true }), SignUp)
 router.post("/signin", signInRateLimit, bruteForceProtection, verifyCSRFToken, conditionalRecaptcha((req) => {
-    const identifier = req.ip || req.connection.remoteAddress;
-    return getFailedAttempts(identifier) >= 3;
+  const identifier = req.ip || req.connection.remoteAddress;
+  return getFailedAttempts(identifier) >= 3;
 }), SignIn)
 router.post("/google", signInRateLimit, bruteForceProtection, verifyCSRFToken, conditionalRecaptcha((req) => {
-    const identifier = req.ip || req.connection.remoteAddress;
-    return getFailedAttempts(identifier) >= 3;
+  const identifier = req.ip || req.connection.remoteAddress;
+  return getFailedAttempts(identifier) >= 3;
 }), Google)
 router.get("/signout", Signout)
 router.get("/verify", verifyAuth)
@@ -40,6 +40,8 @@ router.post("/send-profile-email-otp", otpRateLimit, verifyCSRFToken, ...otpReca
 router.post("/send-account-deletion-otp", verifyToken, otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendAccountDeletionOTP)
 // Transfer rights OTP (root admin only)
 router.post("/send-transfer-rights-otp", verifyToken, otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendTransferRightsOTP)
+// Contract confirmation OTP (must be authenticated)
+router.post("/send-contract-confirmation-otp", verifyToken, otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendContractConfirmationOTP)
 
 // OTP Login routes
 router.post("/send-login-otp", otpRateLimit, verifyCSRFToken, ...otpRecaptchaMiddleware, sendLoginOTP)

@@ -50,6 +50,28 @@ export default function RentProperty() {
   const [newClauseInput, setNewClauseInput] = useState('');
   const [draftingClause, setDraftingClause] = useState(false);
 
+  // OTP Confirmation State
+  const [showOtpModal, setShowOtpModal] = useState(false);
+  const [otpValue, setOtpValue] = useState("");
+  const [otpError, setOtpError] = useState("");
+  const [otpTimer, setOtpTimer] = useState(0);
+  const [otpResending, setOtpResending] = useState(false);
+  const [otpVerifying, setOtpVerifying] = useState(false);
+  const otpInputRef = useRef(null);
+
+  // OTP Timer logic
+  useEffect(() => {
+    let interval = null;
+    if (otpTimer > 0) {
+      interval = setInterval(() => {
+        setOtpTimer(prev => prev - 1);
+      }, 1000);
+    } else {
+      clearInterval(interval);
+    }
+    return () => clearInterval(interval);
+  }, [otpTimer]);
+
   const handleDraftClause = async () => {
     if (!newClauseInput.trim()) {
       toast.error('Please describe the clause you want to add.');
@@ -404,7 +426,79 @@ export default function RentProperty() {
     }));
   };
 
-  const handleContractGeneration = async () => {
+  const handleStartContractConfirmation = async () => {
+    try {
+      setLoading(true);
+      const res = await fetch(`${API_BASE_URL}/api/auth/send-contract-confirmation-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        throw new Error(data.message || "Failed to send verification code");
+      }
+      setShowInitConfirmation(false);
+      setShowOtpModal(true);
+      setOtpTimer(60);
+      setOtpError("");
+      setOtpValue("");
+      toast.success("Verification code sent to your email");
+      setTimeout(() => otpInputRef.current?.focus(), 100);
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleResendOtp = async () => {
+    if (otpTimer > 0 || otpResending) return;
+    try {
+      setOtpResending(true);
+      const res = await fetch(`${API_BASE_URL}/api/auth/send-contract-confirmation-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include'
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Failed to resend code");
+      setOtpTimer(60);
+      setOtpError("");
+      toast.success("Verification code resent");
+    } catch (error) {
+      toast.error(error.message);
+    } finally {
+      setOtpResending(false);
+    }
+  };
+
+  const handleVerifyOtp = async () => {
+    if (otpValue.length !== 6) {
+      setOtpError("Please enter 6-digit code");
+      return;
+    }
+    try {
+      setOtpVerifying(true);
+      const res = await fetch(`${API_BASE_URL}/api/auth/verify-otp`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        credentials: 'include',
+        body: JSON.stringify({ email: currentUser.email, otp: otpValue })
+      });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.message || "Invalid verification code");
+
+      setShowOtpModal(false);
+      await proceedToContractGeneration();
+    } catch (error) {
+      setOtpError(error.message);
+    } finally {
+      setOtpVerifying(false);
+    }
+  };
+
+  const proceedToContractGeneration = async () => {
     setShowInitConfirmation(false);
     try {
       setLoading(true);
@@ -1584,11 +1678,88 @@ export default function RentProperty() {
                     Edit Details
                   </button>
                   <button
-                    onClick={handleContractGeneration}
-                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200"
+                    onClick={handleStartContractConfirmation}
+                    disabled={loading}
+                    className="flex-1 px-4 py-3 bg-blue-600 text-white rounded-xl font-semibold hover:bg-blue-700 transition-colors shadow-lg shadow-blue-200 disabled:opacity-50"
                   >
-                    Confirm & Proceed
+                    {loading ? 'Sending Code...' : 'Confirm & Proceed'}
                   </button>
+                </div>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* OTP Verification Modal */}
+        {showOtpModal && (
+          <div className="fixed inset-0 z-[70] overflow-y-auto bg-black bg-opacity-60 backdrop-blur-sm animate-fade-in">
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full p-8 transform scale-100 animate-scale-in border border-gray-100 relative">
+                <button
+                  onClick={() => setShowOtpModal(false)}
+                  className="absolute top-4 right-4 text-gray-400 hover:text-gray-600 transition-colors"
+                >
+                  <FaTimesCircle className="text-xl" />
+                </button>
+
+                <div className="flex flex-col items-center text-center mb-6">
+                  <div className="w-16 h-16 bg-purple-50 rounded-full flex items-center justify-center mb-4">
+                    <FaLock className="text-3xl text-purple-600" />
+                  </div>
+                  <h3 className="text-2xl font-bold text-gray-800 mb-2">Verify to Confirm Rent-Lock</h3>
+                  <p className="text-gray-600 leading-relaxed text-sm">
+                    We’ve sent a 6-digit verification code to <span className="font-semibold text-gray-800">{currentUser.email}</span>. Please enter it to finalize your Rent-Lock contract.
+                  </p>
+                </div>
+
+                <div className="mb-6">
+                  <input
+                    ref={otpInputRef}
+                    type="text"
+                    maxLength="6"
+                    value={otpValue}
+                    onChange={(e) => {
+                      const val = e.target.value.replace(/\D/g, '');
+                      setOtpValue(val);
+                      if (val.length === 6) setOtpError("");
+                    }}
+                    placeholder="Enter 6-digit code"
+                    className={`w-full text-center text-3xl tracking-[1rem] font-bold p-4 border-2 rounded-xl focus:outline-none focus:ring-4 focus:ring-purple-100 transition-all ${otpError ? 'border-red-500' : 'border-gray-200 focus:border-purple-500'}`}
+                  />
+                  {otpError && <p className="text-red-500 text-sm mt-2 text-center">{otpError}</p>}
+                </div>
+
+                <div className="flex flex-col items-center gap-4">
+                  <button
+                    onClick={handleVerifyOtp}
+                    disabled={otpValue.length !== 6 || otpVerifying}
+                    className="w-full py-4 bg-purple-600 text-white rounded-xl font-bold text-lg hover:bg-purple-700 transition-all transform hover:scale-[1.02] shadow-xl shadow-purple-200 disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                  >
+                    {otpVerifying ? (
+                      <>
+                        <div className="animate-spin rounded-full h-5 w-5 border-2 border-white border-t-transparent"></div>
+                        Verifying...
+                      </>
+                    ) : (
+                      <>
+                        <FaCheckCircle /> Verify & Generate Contract
+                      </>
+                    )}
+                  </button>
+
+                  <div className="text-sm font-medium">
+                    {otpTimer > 0 ? (
+                      <p className="text-gray-500">Resend code in <span className="text-purple-600 font-bold">{otpTimer}s</span></p>
+                    ) : (
+                      <button
+                        onClick={handleResendOtp}
+                        disabled={otpResending}
+                        className="text-purple-600 hover:text-purple-800 hover:underline transition-colors flex items-center gap-1"
+                      >
+                        {otpResending ? 'Sending...' : 'Didn\'t receive code? Resend OTP'}
+                      </button>
+                    )}
+                  </div>
                 </div>
               </div>
             </div>

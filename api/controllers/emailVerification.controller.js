@@ -1,6 +1,6 @@
 import User from "../models/user.model.js";
 import DeletedAccount from "../models/deletedAccount.model.js";
-import { generateOTP, sendSignupOTPEmail, sendForgotPasswordOTPEmail, sendProfileEmailOTPEmail, sendAccountDeletionOTPEmail, sendTransferRightsOTPEmail } from "../utils/emailService.js";
+import { generateOTP, sendSignupOTPEmail, sendForgotPasswordOTPEmail, sendProfileEmailOTPEmail, sendAccountDeletionOTPEmail, sendTransferRightsOTPEmail, sendContractConfirmationOTPEmail } from "../utils/emailService.js";
 import { errorHandler } from "../utils/error.js";
 import { logSecurityEvent } from "../middleware/security.js";
 import OtpTracking from "../models/otpTracking.model.js";
@@ -549,6 +549,20 @@ export const verifyOTP = async (req, res, next) => {
         message: "OTP verified successfully",
         type: 'transfer_rights'
       });
+    } else if (storedData.type === 'contract_confirmation') {
+      // For contract confirmation, return success
+      otpStore.delete(emailLower);
+
+      logSecurityEvent('contract_confirmation_otp_verification_successful', {
+        email: emailLower,
+        userId: storedData.userId
+      });
+
+      return res.status(200).json({
+        success: true,
+        message: "OTP verified successfully",
+        type: 'contract_confirmation'
+      });
     } else {
       // Fallback for unknown OTP types to prevent hanging
       otpStore.delete(emailLower);
@@ -634,6 +648,48 @@ export const sendTransferRightsOTP = async (req, res, next) => {
     }
 
     logSecurityEvent('transfer_rights_otp_request_successful', {
+      email: emailLower,
+      userId: user._id,
+      ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
+    });
+
+    return res.status(200).json({ success: true, message: 'OTP sent successfully to your email' });
+  } catch (error) {
+    next(error);
+  }
+};
+
+
+// Send OTP for contract confirmation (must be authenticated)
+export const sendContractConfirmationOTP = async (req, res, next) => {
+  try {
+    if (!req.user || !req.user._id) {
+      return next(errorHandler(401, "Not authenticated"));
+    }
+    const user = await User.findById(req.user._id);
+    if (!user) {
+      return next(errorHandler(404, "User not found"));
+    }
+
+    const otp = generateOTP();
+    const emailLower = user.email.toLowerCase();
+    const expirationTime = Date.now() + 10 * 60 * 1000;
+
+    // Store OTP
+    otpStore.set(emailLower, {
+      otp,
+      expirationTime,
+      attempts: 0,
+      type: 'contract_confirmation',
+      userId: user._id
+    });
+
+    const emailResult = await sendContractConfirmationOTPEmail(emailLower, otp);
+    if (!emailResult.success) {
+      return res.status(500).json({ success: false, message: "Failed to send OTP. Please try again." });
+    }
+
+    logSecurityEvent('contract_confirmation_otp_request_successful', {
       email: emailLower,
       userId: user._id,
       ip: req.headers['x-forwarded-for']?.split(',')[0]?.trim() || req.ip
