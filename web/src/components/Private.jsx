@@ -9,8 +9,8 @@ export default function PrivateRoute({ bootstrapped }) {
   // Debug log
   // console.log('PrivateRoute debug:', { bootstrapped, loading, currentUser });
 
-  // Show loading state while Redux persist is bootstrapping or authentication is being processed
-  if (!bootstrapped || loading) {
+  // Show loading state while Redux persist is bootstrapping or initial authentication is being processed
+  if (!bootstrapped || (loading && !currentUser)) {
     return <div className="flex items-center justify-center min-h-screen">
       <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
     </div>;

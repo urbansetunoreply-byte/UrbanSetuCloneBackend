@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers } from "react-icons/fa";
+import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -142,6 +142,7 @@ export default function Settings() {
 
   // Visibility Info Modal State
   const [showVisibilityInfoModal, setShowVisibilityInfoModal] = useState(false);
+  const [isUpdatingVisibility, setIsUpdatingVisibility] = useState(false);
   const [transferOtpError, setTransferOtpError] = useState("");
   const [transferResendTimer, setTransferResendTimer] = useState(0);
   const [transferCanResend, setTransferCanResend] = useState(true);
@@ -767,6 +768,7 @@ export default function Settings() {
   const handleProfileVisibilityChange = async (value) => {
     scrollPositionRef.current = window.scrollY;
     try {
+      setIsUpdatingVisibility(true);
       dispatch(updateUserStart());
       const res = await authenticatedFetch(`${API_BASE_URL}/api/user/update/${currentUser._id}`, {
         method: 'POST',
@@ -778,6 +780,7 @@ export default function Settings() {
       const data = await res.json();
       if (data.success === false) {
         dispatch(updateUserFailure(data.message));
+        setIsUpdatingVisibility(false);
         return;
       }
       dispatch(updateUserSuccess(data.updatedUser));
@@ -786,6 +789,8 @@ export default function Settings() {
       showToast('Profile visibility updated');
     } catch (error) {
       dispatch(updateUserFailure(error.message));
+    } finally {
+      setIsUpdatingVisibility(false);
     }
   };
 
@@ -999,7 +1004,7 @@ export default function Settings() {
     );
   };
 
-  const SelectOption = ({ label, value, options, onChange, description, onInfoClick }) => {
+  const SelectOption = ({ label, value, options, onChange, description, onInfoClick, isLoading }) => {
     const handleChange = (e) => {
       e.preventDefault();
       e.stopPropagation();
@@ -1019,6 +1024,9 @@ export default function Settings() {
               >
                 <FaInfoCircle />
               </button>
+            )}
+            {isLoading && (
+              <FaSpinner className="animate-spin text-blue-500" />
             )}
           </div>
           {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
@@ -1131,6 +1139,7 @@ export default function Settings() {
               onChange={handleProfileVisibilityChange}
               description="Control who can see your profile"
               onInfoClick={() => setShowVisibilityInfoModal(true)}
+              isLoading={isUpdatingVisibility}
             />
             <ToggleSwitch
               label="Show Email Address"
