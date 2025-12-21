@@ -50,10 +50,12 @@ const ActiveCallModal = ({
   const streamsRef = useRef({ local: null, remote: null }); // Store streams persistently
   const screenShareVideoRef = useRef(null); // Ref for screen share video element
   const cameraVideoSmallRef = useRef(null); // Ref for camera video in small window during screen share
+  const smallRemoteVideoRef = useRef(null); // Ref for remote video in small window when remote is sharing (to duplicate stream)
   const [videoZoom, setVideoZoom] = useState(1); // Zoom level for video (like Google Meet)
   const [videoPanX, setVideoPanX] = useState(0); // Pan X offset for zoomed video
   const [videoPanY, setVideoPanY] = useState(0); // Pan Y offset for zoomed video
   const [forceRender, setForceRender] = useState(0); // Force re-render when screen share state changes
+  const [presentationLoading, setPresentationLoading] = useState(false); // Loading state for presentation switching
   const isPanningRef = useRef(false); // Track if user is panning
   const lastPanPosRef = useRef({ x: 0, y: 0 }); // Last pan position
 
@@ -159,6 +161,33 @@ const ActiveCallModal = ({
     } else {
       // When remote starts screen sharing, also force render
       setForceRender(prev => prev + 1);
+      // Set loading state
+      setPresentationLoading(true);
+      setTimeout(() => setPresentationLoading(false), 1500);
+    }
+  }, [remoteIsScreenSharing, remoteStream]);
+
+  // Handle local screen share loading state
+  useEffect(() => {
+    if (isScreenSharing) {
+      setPresentationLoading(true);
+      setTimeout(() => setPresentationLoading(false), 1500);
+    }
+  }, [isScreenSharing]);
+
+  // Handle small remote video stream attachment (for Presentee side)
+  useEffect(() => {
+    if (remoteIsScreenSharing && smallRemoteVideoRef.current && remoteStream) {
+      if (smallRemoteVideoRef.current.srcObject !== remoteStream) {
+        smallRemoteVideoRef.current.srcObject = remoteStream;
+        // Mute it because the main window likely has audio, or we don't want double audio? 
+        // Usually remoteStream has audio. If we play it twice, it gets louder. 
+        // Safe to mute the small window mirror.
+        smallRemoteVideoRef.current.muted = true;
+        smallRemoteVideoRef.current.play().catch(err => {
+          if (err.name !== 'AbortError') console.error('Error playing small remote video:', err);
+        });
+      }
     }
   }, [remoteIsScreenSharing, remoteStream]);
 
@@ -429,6 +458,17 @@ const ActiveCallModal = ({
         onMouseDown={handleMouseDown}
         style={{ cursor: videoZoom > 1 ? (isPanningRef.current ? 'grabbing' : 'grab') : 'pointer' }}
       >
+        {/* Presentation Loading Overlay */}
+        {presentationLoading && (
+          <div className="absolute inset-0 z-40 bg-black flex flex-col items-center justify-center animate-fadeIn">
+            <div className="relative">
+              <div className="w-16 h-16 border-4 border-blue-500/30 border-t-blue-500 rounded-full animate-spin"></div>
+              <FaDesktop className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 text-blue-500 text-xl animate-pulse" />
+            </div>
+            <h3 className="mt-4 text-white text-xl font-medium tracking-wide">Starting presentation...</h3>
+          </div>
+        )}
+
         {callType === 'video' ? (
           <>
             {/* Main video - Logic:
@@ -717,44 +757,29 @@ const ActiveCallModal = ({
                   </div>
                 </>
               ) : (
-                // Remote is sharing: show local (yourself) in small window
+                // Remote is sharing: show Presenter (Remote Stream) in small window to mimic "seeing the presenter"
+                // Note: Since we only have 1 track (screen), this will mirror the screen share in the small window.
+                // This is the desired behavior requested to replace the "You" view.
                 <>
-                  {cameraStreamDuringScreenShare ? (
-                    <video
-                      key="local-small-remote-screenshare"
-                      ref={cameraVideoSmallRef}
-                      srcObject={cameraStreamDuringScreenShare}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover"
-                      style={{ transform: 'scaleX(-1)' }}
-                      onLoadedMetadata={(e) => {
-                        e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing camera video:', err); });
-                      }}
-                    />
-                  ) : (
-                    <video
-                      key="local-small-normal"
-                      ref={localVideoRef}
-                      autoPlay
-                      playsInline
-                      muted
-                      className="w-full h-full object-cover"
-                      style={{ transform: 'scaleX(-1)' }}
-                      onLoadedMetadata={(e) => {
-                        e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing local video:', err); });
-                      }}
-                    />
-                  )}
-                  {!isVideoEnabled && (
+                  <video
+                    key="remote-small-mirror"
+                    ref={smallRemoteVideoRef}
+                    autoPlay
+                    playsInline
+                    muted
+                    className="w-full h-full object-cover"
+                    onLoadedMetadata={(e) => {
+                      e.target.play().catch(err => { if (err.name !== 'AbortError') console.error('Error playing small remote video:', err); });
+                    }}
+                  />
+                  {!remoteVideoEnabled && (
                     <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center">
                       <FaVideoSlash className="text-white text-xl" />
                     </div>
                   )}
                   <div className="absolute bottom-2 left-2 bg-black bg-opacity-70 rounded-full px-3 py-1 flex items-center gap-1">
-                    <p className="text-white text-xs font-medium">You</p>
-                    {isLocalSpeaking && !isMuted && (
+                    <p className="text-white text-xs font-medium">{otherPartyName || 'Caller'}</p>
+                    {isRemoteSpeaking && !remoteIsMuted && (
                       <div className="bg-green-500 rounded-full p-0.5 animate-pulse">
                         <FaVolumeUp className="text-white text-[8px]" />
                       </div>
