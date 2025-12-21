@@ -315,7 +315,20 @@ export default function MyAppointments() {
     });
 
     // Calculate pagination
+    // Calculate pagination
     const itemsPerPage = 10;
+
+    // Auto-switch page if deep-linking to an appointment
+    if (shouldOpenChatFromNotification && notificationChatData) {
+      const index = filteredAppts.findIndex(a => a._id === notificationChatData._id);
+      if (index !== -1) {
+        const targetPage = Math.ceil((index + 1) / itemsPerPage);
+        if (targetPage !== currentPage) {
+          setCurrentPage(targetPage);
+        }
+      }
+    }
+
     const totalPages = Math.max(1, Math.ceil(filteredAppts.length / itemsPerPage));
     setTotalPages(totalPages);
 
