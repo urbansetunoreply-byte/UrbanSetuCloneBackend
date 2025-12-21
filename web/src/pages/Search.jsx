@@ -76,7 +76,7 @@ export default function Search() {
             setError(null);
             try {
                 const fetchParams = new URLSearchParams(urlParams);
-                fetchParams.set('visibility', 'public');
+                // fetchParams.set('visibility', 'public'); // Let backend decide based on auth
 
                 let endpoint = `${API_BASE_URL}/api/listing/get?${fetchParams.toString()}`;
 
@@ -85,7 +85,7 @@ export default function Search() {
                     endpoint = `${API_BASE_URL}/api/listing/ai-search?query=${fetchParams.get('searchTerm')}`;
                 }
 
-                const res = await fetch(endpoint);
+                const res = await fetch(endpoint, { credentials: 'include' });
                 if (!res.ok) {
                     throw new Error(`HTTP error! status: ${res.status}`);
                 }
@@ -161,40 +161,7 @@ export default function Search() {
 
     const handleSubmit = (e) => {
         e.preventDefault();
-        const natural = (formData.searchTerm || '').trim();
-        const extracted = { ...formData };
-        const inferStateFromCity = (city) => {
-            const cityToState = {
-                'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra',
-                'delhi': 'Delhi', 'new delhi': 'Delhi',
-                'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka',
-                'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu',
-                'kolkata': 'West Bengal',
-                'hyderabad': 'Telangana',
-                'ahmedabad': 'Gujarat', 'surat': 'Gujarat',
-                'jaipur': 'Rajasthan',
-                'lucknow': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh',
-                'gurgaon': 'Haryana', 'gurugram': 'Haryana',
-                'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh',
-                'patna': 'Bihar'
-            };
-            const key = (city || '').toLowerCase();
-            return cityToState[key] || '';
-        };
-        const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds)/i);
-        if (bedsMatch) extracted.bedrooms = bedsMatch[1];
-        const priceMatch = natural.match(/(?:under|below)\s*(\d[\d,]*)/i);
-        if (priceMatch) extracted.maxPrice = priceMatch[1].replace(/,/g, '');
-        const nearMatch = natural.match(/near\s+([a-zA-Z ]+)/i);
-        if (nearMatch) extracted.city = nearMatch[1].trim();
-        const typeMatch = natural.match(/\b(rent|sale)\b/i);
-        if (typeMatch) extracted.type = typeMatch[1].toLowerCase();
-        if (extracted.city && !extracted.state) extracted.state = inferStateFromCity(extracted.city);
-        const states = ['andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'delhi'];
-        const lower = natural.toLowerCase();
-        const matchedState = states.find(s => new RegExp(`(^|\\b)${s}(\\b|$)`).test(lower));
-        if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
-        const urlParams = new URLSearchParams(extracted);
+        const urlParams = new URLSearchParams(formData);
         navigate(`?${urlParams.toString()}`);
     };
 
@@ -797,8 +764,8 @@ export default function Search() {
         try {
             const urlParams = new URLSearchParams(location.search);
             urlParams.set("startIndex", listings.length);
-            urlParams.set("visibility", "public");
-            const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`);
+            // urlParams.set("visibility", "public");
+            const res = await fetch(`${API_BASE_URL}/api/listing/get?${urlParams.toString()}`, { credentials: 'include' });
             if (!res.ok) {
                 throw new Error(`HTTP error! status: ${res.status}`);
             }
@@ -918,8 +885,8 @@ export default function Search() {
                                     onBlur={handleSearchInputBlur}
                                     placeholder={useAI ? "Describe your dream home... (e.g. cozy vibe with sunset view 🌅)" : "Search by name, location, or features..."}
                                     className={`w-full pl-10 pr-4 py-3 border rounded-xl focus:outline-none focus:ring-2 transition-all outline-none ${useAI
-                                            ? "bg-indigo-50 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-100 text-indigo-900 placeholder-indigo-300"
-                                            : "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-blue-100"
+                                        ? "bg-indigo-50 border-indigo-200 focus:border-indigo-500 focus:ring-indigo-100 text-indigo-900 placeholder-indigo-300"
+                                        : "bg-gray-50 border-gray-200 focus:bg-white focus:border-blue-500 focus:ring-blue-100"
                                         }`}
                                 />
                                 <SearchSuggestions
@@ -940,8 +907,8 @@ export default function Search() {
                                     type="button"
                                     onClick={() => setUseAI(!useAI)}
                                     className={`flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold transition-all duration-300 ${useAI
-                                            ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg scale-105"
-                                            : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+                                        ? "bg-gradient-to-r from-indigo-500 to-purple-600 text-white shadow-lg scale-105"
+                                        : "bg-gray-100 text-gray-500 hover:bg-gray-200"
                                         }`}
                                 >
                                     <Sparkles className={`w-4 h-4 ${useAI ? "text-yellow-300 animate-pulse" : ""}`} />
