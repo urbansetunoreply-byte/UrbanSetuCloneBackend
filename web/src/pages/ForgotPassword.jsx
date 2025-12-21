@@ -5,7 +5,7 @@ import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import RecaptchaWidget from "../components/RecaptchaWidget";
 import { useSelector } from "react-redux";
 import NotFound from "./NotFound";
-import { focusWithoutKeyboard } from '../utils/mobileUtils';
+import { focusWithoutKeyboard, isMobileDevice } from '../utils/mobileUtils';
 import { calculatePasswordStrength, getPasswordStrengthColor, getPasswordStrengthBgColor, getPasswordStrengthText, meetsMinimumRequirements } from "../utils/passwordStrength.js";
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 import { HelpCircle, RotateCcw, Lock, Mail } from "lucide-react";
@@ -92,16 +92,16 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     }
   }, [location.search]);
 
-  // Autofocus email field on initial page (step 1)
+  // Autofocus email field on initial page (step 1) (desktop only)
   useEffect(() => {
-    if (step === 1 && emailInputRef.current) {
+    if (!isMobileDevice() && step === 1 && emailInputRef.current) {
       focusWithoutKeyboard(emailInputRef.current);
     }
   }, [step]);
 
-  // Autofocus OTP field when it appears
+  // Autofocus OTP field when it appears (desktop only)
   useEffect(() => {
-    if (otpSent && !emailVerified && otpInputRef.current) {
+    if (!isMobileDevice() && otpSent && !emailVerified && otpInputRef.current) {
       focusWithoutKeyboard(otpInputRef.current);
     }
   }, [otpSent, emailVerified]);

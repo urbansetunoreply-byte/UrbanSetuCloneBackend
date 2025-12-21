@@ -9,7 +9,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import { reconnectSocket } from "../utils/socket";
 import { FaEye, FaEyeSlash } from "react-icons/fa";
 import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/auth';
-import { focusWithoutKeyboard } from '../utils/mobileUtils';
+import { focusWithoutKeyboard, isMobileDevice } from '../utils/mobileUtils';
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
 import { LogIn, Mail, Lock } from "lucide-react";
 import FormField from "../components/ui/FormField";
@@ -97,30 +97,30 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
     }, []);
 
-    // Autofocus email field on mount
+    // Autofocus email field on mount (desktop only)
     useEffect(() => {
-        if (emailInputRef.current) {
+        if (!isMobileDevice() && emailInputRef.current) {
             focusWithoutKeyboard(emailInputRef.current);
         }
     }, []);
 
-    // Focus OTP email field when OTP method is selected
+    // Focus OTP email field when OTP method is selected (desktop only)
     useEffect(() => {
-        if (loginMethod === "otp" && otpEmailInputRef.current) {
+        if (!isMobileDevice() && loginMethod === "otp" && otpEmailInputRef.current) {
             focusWithoutKeyboard(otpEmailInputRef.current);
         }
     }, [loginMethod]);
 
-    // Focus password field when email step is completed
+    // Focus password field when email step is completed (desktop only)
     useEffect(() => {
-        if (emailStep && passwordInputRef.current) {
+        if (!isMobileDevice() && emailStep && passwordInputRef.current) {
             focusWithoutKeyboard(passwordInputRef.current);
         }
     }, [emailStep]);
 
-    // Focus OTP field when OTP is sent
+    // Focus OTP field when OTP is sent (desktop only)
     useEffect(() => {
-        if (otpSent && otpInputRef.current) {
+        if (!isMobileDevice() && otpSent && otpInputRef.current) {
             focusWithoutKeyboard(otpInputRef.current);
         }
     }, [otpSent]);
