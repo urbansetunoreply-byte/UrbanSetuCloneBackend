@@ -645,13 +645,23 @@ export const getListings = async (req, res, next) => {
 
     // Build query
     const query = {
-      name: { $regex: searchTerm, $options: 'i' },
       offer,
       furnished,
       parking,
       type,
       regularPrice: { $gte: minPrice, $lte: maxPrice },
     };
+
+    if (searchTerm) {
+      query.$or = [
+        { name: { $regex: searchTerm, $options: 'i' } },
+        { description: { $regex: searchTerm, $options: 'i' } },
+        { address: { $regex: searchTerm, $options: 'i' } },
+        { landmark: { $regex: searchTerm, $options: 'i' } },
+        { city: { $regex: searchTerm, $options: 'i' } },
+        { state: { $regex: searchTerm, $options: 'i' } },
+      ];
+    }
     if (city) query.city = { $regex: city, $options: 'i' };
     if (state) query.state = { $regex: state, $options: 'i' };
     if (bedrooms) query.bedrooms = bedrooms;
