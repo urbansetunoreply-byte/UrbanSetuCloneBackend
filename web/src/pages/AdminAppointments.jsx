@@ -774,59 +774,90 @@ export default function AdminAppointments() {
   }, []);
 
   // Handle direct chat link via URL parameter
+  const chatRouteResolvedRef = useRef(null);
+
   useEffect(() => {
-    // Clear any previous timers when dependencies change
-    if (chatIntervalRef.current) {
-      clearInterval(chatIntervalRef.current);
-      chatIntervalRef.current = null;
+    const chatIdFromUrl = params.chatId;
+
+    if (!chatIdFromUrl) {
+      chatRouteResolvedRef.current = null;
+      setMissingChatbookError(null);
+      return;
     }
-    if (chatTimeoutRef.current) {
-      clearTimeout(chatTimeoutRef.current);
-      chatTimeoutRef.current = null;
+
+    setMissingChatbookError(null);
+
+    if (chatRouteResolvedRef.current === chatIdFromUrl) {
+      return;
     }
-    chatResolveRef.current = false;
 
-    // Handle direct chat link via URL parameter
-    if (params.chatId) {
-      const chatIdFromUrl = params.chatId;
+    let cancelled = false;
 
-      const tryResolveChat = () => {
-        const appointment = appointments.find(appt => appt._id === chatIdFromUrl) || allAppointments.find(appt => appt._id === chatIdFromUrl);
-        if (appointment) {
-          chatResolveRef.current = true;
-          setShouldOpenChatFromNotification(true);
-          setActiveChatAppointmentId(chatIdFromUrl);
-          if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-          if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
-        }
-      };
+    const openChatForAppointment = (appointment) => {
+      if (!appointment || cancelled) return;
+      chatRouteResolvedRef.current = appointment._id;
+      setShouldOpenChatFromNotification(true);
+      setActiveChatAppointmentId(appointment._id);
+      setMissingChatbookError(null);
+    };
 
-      if (appointments.length > 0) {
-        tryResolveChat();
-      } else {
-        // Poll until appointments are available
-        chatIntervalRef.current = setInterval(() => {
-          if (appointments.length > 0) {
-            tryResolveChat();
-            if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-          }
-        }, 100);
+    const resolveChatRoute = async () => {
+      // 1. Try local find
+      const findLocalAppointment = () =>
+        appointments.find((appt) => appt._id === chatIdFromUrl) ||
+        allAppointments.find((appt) => appt._id === chatIdFromUrl) ||
+        archivedAppointments.find((appt) => appt._id === chatIdFromUrl);
+
+      let appointment = findLocalAppointment();
+      if (appointment) {
+        openChatForAppointment(appointment);
+        return;
       }
 
-      // Fallback after 5s if still unresolved
-      chatTimeoutRef.current = setTimeout(() => {
-        if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-        if (!chatResolveRef.current) {
+      // 2. Fallback to API fetch
+      try {
+        const response = await fetch(`${API_BASE_URL}/api/bookings/${chatIdFromUrl}`, {
+          credentials: 'include'
+        });
+
+        if (!response.ok) {
+          if (response.status === 404) {
+            if (!cancelled) setMissingChatbookError(chatIdFromUrl);
+            return;
+          }
+          throw new Error('Failed to fetch appointment details');
+        }
+
+        const data = await response.json();
+        appointment = data.booking || data;
+
+        if (!appointment?._id) {
+          throw new Error('Invalid appointment payload');
+        }
+
+        // Add to state if missing
+        if (!cancelled) {
+          setAllAppointments((prev) => {
+            const exists = prev.some(a => a._id === appointment._id);
+            if (exists) return prev;
+            return [appointment, ...prev];
+          });
+          openChatForAppointment(appointment);
+        }
+      } catch (error) {
+        if (!cancelled) {
+          console.error('Failed to resolve chat via link:', error);
           setMissingChatbookError(chatIdFromUrl);
         }
-      }, 5000);
-    }
+      }
+    };
+
+    resolveChatRoute();
 
     return () => {
-      if (chatIntervalRef.current) clearInterval(chatIntervalRef.current);
-      if (chatTimeoutRef.current) clearTimeout(chatTimeoutRef.current);
+      cancelled = true;
     };
-  }, [params.chatId, appointments]);
+  }, [params.chatId, appointments, allAppointments, archivedAppointments]);
 
   // Add state to track updated comments for each appointment
   // REMOVED: updatedComments state - no longer needed, using appointments array directly
@@ -2511,8 +2542,6 @@ export default function AdminAppointments() {
         </div>
       )}
 
-      {/* Contact Support Wrapper (Page-level to avoid duplication) */}
-      <ContactSupportWrapper />
     </div>
   );
 }
