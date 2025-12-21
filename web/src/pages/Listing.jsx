@@ -148,6 +148,7 @@ export default function Listing() {
   const [wishlistCount, setWishlistCount] = useState(0);
   const [showAIRecommendations, setShowAIRecommendations] = useState(false);
   const [showVirtualStaging, setShowVirtualStaging] = useState(false); // State for Virtual Staging
+  const [showVirtualStagingTooltip, setShowVirtualStagingTooltip] = useState(false);
   const [propertyRatings, setPropertyRatings] = useState(null);
   const [showPropertyRatings, setShowPropertyRatings] = useState(false);
   const [ratingsLoading, setRatingsLoading] = useState(false);
@@ -959,6 +960,7 @@ export default function Listing() {
     setShowWishlistTooltip(false);
     setShowEsgTooltip(false);
     setShowNearbyTooltip(false);
+    setShowVirtualStagingTooltip(false);
 
     // Show the specific tooltip
     switch (tooltipType) {
@@ -1017,6 +1019,10 @@ export default function Listing() {
       case 'nearby':
         setShowNearbyTooltip(true);
         setTimeout(() => setShowNearbyTooltip(false), 3000);
+        break;
+      case 'virtualStaging':
+        setShowVirtualStagingTooltip(true);
+        setTimeout(() => setShowVirtualStagingTooltip(false), 3000);
         break;
       default:
         break;
@@ -2250,6 +2256,12 @@ export default function Listing() {
                     <FaChair />
                     <span className="text-sm font-medium">AI Staging</span>
                   </button>
+                  {showVirtualStagingTooltip && (
+                    <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                      Please login to use AI Staging
+                      <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                    </div>
+                  )}
                 </div>
               </div>
             </div>
@@ -2258,7 +2270,7 @@ export default function Listing() {
           {/* Virtual Staging Section */}
           {showVirtualStaging && currentUser && (
             <div className="mb-6 animate-fade-in-up">
-              <VirtualStagingTool originalImage={listing.imageUrls?.[0]} />
+              <VirtualStagingTool listingImages={listing.imageUrls || []} originalImage={listing.imageUrls?.[0]} />
             </div>
           )}
 

@@ -9,7 +9,13 @@ const STYLES = [
     { id: 'boho', name: 'Bohemian Chic', image: 'https://images.unsplash.com/photo-1522444195799-478538b28823?auto=format&fit=crop&w=300&q=80', filter: 'saturate(1.3) contrast(1.1) brightness(1.05)' },
 ];
 
-const VirtualStagingTool = ({ originalImage }) => {
+const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
+    // If listingImages is provided, use state to track selected image, default to originalImage or first image
+    const [selectedImage, setSelectedImage] = useState(originalImage || listingImages[0] || null);
+
+    // Update selectedImage if props change significantly (optional, but good for stability)
+    // useEffect(() => { if(originalImage) setSelectedImage(originalImage) }, [originalImage]);
+
     const [selectedStyle, setSelectedStyle] = useState(STYLES[0].id);
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedImage, setGeneratedImage] = useState(null);
@@ -17,14 +23,14 @@ const VirtualStagingTool = ({ originalImage }) => {
     const [activeFilter, setActiveFilter] = useState('');
 
     const handleGenerate = () => {
-        if (!originalImage) return;
+        if (!selectedImage) return;
         setIsGenerating(true);
         // Mock AI Generation Delay
         setTimeout(() => {
             // SIMULATION: In a real app, this would use Stable Diffusion to generate new furniture.
             // For now, we apply a "Vibe Filter" to the original image to simulate the mood.
             const style = STYLES.find(s => s.id === selectedStyle);
-            setGeneratedImage(originalImage); // Keep the original room
+            setGeneratedImage(selectedImage); // Keep the selected room
             setActiveFilter(style.filter);    // Apply the style filter
             setIsGenerating(false);
         }, 1500); // Faster feedback for simulation
@@ -65,6 +71,34 @@ const VirtualStagingTool = ({ originalImage }) => {
             </div>
 
             <div className="p-6">
+                {/* New: Image Selector Strip */}
+                {listingImages.length > 1 && (
+                    <div className="mb-6">
+                        <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Select Room to Stage</h4>
+                        <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
+                            {listingImages.map((img, idx) => (
+                                <button
+                                    key={idx}
+                                    onClick={() => {
+                                        setSelectedImage(img);
+                                        setGeneratedImage(null); // Reset result when image changes
+                                    }}
+                                    className={`relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-violet-600 ring-2 ring-violet-200' : 'border-gray-200 hover:border-violet-400'}`}
+                                >
+                                    <img src={img} alt={`Room ${idx + 1}`} className="w-full h-full object-cover" />
+                                    {selectedImage === img && (
+                                        <div className="absolute inset-0 bg-violet-600/20 flex items-center justify-center">
+                                            <div className="bg-violet-600 rounded-full p-1">
+                                                <svg className="w-3 h-3 text-white" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={3} d="M5 13l4 4L19 7" /></svg>
+                                            </div>
+                                        </div>
+                                    )}
+                                </button>
+                            ))}
+                        </div>
+                    </div>
+                )}
+
                 {/* Style Selection */}
                 <div className="mb-6">
                     <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Select Style</h4>
@@ -94,8 +128,8 @@ const VirtualStagingTool = ({ originalImage }) => {
                     {/* Original */}
                     <div className="relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200 aspect-video">
                         <span className="absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur">Original Room</span>
-                        {originalImage ? (
-                            <img src={originalImage} alt="Original" className="w-full h-full object-cover" />
+                        {selectedImage ? (
+                            <img src={selectedImage} alt="Original" className="w-full h-full object-cover" />
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-gray-400">
                                 <Upload className="w-8 h-8 mb-2" />
@@ -149,7 +183,7 @@ const VirtualStagingTool = ({ originalImage }) => {
                     <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 z-10 md:block hidden">
                         <button
                             onClick={handleGenerate}
-                            disabled={isGenerating || !originalImage}
+                            disabled={isGenerating || !selectedImage}
                             className="bg-white p-3 rounded-full shadow-lg hover:scale-110 transition-transform text-violet-600 disabled:opacity-50 disabled:cursor-not-allowed"
                         >
                             {isGenerating ? <RefreshCw className="w-6 h-6 animate-spin" /> : <ArrowRight className="w-6 h-6" />}
@@ -160,7 +194,7 @@ const VirtualStagingTool = ({ originalImage }) => {
                 {/* Mobile Action Button */}
                 <button
                     onClick={handleGenerate}
-                    disabled={isGenerating || !originalImage}
+                    disabled={isGenerating || !selectedImage}
                     className="w-full mt-6 bg-violet-600 text-white py-3 rounded-xl font-semibold shadow-lg shadow-violet-200 hover:bg-violet-700 transition-colors flex items-center justify-center gap-2 md:hidden"
                 >
                     {isGenerating ? <RefreshCw className="w-5 h-5 animate-spin" /> : <Sparkles className="w-5 h-5" />}
