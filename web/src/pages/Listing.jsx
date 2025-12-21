@@ -2007,13 +2007,7 @@ export default function Listing() {
                 </>
               )}
 
-              {/* Show verified badge for non-admin users only if verified */}
-              {!isAdmin && listing.isVerified && (
-                <span className="px-3 py-1 bg-green-100 text-green-700 rounded-md flex items-center gap-1 font-semibold">
-                  <FaShieldAlt className="text-green-600" />
-                  Verified Property
-                </span>
-              )}
+
             </div>
 
             <p className="text-gray-700 mb-4 leading-relaxed">
@@ -2075,8 +2069,8 @@ export default function Listing() {
                               key={idx}
                               onClick={() => setActiveVirtualTourIndex(idx)}
                               className={`flex-shrink-0 relative w-24 h-16 rounded-lg overflow-hidden border-2 transition-all snap-start ${activeVirtualTourIndex === idx
-                                  ? 'border-indigo-600 ring-2 ring-indigo-100 scale-105'
-                                  : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-indigo-300'
+                                ? 'border-indigo-600 ring-2 ring-indigo-100 scale-105'
+                                : 'border-gray-200 opacity-70 hover:opacity-100 hover:border-indigo-300'
                                 }`}
                             >
                               <img
