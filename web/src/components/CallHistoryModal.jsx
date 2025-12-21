@@ -1,5 +1,5 @@
-import React, { useState, useEffect } from 'react';
-import { FaPhone, FaVideo, FaTimes, FaClock, FaCheckCircle, FaTimesCircle, FaUser, FaSpinner, FaTrash, FaSync } from 'react-icons/fa';
+import React, { useState, useEffect, useMemo } from 'react';
+import { FaPhone, FaVideo, FaTimes, FaClock, FaCheckCircle, FaTimesCircle, FaUser, FaSpinner, FaTrash, FaSync, FaFilter } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import axios from 'axios';
 
@@ -13,12 +13,19 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
   const [showDeleteSingleModal, setShowDeleteSingleModal] = useState(false);
   const [callToDelete, setCallToDelete] = useState(null);
 
+  // Filters
+  const [filterType, setFilterType] = useState('all');
+  const [filterStatus, setFilterStatus] = useState('all');
+
   useEffect(() => {
     if (isOpen && appointmentId) {
       fetchCallHistory();
     } else {
       setCalls([]);
       setError(null);
+      // Reset filters on close/open
+      setFilterType('all');
+      setFilterStatus('all');
     }
   }, [isOpen, appointmentId]);
 
@@ -32,6 +39,9 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
       );
       if (response.data.calls) {
         setCalls(response.data.calls);
+        // Reset filters when data is refreshed
+        setFilterType('all');
+        setFilterStatus('all');
       }
     } catch (err) {
       console.error('Error fetching call history:', err);
@@ -84,6 +94,17 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
     }
   };
 
+  const filteredCalls = useMemo(() => {
+    return calls.filter(call => {
+      const matchesType = filterType === 'all' || call.callType === filterType;
+      const matchesStatus = filterStatus === 'all' ||
+        (filterStatus === 'ended' && (call.status === 'ended' || call.status === 'accepted')) ||
+        (filterStatus === 'missed' && (call.status === 'missed' || call.status === 'rejected' || call.status === 'cancelled'));
+
+      return matchesType && matchesStatus;
+    });
+  }, [calls, filterType, filterStatus]);
+
   const formatDuration = (seconds) => {
     if (!seconds || seconds === 0) return 'N/A';
     const hours = Math.floor(seconds / 3600);
@@ -98,9 +119,9 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
   const formatDate = (date) => {
     if (!date) return 'N/A';
     const d = new Date(date);
-    return d.toLocaleDateString('en-US', { 
-      month: 'short', 
-      day: 'numeric', 
+    return d.toLocaleDateString('en-US', {
+      month: 'short',
+      day: 'numeric',
       year: 'numeric',
       hour: 'numeric',
       minute: '2-digit',
@@ -196,6 +217,46 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
           </div>
         </div>
 
+        {/* Filters Bar */}
+        <div className="px-4 py-3 bg-gray-50 border-b border-gray-200 flex flex-wrap items-center gap-3">
+          <div className="flex items-center gap-2 text-gray-600 text-sm font-medium mr-2">
+            <FaFilter />
+            Filters:
+          </div>
+
+          <select
+            value={filterType}
+            onChange={(e) => setFilterType(e.target.value)}
+            className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer"
+          >
+            <option value="all">All Types</option>
+            <option value="audio">Audio Only</option>
+            <option value="video">Video Only</option>
+          </select>
+
+          <select
+            value={filterStatus}
+            onChange={(e) => setFilterStatus(e.target.value)}
+            className="px-3 py-1.5 bg-white border border-gray-300 rounded-md text-sm text-gray-700 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none cursor-pointer"
+          >
+            <option value="all">All Status</option>
+            <option value="ended">Completed</option>
+            <option value="missed">Missed/Rejected</option>
+          </select>
+
+          {(filterType !== 'all' || filterStatus !== 'all') && (
+            <button
+              onClick={() => {
+                setFilterType('all');
+                setFilterStatus('all');
+              }}
+              className="px-3 py-1.5 text-sm text-blue-600 hover:text-blue-800 hover:underline transition-colors ml-auto"
+            >
+              Clear Filters
+            </button>
+          )}
+        </div>
+
         {/* Content */}
         <div className="flex-1 overflow-y-auto p-4">
           {loading ? (
@@ -216,32 +277,35 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                 </button>
               </div>
             </div>
-          ) : calls.length === 0 ? (
+          ) : filteredCalls.length === 0 ? (
             <div className="flex items-center justify-center py-12">
               <div className="text-center">
                 <FaPhone className="text-gray-400 text-5xl mx-auto mb-3" />
-                <p className="text-gray-600 font-medium text-lg">No call history found</p>
-                <p className="text-gray-500 text-sm mt-1">Calls made in this chat will appear here</p>
+                <p className="text-gray-600 font-medium text-lg">No calls found</p>
+                {calls.length > 0 ? (
+                  <p className="text-gray-500 text-sm mt-1">Try adjusting your filters</p>
+                ) : (
+                  <p className="text-gray-500 text-sm mt-1">Calls made in this chat will appear here</p>
+                )}
               </div>
             </div>
           ) : (
             <div className="space-y-3">
-              {calls.map((call) => {
+              {filteredCalls.map((call) => {
                 const isCaller = call.callerId?._id === currentUser?._id || call.callerId === currentUser?._id;
                 const callerName = typeof call.callerId === 'object' ? call.callerId?.username : 'Unknown';
                 const receiverName = typeof call.receiverId === 'object' ? call.receiverId?.username : 'Unknown';
-                
+
                 return (
                   <div
                     key={call._id || call.callId}
-                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white"
+                    className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow bg-white animate-fade-in"
                   >
                     <div className="flex items-start justify-between">
                       <div className="flex items-start gap-3 flex-1">
                         {/* Call Type Icon */}
-                        <div className={`mt-1 p-2 rounded-full ${
-                          call.callType === 'video' ? 'bg-blue-100' : 'bg-green-100'
-                        }`}>
+                        <div className={`mt-1 p-2 rounded-full ${call.callType === 'video' ? 'bg-blue-100' : 'bg-green-100'
+                          }`}>
                           {call.callType === 'video' ? (
                             <FaVideo className={`text-lg ${call.callType === 'video' ? 'text-blue-600' : 'text-green-600'}`} />
                           ) : (
@@ -253,9 +317,9 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="font-semibold text-gray-800">
-                              {isAdmin 
+                              {isAdmin
                                 ? `${callerName} → ${receiverName}`
-                                : isCaller 
+                                : isCaller
                                   ? `You called ${receiverName}`
                                   : `${callerName} called you`
                               }
@@ -326,7 +390,7 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3 justify-end">
                   <button
                     type="button"
@@ -365,7 +429,7 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
                     </p>
                   </div>
                 </div>
-                
+
                 <div className="flex gap-3 justify-end">
                   <button
                     type="button"
@@ -394,15 +458,15 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
         {/* Footer */}
         <div className="p-4 border-t border-gray-200 bg-gray-50 rounded-b-lg">
           <div className="flex items-center justify-between text-sm text-gray-600">
-            <span>Total calls: <strong>{calls.length}</strong></span>
+            <span>Total calls: <strong>{filteredCalls.length}</strong></span>
             <div className="flex items-center gap-4">
               <div className="flex items-center gap-1">
                 <FaVideo className="text-blue-600" />
-                <span>Video: {calls.filter(c => c.callType === 'video').length}</span>
+                <span>Video: {filteredCalls.filter(c => c.callType === 'video').length}</span>
               </div>
               <div className="flex items-center gap-1">
                 <FaPhone className="text-green-600" />
-                <span>Audio: {calls.filter(c => c.callType === 'audio').length}</span>
+                <span>Audio: {filteredCalls.filter(c => c.callType === 'audio').length}</span>
               </div>
             </div>
           </div>
@@ -413,4 +477,3 @@ const CallHistoryModal = ({ appointmentId, isOpen, onClose, currentUser, isAdmin
 };
 
 export default CallHistoryModal;
-

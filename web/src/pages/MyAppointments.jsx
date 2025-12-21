@@ -10852,6 +10852,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
                   placeholder="Confirm password"
                 />
+                <p className="text-xs text-gray-500 mt-1">Note: This is a separate password, not your login password.</p>
               </div>
             </div>
 
@@ -10930,6 +10931,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                   {showUnlockPassword ? '👁️' : '👁️‍🗨️'}
                 </button>
               </div>
+              <p className="text-xs text-gray-500 mt-1">Note: This is a separate password, not your login password.</p>
             </div>
 
             <div className="flex items-center justify-end mb-4">
@@ -10974,1404 +10976,1433 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               </button>
             </div>
           </div>
-        </div>
-      ), document.body)}
+        </div >
+      ), document.body)
+      }
       {/* Forgot Password Modal */}
-      {showForgotPasswordModal && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-red-600">
-                <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
-              </svg>
-              Forgot Password
-            </h3>
+      {
+        showForgotPasswordModal && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-red-600">
+                  <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H8c0-2.21 1.79-4 4-4s4 1.79 4 4c0 .88-.36 1.68-.93 2.25z" />
+                </svg>
+                Forgot Password
+              </h3>
 
-            <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-yellow-800">Warning</h3>
-                  <div className="mt-2 text-sm text-yellow-700">
-                    <p>This action will permanently:</p>
-                    <ul className="list-disc list-inside mt-1">
-                      <li>Clear all chat messages</li>
-                      <li>Remove the chat lock</li>
-                      <li>Clear the passcode if set</li>
-                    </ul>
+              <div className="bg-yellow-50 border-l-4 border-yellow-400 p-4 mb-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-yellow-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-yellow-800">Warning</h3>
+                    <div className="mt-2 text-sm text-yellow-700">
+                      <p>This action will permanently:</p>
+                      <ul className="list-disc list-inside mt-1">
+                        <li>Clear all chat messages</li>
+                        <li>Remove the chat lock</li>
+                        <li>Clear the passcode if set</li>
+                      </ul>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <p className="text-gray-600 mb-6">
-              This action cannot be undone. Are you sure you want to proceed?
-            </p>
+              <p className="text-gray-600 mb-6">
+                This action cannot be undone. Are you sure you want to proceed?
+              </p>
 
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => setShowForgotPasswordModal(false)}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleForgotPassword}
-                disabled={forgotPasswordProcessing}
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-              >
-                {forgotPasswordProcessing ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Processing...
-                  </>
-                ) : (
-                  'Continue'
-                )}
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-
-      {/* Remove Lock Modal */}
-      {showRemoveLockModal && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-red-600">
-                <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
-              </svg>
-              Remove Chat Lock
-            </h3>
-
-            <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
-              <div className="flex">
-                <div className="flex-shrink-0">
-                  <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
-                    <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
-                  </svg>
-                </div>
-                <div className="ml-3">
-                  <h3 className="text-sm font-medium text-red-800">Permanent Action</h3>
-                  <div className="mt-2 text-sm text-red-700">
-                    <p>This will remove the chat lock and disable password protection for this conversation.
-                      You can lock this chat again at any time from the options.</p>
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            <p className="text-gray-600 mb-4">
-              Enter your chat lock password to confirm this action.
-            </p>
-
-            <div className="mb-4">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Password
-              </label>
-              <div className="relative">
-                <input
-                  ref={removeLockPasswordRef}
-                  type={showRemoveLockPassword ? "text" : "password"}
-                  value={removeLockPassword}
-                  onChange={(e) => setRemoveLockPassword(e.target.value)}
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 pr-10"
-                  placeholder="Enter your chat lock password"
-                  onKeyPress={(e) => e.key === 'Enter' && handleRemoveLockFromMenu()}
-                />
+              <div className="flex gap-3 justify-end">
                 <button
                   type="button"
-                  onClick={() => setShowRemoveLockPassword(!showRemoveLockPassword)}
-                  className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
+                  onClick={() => setShowForgotPasswordModal(false)}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
                 >
-                  {showRemoveLockPassword ? '👁️' : '👁️‍🗨️'}
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleForgotPassword}
+                  disabled={forgotPasswordProcessing}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                  {forgotPasswordProcessing ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Processing...
+                    </>
+                  ) : (
+                    'Continue'
+                  )}
                 </button>
               </div>
             </div>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowRemoveLockModal(false);
-                  setRemoveLockPassword('');
-                  setShowRemoveLockPassword(false);
-                }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleRemoveLockFromMenu}
-                disabled={removingLock}
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
-              >
-                {removingLock ? (
-                  <>
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Removing...
-                  </>
-                ) : (
-                  <>
-                    <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
-                      <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
-                    </svg>
-                    Remove Lock
-                  </>
-                )}
-              </button>
-            </div>
           </div>
-        </div>
-      ), document.body)}
+        ), document.body)
+      }
 
-      {/* Delete Message Confirmation Modal */}
-      {showDeleteModal && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaTrash className="text-red-500" />
-              {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-'))
-                ? 'Delete Call'
-                : Array.isArray(messageToDelete) ? 'Delete Selected Messages' : 'Delete Message'}
-            </h3>
-
-            {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) ? (
-              // Call deletion - show simplified message
-              <p className="text-gray-600 mb-6">
-                Are you sure you want to delete this call from the chat? The call will be removed from your view, but the call record will remain in the database.
-              </p>
-            ) : (!Array.isArray(messageToDelete) && messageToDelete?.deleted) ? (
-              // Deleted message - show simplified message for local removal
-              <p className="text-gray-600 mb-6">
-                Delete this message for me?
-              </p>
-            ) : ((Array.isArray(messageToDelete) && messageToDelete.every(m => m.senderEmail === currentUser.email)) || (!Array.isArray(messageToDelete) && messageToDelete?.senderEmail === currentUser.email)) ? (
-              // Own message - show existing functionality
-              <>
-                <p className="text-gray-600 mb-4">
-                  {Array.isArray(messageToDelete) ? `Are you sure you want to delete ${messageToDelete.length} messages?` : 'Are you sure you want to delete this message?'}
-                </p>
-
-                <div className="mb-6">
-                  <label className={`flex items-center gap-3 ${isChatSendBlocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
-                    <input
-                      type="checkbox"
-                      checked={deleteForBoth}
-                      onChange={(e) => {
-                        if (isChatSendBlocked) {
-                          toast.info('Delete for everyone is disabled for this appointment status. Only delete for me is allowed.');
-                          return;
-                        }
-                        setDeleteForBoth(e.target.checked);
-                      }}
-                      disabled={isChatSendBlocked}
-                      className={`form-checkbox h-4 w-4 text-red-600 rounded border-gray-300 focus:ring-red-500 ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed' : ''
-                        }`}
-                    />
-                    <span className={`text-sm ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-700'}`}>
-                      Also delete for{' '}
-                      <span className={`font-medium ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-900'}`}>
-                        {otherParty?.username || 'other user'}
-                      </span>
-                      {isChatSendBlocked && ' (Disabled for this appointment status)'}
-                    </span>
-                  </label>
-                  <p className={`text-xs mt-1 ml-7 ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-500'}`}>
-                    {isChatSendBlocked
-                      ? (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
-                      : deleteForBoth
-                        ? (Array.isArray(messageToDelete) ? 'The selected messages will be permanently deleted for everyone' : 'The message will be permanently deleted for everyone')
-                        : (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
-                    }
-                  </p>
-                </div>
-              </>
-            ) : (
-              // Received message - show simplified message
-              <p className="text-gray-600 mb-6">
-                {Array.isArray(messageToDelete) ? (
-                  <>Delete selected messages from <span className="font-medium text-gray-900">{otherParty?.username || 'other user'}</span>?</>
-                ) : (
-                  <>Delete message from <span className="font-medium text-gray-900">{otherParty?.username || 'other user'}</span>?</>
-                )}
-              </p>
-            )}
-
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowDeleteModal(false);
-                  setMessageToDelete(null);
-                  setDeleteForBoth(true);
-                }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleConfirmDelete}
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
-              >
-                <FaTrash size={12} />
-                {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-'))
-                  ? 'Delete'
-                  : Array.isArray(messageToDelete)
-                    ? ((messageToDelete.every(m => m.senderEmail === currentUser.email) && deleteForBoth) ? 'Delete for everyone' : 'Delete for me')
-                    : (messageToDelete?.deleted
-                      ? 'Delete for me'
-                      : messageToDelete?.senderEmail === currentUser.email
-                        ? (deleteForBoth ? 'Delete for everyone' : 'Delete for me')
-                        : 'Delete for me')
-                }
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-
-      {/* Clear Chat Confirmation Modal */}
-      {showClearChatModal && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaTrash className="text-red-500" />
-              Clear Chat
-            </h3>
-
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to clear chat? This action cannot be undone.
-            </p>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => setShowClearChatModal(false)}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={handleClearChat}
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
-              >
-                <FaTrash size={12} />
-                Clear Chat
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-
-      {/* Delete Appointment Confirmation Modal */}
-      {showDeleteAppointmentModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaTrash className="text-red-500" />
-              Delete Appointment
-            </h3>
-
-            <p className="text-gray-600 mb-4">
-              Are you sure you want to delete this appointment?
-            </p>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reason for deletion (required):
-              </label>
-              <textarea
-                value={deleteReason}
-                onChange={(e) => setDeleteReason(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                rows="3"
-                placeholder="Please provide a reason for deleting this appointment..."
-              />
-            </div>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowDeleteAppointmentModal(false);
-                  setAppointmentToHandle(null);
-                  setDeleteReason('');
-                }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmAdminDelete}
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
-              >
-                <FaTrash size={12} />
-                Delete Appointment
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Cancel Appointment Modal */}
-      {showCancelModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaBan className="text-orange-500" />
-              Cancel Appointment
-            </h3>
-
-            <p className="text-gray-600 mb-4">
-              Are you sure you want to cancel this appointment?
-            </p>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reason for cancellation (required):
-              </label>
-              <textarea
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
-                rows="3"
-                placeholder={isSeller ? "Please provide a reason for cancelling..." : "Optional reason for cancelling..."}
-              />
-            </div>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowCancelModal(false);
-                  setCancelReason('');
-                }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmUserCancel}
-                className="px-4 py-2 rounded bg-orange-600 text-white font-semibold hover:bg-orange-700 transition-colors flex items-center gap-2"
-              >
-                <FaBan size={12} />
-                Cancel Appointment
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Admin Cancel Appointment Modal */}
-      {showAdminCancelModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaBan className="text-red-500" />
-              Admin Cancel Appointment
-            </h3>
-
-            <p className="text-gray-600 mb-4">
-              Are you sure you want to cancel this appointment as admin?
-            </p>
-
-            <div className="mb-6">
-              <label className="block text-sm font-medium text-gray-700 mb-2">
-                Reason for admin cancellation (required):
-              </label>
-              <textarea
-                value={cancelReason}
-                onChange={(e) => setCancelReason(e.target.value)}
-                className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
-                rows="3"
-                placeholder="Please provide a reason for admin cancellation..."
-              />
-            </div>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => {
-                  setShowAdminCancelModal(false);
-                  setCancelReason('');
-                }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmAdminCancel}
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
-              >
-                <FaBan size={12} />
-                Cancel as Admin
-              </button>
-            </div>
-          </div>
-        </div>
-      )}
-
-      {/* Permanent Delete Modal */}
-      {showPermanentDeleteModal && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaTrash className="text-red-500" />
-              Remove Appointment
-            </h3>
-
-            <p className="text-gray-600 mb-6">
-              Are you sure you want to permanently remove this appointment from your table? This action cannot be undone.
-            </p>
-
-            <div className="flex gap-3 justify-end">
-              <button
-                type="button"
-                onClick={() => setShowPermanentDeleteModal(false)}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
-              >
-                Cancel
-              </button>
-              <button
-                type="button"
-                onClick={confirmPermanentDelete}
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
-              >
-                <FaTrash size={12} />
-                Remove Permanently
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-      {/* Report Message Modal */}
-      {showReportModal && reportingMessage && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaFlag className="text-red-500" /> Report message
-            </h3>
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                <select
-                  value={reportReason}
-                  onChange={(e) => setReportReason(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
-                >
-                  <option value="">-- Select a reason --</option>
-                  <option value="Spam or scam">Spam or scam</option>
-                  <option value="Harassment or hate speech">Harassment or hate speech</option>
-                  <option value="Inappropriate content">Inappropriate content</option>
-                  <option value="Sensitive or personal data">Sensitive or personal data</option>
-                  <option value="Fraud or illegal activity">Fraud or illegal activity</option>
-                  <option value="Other">Other</option>
-                </select>
-              </div>
-              {reportReason && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {reportReason === 'Other' ? 'Additional details *' : 'Additional details (optional)'}
-                  </label>
-                  <textarea
-                    value={reportDetails}
-                    onChange={(e) => setReportDetails(e.target.value)}
-                    rows={4}
-                    placeholder={reportReason === 'Other' ? 'Please provide details about the issue...' : 'Add any context to help admins review...'}
-                    className="w-full p-2 border border-gray-300 rounded resize-y focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
-                  />
-                </div>
-              )}
-              <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
-                <div className="font-semibold mb-1">Message excerpt:</div>
-                <div className="line-clamp-4 whitespace-pre-wrap">{(reportingMessage.message || '').slice(0, 300)}</div>
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end gap-3">
-              <button
-                onClick={() => { setShowReportModal(false); setReportingMessage(null); setReportReason(''); setReportDetails(''); }}
-                className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  if (!reportReason) { toast.error('Please select a reason'); return; }
-                  setSubmittingReport(true);
-                  try {
-                    const { data } = await axios.post(`${API_BASE_URL}/api/notifications/report-chat`,
-                      {
-                        appointmentId: appt._id,
-                        commentId: reportingMessage._id,
-                        reason: reportReason,
-                        details: reportDetails,
-                      },
-                      {
-                        withCredentials: true,
-                        headers: { 'Content-Type': 'application/json' }
-                      }
-                    );
-                    toast.info('Thank you for reporting.');
-                    setShowReportModal(false);
-                    setReportingMessage(null);
-                    setReportReason('');
-                    setReportDetails('');
-                  } catch (err) {
-                    toast.error(err.response?.data?.message || 'Network error while reporting');
-                  } finally {
-                    setSubmittingReport(false);
-                  }
-                }}
-                disabled={submittingReport || !reportReason || (reportReason === 'Other' && !reportDetails.trim())}
-                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-              >
-                {submittingReport ? 'Reporting…' : 'Report'}
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-
-      {/* Report Chat Modal */}
-      {showReportChatModal && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaFlag className="text-red-500" /> Report Chat
-            </h3>
-
-            {/* Last 5 Messages Preview */}
-            <div className="mb-6">
-              <div className="flex items-center gap-2 mb-3">
-                <FaInfoCircle className="text-blue-500 text-sm" />
-                <span className="text-sm font-medium text-gray-700">The last 5 messages in this chat will be sent to UrbanSetu. This person won't know you reported them:</span>
-              </div>
-              <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 max-h-48 overflow-y-auto">
-                {filteredComments.slice(-5).map((message, index) => (
-                  <div key={message._id || index} className="mb-3 last:mb-0">
-                    <div className="flex items-start gap-2">
-                      <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-600 flex-shrink-0">
-                        {message.senderName ? message.senderName.charAt(0).toUpperCase() : 'U'}
-                      </div>
-                      <div className="flex-1 min-w-0">
-                        <div className="flex items-center gap-2 mb-1">
-                          <span className="text-xs font-semibold text-gray-600">
-                            {message.senderName || 'Unknown User'}
-                          </span>
-                          <span className="text-xs text-gray-400">
-                            {new Date(message.timestamp).toLocaleString()}
-                          </span>
-                        </div>
-                        <div className="text-sm text-gray-700 bg-white rounded p-2 border border-gray-200">
-                          {message.type === 'image' ? (
-                            <div className="flex items-center gap-2">
-                              <span>📷 Image: {message.message}</span>
-                              {message.imageUrl && (
-                                <img
-                                  src={message.imageUrl}
-                                  alt="Reported image"
-                                  className="w-8 h-8 object-cover rounded"
-                                  onError={(e) => e.target.style.display = 'none'}
-                                />
-                              )}
-                            </div>
-                          ) : (
-                            <span className="whitespace-pre-wrap break-words">{message.message}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                ))}
-                {filteredComments.length === 0 && (
-                  <div className="text-center text-gray-500 text-sm py-4">
-                    No messages to report
-                  </div>
-                )}
-              </div>
-            </div>
-
-            <div className="space-y-4">
-              <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
-                <select
-                  value={reportChatReason}
-                  onChange={(e) => setReportChatReason(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
-                >
-                  <option value="">Select a reason</option>
-                  <option value="harassment">Harassment or bullying</option>
-                  <option value="spam">Spam or unwanted messages</option>
-                  <option value="inappropriate">Inappropriate content</option>
-                  <option value="scam">Scam or fraud</option>
-                  <option value="threats">Threats or violence</option>
-                  <option value="privacy">Privacy violation</option>
-                  <option value="other">Other</option>
-                </select>
-              </div>
-              {reportChatReason && (
-                <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">
-                    {reportChatReason === 'other' ? 'Additional details *' : 'Additional details (optional)'}
-                  </label>
-                  <textarea
-                    value={reportChatDetails}
-                    onChange={(e) => setReportChatDetails(e.target.value)}
-                    rows={4}
-                    placeholder={reportChatReason === 'other' ? 'Please provide details about the issue...' : 'Provide more context to help admins review this chat...'}
-                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
-                  />
-                </div>
-              )}
-            </div>
-            <div className="flex gap-2 justify-end mt-6">
-              <button
-                onClick={() => {
-                  setShowReportChatModal(false);
-                  setReportChatReason('');
-                  setReportChatDetails('');
-                }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  if (!reportChatReason) {
-                    toast.error('Please select a reason');
-                    return;
-                  }
-                  setSubmittingChatReport(true);
-                  try {
-                    const { data } = await axios.post(`${API_BASE_URL}/api/notifications/report-chat-conversation`,
-                      {
-                        appointmentId: appt._id,
-                        reason: reportChatReason,
-                        details: reportChatDetails,
-                      },
-                      {
-                        withCredentials: true,
-                        headers: { 'Content-Type': 'application/json' }
-                      }
-                    );
-                    toast.info('Thank you for reporting.');
-                    setShowReportChatModal(false);
-                    setReportChatReason('');
-                    setReportChatDetails('');
-                  } catch (err) {
-                    toast.error(err.response?.data?.message || 'Network error while reporting');
-                  } finally {
-                    setSubmittingChatReport(false);
-                  }
-                }}
-                disabled={submittingChatReport || !reportChatReason || (reportChatReason === 'other' && !reportChatDetails.trim())}
-                className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
-              >
-                {submittingChatReport ? 'Reporting…' : 'Report'}
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-
-      {/* Message Info Modal */}
-      {showMessageInfoModal && selectedMessageForInfo && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaInfoCircle className="text-blue-500" /> Message Info
-            </h3>
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
-                <div className="font-semibold mb-2">Message:</div>
-                <div className="whitespace-pre-wrap break-words">{(selectedMessageForInfo.message || '').slice(0, 200)}{(selectedMessageForInfo.message || '').length > 200 ? '...' : ''}</div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Sent:</span>
-                  <span className="text-sm text-gray-800">
-                    {new Date(selectedMessageForInfo.timestamp).toLocaleString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true
-                    })}
-                  </span>
-                </div>
-
-                {selectedMessageForInfo.deliveredAt && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Delivered:</span>
-                    <span className="text-sm text-gray-800">
-                      {new Date(selectedMessageForInfo.deliveredAt).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </span>
-                  </div>
-                )}
-
-                {selectedMessageForInfo.readAt && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Read:</span>
-                    <span className="text-sm text-gray-800">
-                      {new Date(selectedMessageForInfo.readAt).toLocaleString('en-US', {
-                        year: 'numeric',
-                        month: 'short',
-                        day: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit',
-                        hour12: true
-                      })}
-                    </span>
-                  </div>
-                )}
-
-                {!selectedMessageForInfo.deliveredAt && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Status:</span>
-                    <span className="text-sm text-gray-500">Not delivered yet</span>
-                  </div>
-                )}
-
-                {selectedMessageForInfo.deliveredAt && !selectedMessageForInfo.readAt && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Status:</span>
-                    <span className="text-sm text-blue-600">Delivered</span>
-                  </div>
-                )}
-
-                {selectedMessageForInfo.readAt && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Status:</span>
-                    <span className="text-sm text-green-600">Read</span>
-                  </div>
-                )}
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => { setShowMessageInfoModal(false); setSelectedMessageForInfo(null); }}
-                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-
-      {/* Call Info Modal */}
-      {showCallInfoModal && selectedCallForInfo && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-              <FaInfoCircle className="text-blue-500" /> Call Info
-            </h3>
-            <div className="space-y-4">
-              <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
-                <div className="font-semibold mb-2">Call Type:</div>
-                <div>{selectedCallForInfo.callType === 'video' ? 'Video Call' : 'Audio Call'}</div>
-              </div>
-
-              <div className="space-y-3">
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Status:</span>
-                  <span className={`text-sm font-medium ${selectedCallForInfo.status === 'accepted' ? 'text-green-600' :
-                    selectedCallForInfo.status === 'missed' || selectedCallForInfo.status === 'rejected' || selectedCallForInfo.status === 'cancelled' ? 'text-red-600' :
-                      'text-yellow-600'
-                    }`}>
-                    {selectedCallForInfo.status.charAt(0).toUpperCase() + selectedCallForInfo.status.slice(1)}
-                  </span>
-                </div>
-
-                {selectedCallForInfo.duration && selectedCallForInfo.duration > 0 && (
-                  <div className="flex justify-between items-center">
-                    <span className="text-sm font-medium text-gray-600">Duration:</span>
-                    <span className="text-sm text-gray-800">
-                      {(() => {
-                        const hours = Math.floor(selectedCallForInfo.duration / 3600);
-                        const minutes = Math.floor((selectedCallForInfo.duration % 3600) / 60);
-                        const secs = selectedCallForInfo.duration % 60;
-                        if (hours > 0) {
-                          return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                        }
-                        return `${minutes}:${secs.toString().padStart(2, '0')}`;
-                      })()}
-                    </span>
-                  </div>
-                )}
-
-                <div className="flex justify-between items-center">
-                  <span className="text-sm font-medium text-gray-600">Started:</span>
-                  <span className="text-sm text-gray-800">
-                    {new Date(selectedCallForInfo.startTime || selectedCallForInfo.createdAt).toLocaleString('en-US', {
-                      year: 'numeric',
-                      month: 'short',
-                      day: 'numeric',
-                      hour: '2-digit',
-                      minute: '2-digit',
-                      hour12: true
-                    })}
-                  </span>
-                </div>
-
-                {(() => {
-                  const isCaller = selectedCallForInfo.callerId?._id === currentUser._id || selectedCallForInfo.callerId === currentUser._id;
-                  const callerName = selectedCallForInfo.callerId?.username || 'Unknown';
-                  const receiverName = selectedCallForInfo.receiverId?.username || 'Unknown';
-                  return (
-                    <div className="flex justify-between items-center">
-                      <span className="text-sm font-medium text-gray-600">Participants:</span>
-                      <span className="text-sm text-gray-800">
-                        {isCaller ? `You → ${receiverName}` : `${callerName} → You`}
-                      </span>
-                    </div>
-                  );
-                })()}
-              </div>
-            </div>
-            <div className="mt-6 flex justify-end">
-              <button
-                onClick={() => { setShowCallInfoModal(false); setSelectedCallForInfo(null); }}
-                className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
-              >
-                Close
-              </button>
-            </div>
-          </div>
-        </div>
-      ), document.body)}
-      {/* Starred Messages Modal */}
-      {showStarredModal && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
-            {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-yellow-50 to-amber-50">
-              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <FaStar className="text-yellow-500" />
-                Starred Messages
+      {/* Remove Lock Modal */}
+      {
+        showRemoveLockModal && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <svg width="20" height="20" fill="currentColor" viewBox="0 0 24 24" className="text-red-600">
+                  <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
+                </svg>
+                Remove Chat Lock
               </h3>
-              <button
-                onClick={fetchStarredMessages}
-                disabled={loadingStarredMessages}
-                className="p-2 text-yellow-600 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
-                title="Refresh starred messages"
-              >
-                {loadingStarredMessages ? (
-                  <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
-                ) : (
-                  <FaSync className="w-4 h-4" />
-                )}
-              </button>
-            </div>
 
-            {/* Content */}
-            <div className="flex-1 overflow-y-auto p-6">
-              {loadingStarredMessages ? (
-                <div className="flex items-center justify-center py-12">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
-                  <span className="ml-3 text-gray-600">Loading starred messages...</span>
+              <div className="bg-red-50 border-l-4 border-red-400 p-4 mb-4">
+                <div className="flex">
+                  <div className="flex-shrink-0">
+                    <svg className="h-5 w-5 text-red-400" viewBox="0 0 20 20" fill="currentColor">
+                      <path fillRule="evenodd" d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z" clipRule="evenodd" />
+                    </svg>
+                  </div>
+                  <div className="ml-3">
+                    <h3 className="text-sm font-medium text-red-800">Permanent Action</h3>
+                    <div className="mt-2 text-sm text-red-700">
+                      <p>This will remove the chat lock and disable password protection for this conversation.
+                        You can lock this chat again at any time from the options.</p>
+                    </div>
+                  </div>
                 </div>
-              ) : starredMessages.length === 0 ? (
-                <div className="text-center py-12">
-                  <FaRegStar className="mx-auto text-6xl text-gray-300 mb-4" />
-                  <h4 className="text-xl font-semibold text-gray-600 mb-2">No Starred Messages</h4>
-                  <p className="text-gray-500">Star important messages to find them easily later.</p>
-                </div>
-              ) : (
-                <div className="space-y-4">
-                  {starredMessages.map((message, index) => {
-                    const isMe = message.senderEmail === currentUser.email;
-                    const messageDate = new Date(message.timestamp);
+              </div>
 
-                    return (
-                      <div key={message._id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} mb-4`}>
-                        <div className={`relative max-w-[80%] ${isMe ? 'ml-12' : 'mr-12'}`}>
-                          {/* Star indicator and remove button */}
-                          <div className={`flex items-center gap-2 mb-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
-                            <FaStar className="text-yellow-500 text-xs" />
-                            <span className={`text-xs font-medium ${isMe ? 'text-blue-600' : 'text-green-600'}`}>
-                              {isMe ? 'You' : (message.senderName || 'Other Party')}
-                            </span>
-                            <span className="text-xs text-gray-500">
-                              {messageDate.toLocaleDateString('en-US', {
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit',
-                                hour12: true
-                              })}
-                            </span>
-                            {/* Remove star button */}
-                            <button
-                              onClick={async () => {
-                                setUnstarringMessageId(message._id);
-                                try {
-                                  const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`,
-                                    { starred: false },
-                                    {
-                                      withCredentials: true,
-                                      headers: { 'Content-Type': 'application/json' }
-                                    }
-                                  );
-                                  // Update the local comments state
-                                  setComments(prev => prev.map(c =>
-                                    c._id === message._id
-                                      ? { ...c, starredBy: (c.starredBy || []).filter(id => id !== currentUser._id) }
-                                      : c
-                                  ));
+              <p className="text-gray-600 mb-4">
+                Enter your chat lock password to confirm this action.
+              </p>
 
-                                  // Remove from starred messages list
-                                  setStarredMessages(prev => prev.filter(m => m._id !== message._id));
-
-                                  toast.success('Message unstarred.');
-                                } catch (err) {
-                                  toast.error(err.response?.data?.message || 'Failed to unstar message');
-                                } finally {
-                                  setUnstarringMessageId(null);
-                                }
-                              }}
-                              className="text-red-500 hover:text-red-700 text-xs p-1 rounded-full hover:bg-red-50 transition-colors"
-                              title="Remove from starred messages"
-                              disabled={unstarringMessageId === message._id}
-                            >
-                              {unstarringMessageId === message._id ? (
-                                <div className="w-3 h-3 border border-red-500 border-t-transparent rounded-full animate-spin"></div>
-                              ) : (
-                                <FaTimes className="w-3 h-3" />
-                              )}
-                            </button>
-                          </div>
-
-                          {/* Message bubble - styled like chatbox */}
-                          <div
-                            className={`rounded-2xl px-4 py-3 text-sm shadow-lg break-words relative group cursor-pointer hover:shadow-xl transition-all duration-200 ${isMe
-                              ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600'
-                              : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
-                              }`}
-                            onClick={() => {
-                              setShowStarredModal(false);
-                              // Scroll to the message in the main chat if it exists
-                              const messageElement = document.querySelector(`[data-message-id="${message._id}"]`);
-                              if (messageElement) {
-                                messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
-                                messageElement.classList.add('starred-highlight');
-                                setTimeout(() => {
-                                  messageElement.classList.remove('starred-highlight');
-                                }, 1600);
-                              }
-                            }}
-                          >
-                            <div className="whitespace-pre-wrap break-words">
-                              {message.deleted ? (
-                                <span className="flex items-center gap-1 text-gray-400 italic">
-                                  <FaBan className="inline-block text-lg" /> {message.senderEmail === currentUser.email ? "You deleted this message" : "This message was deleted."}
-                                </span>
-                              ) : (
-                                <>
-                                  {/* Image Message - Only show for non-deleted messages */}
-                                  {message.imageUrl && (
-                                    <div className="mb-2">
-                                      <img
-                                        src={message.imageUrl}
-                                        alt="Shared image"
-                                        className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
-                                        onClick={(e) => {
-                                          e.stopPropagation();
-                                          const imageUrls = (comments || []).filter(msg => !!msg.imageUrl).map(msg => msg.imageUrl);
-                                          const startIndex = Math.max(0, imageUrls.indexOf(message.imageUrl));
-                                          setPreviewImages(imageUrls);
-                                          setPreviewIndex(startIndex);
-                                          setShowImagePreview(true);
-                                        }}
-                                        onError={(e) => {
-                                          e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
-                                          e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
-                                        }}
-                                      />
-                                    </div>
-                                  )}
-                                  <FormattedTextWithReadMore
-                                    text={(message.message || '').replace(/\n+$/, '')}
-                                    isSentMessage={isMe}
-                                    className="whitespace-pre-wrap break-words"
-                                    searchQuery={searchQuery}
-                                  />
-                                </>
-                              )}
-                            </div>
-
-                            {/* Copy button - appears on hover, only for non-deleted messages */}
-                            {!message.deleted && (
-                              <button
-                                onClick={(e) => { e.stopPropagation(); copyMessageToClipboard(message.message); }}
-                                className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-full ${isMe
-                                  ? 'bg-white/20 hover:bg-white/30 text-white'
-                                  : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
-                                  }`}
-                                title="Copy message"
-                              >
-                                <FaCopy className="w-3 h-3" />
-                              </button>
-                            )}
-
-                            {/* Edited indicator only (no time display) */}
-                            {message.edited && (
-                              <div className={`flex justify-end mt-2 text-xs ${isMe ? 'text-blue-200' : 'text-gray-500'
-                                }`}>
-                                <span className="italic">(Edited)</span>
-                              </div>
-                            )}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  })}
-                </div>
-              )}
-            </div>
-
-            {/* Footer */}
-            <div className="p-6 border-t border-gray-200 bg-gray-50">
-              <div className="flex justify-between items-center">
-                <span className="text-sm text-gray-600">
-                  {starredMessages.length} starred message{starredMessages.length !== 1 ? 's' : ''}
-                </span>
-                <div className="flex gap-2">
-                  {starredMessages.length > 0 && (
-                    <button
-                      onClick={handleRemoveAllStarredMessages}
-                      disabled={removingAllStarred}
-                      className="px-2 sm:px-4 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
-                    >
-                      {removingAllStarred ? (
-                        <>
-                          <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                          Removing...
-                        </>
-                      ) : (
-                        <>
-                          <FaTrash className="w-4 h-4" />
-                          Remove All
-                        </>
-                      )}
-                    </button>
-                  )}
+              <div className="mb-4">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Password
+                </label>
+                <div className="relative">
+                  <input
+                    ref={removeLockPasswordRef}
+                    type={showRemoveLockPassword ? "text" : "password"}
+                    value={removeLockPassword}
+                    onChange={(e) => setRemoveLockPassword(e.target.value)}
+                    className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500 pr-10"
+                    placeholder="Enter your chat lock password"
+                    onKeyPress={(e) => e.key === 'Enter' && handleRemoveLockFromMenu()}
+                  />
                   <button
-                    onClick={() => setShowStarredModal(false)}
-                    className="px-2 sm:px-4 py-1.5 sm:py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium text-xs sm:text-sm"
+                    type="button"
+                    onClick={() => setShowRemoveLockPassword(!showRemoveLockPassword)}
+                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600"
                   >
-                    Close
+                    {showRemoveLockPassword ? '👁️' : '👁️‍🗨️'}
                   </button>
                 </div>
               </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowRemoveLockModal(false);
+                    setRemoveLockPassword('');
+                    setShowRemoveLockPassword(false);
+                  }}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleRemoveLockFromMenu}
+                  disabled={removingLock}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2 disabled:opacity-50"
+                >
+                  {removingLock ? (
+                    <>
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Removing...
+                    </>
+                  ) : (
+                    <>
+                      <svg width="16" height="16" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M18 10v-4c0-3.313-2.687-6-6-6s-6 2.687-6 6v4H4v10h16V10h-2zM8 6c0-2.206 1.794-4 4-4s4 1.794 4 4v4H8V6z" />
+                      </svg>
+                      Remove Lock
+                    </>
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ), document.body)}
-      {/* Pin Message Modal */}
-      {showPinModal && messageToPin && createPortal((
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
-            {/* Header */}
-            <div className="flex items-center p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
-              <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                <FaThumbtack className="text-purple-500" />
-                Pin Message
+        ), document.body)
+      }
+
+      {/* Delete Message Confirmation Modal */}
+      {
+        showDeleteModal && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaTrash className="text-red-500" />
+                {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-'))
+                  ? 'Delete Call'
+                  : Array.isArray(messageToDelete) ? 'Delete Selected Messages' : 'Delete Message'}
               </h3>
-            </div>
 
-            {/* Content */}
-            <div className="p-6">
-              <div className="mb-4">
-                <p className="text-gray-600 mb-4">
-                  {Array.isArray(messageToPin)
-                    ? `Choose how long to pin these ${messageToPin.length} messages:`
-                    : 'Choose how long to pin this message:'}
+              {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-')) ? (
+                // Call deletion - show simplified message
+                <p className="text-gray-600 mb-6">
+                  Are you sure you want to delete this call from the chat? The call will be removed from your view, but the call record will remain in the database.
                 </p>
+              ) : (!Array.isArray(messageToDelete) && messageToDelete?.deleted) ? (
+                // Deleted message - show simplified message for local removal
+                <p className="text-gray-600 mb-6">
+                  Delete this message for me?
+                </p>
+              ) : ((Array.isArray(messageToDelete) && messageToDelete.every(m => m.senderEmail === currentUser.email)) || (!Array.isArray(messageToDelete) && messageToDelete?.senderEmail === currentUser.email)) ? (
+                // Own message - show existing functionality
+                <>
+                  <p className="text-gray-600 mb-4">
+                    {Array.isArray(messageToDelete) ? `Are you sure you want to delete ${messageToDelete.length} messages?` : 'Are you sure you want to delete this message?'}
+                  </p>
 
-                {/* Pin Duration Options */}
-                <div className="space-y-3">
-                  <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="pinDuration"
-                      value="24hrs"
-                      checked={pinDuration === '24hrs'}
-                      onChange={(e) => setPinDuration(e.target.value)}
-                      className="text-purple-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-800">24 Hours</div>
-                      <div className="text-sm text-gray-500">Pin for 24 hours</div>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="pinDuration"
-                      value="7days"
-                      checked={pinDuration === '7days'}
-                      onChange={(e) => setPinDuration(e.target.value)}
-                      className="text-purple-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-800">7 Days</div>
-                      <div className="text-sm text-gray-500">Pin for 7 days</div>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="pinDuration"
-                      value="30days"
-                      checked={pinDuration === '30days'}
-                      onChange={(e) => setPinDuration(e.target.value)}
-                      className="text-purple-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-800">30 Days</div>
-                      <div className="text-sm text-gray-500">Pin for 30 days</div>
-                    </div>
-                  </label>
-
-                  <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
-                    <input
-                      type="radio"
-                      name="pinDuration"
-                      value="custom"
-                      checked={pinDuration === 'custom'}
-                      onChange={(e) => setPinDuration(e.target.value)}
-                      className="text-purple-600"
-                    />
-                    <div className="flex-1">
-                      <div className="font-medium text-gray-800">Custom</div>
-                      <div className="text-sm text-gray-500">Pin for custom hours</div>
-                    </div>
-                  </label>
-                </div>
-
-                {/* Custom Hours Input */}
-                {pinDuration === 'custom' && (
-                  <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Custom Hours
+                  <div className="mb-6">
+                    <label className={`flex items-center gap-3 ${isChatSendBlocked ? 'cursor-not-allowed' : 'cursor-pointer'}`}>
+                      <input
+                        type="checkbox"
+                        checked={deleteForBoth}
+                        onChange={(e) => {
+                          if (isChatSendBlocked) {
+                            toast.info('Delete for everyone is disabled for this appointment status. Only delete for me is allowed.');
+                            return;
+                          }
+                          setDeleteForBoth(e.target.checked);
+                        }}
+                        disabled={isChatSendBlocked}
+                        className={`form-checkbox h-4 w-4 text-red-600 rounded border-gray-300 focus:ring-red-500 ${isChatSendBlocked ? 'opacity-50 cursor-not-allowed' : ''
+                          }`}
+                      />
+                      <span className={`text-sm ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-700'}`}>
+                        Also delete for{' '}
+                        <span className={`font-medium ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-900'}`}>
+                          {otherParty?.username || 'other user'}
+                        </span>
+                        {isChatSendBlocked && ' (Disabled for this appointment status)'}
+                      </span>
                     </label>
-                    <input
-                      type="number"
-                      min="1"
-                      max="8760"
-                      value={customHours}
-                      onChange={(e) => setCustomHours(Math.max(1, parseInt(e.target.value) || 1))}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
-                      placeholder="Enter hours (1-8760)"
-                    />
-                    <p className="text-xs text-gray-500 mt-1">
-                      Maximum: 8760 hours (1 year)
+                    <p className={`text-xs mt-1 ml-7 ${isChatSendBlocked ? 'text-gray-400' : 'text-gray-500'}`}>
+                      {isChatSendBlocked
+                        ? (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
+                        : deleteForBoth
+                          ? (Array.isArray(messageToDelete) ? 'The selected messages will be permanently deleted for everyone' : 'The message will be permanently deleted for everyone')
+                          : (Array.isArray(messageToDelete) ? 'The selected messages will only be deleted for you' : 'The message will only be deleted for you')
+                      }
                     </p>
                   </div>
-                )}
-
-                {/* Message Preview */}
-                <div className="mt-4 p-3 bg-gray-50 rounded-lg">
-                  <div className="text-sm text-gray-600 mb-2">
-                    {Array.isArray(messageToPin) ? 'Messages to pin:' : 'Message to pin:'}
-                  </div>
-                  {Array.isArray(messageToPin) ? (
-                    <div className="space-y-2 max-h-32 overflow-y-auto">
-                      {messageToPin.map((msg, index) => (
-                        <div key={msg._id} className="text-sm text-gray-800 bg-white p-2 rounded border">
-                          <span className="font-medium text-xs text-gray-500">#{index + 1}: </span>
-                          {msg.message?.substring(0, 80)}
-                          {msg.message?.length > 80 ? '...' : ''}
-                        </div>
-                      ))}
-                    </div>
+                </>
+              ) : (
+                // Received message - show simplified message
+                <p className="text-gray-600 mb-6">
+                  {Array.isArray(messageToDelete) ? (
+                    <>Delete selected messages from <span className="font-medium text-gray-900">{otherParty?.username || 'other user'}</span>?</>
                   ) : (
-                    <div className="text-sm text-gray-800 bg-white p-2 rounded border">
-                      {messageToPin.message?.substring(0, 100)}
-                      {messageToPin.message?.length > 100 ? '...' : ''}
+                    <>Delete message from <span className="font-medium text-gray-900">{otherParty?.username || 'other user'}</span>?</>
+                  )}
+                </p>
+              )}
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteModal(false);
+                    setMessageToDelete(null);
+                    setDeleteForBoth(true);
+                  }}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleConfirmDelete}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <FaTrash size={12} />
+                  {messageToDelete?.isCall || (messageToDelete?._id && messageToDelete._id.startsWith('call-'))
+                    ? 'Delete'
+                    : Array.isArray(messageToDelete)
+                      ? ((messageToDelete.every(m => m.senderEmail === currentUser.email) && deleteForBoth) ? 'Delete for everyone' : 'Delete for me')
+                      : (messageToDelete?.deleted
+                        ? 'Delete for me'
+                        : messageToDelete?.senderEmail === currentUser.email
+                          ? (deleteForBoth ? 'Delete for everyone' : 'Delete for me')
+                          : 'Delete for me')
+                  }
+                </button>
+              </div>
+            </div>
+          </div>
+        ), document.body)
+      }
+
+      {/* Clear Chat Confirmation Modal */}
+      {
+        showClearChatModal && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaTrash className="text-red-500" />
+                Clear Chat
+              </h3>
+
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to clear chat? This action cannot be undone.
+              </p>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowClearChatModal(false)}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={handleClearChat}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <FaTrash size={12} />
+                  Clear Chat
+                </button>
+              </div>
+            </div>
+          </div>
+        ), document.body)
+      }
+
+      {/* Delete Appointment Confirmation Modal */}
+      {
+        showDeleteAppointmentModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaTrash className="text-red-500" />
+                Delete Appointment
+              </h3>
+
+              <p className="text-gray-600 mb-4">
+                Are you sure you want to delete this appointment?
+              </p>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for deletion (required):
+                </label>
+                <textarea
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  rows="3"
+                  placeholder="Please provide a reason for deleting this appointment..."
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowDeleteAppointmentModal(false);
+                    setAppointmentToHandle(null);
+                    setDeleteReason('');
+                  }}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmAdminDelete}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <FaTrash size={12} />
+                  Delete Appointment
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Cancel Appointment Modal */}
+      {
+        showCancelModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaBan className="text-orange-500" />
+                Cancel Appointment
+              </h3>
+
+              <p className="text-gray-600 mb-4">
+                Are you sure you want to cancel this appointment?
+              </p>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for cancellation (required):
+                </label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-orange-500"
+                  rows="3"
+                  placeholder={isSeller ? "Please provide a reason for cancelling..." : "Optional reason for cancelling..."}
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowCancelModal(false);
+                    setCancelReason('');
+                  }}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmUserCancel}
+                  className="px-4 py-2 rounded bg-orange-600 text-white font-semibold hover:bg-orange-700 transition-colors flex items-center gap-2"
+                >
+                  <FaBan size={12} />
+                  Cancel Appointment
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Admin Cancel Appointment Modal */}
+      {
+        showAdminCancelModal && (
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaBan className="text-red-500" />
+                Admin Cancel Appointment
+              </h3>
+
+              <p className="text-gray-600 mb-4">
+                Are you sure you want to cancel this appointment as admin?
+              </p>
+
+              <div className="mb-6">
+                <label className="block text-sm font-medium text-gray-700 mb-2">
+                  Reason for admin cancellation (required):
+                </label>
+                <textarea
+                  value={cancelReason}
+                  onChange={(e) => setCancelReason(e.target.value)}
+                  className="w-full p-3 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-red-500"
+                  rows="3"
+                  placeholder="Please provide a reason for admin cancellation..."
+                />
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowAdminCancelModal(false);
+                    setCancelReason('');
+                  }}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmAdminCancel}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <FaBan size={12} />
+                  Cancel as Admin
+                </button>
+              </div>
+            </div>
+          </div>
+        )
+      }
+
+      {/* Permanent Delete Modal */}
+      {
+        showPermanentDeleteModal && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaTrash className="text-red-500" />
+                Remove Appointment
+              </h3>
+
+              <p className="text-gray-600 mb-6">
+                Are you sure you want to permanently remove this appointment from your table? This action cannot be undone.
+              </p>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => setShowPermanentDeleteModal(false)}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmPermanentDelete}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                >
+                  <FaTrash size={12} />
+                  Remove Permanently
+                </button>
+              </div>
+            </div>
+          </div>
+        ), document.body)
+      }
+      {/* Report Message Modal */}
+      {
+        showReportModal && reportingMessage && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaFlag className="text-red-500" /> Report message
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                  <select
+                    value={reportReason}
+                    onChange={(e) => setReportReason(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                  >
+                    <option value="">-- Select a reason --</option>
+                    <option value="Spam or scam">Spam or scam</option>
+                    <option value="Harassment or hate speech">Harassment or hate speech</option>
+                    <option value="Inappropriate content">Inappropriate content</option>
+                    <option value="Sensitive or personal data">Sensitive or personal data</option>
+                    <option value="Fraud or illegal activity">Fraud or illegal activity</option>
+                    <option value="Other">Other</option>
+                  </select>
+                </div>
+                {reportReason && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {reportReason === 'Other' ? 'Additional details *' : 'Additional details (optional)'}
+                    </label>
+                    <textarea
+                      value={reportDetails}
+                      onChange={(e) => setReportDetails(e.target.value)}
+                      rows={4}
+                      placeholder={reportReason === 'Other' ? 'Please provide details about the issue...' : 'Add any context to help admins review...'}
+                      className="w-full p-2 border border-gray-300 rounded resize-y focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                    />
+                  </div>
+                )}
+                <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
+                  <div className="font-semibold mb-1">Message excerpt:</div>
+                  <div className="line-clamp-4 whitespace-pre-wrap">{(reportingMessage.message || '').slice(0, 300)}</div>
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end gap-3">
+                <button
+                  onClick={() => { setShowReportModal(false); setReportingMessage(null); setReportReason(''); setReportDetails(''); }}
+                  className="px-4 py-2 rounded border border-gray-300 text-gray-700 hover:bg-gray-50"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!reportReason) { toast.error('Please select a reason'); return; }
+                    setSubmittingReport(true);
+                    try {
+                      const { data } = await axios.post(`${API_BASE_URL}/api/notifications/report-chat`,
+                        {
+                          appointmentId: appt._id,
+                          commentId: reportingMessage._id,
+                          reason: reportReason,
+                          details: reportDetails,
+                        },
+                        {
+                          withCredentials: true,
+                          headers: { 'Content-Type': 'application/json' }
+                        }
+                      );
+                      toast.info('Thank you for reporting.');
+                      setShowReportModal(false);
+                      setReportingMessage(null);
+                      setReportReason('');
+                      setReportDetails('');
+                    } catch (err) {
+                      toast.error(err.response?.data?.message || 'Network error while reporting');
+                    } finally {
+                      setSubmittingReport(false);
+                    }
+                  }}
+                  disabled={submittingReport || !reportReason || (reportReason === 'Other' && !reportDetails.trim())}
+                  className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {submittingReport ? 'Reporting…' : 'Report'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ), document.body)
+      }
+
+      {/* Report Chat Modal */}
+      {
+        showReportChatModal && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-2xl w-full mx-4 shadow-xl max-h-[90vh] overflow-y-auto">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaFlag className="text-red-500" /> Report Chat
+              </h3>
+
+              {/* Last 5 Messages Preview */}
+              <div className="mb-6">
+                <div className="flex items-center gap-2 mb-3">
+                  <FaInfoCircle className="text-blue-500 text-sm" />
+                  <span className="text-sm font-medium text-gray-700">The last 5 messages in this chat will be sent to UrbanSetu. This person won't know you reported them:</span>
+                </div>
+                <div className="bg-gray-50 rounded-lg p-4 border border-gray-200 max-h-48 overflow-y-auto">
+                  {filteredComments.slice(-5).map((message, index) => (
+                    <div key={message._id || index} className="mb-3 last:mb-0">
+                      <div className="flex items-start gap-2">
+                        <div className="w-6 h-6 rounded-full bg-blue-100 flex items-center justify-center text-xs font-semibold text-blue-600 flex-shrink-0">
+                          {message.senderName ? message.senderName.charAt(0).toUpperCase() : 'U'}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="flex items-center gap-2 mb-1">
+                            <span className="text-xs font-semibold text-gray-600">
+                              {message.senderName || 'Unknown User'}
+                            </span>
+                            <span className="text-xs text-gray-400">
+                              {new Date(message.timestamp).toLocaleString()}
+                            </span>
+                          </div>
+                          <div className="text-sm text-gray-700 bg-white rounded p-2 border border-gray-200">
+                            {message.type === 'image' ? (
+                              <div className="flex items-center gap-2">
+                                <span>📷 Image: {message.message}</span>
+                                {message.imageUrl && (
+                                  <img
+                                    src={message.imageUrl}
+                                    alt="Reported image"
+                                    className="w-8 h-8 object-cover rounded"
+                                    onError={(e) => e.target.style.display = 'none'}
+                                  />
+                                )}
+                              </div>
+                            ) : (
+                              <span className="whitespace-pre-wrap break-words">{message.message}</span>
+                            )}
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                  {filteredComments.length === 0 && (
+                    <div className="text-center text-gray-500 text-sm py-4">
+                      No messages to report
                     </div>
                   )}
                 </div>
               </div>
-            </div>
 
-            {/* Footer */}
-            <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
-              <button
-                onClick={() => {
-                  setShowPinModal(false);
-                  setMessageToPin(null);
-                  setPinDuration('24hrs');
-                  setCustomHours(24);
-                }}
-                className="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors font-medium"
-              >
-                Cancel
-              </button>
-              <button
-                onClick={async () => {
-                  if (Array.isArray(messageToPin)) {
-                    // Handle multiple messages
-                    setPinningSaving(true);
+              <div className="space-y-4">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 mb-1">Reason</label>
+                  <select
+                    value={reportChatReason}
+                    onChange={(e) => setReportChatReason(e.target.value)}
+                    className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                  >
+                    <option value="">Select a reason</option>
+                    <option value="harassment">Harassment or bullying</option>
+                    <option value="spam">Spam or unwanted messages</option>
+                    <option value="inappropriate">Inappropriate content</option>
+                    <option value="scam">Scam or fraud</option>
+                    <option value="threats">Threats or violence</option>
+                    <option value="privacy">Privacy violation</option>
+                    <option value="other">Other</option>
+                  </select>
+                </div>
+                {reportChatReason && (
+                  <div>
+                    <label className="block text-sm font-medium text-gray-700 mb-1">
+                      {reportChatReason === 'other' ? 'Additional details *' : 'Additional details (optional)'}
+                    </label>
+                    <textarea
+                      value={reportChatDetails}
+                      onChange={(e) => setReportChatDetails(e.target.value)}
+                      rows={4}
+                      placeholder={reportChatReason === 'other' ? 'Please provide details about the issue...' : 'Provide more context to help admins review this chat...'}
+                      className="w-full p-2 border border-gray-300 rounded focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                    />
+                  </div>
+                )}
+              </div>
+              <div className="flex gap-2 justify-end mt-6">
+                <button
+                  onClick={() => {
+                    setShowReportChatModal(false);
+                    setReportChatReason('');
+                    setReportChatDetails('');
+                  }}
+                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 hover:bg-gray-300"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (!reportChatReason) {
+                      toast.error('Please select a reason');
+                      return;
+                    }
+                    setSubmittingChatReport(true);
                     try {
-
-
-                      // Process messages one by one to handle individual failures gracefully
-                      let successCount = 0;
-                      let failureCount = 0;
-                      const failedMessages = [];
-                      const successfulMessages = [];
-
-                      for (const msg of messageToPin) {
-                        try {
-
-
-                          const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/pin`,
-                            {
-                              pinned: true,
-                              pinDuration: pinDuration,
-                              customHours: pinDuration === 'custom' ? customHours : undefined
-                            },
-                            {
-                              withCredentials: true,
-                              headers: { 'Content-Type': 'application/json' }
-                            }
-                          );
-
-
-                          successCount++;
-                          successfulMessages.push(msg);
-
-                        } catch (err) {
-                          console.error(`Failed to pin message ${msg._id}:`, err);
-                          failureCount++;
-                          failedMessages.push(msg);
+                      const { data } = await axios.post(`${API_BASE_URL}/api/notifications/report-chat-conversation`,
+                        {
+                          appointmentId: appt._id,
+                          reason: reportChatReason,
+                          details: reportChatDetails,
+                        },
+                        {
+                          withCredentials: true,
+                          headers: { 'Content-Type': 'application/json' }
                         }
-                      }
+                      );
+                      toast.info('Thank you for reporting.');
+                      setShowReportChatModal(false);
+                      setReportChatReason('');
+                      setReportChatDetails('');
+                    } catch (err) {
+                      toast.error(err.response?.data?.message || 'Network error while reporting');
+                    } finally {
+                      setSubmittingChatReport(false);
+                    }
+                  }}
+                  disabled={submittingChatReport || !reportChatReason || (reportChatReason === 'other' && !reportChatDetails.trim())}
+                  className="px-4 py-2 rounded bg-red-600 text-white hover:bg-red-700 disabled:opacity-50"
+                >
+                  {submittingChatReport ? 'Reporting…' : 'Report'}
+                </button>
+              </div>
+            </div>
+          </div>
+        ), document.body)
+      }
 
+      {/* Message Info Modal */}
+      {
+        showMessageInfoModal && selectedMessageForInfo && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaInfoCircle className="text-blue-500" /> Message Info
+              </h3>
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
+                  <div className="font-semibold mb-2">Message:</div>
+                  <div className="whitespace-pre-wrap break-words">{(selectedMessageForInfo.message || '').slice(0, 200)}{(selectedMessageForInfo.message || '').length > 200 ? '...' : ''}</div>
+                </div>
 
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">Sent:</span>
+                    <span className="text-sm text-gray-800">
+                      {new Date(selectedMessageForInfo.timestamp).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </span>
+                  </div>
 
-                      if (successCount > 0) {
-                        // Calculate expiry date based on duration
-                        const now = new Date();
-                        let expiryDate;
-                        if (pinDuration === '24hrs') {
-                          expiryDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
-                        } else if (pinDuration === '7days') {
-                          expiryDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
-                        } else if (pinDuration === '30days') {
-                          expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
-                        } else if (pinDuration === 'custom') {
-                          expiryDate = new Date(now.getTime() + customHours * 60 * 60 * 1000);
-                        }
+                  {selectedMessageForInfo.deliveredAt && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Delivered:</span>
+                      <span className="text-sm text-gray-800">
+                        {new Date(selectedMessageForInfo.deliveredAt).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </span>
+                    </div>
+                  )}
 
-                        // Update UI state for successfully pinned messages
-                        setComments(prev => prev.map(c => {
-                          const pinnedMsg = successfulMessages.find(msg => msg._id === c._id);
-                          if (pinnedMsg) {
-                            return {
-                              ...c,
-                              pinned: true,
-                              pinnedBy: currentUser._id,
-                              pinnedAt: now,
-                              pinExpiresAt: expiryDate,
-                              pinDuration: pinDuration
-                            };
+                  {selectedMessageForInfo.readAt && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Read:</span>
+                      <span className="text-sm text-gray-800">
+                        {new Date(selectedMessageForInfo.readAt).toLocaleString('en-US', {
+                          year: 'numeric',
+                          month: 'short',
+                          day: 'numeric',
+                          hour: '2-digit',
+                          minute: '2-digit',
+                          hour12: true
+                        })}
+                      </span>
+                    </div>
+                  )}
+
+                  {!selectedMessageForInfo.deliveredAt && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Status:</span>
+                      <span className="text-sm text-gray-500">Not delivered yet</span>
+                    </div>
+                  )}
+
+                  {selectedMessageForInfo.deliveredAt && !selectedMessageForInfo.readAt && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Status:</span>
+                      <span className="text-sm text-blue-600">Delivered</span>
+                    </div>
+                  )}
+
+                  {selectedMessageForInfo.readAt && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Status:</span>
+                      <span className="text-sm text-green-600">Read</span>
+                    </div>
+                  )}
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => { setShowMessageInfoModal(false); setSelectedMessageForInfo(null); }}
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        ), document.body)
+      }
+
+      {/* Call Info Modal */}
+      {
+        showCallInfoModal && selectedCallForInfo && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[100]">
+            <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4 shadow-xl">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+                <FaInfoCircle className="text-blue-500" /> Call Info
+              </h3>
+              <div className="space-y-4">
+                <div className="bg-gray-50 rounded p-3 text-sm text-gray-700">
+                  <div className="font-semibold mb-2">Call Type:</div>
+                  <div>{selectedCallForInfo.callType === 'video' ? 'Video Call' : 'Audio Call'}</div>
+                </div>
+
+                <div className="space-y-3">
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">Status:</span>
+                    <span className={`text-sm font-medium ${selectedCallForInfo.status === 'accepted' ? 'text-green-600' :
+                      selectedCallForInfo.status === 'missed' || selectedCallForInfo.status === 'rejected' || selectedCallForInfo.status === 'cancelled' ? 'text-red-600' :
+                        'text-yellow-600'
+                      }`}>
+                      {selectedCallForInfo.status.charAt(0).toUpperCase() + selectedCallForInfo.status.slice(1)}
+                    </span>
+                  </div>
+
+                  {selectedCallForInfo.duration && selectedCallForInfo.duration > 0 && (
+                    <div className="flex justify-between items-center">
+                      <span className="text-sm font-medium text-gray-600">Duration:</span>
+                      <span className="text-sm text-gray-800">
+                        {(() => {
+                          const hours = Math.floor(selectedCallForInfo.duration / 3600);
+                          const minutes = Math.floor((selectedCallForInfo.duration % 3600) / 60);
+                          const secs = selectedCallForInfo.duration % 60;
+                          if (hours > 0) {
+                            return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
                           }
-                          return c;
-                        }));
+                          return `${minutes}:${secs.toString().padStart(2, '0')}`;
+                        })()}
+                      </span>
+                    </div>
+                  )}
 
-                        // Update pinned messages list
-                        const newPinnedMessages = successfulMessages.map(msg => ({
-                          ...msg,
-                          pinned: true,
-                          pinnedBy: currentUser._id,
-                          pinnedAt: now,
-                          pinExpiresAt: expiryDate,
-                          pinDuration: pinDuration
-                        }));
+                  <div className="flex justify-between items-center">
+                    <span className="text-sm font-medium text-gray-600">Started:</span>
+                    <span className="text-sm text-gray-800">
+                      {new Date(selectedCallForInfo.startTime || selectedCallForInfo.createdAt).toLocaleString('en-US', {
+                        year: 'numeric',
+                        month: 'short',
+                        day: 'numeric',
+                        hour: '2-digit',
+                        minute: '2-digit',
+                        hour12: true
+                      })}
+                    </span>
+                  </div>
 
-                        setPinnedMessages(prev => {
-                          const filtered = prev.filter(m => !successfulMessages.some(msg => msg._id === m._id));
-                          return [...filtered, ...newPinnedMessages];
-                        });
+                  {(() => {
+                    const isCaller = selectedCallForInfo.callerId?._id === currentUser._id || selectedCallForInfo.callerId === currentUser._id;
+                    const callerName = selectedCallForInfo.callerId?.username || 'Unknown';
+                    const receiverName = selectedCallForInfo.receiverId?.username || 'Unknown';
+                    return (
+                      <div className="flex justify-between items-center">
+                        <span className="text-sm font-medium text-gray-600">Participants:</span>
+                        <span className="text-sm text-gray-800">
+                          {isCaller ? `You → ${receiverName}` : `${callerName} → You`}
+                        </span>
+                      </div>
+                    );
+                  })()}
+                </div>
+              </div>
+              <div className="mt-6 flex justify-end">
+                <button
+                  onClick={() => { setShowCallInfoModal(false); setSelectedCallForInfo(null); }}
+                  className="px-4 py-2 rounded bg-blue-600 text-white hover:bg-blue-700"
+                >
+                  Close
+                </button>
+              </div>
+            </div>
+          </div>
+        ), document.body)
+      }
+      {/* Starred Messages Modal */}
+      {
+        showStarredModal && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+              {/* Header */}
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-yellow-50 to-amber-50">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaStar className="text-yellow-500" />
+                  Starred Messages
+                </h3>
+                <button
+                  onClick={fetchStarredMessages}
+                  disabled={loadingStarredMessages}
+                  className="p-2 text-yellow-600 hover:text-yellow-700 bg-yellow-100 hover:bg-yellow-200 rounded-lg transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                  title="Refresh starred messages"
+                >
+                  {loadingStarredMessages ? (
+                    <div className="w-4 h-4 border-2 border-yellow-600 border-t-transparent rounded-full animate-spin"></div>
+                  ) : (
+                    <FaSync className="w-4 h-4" />
+                  )}
+                </button>
+              </div>
 
-                        // Show appropriate feedback
-                        if (successCount > 0 && failureCount === 0) {
-                          toast.success(`Successfully pinned ${successCount} messages`);
-                          // Clear selection mode if all messages were processed successfully
-                          setIsSelectionMode(false);
-                          setSelectedMessages([]);
-                        } else if (successCount > 0 && failureCount > 0) {
-                          toast.warning(`Partially successful: ${successCount} messages pinned, ${failureCount} failed`);
+              {/* Content */}
+              <div className="flex-1 overflow-y-auto p-6">
+                {loadingStarredMessages ? (
+                  <div className="flex items-center justify-center py-12">
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-yellow-500"></div>
+                    <span className="ml-3 text-gray-600">Loading starred messages...</span>
+                  </div>
+                ) : starredMessages.length === 0 ? (
+                  <div className="text-center py-12">
+                    <FaRegStar className="mx-auto text-6xl text-gray-300 mb-4" />
+                    <h4 className="text-xl font-semibold text-gray-600 mb-2">No Starred Messages</h4>
+                    <p className="text-gray-500">Star important messages to find them easily later.</p>
+                  </div>
+                ) : (
+                  <div className="space-y-4">
+                    {starredMessages.map((message, index) => {
+                      const isMe = message.senderEmail === currentUser.email;
+                      const messageDate = new Date(message.timestamp);
+
+                      return (
+                        <div key={message._id} className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} mb-4`}>
+                          <div className={`relative max-w-[80%] ${isMe ? 'ml-12' : 'mr-12'}`}>
+                            {/* Star indicator and remove button */}
+                            <div className={`flex items-center gap-2 mb-1 ${isMe ? 'justify-end' : 'justify-start'}`}>
+                              <FaStar className="text-yellow-500 text-xs" />
+                              <span className={`text-xs font-medium ${isMe ? 'text-blue-600' : 'text-green-600'}`}>
+                                {isMe ? 'You' : (message.senderName || 'Other Party')}
+                              </span>
+                              <span className="text-xs text-gray-500">
+                                {messageDate.toLocaleDateString('en-US', {
+                                  month: 'short',
+                                  day: 'numeric',
+                                  hour: '2-digit',
+                                  minute: '2-digit',
+                                  hour12: true
+                                })}
+                              </span>
+                              {/* Remove star button */}
+                              <button
+                                onClick={async () => {
+                                  setUnstarringMessageId(message._id);
+                                  try {
+                                    const { data } = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${message._id}/star`,
+                                      { starred: false },
+                                      {
+                                        withCredentials: true,
+                                        headers: { 'Content-Type': 'application/json' }
+                                      }
+                                    );
+                                    // Update the local comments state
+                                    setComments(prev => prev.map(c =>
+                                      c._id === message._id
+                                        ? { ...c, starredBy: (c.starredBy || []).filter(id => id !== currentUser._id) }
+                                        : c
+                                    ));
+
+                                    // Remove from starred messages list
+                                    setStarredMessages(prev => prev.filter(m => m._id !== message._id));
+
+                                    toast.success('Message unstarred.');
+                                  } catch (err) {
+                                    toast.error(err.response?.data?.message || 'Failed to unstar message');
+                                  } finally {
+                                    setUnstarringMessageId(null);
+                                  }
+                                }}
+                                className="text-red-500 hover:text-red-700 text-xs p-1 rounded-full hover:bg-red-50 transition-colors"
+                                title="Remove from starred messages"
+                                disabled={unstarringMessageId === message._id}
+                              >
+                                {unstarringMessageId === message._id ? (
+                                  <div className="w-3 h-3 border border-red-500 border-t-transparent rounded-full animate-spin"></div>
+                                ) : (
+                                  <FaTimes className="w-3 h-3" />
+                                )}
+                              </button>
+                            </div>
+
+                            {/* Message bubble - styled like chatbox */}
+                            <div
+                              className={`rounded-2xl px-4 py-3 text-sm shadow-lg break-words relative group cursor-pointer hover:shadow-xl transition-all duration-200 ${isMe
+                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 text-white hover:from-blue-500 hover:to-purple-600'
+                                : 'bg-white text-gray-800 border border-gray-200 hover:bg-gray-50 hover:border-gray-300'
+                                }`}
+                              onClick={() => {
+                                setShowStarredModal(false);
+                                // Scroll to the message in the main chat if it exists
+                                const messageElement = document.querySelector(`[data-message-id="${message._id}"]`);
+                                if (messageElement) {
+                                  messageElement.scrollIntoView({ behavior: 'smooth', block: 'center' });
+                                  messageElement.classList.add('starred-highlight');
+                                  setTimeout(() => {
+                                    messageElement.classList.remove('starred-highlight');
+                                  }, 1600);
+                                }
+                              }}
+                            >
+                              <div className="whitespace-pre-wrap break-words">
+                                {message.deleted ? (
+                                  <span className="flex items-center gap-1 text-gray-400 italic">
+                                    <FaBan className="inline-block text-lg" /> {message.senderEmail === currentUser.email ? "You deleted this message" : "This message was deleted."}
+                                  </span>
+                                ) : (
+                                  <>
+                                    {/* Image Message - Only show for non-deleted messages */}
+                                    {message.imageUrl && (
+                                      <div className="mb-2">
+                                        <img
+                                          src={message.imageUrl}
+                                          alt="Shared image"
+                                          className="max-w-full max-h-64 rounded-lg cursor-pointer hover:opacity-90 transition-opacity"
+                                          onClick={(e) => {
+                                            e.stopPropagation();
+                                            const imageUrls = (comments || []).filter(msg => !!msg.imageUrl).map(msg => msg.imageUrl);
+                                            const startIndex = Math.max(0, imageUrls.indexOf(message.imageUrl));
+                                            setPreviewImages(imageUrls);
+                                            setPreviewIndex(startIndex);
+                                            setShowImagePreview(true);
+                                          }}
+                                          onError={(e) => {
+                                            e.target.src = "https://via.placeholder.com/300x200?text=Image+Not+Found";
+                                            e.target.className = "max-w-full max-h-64 rounded-lg opacity-50";
+                                          }}
+                                        />
+                                      </div>
+                                    )}
+                                    <FormattedTextWithReadMore
+                                      text={(message.message || '').replace(/\n+$/, '')}
+                                      isSentMessage={isMe}
+                                      className="whitespace-pre-wrap break-words"
+                                      searchQuery={searchQuery}
+                                    />
+                                  </>
+                                )}
+                              </div>
+
+                              {/* Copy button - appears on hover, only for non-deleted messages */}
+                              {!message.deleted && (
+                                <button
+                                  onClick={(e) => { e.stopPropagation(); copyMessageToClipboard(message.message); }}
+                                  className={`absolute top-2 right-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200 p-1.5 rounded-full ${isMe
+                                    ? 'bg-white/20 hover:bg-white/30 text-white'
+                                    : 'bg-gray-100 hover:bg-gray-200 text-gray-600'
+                                    }`}
+                                  title="Copy message"
+                                >
+                                  <FaCopy className="w-3 h-3" />
+                                </button>
+                              )}
+
+                              {/* Edited indicator only (no time display) */}
+                              {message.edited && (
+                                <div className={`flex justify-end mt-2 text-xs ${isMe ? 'text-blue-200' : 'text-gray-500'
+                                  }`}>
+                                  <span className="italic">(Edited)</span>
+                                </div>
+                              )}
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
+                )}
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-gray-200 bg-gray-50">
+                <div className="flex justify-between items-center">
+                  <span className="text-sm text-gray-600">
+                    {starredMessages.length} starred message{starredMessages.length !== 1 ? 's' : ''}
+                  </span>
+                  <div className="flex gap-2">
+                    {starredMessages.length > 0 && (
+                      <button
+                        onClick={handleRemoveAllStarredMessages}
+                        disabled={removingAllStarred}
+                        className="px-2 sm:px-4 py-1.5 sm:py-2 bg-red-500 text-white rounded-lg hover:bg-red-600 disabled:bg-red-400 disabled:cursor-not-allowed transition-colors font-medium flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+                      >
+                        {removingAllStarred ? (
+                          <>
+                            <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                            Removing...
+                          </>
+                        ) : (
+                          <>
+                            <FaTrash className="w-4 h-4" />
+                            Remove All
+                          </>
+                        )}
+                      </button>
+                    )}
+                    <button
+                      onClick={() => setShowStarredModal(false)}
+                      className="px-2 sm:px-4 py-1.5 sm:py-2 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600 transition-colors font-medium text-xs sm:text-sm"
+                    >
+                      Close
+                    </button>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        ), document.body)
+      }
+      {/* Pin Message Modal */}
+      {
+        showPinModal && messageToPin && createPortal((
+          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-[100] p-4">
+            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md overflow-hidden">
+              {/* Header */}
+              <div className="flex items-center p-6 border-b border-gray-200 bg-gradient-to-r from-purple-50 to-blue-50">
+                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaThumbtack className="text-purple-500" />
+                  Pin Message
+                </h3>
+              </div>
+
+              {/* Content */}
+              <div className="p-6">
+                <div className="mb-4">
+                  <p className="text-gray-600 mb-4">
+                    {Array.isArray(messageToPin)
+                      ? `Choose how long to pin these ${messageToPin.length} messages:`
+                      : 'Choose how long to pin this message:'}
+                  </p>
+
+                  {/* Pin Duration Options */}
+                  <div className="space-y-3">
+                    <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input
+                        type="radio"
+                        name="pinDuration"
+                        value="24hrs"
+                        checked={pinDuration === '24hrs'}
+                        onChange={(e) => setPinDuration(e.target.value)}
+                        className="text-purple-600"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-800">24 Hours</div>
+                        <div className="text-sm text-gray-500">Pin for 24 hours</div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input
+                        type="radio"
+                        name="pinDuration"
+                        value="7days"
+                        checked={pinDuration === '7days'}
+                        onChange={(e) => setPinDuration(e.target.value)}
+                        className="text-purple-600"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-800">7 Days</div>
+                        <div className="text-sm text-gray-500">Pin for 7 days</div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input
+                        type="radio"
+                        name="pinDuration"
+                        value="30days"
+                        checked={pinDuration === '30days'}
+                        onChange={(e) => setPinDuration(e.target.value)}
+                        className="text-purple-600"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-800">30 Days</div>
+                        <div className="text-sm text-gray-500">Pin for 30 days</div>
+                      </div>
+                    </label>
+
+                    <label className="flex items-center gap-3 p-3 border border-gray-200 rounded-lg cursor-pointer hover:bg-gray-50 transition-colors">
+                      <input
+                        type="radio"
+                        name="pinDuration"
+                        value="custom"
+                        checked={pinDuration === 'custom'}
+                        onChange={(e) => setPinDuration(e.target.value)}
+                        className="text-purple-600"
+                      />
+                      <div className="flex-1">
+                        <div className="font-medium text-gray-800">Custom</div>
+                        <div className="text-sm text-gray-500">Pin for custom hours</div>
+                      </div>
+                    </label>
+                  </div>
+
+                  {/* Custom Hours Input */}
+                  {pinDuration === 'custom' && (
+                    <div className="mt-4">
+                      <label className="block text-sm font-medium text-gray-700 mb-2">
+                        Custom Hours
+                      </label>
+                      <input
+                        type="number"
+                        min="1"
+                        max="8760"
+                        value={customHours}
+                        onChange={(e) => setCustomHours(Math.max(1, parseInt(e.target.value) || 1))}
+                        className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                        placeholder="Enter hours (1-8760)"
+                      />
+                      <p className="text-xs text-gray-500 mt-1">
+                        Maximum: 8760 hours (1 year)
+                      </p>
+                    </div>
+                  )}
+
+                  {/* Message Preview */}
+                  <div className="mt-4 p-3 bg-gray-50 rounded-lg">
+                    <div className="text-sm text-gray-600 mb-2">
+                      {Array.isArray(messageToPin) ? 'Messages to pin:' : 'Message to pin:'}
+                    </div>
+                    {Array.isArray(messageToPin) ? (
+                      <div className="space-y-2 max-h-32 overflow-y-auto">
+                        {messageToPin.map((msg, index) => (
+                          <div key={msg._id} className="text-sm text-gray-800 bg-white p-2 rounded border">
+                            <span className="font-medium text-xs text-gray-500">#{index + 1}: </span>
+                            {msg.message?.substring(0, 80)}
+                            {msg.message?.length > 80 ? '...' : ''}
+                          </div>
+                        ))}
+                      </div>
+                    ) : (
+                      <div className="text-sm text-gray-800 bg-white p-2 rounded border">
+                        {messageToPin.message?.substring(0, 100)}
+                        {messageToPin.message?.length > 100 ? '...' : ''}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Footer */}
+              <div className="p-6 border-t border-gray-200 bg-gray-50 flex justify-end gap-3">
+                <button
+                  onClick={() => {
+                    setShowPinModal(false);
+                    setMessageToPin(null);
+                    setPinDuration('24hrs');
+                    setCustomHours(24);
+                  }}
+                  className="px-4 py-2 text-gray-600 bg-gray-200 rounded-lg hover:bg-gray-300 transition-colors font-medium"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={async () => {
+                    if (Array.isArray(messageToPin)) {
+                      // Handle multiple messages
+                      setPinningSaving(true);
+                      try {
+
+
+                        // Process messages one by one to handle individual failures gracefully
+                        let successCount = 0;
+                        let failureCount = 0;
+                        const failedMessages = [];
+                        const successfulMessages = [];
+
+                        for (const msg of messageToPin) {
+                          try {
+
+
+                            const response = await axios.patch(`${API_BASE_URL}/api/bookings/${appt._id}/comment/${msg._id}/pin`,
+                              {
+                                pinned: true,
+                                pinDuration: pinDuration,
+                                customHours: pinDuration === 'custom' ? customHours : undefined
+                              },
+                              {
+                                withCredentials: true,
+                                headers: { 'Content-Type': 'application/json' }
+                              }
+                            );
+
+
+                            successCount++;
+                            successfulMessages.push(msg);
+
+                          } catch (err) {
+                            console.error(`Failed to pin message ${msg._id}:`, err);
+                            failureCount++;
+                            failedMessages.push(msg);
+                          }
+                        }
+
+
+
+                        if (successCount > 0) {
+                          // Calculate expiry date based on duration
+                          const now = new Date();
+                          let expiryDate;
+                          if (pinDuration === '24hrs') {
+                            expiryDate = new Date(now.getTime() + 24 * 60 * 60 * 1000);
+                          } else if (pinDuration === '7days') {
+                            expiryDate = new Date(now.getTime() + 7 * 24 * 60 * 60 * 1000);
+                          } else if (pinDuration === '30days') {
+                            expiryDate = new Date(now.getTime() + 30 * 24 * 60 * 60 * 1000);
+                          } else if (pinDuration === 'custom') {
+                            expiryDate = new Date(now.getTime() + customHours * 60 * 60 * 1000);
+                          }
+
+                          // Update UI state for successfully pinned messages
+                          setComments(prev => prev.map(c => {
+                            const pinnedMsg = successfulMessages.find(msg => msg._id === c._id);
+                            if (pinnedMsg) {
+                              return {
+                                ...c,
+                                pinned: true,
+                                pinnedBy: currentUser._id,
+                                pinnedAt: now,
+                                pinExpiresAt: expiryDate,
+                                pinDuration: pinDuration
+                              };
+                            }
+                            return c;
+                          }));
+
+                          // Update pinned messages list
+                          const newPinnedMessages = successfulMessages.map(msg => ({
+                            ...msg,
+                            pinned: true,
+                            pinnedBy: currentUser._id,
+                            pinnedAt: now,
+                            pinExpiresAt: expiryDate,
+                            pinDuration: pinDuration
+                          }));
+
+                          setPinnedMessages(prev => {
+                            const filtered = prev.filter(m => !successfulMessages.some(msg => msg._id === m._id));
+                            return [...filtered, ...newPinnedMessages];
+                          });
+
+                          // Show appropriate feedback
+                          if (successCount > 0 && failureCount === 0) {
+                            toast.success(`Successfully pinned ${successCount} messages`);
+                            // Clear selection mode if all messages were processed successfully
+                            setIsSelectionMode(false);
+                            setSelectedMessages([]);
+                          } else if (successCount > 0 && failureCount > 0) {
+                            toast.warning(`Partially successful: ${successCount} messages pinned, ${failureCount} failed`);
+                          } else {
+                            toast.error(`Failed to pin any messages. Please try again.`);
+                          }
                         } else {
                           toast.error(`Failed to pin any messages. Please try again.`);
                         }
-                      } else {
-                        toast.error(`Failed to pin any messages. Please try again.`);
-                      }
 
-                    } catch (err) {
-                      console.error('Error in bulk pinning operation:', err);
-                      if (err.response) {
-                        console.error('Response data:', err.response.data);
-                        console.error('Response status:', err.response.status);
+                      } catch (err) {
+                        console.error('Error in bulk pinning operation:', err);
+                        if (err.response) {
+                          console.error('Response data:', err.response.data);
+                          console.error('Response status:', err.response.status);
+                        }
+                        toast.error('Failed to pin messages. Please try again.');
+                      } finally {
+                        setPinningSaving(false);
                       }
-                      toast.error('Failed to pin messages. Please try again.');
-                    } finally {
-                      setPinningSaving(false);
+                    } else {
+                      // Handle single message (existing logic)
+                      handlePinMessage(messageToPin, true, pinDuration, customHours);
                     }
-                  } else {
-                    // Handle single message (existing logic)
-                    handlePinMessage(messageToPin, true, pinDuration, customHours);
-                  }
-                  setShowPinModal(false);
-                  setMessageToPin(null);
-                  setPinDuration('24hrs');
-                  setCustomHours(24);
-                }}
-                disabled={pinningSaving}
-                className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
-              >
-                {pinningSaving ? (
-                  <div className="flex items-center gap-2">
-                    <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
-                    Pinning...
-                  </div>
-                ) : (
-                  Array.isArray(messageToPin) ? `Pin ${messageToPin.length} Messages` : 'Pin Message'
-                )}
-              </button>
+                    setShowPinModal(false);
+                    setMessageToPin(null);
+                    setPinDuration('24hrs');
+                    setCustomHours(24);
+                  }}
+                  disabled={pinningSaving}
+                  className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {pinningSaving ? (
+                    <div className="flex items-center gap-2">
+                      <div className="w-4 h-4 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                      Pinning...
+                    </div>
+                  ) : (
+                    Array.isArray(messageToPin) ? `Pin ${messageToPin.length} Messages` : 'Pin Message'
+                  )}
+                </button>
+              </div>
             </div>
           </div>
-        </div>
-      ), document.body)}
+        ), document.body)
+      }
 
       {/* Image Preview Modal */}
       <ImagePreview

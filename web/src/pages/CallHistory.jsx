@@ -1,40 +1,65 @@
 import React, { useState, useEffect } from 'react';
-import { FaPhone, FaVideo, FaClock, FaCheckCircle, FaTimesCircle, FaTrash } from 'react-icons/fa';
+import { FaPhone, FaVideo, FaClock, FaCheckCircle, FaTimesCircle, FaTrash, FaSearch, FaCalendarAlt, FaFilter, FaArrowLeft, FaArrowRight } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { API_BASE_URL } from '../config/api';
 import { usePageTitle } from '../hooks/usePageTitle';
 
+const CallHistorySkeleton = () => (
+  <div className="space-y-4 animate-pulse">
+    {[1, 2, 3, 4, 5].map((i) => (
+      <div key={i} className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center gap-4 flex-1">
+            <div className="w-12 h-12 bg-gray-200 rounded-full"></div>
+            <div className="space-y-2 flex-1">
+              <div className="h-5 bg-gray-200 rounded w-1/4"></div>
+              <div className="h-4 bg-gray-200 rounded w-1/3"></div>
+            </div>
+          </div>
+          <div className="w-8 h-8 bg-gray-200 rounded-full"></div>
+        </div>
+      </div>
+    ))}
+  </div>
+);
+
 const CallHistory = () => {
-  // Set page title
   usePageTitle("Call History");
   const [calls, setCalls] = useState([]);
-  const [allCalls, setAllCalls] = useState([]); // Store all calls for pagination
+  const [allCalls, setAllCalls] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [filter, setFilter] = useState('all'); // all, audio, video, missed
-  const [appointmentFilter, setAppointmentFilter] = useState('');
+
+  // Filters
+  const [activeTab, setActiveTab] = useState('all'); // all, audio, video
+  const [search, setSearch] = useState('');
+  const [statusFilter, setStatusFilter] = useState('all'); // all, missed, accepted, ended, rejected
+  const [dateRange, setDateRange] = useState({ start: '', end: '' });
+
   const [currentPage, setCurrentPage] = useState(1);
   const [showDeleteAllModal, setShowDeleteAllModal] = useState(false);
   const [showDeleteSingleModal, setShowDeleteSingleModal] = useState(false);
   const [callToDelete, setCallToDelete] = useState(null);
-  
+
   const itemsPerPage = 10;
 
   useEffect(() => {
     fetchCallHistory();
-  }, [filter, appointmentFilter]);
+  }, []);
 
   useEffect(() => {
-    // Apply pagination when allCalls or currentPage changes
-    applyPagination();
-  }, [allCalls, currentPage]);
+    // Reset to first page when filtering
+    setCurrentPage(1);
+  }, [activeTab, search, statusFilter, dateRange]);
+
+  useEffect(() => {
+    applyFiltersAndPagination();
+  }, [allCalls, activeTab, search, statusFilter, dateRange, currentPage]);
 
   const fetchCallHistory = async () => {
     try {
       setLoading(true);
       const params = new URLSearchParams();
-      if (appointmentFilter) params.append('appointmentId', appointmentFilter);
-      params.append('limit', '1000'); // Fetch all calls for client-side pagination
-      params.append('page', '1');
+      params.append('limit', '1000'); // Fetch all for client-side filtering
 
       const response = await fetch(`${API_BASE_URL}/api/calls/history?${params}`, {
         credentials: 'include'
@@ -42,321 +67,403 @@ const CallHistory = () => {
 
       if (response.ok) {
         const data = await response.json();
-        let filteredCalls = data.calls || [];
-        
-        if (filter === 'audio') {
-          filteredCalls = filteredCalls.filter(call => call.callType === 'audio');
-        } else if (filter === 'video') {
-          filteredCalls = filteredCalls.filter(call => call.callType === 'video');
-        } else if (filter === 'missed') {
-          filteredCalls = filteredCalls.filter(call => call.status === 'missed');
-        }
-        
-        setAllCalls(filteredCalls);
-        setCurrentPage(1); // Reset to first page when filter changes
+        setAllCalls(data.calls || []);
       }
     } catch (error) {
       console.error('Error fetching call history:', error);
+      toast.error('Failed to load call history');
     } finally {
       setLoading(false);
     }
   };
 
-  const applyPagination = () => {
+  const applyFiltersAndPagination = () => {
+    let filtered = allCalls;
+
+    // Tab Filter (Type)
+    if (activeTab === 'audio') {
+      filtered = filtered.filter(call => call.callType === 'audio');
+    } else if (activeTab === 'video') {
+      filtered = filtered.filter(call => call.callType === 'video');
+    }
+
+    // Status Filter
+    if (statusFilter !== 'all') {
+      // Group statuses if needed, or exact match
+      filtered = filtered.filter(call => call.status === statusFilter);
+    }
+
+    // Search
+    if (search.trim()) {
+      const query = search.toLowerCase();
+      filtered = filtered.filter(call =>
+        call.callerId?.username?.toLowerCase().includes(query) ||
+        call.receiverId?.username?.toLowerCase().includes(query) ||
+        call.appointmentId?.propertyName?.toLowerCase().includes(query)
+      );
+    }
+
+    // Date Range
+    if (dateRange.start) {
+      filtered = filtered.filter(call => new Date(call.startTime) >= new Date(dateRange.start));
+    }
+    if (dateRange.end) {
+      const endDate = new Date(dateRange.end);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(call => new Date(call.startTime) <= endDate);
+    }
+
+    // Pagination
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
-    const paginatedCalls = allCalls.slice(startIndex, endIndex);
-    setCalls(paginatedCalls);
+    setCalls(filtered.slice(startIndex, endIndex));
   };
 
-  const totalPages = Math.ceil(allCalls.length / itemsPerPage);
+  const getFilteredTotal = () => {
+    // Re-run filters logic just for count (simplified)
+    let filtered = allCalls;
+    if (activeTab === 'audio') filtered = filtered.filter(call => call.callType === 'audio');
+    else if (activeTab === 'video') filtered = filtered.filter(call => call.callType === 'video');
+
+    if (statusFilter !== 'all') filtered = filtered.filter(call => call.status === statusFilter);
+
+    if (search.trim()) {
+      const query = search.toLowerCase();
+      filtered = filtered.filter(call =>
+        call.callerId?.username?.toLowerCase().includes(query) ||
+        call.receiverId?.username?.toLowerCase().includes(query) ||
+        call.appointmentId?.propertyName?.toLowerCase().includes(query)
+      );
+    }
+
+    if (dateRange.start) filtered = filtered.filter(call => new Date(call.startTime) >= new Date(dateRange.start));
+    if (dateRange.end) {
+      const endDate = new Date(dateRange.end);
+      endDate.setHours(23, 59, 59, 999);
+      filtered = filtered.filter(call => new Date(call.startTime) <= endDate);
+    }
+    return filtered.length;
+  };
+
+  const totalItems = getFilteredTotal();
+  const totalPages = Math.ceil(totalItems / itemsPerPage) || 1;
 
   const handleDeleteAll = () => {
-    // Local deletion - remove all calls from view (for users only)
     setAllCalls([]);
-    setCalls([]);
-    toast.success('All call history removed from your view');
+    setCalls([]); // Clear current view
+    toast.success('All call history cleared from view');
     setShowDeleteAllModal(false);
   };
 
   const handleDeleteSingle = () => {
     if (!callToDelete) return;
-    // Local deletion - remove single call from view (for users only)
-    setAllCalls(prev => prev.filter(call => 
-      (call._id || call.callId) !== (callToDelete._id || callToDelete.callId)
-    ));
-    toast.success('Call history removed from your view');
+    setAllCalls(prev => prev.filter(call => (call._id || call.callId) !== (callToDelete._id || callToDelete.callId)));
+    toast.success('Call record removed');
     setShowDeleteSingleModal(false);
     setCallToDelete(null);
   };
 
   const formatDuration = (seconds) => {
-    if (!seconds || seconds === 0) return 'N/A';
+    if (!seconds || seconds === 0) return '0s';
     const hours = Math.floor(seconds / 3600);
     const minutes = Math.floor((seconds % 3600) / 60);
     const secs = seconds % 60;
-    if (hours > 0) {
-      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-    }
-    return `${minutes}:${secs.toString().padStart(2, '0')}`;
+    if (hours > 0) return `${hours}h ${minutes}m ${secs}s`;
+    return `${minutes}m ${secs}s`;
   };
 
-  const formatDate = (date) => {
-    if (!date) return 'N/A';
-    return new Date(date).toLocaleString();
+  const getStatusColor = (status) => {
+    switch (status) {
+      case 'accepted':
+      case 'ended': return 'text-green-600 bg-green-50 border-green-100';
+      case 'missed': return 'text-red-600 bg-red-50 border-red-100';
+      case 'rejected': return 'text-orange-600 bg-orange-50 border-orange-100';
+      default: return 'text-gray-600 bg-gray-50 border-gray-100';
+    }
   };
 
   const getStatusIcon = (status) => {
     switch (status) {
       case 'accepted':
-      case 'ended':
-        return <FaCheckCircle className="text-green-500" />;
+      case 'ended': return <FaCheckCircle />;
       case 'missed':
-      case 'rejected':
-        return <FaTimesCircle className="text-red-500" />;
-      default:
-        return <FaClock className="text-gray-500" />;
+      case 'rejected': return <FaTimesCircle />;
+      default: return <FaClock />;
     }
   };
 
-  const getStatusText = (status) => {
-    return status ? status.charAt(0).toUpperCase() + status.slice(1) : 'Unknown';
-  };
-
   return (
-    <div className="min-h-screen bg-gray-50 p-6">
-      <div className="max-w-6xl mx-auto">
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-3xl font-bold">Call History</h1>
-          {/* Delete All Button (users only) */}
+    <div className="min-h-screen bg-gray-50/50 p-4 md:p-8">
+      <div className="max-w-5xl mx-auto space-y-6">
+        {/* Header */}
+        <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
+          <div>
+            <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Call History</h1>
+            <p className="text-gray-500 mt-1">Manage and view your past audio and video calls</p>
+          </div>
           {allCalls.length > 0 && (
             <button
               onClick={() => setShowDeleteAllModal(true)}
-              className="text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 rounded-lg px-4 py-2 transition-colors flex items-center gap-2"
-              title="Delete all call history"
+              className="flex items-center gap-2 px-4 py-2 bg-white text-red-600 border border-red-200 rounded-lg hover:bg-red-50 hover:border-red-300 transition-all shadow-sm font-medium"
             >
-              <FaTrash className="w-5 h-5" />
-              Delete All
+              <FaTrash size={14} />
+              <span>Clear History</span>
             </button>
           )}
         </div>
-        
-        {/* Filters */}
-        <div className="bg-white rounded-lg shadow p-4 mb-6">
-          <div className="flex flex-wrap gap-4 items-center">
-            <div className="flex gap-2">
-              <button
-                onClick={() => setFilter('all')}
-                className={`px-4 py-2 rounded transition-colors ${
-                  filter === 'all' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
-                }`}
+
+        {/* Filters & Search */}
+        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-4">
+          {/* Tabs */}
+          <div className="flex p-1 bg-gray-100 rounded-lg w-fit">
+            <button
+              onClick={() => setActiveTab('all')}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'all' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              All Calls
+            </button>
+            <button
+              onClick={() => setActiveTab('audio')}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'audio' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Audio
+            </button>
+            <button
+              onClick={() => setActiveTab('video')}
+              className={`px-4 py-1.5 rounded-md text-sm font-medium transition-all ${activeTab === 'video' ? 'bg-white text-gray-900 shadow-sm' : 'text-gray-500 hover:text-gray-700'}`}
+            >
+              Video
+            </button>
+          </div>
+
+          <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
+            {/* Search */}
+            <div className="md:col-span-4 relative">
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <input
+                type="text"
+                placeholder="Search user or property..."
+                value={search}
+                onChange={(e) => setSearch(e.target.value)}
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all"
+              />
+            </div>
+
+            {/* Status Filter */}
+            <div className="md:col-span-3 relative">
+              <FaFilter className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <select
+                value={statusFilter}
+                onChange={(e) => setStatusFilter(e.target.value)}
+                className="w-full pl-10 pr-8 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 appearance-none transition-all cursor-pointer"
               >
-                All
-              </button>
-              <button
-                onClick={() => setFilter('audio')}
-                className={`px-4 py-2 rounded transition-colors ${
-                  filter === 'audio' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
-                }`}
-              >
-                Audio
-              </button>
-              <button
-                onClick={() => setFilter('video')}
-                className={`px-4 py-2 rounded transition-colors ${
-                  filter === 'video' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
-                }`}
-              >
-                Video
-              </button>
-              <button
-                onClick={() => setFilter('missed')}
-                className={`px-4 py-2 rounded transition-colors ${
-                  filter === 'missed' ? 'bg-blue-500 text-white' : 'bg-gray-200 hover:bg-gray-300'
-                }`}
-              >
-                Missed
-              </button>
+                <option value="all">All Statuses</option>
+                <option value="ended">Completed</option>
+                <option value="missed">Missed</option>
+                <option value="rejected">Rejected</option>
+              </select>
+            </div>
+
+            {/* Date Range */}
+            <div className="md:col-span-5 flex gap-2">
+              <div className="relative flex-1">
+                <input
+                  type="date"
+                  value={dateRange.start}
+                  onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
+                  className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+                />
+              </div>
+              <span className="self-center text-gray-400">-</span>
+              <div className="relative flex-1">
+                <input
+                  type="date"
+                  value={dateRange.end}
+                  onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
+                  className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+                />
+              </div>
             </div>
           </div>
         </div>
 
-        {/* Call List */}
+        {/* Content */}
         {loading ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
-            <p className="text-gray-600">Loading call history...</p>
-          </div>
+          <CallHistorySkeleton />
         ) : calls.length === 0 ? (
-          <div className="text-center py-12 bg-white rounded-lg shadow">
-            <p className="text-gray-600">No call history found.</p>
+          <div className="text-center py-20 bg-white rounded-xl border border-gray-200 dashed-border">
+            <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
+              <FaPhone className="text-gray-300 text-2xl" />
+            </div>
+            <h3 className="text-lg font-medium text-gray-900">No calls found</h3>
+            <p className="text-gray-500 max-w-sm mx-auto mt-1">
+              {statusFilter !== 'all' || search || activeTab !== 'all' ? 'Try adjusting your filters.' : 'Your call history will appear here once you make or receive calls.'}
+            </p>
           </div>
         ) : (
-          <>
-            <div className="space-y-4">
-              {calls.map((call) => (
-                <div key={call._id} className="bg-white rounded-lg shadow p-6 hover:shadow-md transition-shadow">
-                  <div className="flex items-center justify-between">
-                    <div className="flex items-center gap-4 flex-1">
-                    {/* Call Type Icon */}
-                    <div className={`w-12 h-12 rounded-full flex items-center justify-center ${
-                      call.callType === 'video' ? 'bg-blue-500' : 'bg-green-500'
-                    } text-white`}>
-                      {call.callType === 'video' ? <FaVideo className="text-xl" /> : <FaPhone className="text-xl" />}
+          <div className="space-y-4">
+            {calls.map((call, index) => (
+              <div
+                key={call._id}
+                className="group bg-white rounded-xl p-5 shadow-sm border border-gray-100 hover:shadow-md hover:border-blue-100 transition-all duration-200"
+                style={{ animation: `fadeIn 0.3s ease-out ${index * 0.05}s backwards` }}
+              >
+                <div className="flex items-center justify-between">
+                  <div className="flex items-center gap-5">
+                    {/* Icon */}
+                    <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 ${call.callType === 'video' ? 'bg-blue-50 text-blue-600' : 'bg-emerald-50 text-emerald-600'
+                      }`}>
+                      {call.callType === 'video' ? <FaVideo size={20} /> : <FaPhone size={20} />}
                     </div>
-                    
-                    {/* Call Details */}
+
+                    {/* Info */}
                     <div>
-                      <div className="flex items-center gap-2">
-                        <h3 className="font-semibold text-lg">
-                          {call.callerId?.username || 'Unknown'} → {call.receiverId?.username || 'Unknown'}
+                      <div className="flex items-center gap-3">
+                        <h3 className="font-semibold text-gray-900 text-lg">
+                          {call.callerId?.username || 'Unknown'}
+                          <span className="text-gray-400 px-2">→</span>
+                          {call.receiverId?.username || 'Unknown'}
                         </h3>
-                        {getStatusIcon(call.status)}
+                        <span className={`px-2.5 py-0.5 rounded-full text-xs font-medium border flex items-center gap-1.5 ${getStatusColor(call.status)}`}>
+                          {getStatusIcon(call.status)}
+                          <span className="capitalize">{call.status}</span>
+                        </span>
                       </div>
-                      <p className="text-gray-600 text-sm">
-                        {call.appointmentId?.propertyName || 'N/A'}
-                      </p>
-                      <div className="flex items-center gap-4 mt-1 text-sm text-gray-500">
-                        <span>{formatDate(call.startTime)}</span>
+
+                      <div className="flex flex-wrap items-center gap-x-6 gap-y-1 mt-1.5 text-sm text-gray-500">
+                        <span className="flex items-center gap-1.5">
+                          <FaCalendarAlt className="text-gray-400" />
+                          {new Date(call.startTime).toLocaleDateString(undefined, {
+                            year: 'numeric', month: 'short', day: 'numeric'
+                          })}
+                        </span>
+                        <span className="flex items-center gap-1.5">
+                          <FaClock className="text-gray-400" />
+                          {new Date(call.startTime).toLocaleTimeString(undefined, {
+                            hour: '2-digit', minute: '2-digit'
+                          })}
+                        </span>
                         {call.duration > 0 && (
-                          <span className="flex items-center gap-1">
-                            <FaClock /> {formatDuration(call.duration)}
+                          <span className="flex items-center gap-1.5 text-blue-600/80 font-medium">
+                            <span className="w-1 h-1 rounded-full bg-blue-400"></span>
+                            {formatDuration(call.duration)}
                           </span>
                         )}
-                        <span className="capitalize">{getStatusText(call.status)}</span>
+                        {call.appointmentId?.propertyName && (
+                          <span className="text-gray-400">• {call.appointmentId.propertyName}</span>
+                        )}
                       </div>
                     </div>
-                    {/* Delete Button (users only) */}
-                    <button
-                      onClick={() => {
-                        setCallToDelete(call);
-                        setShowDeleteSingleModal(true);
-                      }}
-                      className="text-red-500 hover:text-red-700 hover:bg-red-50 rounded-full p-2 transition-colors ml-2 flex-shrink-0"
-                      title="Delete this call history"
-                    >
-                      <FaTrash className="w-4 h-4" />
-                    </button>
                   </div>
+
+                  {/* Actions */}
+                  <button
+                    onClick={() => {
+                      setCallToDelete(call);
+                      setShowDeleteSingleModal(true);
+                    }}
+                    className="p-2 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors opacity-0 group-hover:opacity-100"
+                    title="Delete record"
+                  >
+                    <FaTrash />
+                  </button>
                 </div>
               </div>
             ))}
-            </div>
-
-            {/* Pagination */}
-            {totalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-                <div className="text-sm text-gray-700">
-                  Page {currentPage} of {totalPages}
-                </div>
-                <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
-                  <button
-                    onClick={() => {
-                      setCurrentPage(Math.max(1, currentPage - 1));
-                    }}
-                    disabled={currentPage === 1}
-                    className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                  >
-                    Previous
-                  </button>
-                  <button
-                    onClick={() => {
-                      setCurrentPage(Math.min(totalPages, currentPage + 1));
-                    }}
-                    disabled={currentPage === totalPages}
-                    className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
-                  >
-                    Next
-                  </button>
-                </div>
-              </div>
-            )}
-          </>
-        )}
-
-        {/* Delete All Confirmation Modal */}
-        {showDeleteAllModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-              <div className="p-6">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaTrash className="text-red-600 text-xl" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete All Call History</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      Are you sure you want to delete all call history from your view? This action will only remove the calls from your view and will not affect the other party or the database records.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-3 justify-end">
-                  <button
-                    type="button"
-                    onClick={() => setShowDeleteAllModal(false)}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDeleteAll}
-                    className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors flex items-center gap-2"
-                  >
-                    <FaTrash size={14} />
-                    Delete All
-                  </button>
-                </div>
-              </div>
-            </div>
           </div>
         )}
 
-        {/* Delete Single Call Confirmation Modal */}
-        {showDeleteSingleModal && callToDelete && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[10000]">
-            <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
-              <div className="p-6">
-                <div className="flex items-start gap-4 mb-6">
-                  <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center flex-shrink-0">
-                    <FaTrash className="text-red-600 text-xl" />
-                  </div>
-                  <div className="flex-1">
-                    <h3 className="text-lg font-semibold text-gray-800 mb-2">Delete Call History</h3>
-                    <p className="text-sm text-gray-600 leading-relaxed">
-                      Are you sure you want to delete this call history from your view? This action will only remove the call from your view and will not affect the other party or the database records.
-                    </p>
-                  </div>
-                </div>
-                
-                <div className="flex gap-3 justify-end">
-                  <button
-                    type="button"
-                    onClick={() => {
-                      setShowDeleteSingleModal(false);
-                      setCallToDelete(null);
-                    }}
-                    className="px-4 py-2 rounded-lg border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
-                  >
-                    Cancel
-                  </button>
-                  <button
-                    type="button"
-                    onClick={handleDeleteSingle}
-                    className="px-4 py-2 rounded-lg bg-red-600 text-white font-medium hover:bg-red-700 transition-colors flex items-center gap-2"
-                  >
-                    <FaTrash size={14} />
-                    Delete
-                  </button>
-                </div>
-              </div>
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="flex items-center justify-between pt-4 border-t border-gray-200">
+            <p className="text-sm text-gray-500">
+              Showing page <span className="font-semibold text-gray-900">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
+            </p>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
+                disabled={currentPage === 1}
+                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                <FaArrowLeft size={12} /> Previous
+              </button>
+              <button
+                onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
+                disabled={currentPage === totalPages}
+                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+              >
+                Next <FaArrowRight size={12} />
+              </button>
             </div>
           </div>
         )}
       </div>
+
+      {/* Delete Single Modal */}
+      {showDeleteSingleModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600">
+              <FaTrash size={20} />
+            </div>
+            <h3 className="text-xl font-bold text-center text-gray-900 mb-2">Delete Record?</h3>
+            <p className="text-center text-gray-500 mb-6">
+              This will remove this call from your history view. This action cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteSingleModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteSingle}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-500/30"
+              >
+                Delete
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Delete All Modal */}
+      {showDeleteAllModal && (
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl max-w-sm w-full p-6 transform transition-all scale-100">
+            <div className="w-12 h-12 bg-red-100 rounded-full flex items-center justify-center mb-4 mx-auto text-red-600">
+              <FaTrash size={20} />
+            </div>
+            <h3 className="text-xl font-bold text-center text-gray-900 mb-2">Clear History?</h3>
+            <p className="text-center text-gray-500 mb-6">
+              Are you sure you want to clear your entire call history? This action is permanent and cannot be undone.
+            </p>
+            <div className="flex gap-3">
+              <button
+                onClick={() => setShowDeleteAllModal(false)}
+                className="flex-1 px-4 py-2.5 rounded-xl border border-gray-300 text-gray-700 font-medium hover:bg-gray-50 transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteAll}
+                className="flex-1 px-4 py-2.5 rounded-xl bg-red-600 text-white font-medium hover:bg-red-700 transition-colors shadow-lg shadow-red-500/30"
+              >
+                Clear All
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+      <style>{`
+        @keyframes fadeIn {
+          from { opacity: 0; transform: translateY(10px); }
+          to { opacity: 1; transform: translateY(0); }
+        }
+      `}</style>
     </div>
   );
 };
 
 export default CallHistory;
-
