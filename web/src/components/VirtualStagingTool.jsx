@@ -76,50 +76,51 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
     const resultImageRef = useRef(null);
 
     const handleDownload = async () => {
-        if (!resultImageRef.current) return;
+        const imgElement = resultImageRef.current;
+        if (!imgElement || !generatedImage) return;
+
         try {
-            // Bypass CORS issues by fetching as blob locally
-            const imageUrl = resultImageRef.current.src;
-            const response = await fetch(imageUrl, { mode: 'cors' });
-            const blob = await response.blob();
-            const blobUrl = URL.createObjectURL(blob);
+            // Native Canvas API approach - Renders filter into pixel data
+            const canvas = document.createElement('canvas');
+            const ctx = canvas.getContext('2d');
 
-            // Store original src
-            const originalSrc = resultImageRef.current.src;
+            // Use natural dimensions for best quality
+            canvas.width = imgElement.naturalWidth;
+            canvas.height = imgElement.naturalHeight;
 
-            // Swap to blob URL
-            resultImageRef.current.src = blobUrl;
+            // Apply CSS filter to context
+            ctx.filter = activeFilter || 'none';
 
-            // Wait for image to re-load
-            await new Promise((resolve) => {
-                if (resultImageRef.current.complete) {
-                    resolve();
-                } else {
-                    resultImageRef.current.onload = () => resolve();
-                    // Safety timeout
-                    setTimeout(resolve, 1000);
-                }
-            });
+            // Draw image (Note: img must operate in CORS-anonymous mode, which is set in JSX)
+            ctx.drawImage(imgElement, 0, 0, canvas.width, canvas.height);
 
-            const canvas = await html2canvas(resultImageRef.current, {
-                useCORS: true,
-                backgroundColor: null,
-                scale: 2 // Higher quality
-            });
-
-            // Restore original src
-            resultImageRef.current.src = originalSrc;
-            URL.revokeObjectURL(blobUrl);
+            // Generate Blob URL
+            const dataUrl = canvas.toDataURL('image/jpeg', 0.92);
 
             const link = document.createElement('a');
             link.download = `UrbanSetu-Staged-${selectedStyle}-${Date.now()}.jpg`;
-            link.href = canvas.toDataURL('image/jpeg', 0.9);
+            link.href = dataUrl;
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
         } catch (error) {
-            console.error("Failed to download styled image:", error);
-            alert("Could not download image. It might be protected by CORS policy.");
+            console.error("Canvas download failed:", error);
+
+            // Fallback: If canvas is tainted or filter unparseable, download raw image
+            try {
+                const response = await fetch(generatedImage, { mode: 'cors' });
+                const blob = await response.blob();
+                const url = URL.createObjectURL(blob);
+                const link = document.createElement('a');
+                link.download = `UrbanSetu-Raw-Fallback-${Date.now()}.jpg`;
+                link.href = url;
+                document.body.appendChild(link);
+                link.click();
+                setTimeout(() => URL.revokeObjectURL(url), 100);
+                alert("Filter failed (security). Downloading original image.");
+            } catch (fallbackError) {
+                alert("Download failed completely.");
+            }
         }
     };
 
@@ -136,7 +137,6 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
             </div>
 
             <div className="p-6">
-                {/* New: Image Selector Strip */}
                 {/* New: Image Selector Strip including Upload */}
                 <div className="mb-6">
                     <div className="flex justify-between items-end mb-3">
