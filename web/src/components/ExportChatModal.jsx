@@ -1,13 +1,13 @@
 import React, { useState } from 'react';
 import { FaDownload, FaTimes, FaImage, FaFile, FaSpinner } from 'react-icons/fa';
 
-const ExportChatModal = ({ 
-  isOpen, 
-  onClose, 
-  onExport, 
-  appointment, 
-  messageCount, 
-  imageCount 
+const ExportChatModal = ({
+  isOpen,
+  onClose,
+  onExport,
+  appointment,
+  messageCount,
+  imageCount
 }) => {
   const [isExporting, setIsExporting] = useState(false);
   const [exportType, setExportType] = useState('with-media'); // 'with-media' or 'without-media'
@@ -28,9 +28,9 @@ const ExportChatModal = ({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4">
+      <div className="bg-white rounded-lg shadow-xl max-w-md w-full mx-4 max-h-[90vh] flex flex-col">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-200">
+        <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 shrink-0">
           <h3 className="text-lg font-semibold text-gray-900">
             Export Chat Transcript
           </h3>
@@ -44,7 +44,7 @@ const ExportChatModal = ({
         </div>
 
         {/* Content */}
-        <div className="p-6">
+        <div className="p-4 sm:p-6 overflow-y-auto">
           {/* Appointment Info */}
           <div className="mb-6 p-4 bg-gray-50 rounded-lg">
             <h4 className="font-medium text-gray-900 mb-2">Appointment Details</h4>
@@ -59,7 +59,7 @@ const ExportChatModal = ({
           {/* Export Options */}
           <div className="mb-6">
             <h4 className="font-medium text-gray-900 mb-4">Export Options</h4>
-            
+
             {/* With Media Option */}
             <div className="mb-4">
               <label className="flex items-center p-4 border-2 border-gray-200 rounded-lg cursor-pointer hover:border-blue-300 transition-colors">
@@ -75,8 +75,8 @@ const ExportChatModal = ({
                   <FaImage className="text-blue-500 mr-3" size={20} />
                   <div>
                     <div className="font-medium text-gray-900">With Media</div>
-                    <div className="text-sm text-gray-600">
-                      Include all images in the PDF (larger file size)<br/>
+                    <div className="text-xs sm:text-sm text-gray-600">
+                      Include all images in the PDF (larger file size)<br />
                       <span className="text-xs text-blue-600">✓ Includes reactions, edit indicators, and reply context</span>
                     </div>
                   </div>
@@ -99,8 +99,8 @@ const ExportChatModal = ({
                   <FaFile className="text-green-500 mr-3" size={20} />
                   <div>
                     <div className="font-medium text-gray-900">Text Only</div>
-                    <div className="text-sm text-gray-600">
-                      Text messages only with image placeholders (smaller file)<br/>
+                    <div className="text-xs sm:text-sm text-gray-600">
+                      Text messages only with image placeholders (smaller file)<br />
                       <span className="text-xs text-green-600">✓ Includes reactions, edit indicators, and reply context</span>
                     </div>
                   </div>
@@ -113,8 +113,8 @@ const ExportChatModal = ({
           <div className="mb-6 p-3 bg-blue-50 rounded-lg">
             <div className="text-sm text-blue-800">
               <strong>Estimated file size:</strong> {' '}
-              {exportType === 'with-media' ? 
-                `${Math.max(1, Math.ceil(imageCount * 0.5 + messageCount * 0.01))} MB` : 
+              {exportType === 'with-media' ?
+                `${Math.max(1, Math.ceil(imageCount * 0.5 + messageCount * 0.01))} MB` :
                 `${Math.max(0.1, Math.ceil(messageCount * 0.01))} MB`
               }
             </div>
@@ -122,7 +122,7 @@ const ExportChatModal = ({
         </div>
 
         {/* Footer */}
-        <div className="flex justify-end space-x-3 p-6 border-t border-gray-200">
+        <div className="flex justify-end space-x-3 p-4 sm:p-6 border-t border-gray-200 shrink-0">
           <button
             onClick={onClose}
             disabled={isExporting}
