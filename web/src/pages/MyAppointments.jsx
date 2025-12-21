@@ -2500,6 +2500,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
   }, []);
 
   const unlockPasswordRef = useRef(null);
+  const removeLockPasswordRef = useRef(null);
 
   // Autofocus unlock password when modal opens (Desktop only)
   useEffect(() => {
@@ -2507,6 +2508,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
       setTimeout(() => unlockPasswordRef.current?.focus(), 100);
     }
   }, [showChatUnlockModal, isMobile]);
+
+  // Autofocus remove lock password when modal opens (Desktop only)
+  useEffect(() => {
+    if (showRemoveLockModal && !isMobile && removeLockPasswordRef.current) {
+      setTimeout(() => removeLockPasswordRef.current?.focus(), 100);
+    }
+  }, [showRemoveLockModal, isMobile]);
 
   // Message info modal state
   const [showMessageInfoModal, setShowMessageInfoModal] = useState(false);
@@ -11070,6 +11078,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               </label>
               <div className="relative">
                 <input
+                  ref={removeLockPasswordRef}
                   type={showRemoveLockPassword ? "text" : "password"}
                   value={removeLockPassword}
                   onChange={(e) => setRemoveLockPassword(e.target.value)}

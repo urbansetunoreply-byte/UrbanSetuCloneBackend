@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { Link, useNavigate } from "react-router-dom";
+import { isMobileDevice } from '../utils/mobileUtils';
 import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog, FaFileContract, FaGavel, FaMoneyCheckAlt } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
@@ -262,6 +263,8 @@ export default function Profile() {
   const [mobileError, setMobileError] = useState("");
   const [loading, setLoading] = useState(false);
   const [showUpdatePasswordModal, setShowUpdatePasswordModal] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  const updatePasswordRef = useRef(null);
   const [updatePassword, setUpdatePassword] = useState("");
   const [updatePasswordError, setUpdatePasswordError] = useState("");
 
@@ -307,6 +310,23 @@ export default function Profile() {
   const [coinData, setCoinData] = useState({ balance: 0, streak: 0, loading: true });
   const [showCoinHistory, setShowCoinHistory] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
+
+  // Handle mobile state updates
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
+
+  // Autofocus update password when modal opens (Desktop only)
+  useEffect(() => {
+    if (showUpdatePasswordModal && !isMobile && updatePasswordRef.current) {
+      setTimeout(() => updatePasswordRef.current?.focus(), 100);
+    }
+  }, [showUpdatePasswordModal, isMobile]);
 
   // Fetch SetuCoins Balance
   useEffect(() => {
@@ -2350,6 +2370,7 @@ export default function Profile() {
               <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Profile Update</h3>
               <p className="mb-4 text-gray-600">Please enter your password to confirm the profile changes.</p>
               <input
+                ref={updatePasswordRef}
                 type="password"
                 className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your password"
