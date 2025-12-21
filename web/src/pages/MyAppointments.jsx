@@ -642,7 +642,8 @@ export default function MyAppointments() {
     const resolveChatRoute = async () => {
       const findLocalAppointment = () =>
         appointments.find((appt) => appt._id === chatIdFromUrl) ||
-        allAppointments.find((appt) => appt._id === chatIdFromUrl);
+        allAppointments.find((appt) => appt._id === chatIdFromUrl) ||
+        archivedAppointments.find((appt) => appt._id === chatIdFromUrl);
 
       let appointment = findLocalAppointment();
       if (appointment) {
@@ -689,16 +690,6 @@ export default function MyAppointments() {
           return [appointment, ...prev];
         });
 
-        setAppointments((prev) => {
-          const existingIndex = prev.findIndex((appt) => appt._id === appointment._id);
-          if (existingIndex !== -1) {
-            const next = [...prev];
-            next[existingIndex] = { ...next[existingIndex], ...appointment };
-            return next;
-          }
-          return [appointment, ...prev];
-        });
-
         openChatForAppointment(appointment);
       } catch (error) {
         if (!cancelled) {
@@ -713,7 +704,7 @@ export default function MyAppointments() {
     return () => {
       cancelled = true;
     };
-  }, [params.chatId, appointments, allAppointments, currentUser?._id]);
+  }, [params.chatId, appointments, allAppointments, archivedAppointments, currentUser?._id]);
 
   useEffect(() => {
     if (location.state?.fromNotification && location.state?.openChatForAppointment) {
