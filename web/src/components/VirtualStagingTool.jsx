@@ -10,8 +10,14 @@ const STYLES = [
 ];
 
 const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
+    const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
+    const [userImages, setUserImages] = useState([]);
+    const displayImages = [...(listingImages || []), ...userImages];
+
     // If listingImages is provided, use state to track selected image, default to originalImage or first image
     const [selectedImage, setSelectedImage] = useState(originalImage || listingImages[0] || null);
+    const [isUploading, setIsUploading] = useState(false);
+    const fileInputRef = useRef(null);
 
     // Update selectedImage if props change significantly (optional, but good for stability)
     // useEffect(() => { if(originalImage) setSelectedImage(originalImage) }, [originalImage]);
@@ -36,6 +42,37 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
         }, 1500); // Faster feedback for simulation
     };
 
+    const handleFileUpload = async (event) => {
+        const file = event.target.files?.[0];
+        if (!file) return;
+
+        setIsUploading(true);
+        const formData = new FormData();
+        formData.append('image', file);
+
+        try {
+            const response = await fetch(`${API_BASE_URL}/api/upload/image`, {
+                method: 'POST',
+                body: formData,
+            });
+            const data = await response.json();
+
+            if (response.ok && data.imageUrl) {
+                setUserImages(prev => [...prev, data.imageUrl]);
+                setSelectedImage(data.imageUrl);
+                setGeneratedImage(null); // Reset staged view
+            } else {
+                console.error("Upload failed:", data.message);
+                alert("Image upload failed");
+            }
+        } catch (error) {
+            console.error("Error uploading image:", error);
+            alert("Error uploading image");
+        } finally {
+            setIsUploading(false);
+        }
+    };
+
     const resultImageRef = useRef(null);
 
     const handleDownload = async () => {
@@ -47,8 +84,8 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                 scale: 2 // Higher quality
             });
             const link = document.createElement('a');
-            link.download = `UrbanSetu-Staged-${selectedStyle}-${Date.now()}.png`;
-            link.href = canvas.toDataURL('image/png');
+            link.download = `UrbanSetu-Staged-${selectedStyle}-${Date.now()}.jpg`;
+            link.href = canvas.toDataURL('image/jpeg', 0.9);
             document.body.appendChild(link);
             link.click();
             document.body.removeChild(link);
@@ -72,11 +109,29 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
 
             <div className="p-6">
                 {/* New: Image Selector Strip */}
-                {listingImages.length > 1 && (
-                    <div className="mb-6">
-                        <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Select Room to Stage</h4>
+                {/* New: Image Selector Strip including Upload */}
+                <div className="mb-6">
+                    <div className="flex justify-between items-end mb-3">
+                        <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Select Room to Stage</h4>
+                        <button
+                            onClick={() => fileInputRef.current?.click()}
+                            className="text-violet-600 text-xs font-bold flex items-center gap-1 hover:underline"
+                        >
+                            <Upload className="w-3 h-3" /> Upload Your Photo
+                        </button>
+                        <input
+                            type="file"
+                            ref={fileInputRef}
+                            className="hidden"
+                            accept="image/*"
+                            onChange={handleFileUpload}
+                        />
+                    </div>
+
+                    {(displayImages.length > 0) && (
                         <div className="flex gap-3 overflow-x-auto pb-2 scrollbar-hide">
-                            {listingImages.map((img, idx) => (
+                            {/* Upload Placeholer if list is empty? No, we have button above. Just list images. */}
+                            {displayImages.map((img, idx) => (
                                 <button
                                     key={idx}
                                     onClick={() => {
@@ -85,7 +140,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                                     }}
                                     className={`relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-violet-600 ring-2 ring-violet-200' : 'border-gray-200 hover:border-violet-400'}`}
                                 >
-                                    <img src={img} alt={`Room ${idx + 1}`} className="w-full h-full object-cover" />
+                                    <img src={img} alt={`Room ${idx + 1}`} className="w-full h-full object-cover" crossOrigin="anonymous" />
                                     {selectedImage === img && (
                                         <div className="absolute inset-0 bg-violet-600/20 flex items-center justify-center">
                                             <div className="bg-violet-600 rounded-full p-1">
@@ -95,9 +150,25 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                                     )}
                                 </button>
                             ))}
+
+                            {/* Loading state for upload */}
+                            {isUploading && (
+                                <div className="flex-shrink-0 w-24 h-24 rounded-lg bg-gray-100 flex items-center justify-center border-2 border-dashed border-violet-300 animate-pulse">
+                                    <RefreshCw className="w-6 h-6 text-violet-400 animate-spin" />
+                                </div>
+                            )}
                         </div>
-                    </div>
-                )}
+                    )}
+                    {displayImages.length === 0 && !isUploading && (
+                        <div
+                            onClick={() => fileInputRef.current?.click()}
+                            className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-violet-400 hover:bg-violet-50 transition-colors"
+                        >
+                            <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
+                            <p className="text-sm text-gray-500">No images found. <span className="text-violet-600 font-semibold">Upload a room photo</span> to start.</p>
+                        </div>
+                    )}
+                </div>
 
                 {/* Style Selection */}
                 <div className="mb-6">
@@ -129,11 +200,11 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                     <div className="relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200 aspect-video">
                         <span className="absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur">Original Room</span>
                         {selectedImage ? (
-                            <img src={selectedImage} alt="Original" className="w-full h-full object-cover" />
+                            <img src={selectedImage} alt="Original" className="w-full h-full object-cover" crossOrigin="anonymous" />
                         ) : (
                             <div className="flex flex-col items-center justify-center h-full text-gray-400">
                                 <Upload className="w-8 h-8 mb-2" />
-                                <span className="text-sm">No image provided</span>
+                                <span className="text-sm">No image selected</span>
                             </div>
                         )}
                     </div>
@@ -158,6 +229,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                                     alt="Staged"
                                     className="w-full h-full object-cover animate-fade-in transition-all duration-700"
                                     style={{ filter: activeFilter }}
+                                    crossOrigin="anonymous"
                                 />
                                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform">
                                     <p className="text-white/80 text-xs mb-2 italic">
