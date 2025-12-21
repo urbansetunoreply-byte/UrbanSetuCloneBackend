@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { FaCompass, FaExpand, FaCompress, FaSearchPlus, FaSearchMinus, FaPlay, FaPause, FaTimes, FaRedo } from 'react-icons/fa';
+import { FaCompass, FaExpand, FaCompress, FaSearchPlus, FaSearchMinus, FaPlay, FaPause, FaTimes, FaRedo, FaMagic } from 'react-icons/fa';
 
 const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
     const viewerRef = useRef(null);
@@ -7,7 +7,9 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
     const [isLoaded, setIsLoaded] = useState(false);
     const [isFullscreen, setIsFullscreen] = useState(false);
     const [isAutoRotating, setIsAutoRotating] = useState(false);
+
     const [showControls, setShowControls] = useState(true);
+    const [isEnhanced, setIsEnhanced] = useState(false);
     const controlsTimeoutRef = useRef(null);
 
     // Auto-hide controls function
@@ -177,7 +179,15 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
             )}
 
             {/* Viewer Container */}
-            <div ref={viewerRef} className="w-full h-full" style={{ width: '100%', height: '100%' }}></div>
+            <div
+                ref={viewerRef}
+                className="w-full h-full transition-all duration-700"
+                style={{
+                    width: '100%',
+                    height: '100%',
+                    filter: isEnhanced ? 'url(#ai-sharpen) contrast(1.15) saturate(1.15) brightness(1.05)' : 'none'
+                }}
+            ></div>
 
             {/* Interaction Hint (Only shows initially or when hovering very still) */}
             <div className={`absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none transition-opacity duration-1000 ${showControls && !isAutoRotating ? 'opacity-100' : 'opacity-0'}`}>
@@ -198,9 +208,33 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
                 </button>
             </div>
 
+            {/* Hidden SVG Filter for AI Sharpening */}
+            <svg style={{ position: 'absolute', width: 0, height: 0 }}>
+                <defs>
+                    <filter id="ai-sharpen">
+                        {/* Matrix for mild sharpening */}
+                        <feConvolveMatrix order="3" kernelMatrix="0 -0.5 0 -0.5 3 -0.5 0 -0.5 0" preserveAlpha="true" />
+                    </filter>
+                </defs>
+            </svg>
+
             {/* Bottom Controls Bar */}
             <div className={`absolute bottom-6 left-1/2 transform -translate-x-1/2 transition-all duration-500 ${showControls ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0 pointer-events-none'}`}>
                 <div className="bg-black/60 backdrop-blur-md rounded-2xl p-2 flex items-center gap-1 shadow-2xl border border-white/10">
+
+                    {/* AI Enhance Button */}
+                    <button
+                        onClick={() => {
+                            setIsEnhanced(!isEnhanced);
+                            resetControlsTimeout();
+                        }}
+                        className={`p-2.5 rounded-xl transition-all ${isEnhanced ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/50' : 'text-white/80 hover:bg-white/10'}`}
+                        title={isEnhanced ? "Disable AI Enhancer" : "Enable AI Enhancer"}
+                    >
+                        <FaMagic size={14} className={isEnhanced ? "animate-pulse" : ""} />
+                    </button>
+
+                    <div className="w-px h-6 bg-white/20 mx-1"></div>
 
                     {/* Auto Rotate */}
                     <button
