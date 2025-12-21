@@ -7475,33 +7475,7 @@ function AdminAppointmentRow({
                   </div>
                 )}
                 {(() => {
-                  // Helper function to format call duration (WhatsApp style: M:SS or H:MM:SS)
-                  const formatCallDuration = (seconds) => {
-                    if (!seconds || seconds === 0) return 'N/A';
-                    const hours = Math.floor(seconds / 3600);
-                    const minutes = Math.floor((seconds % 3600) / 60);
-                    const secs = Math.floor(seconds % 60);
-                    if (hours > 0) {
-                      return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-                    }
-                    return `${minutes}:${secs.toString().padStart(2, '0')}`;
-                  };
-
-                  // Merge call history with chat messages chronologically (admin is always receiver)
-                  // CRITICAL: Filter call history by clearTime to prevent old calls from loading after chat is cleared
-                  // For admin, we don't have user-specific clearTime, but we should still filter if needed
-                  // For now, admin sees all calls (admin is observer, doesn't clear chat for users)
-                  const filteredCallHistory = callHistory; // Admin sees all calls as observer
-
                   const mergedTimeline = [
-                    // Convert filtered call history to timeline items
-                    ...filteredCallHistory.map(call => ({
-                      type: 'call',
-                      id: call._id || call.callId,
-                      timestamp: new Date(call.startTime || call.createdAt),
-                      call: call,
-                      sortTime: new Date(call.startTime || call.createdAt).getTime()
-                    })),
                     // Convert chat messages to timeline items
                     ...localComments.map(msg => ({
                       type: 'message',
@@ -7533,76 +7507,6 @@ function AdminAppointmentRow({
                     const previousDate = previousItem ? previousItem.timestamp : null;
                     const isNewDay = previousDate ? currentDate.toDateString() !== previousDate.toDateString() : true;
 
-                    // If it's a call, render call history as message bubble (admin view - show third person: "Vishal called Varun")
-                    if (item.type === 'call') {
-                      const call = item.call;
-                      const callerName = call.callerId?.username || (typeof call.callerId === 'string' ? 'Unknown' : 'Unknown');
-                      const receiverName = call.receiverId?.username || (typeof call.receiverId === 'string' ? 'Unknown' : 'Unknown');
-                      // Admin is observer, so show on left side (received message style)
-                      const isMe = false;
-
-                      return (
-                        <React.Fragment key={`call-${call._id || call.callId}`}>
-                          {isNewDay && (
-                            <div className="w-full flex justify-center my-2">
-                              <span className="bg-blue-600 text-white text-xs px-4 py-2 rounded-full shadow-lg border-2 border-white">
-                                {getDateLabel(currentDate)}
-                              </span>
-                            </div>
-                          )}
-                          {/* Call history as message bubble - admin view shows third person (Vishal called Varun) */}
-                          <div className={`flex w-full ${isMe ? 'justify-end' : 'justify-start'} animate-fadeInChatBubble`} style={{ animationDelay: `${0.03 * index}s` }}>
-                            <div
-                              className={`relative rounded-2xl px-4 sm:px-5 py-3 text-sm shadow-xl max-w-[90%] sm:max-w-[80%] md:max-w-[70%] lg:max-w-[60%] xl:max-w-[50%] break-words overflow-visible transition-all duration-300 ${isMe
-                                ? 'bg-gradient-to-r from-blue-600 to-purple-700 hover:from-blue-500 hover:to-purple-600 text-white shadow-blue-200 hover:shadow-blue-300 hover:shadow-2xl'
-                                : 'bg-white hover:bg-gray-50 text-gray-800 border border-gray-200 shadow-gray-200 hover:shadow-lg hover:border-gray-300 hover:shadow-xl'
-                                }`}
-                              style={{ animationDelay: `${0.03 * index}s` }}
-                            >
-                              <div className={`text-left ${isMe ? 'text-base font-medium' : 'text-sm'}`}>
-                                <div className="flex items-center gap-2">
-                                  {call.callType === 'video' ? (
-                                    <FaVideo className={`text-base ${call.status === 'missed' ? 'text-red-500' : isMe ? 'text-white' : 'text-blue-500'}`} />
-                                  ) : (
-                                    <FaPhone className={`text-base ${call.status === 'missed' ? 'text-red-500' : isMe ? 'text-white' : 'text-green-500'}`} />
-                                  )}
-                                  <span className={isMe ? 'text-white' : 'text-gray-800'}>
-                                    {callerName} called {receiverName}
-                                    {call.duration > 0 && (
-                                      <span className={isMe ? 'text-blue-100' : 'text-gray-600'}> • {formatCallDuration(call.duration)}</span>
-                                    )}
-                                  </span>
-                                </div>
-                              </div>
-                              <div className="flex items-center gap-1 justify-end mt-2" data-message-actions>
-                                <span className={`${isMe ? 'text-blue-200' : 'text-gray-500'} text-[10px]`}>
-                                  {currentDate.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit', hour12: true })}
-                                </span>
-                                {/* Options icon - three dots menu */}
-                                <button
-                                  className={`${isMe
-                                    ? 'text-blue-200 hover:text-white'
-                                    : 'text-gray-500 hover:text-gray-700'
-                                    } transition-all duration-200 hover:scale-110 p-1 rounded-full hover:bg-white hover:bg-opacity-20 ml-1`}
-                                  onClick={(e) => {
-                                    e.stopPropagation();
-                                    // Show reactions bar for calls (like regular messages)
-                                    setReactionsMessageId(`call-${call._id || call.callId}`);
-                                    setShowReactionsBar(true);
-                                    // Also set header options for call actions
-                                    setHeaderOptionsMessageId(`call-${call._id || call.callId}`);
-                                  }}
-                                  title="Call options"
-                                  aria-label="Call options"
-                                >
-                                  <FaEllipsisV size={12} />
-                                </button>
-                              </div>
-                            </div>
-                          </div>
-                        </React.Fragment>
-                      );
-                    }
 
                     // If it's a message, render chat message (existing logic)
                     const c = item.message;
