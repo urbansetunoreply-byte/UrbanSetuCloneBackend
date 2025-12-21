@@ -1,11 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useRef } from 'react';
 import { Sparkles, Upload, ArrowRight, RefreshCw, Download } from 'lucide-react';
+import html2canvas from 'html2canvas';
 
 const STYLES = [
-    { id: 'modern', name: 'Modern Minimalist', image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c' },
-    { id: 'scandi', name: 'Scandinavian', image: 'https://images.unsplash.com/photo-1595261179043-3b10c9d7d965' },
-    { id: 'industrial', name: 'Industrial Lofts', image: 'https://images.unsplash.com/photo-1505693314120-0d443867891c' },
-    { id: 'boho', name: 'Bohemian Chic', image: 'https://images.unsplash.com/photo-1522444195799-478538b28823' },
+    { id: 'modern', name: 'Modern Minimalist', image: 'https://images.unsplash.com/photo-1598928506311-c55ded91a20c?auto=format&fit=crop&w=300&q=80', filter: 'brightness(1.1) contrast(1.1) saturate(0.0)' },
+    { id: 'scandi', name: 'Scandinavian', image: 'https://images.unsplash.com/photo-1595855709940-a102914dbd71?auto=format&fit=crop&w=300&q=80', filter: 'brightness(1.15) sepia(0.05) saturate(0.8)' },
+    { id: 'industrial', name: 'Industrial Lofts', image: 'https://images.unsplash.com/photo-1505693314120-0d443867891c?auto=format&fit=crop&w=300&q=80', filter: 'contrast(1.2) sepia(0.2) brightness(0.9)' },
+    { id: 'boho', name: 'Bohemian Chic', image: 'https://images.unsplash.com/photo-1522444195799-478538b28823?auto=format&fit=crop&w=300&q=80', filter: 'saturate(1.3) contrast(1.1) brightness(1.05)' },
 ];
 
 const VirtualStagingTool = ({ originalImage }) => {
@@ -13,16 +14,42 @@ const VirtualStagingTool = ({ originalImage }) => {
     const [isGenerating, setIsGenerating] = useState(false);
     const [generatedImage, setGeneratedImage] = useState(null);
 
+    const [activeFilter, setActiveFilter] = useState('');
+
     const handleGenerate = () => {
+        if (!originalImage) return;
         setIsGenerating(true);
         // Mock AI Generation Delay
         setTimeout(() => {
-            // In a real app, this would call Stable Diffusion API
-            // For demo, we just use the style image as the "result" or keep original with filter
-            // Let's us a placeholder "Staged" version of a room
-            setGeneratedImage(STYLES.find(s => s.id === selectedStyle).image + "?auto=format&fit=crop&w=800&q=80");
+            // SIMULATION: In a real app, this would use Stable Diffusion to generate new furniture.
+            // For now, we apply a "Vibe Filter" to the original image to simulate the mood.
+            const style = STYLES.find(s => s.id === selectedStyle);
+            setGeneratedImage(originalImage); // Keep the original room
+            setActiveFilter(style.filter);    // Apply the style filter
             setIsGenerating(false);
-        }, 3000);
+        }, 1500); // Faster feedback for simulation
+    };
+
+    const resultImageRef = useRef(null);
+
+    const handleDownload = async () => {
+        if (!resultImageRef.current) return;
+        try {
+            const canvas = await html2canvas(resultImageRef.current, {
+                useCORS: true,
+                backgroundColor: null,
+                scale: 2 // Higher quality
+            });
+            const link = document.createElement('a');
+            link.download = `UrbanSetu-Staged-${selectedStyle}-${Date.now()}.png`;
+            link.href = canvas.toDataURL('image/png');
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        } catch (error) {
+            console.error("Failed to download styled image:", error);
+            alert("Could not download image. It might be protected by CORS policy.");
+        }
     };
 
     return (
@@ -91,9 +118,21 @@ const VirtualStagingTool = ({ originalImage }) => {
                             </div>
                         ) : generatedImage ? (
                             <div className="relative w-full h-full group">
-                                <img src={generatedImage} alt="Staged" className="w-full h-full object-cover animate-fade-in" />
+                                <img
+                                    ref={resultImageRef}
+                                    src={generatedImage}
+                                    alt="Staged"
+                                    className="w-full h-full object-cover animate-fade-in transition-all duration-700"
+                                    style={{ filter: activeFilter }}
+                                />
                                 <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/70 to-transparent p-4 translate-y-full group-hover:translate-y-0 transition-transform">
-                                    <button className="w-full bg-white text-gray-900 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-gray-100">
+                                    <p className="text-white/80 text-xs mb-2 italic">
+                                        *Simulation Mode: Mood & Tone visualization.
+                                    </p>
+                                    <button
+                                        onClick={handleDownload}
+                                        className="w-full bg-white text-gray-900 py-2 rounded-lg font-semibold text-sm flex items-center justify-center gap-2 hover:bg-gray-100"
+                                    >
                                         <Download className="w-4 h-4" /> Download Design
                                     </button>
                                 </div>
