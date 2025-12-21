@@ -12,6 +12,8 @@ const groq = new Groq({
     apiKey: GROQ_API_KEY
 });
 
+import { toolRegistry, toolDefinitions } from '../services/aiToolsService.js';
+
 export const chatWithGemini = async (req, res) => {
     try {
         const {
@@ -451,32 +453,81 @@ export const chatWithGemini = async (req, res) => {
             content: sanitizedMessage
         });
 
-        const requestPayload = {
+        // -------------------------------------------------------------
+        // TOOL USE & STREAMING LOGIC
+        // -------------------------------------------------------------
+
+        // Setup initial request payload with tools
+        let requestPayload = {
             messages: messages,
-            model: GROQ_MODEL,
+            model: "llama3-70b-8192", // Force Llama 3 70B for tool use (Groq specific model ID)
             temperature: getTemperature(creativity, tone, temperature),
             max_completion_tokens: getMaxTokens(responseLength),
             top_p: getTopP(topP),
-            stream: enableStreaming === true || enableStreaming === 'true',
-            stop: null
+            stream: false, // Default to false for tool handling logic simplicity first
+            tools: toolDefinitions,
+            tool_choice: "auto"
         };
 
-        // Handle streaming vs non-streaming responses
-        if (enableStreaming === true || enableStreaming === 'true') {
-            console.log('Streaming enabled - setting up Groq streaming response');
+        // Handle streaming vs non-streaming response requires different architectural approach 
+        // For simplicity in this tool-use upgrade, we prioritize accuracy over streaming for tool calls.
+        // If tools are used, we disable streaming for the first hop.
 
-            const origin = req.headers.origin || 'https://urbansetu.vercel.app';
-            res.writeHead(200, {
-                'Content-Type': 'text/plain; charset=utf-8',
-                'Cache-Control': 'no-cache',
-                'Connection': 'keep-alive',
-                'Access-Control-Allow-Origin': origin,
-                'Access-Control-Allow-Headers': 'Content-Type, Authorization',
-                'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS',
-                'Access-Control-Allow-Credentials': 'true'
-            });
+        console.log('🤖 Sending request to Groq...');
+        let completion = await groq.chat.completions.create(requestPayload);
+        let responseMessage = completion.choices[0].message;
 
-            try {
+        // CHECK FOR TOOL CALLS
+        if (responseMessage.tool_calls) {
+            console.log('🛠️ AI requested tool execution:', responseMessage.tool_calls.length);
+
+            // Append the assistant's request to history
+            messages.push(responseMessage);
+
+            // Execute each tool
+            for (const toolCall of responseMessage.tool_calls) {
+                const functionName = toolCall.function.name;
+                const functionArgs = JSON.parse(toolCall.function.arguments);
+
+                console.log(`__ Executing tool: ${functionName}`, functionArgs);
+
+                let toolResult;
+                if (toolRegistry[functionName]) {
+                    toolResult = await toolRegistry[functionName](functionArgs);
+                } else {
+                    toolResult = JSON.stringify({ error: "Tool not found" });
+                }
+
+                // Append the result to history
+                messages.push({
+                    tool_call_id: toolCall.id,
+                    role: "tool",
+                    name: functionName,
+                    content: toolResult
+                });
+            }
+
+            // Call AI again with the tool results
+            requestPayload = {
+                messages: messages,
+                model: "llama3-70b-8192",
+                stream: enableStreaming === true || enableStreaming === 'true' // Re-enable streaming for final answer if requested
+            };
+
+            if (requestPayload.stream) {
+                // --- STREAMING LOGIC FOR FINAL ANSWER ---
+                console.log('Streaming final response after tools...');
+                const origin = req.headers.origin || 'https://urbansetu.vercel.app';
+                res.writeHead(200, {
+                    'Content-Type': 'text/plain; charset=utf-8',
+                    'Cache-Control': 'no-cache',
+                    'Connection': 'keep-alive',
+                    'Access-Control-Allow-Origin': origin,
+                    'Access-Control-Allow-Headers': 'Content-Type, Authorization',
+                    'Access-Control-Allow-Methods': 'GET, POST, PUT, DELETE, OPTIONS, HEAD',
+                    'Access-Control-Allow-Credentials': 'true'
+                });
+
                 const stream = await groq.chat.completions.create(requestPayload);
                 let fullResponse = '';
 
@@ -484,122 +535,60 @@ export const chatWithGemini = async (req, res) => {
                     const content = chunk.choices[0]?.delta?.content || '';
                     if (content) {
                         fullResponse += content;
-                        res.write(`data: ${JSON.stringify({
-                            type: 'chunk',
-                            content: content,
-                            done: false
-                        })}\n\n`);
+                        res.write(`data: ${JSON.stringify({ type: 'chunk', content, done: false })}\n\n`);
                     }
                 }
 
-                // Send completion signal
-                res.write(`data: ${JSON.stringify({
-                    type: 'done',
-                    content: fullResponse,
-                    done: true
-                })}\n\n`);
+                res.write(`data: ${JSON.stringify({ type: 'done', content: fullResponse, done: true })}\n\n`);
 
-                // Save chat history
+                // Save History
                 if (userId) {
-                    (async () => {
-                        try {
-                            const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
-                            await chatHistory.addMessage('user', message);
-                            await chatHistory.addMessage('assistant', fullResponse);
-                            await chatHistory.save();
-
-                            // Auto-title generation
-                            const updatedChatHistory = await ChatHistory.findById(chatHistory._id);
-                            const isFallbackTitle = updatedChatHistory.name && (
-                                updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) ||
-                                updatedChatHistory.name.match(/^New chat \d+$/)
-                            );
-
-                            if ((!updatedChatHistory.name || isFallbackTitle) && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
-                                try {
-                                    const convoForTitle = updatedChatHistory.messages.slice(0, 8).map(m => `${m.role === 'user' ? 'User' : 'Assistant'}: ${m.content}`).join('\n');
-                                    const titlePrompt = `Create a short, descriptive title (4-7 words) for this real estate conversation. Focus on the main topic or question. Do not include quotes, just return the title.\n\nConversation:\n${convoForTitle}\n\nTitle:`;
-
-                                    const titleResponse = await groq.chat.completions.create({
-                                        messages: [
-                                            { role: 'system', content: 'You are a helpful assistant that creates short, descriptive titles.' },
-                                            { role: 'user', content: titlePrompt }
-                                        ],
-                                        model: GROQ_MODEL,
-                                        max_completion_tokens: 50,
-                                        temperature: 0.5
-                                    });
-
-                                    const titleRaw = titleResponse.choices[0]?.message?.content || '';
-                                    const title = titleRaw.replace(/[\n\r"']+/g, ' ').slice(0, 80).trim();
-
-                                    if (title && title.length > 0) {
-                                        updatedChatHistory.name = title;
-                                        await updatedChatHistory.save();
-                                    }
-                                } catch (e) {
-                                    console.error('Auto-title generation failed:', e);
-                                }
-                            }
-                        } catch (historyError) {
-                            console.error('Error saving chat history:', historyError);
-                        }
-                    })();
+                    const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
+                    await chatHistory.addMessage('user', message);
+                    await chatHistory.addMessage('assistant', fullResponse); // Just the final text
+                    // Note: We are skipping saving the intermediate tool calls to DB for simplicity, 
+                    // but ideally they should be saved for context continuity.
+                    await chatHistory.save();
                 }
 
-                res.end();
-
-            } catch (streamError) {
-                console.error('Streaming error:', streamError);
-                res.write(`data: ${JSON.stringify({
-                    type: 'error',
-                    content: 'AI service temporarily unavailable. Please try again.',
-                    done: true
-                })}\n\n`);
-                res.end();
-            }
-            return;
-        }
-
-        // Non-streaming response
-        const completion = await groq.chat.completions.create({ ...requestPayload, stream: false });
-        const responseText = completion.choices[0]?.message?.content || '';
-
-        // Save chat history if user is authenticated
-        if (userId) {
-            try {
-                const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
-                await chatHistory.addMessage('user', message);
-                await chatHistory.addMessage('assistant', responseText);
-                await chatHistory.save();
-
-                // Auto-title generation (same logic as above)
-                const updatedChatHistory = await ChatHistory.findById(chatHistory._id);
-                const isFallbackTitle = updatedChatHistory.name && (
-                    updatedChatHistory.name.match(/^Chat \d{1,2}\/\d{1,2}\/\d{4}$/) ||
-                    updatedChatHistory.name.match(/^New chat \d+$/)
-                );
-
-                if ((!updatedChatHistory.name || isFallbackTitle) && updatedChatHistory.messages && updatedChatHistory.messages.length >= 2) {
-                    // ... (Auto title logic would go here, simplified for non-streaming to avoid duplication if unnecessary, but can be added if needed)
-                }
-            } catch (historyError) {
-                console.error('Error saving chat history:', historyError);
+                return res.end();
+            } else {
+                // Non-Streaming Final Answer
+                completion = await groq.chat.completions.create(requestPayload);
+                responseMessage = completion.choices[0].message;
             }
         }
 
-        res.status(200).json({
-            success: true,
-            response: responseText,
-            sessionId: currentSessionId
-        });
+        // --- STANDARD RESPONSE HANDLING (No tools or Final Answer) ---
+        // Reuse existing logic for non-streaming response if we are here
+        if (!res.headersSent) {
+            const responseText = responseMessage.content || '';
+
+            // Save chat history
+            if (userId) {
+                try {
+                    const chatHistory = await ChatHistory.findOrCreateSession(userId, currentSessionId);
+                    await chatHistory.addMessage('user', message);
+                    await chatHistory.addMessage('assistant', responseText);
+                    await chatHistory.save();
+                } catch (e) { console.error(e); }
+            }
+
+            res.status(200).json({
+                success: true,
+                response: responseText,
+                sessionId: currentSessionId
+            });
+        }
 
     } catch (error) {
         console.error('Groq API Error:', error);
-        res.status(500).json({
-            success: false,
-            message: 'Sorry, I\'m having trouble processing your request. Please try again later.'
-        });
+        if (!res.headersSent) {
+            res.status(500).json({
+                success: false,
+                message: 'Sorry, I\'m having trouble processing your request. Please try again later.'
+            });
+        }
     }
 };
 
