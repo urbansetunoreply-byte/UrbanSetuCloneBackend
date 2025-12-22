@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react'
+import AboutSkeleton from '../components/skeletons/AboutSkeleton';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaDownload, FaAndroid, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
@@ -72,14 +73,7 @@ export default function About() {
   }, []);
 
   if (loading || !aboutData) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading about page...</p>
-        </div>
-      </div>
-    );
+    return <AboutSkeleton />;
   }
 
   return (
