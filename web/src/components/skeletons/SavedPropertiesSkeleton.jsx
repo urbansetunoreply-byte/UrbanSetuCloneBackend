@@ -1,6 +1,6 @@
 import React from 'react';
 
-export default function WishlistSkeleton() {
+export default function SavedPropertiesSkeleton() {
     return (
         <div className="bg-gray-50 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8 overflow-x-hidden animate-pulse font-sans">
             <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-2 sm:p-4 lg:p-6">

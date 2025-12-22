@@ -2,7 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
-import WishlistSkeleton from '../components/skeletons/WishlistSkeleton';
+import SavedPropertiesSkeleton from '../components/skeletons/SavedPropertiesSkeleton';
 import { toast } from 'react-toastify';
 import { socket } from '../utils/socket.js';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaFire, FaArrowDown, FaArrowUp, FaExclamationTriangle, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX } from 'react-icons/fa';
@@ -384,7 +384,7 @@ export default function Watchlist() {
     });
 
   if (loading) {
-    return <WishlistSkeleton />;
+    return <SavedPropertiesSkeleton />;
   }
 
 

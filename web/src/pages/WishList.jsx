@@ -3,7 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
 import AdvancedAIRecommendations from '../components/AdvancedAIRecommendations';
-import WishlistSkeleton from '../components/skeletons/WishlistSkeleton';
+import SavedPropertiesSkeleton from '../components/skeletons/SavedPropertiesSkeleton';
 import { toast } from 'react-toastify';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaArrowDown, FaArrowUp, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX, FaRobot } from 'react-icons/fa';
 
@@ -293,7 +293,7 @@ const WishList = () => {
   };
 
   if (loading) {
-    return <WishlistSkeleton />;
+    return <SavedPropertiesSkeleton />;
   }
 
   return (
