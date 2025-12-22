@@ -10,6 +10,7 @@ import {
 } from 'lucide-react';
 import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
+import BlogDetailSkeleton from '../components/skeletons/BlogDetailSkeleton';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -230,14 +231,7 @@ const PublicBlogDetail = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500 animate-pulse font-medium">Loading insight...</p>
-        </div>
-      </div>
-    );
+    return <BlogDetailSkeleton />;
   }
 
   if (!blog) {

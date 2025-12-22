@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import AdminBlogsSkeleton from '../components/skeletons/AdminBlogsSkeleton';
 import {
   Plus, Edit, Trash, Search, Filter, Globe, Home, Eye, EyeOff,
   ExternalLink, ChevronLeft, ChevronRight, FileText, LayoutTemplate,
@@ -392,10 +393,7 @@ const AdminBlogs = () => {
           </div>
 
           {loading ? (
-            <div className="p-20 text-center">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-500 animate-pulse font-medium">Loading content...</p>
-            </div>
+            <AdminBlogsSkeleton />
           ) : blogs.length === 0 ? (
             <div className="p-16 text-center text-gray-500">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">

@@ -12,6 +12,7 @@ import {
 import BlogEditModal from '../components/BlogEditModal';
 import ImagePreview from '../components/ImagePreview';
 import VideoPreview from '../components/VideoPreview';
+import BlogDetailSkeleton from '../components/skeletons/BlogDetailSkeleton';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -348,14 +349,7 @@ const AdminBlogDetail = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500 animate-pulse font-medium">Loading admin dashboard...</p>
-        </div>
-      </div>
-    );
+    return <BlogDetailSkeleton />;
   }
 
   if (!blog) {
@@ -385,8 +379,8 @@ const AdminBlogDetail = () => {
           <div className="animate-fade-in-up">
             <div className="flex flex-wrap items-center gap-3 mb-6">
               <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${blog.published
-                  ? 'bg-green-500/20 text-green-200 border border-green-500/30'
-                  : 'bg-yellow-500/20 text-yellow-200 border border-yellow-500/30'
+                ? 'bg-green-500/20 text-green-200 border border-green-500/30'
+                : 'bg-yellow-500/20 text-yellow-200 border border-yellow-500/30'
                 }`}>
                 {blog.published ? <span className='flex items-center gap-1'><CheckCircle className='w-3 h-3' /> Published</span> : <span className='flex items-center gap-1'><Clock className='w-3 h-3' /> Draft Mode</span>}
               </span>
@@ -526,8 +520,8 @@ const AdminBlogDetail = () => {
                 <button
                   onClick={handleTogglePublish}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors shadow-sm font-medium text-sm border ${blog.published
-                      ? 'bg-white text-yellow-600 border-yellow-200 hover:bg-yellow-50'
-                      : 'bg-green-600 text-white border-transparent hover:bg-green-700'
+                    ? 'bg-white text-yellow-600 border-yellow-200 hover:bg-yellow-50'
+                    : 'bg-green-600 text-white border-transparent hover:bg-green-700'
                     }`}
                 >
                   {blog.published ? 'Unpublish' : 'Publish Now'}
