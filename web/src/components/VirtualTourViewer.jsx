@@ -10,6 +10,7 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
 
     const [showControls, setShowControls] = useState(true);
     const [isEnhanced, setIsEnhanced] = useState(false);
+    const [isEnhancing, setIsEnhancing] = useState(false);
     const controlsTimeoutRef = useRef(null);
 
     // Auto-hide controls function
@@ -223,15 +224,25 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
                 <div className="bg-black/60 backdrop-blur-md rounded-2xl p-2 flex items-center gap-1 shadow-2xl border border-white/10">
 
                     {/* AI Enhance Button */}
+                    {/* AI Enhance Button */}
                     <button
                         onClick={() => {
-                            setIsEnhanced(!isEnhanced);
                             resetControlsTimeout();
+                            if (isEnhanced) {
+                                setIsEnhanced(false);
+                            } else {
+                                setIsEnhancing(true);
+                                setTimeout(() => {
+                                    setIsEnhancing(false);
+                                    setIsEnhanced(true);
+                                }, 2000);
+                            }
                         }}
                         className={`p-2.5 rounded-xl transition-all ${isEnhanced ? 'bg-gradient-to-r from-violet-600 to-indigo-600 text-white shadow-lg shadow-indigo-500/50' : 'text-white/80 hover:bg-white/10'}`}
                         title={isEnhanced ? "Disable AI Enhancer" : "Enable AI Enhancer"}
+                        disabled={isEnhancing}
                     >
-                        <FaMagic size={14} className={isEnhanced ? "animate-pulse" : ""} />
+                        <FaMagic size={14} className={isEnhanced ? "animate-pulse" : isEnhancing ? "animate-spin" : ""} />
                     </button>
 
                     <div className="w-px h-6 bg-white/20 mx-1"></div>
@@ -294,6 +305,50 @@ const VirtualTourViewer = ({ imageUrl, autoLoad = true, className = "" }) => {
                     <span className="text-white/90 text-xs font-semibold tracking-wide">360° VIEW</span>
                 </div>
             </div>
+
+            {/* AI Magic Apply Animation Overlay */}
+            {isEnhancing && (
+                <div className="absolute inset-0 flex items-center justify-center z-50 bg-black/60 backdrop-blur-sm transition-all duration-500">
+                    <div className="flex flex-col items-center gap-4">
+                        <div className="relative">
+                            <div className="absolute inset-0 bg-violet-500 blur-xl opacity-40 animate-pulse"></div>
+                            <FaMagic className="text-5xl text-violet-400 relative z-10 animate-waving-hand" />
+                            <div className="absolute -top-2 -right-2 w-4 h-4 bg-white rounded-full animate-ping"></div>
+                            <div className="absolute bottom-0 -left-2 w-3 h-3 bg-indigo-400 rounded-full animate-ping delay-150"></div>
+                            <div className="absolute top-1/2 -right-4 w-2 h-2 bg-pink-400 rounded-full animate-ping delay-300"></div>
+                        </div>
+                        <div className="text-center">
+                            <h3 className="text-xl font-bold bg-gradient-to-r from-violet-300 via-white to-indigo-300 bg-clip-text text-transparent animate-gradient-x mb-1">
+                                Applying AI Magic
+                            </h3>
+                            <div className="flex items-center justify-center gap-1">
+                                <span className="w-1.5 h-1.5 bg-violet-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+                                <span className="w-1.5 h-1.5 bg-indigo-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+                                <span className="w-1.5 h-1.5 bg-white rounded-full animate-bounce"></span>
+                            </div>
+                        </div>
+                    </div>
+                    {/* Add custom keyframes if needed in global CSS or use tailwind arbitrary values */}
+                    <style>{`
+                        @keyframes waving-hand {
+                            0%, 100% { transform: rotate(0deg); }
+                            25% { transform: rotate(-15deg); }
+                            75% { transform: rotate(15deg); }
+                        }
+                        .animate-waving-hand {
+                            animation: waving-hand 2s ease-in-out infinite;
+                        }
+                        @keyframes gradient-x {
+                            0%, 100% { background-position: 0% 50%; }
+                            50% { background-position: 100% 50%; }
+                        }
+                        .animate-gradient-x {
+                            background-size: 200% 200%;
+                            animation: gradient-x 3s ease infinite;
+                        }
+                    `}</style>
+                </div>
+            )}
         </div>
     );
 };

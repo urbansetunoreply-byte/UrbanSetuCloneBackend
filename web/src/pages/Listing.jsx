@@ -399,17 +399,26 @@ export default function Listing() {
         });
         if (res.ok) {
           setIsInWatchlist(true);
-          toast.success('Property added to watchlist! Future price insights of this property will be notified.');
+          toast.success(
+            <div>
+              Property added to watchlist! Future price insights will be notified. <Link to="/user/watchlist" className="font-bold underline ml-1">View Watchlist</Link>
+            </div>
+          );
         } else {
           const data = await res.json();
           if (data.message?.includes('already')) {
             setIsInWatchlist(true);
-            toast.info('Property is already in your watchlist.');
+            toast.info(
+              <div>
+                Property is already in your watchlist. <Link to="/user/watchlist" className="font-bold underline ml-1">View Watchlist</Link>
+              </div>
+            );
           } else {
             toast.error('Failed to add to watchlist.');
           }
         }
       }
+
     } catch (error) {
       console.error('Error toggling watchlist:', error);
       toast.error('Failed to update watchlist.');

@@ -1,5 +1,6 @@
 import React, { createContext, useState, useContext, useEffect } from 'react';
 import { useSelector } from 'react-redux';
+import { Link } from 'react-router-dom';
 import { socket } from './utils/socket';
 import { toast } from 'react-toastify';
 
@@ -24,7 +25,7 @@ const WishlistProvider = ({ children }) => {
       const response = await fetch(`${API_BASE_URL}/api/wishlist/user/${currentUser._id}`, {
         credentials: 'include'
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         if (!Array.isArray(data)) {
@@ -81,7 +82,11 @@ const WishlistProvider = ({ children }) => {
     // Optimistically update UI
     setWishlist(prev => {
       if (prev.find(item => item._id === product._id)) return prev;
-      toast.success('Property added to your wishlist!');
+      toast.success(
+        <div>
+          Property added to your wishlist! <Link to="/user/wishlist" className="font-bold underline ml-1">View Wishlist</Link>
+        </div>
+      );
       return [...prev, product];
     });
     // Emit socket event
@@ -150,12 +155,12 @@ const WishlistProvider = ({ children }) => {
   }, [currentUser]);
 
   return (
-    <WishlistContext.Provider value={{ 
-      wishlist, 
-      addToWishlist, 
-      removeFromWishlist, 
+    <WishlistContext.Provider value={{
+      wishlist,
+      addToWishlist,
+      removeFromWishlist,
       isInWishlist,
-      loading 
+      loading
     }}>
       {children}
     </WishlistContext.Provider>
