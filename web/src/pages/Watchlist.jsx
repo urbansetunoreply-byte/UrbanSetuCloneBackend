@@ -2,6 +2,7 @@ import React, { useEffect, useState } from 'react';
 import { useSelector } from 'react-redux';
 import { Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
+import WishlistSkeleton from '../components/skeletons/WishlistSkeleton';
 import { toast } from 'react-toastify';
 import { socket } from '../utils/socket.js';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaFire, FaArrowDown, FaArrowUp, FaExclamationTriangle, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX } from 'react-icons/fa';
@@ -40,9 +41,8 @@ export default function Watchlist() {
     cityDistribution: {}
   });
 
-  const fetchWatchlist = async (showLoading = true) => {
+  const fetchWatchlist = async () => {
     if (!currentUser?._id) return;
-    if (showLoading) setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/watchlist/user/${currentUser._id}`, { credentials: 'include' });
       if (res.ok) {
@@ -63,8 +63,6 @@ export default function Watchlist() {
       }
     } catch (e) {
       // noop
-    } finally {
-      if (showLoading) setLoading(false);
     }
   };
 
@@ -122,7 +120,14 @@ export default function Watchlist() {
     });
   };
 
-  useEffect(() => { fetchWatchlist(); }, [currentUser?._id]);
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await fetchWatchlist();
+      setLoading(false);
+    };
+    loadData();
+  }, [currentUser?._id]);
 
   // Periodic check for price changes (every 5 minutes)
   useEffect(() => {
@@ -130,7 +135,7 @@ export default function Watchlist() {
 
     const interval = setInterval(() => {
       // Re-fetch watchlist to get latest prices and check for changes (background refresh)
-      fetchWatchlist(false);
+      fetchWatchlist();
     }, 5 * 60 * 1000); // 5 minutes
 
     return () => clearInterval(interval);
@@ -141,7 +146,7 @@ export default function Watchlist() {
     const handleVisibilityChange = () => {
       if (!document.hidden && currentUser?._id && items.length > 0) {
         // Page became visible, check for price changes (background refresh)
-        fetchWatchlist(false);
+        fetchWatchlist();
       }
     };
 
@@ -379,14 +384,7 @@ export default function Watchlist() {
     });
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading your watchlist...</p>
-        </div>
-      </div>
-    );
+    return <WishlistSkeleton />;
   }
 
 
@@ -629,8 +627,8 @@ export default function Watchlist() {
                       onClick={() => addToWatchlist(listing)}
                       disabled={isInWatchlist(listing._id)}
                       className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isInWatchlist(listing._id)
-                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                          : 'bg-purple-600 text-white hover:bg-purple-700'
+                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                        : 'bg-purple-600 text-white hover:bg-purple-700'
                         }`}
                     >
                       {isInWatchlist(listing._id) ? 'Added' : 'Add to Watchlist'}

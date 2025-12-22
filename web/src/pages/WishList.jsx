@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate, Link } from 'react-router-dom';
 import ListingItem from '../components/ListingItem';
 import AdvancedAIRecommendations from '../components/AdvancedAIRecommendations';
+import WishlistSkeleton from '../components/skeletons/WishlistSkeleton';
 import { toast } from 'react-toastify';
 import { FaEye, FaTrash, FaSearch, FaFilter, FaSort, FaPlus, FaTimes, FaArrowDown, FaArrowUp, FaCheckCircle, FaDownload, FaShare, FaBookmark, FaCalendarAlt, FaChartLine, FaBars, FaCheck, FaTimes as FaX, FaRobot } from 'react-icons/fa';
 
@@ -39,7 +40,6 @@ const WishList = () => {
 
   const fetchWishlist = async () => {
     if (!currentUser?._id) return;
-    setLoading(true);
     try {
       const res = await fetch(`${API_BASE_URL}/api/wishlist/user/${currentUser._id}`, { credentials: 'include' });
       if (res.ok) {
@@ -57,12 +57,17 @@ const WishList = () => {
       }
     } catch (e) {
       // noop
-    } finally {
-      setLoading(false);
     }
   };
 
-  useEffect(() => { fetchWishlist(); }, [currentUser?._id]);
+  useEffect(() => {
+    const loadData = async () => {
+      setLoading(true);
+      await fetchWishlist();
+      setLoading(false);
+    };
+    loadData();
+  }, [currentUser?._id]);
   useEffect(() => { calculateStats(); }, [items]);
 
   const handleRemove = async (listingId) => {
@@ -288,14 +293,7 @@ const WishList = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading your wishlist...</p>
-        </div>
-      </div>
-    );
+    return <WishlistSkeleton />;
   }
 
   return (

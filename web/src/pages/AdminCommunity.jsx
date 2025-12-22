@@ -8,6 +8,7 @@ import {
 } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
+import CommunitySkeleton from '../components/skeletons/CommunitySkeleton';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ConfirmationModal from '../components/ConfirmationModal';
 import { socket } from '../utils/socket';
@@ -116,13 +117,21 @@ export default function AdminCommunity() {
     ];
 
     useEffect(() => {
-        fetchPosts();
-        fetchStats();
-    }, [activeTab, searchTerm]); // Added searchTerm to dependencies
+        const loadData = async () => {
+            setLoading(true);
+            try {
+                await Promise.all([fetchPosts(), fetchStats()]);
+            } catch (error) {
+                console.error("Error loading data", error);
+            } finally {
+                setLoading(false);
+            }
+        };
+        loadData();
+    }, [activeTab, searchTerm]);
 
     const fetchPosts = async () => {
         try {
-            setLoading(true);
             // Auto-filter by user's location if available (optional enhancement)
 
             const params = new URLSearchParams();
@@ -138,15 +147,9 @@ export default function AdminCommunity() {
         } catch (error) {
             console.error(error);
             toast.error('Failed to load community posts');
-        } finally {
-            setLoading(false);
         }
     };
 
-    // Auto-fetch when tabs or search changes
-    useEffect(() => {
-        fetchPosts();
-    }, [activeTab, searchTerm]);
 
     // Search Debounce & Suggestions
     useEffect(() => {
@@ -173,7 +176,6 @@ export default function AdminCommunity() {
     const handleSearchSelect = (term) => {
         setSearchTerm(term);
         setShowSuggestions(false);
-        fetchPosts();
     };
 
     const fetchStats = async () => {
@@ -961,6 +963,10 @@ export default function AdminCommunity() {
         return parts.length > 0 ? parts : content;
     };
 
+    if (loading) {
+        return <CommunitySkeleton />;
+    }
+
     return (
         <div className="min-h-screen bg-gray-50 pt-20 pb-12 font-sans">
             <style>{styles}</style>
@@ -1047,12 +1053,7 @@ export default function AdminCommunity() {
                 <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-6">
-                        {loading ? (
-                            <div className="text-center py-20">
-                                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                                <p className="text-gray-500">Loading community discussions...</p>
-                            </div>
-                        ) : posts.length === 0 ? (
+                        {posts.length === 0 ? (
                             <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
                                 <FaUsers className="text-6xl text-gray-200 mx-auto mb-4" />
                                 <h3 className="text-xl font-semibold text-gray-800 mb-2">No posts found</h3>
