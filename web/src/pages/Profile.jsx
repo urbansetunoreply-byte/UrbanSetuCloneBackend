@@ -4,6 +4,7 @@ import { Link, useNavigate } from "react-router-dom";
 import { isMobileDevice } from '../utils/mobileUtils';
 import { FaEdit, FaUser, FaEnvelope, FaPhone, FaKey, FaTrash, FaSignOutAlt, FaHome, FaCalendarAlt, FaHeart, FaEye, FaCrown, FaTimes, FaCheck, FaStar, FaRoute, FaCreditCard, FaShieldAlt, FaTools, FaTruck, FaExclamationTriangle, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaBookOpen, FaQuestionCircle, FaChartLine, FaInfoCircle, FaCog, FaFileContract, FaGavel, FaMoneyCheckAlt } from "react-icons/fa";
 import UserAvatar from "../components/UserAvatar";
+import ProfileSkeleton from "../components/skeletons/ProfileSkeleton";
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import SetuCoinCard from "../components/SetuCoins/SetuCoinCard";
 import AdminCoinCard from "../components/SetuCoins/AdminCoinCard";
@@ -246,6 +247,11 @@ export default function Profile() {
   usePageTitle("My Profile - Account Settings");
 
   const { currentUser, error } = useSelector((state) => state.user);
+
+  if (!currentUser) {
+    return <ProfileSkeleton />;
+  }
+
   const { wishlist } = useWishlist();
   const { signout, isSigningOut } = useSignout();
   const dispatch = useDispatch();
