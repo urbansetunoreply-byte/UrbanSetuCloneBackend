@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
+import PublicBlogsSkeleton from '../components/skeletons/PublicBlogsSkeleton';
 import {
   Search as SearchIcon, Filter, Calendar, User, Eye, Heart, Tag,
   ArrowRight, ChevronLeft, ChevronRight, Mail, Info, Clock,
@@ -128,14 +129,7 @@ const PublicBlogs = () => {
   };
 
   if (loading && blogs.length === 0) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-500 animate-pulse font-medium">Loading insights...</p>
-        </div>
-      </div>
-    );
+    return <PublicBlogsSkeleton />;
   }
 
   return (

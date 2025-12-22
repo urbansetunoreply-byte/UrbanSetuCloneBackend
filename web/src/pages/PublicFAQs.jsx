@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import PublicFAQsSkeleton from '../components/skeletons/PublicFAQsSkeleton';
 import {
   Search, ChevronDown, ChevronUp, ThumbsUp, ThumbsDown,
   Filter, HelpCircle, MessageCircle, Phone, Mail,
@@ -204,6 +205,10 @@ const PublicFAQs = () => {
     fetchFAQs();
   };
 
+  if (loading && faqs.length === 0) {
+    return <PublicFAQsSkeleton />;
+  }
+
   return (
     <div className="min-h-screen bg-gray-50 font-sans text-slate-800 pb-20">
       {/* Hero Section */}
@@ -261,8 +266,8 @@ const PublicFAQs = () => {
               <button
                 onClick={() => setSelectedCategory('all')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === 'all'
-                    ? 'bg-blue-600 text-white shadow-md transform scale-105'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-blue-600 text-white shadow-md transform scale-105'
+                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
               >
                 All Categories
@@ -272,8 +277,8 @@ const PublicFAQs = () => {
                   key={category}
                   onClick={() => setSelectedCategory(category)}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === category
-                      ? 'bg-blue-600 text-white shadow-md transform scale-105'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-blue-600 text-white shadow-md transform scale-105'
+                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                     }`}
                 >
                   {category}
@@ -285,12 +290,7 @@ const PublicFAQs = () => {
 
         {/* FAQs List */}
         <div className="space-y-4">
-          {loading ? (
-            <div className="bg-white rounded-3xl p-12 text-center shadow-lg border border-gray-100">
-              <div className="animate-spin rounded-full h-12 w-12 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-              <p className="text-gray-500 animate-pulse font-medium">Finding answers...</p>
-            </div>
-          ) : faqs.length === 0 ? (
+          {faqs.length === 0 ? (
             <div className="bg-white rounded-3xl p-16 text-center shadow-lg border border-gray-100 animate-fade-in-up">
               <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
                 <Search className="w-10 h-10 text-gray-400" />
@@ -315,8 +315,8 @@ const PublicFAQs = () => {
                 <div
                   key={faq._id}
                   className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${expandedFAQ === faq._id
-                      ? 'shadow-lg border-blue-200 ring-1 ring-blue-100'
-                      : 'shadow-sm border-gray-100 hover:shadow-md hover:border-gray-200'
+                    ? 'shadow-lg border-blue-200 ring-1 ring-blue-100'
+                    : 'shadow-sm border-gray-100 hover:shadow-md hover:border-gray-200'
                     }`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
@@ -362,8 +362,8 @@ const PublicFAQs = () => {
                             onClick={(e) => handleRating(faq._id, 'like', e)}
                             disabled={reactionLoading[faq._id]}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${userReactions[faq._id] === 'like'
-                                ? 'bg-green-100 text-green-700 border border-green-200'
-                                : 'bg-white text-gray-500 border border-gray-200 hover:border-green-300 hover:text-green-600'
+                              ? 'bg-green-100 text-green-700 border border-green-200'
+                              : 'bg-white text-gray-500 border border-gray-200 hover:border-green-300 hover:text-green-600'
                               }`}
                           >
                             <ThumbsUp className={`w-4 h-4 ${userReactions[faq._id] === 'like' ? 'fill-current' : ''}`} />
@@ -374,8 +374,8 @@ const PublicFAQs = () => {
                             onClick={(e) => handleRating(faq._id, 'dislike', e)}
                             disabled={reactionLoading[faq._id]}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${userReactions[faq._id] === 'dislike'
-                                ? 'bg-red-100 text-red-700 border border-red-200'
-                                : 'bg-white text-gray-500 border border-gray-200 hover:border-red-300 hover:text-red-600'
+                              ? 'bg-red-100 text-red-700 border border-red-200'
+                              : 'bg-white text-gray-500 border border-gray-200 hover:border-red-300 hover:text-red-600'
                               }`}
                           >
                             <ThumbsDown className={`w-4 h-4 ${userReactions[faq._id] === 'dislike' ? 'fill-current' : ''}`} />
@@ -411,8 +411,8 @@ const PublicFAQs = () => {
                       key={page}
                       onClick={() => setPagination(prev => ({ ...prev, current: page }))}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${pagination.current === page
-                          ? 'bg-blue-600 text-white shadow-md'
-                          : 'text-gray-600 hover:bg-gray-100'
+                        ? 'bg-blue-600 text-white shadow-md'
+                        : 'text-gray-600 hover:bg-gray-100'
                         }`}
                     >
                       {page}
