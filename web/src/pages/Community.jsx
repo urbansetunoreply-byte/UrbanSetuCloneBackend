@@ -112,8 +112,12 @@ export default function Community() {
 
     useEffect(() => {
         const loadData = async () => {
-            setLoading(true);
+            // Only show full skeleton on initial load or tab change, not during search
+            if (!searchTerm) {
+                setLoading(true);
+            }
             try {
+                // If searching, we still want to fetch, but maybe not hide everything behind a skeleton
                 await Promise.all([fetchPosts(), fetchStats()]);
             } catch (error) {
                 console.error("Error loading data", error);
