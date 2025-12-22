@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import AdminDashboardSkeleton from "../components/skeletons/AdminDashboardSkeleton";
 import ListingItem from "../components/ListingItem";
 import { Link, useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
@@ -825,22 +826,15 @@ export default function AdminDashboard() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading dashboard...</p>
-        </div>
-      </div>
-    );
+    return <AdminDashboardSkeleton />;
   }
 
   return (
-    <div className="bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 min-h-screen">
+    <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen pb-12 transition-colors duration-500">
       {/* Enhanced Header Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden bg-white rounded-2xl shadow-2xl mb-8 mt-6">
-          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/5 to-purple-600/5"></div>
+        <div className="relative overflow-hidden bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 mb-10 mt-8 transform transition-all hover:scale-[1.01] duration-500">
+          <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 opacity-50"></div>
           <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between p-6 lg:p-10 gap-6">
             <div className="flex-1">
               <div className="flex items-center gap-4 mb-4">
@@ -921,7 +915,7 @@ export default function AdminDashboard() {
           {/* Security & Fraud Monitoring */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Active OTP Lockouts Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-red-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-red-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Active OTP Lockouts</p>
@@ -937,7 +931,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Password Lockouts Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-orange-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-orange-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Password Lockouts</p>
@@ -953,7 +947,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Failed Attempts Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-purple-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-purple-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Failed Attempts</p>
@@ -969,7 +963,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Total OTP Requests Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-blue-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total OTP Requests</p>
