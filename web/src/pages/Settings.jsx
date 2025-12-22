@@ -3,7 +3,6 @@ import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
 import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
-import ProfileSkeleton from '../components/skeletons/ProfileSkeleton';
 import {
   deleteUserStart,
   deleteUserSuccess,
@@ -967,7 +966,7 @@ export default function Settings() {
   }, [fontSize]);
 
   if (!currentUser) {
-    return <ProfileSkeleton />;
+    return <div className="text-center text-red-600 mt-10">Please sign in to access settings.</div>;
   }
 
   const SettingSection = ({ title, icon: Icon, children }) => (
