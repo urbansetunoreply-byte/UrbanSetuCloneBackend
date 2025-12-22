@@ -980,7 +980,7 @@ export default function AdminDashboard() {
           </div>
 
           {/* Visitor Tracking Statistics */}
-          <div className="bg-white rounded-2xl shadow-lg p-6 mb-6 border border-gray-100">
+          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6 border border-white/50 hover:shadow-2xl transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg">
@@ -1074,7 +1074,7 @@ export default function AdminDashboard() {
           {/* Pending Reviews & Appointments - High Priority Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Pending Reviews Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-yellow-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-yellow-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Pending Reviews</p>
@@ -1102,7 +1102,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Appointments Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-purple-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-purple-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Appointments</p>
@@ -1149,7 +1149,7 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Users Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-blue-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-blue-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
@@ -1176,7 +1176,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Properties Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-green-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-green-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Total Properties</p>
@@ -1208,7 +1208,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Engagement Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-rose-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-rose-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Avg Views/Listing</p>
@@ -1224,7 +1224,7 @@ export default function AdminDashboard() {
             </div>
 
             {/* Rent Lock Card */}
-            <div className="group bg-white rounded-2xl shadow-lg hover:shadow-2xl transition-all duration-300 p-6 border border-gray-100 hover:border-indigo-200">
+            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-indigo-300 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
                   <p className="text-sm font-medium text-gray-600 mb-1">Rent-Locked Deals</p>
@@ -1265,7 +1265,7 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-green-600 mr-2" /> Price Statistics</h3>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
@@ -1284,7 +1284,7 @@ export default function AdminDashboard() {
               <p className="mt-4 text-sm text-gray-600"><span className="font-semibold text-green-700">{analytics.priceStats.discountedCount}</span> listings currently on discount</p>
             </div>
 
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-purple-600 mr-2" /> Bedrooms Distribution</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {Object.entries(analytics.bedroomsDistribution).sort((a, b) => Number(a[0]) - Number(b[0])).map(([beds, count]) => (
@@ -1303,7 +1303,7 @@ export default function AdminDashboard() {
 
           {/* Fraud Activity Timeline - Grouped with Security */}
           {fraudTimeline.length > 0 && (
-            <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow mb-6">
+            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 mb-6 border border-white/50 hover:-translate-y-1">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaExclamationTriangle className="text-red-600 mr-2" /> Fraud Activity Timeline</h3>
               <div className="mt-3 flex items-end gap-1 h-20">
                 {fraudTimeline.map((pt, i, arr) => {
@@ -1328,7 +1328,7 @@ export default function AdminDashboard() {
 
         {/* Market Insights - Extended */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-blue-600 mr-2" /> Market Price Trends</h3>
             {analytics.marketInsights.monthlyAvgPrices.length === 0 ? (
               <p className="text-sm text-gray-500">Not enough data yet.</p>
@@ -1356,7 +1356,7 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Demand by City</h3>
             {analytics.marketInsights.demandByCity.length === 0 ? (
               <p className="text-sm text-gray-500">Not enough data yet.</p>
@@ -1418,7 +1418,7 @@ export default function AdminDashboard() {
 
         {/* Performance & Sentiment Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border border-gray-200">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
             {analytics.performance.topOwnersByRating.length === 0 ? (
               <p className="text-sm text-gray-500">Not enough data yet.</p>
@@ -1433,7 +1433,7 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow border border-gray-200">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
@@ -1465,7 +1465,7 @@ export default function AdminDashboard() {
 
       {/* Conversion Funnel & Property Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Conversion Funnel</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
@@ -1493,7 +1493,7 @@ export default function AdminDashboard() {
           </div>
         </div>
 
-        <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
           <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaEye className="text-cyan-600 mr-2" /> Top Viewed Properties</h3>
           {analytics.propertyPerformance.topViewedProperties.length === 0 ? (
             <p className="text-sm text-gray-500">No view data available yet.</p>
@@ -1511,7 +1511,7 @@ export default function AdminDashboard() {
 
         {/* Geographic Analytics & Property Types */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-emerald-600 mr-2" /> State Distribution</h3>
             {Object.keys(analytics.geographic.stateDistribution).length === 0 ? (
               <p className="text-sm text-gray-500">No geographic data available.</p>
@@ -1538,7 +1538,7 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaHome className="text-orange-600 mr-2" /> Property Types</h3>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(analytics.propertyTypes)
@@ -1562,7 +1562,7 @@ export default function AdminDashboard() {
 
         {/* Advanced Sentiment & Regional Price Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-pink-600 mr-2" /> Emotion Analysis</h3>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(analytics.advancedSentiment.emotionBreakdown)
@@ -1583,7 +1583,7 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white rounded-xl shadow-lg p-6 hover:shadow-xl transition-shadow">
+          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
             <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaRupeeSign className="text-teal-600 mr-2" /> Regional Price Analysis</h3>
             {analytics.geographic.regionalPriceVariation.length === 0 ? (
               <p className="text-sm text-gray-500">No regional price data available.</p>
