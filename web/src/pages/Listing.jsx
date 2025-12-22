@@ -1608,27 +1608,28 @@ export default function Listing() {
                     <div className="space-y-2 mb-4 max-h-[40vh] sm:max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                       {comparisonProperties.map((property) => (
                         <div key={property._id} className="group flex items-center justify-between bg-white p-2 rounded-xl shadow-sm border border-indigo-50 hover:shadow-md transition-all hover:border-indigo-200">
-                          <div className="flex items-center gap-3 overflow-hidden">
+                          <div className="flex items-center gap-3 overflow-hidden flex-1">
                             <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                               <img
                                 src={property.imageUrls?.[0] || '/placeholder-property.jpg'}
                                 alt={property.name}
                                 className="w-full h-full object-cover rounded-lg shadow-sm"
                               />
-                              <button
-                                onClick={(e) => { e.stopPropagation(); removeFromComparison(property._id); }}
-                                className="absolute -top-1.5 -right-1.5 bg-red-500 text-white rounded-full p-0.5 shadow-md opacity-0 group-hover:opacity-100 transition-opacity scale-75 hover:scale-90"
-                              >
-                                <FaTimes size={10} />
-                              </button>
                             </div>
-                            <div className="min-w-0">
+                            <div className="min-w-0 flex-1 pr-2">
                               <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate leading-tight">{property.name}</p>
                               <p className="text-[10px] sm:text-xs text-indigo-500 font-medium truncate">
                                 ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
                               </p>
                             </div>
                           </div>
+                          <button
+                            onClick={(e) => { e.stopPropagation(); removeFromComparison(property._id); }}
+                            className="flex-shrink-0 p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                            aria-label="Remove property"
+                          >
+                            <FaTimes size={12} />
+                          </button>
                         </div>
                       ))}
                       {comparisonProperties.length < 4 && (
