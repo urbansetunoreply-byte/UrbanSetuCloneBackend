@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import HomeSkeleton from "../components/skeletons/HomeSkeleton";
 import { Link, useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, EffectFade } from "swiper/modules";
@@ -42,43 +43,69 @@ export default function Home() {
   // But standard links work fine too. We'll use the check for flexible routing if needed.
   const linkPrefix = currentUser ? "/user" : "";
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const fetchOfferListings = async () => {
+    const fetchAllData = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`, { credentials: 'include' });
-        const data = await res.json();
-        setOfferListings(Array.isArray(data) ? data : []);
+        setLoading(true);
+
+        // Parallel fetching of all initial data
+        const [
+          offerRes,
+          rentRes,
+          saleRes,
+          trendingRes,
+          statsRes
+        ] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`, { credentials: 'include' }),
+          fetch(`${API_BASE_URL}/api/watchlist/top?limit=6`, { credentials: 'include' }),
+          Promise.all([
+            fetch(`${API_BASE_URL}/api/listing/count`),
+            fetch(`${API_BASE_URL}/api/user/count`),
+            fetch(`${API_BASE_URL}/api/bookings/count`)
+          ])
+        ]);
+
+        const offerData = await offerRes.json();
+        const rentData = await rentRes.json();
+        const saleData = await saleRes.json();
+
+        // Handle Trending Data safely
+        let trendingData = [];
+        if (trendingRes.ok) {
+          const tData = await trendingRes.json();
+          trendingData = Array.isArray(tData) ? tData : (tData?.listings || []);
+        }
+
+        // Handle Stats Data
+        const [propsRes, usersRes, transRes] = statsRes;
+        const propsData = await propsRes.json();
+        const uData = await usersRes.json();
+        const transData = await transRes.json();
+
+        setOfferListings(Array.isArray(offerData) ? offerData : []);
+        setRentListings(Array.isArray(rentData) ? rentData : []);
+        setSaleListings(Array.isArray(saleData) ? saleData : []);
+        setTrendingListings(trendingData);
+
+        setStats({
+          properties: Number(propsData.count) || 1250,
+          users: Number(uData.count) || 5000,
+          transactions: Number(transData.count) || 2500,
+          satisfaction: 98
+        });
+
       } catch (error) {
-        console.error("Error fetching offer listings", error);
-        setOfferListings([]);
+        console.error("Error fetching home data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchRentListings = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`, { credentials: 'include' });
-        const data = await res.json();
-        setRentListings(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Error fetching rent listings", error);
-        setRentListings([]);
-      }
-    };
-
-    const fetchSaleListings = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`, { credentials: 'include' });
-        const data = await res.json();
-        setSaleListings(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Error fetching sale listings", error);
-        setSaleListings([]);
-      }
-    };
-
-    fetchOfferListings();
-    fetchRentListings();
-    fetchSaleListings();
+    fetchAllData();
   }, []);
 
   // Fetch recommended listings for logged-in users
@@ -101,68 +128,6 @@ export default function Home() {
     fetchRecommended();
   }, [currentUser?._id]);
 
-  // Fetch trending listings
-  useEffect(() => {
-    const fetchTrending = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/watchlist/top?limit=6`, { credentials: 'include' });
-        if (!res.ok) {
-          setTrendingListings([]);
-          return;
-        }
-        const data = await res.json();
-        setTrendingListings(Array.isArray(data) ? data : (data?.listings || []));
-      } catch (error) {
-        console.error("Error fetching trending listings", error);
-        setTrendingListings([]);
-      }
-    };
-    fetchTrending();
-  }, []);
-
-  // Trigger slider visibility animation after component mounts
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      setIsSliderVisible(true);
-    }, 100);
-    return () => clearTimeout(timer);
-  }, []);
-
-  // Fetch statistics
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [propertiesRes, usersRes, transactionsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/listing/count`),
-          fetch(`${API_BASE_URL}/api/user/count`),
-          fetch(`${API_BASE_URL}/api/bookings/count`)
-        ]);
-
-        const [propertiesData, usersData, transactionsData] = await Promise.all([
-          propertiesRes.json(),
-          usersRes.json(),
-          transactionsRes.json()
-        ]);
-
-        setStats({
-          properties: Number(propertiesData.count) || 1250,
-          users: Number(usersData.count) || 5000,
-          transactions: Number(transactionsData.count) || 2500,
-          satisfaction: 98
-        });
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-        setStats({
-          properties: 1250,
-          users: 5000,
-          transactions: 2500,
-          satisfaction: 98
-        });
-      }
-    };
-    fetchStats();
-  }, []);
-
   const handleSlideChange = (swiper) => {
     setCurrentSlideIndex(swiper.realIndex);
   };
@@ -183,6 +148,10 @@ export default function Home() {
       type: listing.type
     }))
   ) : [];
+
+  if (loading) {
+    return <HomeSkeleton />;
+  }
 
   return (
     <div className="bg-gray-50 min-h-screen relative overflow-hidden font-sans">
