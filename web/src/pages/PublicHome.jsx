@@ -1,4 +1,5 @@
 import React, { useEffect, useState, useRef } from "react";
+import PublicHomeSkeleton from "../components/skeletons/PublicHomeSkeleton";
 import { Link, useNavigate } from "react-router-dom";
 import { Swiper, SwiperSlide } from "swiper/react";
 import { Autoplay, Pagination, EffectFade } from "swiper/modules";
@@ -35,43 +36,77 @@ export default function PublicHome() {
   const swiperRef = useRef(null);
   const navigate = useNavigate();
 
+  const [loading, setLoading] = useState(true);
+
   useEffect(() => {
-    const fetchOfferListings = async () => {
+    const fetchAllData = async () => {
       try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`);
-        const data = await res.json();
-        setOfferListings(Array.isArray(data) ? data : []);
+        setLoading(true);
+
+        const [
+          offerRes,
+          rentRes,
+          saleRes,
+          statsRes,
+          recommendedRes,
+          trendingRes
+        ] = await Promise.all([
+          fetch(`${API_BASE_URL}/api/listing/get?offer=true&visibility=public`),
+          fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`),
+          fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`),
+          Promise.all([
+            fetch(`${API_BASE_URL}/api/listing/count`),
+            fetch(`${API_BASE_URL}/api/user/count`),
+            fetch(`${API_BASE_URL}/api/bookings/count`)
+          ]),
+          fetch(`${API_BASE_URL}/api/listing/recommended?limit=6`),
+          fetch(`${API_BASE_URL}/api/watchlist/top-watched?limit=6`)
+        ]);
+
+        // Helper to safely parse JSON
+        const safeJson = async (res) => {
+          if (res.ok) {
+            try {
+              return await res.json();
+            } catch (e) {
+              return [];
+            }
+          }
+          return [];
+        }
+
+        const offerData = await safeJson(offerRes);
+        const rentData = await safeJson(rentRes);
+        const saleData = await safeJson(saleRes);
+        const recommendedData = await safeJson(recommendedRes);
+        const trendingData = await safeJson(trendingRes);
+
+        const [propsRes, usersRes, transRes] = statsRes;
+        const propsData = await safeJson(propsRes);
+        const uData = await safeJson(usersRes);
+        const transData = await safeJson(transRes);
+
+        setOfferListings(Array.isArray(offerData) ? offerData : []);
+        setRentListings(Array.isArray(rentData) ? rentData : []);
+        setSaleListings(Array.isArray(saleData) ? saleData : []);
+        setRecommendedListings(Array.isArray(recommendedData) ? recommendedData : []);
+        setTrendingListings(Array.isArray(trendingData) ? trendingData : []);
+
+        setStats({
+          properties: Number(propsData.count) || 1250,
+          users: Number(uData.count) || 5000,
+          transactions: Number(transData.count) || 2500,
+          satisfaction: 98
+        });
+
       } catch (error) {
-        console.error("Error fetching offer listings", error);
-        setOfferListings([]);
+        console.error("Error fetching public home data:", error);
+      } finally {
+        setLoading(false);
       }
     };
 
-    const fetchRentListings = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=rent&visibility=public`);
-        const data = await res.json();
-        setRentListings(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Error fetching rent listings", error);
-        setRentListings([]);
-      }
-    };
-
-    const fetchSaleListings = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/get?type=sale&visibility=public`);
-        const data = await res.json();
-        setSaleListings(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Error fetching sale listings", error);
-        setSaleListings([]);
-      }
-    };
-
-    fetchOfferListings();
-    fetchRentListings();
-    fetchSaleListings();
+    fetchAllData();
   }, []);
 
   // Trigger slider visibility animation after component mounts
@@ -82,72 +117,12 @@ export default function PublicHome() {
     return () => clearTimeout(timer);
   }, []);
 
-  // Fetch statistics
-  useEffect(() => {
-    const fetchStats = async () => {
-      try {
-        const [propertiesRes, usersRes, transactionsRes] = await Promise.all([
-          fetch(`${API_BASE_URL}/api/listing/count`),
-          fetch(`${API_BASE_URL}/api/user/count`),
-          fetch(`${API_BASE_URL}/api/bookings/count`)
-        ]);
-
-        const [propertiesData, usersData, transactionsData] = await Promise.all([
-          propertiesRes.json(),
-          usersRes.json(),
-          transactionsRes.json()
-        ]);
-
-        setStats({
-          properties: Number(propertiesData.count) || 1250,
-          users: Number(usersData.count) || 5000,
-          transactions: Number(transactionsData.count) || 2500,
-          satisfaction: 98
-        });
-      } catch (error) {
-        console.error("Error fetching stats:", error);
-        setStats({
-          properties: 1250,
-          users: 5000,
-          transactions: 2500,
-          satisfaction: 98
-        });
-      }
-    };
-    fetchStats();
-  }, []);
-
-  // Fetch recommended & trending listings (Logic preserved from original)
-  useEffect(() => {
-    const fetchRecommended = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/listing/recommended?limit=6`);
-        if (!res.ok) return;
-        const data = await res.json();
-        setRecommendedListings(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Error fetching recommended listings", error);
-        setRecommendedListings([]);
-      }
-    };
-    fetchRecommended();
-
-    const fetchTrending = async () => {
-      try {
-        const res = await fetch(`${API_BASE_URL}/api/watchlist/top-watched?limit=6`);
-        if (!res.ok) return;
-        const data = await res.json();
-        setTrendingListings(Array.isArray(data) ? data : []);
-      } catch (error) {
-        console.error("Error fetching trending listings", error);
-      }
-    };
-    fetchTrending();
-  }, []);
-
   const handleSlideChange = (swiper) => {
     setCurrentSlideIndex(swiper.realIndex);
   };
+  if (loading) {
+    return <PublicHomeSkeleton />;
+  }
 
   const goToSlide = (index) => {
     if (swiperRef.current && swiperRef.current.swiper) {
