@@ -144,7 +144,7 @@ const YearInReview = ({ isAdmin = false }) => {
             color: "from-yellow-950 via-[#1a1500] to-yellow-950",
         },
         persona: {
-            title: "Your 2024 Identity",
+            title: `Your ${year} Identity`,
             content: data?.personality?.type || "The Urban Resident",
             subtitle: data?.personality?.desc || "A visionary hunter of perfect spaces.",
             icon: <FaRocket className="text-8xl text-emerald-400 mb-6" />,
@@ -152,7 +152,7 @@ const YearInReview = ({ isAdmin = false }) => {
             highlight: true
         },
         outro: {
-            title: "Next Stop: 2025",
+            title: `Next Stop: ${parseInt(year) + 1}`,
             content: `Thank you for being part of UrbanSetu's journey in ${year}.`,
             icon: <FaFlag className="text-8xl text-white mb-6" />,
             color: "from-[#0f172a] via-[#1e293b] to-[#0f172a]",
@@ -256,7 +256,7 @@ const YearInReview = ({ isAdmin = false }) => {
 
     if (!loading && !hasData) {
         return (
-            <div className={`fixed inset-0 bg-[#0f172a] text-white flex flex-col items-center justify-center p-10 text-center font-inter`}>
+            <div className={`fixed inset-0 z-[1000] bg-[#0f172a] text-white flex flex-col items-center justify-center p-10 text-center font-inter`}>
                 <motion.div
                     initial={{ opacity: 0, scale: 0.9 }}
                     animate={{ opacity: 1, scale: 1 }}
@@ -286,7 +286,7 @@ const YearInReview = ({ isAdmin = false }) => {
     }
 
     return (
-        <div ref={flashbackRef} className={`fixed inset-0 bg-gradient-to-br ${currentData.color} text-white flex flex-col overflow-hidden transition-all duration-1000 font-inter`}>
+        <div ref={flashbackRef} className={`fixed inset-0 z-[1000] bg-gradient-to-br ${currentData.color} text-white flex flex-col overflow-hidden transition-all duration-1000 font-inter`}>
             {/* Dynamic Background Effects */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                 <motion.div
