@@ -1054,7 +1054,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             <p className="text-gray-500 font-medium">
                                 Don't have an account?{" "}
                                 <Link
-                                    to="/sign-up"
+                                    to={`/sign-up${location.search}`}
                                     className={`text-blue-600 hover:text-blue-700 font-bold hover:underline transition-colors ${(authInProgress !== null || loading || otpVerifyingLoading || otpSent) ? 'opacity-50 pointer-events-none' : ''}`}
                                 >
                                     Sign Up

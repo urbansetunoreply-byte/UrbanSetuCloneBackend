@@ -203,7 +203,7 @@ function normalizeRoute(path, role) {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
   // List of shared base routes (add more as needed)
-  const sharedBases = ["about", "search", "terms", "privacy", "cookie-policy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact", "ai", "investment-tools", "settings", "year"];
+  const sharedBases = ["about", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai"];
 
   // Helper to extract base and subpath
   function extractBaseAndRest(p) {

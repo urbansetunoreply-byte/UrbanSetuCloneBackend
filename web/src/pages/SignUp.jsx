@@ -394,11 +394,19 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
       // Reconnect socket with new token
       reconnectSocket();
 
-      // Navigate based on user role
-      if (pendingLoginData.role === "admin" || pendingLoginData.role === "rootadmin") {
-        navigate("/admin");
+      // Check for redirect URL in query params
+      const searchParams = new URLSearchParams(location.search);
+      const redirectUrl = searchParams.get('redirect');
+
+      if (redirectUrl && redirectUrl.startsWith('/')) {
+        navigate(redirectUrl, { replace: true });
       } else {
-        navigate("/user");
+        // Navigate based on user role
+        if (pendingLoginData.role === "admin" || pendingLoginData.role === "rootadmin") {
+          navigate("/admin");
+        } else {
+          navigate("/user");
+        }
       }
     } else {
       // Fallback for regular signup (not logged in yet)
