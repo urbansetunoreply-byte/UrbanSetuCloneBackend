@@ -157,7 +157,95 @@ const CookiePolicy = () => {
           </div>
         </div>
 
-        {/* Third Party & Contact Grid */}
+        {/* Detailed Cookie Table */}
+        <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+          <div className="p-8 border-b border-gray-100">
+            <h2 className="text-3xl font-bold text-gray-900 flex items-center gap-3">
+              <FileText className="w-8 h-8 text-blue-600" />
+              Specific Cookies We Use
+            </h2>
+            <p className="text-gray-600 mt-2">A detailed list of the first-party and third-party cookies currently in use on UrbanSetu.</p>
+          </div>
+          <div className="overflow-x-auto">
+            <table className="w-full text-left border-collapse">
+              <thead>
+                <tr className="bg-gray-50 border-b border-gray-100 text-xs uppercase tracking-wider text-gray-500 font-semibold">
+                  <th className="p-6">Cookie Name</th>
+                  <th className="p-6">Category</th>
+                  <th className="p-6">Purpose</th>
+                  <th className="p-6">Duration</th>
+                </tr>
+              </thead>
+              <tbody className="divide-y divide-gray-100 text-sm">
+                <tr className="hover:bg-gray-50/50 transition-colors">
+                  <td className="p-6 font-mono text-blue-600 font-medium">access_token</td>
+                  <td className="p-6"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Necessary</span></td>
+                  <td className="p-6 text-gray-600">Securely authenticates your user session to access private features.</td>
+                  <td className="p-6 text-gray-500">Session (15 mins)</td>
+                </tr>
+                <tr className="hover:bg-gray-50/50 transition-colors">
+                  <td className="p-6 font-mono text-blue-600 font-medium">refresh_token</td>
+                  <td className="p-6"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Necessary</span></td>
+                  <td className="p-6 text-gray-600">Allows you to stay logged in without re-entering credentials frequently.</td>
+                  <td className="p-6 text-gray-500">Persistent (7 days)</td>
+                </tr>
+                <tr className="hover:bg-gray-50/50 transition-colors">
+                  <td className="p-6 font-mono text-blue-600 font-medium">session_id</td>
+                  <td className="p-6"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Necessary</span></td>
+                  <td className="p-6 text-gray-600">Uniquely identifies your browsing session to prevent fraud and manage state.</td>
+                  <td className="p-6 text-gray-500">Session</td>
+                </tr>
+                <tr className="hover:bg-gray-50/50 transition-colors">
+                  <td className="p-6 font-mono text-blue-600 font-medium">csrftoken</td>
+                  <td className="p-6"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">Security</span></td>
+                  <td className="p-6 text-gray-600">Protects against Cross-Site Request Forgery (CSRF) attacks.</td>
+                  <td className="p-6 text-gray-500">Session</td>
+                </tr>
+                <tr className="hover:bg-gray-50/50 transition-colors">
+                  <td className="p-6 font-mono text-blue-600 font-medium">theme_pref</td>
+                  <td className="p-6"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">Functional</span></td>
+                  <td className="p-6 text-gray-600">Remembers your preferred display mode (Light/Dark).</td>
+                  <td className="p-6 text-gray-500">Persistent (1 year)</td>
+                </tr>
+                <tr className="hover:bg-gray-50/50 transition-colors">
+                  <td className="p-6 font-mono text-blue-600 font-medium">_ga, _gid</td>
+                  <td className="p-6"><span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">Analytics</span></td>
+                  <td className="p-6 text-gray-600">Google Analytics cookies to distinguish unique users and throttle request rates.</td>
+                  <td className="p-6 text-gray-500">2 years / 24 hours</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+
+        {/* Browser Management Section */}
+        <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100 animate-fade-in-up" style={{ animationDelay: '0.3s' }}>
+          <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-3">
+            <Settings className="w-6 h-6 text-gray-600" /> Managing Cookies in Your Browser
+          </h2>
+          <p className="text-gray-600 mb-6 leading-relaxed">
+            Most web browsers allow you to control cookies through their settings preferences. However, if you limit the ability of websites to set cookies, you may worsen your overall user experience, since it will no longer be personalized to you. It may also stop you from saving customized settings like login information.
+          </p>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
+            <a href="https://support.google.com/chrome/answer/95647" target="_blank" rel="noopener noreferrer" className="p-4 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all text-center group">
+              <span className="font-semibold text-gray-700 group-hover:text-blue-600 block mb-1">Google Chrome</span>
+              <span className="text-xs text-gray-500">Manage settings &rarr;</span>
+            </a>
+            <a href="https://support.apple.com/guide/safari/manage-cookies-and-website-data-sfri11471/mac" target="_blank" rel="noopener noreferrer" className="p-4 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all text-center group">
+              <span className="font-semibold text-gray-700 group-hover:text-blue-600 block mb-1">Safari</span>
+              <span className="text-xs text-gray-500">Manage settings &rarr;</span>
+            </a>
+            <a href="https://support.mozilla.org/en-US/kb/enhanced-tracking-protection-firefox-desktop" target="_blank" rel="noopener noreferrer" className="p-4 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all text-center group">
+              <span className="font-semibold text-gray-700 group-hover:text-blue-600 block mb-1">Mozilla Firefox</span>
+              <span className="text-xs text-gray-500">Manage settings &rarr;</span>
+            </a>
+            <a href="https://support.microsoft.com/en-us/microsoft-edge/delete-cookies-in-microsoft-edge-63947406-40ac-c23d-708e-4050b5969269" target="_blank" rel="noopener noreferrer" className="p-4 rounded-xl bg-gray-50 hover:bg-gray-100 border border-gray-200 transition-all text-center group">
+              <span className="font-semibold text-gray-700 group-hover:text-blue-600 block mb-1">Microsoft Edge</span>
+              <span className="text-xs text-gray-500">Manage settings &rarr;</span>
+            </a>
+          </div>
+        </div>
+
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Third Party Services */}
           <div className="bg-white rounded-3xl shadow-xl p-8 border border-gray-100">
