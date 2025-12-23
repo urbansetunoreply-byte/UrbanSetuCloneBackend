@@ -37,6 +37,8 @@ const SessionManagement = () => {
   const [searchTimeout, setSearchTimeout] = useState(null);
   const [isSearching, setIsSearching] = useState(false);
 
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
   // Debounced search effect
   useEffect(() => {
     if (searchTimeout) {
@@ -60,13 +62,13 @@ const SessionManagement = () => {
   }, [searchQuery]);
 
   useEffect(() => {
-    fetchSessions();
+    fetchSessions(); // Main initial fetch
     return () => { if (autoRefreshRef.current) clearInterval(autoRefreshRef.current); };
   }, [filterRole, filterDevice, filterLocation, filterDateRange, currentPage]);
 
   // Refresh immediately when backend broadcasts updates
   useEffect(() => {
-    const handler = () => fetchSessions();
+    const handler = () => fetchSessions(); // Background update
 
     if (socket) {
       socket.on('adminSessionsUpdated', handler);
@@ -82,6 +84,8 @@ const SessionManagement = () => {
   }, [filterRole, currentPage]);
 
   const fetchSessions = async () => {
+    // Note: We do NOT set global loading(true) here to avoid flashing the skeleton
+    // on refreshes. Global loading is only true initially via useState(true).
     try {
       const params = new URLSearchParams({
         page: currentPage,
@@ -118,8 +122,14 @@ const SessionManagement = () => {
       console.error('Error fetching sessions:', error);
       toast.error('Failed to fetch sessions');
     } finally {
-      setLoading(false);
+      setLoading(false); // Only turn off initial loading
     }
+  };
+
+  const activeRefresh = async () => {
+    setIsRefreshing(true);
+    await fetchSessions();
+    setIsRefreshing(false);
   };
 
   const toggleAutoRefresh = () => {
@@ -325,11 +335,11 @@ const SessionManagement = () => {
             <div className="flex flex-col sm:flex-row gap-3">
               <div className="flex rounded-lg shadow-sm bg-gray-50 p-1 border border-gray-200">
                 <button
-                  onClick={() => { setLoading(true); fetchSessions(); }}
+                  onClick={activeRefresh}
                   className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm transition-all focus:outline-none"
                   title="Refresh sessions"
                 >
-                  <FaSync className={`mr-2 ${loading ? 'animate-spin text-blue-600' : 'text-gray-500'}`} />
+                  <FaSync className={`mr-2 ${loading || isRefreshing ? 'animate-spin text-blue-600' : 'text-gray-500'}`} />
                   Refresh
                 </button>
                 <div className="w-px bg-gray-200 my-1 mx-1"></div>
