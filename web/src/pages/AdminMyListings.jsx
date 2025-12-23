@@ -9,6 +9,7 @@ import { maskAddress } from '../utils/addressMasking';
 import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import AdminMyListingsSkeleton from "../components/skeletons/AdminMyListingsSkeleton";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminMyListings() {
@@ -188,14 +189,7 @@ export default function AdminMyListings() {
   });
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading your listings...</p>
-        </div>
-      </div>
-    );
+    return <AdminMyListingsSkeleton />;
   }
 
   if (error) {

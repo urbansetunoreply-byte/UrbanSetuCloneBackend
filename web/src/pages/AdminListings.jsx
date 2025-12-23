@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { isMobileDevice } from '../utils/mobileUtils';
+import AdminListingsSkeleton from "../components/skeletons/AdminListingsSkeleton";
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminListings() {
@@ -405,14 +406,7 @@ export default function AdminListings() {
   }, [propertyReports, propertyReportsFilters]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading all listings...</p>
-        </div>
-      </div>
-    );
+    return <AdminListingsSkeleton />;
   }
 
   if (error) {
