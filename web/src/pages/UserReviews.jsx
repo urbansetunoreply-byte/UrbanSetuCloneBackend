@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useSelector } from 'react-redux';
 import { FaStar, FaEdit, FaTrash, FaSearch, FaCheck, FaTimes, FaSync, FaChartLine, FaChartBar, FaChartPie, FaArrowUp, FaArrowDown, FaUsers, FaComments, FaExclamationTriangle, FaHome, FaFilter, FaSort, FaBars, FaEye, FaHeart, FaDownload, FaShare, FaPlus, FaTimes as FaX } from 'react-icons/fa';
 import ReviewForm from '../components/ReviewForm.jsx';
+import UserReviewsSkeleton from '../components/skeletons/UserReviewsSkeleton';
 import { socket } from '../utils/socket.js';
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
@@ -24,7 +25,7 @@ export default function UserReviews() {
   const [reviewToDelete, setReviewToDelete] = useState(null);
   const [showPermanentDeleteModal, setShowPermanentDeleteModal] = useState(false);
   const [reviewToPermanentlyDelete, setReviewToPermanentlyDelete] = useState(null);
-  
+
   // Analytics and UI state
   const [analytics, setAnalytics] = useState({
     totalReviews: 0,
@@ -76,7 +77,7 @@ export default function UserReviews() {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
-    } catch {}
+    } catch { }
   }, []);
 
   useEffect(() => {
@@ -105,7 +106,7 @@ export default function UserReviews() {
       });
     };
     socket.on('reviewUpdated', handleSocketReviewUpdate);
-    
+
     // Listen for profile updates to update user info in reviews
     const handleProfileUpdate = (profileData) => {
       setReviews(prevReviews => {
@@ -124,7 +125,7 @@ export default function UserReviews() {
     };
     socket.on('profileUpdated', handleProfileUpdate);
 
-    
+
     return () => {
       socket.off('reviewUpdated', handleSocketReviewUpdate);
       socket.off('profileUpdated', handleProfileUpdate);
@@ -136,7 +137,7 @@ export default function UserReviews() {
   useEffect(() => {
     const pollInterval = setInterval(async () => {
       if (!currentUser) return;
-      
+
       try {
         const res = await fetch(`${API_BASE_URL}/api/user/id/${currentUser._id}`);
         if (res.ok) {
@@ -210,7 +211,7 @@ export default function UserReviews() {
     const approvedReviews = reviews.filter(r => r.status === 'approved').length;
     const rejectedReviews = reviews.filter(r => r.status === 'rejected').length;
     const removedReviews = reviews.filter(r => r.status === 'removed' || r.status === 'removed_by_user').length;
-    
+
     // Calculate average rating
     const totalRating = reviews.reduce((sum, review) => sum + (review.rating || 0), 0);
     const averageRating = totalRating / totalReviews;
@@ -356,9 +357,8 @@ export default function UserReviews() {
     return [...Array(5)].map((_, index) => (
       <FaStar
         key={index}
-        className={`text-lg ${
-          index < rating ? 'text-yellow-400' : 'text-gray-300'
-        }`}
+        className={`text-lg ${index < rating ? 'text-yellow-400' : 'text-gray-300'
+          }`}
       />
     ));
   };
@@ -389,7 +389,7 @@ export default function UserReviews() {
     };
 
     const config = statusConfig[status];
-    
+
     // Handle unknown status
     if (!config) {
       return (
@@ -449,14 +449,7 @@ export default function UserReviews() {
     });
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading your reviews...</p>
-        </div>
-      </div>
-    );
+    return <UserReviewsSkeleton />;
   }
 
   return (
@@ -498,30 +491,28 @@ export default function UserReviews() {
                   <FaBars className="rotate-90 text-sm" />
                 </button>
               </div>
-              
+
               {/* Analytics Toggle */}
               <button
                 onClick={() => setShowAnalytics(!showAnalytics)}
-                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
-                  showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 <FaChartLine className="text-xs sm:text-sm" />
                 <span className="hidden sm:inline">Analytics</span>
               </button>
-              
+
               {/* Stats Toggle */}
               <button
                 onClick={() => setShowStats(!showStats)}
-                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${
-                  showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                }`}
+                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  }`}
               >
                 <FaChartBar className="text-xs sm:text-sm" />
                 <span className="hidden sm:inline">Stats</span>
               </button>
             </div>
-            
+
             {/* Second row for mobile */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Refresh */}
@@ -533,7 +524,7 @@ export default function UserReviews() {
                 <FaSync className={`text-xs sm:text-sm ${loading ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Refresh</span>
               </button>
-              
+
               {/* Browse Properties */}
               <Link
                 to="/search"
@@ -572,7 +563,7 @@ export default function UserReviews() {
                 <p className="text-lg sm:text-2xl font-bold text-yellow-600">{analytics.pendingReviews}</p>
               </div>
             </div>
-            
+
             {/* Rating Distribution */}
             <div className="mt-6">
               <div className="bg-white p-4 rounded-lg shadow-sm">
@@ -588,7 +579,7 @@ export default function UserReviews() {
                           <FaStar className="text-yellow-400 text-xs" />
                         </div>
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div 
+                          <div
                             className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${percentage}%` }}
                           ></div>
@@ -628,7 +619,7 @@ export default function UserReviews() {
                 <p className="text-lg sm:text-2xl font-bold text-yellow-600">{analytics.pendingReviews}</p>
               </div>
             </div>
-            
+
             {/* Top Properties */}
             {analytics.topProperties.length > 0 && (
               <div className="mt-6">
@@ -746,8 +737,8 @@ export default function UserReviews() {
             <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
           </div>
         ) : (
-          <div className={viewMode === 'grid' 
-            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6" 
+          <div className={viewMode === 'grid'
+            ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6"
             : "space-y-4 overflow-x-hidden"
           }>
             {filteredAndSortedReviews.map((review) => (
@@ -808,7 +799,7 @@ export default function UserReviews() {
                           <FaEdit />
                           Edit
                         </button>
-                        
+
                         <button
                           onClick={() => handleDeleteReview(review)}
                           className={`flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm w-full' : 'px-4 py-2'}`}
@@ -876,7 +867,7 @@ export default function UserReviews() {
                 <FaTrash className="text-red-500" />
                 Delete Review
               </h3>
-              
+
               <p className="text-gray-600 mb-4">
                 Are you sure you want to delete this review? This action cannot be undone.
               </p>
@@ -896,7 +887,7 @@ export default function UserReviews() {
                   </p>
                 )}
               </div>
-              
+
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"

@@ -4,6 +4,7 @@ import { FaStar, FaCheck, FaTimes, FaTrash, FaEye, FaBan, FaSort, FaSortUp, FaSo
 import { socket } from '../utils/socket';
 import { toast } from 'react-toastify';
 import UserAvatar from '../components/UserAvatar';
+import AdminReviewsSkeleton from '../components/skeletons/AdminReviewsSkeleton';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import axios from 'axios';
 
@@ -39,7 +40,7 @@ export default function AdminReviews() {
   const [responseLoading, setResponseLoading] = useState({});
   const [responseError, setResponseError] = useState({});
   const [search, setSearch] = useState('');
-  
+
   // Analytics state
   const [analytics, setAnalytics] = useState({
     totalReviews: 0,
@@ -100,7 +101,7 @@ export default function AdminReviews() {
       });
     };
     socket.on('reviewUpdated', handleSocketReviewUpdate);
-    
+
     // Listen for profile updates to update user info in reviews
     const handleProfileUpdate = (profileData) => {
       setReviews(prevReviews => prevReviews.map(review => {
@@ -115,7 +116,7 @@ export default function AdminReviews() {
       }));
     };
     socket.on('profileUpdated', handleProfileUpdate);
-    
+
     return () => {
       socket.off('reviewUpdated', handleSocketReviewUpdate);
       socket.off('profileUpdated', handleProfileUpdate);
@@ -128,7 +129,7 @@ export default function AdminReviews() {
       window.scrollTo({ top: 0, left: 0, behavior: 'auto' });
       document.documentElement.scrollTop = 0;
       document.body.scrollTop = 0;
-    } catch {}
+    } catch { }
   }, []);
 
   // Scroll lock for modals: lock body scroll when any modal is open (mobile and desktop)
@@ -169,7 +170,7 @@ export default function AdminReviews() {
     // Apply search filter
     if (reportsFilters.search) {
       const searchTerm = reportsFilters.search.toLowerCase();
-      filtered = filtered.filter(report => 
+      filtered = filtered.filter(report =>
         report.propertyName?.toLowerCase().includes(searchTerm) ||
         report.reporter?.toLowerCase().includes(searchTerm) ||
         report.reporterEmail?.toLowerCase().includes(searchTerm) ||
@@ -182,7 +183,7 @@ export default function AdminReviews() {
     // Apply reporter filter
     if (reportsFilters.reporter) {
       const reporterTerm = reportsFilters.reporter.toLowerCase();
-      filtered = filtered.filter(report => 
+      filtered = filtered.filter(report =>
         report.reporter?.toLowerCase().includes(reporterTerm)
       );
     }
@@ -190,7 +191,7 @@ export default function AdminReviews() {
     // Apply date filters
     if (reportsFilters.dateFrom) {
       const fromDate = new Date(reportsFilters.dateFrom);
-      filtered = filtered.filter(report => 
+      filtered = filtered.filter(report =>
         new Date(report.createdAt) >= fromDate
       );
     }
@@ -198,7 +199,7 @@ export default function AdminReviews() {
     if (reportsFilters.dateTo) {
       const toDate = new Date(reportsFilters.dateTo);
       toDate.setHours(23, 59, 59, 999); // Include entire day
-      filtered = filtered.filter(report => 
+      filtered = filtered.filter(report =>
         new Date(report.createdAt) <= toDate
       );
     }
@@ -206,7 +207,7 @@ export default function AdminReviews() {
     // Apply sorting
     filtered.sort((a, b) => {
       let aValue, bValue;
-      
+
       switch (reportsFilters.sortBy) {
         case 'reporter':
           aValue = a.reporter || '';
@@ -245,7 +246,7 @@ export default function AdminReviews() {
         sort: 'date',
         order: 'desc'
       });
-      
+
       if (selectedStatus) {
         params.append('status', selectedStatus);
       }
@@ -258,7 +259,7 @@ export default function AdminReviews() {
 
       if (res.ok) {
         // Ensure latest reviews appear at top even if API doesn't sort correctly
-        const sorted = Array.isArray(data.reviews) ? [...data.reviews].sort((a,b)=> new Date(b.createdAt) - new Date(a.createdAt)) : [];
+        const sorted = Array.isArray(data.reviews) ? [...data.reviews].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt)) : [];
         setReviews(sorted);
         setTotalPages(data.pages);
       } else {
@@ -277,12 +278,12 @@ export default function AdminReviews() {
       const statsRes = await axios.get(`${API_BASE_URL}/api/review/admin/stats`, {
         withCredentials: true
       });
-      
+
       // Fetch all reviews for analytics
       const allReviewsRes = await axios.get(`${API_BASE_URL}/api/review/admin/all?limit=1000&sort=date&order=desc`, {
         withCredentials: true
       });
-      
+
       const allReviews = allReviewsRes.data.reviews || allReviewsRes.data || [];
       const stats = statsRes.data;
 
@@ -299,7 +300,7 @@ export default function AdminReviews() {
         const month = new Date(review.createdAt).toISOString().substring(0, 7);
         monthlyTrends[month] = (monthlyTrends[month] || 0) + 1;
       });
-      
+
       // Debug logging for monthly trends
       console.log('Monthly trends data:', monthlyTrends);
       console.log('Total reviews for trends:', allReviews.length);
@@ -352,11 +353,11 @@ export default function AdminReviews() {
       const responseRate = allReviews.length > 0 ? (reviewsWithResponses.length / allReviews.length) * 100 : 0;
 
       // Sentiment Analysis: same logic as AdminDashboard
-      const positiveWords = ['good','great','excellent','amazing','love','nice','helpful','fast','clean','spacious','recommended','recommend'];
-      const negativeWords = ['bad','poor','terrible','awful','hate','dirty','small','slow','rude','noisy','not recommended','worst'];
+      const positiveWords = ['good', 'great', 'excellent', 'amazing', 'love', 'nice', 'helpful', 'fast', 'clean', 'spacious', 'recommended', 'recommend'];
+      const negativeWords = ['bad', 'poor', 'terrible', 'awful', 'hate', 'dirty', 'small', 'slow', 'rude', 'noisy', 'not recommended', 'worst'];
       let pos = 0, neg = 0, neu = 0;
       const wordFreq = {};
-      
+
       // Use only approved reviews for sentiment analysis (same as AdminDashboard)
       const approvedReviews = allReviews.filter(r => r.status === 'approved');
       approvedReviews.forEach(r => {
@@ -368,8 +369,8 @@ export default function AdminReviews() {
         if (score > 0) pos++; else if (score < 0) neg++; else neu++;
         text.split(/[^a-zA-Z]+/).forEach(t => { if (t.length > 3) wordFreq[t] = (wordFreq[t] || 0) + 1; });
       });
-      
-      const topWords = Object.entries(wordFreq).sort((a,b) => b[1]-a[1]).slice(0,10).map(([word,count]) => ({ word, count }));
+
+      const topWords = Object.entries(wordFreq).sort((a, b) => b[1] - a[1]).slice(0, 10).map(([word, count]) => ({ word, count }));
 
       setAnalytics({
         totalReviews: stats.totalReviews || allReviews.length,
@@ -412,7 +413,7 @@ export default function AdminReviews() {
       const data = await res.json();
 
       if (res.ok) {
-        setReviews(reviews.map(review => 
+        setReviews(reviews.map(review =>
           review._id === reviewId ? { ...review, status: newStatus, adminNote } : review
         ));
         toast.success(`Review ${newStatus} successfully`);
@@ -436,16 +437,16 @@ export default function AdminReviews() {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ 
-          reason: removalReason, 
-          note: removalNote 
+        body: JSON.stringify({
+          reason: removalReason,
+          note: removalNote
         }),
       });
       const data = await res.json();
       if (res.ok) {
-        setReviews(reviews.map(review => 
-          review._id === reviewToRemove._id 
-            ? { ...review, status: 'removed', removalReason, removalNote } 
+        setReviews(reviews.map(review =>
+          review._id === reviewToRemove._id
+            ? { ...review, status: 'removed', removalReason, removalNote }
             : review
         ));
         setShowRemovalModal(false);
@@ -522,9 +523,8 @@ export default function AdminReviews() {
     return [...Array(5)].map((_, index) => (
       <FaStar
         key={index}
-        className={`text-sm ${
-          index < rating ? 'text-yellow-400' : 'text-gray-300'
-        }`}
+        className={`text-sm ${index < rating ? 'text-yellow-400' : 'text-gray-300'
+          }`}
       />
     ));
   };
@@ -588,7 +588,7 @@ export default function AdminReviews() {
     try {
       setReportsLoading(true);
       setReportsError('');
-      
+
       const params = new URLSearchParams();
       if (reportsFilters.dateFrom) params.append('dateFrom', reportsFilters.dateFrom);
       if (reportsFilters.dateTo) params.append('dateTo', reportsFilters.dateTo);
@@ -598,14 +598,14 @@ export default function AdminReviews() {
       params.append('sortOrder', reportsFilters.sortOrder);
 
       console.log('Fetching reports from:', `${API_BASE_URL}/api/notifications/reports/reviews?${params}`);
-      
+
       const res = await fetch(`${API_BASE_URL}/api/notifications/reports/reviews?${params}`, {
         credentials: 'include'
       });
       const data = await res.json();
-      
+
       console.log('Reports API response:', data);
-      
+
       if (data.success) {
         setReports(data.reports || []);
         console.log('Reports set:', data.reports?.length || 0);
@@ -663,14 +663,7 @@ export default function AdminReviews() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading reviews...</p>
-        </div>
-      </div>
-    );
+    return <AdminReviewsSkeleton />;
   }
 
   return (
@@ -681,11 +674,10 @@ export default function AdminReviews() {
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
             <button
               onClick={() => setShowAnalytics(!showAnalytics)}
-              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition text-sm sm:text-base ${
-                showAnalytics 
-                  ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white' 
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-              }`}
+              className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition text-sm sm:text-base ${showAnalytics
+                ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
+                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                }`}
               title="Toggle Analytics"
             >
               <FaChartLine />
@@ -721,7 +713,7 @@ export default function AdminReviews() {
               <FaChartBar className="text-blue-600" />
               Review Analytics & Insights
             </h2>
-            
+
             {/* Key Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
               <div className="bg-white rounded-lg p-4 shadow-sm">
@@ -733,7 +725,7 @@ export default function AdminReviews() {
                   <FaComments className="text-2xl text-blue-500" />
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
@@ -743,7 +735,7 @@ export default function AdminReviews() {
                   <FaExclamationTriangle className="text-2xl text-yellow-500" />
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
@@ -753,7 +745,7 @@ export default function AdminReviews() {
                   <FaCheck className="text-2xl text-green-500" />
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
@@ -763,7 +755,7 @@ export default function AdminReviews() {
                   <FaStar className="text-2xl text-purple-500" />
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
@@ -773,7 +765,7 @@ export default function AdminReviews() {
                   <FaReply className="text-2xl text-indigo-500" />
                 </div>
               </div>
-              
+
               <div className="bg-white rounded-lg p-4 shadow-sm">
                 <div className="flex items-center justify-between">
                   <div>
@@ -836,7 +828,7 @@ export default function AdminReviews() {
                           <FaStar className="text-yellow-400 text-xs" />
                         </div>
                         <div className="flex-1 bg-gray-200 rounded-full h-2">
-                          <div 
+                          <div
                             className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${percentage}%` }}
                           ></div>
@@ -921,7 +913,7 @@ export default function AdminReviews() {
                     const height = (trend.count / maxCount) * 100;
                     return (
                       <div key={idx} className="flex flex-col items-center flex-1">
-                        <div 
+                        <div
                           className="w-full bg-gradient-to-t from-blue-500 to-purple-500 rounded-t transition-all duration-300"
                           style={{ height: `${height}%` }}
                           title={`${trend.month}: ${trend.count} reviews`}
@@ -970,7 +962,7 @@ export default function AdminReviews() {
               <option value="rejected">Rejected</option>
               <option value="removed">Removed</option>
             </select>
-            
+
             <div className="flex flex-wrap items-center gap-2 w-full">
               <span className="text-sm text-gray-600">Sort:</span>
               <button
@@ -1015,9 +1007,9 @@ export default function AdminReviews() {
               >
                 <div className="flex flex-row items-center gap-3 sm:table-cell sm:align-top sm:w-1/4 mb-2 sm:mb-0">
                   <div className="flex items-center">
-                    <UserAvatar 
-                      user={{ username: review.userName, avatar: review.userAvatar }} 
-                      size="w-10 h-10" 
+                    <UserAvatar
+                      user={{ username: review.userName, avatar: review.userAvatar }}
+                      size="w-10 h-10"
                       textSize="text-sm"
                       showBorder={false}
                     />
@@ -1230,9 +1222,9 @@ export default function AdminReviews() {
             {/* Header */}
             <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-2xl px-6 py-5 border-b border-gray-200">
               <div className="flex items-center gap-3">
-                <UserAvatar 
-                  user={{ username: selectedReview.userName, avatar: selectedReview.userAvatar }} 
-                  size="w-14 h-14" 
+                <UserAvatar
+                  user={{ username: selectedReview.userName, avatar: selectedReview.userAvatar }}
+                  size="w-14 h-14"
                   textSize="text-lg"
                   showBorder={true}
                   className="border-4 border-white shadow-lg"
@@ -1497,7 +1489,7 @@ export default function AdminReviews() {
                     />
                   </div>
                 </div>
-                
+
                 {/* Secondary controls - compact on mobile */}
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center justify-between">
                   <div className="flex gap-2">
@@ -1679,22 +1671,20 @@ export default function AdminReviews() {
                           )}
                           <a
                             href={report.reporterEmail ? `mailto:${report.reporterEmail}` : '#'}
-                            className={`px-3 py-1 text-sm rounded-md transition text-center ${
-                              report.reporterEmail 
-                                ? 'bg-purple-100 text-purple-700 hover:bg-purple-200' 
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
+                            className={`px-3 py-1 text-sm rounded-md transition text-center ${report.reporterEmail
+                              ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
+                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              }`}
                             onClick={!report.reporterEmail ? (e) => e.preventDefault() : undefined}
                           >
                             Email Reporter
                           </a>
                           <a
                             href={report.reporterPhone ? `tel:${report.reporterPhone}` : '#'}
-                            className={`px-3 py-1 text-sm rounded-md transition text-center ${
-                              report.reporterPhone 
-                                ? 'bg-orange-100 text-orange-700 hover:bg-orange-200' 
-                                : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                            }`}
+                            className={`px-3 py-1 text-sm rounded-md transition text-center ${report.reporterPhone
+                              ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
+                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                              }`}
                             onClick={!report.reporterPhone ? (e) => e.preventDefault() : undefined}
                           >
                             Call Reporter
