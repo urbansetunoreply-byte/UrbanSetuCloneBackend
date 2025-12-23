@@ -433,6 +433,13 @@ export default function Listing() {
     const { type, propertyId, origin } = confirmModal;
 
     if (type === 'root-verify') {
+      // Check if owner is present
+      if (!listing?.userRef || !ownerDetails) {
+        toast.error('Cannot verify: Property owner details are missing. Please assign an owner first.');
+        closeConfirm();
+        return;
+      }
+
       try {
         const res = await fetch(`${API_BASE_URL}/api/listing/root-verify/${listing._id}`, {
           method: 'POST',
