@@ -460,7 +460,7 @@ export const chatWithGemini = async (req, res) => {
         // Setup initial request payload with tools
         let requestPayload = {
             messages: messages,
-            model: "llama3-70b-8192", // Force Llama 3 70B for tool use (Groq specific model ID)
+            model: GROQ_MODEL, // Llama 3 for tool use (Groq model ID)
             temperature: getTemperature(creativity, tone, temperature),
             max_completion_tokens: getMaxTokens(responseLength),
             top_p: getTopP(topP),
@@ -510,7 +510,7 @@ export const chatWithGemini = async (req, res) => {
             // Call AI again with the tool results
             requestPayload = {
                 messages: messages,
-                model: "llama3-70b-8192",
+                model: GROQ_MODEL,
                 stream: enableStreaming === true || enableStreaming === 'true' // Re-enable streaming for final answer if requested
             };
 
