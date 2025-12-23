@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner } from "react-icons/fa";
+import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner, FaBullhorn } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -1310,6 +1310,14 @@ export default function Settings() {
               >
                 <FaUser className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
                 Account Management
+              </button>
+
+              <button
+                onClick={() => navigate('/admin/updates')}
+                className={`w-full bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
+              >
+                <FaBullhorn className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-shake`} />
+                Platform Updates
               </button>
 
               {currentUser.role === 'rootadmin' && (

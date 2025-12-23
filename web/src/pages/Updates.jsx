@@ -13,9 +13,12 @@ import {
 } from 'lucide-react';
 import Footer from '../components/Footer';
 
+import { usePageTitle } from '../hooks/usePageTitle';
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
 const Updates = () => {
+    usePageTitle("Platform Updates - What's New");
     const [updates, setUpdates] = useState([]);
     const [loading, setLoading] = useState(true);
     const [filter, setFilter] = useState('all');
