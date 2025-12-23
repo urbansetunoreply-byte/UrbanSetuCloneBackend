@@ -5,7 +5,8 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
     FaHome, FaCity, FaHeart, FaStar, FaCoins, FaRocket, FaFlag,
     FaChevronRight, FaChevronLeft, FaShareAlt, FaChartLine, FaUsers,
-    FaShieldAlt, FaDownload, FaCalendarAlt, FaBuilding, FaMagic
+    FaShieldAlt, FaDownload, FaCalendarAlt, FaBuilding, FaMagic,
+    FaFire, FaStamp, FaHandshake, FaTimes, FaCloud
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import html2canvas from 'html2canvas';
@@ -72,23 +73,35 @@ const YearInReview = ({ isAdmin = false }) => {
             color: "from-gray-900 via-indigo-950 to-gray-900",
         },
         stats: {
-            title: "Impact Summary",
+            title: "Platform Growth",
             content: data?.stats?.users > 0
-                ? `Empowered ${data.stats.users} users and verified ${data.stats.listings} listings.`
-                : "Platform foundation established with core listings verified.",
-            subtitle: data?.stats?.bookings > 0
-                ? `${data.stats.bookings} successful bookings processed.`
-                : "System reliability maintained at 100%.",
+                ? `You managed ${data.stats.users} new users and oversaw ${data.stats.listings} total listings.`
+                : "System logs show consistent platform uptime and growth.",
+            subtitle: `${data?.stats?.bookings || 0} bookings handled flawlessly.`,
             icon: <FaChartLine className="text-8xl text-emerald-400 mb-6" />,
             color: "from-gray-900 via-emerald-950 to-gray-900",
         },
+        moderation: {
+            title: "Safety First",
+            content: `You resolved ${data?.stats?.resolvedDisputes || 0} disputes this year.`,
+            subtitle: `Currently monitoring ${data?.stats?.activeReports || 0} active reports.`,
+            icon: <FaHandshake className="text-8xl text-blue-400 mb-6" />,
+            color: "from-gray-900 via-blue-950 to-gray-900",
+        },
+        verification: {
+            title: "Trust Builder",
+            content: `Issued ${data?.stats?.verifications || 0} Property Verification Badges.`,
+            subtitle: "Ensuring every listing meets UrbanSetu standards.",
+            icon: <FaStamp className="text-8xl text-purple-400 mb-6" />,
+            color: "from-gray-900 via-purple-950 to-gray-900",
+        },
         finance: {
             id: 'admin-finance',
-            title: "Growth Scale",
+            title: "Economic Impact",
             content: data?.stats?.revenue > 0
-                ? `₹${(data.stats.revenue).toLocaleString()} volume processed efficiently.`
-                : "Scaling operations for higher volume next year.",
-            subtitle: `Market leader in ${data?.stats?.topCity || 'Multiple Regions'}`,
+                ? `₹${(data.stats.revenue).toLocaleString()} in platform transactions.`
+                : "Scaling revenue streams for the next quarter.",
+            subtitle: `Top Activity Hub: ${data?.stats?.topCity || 'Multiple Regions'}`,
             icon: <FaCoins className="text-8xl text-yellow-500 mb-6" />,
             color: "from-gray-900 via-yellow-950 to-gray-900",
         }
@@ -96,60 +109,66 @@ const YearInReview = ({ isAdmin = false }) => {
         intro: {
             title: `Your ${year} Flashback`,
             subtitle: "UrbanSetu Journeys",
-            content: `Hey ${currentUser?.username}, let's revisit your property highlights.`,
+            content: `Hey ${currentUser?.username}, ready for your highlight reel?`,
             icon: <FaHome className="text-8xl text-blue-400 mb-6" />,
             color: "from-blue-950 via-[#0a192f] to-blue-950",
+        },
+        streak: {
+            title: "Pure Consistency",
+            content: `You used UrbanSetu for ${data?.stats?.activeDays || 0} days this year!`,
+            subtitle: data?.stats?.maxStreak > 1
+                ? `Your longest activity streak was ${data.stats.maxStreak} days.`
+                : "Building a new habit of property exploration!",
+            icon: <FaFire className="text-8xl text-red-500 mb-6 animate-pulse" />,
+            color: "from-red-950 via-[#1a0500] to-red-950",
         },
         peak: {
             title: "Peak Energy",
             content: data?.stats?.views > 0
-                ? `You were most active during ${data?.stats?.peakMonth}!`
-                : "You started your engine this year!",
-            subtitle: data?.stats?.views > 0
-                ? "The market was buzzing with your searches."
-                : "Good things take time. Keep exploring!",
+                ? `You were on fire in ${data?.stats?.peakMonth}!`
+                : "Your journey picked up speed this year.",
+            subtitle: "Browsing properties like a pro hunter.",
             icon: <FaCalendarAlt className="text-8xl text-orange-400 mb-6" />,
             color: "from-orange-950 via-[#1a0f00] to-orange-950",
         },
         type: {
             title: "Your Signature Style",
             content: data?.stats?.views > 0
-                ? `You loved browsing ${data?.stats?.topType} properties.`
-                : "Finding your preferred property style...",
-            subtitle: data?.stats?.views > 0
-                ? "You definitely know what you're looking for!"
-                : "Diversity is the spice of life. Keep searching!",
+                ? `You couldn't stop looking at ${data?.stats?.topType}s.`
+                : "Defining your unique property taste...",
+            subtitle: "An eye for the extraordinary.",
             icon: <FaMagic className="text-8xl text-cyan-400 mb-6" />,
             color: "from-cyan-950 via-[#001a1a] to-cyan-950",
         },
         views: {
             title: "The Explorer",
-            content: data?.stats?.views > 0
-                ? `You discovered ${data.stats.views} properties!`
-                : "Your exploration journey is just beginning.",
+            content: `You unlocked the details of ${data?.stats?.views || 0} homes!`,
             subtitle: data?.topCities?.length > 0
-                ? `Top cities: ${data.topCities.join(', ')}`
-                : "New horizons are waiting for you.",
+                ? `Exploring: ${data.topCities.join(', ')}`
+                : "Next year, the world is your oyster.",
             icon: <FaCity className="text-8xl text-purple-400 mb-6" />,
             color: "from-purple-950 via-[#14001a] to-purple-950",
         },
         heart: {
-            title: "Heart Strings",
-            content: data?.stats?.wishlist > 0
-                ? `You found ${data.stats.wishlist} properties to love.`
-                : "Still waiting for that perfect match.",
-            subtitle: data?.stats?.reviews > 0
-                ? `You shared ${data.stats.reviews} insightful reviews.`
-                : "Join the community talk next year!",
+            title: "Most Loved",
+            content: `Saved ${data?.stats?.wishlist || 0} wishlist favorites.`,
+            subtitle: `You also loved ${data?.stats?.favorites || 0} stunning property photos.`,
             icon: <FaHeart className="text-8xl text-pink-400 mb-6" />,
             color: "from-pink-950 via-[#1a000a] to-pink-950",
         },
+        secured: {
+            title: "Action Taker",
+            content: `You completed ${data?.stats?.bookings || 0} property bookings!`,
+            subtitle: data?.stats?.rentals > 0
+                ? `Plus ${data.stats.rentals} active Rental Contracts secured.`
+                : "Moving closer to your dream home every day.",
+            icon: <FaHandshake className="text-8xl text-emerald-400 mb-6" />,
+            color: "from-emerald-950 via-[#001a0a] to-emerald-950",
+        },
         coins: {
-            title: "SetuCoins Legend",
-            content: data?.stats?.coins > 0
-                ? `You earned a massive ${data.stats.coins} SetuCoins!`
-                : "Time to start earning those rewards!",
-            subtitle: "Every interaction brings you closer to exclusive benefits.",
+            title: "SetuCoins Milestone",
+            content: `You stacked up ${data?.stats?.coins || 0} SetuCoins!`,
+            subtitle: "Your engagement is literally paying off.",
             icon: <FaCoins className="text-8xl text-yellow-400 mb-6" />,
             color: "from-yellow-950 via-[#1a1500] to-yellow-950",
         },
@@ -157,13 +176,13 @@ const YearInReview = ({ isAdmin = false }) => {
             title: `Your ${year} Identity`,
             content: data?.personality?.type || "The Urban Resident",
             subtitle: data?.personality?.desc || "A visionary hunter of perfect spaces.",
-            icon: <FaRocket className="text-8xl text-emerald-400 mb-6" />,
-            color: "from-emerald-950 via-[#001a0a] to-emerald-950",
+            icon: <FaRocket className="text-8xl text-green-400 mb-6" />,
+            color: "from-green-950 via-[#001a0a] to-green-950",
             highlight: true
         },
         outro: {
             title: `Next Stop: ${parseInt(year) + 1}`,
-            content: `Thank you for being part of UrbanSetu's journey in ${year}.`,
+            content: `Thanks for building ${year} with UrbanSetu.`,
             icon: <FaFlag className="text-8xl text-white mb-6" />,
             color: "from-[#0f172a] via-[#1e293b] to-[#0f172a]",
             outro: true
@@ -463,18 +482,5 @@ const YearInReview = ({ isAdmin = false }) => {
         </div>
     );
 };
-
-// Add missing icon FaTimes
-const FaTimes = () => (
-    <svg xmlns="http://www.w3.org/2000/svg" className="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M6 18L18 6M6 6l18 18" />
-    </svg>
-);
-
-const FaCloud = ({ className }) => (
-    <svg stroke="currentColor" fill="currentColor" strokeWidth="0" viewBox="0 0 640 512" className={className} height="1em" width="1em" xmlns="http://www.w3.org/2000/svg">
-        <path d="M537.6 226.6c4.1-10.7 6.4-22.4 6.4-34.6 0-53-43-96-96-96-19.7 0-38.1 6-53.3 16.2C367 64.2 315.3 32 256 32c-88.4 0-160 71.6-160 160 0 2.7.1 5.4.2 8.1C40.2 219.8 0 273.2 0 336c0 79.5 64.5 144 144 144h368c70.7 0 128-57.3 128-128 0-61.9-44-113.6-102.4-125.4z"></path>
-    </svg>
-);
 
 export default YearInReview;

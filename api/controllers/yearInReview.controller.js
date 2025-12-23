@@ -5,6 +5,10 @@ import Wishlist from "../models/wishlist.model.js";
 import CoinTransaction from "../models/coinTransaction.model.js";
 import Listing from "../models/listing.model.js";
 import User from "../models/user.model.js";
+import RentLockContract from "../models/rentLockContract.model.js";
+import ImageFavorite from "../models/imageFavorite.model.js";
+import Dispute from "../models/dispute.model.js";
+import PropertyVerification from "../models/propertyVerification.model.js";
 import cloudinary from 'cloudinary';
 
 // Configure Cloudinary for base64 uploads
@@ -34,11 +38,45 @@ export const getUserYearInReview = async (req, res, next) => {
             return res.status(400).json({ message: "The future hasn't been written yet! Check back at the end of the year." });
         }
 
-        // Date range for the year
         const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
         const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
 
-        // 1. Property Views
+        // 1. Property Views & Active Days/Streaks
+        const viewsAgg = await PropertyView.aggregate([
+            {
+                $match: {
+                    viewerId: userId.toString(),
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            {
+                $group: {
+                    _id: { $dateToString: { format: "%Y-%m-%d", date: "$createdAt" } }
+                }
+            },
+            { $sort: { _id: 1 } }
+        ]);
+
+        const activeDays = viewsAgg.length;
+        let streak = 0;
+        let maxStreak = 0;
+        if (activeDays > 0) {
+            streak = 1;
+            maxStreak = 1;
+            for (let i = 1; i < viewsAgg.length; i++) {
+                const prev = new Date(viewsAgg[i - 1]._id);
+                const curr = new Date(viewsAgg[i]._id);
+                const diffTime = Math.abs(curr - prev);
+                const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24));
+                if (diffDays === 1) {
+                    streak++;
+                    maxStreak = Math.max(maxStreak, streak);
+                } else {
+                    streak = 1;
+                }
+            }
+        }
+
         const viewsCount = await PropertyView.countDocuments({
             viewerId: userId.toString(),
             createdAt: { $gte: startDate, $lte: endDate }
@@ -98,14 +136,25 @@ export const getUserYearInReview = async (req, res, next) => {
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
         const peakMonth = monthlyActivity.length > 0 ? monthNames[monthlyActivity[0]._id - 1] : null;
 
-        // 4. Bookings & Interactions
+        // 4. Bookings & Rentals
         const bookingsCount = await Booking.countDocuments({
             buyerId: userId,
             createdAt: { $gte: startDate, $lte: endDate },
             status: { $nin: ['cancelledByBuyer', 'cancelledBySeller', 'cancelledByAdmin'] }
         });
 
+        const rentalsCount = await RentLockContract.countDocuments({
+            tenantId: userId,
+            createdAt: { $gte: startDate, $lte: endDate },
+            status: 'active'
+        });
+
         const wishlistCount = await Wishlist.countDocuments({
+            user: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const favoriteCount = await ImageFavorite.countDocuments({
             user: userId,
             createdAt: { $gte: startDate, $lte: endDate }
         });
@@ -127,12 +176,16 @@ export const getUserYearInReview = async (req, res, next) => {
         ]);
         const coinsEarned = coinsAgg.length > 0 ? coinsAgg[0].total : 0;
 
-        const totalInteractions = viewsCount + bookingsCount + wishlistCount + reviewsCount + (coinsEarned > 0 ? 1 : 0);
+        const totalInteractions = viewsCount + bookingsCount + wishlistCount + reviewsCount + rentalsCount + (coinsEarned > 0 ? 1 : 0);
 
         const stats = {
             views: viewsCount,
+            activeDays,
+            maxStreak,
             bookings: bookingsCount,
+            rentals: rentalsCount,
             wishlist: wishlistCount,
+            favorites: favoriteCount,
             reviews: reviewsCount,
             coins: coinsEarned,
             peakMonth,
@@ -159,6 +212,7 @@ export const getAdminYearInReview = async (req, res, next) => {
     try {
         const { year } = req.params;
         const currentYear = new Date().getFullYear();
+        const adminId = req.user.id;
 
         if (parseInt(year) > currentYear) {
             return res.status(400).json({ message: "System logs for the future are currently unavailable." });
@@ -167,11 +221,23 @@ export const getAdminYearInReview = async (req, res, next) => {
         const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
         const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
 
-        const listingsCount = await Listing.countDocuments({
-            isVerified: true,
-            createdAt: { $gte: startDate, $lte: endDate }
+        // 1. Listings Verified & Documents Checked
+        const listingsAgg = await Listing.aggregate([
+            {
+                $match: {
+                    isVerified: true,
+                    updatedAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            { $count: "total" }
+        ]);
+
+        const verifications = await PropertyVerification.countDocuments({
+            status: 'verified',
+            badgeIssuedAt: { $gte: startDate, $lte: endDate }
         });
 
+        // 2. Financials
         const bookingsAgg = await Booking.aggregate([
             {
                 $match: {
@@ -191,10 +257,22 @@ export const getAdminYearInReview = async (req, res, next) => {
         const totalRevenue = bookingsAgg.length > 0 ? bookingsAgg[0].totalRevenue : 0;
         const totalBookings = bookingsAgg.length > 0 ? bookingsAgg[0].count : 0;
 
+        // 3. User & Moderation
         const usersCount = await User.countDocuments({
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
+        const resolvedDisputes = await Dispute.countDocuments({
+            status: 'resolved',
+            updatedAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const activeReports = await Dispute.countDocuments({
+            status: 'pending',
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        // 4. Most Popular City
         const cityAgg = await Listing.aggregate([
             { $match: { isVerified: true, createdAt: { $gte: startDate, $lte: endDate } } },
             { $group: { _id: "$city", count: { $sum: 1 } } },
@@ -204,16 +282,19 @@ export const getAdminYearInReview = async (req, res, next) => {
 
         const topCity = cityAgg.length > 0 ? cityAgg[0]._id : null;
 
-        const hasActivity = listingsCount > 0 || totalBookings > 0 || usersCount > 0;
+        const hasActivity = verifications > 0 || totalBookings > 0 || usersCount > 0;
 
         res.status(200).json({
             year,
             stats: {
-                listings: listingsCount,
+                listings: listingsAgg[0]?.total || 0,
+                verifications,
                 bookings: totalBookings,
                 users: usersCount,
                 revenue: totalRevenue,
-                topCity
+                topCity,
+                resolvedDisputes,
+                activeReports
             },
             hasActivity,
             isCurrentYear: parseInt(year) === currentYear
