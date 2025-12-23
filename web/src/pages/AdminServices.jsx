@@ -4,6 +4,7 @@ import { FaTools, FaEnvelope, FaCheckCircle, FaTruckMoving, FaHome, FaSignInAlt,
 import { toast } from 'react-toastify';
 import { Link } from 'react-router-dom';
 import ChecklistModal from '../components/rental/ChecklistModal';
+import AdminServicesSkeleton from '../components/skeletons/AdminServicesSkeleton';
 import { getCoinValue, COIN_CONFIG } from '../utils/coinUtils';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -19,6 +20,7 @@ export default function AdminServices() {
   const [loadingServices, setLoadingServices] = useState(true);
   const [loadingMovers, setLoadingMovers] = useState(true);
   const [loadingChecklists, setLoadingChecklists] = useState(true);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [showUnreadOnly, setShowUnreadOnly] = useState(false);
   // Move-In/Move-Out Checklists
   const [checklists, setChecklists] = useState([]);
@@ -67,9 +69,19 @@ export default function AdminServices() {
   };
 
   useEffect(() => {
-    fetchServiceRequests();
-    fetchMoverRequests();
-    fetchChecklists();
+    const init = async () => {
+      if (currentUser?._id) {
+        await Promise.all([
+          fetchServiceRequests(),
+          fetchMoverRequests(),
+          fetchChecklists()
+        ]);
+        setInitialLoading(false);
+      } else {
+        setInitialLoading(false);
+      }
+    };
+    init();
   }, [currentUser?._id]);
 
   const filtered = useMemo(() => {
@@ -95,6 +107,10 @@ export default function AdminServices() {
       setItems(prev => prev.map(i => i._id === id ? { ...i, isRead: true, readAt: new Date().toISOString() } : i));
     } catch (_) { }
   };
+
+  if (initialLoading) {
+    return <AdminServicesSkeleton />;
+  }
 
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">

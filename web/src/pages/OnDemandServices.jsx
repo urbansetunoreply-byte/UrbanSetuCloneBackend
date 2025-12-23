@@ -9,6 +9,7 @@ import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
+import UserServicesSkeleton from '../components/skeletons/UserServicesSkeleton';
 import { getCoinValue, COIN_CONFIG } from '../utils/coinUtils';
 const services = [
   { key: 'cleaning', name: 'Cleaning', icon: <FaBroom className="text-blue-600" /> },
@@ -52,6 +53,7 @@ export default function OnDemandServices() {
   const [showCoinBurst, setShowCoinBurst] = useState(false);
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentRequestData, setPaymentRequestData] = useState(null);
+  const [pageLoading, setPageLoading] = useState(true);
 
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -112,10 +114,20 @@ export default function OnDemandServices() {
   };
 
   useEffect(() => {
-    fetchMyRequests();
-    fetchMyMoverRequests();
-    fetchMyContracts();
-    fetchCoinBalance();
+    const init = async () => {
+      if (currentUser?._id) {
+        await Promise.all([
+          fetchMyRequests(),
+          fetchMyMoverRequests(),
+          fetchMyContracts(),
+          fetchCoinBalance()
+        ]);
+        setPageLoading(false);
+      } else {
+        setPageLoading(false);
+      }
+    };
+    init();
   }, [currentUser?._id]);
 
   // Handle URL parameters for opening checklist modal
@@ -261,6 +273,10 @@ export default function OnDemandServices() {
       setMoversSubmitting(false);
     }
   };
+
+  if (pageLoading) {
+    return <UserServicesSkeleton />;
+  }
 
   return (
     <div className="max-w-5xl mx-auto px-2 sm:px-4 py-6 sm:py-10">
