@@ -1,3 +1,4 @@
+import mongoose from 'mongoose';
 import PropertyView from "../models/propertyView.model.js";
 import Booking from "../models/booking.model.js";
 import Review from "../models/review.model.js";
@@ -9,6 +10,7 @@ import RentLockContract from "../models/rentLockContract.model.js";
 import ImageFavorite from "../models/imageFavorite.model.js";
 import Dispute from "../models/dispute.model.js";
 import PropertyVerification from "../models/propertyVerification.model.js";
+import PropertyWatchlist from "../models/propertyWatchlist.model.js";
 import cloudinary from 'cloudinary';
 
 // Configure Cloudinary for base64 uploads
@@ -23,15 +25,16 @@ cloudinary.v2.config({
 const getPersonality = (stats) => {
     if (stats.bookings > 0 || stats.rentals > 0) return { type: "The Action Taker", desc: "You don't just dream; you make moves. You secured your spot this year!" };
     if (stats.reviews > 5) return { type: "The Community Voice", desc: "Your opinions matter, and you've helped guide many others this year." };
-    if (stats.views > 50 && stats.wishlist > 10) return { type: "The Dreamer", desc: "You have an eye for beauty and a wishlist full of possibilities." };
-    if (stats.coins > 1000) return { type: "The Collector", desc: "You've engaged with everything UrbanSetu has to offer!" };
-    return { type: "The Explorer", desc: "You're checking out the market and seeing what's out there." };
+    if (stats.wishlist > 20) return { type: "The Dreamer", desc: "You've curated an incredible list of future homes. Dreaming big is where it begins!" };
+    if (stats.views > 100) return { type: "The Master Explorer", desc: "You've seen it all! Your property knowledge is second to none." };
+    return { type: "The Urban Resident", desc: "A visionary hunter of perfect spaces." };
 };
 
 export const getUserYearInReview = async (req, res, next) => {
     try {
         const { year } = req.params;
         const userId = req.user.id;
+        const userObjectId = new mongoose.Types.ObjectId(userId);
         const currentYear = new Date().getFullYear();
 
         if (parseInt(year) > currentYear) {
@@ -45,7 +48,7 @@ export const getUserYearInReview = async (req, res, next) => {
         const viewsAgg = await PropertyView.aggregate([
             {
                 $match: {
-                    viewerId: userId.toString(),
+                    viewerId: `u:${userId}`,
                     createdAt: { $gte: startDate, $lte: endDate }
                 }
             },
@@ -78,7 +81,7 @@ export const getUserYearInReview = async (req, res, next) => {
         }
 
         const viewsCount = await PropertyView.countDocuments({
-            viewerId: userId.toString(),
+            viewerId: `u:${userId}`,
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
@@ -86,7 +89,7 @@ export const getUserYearInReview = async (req, res, next) => {
         const explorationAgg = await PropertyView.aggregate([
             {
                 $match: {
-                    viewerId: userId.toString(),
+                    viewerId: `u:${userId}`,
                     createdAt: { $gte: startDate, $lte: endDate }
                 }
             },
@@ -119,7 +122,7 @@ export const getUserYearInReview = async (req, res, next) => {
         const monthlyActivity = await PropertyView.aggregate([
             {
                 $match: {
-                    viewerId: userId.toString(),
+                    viewerId: `u:${userId}`,
                     createdAt: { $gte: startDate, $lte: endDate }
                 }
             },
@@ -150,24 +153,29 @@ export const getUserYearInReview = async (req, res, next) => {
         });
 
         const wishlistCount = await Wishlist.countDocuments({
-            user: userId,
+            userId: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const watchlistCount = await PropertyWatchlist.countDocuments({
+            userId: userId,
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
         const favoriteCount = await ImageFavorite.countDocuments({
-            user: userId,
+            userId: userId,
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
         const reviewsCount = await Review.countDocuments({
-            user: userId,
+            userId: userId,
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
         const coinsAgg = await CoinTransaction.aggregate([
             {
                 $match: {
-                    userId: userId.toString(),
+                    userId: userObjectId,
                     type: 'credit',
                     createdAt: { $gte: startDate, $lte: endDate }
                 }
@@ -176,7 +184,7 @@ export const getUserYearInReview = async (req, res, next) => {
         ]);
         const coinsEarned = coinsAgg.length > 0 ? coinsAgg[0].total : 0;
 
-        const totalInteractions = viewsCount + bookingsCount + wishlistCount + reviewsCount + rentalsCount + (coinsEarned > 0 ? 1 : 0);
+        const totalInteractions = viewsCount + bookingsCount + wishlistCount + watchlistCount + reviewsCount + rentalsCount + favoriteCount + (coinsEarned > 0 ? 1 : 0);
 
         const stats = {
             views: viewsCount,
@@ -184,7 +192,7 @@ export const getUserYearInReview = async (req, res, next) => {
             maxStreak,
             bookings: bookingsCount,
             rentals: rentalsCount,
-            wishlist: wishlistCount,
+            wishlist: wishlistCount + watchlistCount,
             favorites: favoriteCount,
             reviews: reviewsCount,
             coins: coinsEarned,
