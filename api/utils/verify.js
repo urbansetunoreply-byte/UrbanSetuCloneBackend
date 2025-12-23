@@ -6,7 +6,7 @@ export const verifyToken = async (req, res, next) => {
   try {
     // Try to get token from cookies first (preferred method)
     let token = req.cookies.access_token;
-    
+
     // If no cookie token, try Authorization header as fallback (for third-party cookie blocking)
     if (!token) {
       const authHeader = req.headers.authorization;
@@ -14,7 +14,7 @@ export const verifyToken = async (req, res, next) => {
         token = authHeader.substring(7); // Remove 'Bearer ' prefix
       }
     }
-    
+
     if (!token) {
       return res.status(401).json({ message: 'Access token not found' });
     }
@@ -36,7 +36,7 @@ export const verifyToken = async (req, res, next) => {
           return res.status(401).json({ message: 'Session expired' });
         }
       }
-    } catch (_) {}
+    } catch (_) { }
     // SUSPENSION CHECK
     if (user.status === 'suspended') {
       res.clearCookie('access_token', {
@@ -71,7 +71,7 @@ export const optionalAuth = async (req, res, next) => {
   try {
     // Try to get token from cookies first (preferred method)
     let token = req.cookies.access_token;
-    
+
     // If no cookie token, try Authorization header as fallback (for third-party cookie blocking)
     if (!token) {
       const authHeader = req.headers.authorization;
@@ -79,13 +79,13 @@ export const optionalAuth = async (req, res, next) => {
         token = authHeader.substring(7); // Remove 'Bearer ' prefix
       }
     }
-    
+
     if (!token) {
       // No token provided, continue without authentication
       req.user = null;
       return next();
     }
-    
+
     const decoded = jwt.verify(token, process.env.JWT_TOKEN);
     const user = await User.findById(decoded.id);
     if (!user) {
@@ -93,7 +93,7 @@ export const optionalAuth = async (req, res, next) => {
       req.user = null;
       return next();
     }
-    
+
     // SUSPENSION CHECK
     if (user.status === 'suspended') {
       res.clearCookie('access_token', {
@@ -106,7 +106,7 @@ export const optionalAuth = async (req, res, next) => {
       req.user = null;
       return next();
     }
-    
+
     // Refresh cookie expiry
     res.cookie('access_token', token, {
       httpOnly: true,
@@ -121,5 +121,22 @@ export const optionalAuth = async (req, res, next) => {
     console.log('optionalAuth - Authentication failed:', error.message);
     req.user = null;
     next();
+  }
+};
+
+export const verifyAdmin = async (req, res, next) => {
+  try {
+    const user = req.user;
+    if (!user) {
+      return res.status(401).json({ message: 'Authentication required' });
+    }
+
+    if (user.role === 'admin' || user.role === 'rootadmin' || user.isDefaultAdmin) {
+      return next();
+    }
+
+    return res.status(403).json({ message: 'Access denied. Admin rights required.' });
+  } catch (error) {
+    next(error);
   }
 };
