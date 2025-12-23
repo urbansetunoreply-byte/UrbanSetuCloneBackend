@@ -443,7 +443,7 @@ const YearInReview = ({ isAdmin = false }) => {
                 onClose={() => setIsShareOpen(false)}
                 url={shareUrl}
                 title={`My UrbanSetu Flashback ${year}`}
-                description={`I explored ${data?.stats?.views} properties and my 2024 persona is "${data?.personality?.type}"! Check out your own flashback at UrbanSetu.`}
+                description={`I explored ${data?.stats?.views} properties and my ${year} persona is "${data?.personality?.type}"! Check out your own flashback at UrbanSetu.`}
             />
 
             <style>{`
