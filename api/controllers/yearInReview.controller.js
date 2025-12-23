@@ -60,6 +60,16 @@ export const getUserYearInReview = async (req, res, next) => {
             return res.status(400).json({ message: "The future hasn't been written yet! Check back at the end of the year." });
         }
 
+        // Check if user is brand new (less than 1 day old)
+        const user = await User.findById(userId);
+        const joinDate = new Date(user.createdAt);
+        const now = new Date();
+        const oneDay = 24 * 60 * 60 * 1000;
+
+        if (now - joinDate < oneDay) {
+            return res.status(400).json({ message: "Welcome to UrbanSetu! Your journey has just begun. Come back later to see your flashback!" });
+        }
+
         const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
         const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
 
