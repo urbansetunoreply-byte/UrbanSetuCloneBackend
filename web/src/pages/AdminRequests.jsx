@@ -3,6 +3,7 @@ import { useSelector } from 'react-redux';
 import { useNavigate } from 'react-router-dom';
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import { toast } from 'react-toastify';
+import AdminRequestsSkeleton from '../components/skeletons/AdminRequestsSkeleton';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -10,7 +11,7 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const AdminRequests = () => {
   // Set page title
   usePageTitle("Admin Requests - Approval Management");
-  
+
   const [allRequests, setAllRequests] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
@@ -42,11 +43,11 @@ const AdminRequests = () => {
         credentials: 'include',
       });
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.message || 'Failed to fetch requests');
       }
-      
+
       setAllRequests(data);
     } catch (error) {
       setError(error.message);
@@ -63,25 +64,25 @@ const AdminRequests = () => {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           currentUserId: currentUser._id,
           rootAdminPassword: 'Salendra@2004' // Root admin password
         }),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.message || 'Failed to approve request');
       }
-      
+
       // Update the request in the list
-      setAllRequests(prev => prev.map(request => 
-        request._id === userId 
+      setAllRequests(prev => prev.map(request =>
+        request._id === userId
           ? { ...request, adminApprovalStatus: 'approved', role: 'admin' }
           : request
       ));
-      
+
       // Show success message
       toast.success('Admin request approved successfully!');
     } catch (error) {
@@ -97,25 +98,25 @@ const AdminRequests = () => {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           currentUserId: currentUser._id,
           rootAdminPassword: 'Salendra@2004' // Root admin password
         }),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.message || 'Failed to reject request');
       }
-      
+
       // Update the request in the list
-      setAllRequests(prev => prev.map(request => 
-        request._id === userId 
+      setAllRequests(prev => prev.map(request =>
+        request._id === userId
           ? { ...request, adminApprovalStatus: 'rejected', role: 'user' }
           : request
       ));
-      
+
       // Show success message
       toast.success('Admin request rejected successfully!');
     } catch (error) {
@@ -131,25 +132,25 @@ const AdminRequests = () => {
           'Content-Type': 'application/json',
         },
         credentials: 'include',
-        body: JSON.stringify({ 
+        body: JSON.stringify({
           currentUserId: currentUser._id,
           rootAdminPassword: 'Salendra@2004' // Root admin password
         }),
       });
-      
+
       const data = await res.json();
-      
+
       if (!res.ok) {
         throw new Error(data.message || 'Failed to reapprove request');
       }
-      
+
       // Update the request in the list
-      setAllRequests(prev => prev.map(request => 
-        request._id === userId 
+      setAllRequests(prev => prev.map(request =>
+        request._id === userId
           ? { ...request, adminApprovalStatus: 'approved', role: 'admin' }
           : request
       ));
-      
+
       // Show success message
       toast.success('Admin request reapproved successfully!');
     } catch (error) {
@@ -246,14 +247,7 @@ const AdminRequests = () => {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-2 text-gray-600">Loading admin requests...</p>
-        </div>
-      </div>
-    );
+    return <AdminRequestsSkeleton />;
   }
 
 
@@ -270,7 +264,7 @@ const AdminRequests = () => {
               <p className="text-gray-600">Only the default admin or root admin can approve new admin requests.</p>
               <p className="text-sm text-gray-500 mt-2">Current user: {currentUser.email}</p>
               <div className="flex justify-center mt-6">
-                <button 
+                <button
                   onClick={() => navigate('/admin')}
                   className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-6 py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-2 text-base mx-auto"
                 >
@@ -319,11 +313,10 @@ const AdminRequests = () => {
                 <button
                   key={key}
                   onClick={() => setFilter(key)}
-                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${
-                    filter === key
-                      ? 'bg-blue-500 text-white shadow-lg'
-                      : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
-                  }`}
+                  className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${filter === key
+                    ? 'bg-blue-500 text-white shadow-lg'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    }`}
                 >
                   {label} ({count})
                 </button>
@@ -343,8 +336,8 @@ const AdminRequests = () => {
                   {filter === 'all' ? 'No Admin Requests' : `No ${filter.charAt(0).toUpperCase() + filter.slice(1)} Requests`}
                 </h3>
                 <p className="text-gray-600">
-                  {filter === 'all' 
-                    ? 'No admin requests have been submitted yet.' 
+                  {filter === 'all'
+                    ? 'No admin requests have been submitted yet.'
                     : `No admin requests with ${filter} status found.`
                   }
                 </p>
@@ -372,7 +365,7 @@ const AdminRequests = () => {
                           )}
                         </div>
                       </div>
-                      
+
                       {/* Actions */}
                       <div className="mt-4 pt-4 border-t border-gray-200">
                         {getActionButtons(request)}
