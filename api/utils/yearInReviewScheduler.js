@@ -8,14 +8,13 @@ import { sendYearInReviewEmail } from './emailService.js';
  */
 export const initializeYearInReviewScheduler = () => {
     // Run daily at 10:00 AM
-    cron.schedule('0 10 * * *', async () => {
+    cron.schedule('0 10 * 12 *', async () => {
         const now = new Date();
-        const month = now.getMonth(); // 0-indexed, so 11 is December
         const day = now.getDate();
         const currentYear = now.getFullYear();
 
         // Only run between Dec 20 and Dec 31
-        if (month === 11 && day >= 20) {
+        if (day >= 20 && day <= 31) {
             console.log(`[YearInReview] Starting daily email batch for ${currentYear}...`);
             await sendYearInReviewBatch(currentYear);
         } else {
@@ -33,7 +32,7 @@ export const sendYearInReviewBatch = async (year, limit = 50) => {
         const users = await User.find({
             yearInReviewSent: { $ne: year },
             status: 'active'
-        }).limit(limit);
+        }).select('email username role yearInReviewSent').limit(limit);
 
         if (users.length === 0) {
             console.log(`[YearInReview] No pending users for ${year}.`);
@@ -47,7 +46,8 @@ export const sendYearInReviewBatch = async (year, limit = 50) => {
 
         for (const user of users) {
             try {
-                const result = await sendYearInReviewEmail(user.email, user.username, year);
+                // Pass user role to the email service
+                const result = await sendYearInReviewEmail(user.email, user.username, year, user.role);
                 if (result.success) {
                     // Update user to mark as sent
                     await User.findByIdAndUpdate(user._id, {

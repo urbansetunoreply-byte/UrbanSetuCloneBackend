@@ -14347,14 +14347,31 @@ export const sendReferredWelcomeEmail = async (email, username, referrerName, am
 };
 
 // Send Year in Review notification email
-export const sendYearInReviewEmail = async (email, username, year) => {
+export const sendYearInReviewEmail = async (email, username, year, role = 'user') => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const flashbackUrl = `${clientBaseUrl}/user/year/${year}`;
+
+  const isAdmin = role === 'admin' || role === 'rootadmin';
+  const subject = isAdmin
+    ? `UrbanSetu ${year} Leadership Recap 🚀`
+    : `Your UrbanSetu ${year} Flashback is here! 🎬`;
+
+  const heading = isAdmin
+    ? "Platform Leadership Recap"
+    : "Your Personalized Recap";
+
+  const subHeading = isAdmin
+    ? "Review the ecosystem growth and your management impact."
+    : "Discover your property persona and see your activity stats.";
+
+  const messageStr = isAdmin
+    ? "Your leadership has been instrumental this year. We've compiled a summary of the platform's milestones and your management impact."
+    : "What a journey it's been! From finding hidden gems to building your property wishlist, we've captured your best moments on UrbanSetu this year.";
 
   const mailOptions = {
     from: process.env.EMAIL_USER,
     to: email,
-    subject: `Your UrbanSetu ${year} Flashback is here! 🎬`,
+    subject: subject,
     html: `
       <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff;">
         <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 40px 30px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);">
@@ -14366,12 +14383,12 @@ export const sendYearInReviewEmail = async (email, username, year) => {
           <h2 style="font-size: 28px; line-height: 1.2; margin-bottom: 20px; font-weight: 700;">Hi ${username}! <br>Ready to relive your ${year}?</h2>
           
           <p style="color: #94a3b8; font-size: 18px; line-height: 1.6; margin-bottom: 35px;">
-            What a journey it's been! From finding hidden gems to building your property wishlist, we've captured your best moments on UrbanSetu this year.
+            ${messageStr}
           </p>
           
           <div style="background: rgba(59, 130, 246, 0.1); padding: 30px; border-radius: 16px; margin-bottom: 35px; border: 1px dashed rgba(59, 130, 246, 0.3);">
-            <p style="margin: 0; font-size: 16px; color: #60a5fa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Your Personalized Recap</p>
-            <p style="margin: 10px 0 0 0; font-size: 14px; color: #94a3b8;">Discover your property persona and see your activity stats in a stunning animated experience.</p>
+            <p style="margin: 0; font-size: 16px; color: #60a5fa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">${heading}</p>
+            <p style="margin: 10px 0 0 0; font-size: 14px; color: #94a3b8;">${subHeading}</p>
           </div>
           
           <div style="margin-top: 20px;">
