@@ -200,13 +200,20 @@ export default function AdminDeploymentManagement() {
     }
   };
 
-  const handleDeleteFile = async (fileId) => {
-    if (!window.confirm('Are you sure you want to delete this file?')) {
-      return;
-    }
+  // Delete Modal State
+  const [showDeleteModal, setShowDeleteModal] = useState(false);
+  const [fileToDelete, setFileToDelete] = useState(null);
+
+  const confirmDeleteFile = (fileId) => {
+    setFileToDelete(fileId);
+    setShowDeleteModal(true);
+  };
+
+  const handleDeleteFile = async () => {
+    if (!fileToDelete) return;
 
     try {
-      const encodedId = encodeURIComponent(fileId);
+      const encodedId = encodeURIComponent(fileToDelete);
       const response = await fetch(`${API_BASE_URL}/api/deployment/${encodedId}`, {
         method: 'DELETE',
         credentials: 'include'
@@ -220,11 +227,13 @@ export default function AdminDeploymentManagement() {
       } else {
         toast.error(data.message || 'Failed to delete file');
       }
-      // Invalidate public download cache immediately after changes
       resetAndroidDownloadCache();
     } catch (error) {
       console.error('Error deleting file:', error);
       toast.error('Failed to delete file');
+    } finally {
+      setShowDeleteModal(false);
+      setFileToDelete(null);
     }
   };
 
@@ -311,6 +320,39 @@ export default function AdminDeploymentManagement() {
             .animate-fade-in-delay-2 { animation: fadeIn 0.8s ease-out 0.4s forwards; opacity: 0; }
         `}
       </style>
+
+      {/* Delete Confirmation Modal */}
+      {showDeleteModal && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
+          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 transform transition-all scale-100">
+            <div className="flex items-center gap-4 mb-4 text-red-600">
+              <div className="p-3 bg-red-100 rounded-full">
+                <FaTrash className="text-xl" />
+              </div>
+              <h3 className="text-xl font-bold text-gray-900">Confirm Deletion</h3>
+            </div>
+
+            <p className="text-gray-600 mb-6">
+              Are you sure you want to delete this deployment file? This action cannot be undone.
+            </p>
+
+            <div className="flex justify-end gap-3">
+              <button
+                onClick={() => setShowDeleteModal(false)}
+                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium transition-colors"
+              >
+                Cancel
+              </button>
+              <button
+                onClick={handleDeleteFile}
+                className="px-4 py-2 text-white bg-red-600 rounded-lg hover:bg-red-700 font-medium shadow-lg shadow-red-200 transition-colors"
+              >
+                Delete File
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
 
       {/* Abstract Background Elements */}
       <div className="absolute top-0 left-0 w-full h-full overflow-hidden z-0 pointer-events-none">
@@ -626,7 +668,7 @@ export default function AdminDeploymentManagement() {
                                 </button>
                               )}
                               <button
-                                onClick={() => handleDeleteFile(file.id)}
+                                onClick={() => confirmDeleteFile(file.id)}
                                 className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors"
                                 title="Delete"
                               >

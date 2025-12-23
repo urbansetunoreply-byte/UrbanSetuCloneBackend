@@ -12,6 +12,7 @@ import {
     Filter
 } from 'lucide-react';
 import Footer from '../components/Footer';
+import UpdatesSkeleton from '../components/skeletons/UpdatesSkeleton';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
@@ -141,10 +142,9 @@ const Updates = () => {
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
                 <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
 
+
                     {loading && page === 1 ? (
-                        <div className="text-center py-20">
-                            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-                        </div>
+                        <UpdatesSkeleton />
                     ) : updates.length > 0 ? (
                         updates.map((update, index) => (
                             <motion.div
