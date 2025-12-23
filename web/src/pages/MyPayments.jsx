@@ -6,6 +6,7 @@ import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../red
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import PaymentModal from '../components/PaymentModal';
+import MyPaymentsSkeleton from '../components/skeletons/MyPaymentsSkeleton';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -13,29 +14,29 @@ const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 const MyPayments = () => {
   // Set page title
   usePageTitle("My Payments - Payment History");
-  
+
   const { currentUser } = useSelector((state) => state.user);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  
+
   const [payments, setPayments] = useState([]);
   const [allPayments, setAllPayments] = useState([]);
   const [loading, setLoading] = useState(true);
   const [filters, setFilters] = useState({ status: '', gateway: '', currency: '', paymentType: '', q: '', fromDate: '', toDate: '' });
-  
+
   // Pagination states
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  
+
   // Preview modal states
   const [showPreviewModal, setShowPreviewModal] = useState(false);
   const [selectedPayment, setSelectedPayment] = useState(null);
-  
+
   // Payment modal states
   const [showPaymentModal, setShowPaymentModal] = useState(false);
   const [paymentAppointment, setPaymentAppointment] = useState(null);
   const [loadingPaymentId, setLoadingPaymentId] = useState(null); // Track which payment is loading
-  
+
   // Export password modal states
   const [showExportPasswordModal, setShowExportPasswordModal] = useState(false);
   const [exportPassword, setExportPassword] = useState('');
@@ -83,7 +84,7 @@ const MyPayments = () => {
         setAllPayments(data.payments || []);
         setCurrentPage(1); // Reset to first page when filters change
       }
-    } catch {}
+    } catch { }
     finally { setLoading(false); }
   };
 
@@ -101,34 +102,34 @@ const MyPayments = () => {
         paymentsByAppointment['no-appointment'].push(payment);
         return;
       }
-      
+
       if (!paymentsByAppointment[appointmentId]) {
         paymentsByAppointment[appointmentId] = [];
       }
       paymentsByAppointment[appointmentId].push(payment);
     });
-    
+
     // Second pass: Filter payments per appointment
     const filteredPayments = [];
-    
+
     Object.keys(paymentsByAppointment).forEach(key => {
       const appointmentPayments = paymentsByAppointment[key];
-      
+
       // For payments without appointment ID, include all
       if (key === 'no-appointment') {
         filteredPayments.push(...appointmentPayments);
         return;
       }
-      
+
       // Check if there's a completed payment for this appointment
       const hasCompleted = appointmentPayments.some(p => p.status === 'completed');
-      
+
       if (hasCompleted) {
         // If there's a completed payment, only include completed, failed, refunded payments
         // Remove all pending/processing/cancelled payments
         appointmentPayments.forEach(payment => {
-          if (payment.status === 'completed' || payment.status === 'failed' || 
-              payment.status === 'refunded' || payment.status === 'partially_refunded') {
+          if (payment.status === 'completed' || payment.status === 'failed' ||
+            payment.status === 'refunded' || payment.status === 'partially_refunded') {
             filteredPayments.push(payment);
           }
           // Skip pending/processing/cancelled payments when there's a completed payment
@@ -136,32 +137,32 @@ const MyPayments = () => {
       } else {
         // No completed payment - include failed, refunded, and only the most recent pending/processing
         // Exclude cancelled payments from display
-        const completedOrFailed = appointmentPayments.filter(p => 
+        const completedOrFailed = appointmentPayments.filter(p =>
           p.status === 'failed' || p.status === 'refunded' || p.status === 'partially_refunded'
         );
         filteredPayments.push(...completedOrFailed);
-        
+
         // For pending/processing, keep only the most recent one (exclude cancelled)
-        const pendingPayments = appointmentPayments.filter(p => 
+        const pendingPayments = appointmentPayments.filter(p =>
           (p.status === 'pending' || p.status === 'processing') && p.status !== 'cancelled'
         );
         if (pendingPayments.length > 0) {
           // Sort by createdAt descending and take the first (most recent)
-          const mostRecentPending = pendingPayments.sort((a, b) => 
+          const mostRecentPending = pendingPayments.sort((a, b) =>
             new Date(b.createdAt) - new Date(a.createdAt)
           )[0];
           filteredPayments.push(mostRecentPending);
         }
       }
     });
-    
+
     // Sort all payments by createdAt descending (most recent first)
     filteredPayments.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
-    
+
     const itemsPerPage = 10;
     const totalPages = Math.ceil(filteredPayments.length / itemsPerPage);
     setTotalPages(totalPages);
-    
+
     const startIndex = (currentPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPagePayments = filteredPayments.slice(startIndex, endIndex);
@@ -170,11 +171,11 @@ const MyPayments = () => {
 
   const payNow = async (payment) => {
     if (!payment || !payment.appointmentId) return;
-    
+
     try {
       // Track which payment is loading
       setLoadingPaymentId(payment._id);
-      
+
       // Extract appointment ID (could be object or string)
       const appointmentId = payment.appointmentId?._id || payment.appointmentId;
       if (!appointmentId) {
@@ -182,17 +183,17 @@ const MyPayments = () => {
         setLoadingPaymentId(null);
         return;
       }
-      
+
       // Check if payment is already completed before proceeding
       try {
         const paymentCheckRes = await fetch(`${API_BASE_URL}/api/payments/history?appointmentId=${appointmentId}`, {
           credentials: 'include'
         });
         const paymentCheckData = await paymentCheckRes.json();
-        
+
         if (paymentCheckRes.ok && paymentCheckData.payments && paymentCheckData.payments.length > 0) {
           const latestPayment = paymentCheckData.payments[0];
-          
+
           // Check if payment is already completed
           if (latestPayment.status === 'completed' || latestPayment.metadata?.adminMarked) {
             toast.success('Payment already completed!');
@@ -200,7 +201,7 @@ const MyPayments = () => {
             await fetchPayments();
             // Dispatch event to update MyAppointments page if it's open
             window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
-              detail: { 
+              detail: {
                 appointmentId: appointmentId,
                 paymentConfirmed: true
               }
@@ -208,13 +209,13 @@ const MyPayments = () => {
             setLoadingPaymentId(null);
             return;
           }
-          
+
           // Check for active (pending/processing) payments that are NOT cancelled
-          const activePayment = paymentCheckData.payments.find(p => 
-            (p.status === 'pending' || p.status === 'processing') && 
+          const activePayment = paymentCheckData.payments.find(p =>
+            (p.status === 'pending' || p.status === 'processing') &&
             p.status !== 'cancelled'
           );
-          
+
           if (activePayment) {
             // Check if another tab/window/browser has the payment modal open using backend lock
             try {
@@ -222,26 +223,26 @@ const MyPayments = () => {
                 method: 'GET',
                 credentials: 'include'
               });
-              
+
               const lockCheckData = await lockCheckResponse.json();
-              
+
               if (lockCheckData.ok && lockCheckData.locked === true && !lockCheckData.ownedByUser) {
                 // Another browser/device has the payment modal open
                 toast.warning(lockCheckData.message || 'A payment session is already open for this appointment in another browser/device. Please close that browser/device first before opening a new payment session.');
                 setLoadingPaymentId(null);
                 return;
               }
-              
+
               // Also check localStorage for same-browser detection (fallback)
               const lockKey = `payment_lock_${appointmentId}`;
               const lockData = localStorage.getItem(lockKey);
-              
+
               if (lockData) {
                 try {
                   const { tabId: ownerTabId, timestamp } = JSON.parse(lockData);
                   const currentTabId = sessionStorage.getItem('paymentTabId');
                   const now = Date.now();
-                  
+
                   // If lock is not stale (less than 5 seconds old) and owned by another tab
                   if (now - timestamp <= 5000 && ownerTabId !== currentTabId) {
                     toast.warning('A payment session is already open for this appointment in another tab. Please close that tab first before opening a new payment session.');
@@ -256,12 +257,12 @@ const MyPayments = () => {
               console.error('Error checking payment lock:', lockCheckError);
               // If lock check fails, continue (allow opening modal as fallback)
             }
-            
+
             // Check if the active payment has expired
             const now = new Date();
             const tenMinutesAgo = new Date(now.getTime() - 10 * 60 * 1000);
             let isExpired = false;
-            
+
             if (activePayment.expiresAt) {
               const expiresAt = new Date(activePayment.expiresAt);
               isExpired = expiresAt <= now;
@@ -269,7 +270,7 @@ const MyPayments = () => {
               const createdAt = new Date(activePayment.createdAt);
               isExpired = createdAt <= tenMinutesAgo;
             }
-            
+
             if (isExpired) {
               // Payment expired, allow opening modal (will create new payment)
               toast.info('Previous payment session expired. Opening a new payment session.');
@@ -279,7 +280,7 @@ const MyPayments = () => {
             }
             // Continue to open modal - backend will handle creating new payment
           }
-          
+
           // If latest payment is cancelled, failed, or expired, show appropriate message and allow retry
           if (latestPayment.status === 'cancelled' && !activePayment) {
             toast.info('Previous payment was cancelled. You can initiate a new payment.');
@@ -291,28 +292,28 @@ const MyPayments = () => {
         console.error('Error checking payment status:', paymentCheckError);
         // Continue with payment flow if check fails
       }
-      
+
       // Fetch appointment details - API returns the booking object directly (not wrapped)
       const res = await fetch(`${API_BASE_URL}/api/bookings/${appointmentId}`, {
         credentials: 'include'
       });
-      
+
       if (!res.ok) {
         const errorData = await res.json().catch(() => ({ message: 'Failed to load appointment' }));
         toast.error(errorData.message || 'Failed to load appointment details');
         setLoadingPaymentId(null);
         return;
       }
-      
+
       // API returns booking object directly, not wrapped in { success, appointment }
       const appointment = await res.json();
-      
+
       if (!appointment || !appointment._id) {
         toast.error('Appointment not found');
         setLoadingPaymentId(null);
         return;
       }
-      
+
       // Initialize appointment lock before opening modal (timer is tied to appointment slot, not payment ID)
       try {
         const lockInitResponse = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/lock/initialize`, {
@@ -323,7 +324,7 @@ const MyPayments = () => {
           credentials: 'include',
           body: JSON.stringify({ appointmentId: appointment._id })
         });
-        
+
         if (lockInitResponse.ok) {
           const lockData = await lockInitResponse.json();
           // Update appointment with lock info if provided
@@ -336,14 +337,14 @@ const MyPayments = () => {
         console.error('Error initializing appointment lock:', lockError);
         // Continue anyway - backend will initialize lock when creating payment intent
       }
-      
+
       // Prepare appointment object for PaymentModal (same format as MyAppointments)
       // PaymentModal expects appointment with region field
       const appointmentForModal = {
         ...appointment,
         region: appointment.region || 'india' // Default to 'india' if not specified
       };
-      
+
       setPaymentAppointment(appointmentForModal);
       setShowPaymentModal(true);
     } catch (error) {
@@ -358,16 +359,16 @@ const MyPayments = () => {
 
   const goToAppointment = (payment) => {
     if (!payment || !payment.appointmentId) return;
-    
+
     // Extract appointment ID (could be object or string)
     const appointmentId = payment.appointmentId?._id || payment.appointmentId;
     if (!appointmentId) return;
-    
+
     // Navigate to MyAppointments and dispatch custom event to highlight the appointment
     navigate('/user/my-appointments', {
       state: { highlightAppointmentId: appointmentId }
     });
-    
+
     // Also dispatch a custom event for immediate highlighting if already on the page
     window.dispatchEvent(new CustomEvent('highlightAppointment', {
       detail: { appointmentId: appointmentId }
@@ -402,7 +403,7 @@ const MyPayments = () => {
   const sharePayment = async (payment) => {
     const shareText = `Payment Details:\nProperty: ${payment.appointmentId?.propertyName || 'N/A'}\nAmount: ${payment.currency === 'INR' ? '₹' : '$'}${Number(payment.amount).toFixed(2)}\nStatus: ${payment.status}\nPayment ID: ${payment.paymentId}`;
     const shareUrl = window.location.origin + `/user/my-payments?paymentId=${payment.paymentId}`;
-    
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -460,12 +461,12 @@ const MyPayments = () => {
 
         <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg p-4 sm:p-6 border border-blue-100">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <input value={filters.q} onChange={(e)=>{setFilters(prev=>({...prev,q:e.target.value})); setCurrentPage(1);}} placeholder="Search payment ID or receipt" className="px-3 py-2 border rounded-lg text-sm" />
+            <input value={filters.q} onChange={(e) => { setFilters(prev => ({ ...prev, q: e.target.value })); setCurrentPage(1); }} placeholder="Search payment ID or receipt" className="px-3 py-2 border rounded-lg text-sm" />
             <label className="text-sm text-gray-600">From:</label>
-            <input type="date" value={filters.fromDate} max={new Date().toISOString().split('T')[0]} onChange={(e)=>{setFilters(prev=>({...prev,fromDate:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm" />
+            <input type="date" value={filters.fromDate} max={new Date().toISOString().split('T')[0]} onChange={(e) => { setFilters(prev => ({ ...prev, fromDate: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm" />
             <label className="text-sm text-gray-600">To:</label>
-            <input type="date" value={filters.toDate} max={new Date().toISOString().split('T')[0]} onChange={(e)=>{setFilters(prev=>({...prev,toDate:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm" />
-            <select value={filters.status} onChange={(e)=>{setFilters(prev=>({...prev,status:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm">
+            <input type="date" value={filters.toDate} max={new Date().toISOString().split('T')[0]} onChange={(e) => { setFilters(prev => ({ ...prev, toDate: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm" />
+            <select value={filters.status} onChange={(e) => { setFilters(prev => ({ ...prev, status: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Status</option>
               <option value="completed">Completed</option>
               <option value="pending">Pending</option>
@@ -473,17 +474,17 @@ const MyPayments = () => {
               <option value="refunded">Refunded</option>
               <option value="partially_refunded">Partially Refunded</option>
             </select>
-            <select value={filters.gateway} onChange={(e)=>{setFilters(prev=>({...prev,gateway:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm">
+            <select value={filters.gateway} onChange={(e) => { setFilters(prev => ({ ...prev, gateway: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Gateways</option>
               <option value="paypal">PayPal</option>
               <option value="razorpay">Razorpay</option>
             </select>
-            <select value={filters.currency} onChange={(e)=>{setFilters(prev=>({...prev,currency:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm">
+            <select value={filters.currency} onChange={(e) => { setFilters(prev => ({ ...prev, currency: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Currencies</option>
               <option value="USD">USD ($)</option>
               <option value="INR">INR (₹)</option>
             </select>
-            <select value={filters.paymentType} onChange={(e)=>{setFilters(prev=>({...prev,paymentType:e.target.value})); setCurrentPage(1);}} className="px-3 py-2 border rounded-lg text-sm">
+            <select value={filters.paymentType} onChange={(e) => { setFilters(prev => ({ ...prev, paymentType: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
               <option value="">All Types</option>
               <option value="advance">Advance Payment</option>
               <option value="monthly_rent">Monthly Rent</option>
@@ -503,10 +504,7 @@ const MyPayments = () => {
           </div>
 
           {loading ? (
-            <div className="flex items-center justify-center py-8">
-              <FaSpinner className="animate-spin text-2xl text-blue-600" />
-              <span className="ml-2 text-gray-600">Loading payments...</span>
-            </div>
+            <MyPaymentsSkeleton />
           ) : (payments?.length || 0) === 0 ? (
             <div className="text-center py-8">
               <FaMoneyBill className="text-6xl text-gray-300 mx-auto mb-4" />
@@ -516,27 +514,25 @@ const MyPayments = () => {
           ) : (
             <div className="space-y-3">
               {Array.isArray(payments) && payments.map((p) => (
-                <div key={p._id} className={`rounded-lg p-4 border cursor-pointer ${
-                  p.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 
-                  p.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' : 
-                  p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50' :
-                  'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'
-                } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
+                <div key={p._id} className={`rounded-lg p-4 border cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' :
+                  p.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' :
+                    p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50' :
+                      'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'
+                  } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex-1">
                       <div className="font-semibold text-gray-800 flex items-center gap-2">
                         {p.appointmentId?.propertyName || 'Property Payment'}
                         {p.paymentType && (
-                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${
-                            p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                          <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
                             p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                            p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
+                              p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-700'
+                            }`}>
                             {p.paymentType === 'monthly_rent' ? 'Rent' :
-                             p.paymentType === 'advance' ? 'Advance' :
-                             p.paymentType === 'security_deposit' ? 'Security Deposit' :
-                             p.paymentType?.replace('_', ' ')}
+                              p.paymentType === 'advance' ? 'Advance' :
+                                p.paymentType === 'security_deposit' ? 'Security Deposit' :
+                                  p.paymentType?.replace('_', ' ')}
                           </span>
                         )}
                       </div>
@@ -550,11 +546,10 @@ const MyPayments = () => {
                           </span>
                         )}
                         {p.escrowStatus && (
-                          <span className={`px-2 py-0.5 rounded-full ${
-                            p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
+                          <span className={`px-2 py-0.5 rounded-full ${p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
                             p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
-                            'bg-gray-100 text-gray-700'
-                          }`}>
+                              'bg-gray-100 text-gray-700'
+                            }`}>
                             Escrow: {p.escrowStatus}
                           </span>
                         )}
@@ -605,7 +600,7 @@ const MyPayments = () => {
                   <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
                   <div className="mt-2 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                     {p.receiptUrl && (
-                      <button onClick={()=>downloadReceipt(p.receiptUrl)} className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-xs flex items-center gap-1">
+                      <button onClick={() => downloadReceipt(p.receiptUrl)} className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-xs flex items-center gap-1">
                         <FaDownload className="text-xs" /> Receipt
                       </button>
                     )}
@@ -625,11 +620,11 @@ const MyPayments = () => {
                       <FaShare className="text-xs" /> Share
                     </button>
                     {p.status !== 'completed' && p.status !== 'refunded' && p.status !== 'partially_refunded' && (
-                      <button 
+                      <button
                         onClick={(e) => {
                           e.stopPropagation();
                           payNow(p);
-                        }} 
+                        }}
                         className="px-3 py-1 bg-green-600 text-white rounded-lg hover:bg-green-700 text-xs flex items-center gap-1"
                         disabled={loadingPaymentId === p._id}
                       >
@@ -639,7 +634,7 @@ const MyPayments = () => {
                           </>
                         ) : (
                           <>
-                        <FaCreditCard className="text-xs" /> Pay Now
+                            <FaCreditCard className="text-xs" /> Pay Now
                           </>
                         )}
                       </button>
@@ -682,7 +677,7 @@ const MyPayments = () => {
           )}
         </div>
       </div>
-      
+
       {/* Payment Preview Modal */}
       {showPreviewModal && selectedPayment && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4" onClick={() => setShowPreviewModal(false)}>
@@ -701,7 +696,7 @@ const MyPayments = () => {
                 </button>
               </div>
             </div>
-            
+
             <div className="p-6 space-y-6">
               {/* Payment Overview */}
               <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 sm:p-6 border border-blue-200">
@@ -725,16 +720,15 @@ const MyPayments = () => {
                   <div className="text-sm text-gray-600 mb-1">Payment Type</div>
                   <div className="font-semibold text-gray-800">
                     {selectedPayment.paymentType ? (
-                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${
-                        selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                      <span className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
                         selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                        selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                        'bg-gray-100 text-gray-700'
-                      }`}>
+                          selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                            'bg-gray-100 text-gray-700'
+                        }`}>
                         {selectedPayment.paymentType === 'monthly_rent' ? 'Monthly Rent' :
-                         selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
-                         selectedPayment.paymentType === 'security_deposit' ? 'Security Deposit' :
-                         selectedPayment.paymentType?.replace('_', ' ')}
+                          selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
+                            selectedPayment.paymentType === 'security_deposit' ? 'Security Deposit' :
+                              selectedPayment.paymentType?.replace('_', ' ')}
                       </span>
                     ) : 'N/A'}
                   </div>
@@ -756,21 +750,18 @@ const MyPayments = () => {
                   </div>
                 )}
                 {selectedPayment.escrowStatus && (
-                  <div className={`rounded-lg p-4 ${
-                    selectedPayment.escrowStatus === 'released' ? 'bg-green-50' :
+                  <div className={`rounded-lg p-4 ${selectedPayment.escrowStatus === 'released' ? 'bg-green-50' :
                     selectedPayment.escrowStatus === 'held' ? 'bg-orange-50' :
-                    'bg-gray-50'
-                  }`}>
-                    <div className={`text-sm mb-1 ${
-                      selectedPayment.escrowStatus === 'released' ? 'text-green-600' :
+                      'bg-gray-50'
+                    }`}>
+                    <div className={`text-sm mb-1 ${selectedPayment.escrowStatus === 'released' ? 'text-green-600' :
                       selectedPayment.escrowStatus === 'held' ? 'text-orange-600' :
-                      'text-gray-600'
-                    }`}>Escrow Status</div>
-                    <div className={`font-semibold ${
-                      selectedPayment.escrowStatus === 'released' ? 'text-green-800' :
+                        'text-gray-600'
+                      }`}>Escrow Status</div>
+                    <div className={`font-semibold ${selectedPayment.escrowStatus === 'released' ? 'text-green-800' :
                       selectedPayment.escrowStatus === 'held' ? 'text-orange-800' :
-                      'text-gray-800'
-                    }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
+                        'text-gray-800'
+                      }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
                     {selectedPayment.escrowReleasedAt && (
                       <div className="text-xs text-gray-500 mt-1">
                         Released: {new Date(selectedPayment.escrowReleasedAt).toLocaleDateString('en-GB')}
@@ -782,10 +773,10 @@ const MyPayments = () => {
                   <div className="bg-gray-50 rounded-lg p-4">
                     <div className="text-sm text-gray-600 mb-1">Paid Date</div>
                     <div className="font-semibold text-gray-800">
-                      {new Date(selectedPayment.completedAt).toLocaleDateString('en-GB', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                      {new Date(selectedPayment.completedAt).toLocaleDateString('en-GB', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                       })}
                     </div>
                     <div className="text-xs text-gray-500 mt-1">
@@ -796,10 +787,10 @@ const MyPayments = () => {
                 <div className="bg-gray-50 rounded-lg p-4">
                   <div className="text-sm text-gray-600 mb-1">Created Date</div>
                   <div className="font-semibold text-gray-800">
-                    {new Date(selectedPayment.createdAt).toLocaleDateString('en-GB', { 
-                      year: 'numeric', 
-                      month: 'long', 
-                      day: 'numeric' 
+                    {new Date(selectedPayment.createdAt).toLocaleDateString('en-GB', {
+                      year: 'numeric',
+                      month: 'long',
+                      day: 'numeric'
                     })}
                   </div>
                   <div className="text-xs text-gray-500 mt-1">
@@ -810,10 +801,10 @@ const MyPayments = () => {
                   <div className="bg-red-50 rounded-lg p-4">
                     <div className="text-sm text-red-600 mb-1">Refunded Date</div>
                     <div className="font-semibold text-red-800">
-                      {new Date(selectedPayment.refundedAt).toLocaleDateString('en-GB', { 
-                        year: 'numeric', 
-                        month: 'long', 
-                        day: 'numeric' 
+                      {new Date(selectedPayment.refundedAt).toLocaleDateString('en-GB', {
+                        year: 'numeric',
+                        month: 'long',
+                        day: 'numeric'
                       })}
                     </div>
                     <div className="text-xs text-red-500 mt-1">
@@ -911,7 +902,7 @@ const MyPayments = () => {
           </div>
         </div>
       )}
-      
+
       {/* Payment Modal */}
       {showPaymentModal && paymentAppointment && (
         <PaymentModal
@@ -932,7 +923,7 @@ const MyPayments = () => {
             const appointmentId = paymentAppointment?._id || payment?.appointmentId?._id || payment?.appointmentId;
             if (appointmentId) {
               window.dispatchEvent(new CustomEvent('paymentStatusUpdated', {
-                detail: { 
+                detail: {
                   appointmentId: appointmentId,
                   paymentConfirmed: true
                 }
@@ -941,20 +932,20 @@ const MyPayments = () => {
           }}
         />
       )}
-      
+
       {/* Export Password Modal */}
       {showExportPasswordModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form 
-            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4" 
+          <form
+            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4"
             onSubmit={async (e) => {
               e.preventDefault();
               setExportPasswordLoading(true);
               setExportPasswordError("");
               try {
-                const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`, 
+                const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`,
                   { password: exportPassword },
-                  { 
+                  {
                     withCredentials: true,
                     headers: { "Content-Type": "application/json" }
                   }
@@ -965,7 +956,7 @@ const MyPayments = () => {
                   setShowExportPasswordModal(false);
                   setExportPassword("");
                   setExportPasswordError("");
-                  
+
                   // Download export file
                   try {
                     const params = new URLSearchParams();
@@ -1048,9 +1039,9 @@ const MyPayments = () => {
             />
             {exportPasswordError && <div className="text-red-600 text-sm">{exportPasswordError}</div>}
             <div className="flex gap-2 justify-end">
-              <button 
-                type="button" 
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold" 
+              <button
+                type="button"
+                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
                 onClick={() => {
                   setShowExportPasswordModal(false);
                   setExportPassword("");
@@ -1059,9 +1050,9 @@ const MyPayments = () => {
               >
                 Cancel
               </button>
-              <button 
-                type="submit" 
-                className="px-4 py-2 rounded bg-blue-700 text-white font-semibold" 
+              <button
+                type="submit"
+                className="px-4 py-2 rounded bg-blue-700 text-white font-semibold"
                 disabled={exportPasswordLoading}
               >
                 {exportPasswordLoading ? 'Verifying...' : 'Confirm'}

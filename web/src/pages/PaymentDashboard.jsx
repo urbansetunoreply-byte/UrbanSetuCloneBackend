@@ -8,6 +8,7 @@ import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from '../red
 import { toast } from 'react-toastify';
 import axios from 'axios';
 import { socket } from '../utils/socket';
+import PaymentDashboardSkeleton from '../components/skeletons/PaymentDashboardSkeleton';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -245,14 +246,7 @@ const PaymentDashboard = () => {
   ];
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading payment dashboard...</p>
-        </div>
-      </div>
-    );
+    return <PaymentDashboardSkeleton />;
   }
 
   return (
@@ -290,8 +284,8 @@ const PaymentDashboard = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`shrink-0 py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-2 ${activeTab === tab.id
-                        ? 'border-blue-500 text-blue-600'
-                        : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-600'
+                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
                       }`}
                   >
                     <Icon />
@@ -511,9 +505,9 @@ const PaymentDashboard = () => {
                   <div className="space-y-3">
                     {usdPayments.map((p) => (
                       <div key={p._id} className={`border rounded-lg p-4 cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-green-50' :
-                          p.status === 'failed' ? 'border-red-200 bg-red-50' :
-                            p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
-                              'border-yellow-200 bg-yellow-50'
+                        p.status === 'failed' ? 'border-red-200 bg-red-50' :
+                          p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
+                            'border-yellow-200 bg-yellow-50'
                         } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
@@ -521,9 +515,9 @@ const PaymentDashboard = () => {
                               {p.appointmentId?.propertyName || 'Property Payment'}
                               {p.paymentType && (
                                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                                    p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                                      p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                                        'bg-gray-100 text-gray-700'
+                                  p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                                    p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-gray-100 text-gray-700'
                                   }`}>
                                   {p.paymentType === 'monthly_rent' ? 'Rent' :
                                     p.paymentType === 'advance' ? 'Advance' :
@@ -541,8 +535,8 @@ const PaymentDashboard = () => {
                               )}
                               {p.escrowStatus && (
                                 <span className={`px-2 py-0.5 rounded-full ${p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
-                                    p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
-                                      'bg-gray-100 text-gray-700'
+                                  p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
+                                    'bg-gray-100 text-gray-700'
                                   }`}>
                                   Escrow: {p.escrowStatus}
                                 </span>
@@ -651,9 +645,9 @@ const PaymentDashboard = () => {
                   <div className="space-y-3">
                     {inrPayments.map((p) => (
                       <div key={p._id} className={`border rounded-lg p-4 cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-green-50' :
-                          p.status === 'failed' ? 'border-red-200 bg-red-50' :
-                            p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
-                              'border-yellow-200 bg-yellow-50'
+                        p.status === 'failed' ? 'border-red-200 bg-red-50' :
+                          p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
+                            'border-yellow-200 bg-yellow-50'
                         } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
@@ -661,9 +655,9 @@ const PaymentDashboard = () => {
                               {p.appointmentId?.propertyName || 'Property Payment'}
                               {p.paymentType && (
                                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                                    p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                                      p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                                        'bg-gray-100 text-gray-700'
+                                  p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                                    p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                                      'bg-gray-100 text-gray-700'
                                   }`}>
                                   {p.paymentType === 'monthly_rent' ? 'Rent' :
                                     p.paymentType === 'advance' ? 'Advance' :
@@ -681,8 +675,8 @@ const PaymentDashboard = () => {
                               )}
                               {p.escrowStatus && (
                                 <span className={`px-2 py-0.5 rounded-full ${p.escrowStatus === 'released' ? 'bg-green-100 text-green-700' :
-                                    p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
-                                      'bg-gray-100 text-gray-700'
+                                  p.escrowStatus === 'held' ? 'bg-orange-100 text-orange-700' :
+                                    'bg-gray-100 text-gray-700'
                                   }`}>
                                   Escrow: {p.escrowStatus}
                                 </span>
@@ -834,9 +828,9 @@ const PaymentDashboard = () => {
                     <div className="font-semibold text-gray-800">
                       {selectedPayment.paymentType ? (
                         <span className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                            selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                              selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-gray-100 text-gray-700'
+                          selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                            selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                              'bg-gray-100 text-gray-700'
                           }`}>
                           {selectedPayment.paymentType === 'monthly_rent' ? 'Monthly Rent' :
                             selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
@@ -864,16 +858,16 @@ const PaymentDashboard = () => {
                   )}
                   {selectedPayment.escrowStatus && (
                     <div className={`rounded-lg p-4 ${selectedPayment.escrowStatus === 'released' ? 'bg-green-50' :
-                        selectedPayment.escrowStatus === 'held' ? 'bg-orange-50' :
-                          'bg-gray-50'
+                      selectedPayment.escrowStatus === 'held' ? 'bg-orange-50' :
+                        'bg-gray-50'
                       }`}>
                       <div className={`text-sm mb-1 ${selectedPayment.escrowStatus === 'released' ? 'text-green-600' :
-                          selectedPayment.escrowStatus === 'held' ? 'text-orange-600' :
-                            'text-gray-600'
+                        selectedPayment.escrowStatus === 'held' ? 'text-orange-600' :
+                          'text-gray-600'
                         }`}>Escrow Status</div>
                       <div className={`font-semibold ${selectedPayment.escrowStatus === 'released' ? 'text-green-800' :
-                          selectedPayment.escrowStatus === 'held' ? 'text-orange-800' :
-                            'text-gray-800'
+                        selectedPayment.escrowStatus === 'held' ? 'text-orange-800' :
+                          'text-gray-800'
                         }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
                       {selectedPayment.escrowReleasedAt && (
                         <div className="text-xs text-gray-500 mt-1">
