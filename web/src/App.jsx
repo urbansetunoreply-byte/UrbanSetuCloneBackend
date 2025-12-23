@@ -357,7 +357,8 @@ function AppRoutes({ bootstrapped }) {
     }
   }, [location.search]);
 
-  // Do not show header on /appointments admin route
+  // Do not show header on /appointments admin route or Year in Review pages
+  const isYearPath = location.pathname.includes('/year/');
   const hideHeaderRoutes = ["/appointments"];
 
   // Persistent session check on app load
@@ -670,7 +671,7 @@ function AppRoutes({ bootstrapped }) {
     <>
       <NetworkStatus />
       <CookieConsent />
-      {!hideHeaderRoutes.includes(location.pathname) && isHeaderVisible && (
+      {!hideHeaderRoutes.includes(location.pathname) && !location.pathname.includes('/year/') && isHeaderVisible && (
         currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin')
           ? <AdminHeader />
           : <Header />

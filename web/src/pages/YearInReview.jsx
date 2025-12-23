@@ -53,6 +53,14 @@ const YearInReview = ({ isAdmin = false }) => {
         fetchData();
     }, [year, isAdmin]);
 
+    useEffect(() => {
+        // Disable scroll when in cinematic view
+        document.body.style.overflow = 'hidden';
+        return () => {
+            document.body.style.overflow = 'auto';
+        };
+    }, []);
+
     const slideContent = isAdmin ? {
         intro: {
             title: `Admin System Review ${year}`,
@@ -317,9 +325,9 @@ const YearInReview = ({ isAdmin = false }) => {
             </div>
 
             {/* Navigation Areas */}
-            <div data-html2canvas-ignore="true" className="absolute inset-0 z-40 flex">
-                <div className="w-[30%] h-full cursor-left-arrow" onClick={prevSlide} />
-                <div className="w-[70%] h-full cursor-right-arrow" onClick={nextSlide} />
+            <div data-html2canvas-ignore="true" className="absolute inset-0 z-40 flex pointer-events-none">
+                <div className="w-[30%] h-full cursor-left-arrow pointer-events-auto" onClick={prevSlide} />
+                <div className="w-[70%] h-full cursor-right-arrow pointer-events-auto" onClick={nextSlide} />
             </div>
 
             {/* Branding Overlay - Premium Style */}
@@ -328,14 +336,14 @@ const YearInReview = ({ isAdmin = false }) => {
             </div>
 
             {/* Header UI */}
-            <div data-html2canvas-ignore="true" className="absolute top-8 right-6 left-6 z-50 flex justify-between items-center">
+            <div data-html2canvas-ignore="true" className="absolute top-8 right-6 left-6 z-50 flex justify-between items-center pointer-events-none">
                 <div className="flex items-center gap-3">
                     <div className="w-10 h-10 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl flex items-center justify-center">
                         <span className="font-black text-xs text-white">US</span>
                     </div>
                     <span className="font-black tracking-[0.2em] text-xs uppercase opacity-70">UrbanSetu</span>
                 </div>
-                <div className="flex gap-2">
+                <div className="flex gap-2 pointer-events-auto">
                     <button
                         onClick={downloadFlashback}
                         disabled={isDownloading}
@@ -353,7 +361,7 @@ const YearInReview = ({ isAdmin = false }) => {
             </div>
 
             {/* Main Slide Content */}
-            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative z-30">
+            <div className="flex-1 flex flex-col items-center justify-center p-8 text-center relative z-50 pointer-events-none">
                 <AnimatePresence mode="wait">
                     <motion.div
                         key={currentData.id}
@@ -361,7 +369,7 @@ const YearInReview = ({ isAdmin = false }) => {
                         animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
                         exit={{ opacity: 0, y: -40, scale: 1.1, filter: "blur(15px)" }}
                         transition={{ duration: 0.9, ease: [0.22, 1, 0.36, 1] }}
-                        className="max-w-3xl w-full"
+                        className="max-w-3xl w-full pointer-events-auto"
                     >
                         <motion.div
                             animate={{ y: [0, -15, 0] }}
