@@ -187,13 +187,6 @@ const YearInReview = ({ isAdmin = false }) => {
             icon: <FaHandshake className="text-8xl text-emerald-400 mb-6" />,
             color: "from-emerald-950 via-[#001a0a] to-emerald-950",
         },
-        finance: {
-            title: "Commitment to City Life",
-            content: `You securely processed ₹${(data?.stats?.totalPaid || 0).toLocaleString()} in platform payments.`,
-            subtitle: "Investing in your lifestyle and future home.",
-            icon: <FaShieldAlt className="text-8xl text-indigo-400 mb-6" />,
-            color: "from-indigo-950 via-[#050a1a] to-indigo-950",
-        },
         coins: {
             title: "SetuCoins Milestone",
             content: `You stacked up ${data?.stats?.coins || 0} SetuCoins!`,

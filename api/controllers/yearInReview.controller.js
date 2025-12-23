@@ -228,22 +228,10 @@ export const getUserYearInReview = async (req, res, next) => {
         ]);
         const coinsEarned = coinsAgg.length > 0 ? coinsAgg[0].total : 0;
 
-        const paymentsAgg = await Payment.aggregate([
-            {
-                $match: {
-                    userId: userObjectId,
-                    status: 'completed',
-                    createdAt: { $gte: startDate, $lte: endDate }
-                }
-            },
-            { $group: { _id: null, total: { $sum: "$amount" } } }
-        ]);
-        const totalPaid = paymentsAgg.length > 0 ? paymentsAgg[0].total : 0;
-
         const totalInteractions = viewsCount + bookingsCount + wishlistCount + watchlistCount +
             reviewsCount + rentalsCount + favoriteCount + serviceCount +
             moversCount + forumPostsCount + calculationsCount + referralsCount +
-            loansCount + rentalRatingsCount + (coinsEarned > 0 ? 1 : 0) + (totalPaid > 0 ? 1 : 0);
+            loansCount + rentalRatingsCount + (coinsEarned > 0 ? 1 : 0);
 
         const stats = {
             views: viewsCount,
@@ -260,7 +248,6 @@ export const getUserYearInReview = async (req, res, next) => {
             forumPosts: forumPostsCount,
             calculations: calculationsCount,
             referrals: referralsCount,
-            totalPaid,
             loans: loansCount,
             rentalRatings: rentalRatingsCount,
             peakMonth,
