@@ -261,10 +261,10 @@ export default function Settings() {
       if (res.ok) {
         setAdmins(data);
       } else {
-        toast.error(data.message || 'Failed to fetch admins');
+        toast.error(data.message || t('messages.admin_fetch_error'));
       }
     } catch (error) {
-      toast.error('Error fetching admins');
+      toast.error(t('messages.admin_fetch_error'));
     } finally {
       setLoadingAdmins(false);
     }
@@ -315,7 +315,7 @@ export default function Settings() {
       setDeletePasswordAttempts(attempts);
       if (attempts >= 3) {
         setShowPasswordModal(false);
-        toast.error("For security reasons, you've been signed out automatically.");
+        toast.error(t('messages.auto_signout'));
         dispatch(signoutUserStart());
         const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
         const signoutData = await signoutRes.json();
@@ -398,7 +398,7 @@ export default function Settings() {
       if (!res.ok) { setDeleteError(data.message || 'Account deletion failed'); setDeleteDeleting(false); return; }
       dispatch(deleteUserSuccess(data));
       setShowPasswordModal(false);
-      toast.success("Account deleted successfully. Thank you for being with us — we hope to serve you again in the future!");
+      toast.success(t('messages.account_deleted'));
       navigate('/');
     } catch (_) {
       setDeleteOtpError('Verification failed');
@@ -409,7 +409,7 @@ export default function Settings() {
 
   const handleTransferAndDelete = async () => {
     if (!selectedAdmin) {
-      toast.error('Please select an admin to transfer default admin rights to');
+      toast.error(t('messages.select_admin_transfer'));
       return;
     }
     setShowTransferPasswordModal(true);
@@ -529,7 +529,7 @@ export default function Settings() {
       dispatch(deleteUserSuccess(deleteData));
       setShowAdminModal(false);
       setShowTransferPasswordModal(false);
-      toast.success('Admin rights transferred and account deleted successfully!');
+      toast.success(t('messages.admin_transfer_delete_success'));
       navigate('/');
     } catch (_) {
       setTransferOtpError('Verification failed');
@@ -657,7 +657,7 @@ export default function Settings() {
         setTransferError(data.message || 'Failed to transfer rights.');
         return;
       }
-      toast.success(data.message || 'Admin rights transferred successfully!');
+      toast.success(data.message || t('messages.admin_transfer_success'));
       // Clear modal state and sign out to refresh role flags
       setShowTransferModal(false);
       setSelectedTransferAdmin("");
@@ -736,14 +736,14 @@ export default function Settings() {
     scrollPositionRef.current = window.scrollY;
     setEmailNotifications(value);
     localStorage.setItem('emailNotifications', value.toString());
-    showToast('Email notifications preference saved');
+    showToast(t('messages.email_pref_saved'));
   };
 
   const handleInAppNotificationsChange = (value) => {
     scrollPositionRef.current = window.scrollY;
     setInAppNotifications(value);
     localStorage.setItem('inAppNotifications', value.toString());
-    showToast('In-app notifications preference saved');
+    showToast(t('messages.in_app_pref_saved'));
   };
 
   const handlePushNotificationsChange = async (value) => {
@@ -751,20 +751,20 @@ export default function Settings() {
     if (value && 'Notification' in window) {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') {
-        showToast('Push notifications permission denied', 'error');
+        showToast(t('messages.push_denied'), 'error');
         return;
       }
     }
     setPushNotifications(value);
     localStorage.setItem('pushNotifications', value.toString());
-    showToast('Push notifications preference saved');
+    showToast(t('messages.push_pref_saved'));
   };
 
   const handleNotificationSoundChange = (value) => {
     scrollPositionRef.current = window.scrollY;
     setNotificationSound(value);
     localStorage.setItem('notificationSound', value);
-    showToast('Notification sound preference saved');
+    showToast(t('messages.sound_pref_saved'));
   };
 
   const handleProfileVisibilityChange = async (value) => {
@@ -788,7 +788,7 @@ export default function Settings() {
       dispatch(updateUserSuccess(data.updatedUser));
       setProfileVisibility(value);
       localStorage.setItem('profileVisibility', value);
-      showToast('Profile visibility updated');
+      showToast(t('messages.profile_vis_updated'));
     } catch (error) {
       dispatch(updateUserFailure(error.message));
     } finally {
@@ -802,7 +802,7 @@ export default function Settings() {
     localStorage.setItem('showEmail', value.toString());
     // Dispatch custom event to notify Profile page
     window.dispatchEvent(new Event('settingsUpdated'));
-    showToast('Email visibility updated');
+    showToast(t('messages.email_vis_updated'));
   };
 
   const handleShowPhoneChange = (value) => {
@@ -811,14 +811,14 @@ export default function Settings() {
     localStorage.setItem('showPhone', value.toString());
     // Dispatch custom event to notify Profile page
     window.dispatchEvent(new Event('settingsUpdated'));
-    showToast('Phone visibility updated');
+    showToast(t('messages.phone_vis_updated'));
   };
 
   const handleDataSharingChange = (value) => {
     scrollPositionRef.current = window.scrollY;
     setDataSharing(value);
     localStorage.setItem('dataSharing', value.toString());
-    showToast('Data sharing preference saved');
+    showToast(t('messages.data_sharing_saved'));
   };
 
   const handleLanguageChange = (value) => {
@@ -826,21 +826,21 @@ export default function Settings() {
     setLanguage(value);
     i18n.changeLanguage(value);
     localStorage.setItem('language', value);
-    showToast(t('settings.language') + ' saved');
+    showToast(t('messages.language_saved'));
   };
 
   const handleTimezoneChange = (value) => {
     scrollPositionRef.current = window.scrollY;
     setTimezone(value);
     localStorage.setItem('timezone', value);
-    showToast('Timezone updated');
+    showToast(t('messages.timezone_updated'));
   };
 
   const handleDateFormatChange = (value) => {
     scrollPositionRef.current = window.scrollY;
     setDateFormat(value);
     localStorage.setItem('dateFormat', value);
-    showToast('Date format updated');
+    showToast(t('messages.date_format_updated'));
   };
 
   const handleThemeChange = (value) => {
@@ -848,7 +848,7 @@ export default function Settings() {
     setTheme(value);
     localStorage.setItem('theme', value);
     document.documentElement.classList.toggle('dark', value === 'dark');
-    showToast('Theme updated');
+    showToast(t('messages.theme_updated'));
   };
 
   const handleFontSizeChange = (value) => {
@@ -856,7 +856,7 @@ export default function Settings() {
     setFontSize(value);
     localStorage.setItem('fontSize', value);
     document.documentElement.style.fontSize = value === 'small' ? '14px' : value === 'large' ? '18px' : '16px';
-    showToast('Font size updated');
+    showToast(t('messages.font_size_updated'));
   };
 
   const handleExportDataClick = () => {
@@ -917,12 +917,12 @@ export default function Settings() {
       });
       const data = await res.json();
       if (!res.ok) {
-        toast.error(data.message || 'Failed to export data');
+        toast.error(data.message || t('messages.export_failed'));
         return;
       }
-      toast.success('Your data export is being prepared. You will receive an email shortly with a download link.');
+      toast.success(t('messages.export_success'));
     } catch (error) {
-      toast.error('Failed to export data');
+      toast.error(t('messages.export_failed'));
     } finally {
       setExportingData(false);
     }
