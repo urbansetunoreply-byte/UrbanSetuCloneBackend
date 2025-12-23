@@ -7,18 +7,18 @@ import { sendYearInReviewEmail } from './emailService.js';
  * Runs once a day to check if it's the right time of year and sends emails in batches.
  */
 export const initializeYearInReviewScheduler = () => {
-    // Run daily at 10:00 AM
-    cron.schedule('0 10 * 12 *', async () => {
+    // Run hourly in December
+    cron.schedule('0 * * 12 *', async () => {
         const now = new Date();
         const day = now.getDate();
         const currentYear = now.getFullYear();
 
         // Only run between Dec 20 and Dec 31
         if (day >= 20 && day <= 31) {
-            console.log(`[YearInReview] Starting daily email batch for ${currentYear}...`);
+            console.log(`[YearInReview] Starting hourly email batch for ${currentYear}...`);
             await sendYearInReviewBatch(currentYear);
         } else {
-            console.log(`[YearInReview] Not time yet. Current date: ${now.toDateString()}`);
+            // Optional: Log once a day instead of every hour to reduce noise, or remove else block
         }
     });
 };
@@ -26,7 +26,7 @@ export const initializeYearInReviewScheduler = () => {
 /**
  * Sends Year in Review emails to a batch of users who haven't received it yet.
  */
-export const sendYearInReviewBatch = async (year, limit = 50) => {
+export const sendYearInReviewBatch = async (year, limit = 100) => {
     try {
         // Find users who haven't received the review for the specified year
         const users = await User.find({
