@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { FaShieldAlt, FaCheckCircle, FaTimesCircle, FaClock, FaSearch, FaSpinner, FaFileAlt, FaUser, FaHome, FaDownload } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import VerificationStatus from '../components/verification/VerificationStatus';
+import AdminPropertyVerificationSkeleton from '../components/skeletons/AdminPropertyVerificationSkeleton';
 
 // Verification Status Modal Component with scroll prevention
 const VerificationStatusModal = ({ verification, listing, currentUser, onUpdate, onClose, STATUS_COLORS, STATUS_LABELS }) => {
@@ -161,14 +162,7 @@ export default function AdminPropertyVerification() {
   });
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading verifications...</p>
-        </div>
-      </div>
-    );
+    return <AdminPropertyVerificationSkeleton />;
   }
 
   return (
@@ -191,8 +185,8 @@ export default function AdminPropertyVerification() {
             <button
               onClick={() => setActiveTab('rent')}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'rent'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
             >
               <FaHome className={activeTab === 'rent' ? 'text-blue-600' : 'text-gray-400'} />
@@ -204,8 +198,8 @@ export default function AdminPropertyVerification() {
             <button
               onClick={() => setActiveTab('sale')}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'sale'
-                  ? 'border-b-2 border-green-600 text-green-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-b-2 border-green-600 text-green-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
             >
               <FaCheckCircle className={activeTab === 'sale' ? 'text-green-600' : 'text-gray-400'} />
