@@ -4,10 +4,11 @@ import Listing from '../models/listing.model.js';
 import { sendTrendingUpdateEmail } from './emailService.js';
 
 export const initializeTrendingEmailScheduler = () => {
-    // Schedule: Every Friday at 5:00 PM (17:00)
+    // Schedule: Bi-weekly on the 1st and 15th of the month at 5:00 PM (17:00)
+    // Best practice: Large platforms (Zillow, Airbnb) typically use bi-weekly or monthly digests to avoid user fatigue while keeping engagement high.
     // Cron syntax: Minute Hour DayOfMonth Month DayOfWeek
-    cron.schedule('0 17 * * 5', async () => {
-        console.log('🚀 Starting Weekly Trending Email Job...');
+    cron.schedule('0 17 1,15 * *', async () => {
+        console.log('🚀 Starting Bi-Weekly Trending Email Job...');
 
         try {
             // 1. Fetch Global Data (Fallback/Default)
@@ -85,14 +86,14 @@ export const initializeTrendingEmailScheduler = () => {
                 }
             }
 
-            console.log(`✅ Weekly Trending Email Job Completed. Processed: ${processedCount}, Sent: ${successCount}`);
+            console.log(`✅ Bi-Weekly Trending Email Job Completed. Processed: ${processedCount}, Sent: ${successCount}`);
 
         } catch (error) {
-            console.error('❌ Error in weekly trending email scheduler:', error);
+            console.error('❌ Error in bi-weekly trending email scheduler:', error);
         }
     });
 
-    console.log('✅ Weekly Trending Email Scheduler initialized (Friday 17:00)');
+    console.log('✅ Bi-Weekly Trending Email Scheduler initialized (1st & 15th at 17:00)');
 };
 
 // Helper: Send with Retry (Max 2 retries -> 1 initial + 2 retries = 3 attempts)
