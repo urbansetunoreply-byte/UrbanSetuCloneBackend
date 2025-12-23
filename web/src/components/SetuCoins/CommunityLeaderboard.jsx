@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { FaCoins, FaTrophy, FaFire, FaCrown, FaMedal, FaStar, FaInfoCircle } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
+import LeaderboardSkeleton from '../skeletons/LeaderboardSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -53,12 +54,7 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
     };
 
     if (loading) {
-        return (
-            <div className="flex flex-col items-center justify-center py-20 bg-white rounded-3xl border border-slate-100 shadow-sm">
-                <div className="w-12 h-12 border-4 border-indigo-600 border-t-transparent rounded-full animate-spin mb-4"></div>
-                <p className="text-slate-500 font-medium">Fetching champions...</p>
-            </div>
-        );
+        return <LeaderboardSkeleton />;
     }
 
     return (

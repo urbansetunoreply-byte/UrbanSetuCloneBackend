@@ -12,6 +12,7 @@ import SetuCoinInfoModal from '../components/SetuCoins/SetuCoinInfoModal';
 import CommunityLeaderboard from '../components/SetuCoins/CommunityLeaderboard';
 import SocialSharePanel from '../components/SocialSharePanel';
 import { getCoinValue, COIN_CONFIG } from '../utils/coinUtils';
+import RewardsSkeleton from '../components/skeletons/RewardsSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -161,6 +162,10 @@ export default function Rewards() {
         { title: 'Merchant Vouchers', rate: `500 Coins = ₹100`, icon: <FaShoppingBag className="text-pink-500" />, desc: 'Redeem for Amazon, Flipkart, or Swiggy vouchers.', link: '#' },
         { title: 'Utility Bill Payments', rate: `1000 Coins = ₹200`, icon: <FaReceipt className="text-green-500" />, desc: 'Pay electricity or water bills using SetuCoins.', link: '#' },
     ];
+
+    if (coinData.loading) {
+        return <RewardsSkeleton />;
+    }
 
     return (
         <div className="min-h-screen bg-slate-50 py-8 px-4 md:px-8">
