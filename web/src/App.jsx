@@ -129,6 +129,8 @@ const PayMonthlyRent = lazy(() => import('./pages/PayMonthlyRent'));
 const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const AdminCoinStats = lazy(() => import('./pages/AdminCoinStats'));
 const Rewards = lazy(() => import('./pages/Rewards'));
+const YearInReview = lazy(() => import('./pages/YearInReview'));
+
 
 // Loading component
 const LoadingSpinner = () => (
@@ -201,7 +203,7 @@ function normalizeRoute(path, role) {
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
   // List of shared base routes (add more as needed)
-  const sharedBases = ["about", "search", "terms", "privacy", "cookie-policy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact", "ai", "investment-tools", "settings"];
+  const sharedBases = ["about", "search", "terms", "privacy", "cookie-policy", "listing", "home", "reviews", "wishlist", "profile", "appointment", "explore", "contact", "ai", "investment-tools", "settings", "year"];
 
   // Helper to extract base and subpath
   function extractBaseAndRest(p) {
@@ -749,6 +751,8 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/community" element={<Community />} />
               <Route path="/user/rewards" element={<Rewards />} />
               <Route path="/user/leaderboard" element={<Leaderboard />} />
+              <Route path="/user/year/:year" element={<YearInReview />} />
+
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/ai" element={<Navigate to="/user/ai" />} />
@@ -798,6 +802,8 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/rental-contracts" element={<AdminRentalContracts />} />
               <Route path="/admin/rental-loans" element={<AdminRentalLoans />} />
               <Route path="/admin/disputes" element={<AdminDisputeResolution />} />
+              <Route path="/admin/coin-stats" element={<AdminCoinStats />} />
+              <Route path="/admin/year/:year" element={<YearInReview isAdmin={true} />} />
               <Route path="/admin/settings" element={<Settings />} />
               <Route path="/admin/view/:documentId" element={<ViewDocument />} />
               <Route path="/admin/view/preview" element={<ViewDocument />} />

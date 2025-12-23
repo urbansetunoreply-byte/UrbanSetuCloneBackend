@@ -244,6 +244,10 @@ const userSchema = new mongoose.Schema({
       max: 31,
       default: 1
     }
+  },
+  yearInReviewSent: {
+    type: [Number], // Array of years for which review has been sent
+    default: []
   }
 }, { timestamps: true });
 

@@ -55,6 +55,7 @@ import { sendCallMissedEmail, sendCallInitiatedEmail } from "./utils/emailServic
 import rentalRouter from "./routes/rental.route.js";
 import coinRouter from "./routes/coin.route.js";
 import turnRouter from "./routes/turn.route.js"; // Import TURN route
+import yearInReviewRouter from "./routes/yearInReview.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
 try {
@@ -77,6 +78,8 @@ import { startReferralReminderScheduler } from "./schedulers/referralReminder.js
 import { indexAllWebsiteData } from "./services/dataSyncService.js";
 import { setupAllHooks } from "./middleware/dataSyncHooks.js";
 import { startScheduledSync } from "./services/scheduledSyncService.js";
+import { initializeYearInReviewScheduler } from "./utils/yearInReviewScheduler.js";
+
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
 import helmet from 'helmet';
@@ -164,6 +167,7 @@ connectToMongoDB().then(() => {
   initializeReEngagementScheduler();
   initializeTrendingEmailScheduler();
   startReferralReminderScheduler();
+  initializeYearInReviewScheduler();
 });
 
 const __dirname = path.resolve();
@@ -1200,6 +1204,7 @@ app.use("/api/rental", rentalRouter);
 app.use("/api/report-message", reportMessageRouter);
 app.use("/api/forum", forumRouter);
 app.use("/api/coins", coinRouter);
+app.use("/api/year-in-review", yearInReviewRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes

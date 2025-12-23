@@ -14345,3 +14345,63 @@ export const sendReferredWelcomeEmail = async (email, username, referrerName, am
     return createErrorResponse(error, 'referred_welcome');
   }
 };
+
+// Send Year in Review notification email
+export const sendYearInReviewEmail = async (email, username, year) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const flashbackUrl = `${clientBaseUrl}/user/year/${year}`;
+
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `Your UrbanSetu ${year} Flashback is here! 🎬`,
+    html: `
+      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff;">
+        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 40px 30px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);">
+          <div style="margin-bottom: 30px;">
+            <h1 style="color: #3b82f6; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.025em;">UrbanSetu</h1>
+            <div style="height: 4px; width: 40px; background: #3b82f6; margin: 12px auto; border-radius: 2px;"></div>
+          </div>
+          
+          <h2 style="font-size: 28px; line-height: 1.2; margin-bottom: 20px; font-weight: 700;">Hi ${username}! <br>Ready to relive your ${year}?</h2>
+          
+          <p style="color: #94a3b8; font-size: 18px; line-height: 1.6; margin-bottom: 35px;">
+            What a journey it's been! From finding hidden gems to building your property wishlist, we've captured your best moments on UrbanSetu this year.
+          </p>
+          
+          <div style="background: rgba(59, 130, 246, 0.1); padding: 30px; border-radius: 16px; margin-bottom: 35px; border: 1px dashed rgba(59, 130, 246, 0.3);">
+            <p style="margin: 0; font-size: 16px; color: #60a5fa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">Your Personalized Recap</p>
+            <p style="margin: 10px 0 0 0; font-size: 14px; color: #94a3b8;">Discover your property persona and see your activity stats in a stunning animated experience.</p>
+          </div>
+          
+          <div style="margin-top: 20px;">
+            <a href="${flashbackUrl}" style="display: inline-block; background: #3b82f6; color: #ffffff; text-decoration: none; padding: 18px 40px; border-radius: 50px; font-weight: 700; font-size: 18px; transition: all 0.3s ease; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);">
+              Watch Your Flashback 🎬
+            </a>
+          </div>
+          
+          <p style="color: #64748b; margin-top: 40px; font-size: 14px;">
+            Can't click the button? Copy this link: <br>
+            <a href="${flashbackUrl}" style="color: #3b82f6; text-decoration: none;">${flashbackUrl}</a>
+          </p>
+          
+          <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+            <p style="color: #475569; margin: 0; font-size: 12px; font-weight: 500;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved. <br>
+              Making property journeys simpler and more beautiful.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'year_in_review') :
+      createErrorResponse(new Error(result.error), 'year_in_review');
+  } catch (error) {
+    return createErrorResponse(error, 'year_in_review');
+  }
+};
