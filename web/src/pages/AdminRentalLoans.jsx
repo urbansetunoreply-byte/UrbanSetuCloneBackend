@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { FaCreditCard, FaSpinner, FaSearch, FaTimes, FaCheckCircle, FaClock, FaTimesCircle, FaHome, FaUser, FaMoneyBillWave, FaCheck, FaBan, FaDownload, FaFile, FaSync } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import LoanStatusDisplay from '../components/loans/LoanStatusDisplay';
+import AdminRentalLoansSkeleton from '../components/skeletons/AdminRentalLoansSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -311,14 +312,7 @@ export default function AdminRentalLoans() {
   }, [loans]);
 
   if (loading && loans.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading loans...</p>
-        </div>
-      </div>
-    );
+    return <AdminRentalLoansSkeleton />;
   }
 
   return (

@@ -10,6 +10,7 @@ import {
 } from 'react-icons/fa';
 
 import { usePageTitle } from '../hooks/usePageTitle';
+import DeviceManagementSkeleton from '../components/skeletons/DeviceManagementSkeleton';
 
 
 
@@ -297,14 +298,7 @@ const DeviceManagement = () => {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-white flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-16 w-16 border-t-4 border-b-4 border-blue-600 mx-auto mb-4"></div>
-          <p className="text-gray-600 font-medium">Loading session data...</p>
-        </div>
-      </div>
-    );
+    return <DeviceManagementSkeleton />;
   }
 
   return (

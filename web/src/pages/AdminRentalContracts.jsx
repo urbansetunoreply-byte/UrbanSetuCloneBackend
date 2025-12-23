@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLock, FaCheckCircle, FaTimesCircle, FaSpinner, FaSearch, FaBan, FaCheck, FaUser, FaHome, FaGavel, FaWallet, FaCreditCard, FaExclamationTriangle, FaClock, FaTimes } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
+import AdminRentalContractsSkeleton from '../components/skeletons/AdminRentalContractsSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -260,14 +261,7 @@ export default function AdminRentalContracts() {
   }, [contracts]);
 
   if (loading && contracts.length === 0) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading contracts...</p>
-        </div>
-      </div>
-    );
+    return <AdminRentalContractsSkeleton />;
   }
 
   return (

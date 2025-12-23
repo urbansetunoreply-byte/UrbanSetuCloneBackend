@@ -8,6 +8,7 @@ import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../red
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { isMobileDevice } from '../utils/mobileUtils';
+import AdminManagementSkeleton from '../components/skeletons/AdminManagementSkeleton';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminManagement() {
@@ -1055,6 +1056,10 @@ export default function AdminManagement() {
         </form>
       </div>
     );
+  }
+
+  if (loading) {
+    return <AdminManagementSkeleton />;
   }
 
   return (

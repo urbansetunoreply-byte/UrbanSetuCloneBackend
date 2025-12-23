@@ -6,6 +6,7 @@ import { FaFileContract, FaDownload, FaEye, FaCalendarAlt, FaMoneyBillWave, FaLo
 import { usePageTitle } from '../hooks/usePageTitle';
 import ContractPreview from '../components/rental/ContractPreview';
 import DigitalSignature from '../components/rental/DigitalSignature';
+import UserRentalContractsSkeleton from '../components/skeletons/UserRentalContractsSkeleton';
 import axios from 'axios';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -305,14 +306,7 @@ export default function RentalContracts() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading contracts...</p>
-        </div>
-      </div>
-    );
+    return <UserRentalContractsSkeleton />;
   }
 
   return (

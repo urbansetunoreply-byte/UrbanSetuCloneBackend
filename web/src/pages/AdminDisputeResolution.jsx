@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { FaExclamationTriangle, FaSearch, FaFilter, FaTimes, FaFileAlt, FaComments, FaCheckCircle, FaClock, FaGavel, FaUser, FaPaperclip, FaImage, FaVideo, FaFile, FaDownload, FaEdit, FaBan, FaEye, FaSync } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import DisputeDetail from '../components/dispute/DisputeDetail';
+import AdminDisputesSkeleton from '../components/skeletons/AdminDisputesSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -230,14 +231,7 @@ export default function AdminDisputeResolution() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaClock className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading disputes...</p>
-        </div>
-      </div>
-    );
+    return <AdminDisputesSkeleton />;
   }
 
   return (
@@ -267,8 +261,8 @@ export default function AdminDisputeResolution() {
             <button
               onClick={() => setActiveTab('rental')}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'rental'
-                  ? 'border-b-2 border-blue-600 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-b-2 border-blue-600 text-blue-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
             >
               <FaFileAlt className={activeTab === 'rental' ? 'text-blue-600' : 'text-gray-400'} />
@@ -280,8 +274,8 @@ export default function AdminDisputeResolution() {
             <button
               onClick={() => setActiveTab('sales')}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'sales'
-                  ? 'border-b-2 border-green-600 text-green-600'
-                  : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-b-2 border-green-600 text-green-600'
+                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
                 }`}
             >
               <FaCheckCircle className={activeTab === 'sales' ? 'text-green-600' : 'text-gray-400'} />

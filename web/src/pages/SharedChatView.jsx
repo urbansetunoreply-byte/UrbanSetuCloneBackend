@@ -4,6 +4,7 @@ import { FaRobot, FaUser, FaClock, FaCalendar, FaExclamationTriangle, FaArrowRig
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import GeminiAIWrapper from "../components/GeminiAIWrapper";
+import SharedChatViewSkeleton from '../components/skeletons/SharedChatViewSkeleton';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
 
 export default function SharedChatView() {
@@ -94,12 +95,7 @@ export default function SharedChatView() {
     };
 
     if (loading) {
-        return (
-            <div className="min-h-screen bg-gray-50 flex flex-col items-center justify-center gap-4">
-                <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                <p className="text-gray-600 font-medium">Loading conversation...</p>
-            </div>
-        );
+        return <SharedChatViewSkeleton />;
     }
 
     if (error) {

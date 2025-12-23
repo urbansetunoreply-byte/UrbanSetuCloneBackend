@@ -6,6 +6,7 @@ import { toast } from 'react-toastify';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { resetAndroidDownloadCache } from '../utils/androidDownload';
+import AdminDeploymentManagementSkeleton from '../components/skeletons/AdminDeploymentManagementSkeleton';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminDeploymentManagement() {
@@ -286,14 +287,7 @@ export default function AdminDeploymentManagement() {
   }
 
   if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600 font-medium">Loading deployment dashboard...</p>
-        </div>
-      </div>
-    );
+    return <AdminDeploymentManagementSkeleton />;
   }
 
   return (

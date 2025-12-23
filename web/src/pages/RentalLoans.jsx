@@ -6,6 +6,7 @@ import { FaCreditCard, FaFileUpload, FaSpinner, FaSearch, FaTimes, FaCheckCircle
 import { usePageTitle } from '../hooks/usePageTitle';
 import LoanApplicationForm from '../components/loans/LoanApplicationForm';
 import LoanStatusDisplay from '../components/loans/LoanStatusDisplay';
+import UserRentalLoansSkeleton from '../components/skeletons/UserRentalLoansSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -197,14 +198,7 @@ export default function RentalLoans() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading loans...</p>
-        </div>
-      </div>
-    );
+    return <UserRentalLoansSkeleton />;
   }
 
   return (
