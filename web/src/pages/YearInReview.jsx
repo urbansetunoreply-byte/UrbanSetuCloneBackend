@@ -251,6 +251,40 @@ const YearInReview = ({ isAdmin = false }) => {
 
     const currentData = slides[currentSlide];
 
+    // Check if the year has actual activity
+    const hasData = isAdmin ? data?.hasActivity : (data?.stats?.totalInteractions > 0);
+
+    if (!loading && !hasData) {
+        return (
+            <div className={`fixed inset-0 bg-[#0f172a] text-white flex flex-col items-center justify-center p-10 text-center font-inter`}>
+                <motion.div
+                    initial={{ opacity: 0, scale: 0.9 }}
+                    animate={{ opacity: 1, scale: 1 }}
+                    className="max-w-md"
+                >
+                    <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 mx-auto border border-white/10">
+                        <FaMagic className="text-4xl text-indigo-400 opacity-50" />
+                    </div>
+                    <h1 className="text-4xl font-black mb-4 tracking-tighter">Quiet Year in {year}</h1>
+                    <p className="text-white/60 mb-10 leading-relaxed font-medium">
+                        {data?.isCurrentYear
+                            ? "Your journey for this year has just begun. Start exploring properties to build your flashback!"
+                            : `We couldn't find any memory for ${year}. It looks like you didn't interact with UrbanSetu much during this time.`}
+                    </p>
+                    <button
+                        onClick={() => navigate(isAdmin ? '/admin' : '/user')}
+                        className="bg-white text-gray-900 px-8 py-4 rounded-2xl font-black hover:scale-105 transition-all shadow-xl"
+                    >
+                        Back to Dashboard
+                    </button>
+                </motion.div>
+
+                {/* Subtle Branding */}
+                <div className="absolute bottom-10 opacity-10 font-black tracking-widest text-xs uppercase">UrbanSetu Flashback</div>
+            </div>
+        );
+    }
+
     return (
         <div ref={flashbackRef} className={`fixed inset-0 bg-gradient-to-br ${currentData.color} text-white flex flex-col overflow-hidden transition-all duration-1000 font-inter`}>
             {/* Dynamic Background Effects */}

@@ -27,20 +27,24 @@ const getPersonality = (stats) => {
 export const getUserYearInReview = async (req, res, next) => {
     try {
         const { year } = req.params;
-        const userId = req.user.id; // Assumes auth middleware populates this
+        const userId = req.user.id;
+        const currentYear = new Date().getFullYear();
+
+        if (parseInt(year) > currentYear) {
+            return res.status(400).json({ message: "The future hasn't been written yet! Check back at the end of the year." });
+        }
 
         // Date range for the year
         const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
         const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
 
         // 1. Property Views
-        // Note: viewerId in PropertyView is String, need to match userId string
         const viewsCount = await PropertyView.countDocuments({
             viewerId: userId.toString(),
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
-        // 2. Cities Explored & Top Property Type
+        // 2. Exploration & Top Type
         const explorationAgg = await PropertyView.aggregate([
             {
                 $match: {
@@ -92,7 +96,7 @@ export const getUserYearInReview = async (req, res, next) => {
         ]);
 
         const monthNames = ["January", "February", "March", "April", "May", "June", "July", "August", "September", "October", "November", "December"];
-        const peakMonth = monthlyActivity.length > 0 ? monthNames[monthlyActivity[0]._id - 1] : "the year";
+        const peakMonth = monthlyActivity.length > 0 ? monthNames[monthlyActivity[0]._id - 1] : null;
 
         // 4. Bookings & Interactions
         const bookingsCount = await Booking.countDocuments({
@@ -106,13 +110,11 @@ export const getUserYearInReview = async (req, res, next) => {
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
-        // 5. Community & Gamification
         const reviewsCount = await Review.countDocuments({
             user: userId,
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
-        // Sum coins earned
         const coinsAgg = await CoinTransaction.aggregate([
             {
                 $match: {
@@ -121,16 +123,12 @@ export const getUserYearInReview = async (req, res, next) => {
                     createdAt: { $gte: startDate, $lte: endDate }
                 }
             },
-            {
-                $group: {
-                    _id: null,
-                    total: { $sum: "$amount" }
-                }
-            }
+            { $group: { _id: null, total: { $sum: "$amount" } } }
         ]);
         const coinsEarned = coinsAgg.length > 0 ? coinsAgg[0].total : 0;
 
-        // 6. Calculate Personality
+        const totalInteractions = viewsCount + bookingsCount + wishlistCount + reviewsCount + (coinsEarned > 0 ? 1 : 0);
+
         const stats = {
             views: viewsCount,
             bookings: bookingsCount,
@@ -138,18 +136,19 @@ export const getUserYearInReview = async (req, res, next) => {
             reviews: reviewsCount,
             coins: coinsEarned,
             peakMonth,
-            topType: explorationAgg[0]?.topType[0]?._id || "Real Estate"
+            topType: explorationAgg[0]?.topType[0]?._id || null,
+            totalInteractions
         };
+
         const personality = getPersonality(stats);
 
-        const matchData = {
+        res.status(200).json({
             year,
             stats,
             topCities: explorationAgg[0]?.topCities.map(c => c._id).filter(Boolean),
-            personality
-        };
-
-        res.status(200).json(matchData);
+            personality,
+            isCurrentYear: parseInt(year) === currentYear
+        });
 
     } catch (error) {
         next(error);
@@ -159,16 +158,20 @@ export const getUserYearInReview = async (req, res, next) => {
 export const getAdminYearInReview = async (req, res, next) => {
     try {
         const { year } = req.params;
+        const currentYear = new Date().getFullYear();
+
+        if (parseInt(year) > currentYear) {
+            return res.status(400).json({ message: "System logs for the future are currently unavailable." });
+        }
+
         const startDate = new Date(`${year}-01-01T00:00:00.000Z`);
         const endDate = new Date(`${year}-12-31T23:59:59.999Z`);
 
-        // 1. Listings Verified
         const listingsCount = await Listing.countDocuments({
             isVerified: true,
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
-        // 2. Bookings Processed & Revenue
         const bookingsAgg = await Booking.aggregate([
             {
                 $match: {
@@ -188,20 +191,20 @@ export const getAdminYearInReview = async (req, res, next) => {
         const totalRevenue = bookingsAgg.length > 0 ? bookingsAgg[0].totalRevenue : 0;
         const totalBookings = bookingsAgg.length > 0 ? bookingsAgg[0].count : 0;
 
-        // 3. New Users
         const usersCount = await User.countDocuments({
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
-        // 4. Most Popular City (Platform Wide)
         const cityAgg = await Listing.aggregate([
-            { $match: { isVerified: true } },
+            { $match: { isVerified: true, createdAt: { $gte: startDate, $lte: endDate } } },
             { $group: { _id: "$city", count: { $sum: 1 } } },
             { $sort: { count: -1 } },
             { $limit: 1 }
         ]);
 
-        const topCity = cityAgg.length > 0 ? cityAgg[0]._id : "Multiple Cities";
+        const topCity = cityAgg.length > 0 ? cityAgg[0]._id : null;
+
+        const hasActivity = listingsCount > 0 || totalBookings > 0 || usersCount > 0;
 
         res.status(200).json({
             year,
@@ -211,7 +214,9 @@ export const getAdminYearInReview = async (req, res, next) => {
                 users: usersCount,
                 revenue: totalRevenue,
                 topCity
-            }
+            },
+            hasActivity,
+            isCurrentYear: parseInt(year) === currentYear
         });
     } catch (error) {
         next(error);
