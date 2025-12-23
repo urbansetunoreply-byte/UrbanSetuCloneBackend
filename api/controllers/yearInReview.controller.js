@@ -11,6 +11,14 @@ import ImageFavorite from "../models/imageFavorite.model.js";
 import Dispute from "../models/dispute.model.js";
 import PropertyVerification from "../models/propertyVerification.model.js";
 import PropertyWatchlist from "../models/propertyWatchlist.model.js";
+import ServiceRequest from "../models/serviceRequest.model.js";
+import MoversRequest from "../models/moversRequest.model.js";
+import ForumPost from "../models/forumPost.model.js";
+import CalculationHistory from "../models/calculationHistory.model.js";
+import Blog from "../models/blog.model.js";
+import Payment from "../models/payment.model.js";
+import RentalLoan from "../models/rentalLoan.model.js";
+import RentalRating from "../models/rentalRating.model.js";
 import cloudinary from 'cloudinary';
 
 // Configure Cloudinary for base64 uploads
@@ -172,6 +180,42 @@ export const getUserYearInReview = async (req, res, next) => {
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
+        const serviceCount = await ServiceRequest.countDocuments({
+            userId: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const moversCount = await MoversRequest.countDocuments({
+            userId: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const forumPostsCount = await ForumPost.countDocuments({
+            author: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const calculationsCount = await CalculationHistory.countDocuments({
+            userId: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const referralsCount = await CoinTransaction.countDocuments({
+            userId: userId,
+            source: 'referral',
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const loansCount = await RentalLoan.countDocuments({
+            userId: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const rentalRatingsCount = await RentalRating.countDocuments({
+            $or: [{ tenantId: userId }, { landlordId: userId }],
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
         const coinsAgg = await CoinTransaction.aggregate([
             {
                 $match: {
@@ -184,7 +228,22 @@ export const getUserYearInReview = async (req, res, next) => {
         ]);
         const coinsEarned = coinsAgg.length > 0 ? coinsAgg[0].total : 0;
 
-        const totalInteractions = viewsCount + bookingsCount + wishlistCount + watchlistCount + reviewsCount + rentalsCount + favoriteCount + (coinsEarned > 0 ? 1 : 0);
+        const paymentsAgg = await Payment.aggregate([
+            {
+                $match: {
+                    userId: userObjectId,
+                    status: 'completed',
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            { $group: { _id: null, total: { $sum: "$amount" } } }
+        ]);
+        const totalPaid = paymentsAgg.length > 0 ? paymentsAgg[0].total : 0;
+
+        const totalInteractions = viewsCount + bookingsCount + wishlistCount + watchlistCount +
+            reviewsCount + rentalsCount + favoriteCount + serviceCount +
+            moversCount + forumPostsCount + calculationsCount + referralsCount +
+            loansCount + rentalRatingsCount + (coinsEarned > 0 ? 1 : 0) + (totalPaid > 0 ? 1 : 0);
 
         const stats = {
             views: viewsCount,
@@ -196,6 +255,14 @@ export const getUserYearInReview = async (req, res, next) => {
             favorites: favoriteCount,
             reviews: reviewsCount,
             coins: coinsEarned,
+            serviceRequests: serviceCount,
+            moversRequests: moversCount,
+            forumPosts: forumPostsCount,
+            calculations: calculationsCount,
+            referrals: referralsCount,
+            totalPaid,
+            loans: loansCount,
+            rentalRatings: rentalRatingsCount,
             peakMonth,
             topType: explorationAgg[0]?.topType[0]?._id || null,
             totalInteractions
@@ -280,6 +347,29 @@ export const getAdminYearInReview = async (req, res, next) => {
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
+        const forumPostsTotal = await ForumPost.countDocuments({
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const blogPostsTotal = await Blog.countDocuments({
+            published: true,
+            publishedAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const serviceRequestsTotal = await ServiceRequest.countDocuments({
+            status: 'completed',
+            updatedAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const moversRequestsTotal = await MoversRequest.countDocuments({
+            status: 'completed',
+            updatedAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const calculationsTotal = await CalculationHistory.countDocuments({
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
         // 4. Most Popular City
         const cityAgg = await Listing.aggregate([
             { $match: { isVerified: true, createdAt: { $gte: startDate, $lte: endDate } } },
@@ -290,7 +380,21 @@ export const getAdminYearInReview = async (req, res, next) => {
 
         const topCity = cityAgg.length > 0 ? cityAgg[0]._id : null;
 
-        const hasActivity = verifications > 0 || totalBookings > 0 || usersCount > 0;
+        const referralsTotal = await CoinTransaction.countDocuments({
+            source: 'referral',
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const loansTotal = await RentalLoan.countDocuments({
+            status: 'approved',
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const rentalRatingsTotal = await RentalRating.countDocuments({
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const hasActivity = verifications > 0 || totalBookings > 0 || usersCount > 0 || blogPostsTotal > 0;
 
         res.status(200).json({
             year,
@@ -302,7 +406,15 @@ export const getAdminYearInReview = async (req, res, next) => {
                 revenue: totalRevenue,
                 topCity,
                 resolvedDisputes,
-                activeReports
+                activeReports,
+                blogs: blogPostsTotal,
+                forumPosts: forumPostsTotal,
+                serviceRequests: serviceRequestsTotal,
+                moversRequests: moversRequestsTotal,
+                calculations: calculationsTotal,
+                referrals: referralsTotal,
+                loans: loansTotal,
+                rentalRatings: rentalRatingsTotal
             },
             hasActivity,
             isCurrentYear: parseInt(year) === currentYear

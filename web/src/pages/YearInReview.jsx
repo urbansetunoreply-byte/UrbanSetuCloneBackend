@@ -6,7 +6,8 @@ import {
     FaHome, FaCity, FaHeart, FaStar, FaCoins, FaRocket, FaFlag,
     FaChevronRight, FaChevronLeft, FaShareAlt, FaChartLine, FaUsers,
     FaShieldAlt, FaDownload, FaCalendarAlt, FaBuilding, FaMagic,
-    FaFire, FaStamp, FaHandshake, FaTimes, FaCloud
+    FaFire, FaStamp, FaHandshake, FaTimes, FaCloud,
+    FaComments, FaTools, FaCalculator, FaPenNib, FaTruck
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import html2canvas from 'html2canvas';
@@ -77,7 +78,7 @@ const YearInReview = ({ isAdmin = false }) => {
             content: data?.stats?.users > 0
                 ? `You managed ${data.stats.users} new users and oversaw ${data.stats.listings} total listings.`
                 : "System logs show consistent platform uptime and growth.",
-            subtitle: `${data?.stats?.bookings || 0} bookings handled flawlessly.`,
+            subtitle: `${data?.stats?.bookings || 0} bookings and ${data?.stats?.referrals || 0} referrals handled flawlessly.`,
             icon: <FaChartLine className="text-8xl text-emerald-400 mb-6" />,
             color: "from-gray-900 via-emerald-950 to-gray-900",
         },
@@ -104,6 +105,27 @@ const YearInReview = ({ isAdmin = false }) => {
             subtitle: `Top Activity Hub: ${data?.stats?.topCity || 'Multiple Regions'}`,
             icon: <FaCoins className="text-8xl text-yellow-500 mb-6" />,
             color: "from-gray-900 via-yellow-950 to-gray-900",
+        },
+        operational: {
+            title: "Operational Excellence",
+            content: `Handled ${(data?.stats?.serviceRequests || 0) + (data?.stats?.moversRequests || 0)} service and relocation requests.`,
+            subtitle: `Plus ${data?.stats?.loans || 0} rental loans approved and ${data?.stats?.rentalRatings || 0} rental ratings mutualized.`,
+            icon: <FaTools className="text-8xl text-orange-400 mb-6" />,
+            color: "from-gray-900 via-orange-950 to-gray-900",
+        },
+        content: {
+            title: "Content Dynasty",
+            content: `Published ${data?.stats?.blogs || 0} blog posts and moderated ${data?.stats?.forumPosts || 0} forum topics.`,
+            subtitle: "Feeding the knowledge ecosystem.",
+            icon: <FaPenNib className="text-8xl text-pink-400 mb-6" />,
+            color: "from-gray-900 via-pink-950 to-gray-900",
+        },
+        insight: {
+            title: "Insight Engine",
+            content: `Platform users performed ${data?.stats?.calculations || 0} real estate calculations.`,
+            subtitle: "Data-driven decisions start here.",
+            icon: <FaCalculator className="text-8xl text-sky-400 mb-6" />,
+            color: "from-gray-900 via-sky-950 to-gray-900",
         }
     } : {
         intro: {
@@ -165,12 +187,47 @@ const YearInReview = ({ isAdmin = false }) => {
             icon: <FaHandshake className="text-8xl text-emerald-400 mb-6" />,
             color: "from-emerald-950 via-[#001a0a] to-emerald-950",
         },
+        finance: {
+            title: "Commitment to City Life",
+            content: `You securely processed ₹${(data?.stats?.totalPaid || 0).toLocaleString()} in platform payments.`,
+            subtitle: "Investing in your lifestyle and future home.",
+            icon: <FaShieldAlt className="text-8xl text-indigo-400 mb-6" />,
+            color: "from-indigo-950 via-[#050a1a] to-indigo-950",
+        },
         coins: {
             title: "SetuCoins Milestone",
             content: `You stacked up ${data?.stats?.coins || 0} SetuCoins!`,
             subtitle: "Your engagement is literally paying off.",
             icon: <FaCoins className="text-8xl text-yellow-400 mb-6" />,
             color: "from-yellow-950 via-[#1a1500] to-yellow-950",
+        },
+        forum: {
+            title: "Forum Legend",
+            content: `You started ${data?.stats?.forumPosts || 0} discussions in the community!`,
+            subtitle: "Your voice is a beacon for others.",
+            icon: <FaComments className="text-8xl text-indigo-400 mb-6" />,
+            color: "from-indigo-950 via-[#05001a] to-indigo-950",
+        },
+        concierge: {
+            title: "Home Concierge",
+            content: `Used ${data?.stats?.serviceRequests || 0} UrbanSetu services and planned ${data?.stats?.moversRequests || 0} moves.`,
+            subtitle: "Making city living effortless.",
+            icon: <FaTools className="text-8xl text-amber-400 mb-6" />,
+            color: "from-amber-950 via-[#1a0a00] to-amber-950",
+        },
+        architect: {
+            title: "Financial Architect",
+            content: `You performed ${data?.stats?.calculations || 0} smart real estate calculations!`,
+            subtitle: "Planning your future with precision.",
+            icon: <FaCalculator className="text-8xl text-teal-400 mb-6" />,
+            color: "from-teal-950 via-[#001a1a] to-teal-950",
+        },
+        networker: {
+            title: "Community Growth",
+            content: `You introduced ${data?.stats?.referrals || 0} new members to UrbanSetu!`,
+            subtitle: "The community grows stronger through you.",
+            icon: <FaUsers className="text-8xl text-pink-400 mb-6" />,
+            color: "from-pink-950 via-[#1a000d] to-pink-950",
         },
         persona: {
             title: `Your ${year} Identity`,
