@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentSchedule from '../components/rental/PaymentSchedule';
 import AutoDebitSettings from '../components/rental/AutoDebitSettings';
 import RentPaymentHistory from '../components/rental/RentPaymentHistory';
+import RentWalletSkeleton from '../components/skeletons/RentWalletSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -132,14 +133,7 @@ export default function RentWallet() {
   }, [wallet, fetchWalletDetails]);
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-blue-600 text-4xl mx-auto mb-4" />
-          <p className="text-gray-600">Loading wallet details...</p>
-        </div>
-      </div>
-    );
+    return <RentWalletSkeleton />;
   }
 
   if (!wallet || !contract) {

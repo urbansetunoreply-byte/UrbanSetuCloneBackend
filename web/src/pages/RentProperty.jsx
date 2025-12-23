@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
 import DigitalSignature from '../components/rental/DigitalSignature';
+import RentPropertySkeleton from '../components/skeletons/RentPropertySkeleton';
 import { authenticatedFetch } from '../utils/auth';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -835,14 +836,7 @@ export default function RentProperty() {
   };
 
   if (loading && !listing) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-          <p className="mt-4 text-gray-600">Loading property details...</p>
-        </div>
-      </div>
-    );
+    return <RentPropertySkeleton />;
   }
 
   if (!listing) {

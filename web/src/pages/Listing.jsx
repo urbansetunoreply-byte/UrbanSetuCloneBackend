@@ -28,6 +28,7 @@ import LocalityScoreDisplay from '../components/rental/LocalityScoreDisplay';
 
 import VirtualTourViewer from "../components/VirtualTourViewer"; // Import the viewer component
 import VirtualStagingTool from "../components/VirtualStagingTool"; // Import Virtual Staging Tool
+import ListingSkeleton from "../components/skeletons/ListingSkeleton"; // Import ListingSkeleton
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const UNAVAILABLE_STATUSES = ['reserved', 'under_contract', 'rented', 'sold', 'suspended'];
@@ -1330,16 +1331,7 @@ export default function Listing() {
   }, [listing]);
 
   if (loading) {
-    return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
-          <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="ml-3 text-lg font-semibold text-blue-600">Loading property details...</p>
-          </div>
-        </div>
-      </div>
-    );
+    return <ListingSkeleton />;
   }
 
   if (!listing) {
@@ -3042,8 +3034,19 @@ export default function Listing() {
                 Similar Properties in {listing.city}
               </h4>
               {loadingSimilar ? (
-                <div className="flex justify-center py-8">
-                  <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {[...Array(3)].map((_, index) => (
+                    <div key={index} className="border border-gray-200 rounded-lg p-4 animate-pulse">
+                      <div className="h-4 bg-gray-200 rounded w-3/4 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-1/2 mb-2"></div>
+                      <div className="h-5 bg-gray-200 rounded w-2/3 mb-2"></div>
+                      <div className="h-3 bg-gray-200 rounded w-full mb-4"></div>
+                      <div className="flex gap-2">
+                        <div className="flex-1 h-10 bg-gray-200 rounded"></div>
+                        <div className="h-10 w-24 bg-gray-200 rounded"></div>
+                      </div>
+                    </div>
+                  ))}
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">

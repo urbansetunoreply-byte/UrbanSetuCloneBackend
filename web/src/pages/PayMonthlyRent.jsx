@@ -7,6 +7,7 @@ import { usePageTitle } from '../hooks/usePageTitle';
 import PaymentModal from '../components/PaymentModal';
 import ContractPreview from '../components/rental/ContractPreview';
 import SetuCoinParticles from '../components/SetuCoins/SetuCoinParticles';
+import PayMonthlyRentSkeleton from '../components/skeletons/PayMonthlyRentSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -322,14 +323,7 @@ export default function PayMonthlyRent() {
   };
 
   if (pageLoading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-blue-600 text-4xl mx-auto mb-4" />
-          <p className="text-gray-600">Loading...</p>
-        </div>
-      </div>
-    );
+    return <PayMonthlyRentSkeleton />;
   }
 
   if (!contract || !wallet || !selectedPayment) {
