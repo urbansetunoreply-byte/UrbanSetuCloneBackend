@@ -26,6 +26,7 @@ import { useSignout } from '../hooks/useSignout';
 // Note: Do not import server-only libs here
 import { useAudioActivity } from '../hooks/useAudioActivity';
 import ContactSupportWrapper from '../components/ContactSupportWrapper';
+import AdminAppointmentsSkeleton from '../components/skeletons/AdminAppointmentsSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -1753,14 +1754,7 @@ export default function AdminAppointments() {
 
 
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600">Loading appointments...</p>
-      </div>
-    </div>
-  );
+  if (loading) return <AdminAppointmentsSkeleton />;
 
   if (!Array.isArray(appointments)) {
     return (
@@ -2675,7 +2669,7 @@ function AdminPaymentStatusCell({ appointmentId, appointment }) {
   );
 
   if (loading) {
-    return <FaSpinner className="animate-spin text-blue-600 mx-auto" />;
+    return <div className="h-6 w-20 bg-gray-200 rounded animate-pulse mx-auto"></div>;
   }
 
   if (!payment) {
