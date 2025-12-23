@@ -1204,7 +1204,7 @@ export default function Settings() {
               description="Set your timezone"
             />
             <SelectOption
-              label="Date Format"
+              label={t('settings.date_format')}
               value={dateFormat}
               options={[
                 { value: 'MM/DD/YYYY', label: 'MM/DD/YYYY' },
@@ -1219,34 +1219,34 @@ export default function Settings() {
         </SettingSection>
 
         {/* Appearance */}
-        <SettingSection title="Appearance" icon={FaPalette}>
+        <SettingSection title={t('settings.section_appearance')} icon={FaPalette}>
           <div className="space-y-0">
             <div className="py-3 border-b border-gray-200">
-              <p className="font-medium text-gray-800 mb-2">Theme</p>
+              <p className="font-medium text-gray-800 mb-2">{t('settings.theme')}</p>
               <div className="flex gap-4">
                 <button
                   onClick={() => handleThemeChange('light')}
                   className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'light' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
                 >
                   <FaSun className="w-5 h-5 mx-auto mb-1 text-yellow-500" />
-                  <span className="text-sm font-medium">Light</span>
+                  <span className="text-sm font-medium">{t('settings.theme_light')}</span>
                 </button>
                 <button
                   onClick={() => handleThemeChange('dark')}
                   className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'dark' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
                 >
                   <FaMoon className="w-5 h-5 mx-auto mb-1 text-gray-700" />
-                  <span className="text-sm font-medium">Dark</span>
+                  <span className="text-sm font-medium">{t('settings.theme_dark')}</span>
                 </button>
               </div>
             </div>
             <SelectOption
-              label="Font Size"
+              label={t('settings.font_size')}
               value={fontSize}
               options={[
-                { value: 'small', label: 'Small' },
-                { value: 'medium', label: 'Medium' },
-                { value: 'large', label: 'Large' }
+                { value: 'small', label: t('settings.font_small') },
+                { value: 'medium', label: t('settings.font_medium') },
+                { value: 'large', label: t('settings.font_large') }
               ]}
               onChange={handleFontSizeChange}
               description="Adjust text size for better readability"
