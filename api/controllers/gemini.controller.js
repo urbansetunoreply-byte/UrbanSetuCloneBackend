@@ -6,7 +6,7 @@ import { getRelevantCachedData, needsReindexing, indexAllWebsiteData } from '../
 
 const GROQ_API_KEY = process.env.GROQ_API_KEY;
 // Using Llama 3.3 70B Versatile as the primary model
-const GROQ_MODEL = process.env.GROQ_MODEL || 'llama-3.3-70b-versatile';
+const GROQ_MODEL = process.env.GROQ_MODEL;
 
 const groq = new Groq({
     apiKey: GROQ_API_KEY
