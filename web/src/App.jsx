@@ -130,6 +130,8 @@ const Leaderboard = lazy(() => import('./pages/Leaderboard'));
 const AdminCoinStats = lazy(() => import('./pages/AdminCoinStats'));
 const Rewards = lazy(() => import('./pages/Rewards'));
 const YearInReview = lazy(() => import('./pages/YearInReview'));
+const AdminUpdates = lazy(() => import('./pages/AdminUpdates'));
+const Updates = lazy(() => import('./pages/Updates'));
 
 
 // Loading component
@@ -715,6 +717,7 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/restore-account/:token" element={<AccountRevocation />} />
             <Route path="/restore-property" element={<RestoreProperty />} />
             <Route path="/offers" element={<Offers />} />
+            <Route path="/updates" element={<Updates />} />
             <Route path="/ai/share/:shareToken" element={<SharedChatView />} />
             <Route path="/view/:documentId" element={<ViewDocument />} />
             <Route path="/view-chat/preview" element={<ViewChatDocument />} />
@@ -767,6 +770,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/rewards" element={<Rewards />} />
               <Route path="/user/leaderboard" element={<Leaderboard />} />
               <Route path="/user/year/:year" element={<YearInReview />} />
+              <Route path="/user/updates" element={<Updates />} />
 
               <Route path="/contact" element={<Navigate to="/user/contact" />} />
               <Route path="/admin/contact" element={<Navigate to="/user/contact" />} />
@@ -798,6 +802,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/terms" element={<AdminTerms />} />
               <Route path="/admin/privacy" element={<AdminPrivacy />} />
               <Route path="/admin/cookie-policy" element={<AdminCookiePolicy />} />
+              <Route path="/admin/updates" element={<AdminUpdates />} />
               <Route path="/admin/management" element={<AdminManagement />} />
               <Route path="/admin/reviews" element={<AdminReviews />} />
               <Route path="/admin/services" element={<AdminServices />} />

@@ -55,6 +55,7 @@ import { sendCallMissedEmail, sendCallInitiatedEmail } from "./utils/emailServic
 import rentalRouter from "./routes/rental.route.js";
 import coinRouter from "./routes/coin.route.js";
 import turnRouter from "./routes/turn.route.js"; // Import TURN route
+import platformUpdateRouter from "./routes/platformUpdate.route.js";
 import yearInReviewRouter from "./routes/yearInReview.route.js";
 // Use S3 deployment route if AWS is configured, otherwise fallback to Cloudinary
 let deploymentRouter;
@@ -1205,6 +1206,7 @@ app.use("/api/report-message", reportMessageRouter);
 app.use("/api/forum", forumRouter);
 app.use("/api/coins", coinRouter);
 app.use("/api/year-in-review", yearInReviewRouter);
+app.use("/api/updates", platformUpdateRouter);
 console.log('All API routes registered successfully');
 
 // Catch-all route for 404s - must be after all other routes

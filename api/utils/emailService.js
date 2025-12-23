@@ -13676,6 +13676,10 @@ export const sendTrendingUpdateEmail = async (email, username, newProperties, tr
                       <div style="background-color: #f5f3ff; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; margin: 0 auto 8px; font-size: 24px;">🛠️</div>
                       <div style="font-size: 13px; font-weight: 600;">Services</div>
                   </a>
+                  <a href="${clientBaseUrl}/updates" style="display: inline-block; width: 80px; margin: 0 10px 20px; text-decoration: none; color: #4b5563; vertical-align: top;">
+                      <div style="background-color: #e0f2fe; border-radius: 16px; width: 56px; height: 56px; line-height: 56px; margin: 0 auto 8px; font-size: 24px;">🚀</div>
+                      <div style="font-size: 13px; font-weight: 600;">Updates</div>
+                  </a>
               </div>
           </div>
 
