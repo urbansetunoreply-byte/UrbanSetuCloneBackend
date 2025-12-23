@@ -7,7 +7,8 @@ import {
     FaChevronRight, FaChevronLeft, FaShareAlt, FaChartLine, FaUsers,
     FaShieldAlt, FaDownload, FaCalendarAlt, FaBuilding, FaMagic,
     FaFire, FaStamp, FaHandshake, FaTimes, FaCloud,
-    FaComments, FaTools, FaCalculator, FaPenNib, FaTruck
+    FaComments, FaTools, FaCalculator, FaPenNib, FaTruck,
+    FaRobot, FaSearchPlus, FaBell
 } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import html2canvas from 'html2canvas';
@@ -127,6 +128,13 @@ const YearInReview = ({ isAdmin = false }) => {
             icon: <FaCalculator className="text-8xl text-sky-400 mb-6" />,
             color: "from-gray-900 via-sky-950 to-gray-900",
         },
+        engagement: {
+            title: "Digital Ecosystem",
+            content: `${data?.stats?.aiMessages || 0} AI assistant queries and ${data?.stats?.savedSearches || 0} tailored searches.`,
+            subtitle: `Platform heartbeat: ${data?.stats?.notifications || 0} notifications delivered.`,
+            icon: <FaRobot className="text-8xl text-violet-400 mb-6" />,
+            color: "from-gray-900 via-violet-950 to-gray-900",
+        },
         outro: {
             title: `Forward to ${parseInt(year) + 1}`,
             content: "Successfully steering the platform into the future.",
@@ -229,6 +237,13 @@ const YearInReview = ({ isAdmin = false }) => {
             subtitle: "The community grows stronger through you.",
             icon: <FaUsers className="text-8xl text-pink-400 mb-6" />,
             color: "from-pink-950 via-[#1a000d] to-pink-950",
+        },
+        digital: {
+            title: "Digital Footprint",
+            content: `You asked our AI assistant ${data?.stats?.aiMessages || 0} questions and tracked ${data?.stats?.savedSearches || 0} specific markets.`,
+            subtitle: `Stayed connected with ${data?.stats?.notifications || 0} smart notifications.`,
+            icon: <FaRobot className="text-8xl text-violet-400 mb-6" />,
+            color: "from-violet-950 via-[#0a001a] to-violet-950",
         },
         persona: {
             title: `Your ${year} Identity`,

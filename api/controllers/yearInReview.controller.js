@@ -19,6 +19,9 @@ import Blog from "../models/blog.model.js";
 import Payment from "../models/payment.model.js";
 import RentalLoan from "../models/rentalLoan.model.js";
 import RentalRating from "../models/rentalRating.model.js";
+import ChatHistory from "../models/chatHistory.model.js";
+import SavedSearch from "../models/savedSearch.model.js";
+import Notification from "../models/notification.model.js";
 import cloudinary from 'cloudinary';
 
 // Configure Cloudinary for base64 uploads
@@ -228,10 +231,31 @@ export const getUserYearInReview = async (req, res, next) => {
         ]);
         const coinsEarned = coinsAgg.length > 0 ? coinsAgg[0].total : 0;
 
+        const chatAgg = await ChatHistory.aggregate([
+            {
+                $match: {
+                    userId: userObjectId,
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            { $group: { _id: null, total: { $sum: "$totalMessages" } } }
+        ]);
+        const totalMessages = chatAgg.length > 0 ? chatAgg[0].total : 0;
+
+        const totalSearches = await SavedSearch.countDocuments({
+            userId: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const totalNotifs = await Notification.countDocuments({
+            userId: userId,
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
         const totalInteractions = viewsCount + bookingsCount + wishlistCount + watchlistCount +
             reviewsCount + rentalsCount + favoriteCount + serviceCount +
             moversCount + forumPostsCount + calculationsCount + referralsCount +
-            loansCount + rentalRatingsCount + (coinsEarned > 0 ? 1 : 0);
+            loansCount + rentalRatingsCount + totalMessages + totalSearches + (coinsEarned > 0 ? 1 : 0);
 
         const stats = {
             views: viewsCount,
@@ -250,6 +274,9 @@ export const getUserYearInReview = async (req, res, next) => {
             referrals: referralsCount,
             loans: loansCount,
             rentalRatings: rentalRatingsCount,
+            aiMessages: totalMessages,
+            savedSearches: totalSearches,
+            notifications: totalNotifs,
             peakMonth,
             topType: explorationAgg[0]?.topType[0]?._id || null,
             totalInteractions
@@ -381,6 +408,24 @@ export const getAdminYearInReview = async (req, res, next) => {
             createdAt: { $gte: startDate, $lte: endDate }
         });
 
+        const chatAggTotal = await ChatHistory.aggregate([
+            {
+                $match: {
+                    createdAt: { $gte: startDate, $lte: endDate }
+                }
+            },
+            { $group: { _id: null, total: { $sum: "$totalMessages" } } }
+        ]);
+        const platformMessages = chatAggTotal.length > 0 ? chatAggTotal[0].total : 0;
+
+        const platformSearches = await SavedSearch.countDocuments({
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
+        const platformNotifs = await Notification.countDocuments({
+            createdAt: { $gte: startDate, $lte: endDate }
+        });
+
         const hasActivity = verifications > 0 || totalBookings > 0 || usersCount > 0 || blogPostsTotal > 0;
 
         res.status(200).json({
@@ -401,7 +446,10 @@ export const getAdminYearInReview = async (req, res, next) => {
                 calculations: calculationsTotal,
                 referrals: referralsTotal,
                 loans: loansTotal,
-                rentalRatings: rentalRatingsTotal
+                rentalRatings: rentalRatingsTotal,
+                aiMessages: platformMessages,
+                savedSearches: platformSearches,
+                notifications: platformNotifs
             },
             hasActivity,
             isCurrentYear: parseInt(year) === currentYear
