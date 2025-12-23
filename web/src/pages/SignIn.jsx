@@ -711,7 +711,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
                     {/* Sign In Method Toggle Tabs */}
                     <div className="flex p-1 bg-gray-100 rounded-xl mb-8 relative border border-gray-200">
-                        <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out transform ${loginMethod === "otp" ? "translate-x-full left-1" : "left-1"}`}></div>
+                        <div className={`absolute top-1 bottom-1 w-[calc(33.33%-3px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out transform ${loginMethod === "otp" ? "translate-x-[100%] left-[2px]" : "left-1"}`}></div>
                         <button
                             type="button"
                             disabled={authInProgress !== null || otpSent}
@@ -744,6 +744,12 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         >
                             OTP
                         </button>
+                        <Link
+                            to="/sign-up"
+                            className="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 text-center transition-colors duration-200 text-gray-500 hover:text-gray-700"
+                        >
+                            Sign Up
+                        </Link>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8 relative overflow-hidden">
