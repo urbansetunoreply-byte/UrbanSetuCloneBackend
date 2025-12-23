@@ -211,6 +211,13 @@ const YearInReview = ({ isAdmin = false }) => {
             icon: <FaHandshake className="text-8xl text-emerald-400 mb-6" />,
             color: "from-emerald-950 via-[#001a0a] to-emerald-950",
         },
+        reviews: {
+            title: "Critical Eye",
+            content: `You shared your opinion on ${data?.stats?.reviews || 0} properties.`,
+            subtitle: "Helping the community make better choices.",
+            icon: <FaStar className="text-8xl text-orange-400 mb-6" />,
+            color: "from-orange-950 via-[#1a0f00] to-orange-950",
+        },
         coins: {
             title: "SetuCoins Milestone",
             content: `You stacked up ${data?.stats?.coins || 0} SetuCoins!`,
@@ -232,12 +239,26 @@ const YearInReview = ({ isAdmin = false }) => {
             icon: <FaTools className="text-8xl text-amber-400 mb-6" />,
             color: "from-amber-950 via-[#1a0a00] to-amber-950",
         },
+        trust: {
+            title: "Mutual Trust",
+            content: `You participated in ${data?.stats?.rentalRatings || 0} verified rating exchanges.`,
+            subtitle: "Building a reputation that opens doors.",
+            icon: <FaShieldAlt className="text-8xl text-blue-500 mb-6" />,
+            color: "from-blue-950 via-[#000a1a] to-blue-950",
+        },
         architect: {
             title: "Financial Architect",
             content: `You performed ${data?.stats?.calculations || 0} smart real estate calculations!`,
             subtitle: "Planning your future with precision.",
             icon: <FaCalculator className="text-8xl text-teal-400 mb-6" />,
             color: "from-teal-950 via-[#001a1a] to-teal-950",
+        },
+        loans: {
+            title: "Smart Finance",
+            content: `You secured ${data?.stats?.loans || 0} rental loans to manage your cash flow.`,
+            subtitle: "Empowering your move with financial flexibility.",
+            icon: <FaCoins className="text-8xl text-green-500 mb-6" />,
+            color: "from-green-950 via-[#051a00] to-green-950",
         },
         networker: {
             title: "Community Growth",
@@ -406,14 +427,19 @@ const YearInReview = ({ isAdmin = false }) => {
             {/* Dynamic Background Effects */}
             <div className="absolute inset-0 z-0 overflow-hidden pointer-events-none">
                 <motion.div
-                    animate={{ scale: [1, 1.5, 1], x: [0, 100, 0], y: [0, 50, 0] }}
+                    animate={{ scale: [1, 1.5, 1], x: [0, 100, 0], y: [0, 50, 0], opacity: [0.3, 0.6, 0.3] }}
                     transition={{ duration: 15, repeat: Infinity, ease: "linear" }}
-                    className="absolute -top-[20%] -left-[20%] w-[60%] h-[60%] bg-blue-500/10 rounded-full blur-[100px]"
+                    className="absolute -top-[20%] -left-[20%] w-[70%] h-[70%] bg-blue-500/20 rounded-full blur-[120px]"
                 />
                 <motion.div
-                    animate={{ scale: [1.2, 1, 1.2], x: [0, -100, 0], y: [0, -50, 0] }}
+                    animate={{ scale: [1.2, 1, 1.2], x: [0, -100, 0], y: [0, -50, 0], opacity: [0.3, 0.5, 0.3] }}
                     transition={{ duration: 18, repeat: Infinity, ease: "linear" }}
-                    className="absolute -bottom-[20%] -right-[20%] w-[60%] h-[60%] bg-indigo-500/10 rounded-full blur-[100px]"
+                    className="absolute -bottom-[20%] -right-[20%] w-[70%] h-[70%] bg-indigo-500/20 rounded-full blur-[120px]"
+                />
+                <motion.div
+                    animate={{ scale: [1, 1.3, 1], x: [0, 50, -50, 0], y: [0, -30, 30, 0] }}
+                    transition={{ duration: 25, repeat: Infinity, ease: "linear" }}
+                    className="absolute top-[30%] left-[30%] w-[40%] h-[40%] bg-purple-500/10 rounded-full blur-[90px]"
                 />
             </div>
 
