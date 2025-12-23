@@ -5,6 +5,7 @@ import { toast } from 'react-toastify';
 import { FaStar, FaUser, FaHome, FaSpinner, FaSearch, FaCheckCircle, FaClock, FaFileAlt, FaTimes } from 'react-icons/fa';
 import { usePageTitle } from '../hooks/usePageTitle';
 import RatingDisplay from '../components/ratings/RatingDisplay';
+import AdminRentalRatingsSkeleton from '../components/skeletons/AdminRentalRatingsSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -123,14 +124,7 @@ export default function AdminRentalRatings() {
   };
 
   if (loading) {
-    return (
-      <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center">
-          <FaSpinner className="animate-spin text-4xl text-blue-600 mx-auto mb-4" />
-          <p className="text-gray-600">Loading ratings...</p>
-        </div>
-      </div>
-    );
+    return <AdminRentalRatingsSkeleton />;
   }
 
   return (
