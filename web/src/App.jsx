@@ -202,8 +202,16 @@ function normalizeRoute(path, role) {
   // Remove trailing slash for consistency
   if (path.length > 1 && path.endsWith('/')) path = path.slice(0, -1);
 
-  // List of shared base routes (add more as needed)
-  const sharedBases = ["about", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai"];
+  // List of base routes that have public-facing versions
+  const publicBases = ["about", "blogs", "faqs", "search", "terms", "privacy", "cookie-policy", "listing", "home", "contact", "ai"];
+
+  // List of base routes that exist for both user and admin but are NOT public
+  const parallelBases = [
+    "year", "profile", "settings", "investment-tools", "create-listing", "update-listing",
+    "community", "change-password", "view", "view-chat", "reviews", "disputes",
+    "property-verification", "rental-ratings", "rental-contracts", "rental-loans",
+    "services", "route-planner", "device-management"
+  ];
 
   // Helper to extract base and subpath
   function extractBaseAndRest(p) {
@@ -217,25 +225,28 @@ function normalizeRoute(path, role) {
   const { prefix, base, rest } = extractBaseAndRest(path);
 
   if (role === "public") {
-    // If public tries to access /user/* or /admin/* shared, redirect to public
-    if ((prefix === "user" || prefix === "admin") && sharedBases.includes(base)) {
+    // If public tries to access /user/* or /admin/* that has a public version, redirect to public
+    if ((prefix === "user" || prefix === "admin") && publicBases.includes(base)) {
       return `/${base}${rest}`;
     }
-    // If public tries to access deep user/admin-only, show 404 (no redirect)
-    if ((prefix === "user" && !sharedBases.includes(base)) || (prefix === "admin" && !sharedBases.includes(base))) {
+    // If public tries to access deep user/admin-only, show 404 (triggers redirect to login in NormalizeRoute)
+    if ((prefix === "user" || prefix === "admin") && !publicBases.includes(base)) {
       return null;
     }
     // Otherwise, stay on public
     return path;
   }
+
   if (role === "user") {
-    // If user tries to access /about, /search, etc., redirect to /user/*
-    if (!path.startsWith("/user") && sharedBases.includes(base)) {
+    // If user tries to access a public path that should be prefixed, redirect to /user/*
+    if (!prefix && publicBases.includes(base)) {
       return `/user/${base}${rest}`;
     }
-    // If user tries to access /admin/*, redirect to /user/* if shared, else 404
+    // If user tries to access /admin/*, redirect to /user/* if it's a parallel or public route, else 404
     if (prefix === "admin") {
-      if (sharedBases.includes(base)) return `/user/${base}${rest}`;
+      if (publicBases.includes(base) || parallelBases.includes(base)) {
+        return `/user/${base}${rest}`;
+      }
       return null;
     }
     // If user tries to access /user/*, allow
@@ -243,14 +254,17 @@ function normalizeRoute(path, role) {
     // Otherwise, stay
     return path;
   }
+
   if (role === "admin") {
-    // If admin tries to access /about, /search, etc., redirect to /admin/*
-    if (!path.startsWith("/admin") && sharedBases.includes(base)) {
+    // If admin tries to access a public path that should be prefixed, redirect to /admin/*
+    if (!prefix && publicBases.includes(base)) {
       return `/admin/${base}${rest}`;
     }
-    // If admin tries to access /user/*, redirect to /admin/* if shared, else 404
+    // If admin tries to access /user/*, redirect to /admin/* if it's a parallel or public route, else 404
     if (prefix === "user") {
-      if (sharedBases.includes(base)) return `/admin/${base}${rest}`;
+      if (publicBases.includes(base) || parallelBases.includes(base)) {
+        return `/admin/${base}${rest}`;
+      }
       return null;
     }
     // If admin tries to access /admin/*, allow
