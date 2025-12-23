@@ -24,6 +24,7 @@ const YearInReview = ({ isAdmin = false }) => {
     const [isUploading, setIsUploading] = useState(false);
     const [shareUrl, setShareUrl] = useState(window.location.href);
     const [isShareOpen, setIsShareOpen] = useState(false);
+    const [error, setError] = useState(null);
     const flashbackRef = useRef(null);
 
     useEffect(() => {
@@ -39,8 +40,9 @@ const YearInReview = ({ isAdmin = false }) => {
 
                 if (res.ok) {
                     setData(json);
+                    setError(null);
                 } else {
-                    toast.error(json.message || 'Failed to load flashback data');
+                    setError(json.message || 'Flashback data currently unavailable');
                 }
             } catch (error) {
                 console.error('Error fetching flashback:', error);
@@ -262,7 +264,9 @@ const YearInReview = ({ isAdmin = false }) => {
     // Check if the year has actual activity
     const hasData = isAdmin ? data?.hasActivity : (data?.stats?.totalInteractions > 0);
 
-    if (!loading && !hasData) {
+    if (!loading && (error || !hasData)) {
+        const isFuture = parseInt(year) > new Date().getFullYear();
+
         return (
             <div className={`fixed inset-0 z-[1000] bg-[#0f172a] text-white flex flex-col items-center justify-center p-10 text-center font-inter`}>
                 <motion.div
@@ -271,13 +275,17 @@ const YearInReview = ({ isAdmin = false }) => {
                     className="max-w-md"
                 >
                     <div className="w-24 h-24 bg-white/5 rounded-3xl flex items-center justify-center mb-8 mx-auto border border-white/10">
-                        <FaMagic className="text-4xl text-indigo-400 opacity-50" />
+                        {isFuture ? <FaRocket className="text-4xl text-blue-400 opacity-50" /> : <FaMagic className="text-4xl text-indigo-400 opacity-50" />}
                     </div>
-                    <h1 className="text-4xl font-black mb-4 tracking-tighter">Quiet Year in {year}</h1>
+                    <h1 className="text-4xl font-black mb-4 tracking-tighter">
+                        {isFuture ? "Mission to the Future?" : `Quiet Year in ${year}`}
+                    </h1>
                     <p className="text-white/60 mb-10 leading-relaxed font-medium">
-                        {data?.isCurrentYear
-                            ? "Your journey for this year has just begun. Start exploring properties to build your flashback!"
-                            : `We couldn't find any memory for ${year}. It looks like you didn't interact with UrbanSetu much during this time.`}
+                        {isFuture
+                            ? (error || "The future hasn't been written yet. Start your journey today to see it here next year!")
+                            : (data?.isCurrentYear
+                                ? "Your journey for this year has just begun. Start exploring properties to build your flashback!"
+                                : `We couldn't find any memory for ${year}. It looks like you didn't interact with UrbanSetu much during this time.`)}
                     </p>
                     <button
                         onClick={() => navigate(isAdmin ? '/admin' : '/user')}
