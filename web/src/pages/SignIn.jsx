@@ -88,6 +88,53 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
         }
     }, [location.search, navigate]);
 
+    // Sync state with URL parameters
+    useEffect(() => {
+        const searchParams = new URLSearchParams(location.search);
+        const tabParam = searchParams.get('tab');
+        const emailParam = searchParams.get('email');
+
+        // Handle Tab State
+        if (tabParam === 'otp') {
+            if (loginMethod !== 'otp') {
+                setLoginMethod('otp');
+                setFormData(prev => ({ ...prev, password: "" }));
+                setEmailStep(false);
+            }
+        } else {
+            // Default to password
+            if (tabParam === 'password' && loginMethod !== 'password') {
+                setLoginMethod('password');
+                setOtpSent(false);
+                setOtpSuccessMessage("");
+                setOtpData(prev => ({ ...prev, otp: "" }));
+                setResendTimer(0);
+                setCanResend(true);
+            }
+        }
+
+        // Handle Email State (Pre-fill)
+        if (emailParam) {
+            setFormData(prev => ({ ...prev, email: emailParam }));
+            setOtpData(prev => ({ ...prev, email: emailParam }));
+        }
+    }, [location.search, loginMethod]);
+
+    const onTabClick = (method) => {
+        const params = new URLSearchParams(location.search);
+        params.set('tab', method);
+
+        // Capture current input to persist in URL
+        const currentInputEmail = loginMethod === 'password' ? formData.email : otpData.email;
+        if (currentInputEmail) {
+            params.set('email', currentInputEmail);
+        } else {
+            params.delete('email');
+        }
+
+        navigate({ search: params.toString() }, { replace: true });
+    };
+
     // Check for existing failed attempts on component mount
     useEffect(() => {
         const failedAttempts = parseInt(localStorage.getItem('failedLoginAttempts') || '0');
@@ -711,20 +758,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
                     {/* Sign In Method Toggle Tabs */}
                     <div className="flex p-1 bg-gray-100 rounded-xl mb-8 relative border border-gray-200">
-                        <div className={`absolute top-1 bottom-1 w-[calc(33.33%-3px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out transform ${loginMethod === "otp" ? "translate-x-[100%] left-[2px]" : "left-1"}`}></div>
+                        <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out transform ${loginMethod === "otp" ? "translate-x-full left-1" : "left-1"}`}></div>
                         <button
                             type="button"
                             disabled={authInProgress !== null || otpSent}
-                            onClick={() => {
-                                setLoginMethod("password");
-                                setOtpSent(false);
-                                setOtpData({ email: "", otp: "" });
-                                setOtpSuccessMessage("");
-                                setResendTimer(0);
-                                setCanResend(true);
-                                setEmailStep(false);
-                                setFormData({ email: "", password: "" });
-                            }}
+                            onClick={() => onTabClick("password")}
                             className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "password" ? "text-gray-900" : "text-gray-500 hover:text-gray-700"} disabled:opacity-50`}
                         >
                             Password
@@ -732,24 +770,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         <button
                             type="button"
                             disabled={authInProgress !== null}
-                            onClick={() => {
-                                setLoginMethod("otp");
-                                setFormData({ email: "", password: "" });
-                                setOtpSuccessMessage("");
-                                setResendTimer(0);
-                                setCanResend(true);
-                                setEmailStep(false);
-                            }}
+                            onClick={() => onTabClick("otp")}
                             className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "otp" ? "text-gray-900" : "text-gray-500 hover:text-gray-700"} disabled:opacity-50`}
                         >
                             OTP
                         </button>
-                        <Link
-                            to="/sign-up"
-                            className="flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 text-center transition-colors duration-200 text-gray-500 hover:text-gray-700"
-                        >
-                            Sign Up
-                        </Link>
                     </div>
 
                     <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8 relative overflow-hidden">
