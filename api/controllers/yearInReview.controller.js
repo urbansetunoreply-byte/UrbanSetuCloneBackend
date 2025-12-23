@@ -41,6 +41,14 @@ const getPersonality = (stats) => {
     return { type: "The Urban Resident", desc: "A visionary hunter of perfect spaces." };
 };
 
+const getAdminPersonality = (stats) => {
+    if (stats.revenue > 1000000 || stats.bookings > 100) return { type: "The Economic Catalyst", desc: "You've driven massive growth and financial vitality this year!" };
+    if (stats.resolvedDisputes > 10 || stats.verifications > 30) return { type: "The Platform Guardian", desc: "Safety and trust are your top priorities. You've kept UrbanSetu secure." };
+    if (stats.blogs > 15 || stats.forumPosts > 40) return { type: "The Visionary Curator", desc: "You've shaped the community narrative through insights and moderation." };
+    if (stats.users > 500) return { type: "The Scale Strategist", desc: "Managing growth at scale is your specialty. The ecosystem is thriving!" };
+    return { type: "The Urban Architect", desc: "Building the foundations of future city living." };
+};
+
 export const getUserYearInReview = async (req, res, next) => {
     try {
         const { year } = req.params;
@@ -428,36 +436,41 @@ export const getAdminYearInReview = async (req, res, next) => {
 
         const hasActivity = verifications > 0 || totalBookings > 0 || usersCount > 0 || blogPostsTotal > 0;
 
+        const adminStats = {
+            listings: listingsAgg[0]?.total || 0,
+            verifications,
+            bookings: totalBookings,
+            users: usersCount,
+            revenue: totalRevenue,
+            topCity,
+            resolvedDisputes,
+            activeReports,
+            blogs: blogPostsTotal,
+            forumPosts: forumPostsTotal,
+            serviceRequests: serviceRequestsTotal,
+            moversRequests: moversRequestsTotal,
+            calculations: calculationsTotal,
+            referrals: referralsTotal,
+            loans: loansTotal,
+            rentalRatings: rentalRatingsTotal,
+            aiMessages: platformMessages,
+            savedSearches: platformSearches,
+            notifications: platformNotifs
+        };
+
+        const personality = getAdminPersonality(adminStats);
+
         res.status(200).json({
             year,
-            stats: {
-                listings: listingsAgg[0]?.total || 0,
-                verifications,
-                bookings: totalBookings,
-                users: usersCount,
-                revenue: totalRevenue,
-                topCity,
-                resolvedDisputes,
-                activeReports,
-                blogs: blogPostsTotal,
-                forumPosts: forumPostsTotal,
-                serviceRequests: serviceRequestsTotal,
-                moversRequests: moversRequestsTotal,
-                calculations: calculationsTotal,
-                referrals: referralsTotal,
-                loans: loansTotal,
-                rentalRatings: rentalRatingsTotal,
-                aiMessages: platformMessages,
-                savedSearches: platformSearches,
-                notifications: platformNotifs
-            },
+            stats: adminStats,
+            personality,
             hasActivity,
             isCurrentYear: parseInt(year) === currentYear
         });
     } catch (error) {
         next(error);
     }
-}
+};
 
 export const uploadYearInReviewImage = async (req, res, next) => {
     try {

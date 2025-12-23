@@ -135,6 +135,14 @@ const YearInReview = ({ isAdmin = false }) => {
             icon: <FaRobot className="text-8xl text-violet-400 mb-6" />,
             color: "from-gray-900 via-violet-950 to-gray-900",
         },
+        persona: {
+            title: `Your ${year} Identity`,
+            content: data?.personality?.type || "The Urban Architect",
+            subtitle: data?.personality?.desc || "Building the foundations of future city living.",
+            icon: <FaRocket className="text-8xl text-emerald-400 mb-6" />,
+            color: "from-gray-900 via-emerald-950 to-gray-900",
+            highlight: true
+        },
         outro: {
             title: `Forward to ${parseInt(year) + 1}`,
             content: "Successfully steering the platform into the future.",
