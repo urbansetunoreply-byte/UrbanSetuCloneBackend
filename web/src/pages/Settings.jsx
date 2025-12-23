@@ -16,6 +16,7 @@ import {
 } from "../redux/user/userSlice";
 
 import { toast } from 'react-toastify';
+import { useTranslation } from 'react-i18next';
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useSignout } from '../hooks/useSignout';
 import { isMobileDevice } from '../utils/mobileUtils';
@@ -30,7 +31,8 @@ const animationClasses = {
 };
 
 export default function Settings() {
-  usePageTitle("Settings - Account Management");
+  const { t, i18n } = useTranslation();
+  usePageTitle(`${t('settings.title')} - ${t('settings.subtitle')}`);
 
   const { currentUser } = useSelector((state) => state.user);
   const { signout } = useSignout();
@@ -73,7 +75,7 @@ export default function Settings() {
 
   // Language & Region
   const [language, setLanguage] = useState(() => {
-    return localStorage.getItem('language') || 'en';
+    return i18n.language || localStorage.getItem('language') || 'en';
   });
   const [timezone, setTimezone] = useState(() => {
     return localStorage.getItem('timezone') || Intl.DateTimeFormat().resolvedOptions().timeZone;
@@ -822,8 +824,9 @@ export default function Settings() {
   const handleLanguageChange = (value) => {
     scrollPositionRef.current = window.scrollY;
     setLanguage(value);
+    i18n.changeLanguage(value);
     localStorage.setItem('language', value);
-    showToast('Language preference saved');
+    showToast(t('settings.language') + ' saved');
   };
 
   const handleTimezoneChange = (value) => {
@@ -1052,21 +1055,21 @@ export default function Settings() {
         <div className="mb-6">
           <h1 className="text-3xl font-bold text-gray-800 mb-2">
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
-              Account Settings
+              {t('settings.title')}
             </span>
           </h1>
-          <p className="text-gray-600">Manage your account preferences and settings</p>
+          <p className="text-gray-600">{t('settings.subtitle')}</p>
         </div>
 
         {/* Security Settings */}
-        <SettingSection title="Security" icon={FaShieldAlt}>
+        <SettingSection title={t('settings.section_security')} icon={FaShieldAlt}>
           <div className="space-y-4">
             <button
               onClick={() => navigate((currentUser.role === 'admin' || currentUser.role === 'rootadmin') ? '/admin/change-password' : '/user/change-password')}
               className={`w-full bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
             >
               <FaKey className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-wiggle`} />
-              Change Password
+              {t('settings.change_password')}
             </button>
 
             <button
@@ -1074,7 +1077,7 @@ export default function Settings() {
               className={`w-full bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
             >
               <FaMobileAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-              Device Management
+              {t('settings.device_management')}
             </button>
 
             {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
@@ -1083,35 +1086,35 @@ export default function Settings() {
                 className={`w-full bg-orange-500 text-white px-6 py-3 rounded-lg hover:bg-orange-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
               >
                 <FaHistory className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-                Session Management
+                {t('settings.session_management')}
               </button>
             )}
           </div>
         </SettingSection>
 
         {/* Notification Preferences */}
-        <SettingSection title="Notifications" icon={FaBell}>
+        <SettingSection title={t('settings.section_notifications')} icon={FaBell}>
           <div className="space-y-0">
             <ToggleSwitch
-              label="Email Notifications"
+              label={t('settings.email_notifications')}
               checked={emailNotifications}
               onChange={handleEmailNotificationsChange}
               description="Receive notifications via email"
             />
             <ToggleSwitch
-              label="In-App Notifications"
+              label={t('settings.in_app_notifications')}
               checked={inAppNotifications}
               onChange={handleInAppNotificationsChange}
               description="Show notifications within the app"
             />
             <ToggleSwitch
-              label="Push Notifications"
+              label={t('settings.push_notifications')}
               checked={pushNotifications}
               onChange={handlePushNotificationsChange}
               description="Receive browser push notifications"
             />
             <SelectOption
-              label="Notification Sound"
+              label={t('settings.notification_sound')}
               value={notificationSound}
               options={[
                 { value: 'default', label: 'Default' },
@@ -1126,10 +1129,10 @@ export default function Settings() {
         </SettingSection>
 
         {/* Privacy Settings */}
-        <SettingSection title="Privacy" icon={FaLock}>
+        <SettingSection title={t('settings.section_privacy')} icon={FaLock}>
           <div className="space-y-0">
             <SelectOption
-              label="Profile Visibility"
+              label={t('settings.profile_visibility')}
               value={profileVisibility}
               options={[
                 { value: 'public', label: 'Public' },
@@ -1142,19 +1145,19 @@ export default function Settings() {
               isLoading={isUpdatingVisibility}
             />
             <ToggleSwitch
-              label="Show Email Address"
+              label={t('settings.show_email')}
               checked={showEmail}
               onChange={handleShowEmailChange}
               description="Display your email on your profile"
             />
             <ToggleSwitch
-              label="Show Phone Number"
+              label={t('settings.show_phone')}
               checked={showPhone}
               onChange={handleShowPhoneChange}
               description="Display your phone number on your profile"
             />
             <ToggleSwitch
-              label="Data Sharing for Analytics"
+              label={t('settings.data_sharing')}
               checked={dataSharing}
               onChange={handleDataSharingChange}
               description="Allow anonymous data sharing to improve our services"
@@ -1163,22 +1166,30 @@ export default function Settings() {
         </SettingSection>
 
         {/* Language & Region */}
-        <SettingSection title="Language & Region" icon={FaGlobe}>
+        <SettingSection title={t('settings.section_language')} icon={FaGlobe}>
           <div className="space-y-0">
             <SelectOption
-              label="Language"
+              label={t('settings.language')}
               value={language}
               options={[
                 { value: 'en', label: 'English' },
-                { value: 'hi', label: 'Hindi' },
-                { value: 'es', label: 'Spanish' },
-                { value: 'fr', label: 'French' }
+                { value: 'hi', label: 'Hindi (हिंदी)' },
+                { value: 'bn', label: 'Bengali (বাংলা)' },
+                { value: 'te', label: 'Telugu (తెలుగు)' },
+                { value: 'mr', label: 'Marathi (मराठी)' },
+                { value: 'ta', label: 'Tamil (தமிழ்)' },
+                { value: 'gu', label: 'Gujarati (ગુજરાતી)' },
+                { value: 'kn', label: 'Kannada (ಕನ್ನಡ)' },
+                { value: 'ml', label: 'Malayalam (മലയാളം)' },
+                { value: 'pa', label: 'Punjabi (ਪੰਜਾਬੀ)' },
+                { value: 'es', label: 'Spanish (Español)' },
+                { value: 'fr', label: 'French (Français)' }
               ]}
               onChange={handleLanguageChange}
               description="Choose your preferred language"
             />
             <SelectOption
-              label="Timezone"
+              label={t('settings.timezone')}
               value={timezone}
               options={[
                 { value: Intl.DateTimeFormat().resolvedOptions().timeZone, label: Intl.DateTimeFormat().resolvedOptions().timeZone },
@@ -1244,7 +1255,7 @@ export default function Settings() {
         </SettingSection>
 
         {/* Data Management */}
-        <SettingSection title="Data Management" icon={FaDatabase}>
+        <SettingSection title={t('settings.section_data')} icon={FaDatabase}>
           <div className="space-y-4">
             <button
               onClick={handleExportDataClick}
@@ -1259,7 +1270,7 @@ export default function Settings() {
               ) : (
                 <>
                   <FaFileDownload className={`w-4 h-4 mr-2`} />
-                  Export My Data
+                  {t('settings.export_data')}
                 </>
               )}
             </button>
@@ -1268,7 +1279,7 @@ export default function Settings() {
         </SettingSection>
 
         {/* Call Management */}
-        <SettingSection title="Call Management" icon={FaPhone}>
+        <SettingSection title={t('settings.section_call')} icon={FaPhone}>
           <div className="space-y-4">
             {/* Only show Call History for regular users, not admins */}
             {(currentUser.role !== 'admin' && currentUser.role !== 'rootadmin') && (
@@ -1278,7 +1289,7 @@ export default function Settings() {
                   className={`w-full bg-blue-500 text-white px-6 py-3 rounded-lg hover:bg-blue-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
                 >
                   <FaPhone className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-                  Call History
+                  {t('settings.call_history')}
                 </button>
                 <p className="text-sm text-gray-500">View your audio and video call history with buyers and sellers</p>
               </>
@@ -1292,7 +1303,7 @@ export default function Settings() {
                   className={`w-full bg-purple-500 text-white px-6 py-3 rounded-lg hover:bg-purple-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
                 >
                   <FaVideo className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-                  Admin Call History
+                  {t('settings.admin_call_history')}
                 </button>
                 <p className="text-sm text-gray-500">View and manage all call history across the platform</p>
               </>
@@ -1302,14 +1313,14 @@ export default function Settings() {
 
         {/* Admin Settings */}
         {(currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
-          <SettingSection title="Administration" icon={FaUser}>
+          <SettingSection title={t('settings.section_admin')} icon={FaUser}>
             <div className="space-y-4">
               <button
                 onClick={() => navigate('/admin/management')}
                 className={`w-full bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
               >
                 <FaUser className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-                Account Management
+                {t('settings.account_management')}
               </button>
 
               <button
@@ -1317,7 +1328,7 @@ export default function Settings() {
                 className={`w-full bg-indigo-500 text-white px-6 py-3 rounded-lg hover:bg-indigo-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
               >
                 <FaBullhorn className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-shake`} />
-                Platform Updates
+                {t('settings.platform_updates')}
               </button>
 
               {currentUser.role === 'rootadmin' && (
@@ -1326,7 +1337,7 @@ export default function Settings() {
                   className={`w-full bg-teal-500 text-white px-6 py-3 rounded-lg hover:bg-teal-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
                 >
                   <FaCloudUploadAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-                  Deployment Management
+                  {t('settings.deployment_management')}
                 </button>
               )}
 
@@ -1335,7 +1346,7 @@ export default function Settings() {
                 className={`w-full bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
               >
                 <FaClipboardList className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
-                Audit Logs
+                {t('settings.audit_logs')}
               </button>
             </div>
           </SettingSection>
@@ -1343,14 +1354,14 @@ export default function Settings() {
 
         {/* Default Admin Settings */}
         {currentUser.isDefaultAdmin && (
-          <SettingSection title="Admin Rights" icon={FaCrown}>
+          <SettingSection title={t('settings.section_admin_rights')} icon={FaCrown}>
             <div className="space-y-4">
               <button
                 onClick={onShowTransferModal}
                 className={`w-full bg-yellow-500 text-white px-6 py-3 rounded-lg hover:bg-yellow-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
               >
                 <FaCrown className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-bounce text-yellow-200`} />
-                Transfer Rights
+                {t('settings.transfer_rights')}
               </button>
               <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
                 <div className="flex items-start">
@@ -1361,7 +1372,7 @@ export default function Settings() {
                   </div>
                   <div className="ml-2">
                     <p className="text-sm text-blue-700">
-                      <strong>Note:</strong> You must transfer your default admin rights to another admin before you can delete your account.
+                      <strong>Note:</strong> {t('settings.transfer_admin_note')}
                     </p>
                   </div>
                 </div>
@@ -1371,25 +1382,25 @@ export default function Settings() {
         )}
 
         {/* Legal & Support */}
-        <SettingSection title="Legal & Support" icon={FaShieldAlt}>
+        <SettingSection title={t('settings.section_legal')} icon={FaShieldAlt}>
           <div className="space-y-3">
             <Link
               to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/terms' : '/user/terms'}
               className="block text-blue-600 hover:text-blue-800 hover:underline"
             >
-              Terms & Conditions
+              {t('settings.terms_conditions')}
             </Link>
             <Link
               to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/privacy' : '/user/privacy'}
               className="block text-blue-600 hover:text-blue-800 hover:underline"
             >
-              Privacy Policy
+              {t('settings.privacy_policy')}
             </Link>
             <Link
               to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/cookie-policy' : '/user/cookie-policy'}
               className="block text-blue-600 hover:text-blue-800 hover:underline"
             >
-              Cookie Policy
+              {t('settings.cookie_policy')}
             </Link>
           </div>
         </SettingSection>
@@ -1398,7 +1409,7 @@ export default function Settings() {
         <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
           <div className="flex items-center mb-4">
             <FaExclamationTriangle className="w-5 h-5 mr-2 text-red-600" />
-            <h2 className="text-xl font-bold text-gray-800">Account Actions</h2>
+            <h2 className="text-xl font-bold text-gray-800">{t('settings.section_account')}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
@@ -1406,7 +1417,7 @@ export default function Settings() {
               className={`bg-gray-500 text-white px-6 py-3 rounded-lg hover:bg-gray-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
             >
               <FaSignOutAlt className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:-translate-x-1`} />
-              Sign Out
+              {t('settings.sign_out')}
             </button>
 
             <button
@@ -1414,9 +1425,12 @@ export default function Settings() {
               className={`bg-red-500 text-white px-6 py-3 rounded-lg hover:bg-red-600 transition-all duration-300 transform hover:scale-105 hover:shadow-lg flex items-center justify-center font-semibold group ${animationClasses.slideInUp}`}
             >
               <FaTrash className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-wiggle`} />
-              Delete Account
+              {t('settings.delete_account')}
             </button>
           </div>
+          <p className="text-sm text-red-500 mt-2">
+            {t('settings.delete_account_warning')}
+          </p>
         </div>
       </div>
 
