@@ -31,6 +31,7 @@ import { saleModalStore } from '../utils/saleModalStore';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 
+import MyAppointmentsSkeleton from '../components/skeletons/MyAppointmentsSkeleton';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -1171,14 +1172,7 @@ export default function MyAppointments() {
     }
   };
 
-  if (loading) return (
-    <div className="min-h-screen flex items-center justify-center">
-      <div className="text-center">
-        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto"></div>
-        <p className="mt-2 text-gray-600">Loading your appointments...</p>
-      </div>
-    </div>
-  );
+  if (loading) return <MyAppointmentsSkeleton />;
 
   if (error) {
     const handleRetry = async () => {
@@ -12749,7 +12743,7 @@ function PaymentStatusCell({ appointment, isBuyer }) {
   };
 
   if (loading) {
-    return <FaSpinner className="animate-spin text-blue-600" />;
+    return <div className="h-6 w-20 bg-gray-200 rounded animate-pulse"></div>;
   }
 
   // Determine the display status based on latest payment record only
