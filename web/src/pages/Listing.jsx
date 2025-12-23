@@ -1595,64 +1595,64 @@ export default function Listing() {
                 </div>
 
                 {/* Content Area */}
-                {showComparisonPanel && (
-                  <div className="p-3 sm:p-4 bg-gradient-to-b from-white to-indigo-50/50">
-                    <div className="space-y-2 mb-4 max-h-[40vh] sm:max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
-                      {comparisonProperties.map((property) => (
-                        <div key={property._id} className="group flex items-center justify-between bg-white p-2 rounded-xl shadow-sm border border-indigo-50 hover:shadow-md transition-all hover:border-indigo-200">
-                          <div className="flex items-center gap-3 overflow-hidden flex-1">
-                            <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
-                              <img
-                                src={property.imageUrls?.[0] || '/placeholder-property.jpg'}
-                                alt={property.name}
-                                className="w-full h-full object-cover rounded-lg shadow-sm"
-                              />
-                            </div>
-                            <div className="min-w-0 flex-1 pr-2">
-                              <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate leading-tight">{property.name}</p>
-                              <p className="text-[10px] sm:text-xs text-indigo-500 font-medium truncate">
-                                ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
-                              </p>
-                            </div>
-                          </div>
-                          <button
-                            onClick={(e) => { e.stopPropagation(); removeFromComparison(property._id); }}
-                            className="flex-shrink-0 p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors"
-                            aria-label="Remove property"
-                          >
-                            <FaTimes size={12} />
-                          </button>
-                        </div>
-                      ))}
-                      {comparisonProperties.length < 4 && (
-                        <button
-                          onClick={openPropertySearch}
-                          className="w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-500 text-xs sm:text-sm font-medium hover:bg-indigo-50 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
-                        >
-                          <div className="bg-indigo-100 p-1 rounded-full">
-                            <FaSearch size={10} />
-                          </div>
-                          Add Property
-                        </button>
-                      )}
-                    </div>
 
-                    <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                <div className="p-3 sm:p-4 bg-gradient-to-b from-white to-indigo-50/50">
+                  <div className="space-y-2 mb-4 max-h-[40vh] sm:max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
+                    {comparisonProperties.map((property) => (
+                      <div key={property._id} className="group flex items-center justify-between bg-white p-2 rounded-xl shadow-sm border border-indigo-50 hover:shadow-md transition-all hover:border-indigo-200">
+                        <div className="flex items-center gap-3 overflow-hidden flex-1">
+                          <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
+                            <img
+                              src={property.imageUrls?.[0] || '/placeholder-property.jpg'}
+                              alt={property.name}
+                              className="w-full h-full object-cover rounded-lg shadow-sm"
+                            />
+                          </div>
+                          <div className="min-w-0 flex-1 pr-2">
+                            <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate leading-tight">{property.name}</p>
+                            <p className="text-[10px] sm:text-xs text-indigo-500 font-medium truncate">
+                              ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
+                            </p>
+                          </div>
+                        </div>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); removeFromComparison(property._id); }}
+                          className="flex-shrink-0 p-1.5 text-red-500 hover:bg-red-50 rounded-full transition-colors"
+                          aria-label="Remove property"
+                        >
+                          <FaTimes size={12} />
+                        </button>
+                      </div>
+                    ))}
+                    {comparisonProperties.length < 4 && (
                       <button
-                        onClick={() => setComparisonProperties([])}
-                        className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-800 transition-colors flex items-center justify-center gap-2"
+                        onClick={openPropertySearch}
+                        className="w-full py-3 border-2 border-dashed border-indigo-200 rounded-xl text-indigo-500 text-xs sm:text-sm font-medium hover:bg-indigo-50 hover:border-indigo-300 transition-all flex items-center justify-center gap-2"
                       >
-                        Clear
+                        <div className="bg-indigo-100 p-1 rounded-full">
+                          <FaSearch size={10} />
+                        </div>
+                        Add Property
                       </button>
-                      <button
-                        onClick={openComparisonModal}
-                        className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
-                      >
-                        Compare
-                      </button>
-                    </div>
+                    )}
                   </div>
-                )}
+
+                  <div className="grid grid-cols-2 gap-2 sm:gap-3">
+                    <button
+                      onClick={() => setComparisonProperties([])}
+                      className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-800 transition-colors flex items-center justify-center gap-2"
+                    >
+                      Clear
+                    </button>
+                    <button
+                      onClick={openComparisonModal}
+                      className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-bold text-white bg-gradient-to-r from-violet-600 to-indigo-600 hover:from-violet-700 hover:to-indigo-700 shadow-lg shadow-indigo-200 hover:shadow-indigo-300 transform hover:-translate-y-0.5 transition-all flex items-center justify-center gap-2"
+                    >
+                      Compare
+                    </button>
+                  </div>
+                </div>
+
               </div>
             </div>
           )}
