@@ -126,6 +126,14 @@ const YearInReview = ({ isAdmin = false }) => {
             subtitle: "Data-driven decisions start here.",
             icon: <FaCalculator className="text-8xl text-sky-400 mb-6" />,
             color: "from-gray-900 via-sky-950 to-gray-900",
+        },
+        outro: {
+            title: `Forward to ${parseInt(year) + 1}`,
+            content: "Successfully steering the platform into the future.",
+            subtitle: `Admin Log: ${(data?.stats?.listings || 0) + (data?.stats?.users || 0)} key milestones recorded.`,
+            icon: <FaFlag className="text-8xl text-white mb-6" />,
+            color: "from-[#0f172a] via-[#1e293b] to-[#0f172a]",
+            outro: true
         }
     } : {
         intro: {
