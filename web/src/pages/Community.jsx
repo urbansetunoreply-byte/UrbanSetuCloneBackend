@@ -1133,7 +1133,7 @@ export default function Community() {
                                                             <button
                                                                 type="button"
                                                                 onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                className="absolute -top-3 -right-3 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
+                                                                className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
                                                             >
                                                                 <FaTimes size={12} />
                                                             </button>
@@ -1269,7 +1269,7 @@ export default function Community() {
                                                                                         <button
                                                                                             type="button"
                                                                                             onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                                            className="absolute -top-3 -right-3 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
+                                                                                            className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
                                                                                         >
                                                                                             <FaTimes size={12} />
                                                                                         </button>
@@ -1416,7 +1416,7 @@ export default function Community() {
                                                                                             <button
                                                                                                 type="button"
                                                                                                 onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                                                className="absolute -top-3 -right-3 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
+                                                                                                className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
                                                                                             >
                                                                                                 <FaTimes size={12} />
                                                                                             </button>
@@ -1501,7 +1501,7 @@ export default function Community() {
                                                                                                                             <button
                                                                                                                                 type="button"
                                                                                                                                 onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                                                                                className="absolute -top-3 -right-3 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
+                                                                                                                                className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
                                                                                                                             >
                                                                                                                                 <FaTimes size={12} />
                                                                                                                             </button>
@@ -1642,7 +1642,7 @@ export default function Community() {
                                                                                                                                 <button
                                                                                                                                     type="button"
                                                                                                                                     onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                                                                                    className="absolute -top-3 -right-3 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
+                                                                                                                                    className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
                                                                                                                                 >
                                                                                                                                     <FaTimes size={12} />
                                                                                                                                 </button>
@@ -1731,7 +1731,7 @@ export default function Community() {
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                    className="absolute -top-3 -right-3 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
+                                                                    className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
                                                                 >
                                                                     <FaTimes size={12} />
                                                                 </button>
@@ -1896,7 +1896,7 @@ export default function Community() {
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                    className="absolute -top-3 -right-3 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
+                                                    className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
                                                 >
                                                     <FaTimes size={12} />
                                                 </button>
