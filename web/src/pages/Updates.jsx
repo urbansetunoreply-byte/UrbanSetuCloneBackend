@@ -153,7 +153,7 @@ const Updates = () => {
                                 whileInView={{ opacity: 1, y: 0 }}
                                 viewport={{ once: true }}
                                 transition={{ delay: index * 0.1 }}
-                                className="relative flex items-center justify-between md:justify-normal md:odd:flex-row-reverse group is-active"
+                                className="relative flex items-center md:items-center gap-4 md:gap-0 md:justify-normal md:odd:flex-row-reverse group is-active"
                             >
                                 {/* Timeline Icon */}
                                 <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-gray-50 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 transition-colors duration-300 group-hover:bg-blue-50 group-hover:border-blue-100">
@@ -161,9 +161,9 @@ const Updates = () => {
                                 </div>
 
                                 {/* Content Card */}
-                                <div className="w-[calc(100%-4rem)] md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-100 transition-all duration-300 group-hover:-translate-y-1">
+                                <div className="flex-1 md:flex-none md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-100 transition-all duration-300 group-hover:-translate-y-1">
 
-                                    <div className="flex items-center justify-between mb-4">
+                                    <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(update.category)}`}>
                                             {update.category.charAt(0).toUpperCase() + update.category.slice(1)}
                                         </span>
@@ -173,22 +173,22 @@ const Updates = () => {
                                         </time>
                                     </div>
 
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-2 leading-tight group-hover:text-blue-600 transition-colors">
+                                    <h3 className="text-2xl font-bold text-gray-900 mb-2 leading-tight group-hover:text-blue-600 transition-colors break-words">
                                         {update.title}
                                     </h3>
 
-                                    <div className="flex items-center gap-3 mb-4 text-sm">
-                                        <span className="font-mono text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-200">
+                                    <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
+                                        <span className="font-mono text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-200 text-xs">
                                             v{update.version}
                                         </span>
                                         {update.tags?.map((tag, i) => (
-                                            <span key={i} className="text-gray-500 flex items-center gap-1">
+                                            <span key={i} className="text-gray-500 flex items-center gap-1 bg-gray-50/50 px-2 py-0.5 rounded-full border border-gray-100/50">
                                                 <Tag className="w-3 h-3" /> {tag}
                                             </span>
                                         ))}
                                     </div>
 
-                                    <div className="prose prose-blue prose-sm text-gray-600 mb-4 whitespace-pre-wrap">
+                                    <div className="prose prose-blue prose-sm text-gray-600 mb-4 whitespace-pre-wrap break-words">
                                         {update.description}
                                     </div>
 
