@@ -587,7 +587,7 @@ export default function Home() {
 
           {/* Ads Section */}
           <div className="text-center py-6">
-            <p className="text-xs text-gray-400 mb-2 font-mono">SPONSORED CONTENT</p>
+            <p className="text-xs text-gray-400 mb-2 font-mono">SPONSORED CONTENT Coming Soon...</p>
             {/* <AdsterraBanner /> */}
           </div>
         </div>
