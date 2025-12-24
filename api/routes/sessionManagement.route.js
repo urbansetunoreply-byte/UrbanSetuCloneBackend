@@ -191,6 +191,11 @@ router.get('/admin/all-sessions', verifyToken, async (req, res, next) => {
     users.forEach(user => {
       if (user.activeSessions && user.activeSessions.length > 0) {
         user.activeSessions.forEach(session => {
+          // Restriction: Admins (non-root) cannot see sessions of rootadmins
+          if (req.user.role !== 'rootadmin' && user.role === 'rootadmin') {
+            return;
+          }
+
           sessionsWithUserInfo.push({
             sessionId: session.sessionId,
             userId: user._id,
@@ -308,6 +313,11 @@ router.post('/admin/force-logout', verifyToken, async (req, res, next) => {
       return res.status(404).json({ success: false, message: 'User not found' });
     }
 
+    // Restriction: Admins (non-root) cannot force logout other admins or rootadmins
+    if (req.user.role === 'admin' && (targetUser.role === 'admin' || targetUser.role === 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Admins cannot perform this action on other administrators' });
+    }
+
     // Check if session exists
     const sessionExists = targetUser.activeSessions.some(s => s.sessionId === sessionId);
     if (!sessionExists) {
@@ -372,6 +382,11 @@ router.post('/admin/force-logout-all', verifyToken, async (req, res, next) => {
     const targetUser = await User.findById(userId);
     if (!targetUser) {
       return res.status(404).json({ success: false, message: 'User not found' });
+    }
+
+    // Restriction: Admins (non-root) cannot force logout other admins or rootadmins
+    if (req.user.role === 'admin' && (targetUser.role === 'admin' || targetUser.role === 'rootadmin')) {
+      return res.status(403).json({ success: false, message: 'Admins cannot perform this action on other administrators' });
     }
 
     const sessionCount = await revokeAllUserSessionsFromDB(userId);
