@@ -500,7 +500,13 @@ const SessionManagement = () => {
                   </tr>
                 </thead>
                 <tbody className="bg-white divide-y divide-gray-200">
-                  {sessions.map((session) => (
+                  {sessions.filter(session => {
+                    // Restriction 1: Admins (non-root) cannot see rootadmin sessions
+                    if (currentUser.role !== 'rootadmin' && session.role === 'rootadmin') {
+                      return false;
+                    }
+                    return true;
+                  }).map((session) => (
                     <tr key={session.sessionId} className="hover:bg-blue-50/30 transition-colors duration-150">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
@@ -556,21 +562,26 @@ const SessionManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                         <div className="flex justify-end space-x-2">
-                          <button
-                            onClick={() => openForceLogoutModal(session)}
-                            disabled={revokingSession === session.sessionId}
-                            className="text-red-600 hover:text-red-900 disabled:opacity-50 hover:bg-red-50 p-2 rounded-lg transition-colors"
-                            title="Force Logout"
-                          >
-                            {revokingSession === session.sessionId ? <FaSync className="animate-spin" /> : <FaSignOutAlt />}
-                          </button>
-                          <button
-                            onClick={() => forceLogoutAllUserSessions(session.userId, 'Admin action')}
-                            className="text-orange-600 hover:text-orange-900 hover:bg-orange-50 p-2 rounded-lg transition-colors"
-                            title="Logout All User Sessions"
-                          >
-                            <FaUserSlash />
-                          </button>
+                          {/* Restriction 2: Admins cannot perform actions on other Admins or Rootadmins */}
+                          {(currentUser.role === 'rootadmin' || (session.role !== 'admin' && session.role !== 'rootadmin')) && (
+                            <>
+                              <button
+                                onClick={() => openForceLogoutModal(session)}
+                                disabled={revokingSession === session.sessionId}
+                                className="text-red-600 hover:text-red-900 disabled:opacity-50 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                                title="Force Logout"
+                              >
+                                {revokingSession === session.sessionId ? <FaSync className="animate-spin" /> : <FaSignOutAlt />}
+                              </button>
+                              <button
+                                onClick={() => forceLogoutAllUserSessions(session.userId, 'Admin action')}
+                                className="text-orange-600 hover:text-orange-900 hover:bg-orange-50 p-2 rounded-lg transition-colors"
+                                title="Logout All User Sessions"
+                              >
+                                <FaUserSlash />
+                              </button>
+                            </>
+                          )}
                         </div>
                       </td>
                     </tr>
