@@ -7975,10 +7975,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 showInfoModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                         <div
-                            className={`w-11/12 max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 relative ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
-                            style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+                            className={`w-11/12 max-w-2xl max-h-[85vh] flex flex-col rounded-xl shadow-xl relative ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
                         >
-                            <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
+                            <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                                 <div className="flex items-center gap-4">
                                     <div className={`p-3 rounded-2xl ${isDarkMode ? 'bg-indigo-500/10' : 'bg-indigo-50'}`}>
                                         <FaRobot size={24} className="text-indigo-500" />
@@ -7996,7 +7995,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 </button>
                             </div>
 
-                            <div className="space-y-8">
+                            <div className="flex-1 overflow-y-auto p-6 space-y-8 custom-scrollbar" style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
                                 {/* Core Technology */}
                                 <section>
                                     <h3 className="text-lg font-semibold mb-4 flex items-center gap-2">
@@ -8084,11 +8083,10 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                 showTermsModal && (
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
                         <div
-                            className={`w-11/12 max-w-2xl max-h-[85vh] overflow-y-auto rounded-xl shadow-xl p-6 relative ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
-                            style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}
+                            className={`w-11/12 max-w-2xl max-h-[85vh] flex flex-col rounded-xl shadow-xl relative ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
                         >
                             {/* Header */}
-                            <div className={`flex items-center justify-between mb-6 ${isDarkMode ? 'border-b border-gray-700 pb-4' : 'border-b border-gray-100 pb-4'}`}>
+                            <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                                 <div className="flex items-center gap-3">
                                     <FaFileAlt className="text-blue-500 text-xl" />
                                     <h2 className="text-xl font-bold">Terms of Service</h2>
@@ -8102,63 +8100,65 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                             </div>
 
                             {/* Scrollable Content */}
-                            <div className="space-y-6 text-sm leading-relaxed">
-                                <section>
-                                    <h3 className="font-bold text-lg mb-2 text-blue-500">1. Introduction</h3>
-                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                                        Welcome to SetuAI. By accessing or using this AI chatbot service, you agree to be bound by these Terms and Conditions.
-                                        This service utilizes advanced artificial intelligence technology powered by Groq and Meta Llama 3 models.
-                                    </p>
-                                </section>
-
-                                <section>
-                                    <h3 className="font-bold text-lg mb-2 text-blue-500">2. Usage Guidelines</h3>
-                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                                        You agree to use SetuAI only for lawful purposes. You must not:
-                                    </p>
-                                    <ul className={`list-disc pl-5 mt-2 space-y-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
-                                        <li>Generate harmful, abusive, or illegal content.</li>
-                                        <li>Attempt to bypass security filters or jailbreak the AI.</li>
-                                        <li>Upload malicious files or code.</li>
-                                        <li>Use the service to harass others or violate privacy rights.</li>
-                                    </ul>
-                                </section>
-
-                                <section>
-                                    <h3 className="font-bold text-lg mb-2 text-blue-500">3. AI Limitations & Disclaimers</h3>
-                                    <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-amber-900/20 border-amber-700/50' : 'bg-amber-50 border-amber-200'}`}>
-                                        <p className={`font-semibold mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-800'}`}>Important Notice:</p>
-                                        <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
-                                            SetuAI is an artificial intelligence. While we strive for accuracy, the AI may occasionally generate incorrect or misleading information ("hallucinations").
-                                            Always verify critical real estate, financial, or legal information with qualified human professionals.
+                            <div className="flex-1 overflow-y-auto p-6 space-y-6 custom-scrollbar" style={{ overscrollBehavior: 'contain', WebkitOverflowScrolling: 'touch' }}>
+                                <div className="text-sm leading-relaxed space-y-6">
+                                    <section>
+                                        <h3 className="font-bold text-lg mb-2 text-blue-500">1. Introduction</h3>
+                                        <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                            Welcome to SetuAI. By accessing or using this AI chatbot service, you agree to be bound by these Terms and Conditions.
+                                            This service utilizes advanced artificial intelligence technology powered by Groq and Meta Llama 3 models.
                                         </p>
-                                    </div>
-                                </section>
+                                    </section>
 
-                                <section>
-                                    <h3 className="font-bold text-lg mb-2 text-blue-500">4. Data Privacy</h3>
-                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                                        We value your privacy. Your conversation history is stored securely and encrypted in transit.
-                                        We do not use your personal chat data to train our public models. However, for quality assurance, anonymized interactions may be reviewed.
-                                    </p>
-                                </section>
+                                    <section>
+                                        <h3 className="font-bold text-lg mb-2 text-blue-500">2. Usage Guidelines</h3>
+                                        <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                            You agree to use SetuAI only for lawful purposes. You must not:
+                                        </p>
+                                        <ul className={`list-disc pl-5 mt-2 space-y-1 ${isDarkMode ? 'text-gray-300' : 'text-gray-600'}`}>
+                                            <li>Generate harmful, abusive, or illegal content.</li>
+                                            <li>Attempt to bypass security filters or jailbreak the AI.</li>
+                                            <li>Upload malicious files or code.</li>
+                                            <li>Use the service to harass others or violate privacy rights.</li>
+                                        </ul>
+                                    </section>
 
-                                <section>
-                                    <h3 className="font-bold text-lg mb-2 text-blue-500">5. Changes to Terms</h3>
-                                    <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
-                                        We reserve the right to modify these terms at any time. Continued use of the service constitutes acceptance of updated terms.
-                                    </p>
-                                </section>
-                            </div>
+                                    <section>
+                                        <h3 className="font-bold text-lg mb-2 text-blue-500">3. AI Limitations & Disclaimers</h3>
+                                        <div className={`p-4 rounded-xl border ${isDarkMode ? 'bg-amber-900/20 border-amber-700/50' : 'bg-amber-50 border-amber-200'}`}>
+                                            <p className={`font-semibold mb-1 ${isDarkMode ? 'text-amber-400' : 'text-amber-800'}`}>Important Notice:</p>
+                                            <p className={isDarkMode ? 'text-gray-300' : 'text-gray-700'}>
+                                                SetuAI is an artificial intelligence. While we strive for accuracy, the AI may occasionally generate incorrect or misleading information ("hallucinations").
+                                                Always verify critical real estate, financial, or legal information with qualified human professionals.
+                                            </p>
+                                        </div>
+                                    </section>
 
-                            {/* Footer Action (If viewing from consent modal, this effectively returns to it) */}
-                            <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                                <button
-                                    onClick={() => setShowTermsModal(false)}
-                                    className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
-                                >
-                                    Close
-                                </button>
+                                    <section>
+                                        <h3 className="font-bold text-lg mb-2 text-blue-500">4. Data Privacy</h3>
+                                        <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                            We value your privacy. Your conversation history is stored securely and encrypted in transit.
+                                            We do not use your personal chat data to train our public models. However, for quality assurance, anonymized interactions may be reviewed.
+                                        </p>
+                                    </section>
+
+                                    <section>
+                                        <h3 className="font-bold text-lg mb-2 text-blue-500">5. Changes to Terms</h3>
+                                        <p className={isDarkMode ? 'text-gray-300' : 'text-gray-600'}>
+                                            We reserve the right to modify these terms at any time. Continued use of the service constitutes acceptance of updated terms.
+                                        </p>
+                                    </section>
+                                </div>
+
+                                {/* Footer Action (If viewing from consent modal, this effectively returns to it) */}
+                                <div className={`p-4 border-t flex justify-end ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                    <button
+                                        onClick={() => setShowTermsModal(false)}
+                                        className="px-6 py-2 bg-blue-600 hover:bg-blue-700 text-white rounded-lg font-medium transition-colors"
+                                    >
+                                        Close
+                                    </button>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -8609,138 +8609,144 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             }
 
             {/* Report Delete Confirmation Modal */}
-            {showReportDeleteModal && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => !selectedReportToDelete && setShowReportDeleteModal(false)}>
-                    <div className={`w-full max-w-sm p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-800' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
-                        <div className="text-center mb-6">
-                            <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-red-900/20' : 'bg-red-100'}`}>
-                                <FaTrash className="text-red-500 text-2xl" />
+            {
+                showReportDeleteModal && (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => !selectedReportToDelete && setShowReportDeleteModal(false)}>
+                        <div className={`w-full max-w-sm p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-800' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                            <div className="text-center mb-6">
+                                <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-red-900/20' : 'bg-red-100'}`}>
+                                    <FaTrash className="text-red-500 text-2xl" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-2">Delete Report?</h3>
+                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    Are you sure you want to delete this report? This action cannot be undone.
+                                </p>
                             </div>
-                            <h3 className="text-xl font-bold mb-2">Delete Report?</h3>
-                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                Are you sure you want to delete this report? This action cannot be undone.
-                            </p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setShowReportDeleteModal(false)}
-                                className={`flex-1 py-2.5 rounded-xl font-medium transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDeleteReport}
-                                className="flex-1 py-2.5 rounded-xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors shadow-lg shadow-red-500/25"
-                            >
-                                Delete
-                            </button>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowReportDeleteModal(false)}
+                                    className={`flex-1 py-2.5 rounded-xl font-medium transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDeleteReport}
+                                    className="flex-1 py-2.5 rounded-xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors shadow-lg shadow-red-500/25"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Rating Delete Confirmation Modal */}
-            {showRatingDeleteModal && (
-                <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowRatingDeleteModal(false)}>
-                    <div className={`w-full max-w-sm p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-800' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
-                        <div className="text-center mb-6">
-                            <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-red-900/20' : 'bg-red-100'}`}>
-                                <FaTrash className="text-red-500 text-2xl" />
+            {
+                showRatingDeleteModal && (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowRatingDeleteModal(false)}>
+                        <div className={`w-full max-w-sm p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-800' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                            <div className="text-center mb-6">
+                                <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-red-900/20' : 'bg-red-100'}`}>
+                                    <FaTrash className="text-red-500 text-2xl" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-2">Delete Rating?</h3>
+                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    Are you sure you want to delete this rating?
+                                </p>
                             </div>
-                            <h3 className="text-xl font-bold mb-2">Delete Rating?</h3>
-                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                Are you sure you want to delete this rating?
-                            </p>
-                        </div>
-                        <div className="flex gap-3">
-                            <button
-                                onClick={() => setShowRatingDeleteModal(false)}
-                                className={`flex-1 py-2.5 rounded-xl font-medium transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
-                            >
-                                Cancel
-                            </button>
-                            <button
-                                onClick={confirmDeleteRating}
-                                className="flex-1 py-2.5 rounded-xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors shadow-lg shadow-red-500/25"
-                            >
-                                Delete
-                            </button>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowRatingDeleteModal(false)}
+                                    className={`flex-1 py-2.5 rounded-xl font-medium transition-colors ${isDarkMode ? 'bg-gray-800 hover:bg-gray-700 text-gray-300' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDeleteRating}
+                                    className="flex-1 py-2.5 rounded-xl font-medium bg-red-500 hover:bg-red-600 text-white transition-colors shadow-lg shadow-red-500/25"
+                                >
+                                    Delete
+                                </button>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             {/* Report Detail Modal */}
-            {showReportDetailModal && selectedReportDetail && (
-                <div className="fixed inset-0 z-[115] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowReportDetailModal(false)}>
-                    <div
-                        className={`w-full max-w-2xl flex flex-col rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
-                        onClick={e => e.stopPropagation()}
-                    >
-                        {/* Header */}
-                        <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
-                            <div className="flex items-center gap-3">
-                                <div className={`p-2 rounded-lg ${selectedReportDetail.status === 'resolved' ? 'bg-green-500/20 text-green-500' : selectedReportDetail.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-gray-500/20 text-gray-500'}`}>
-                                    <FaFlag size={20} />
+            {
+                showReportDetailModal && selectedReportDetail && (
+                    <div className="fixed inset-0 z-[115] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setShowReportDetailModal(false)}>
+                        <div
+                            className={`w-full max-w-2xl flex flex-col rounded-2xl shadow-2xl overflow-hidden max-h-[85vh] ${isDarkMode ? 'bg-gray-900 text-gray-100' : 'bg-white text-gray-900'}`}
+                            onClick={e => e.stopPropagation()}
+                        >
+                            {/* Header */}
+                            <div className={`flex flex-shrink-0 items-center justify-between p-6 border-b ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
+                                <div className="flex items-center gap-3">
+                                    <div className={`p-2 rounded-lg ${selectedReportDetail.status === 'resolved' ? 'bg-green-500/20 text-green-500' : selectedReportDetail.status === 'pending' ? 'bg-yellow-500/20 text-yellow-500' : 'bg-gray-500/20 text-gray-500'}`}>
+                                        <FaFlag size={20} />
+                                    </div>
+                                    <div>
+                                        <h2 className="text-xl font-bold">Report Details</h2>
+                                        <div className="flex items-center gap-2 text-xs opacity-70">
+                                            <span>{selectedReportDetail.reportedBy?.username || 'Public Guest'}</span>
+                                            <span>•</span>
+                                            <span>{new Date(selectedReportDetail.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
+                                        </div>
+                                    </div>
                                 </div>
+                                <button
+                                    onClick={() => setShowReportDetailModal(false)}
+                                    className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
+                                >
+                                    <FaTimes size={20} />
+                                </button>
+                            </div>
+
+                            {/* Content */}
+                            <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
+                                {/* Meta Info */}
+                                <div className="flex gap-4 mb-6">
+                                    <div className={`flex-1 p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
+                                        <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Category</div>
+                                        <div className="font-semibold">{selectedReportDetail.category}</div>
+                                    </div>
+                                    <div className={`flex-1 p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
+                                        <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Context</div>
+                                        <div className="font-semibold">{selectedReportDetail.subCategory}</div>
+                                    </div>
+                                </div>
+
+                                {/* User Description */}
+                                <div className={`mb-6 p-4 rounded-xl border ${isDarkMode ? 'bg-red-900/10 border-red-900/30' : 'bg-red-50 border-red-100'}`}>
+                                    <div className="text-xs font-bold uppercase tracking-wider text-red-500 mb-2">Report Description</div>
+                                    <p className="whitespace-pre-wrap font-medium">{selectedReportDetail.description}</p>
+                                </div>
+
+                                {/* User Prompt */}
+                                {selectedReportDetail.prompt && (
+                                    <div className="mb-6">
+                                        <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-2 border-b border-dashed border-gray-500/30 pb-1 inline-block">Reported User Prompt</div>
+                                        <div className={`p-4 rounded-xl text-sm leading-relaxed ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
+                                            <p className="whitespace-pre-wrap font-mono text-opacity-90">{selectedReportDetail.prompt}</p>
+                                        </div>
+                                    </div>
+                                )}
+
+                                {/* AI Response */}
                                 <div>
-                                    <h2 className="text-xl font-bold">Report Details</h2>
-                                    <div className="flex items-center gap-2 text-xs opacity-70">
-                                        <span>{selectedReportDetail.reportedBy?.username || 'Public Guest'}</span>
-                                        <span>•</span>
-                                        <span>{new Date(selectedReportDetail.createdAt).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' })}</span>
-                                    </div>
-                                </div>
-                            </div>
-                            <button
-                                onClick={() => setShowReportDetailModal(false)}
-                                className={`p-2 rounded-full transition-colors ${isDarkMode ? 'hover:bg-gray-800 text-gray-400 hover:text-white' : 'hover:bg-gray-100 text-gray-500 hover:text-gray-800'}`}
-                            >
-                                <FaTimes size={20} />
-                            </button>
-                        </div>
-
-                        {/* Content */}
-                        <div className="flex-1 overflow-y-auto p-6 custom-scrollbar">
-                            {/* Meta Info */}
-                            <div className="flex gap-4 mb-6">
-                                <div className={`flex-1 p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
-                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Category</div>
-                                    <div className="font-semibold">{selectedReportDetail.category}</div>
-                                </div>
-                                <div className={`flex-1 p-3 rounded-xl border ${isDarkMode ? 'bg-gray-800/50 border-gray-700' : 'bg-gray-50 border-gray-100'}`}>
-                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-1">Context</div>
-                                    <div className="font-semibold">{selectedReportDetail.subCategory}</div>
-                                </div>
-                            </div>
-
-                            {/* User Description */}
-                            <div className={`mb-6 p-4 rounded-xl border ${isDarkMode ? 'bg-red-900/10 border-red-900/30' : 'bg-red-50 border-red-100'}`}>
-                                <div className="text-xs font-bold uppercase tracking-wider text-red-500 mb-2">Report Description</div>
-                                <p className="whitespace-pre-wrap font-medium">{selectedReportDetail.description}</p>
-                            </div>
-
-                            {/* User Prompt */}
-                            {selectedReportDetail.prompt && (
-                                <div className="mb-6">
-                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-2 border-b border-dashed border-gray-500/30 pb-1 inline-block">Reported User Prompt</div>
+                                    <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-2 border-b border-dashed border-gray-500/30 pb-1 inline-block">Reported AI Response</div>
                                     <div className={`p-4 rounded-xl text-sm leading-relaxed ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                                        <p className="whitespace-pre-wrap font-mono text-opacity-90">{selectedReportDetail.prompt}</p>
+                                        <p className="whitespace-pre-wrap text-opacity-90">{selectedReportDetail.messageContent}</p>
                                     </div>
-                                </div>
-                            )}
-
-                            {/* AI Response */}
-                            <div>
-                                <div className="text-xs font-bold uppercase tracking-wider opacity-60 mb-2 border-b border-dashed border-gray-500/30 pb-1 inline-block">Reported AI Response</div>
-                                <div className={`p-4 rounded-xl text-sm leading-relaxed ${isDarkMode ? 'bg-gray-800' : 'bg-gray-50'}`}>
-                                    <p className="whitespace-pre-wrap text-opacity-90">{selectedReportDetail.messageContent}</p>
                                 </div>
                             </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
 
             <ShareChatModal
                 isOpen={isShareModalOpen}
@@ -8750,33 +8756,35 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             />
 
             {/* Auth Required Modal */}
-            {authModal.isOpen && (
-                <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setAuthModal({ ...authModal, isOpen: false })}>
-                    <div className={`w-full max-w-sm p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-800' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
-                        <div className="text-center mb-6">
-                            <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-100'}`}>
-                                <FaUser className="text-blue-500 text-2xl" />
+            {
+                authModal.isOpen && (
+                    <div className="fixed inset-0 z-[130] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setAuthModal({ ...authModal, isOpen: false })}>
+                        <div className={`w-full max-w-sm p-6 rounded-2xl shadow-xl transform transition-all scale-100 ${isDarkMode ? 'bg-gray-900 text-gray-100 border border-gray-800' : 'bg-white text-gray-900'}`} onClick={e => e.stopPropagation()}>
+                            <div className="text-center mb-6">
+                                <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${isDarkMode ? 'bg-blue-900/20' : 'bg-blue-100'}`}>
+                                    <FaUser className="text-blue-500 text-2xl" />
+                                </div>
+                                <h3 className="text-xl font-bold mb-2">
+                                    {authModal.type === 'save' ? 'Login to Save Chat' : 'Login to Share Chat'}
+                                </h3>
+                                <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
+                                    {authModal.type === 'save'
+                                        ? 'Login to save chat with login and signup links'
+                                        : 'Login to share chat publicy anywhere with signup and signin links'}
+                                </p>
                             </div>
-                            <h3 className="text-xl font-bold mb-2">
-                                {authModal.type === 'save' ? 'Login to Save Chat' : 'Login to Share Chat'}
-                            </h3>
-                            <p className={`text-sm ${isDarkMode ? 'text-gray-400' : 'text-gray-500'}`}>
-                                {authModal.type === 'save'
-                                    ? 'Login to save chat with login and signup links'
-                                    : 'Login to share chat publicy anywhere with signup and signin links'}
-                            </p>
-                        </div>
-                        <div className="flex gap-3 flex-col sm:flex-row">
-                            <a href="/login" className="flex-1 py-2.5 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white text-center transition-colors shadow-lg shadow-blue-500/25">
-                                Login
-                            </a>
-                            <a href="/signup" className={`flex-1 py-2.5 rounded-xl font-medium text-center transition-colors border ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200 hover:bg-gray-50'}`}>
-                                Sign Up
-                            </a>
+                            <div className="flex gap-3 flex-col sm:flex-row">
+                                <a href="/login" className="flex-1 py-2.5 rounded-xl font-medium bg-blue-600 hover:bg-blue-700 text-white text-center transition-colors shadow-lg shadow-blue-500/25">
+                                    Login
+                                </a>
+                                <a href="/signup" className={`flex-1 py-2.5 rounded-xl font-medium text-center transition-colors border ${isDarkMode ? 'border-gray-700 hover:bg-gray-800' : 'border-gray-200 hover:bg-gray-50'}`}>
+                                    Sign Up
+                                </a>
+                            </div>
                         </div>
                     </div>
-                </div>
-            )}
+                )
+            }
         </>
     );
 };
