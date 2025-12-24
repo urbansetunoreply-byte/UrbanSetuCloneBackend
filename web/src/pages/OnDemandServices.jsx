@@ -45,6 +45,13 @@ export default function OnDemandServices() {
   const [checklistForm, setChecklistForm] = useState({ rooms: [], amenities: [], notes: '' });
   const [checklistFilters, setChecklistFilters] = useState({ q: '', status: 'all' });
   const [showSelectionModal, setShowSelectionModal] = useState(false);
+  const [confirmationModal, setConfirmationModal] = useState({
+    open: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    isDestructive: true
+  });
 
   // SetuCoins Redemption
   const [coinBalance, setCoinBalance] = useState(0);
@@ -466,7 +473,29 @@ export default function OnDemandServices() {
                       {req.status === 'cancelled' && (req.reinitiateCount ?? 0) < 2 && (
                         <button onClick={async () => { try { const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}/reinitiate`, { method: 'POST', credentials: 'include' }); const data = await r.json(); if (r.ok) { toast.success('Movers request re-initiated'); fetchMyMoverRequests(); } else { toast.error(data.message || 'Failed to reinitiate'); } } catch (_) { toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount || 0)} left)</button>
                       )}
-                      <button onClick={async () => { if (!confirm('Delete this request permanently?')) return; try { const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method: 'DELETE', credentials: 'include' }); if (r.ok) { toast.success('Deleted'); setMyMoverRequests(prev => prev.filter(x => x._id !== req._id)); } else { const d = await r.json(); toast.error(d.message || 'Delete failed'); } } catch (_) { toast.error('Delete failed'); } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                      <button onClick={() => {
+                        setConfirmationModal({
+                          open: true,
+                          title: 'delete Movers Request?',
+                          message: 'Are you sure you want to delete this movers request permanently? This action cannot be undone.',
+                          isDestructive: true,
+                          onConfirm: async () => {
+                            try {
+                              const r = await fetch(`${API_BASE_URL}/api/requests/movers/${req._id}`, { method: 'DELETE', credentials: 'include' });
+                              if (r.ok) {
+                                toast.success('Deleted');
+                                setMyMoverRequests(prev => prev.filter(x => x._id !== req._id));
+                              } else {
+                                const d = await r.json();
+                                toast.error(d.message || 'Delete failed');
+                              }
+                            } catch (_) {
+                              toast.error('Delete failed');
+                            }
+                            setConfirmationModal(prev => ({ ...prev, open: false }));
+                          }
+                        });
+                      }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                     </div>
                   </li>
                 ))}
@@ -812,7 +841,29 @@ export default function OnDemandServices() {
                     {req.status === 'cancelled' && (req.reinitiateCount ?? 0) < 2 && (
                       <button onClick={async () => { try { const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}/reinitiate`, { method: 'POST', credentials: 'include' }); const data = await r.json(); if (r.ok) { toast.success('Service request re-initiated'); fetchMyRequests(); } else { toast.error(data.message || 'Failed to reinitiate'); } } catch (_) { toast.error('Failed to reinitiate'); } }} className="text-xs px-2 py-1 rounded bg-blue-100 text-blue-700">Re-initiate ({2 - (req.reinitiateCount || 0)} left)</button>
                     )}
-                    <button onClick={async () => { if (!confirm('Delete this request permanently?')) return; try { const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method: 'DELETE', credentials: 'include' }); if (r.ok) { toast.success('Deleted'); setMyRequests(prev => prev.filter(x => x._id !== req._id)); } else { const d = await r.json(); toast.error(d.message || 'Delete failed'); } } catch (_) { toast.error('Delete failed'); } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                    <button onClick={() => {
+                      setConfirmationModal({
+                        open: true,
+                        title: 'Delete Service Request?',
+                        message: 'Are you sure you want to delete this service request permanently? This action cannot be undone.',
+                        isDestructive: true,
+                        onConfirm: async () => {
+                          try {
+                            const r = await fetch(`${API_BASE_URL}/api/requests/services/${req._id}`, { method: 'DELETE', credentials: 'include' });
+                            if (r.ok) {
+                              toast.success('Deleted');
+                              setMyRequests(prev => prev.filter(x => x._id !== req._id));
+                            } else {
+                              const d = await r.json();
+                              toast.error(d.message || 'Delete failed');
+                            }
+                          } catch (_) {
+                            toast.error('Delete failed');
+                          }
+                          setConfirmationModal(prev => ({ ...prev, open: false }));
+                        }
+                      });
+                    }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                   </div>
                 </li>
               ))}
@@ -862,6 +913,44 @@ export default function OnDemandServices() {
         onComplete={() => setShowCoinBurst(false)}
         count={20}
       />
+
+      {/* Confirmation Modal */}
+      {confirmationModal.open && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmationModal(prev => ({ ...prev, open: false }))}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100" onClick={e => e.stopPropagation()}>
+            <div className="p-6 text-center">
+              <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${confirmationModal.isDestructive ? 'bg-red-100' : 'bg-blue-100'}`}>
+                {confirmationModal.isDestructive ? (
+                  <FaTimesCircle className="text-red-600 text-2xl" />
+                ) : (
+                  <FaCheckCircle className="text-blue-600 text-2xl" />
+                )}
+              </div>
+              <h3 className="text-xl font-bold mb-2 text-gray-900">{confirmationModal.title}</h3>
+              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                {confirmationModal.message}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmationModal(prev => ({ ...prev, open: false }))}
+                  className="flex-1 py-2.5 rounded-xl font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmationModal.onConfirm}
+                  className={`flex-1 py-2.5 rounded-xl font-bold text-white transition-colors shadow-lg ${confirmationModal.isDestructive
+                    ? 'bg-red-600 hover:bg-red-700 shadow-red-500/30'
+                    : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
+                    }`}
+                >
+                  Confirm
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

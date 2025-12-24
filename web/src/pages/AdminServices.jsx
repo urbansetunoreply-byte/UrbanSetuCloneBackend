@@ -29,6 +29,16 @@ export default function AdminServices() {
   const [showChecklistModal, setShowChecklistModal] = useState(false);
   const [checklistType, setChecklistType] = useState('move_in');
 
+  // Confirmation Modal State
+  const [confirmationModal, setConfirmationModal] = useState({
+    open: false,
+    title: '',
+    message: '',
+    onConfirm: null,
+    isDestructive: true
+  });
+
+
   const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
   const fetchServiceRequests = async () => {
@@ -190,7 +200,23 @@ export default function AdminServices() {
                         <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1">
                           {['pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
-                        <button onClick={async () => { if (!confirm('Delete this service request?')) return; try { const r = await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'DELETE', credentials: 'include' }); if (r.ok) { setItems(prev => prev.filter(x => x._id !== n._id)); } } catch (_) { } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                        <button onClick={() => {
+                          setConfirmationModal({
+                            open: true,
+                            title: 'Delete Service Request?',
+                            message: 'Are you sure you want to delete this service request? This action cannot be undone.',
+                            isDestructive: true,
+                            onConfirm: async () => {
+                              try {
+                                const r = await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'DELETE', credentials: 'include' });
+                                if (r.ok) {
+                                  setItems(prev => prev.filter(x => x._id !== n._id));
+                                }
+                              } catch (_) { }
+                              setConfirmationModal(prev => ({ ...prev, open: false }));
+                            }
+                          });
+                        }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -266,7 +292,23 @@ export default function AdminServices() {
                         <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1">
                           {['pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
-                        <button onClick={async () => { if (!confirm('Delete this movers request?')) return; try { const r = await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'DELETE', credentials: 'include' }); if (r.ok) { setMovers(prev => prev.filter(x => x._id !== n._id)); } } catch (_) { } }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
+                        <button onClick={() => {
+                          setConfirmationModal({
+                            open: true,
+                            title: 'Delete Movers Request?',
+                            message: 'Are you sure you want to delete this movers request? This action cannot be undone.',
+                            isDestructive: true,
+                            onConfirm: async () => {
+                              try {
+                                const r = await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'DELETE', credentials: 'include' });
+                                if (r.ok) {
+                                  setMovers(prev => prev.filter(x => x._id !== n._id));
+                                }
+                              } catch (_) { }
+                              setConfirmationModal(prev => ({ ...prev, open: false }));
+                            }
+                          });
+                        }} className="text-xs px-2 py-1 rounded bg-red-100 text-red-700">Delete</button>
                       </div>
                     </td>
                   </tr>
@@ -444,24 +486,32 @@ export default function AdminServices() {
                             <FaEye /> View
                           </button>
                           <button
-                            onClick={async () => {
-                              if (!confirm(`Are you sure you want to delete this ${checklist.type === 'move_in' ? 'move-in' : 'move-out'} checklist?`)) return;
-                              try {
-                                const res = await fetch(`${API_BASE_URL}/api/rental/checklist/${checklist._id}`, {
-                                  method: 'DELETE',
-                                  credentials: 'include'
-                                });
-                                const data = await res.json();
-                                if (res.ok && data.success) {
-                                  toast.success('Checklist deleted successfully');
-                                  fetchChecklists();
-                                } else {
-                                  toast.error(data.message || 'Failed to delete checklist');
+                            onClick={() => {
+                              setConfirmationModal({
+                                open: true,
+                                title: `Delete ${checklist.type === 'move_in' ? 'Move-In' : 'Move-Out'} Checklist?`,
+                                message: `Are you sure you want to delete this ${checklist.type === 'move_in' ? 'move-in' : 'move-out'} checklist? This action cannot be undone.`,
+                                isDestructive: true,
+                                onConfirm: async () => {
+                                  try {
+                                    const res = await fetch(`${API_BASE_URL}/api/rental/checklist/${checklist._id}`, {
+                                      method: 'DELETE',
+                                      credentials: 'include'
+                                    });
+                                    const data = await res.json();
+                                    if (res.ok && data.success) {
+                                      toast.success('Checklist deleted successfully');
+                                      fetchChecklists();
+                                    } else {
+                                      toast.error(data.message || 'Failed to delete checklist');
+                                    }
+                                  } catch (error) {
+                                    toast.error('Failed to delete checklist');
+                                    console.error(error);
+                                  }
+                                  setConfirmationModal(prev => ({ ...prev, open: false }));
                                 }
-                              } catch (error) {
-                                toast.error('Failed to delete checklist');
-                                console.error(error);
-                              }
+                              });
                             }}
                             className="px-2 py-1 bg-red-100 text-red-700 rounded text-xs hover:bg-red-200 flex items-center gap-1"
                             title="Delete Checklist"
@@ -502,6 +552,43 @@ export default function AdminServices() {
                   fetchChecklists();
                 }}
               />
+            </div>
+          </div>
+        </div>
+      )}
+      {/* Confirmation Modal */}
+      {confirmationModal.open && (
+        <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmationModal(prev => ({ ...prev, open: false }))}>
+          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100" onClick={e => e.stopPropagation()}>
+            <div className="p-6 text-center">
+              <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${confirmationModal.isDestructive ? 'bg-red-100' : 'bg-blue-100'}`}>
+                {confirmationModal.isDestructive ? (
+                  <FaTrash className="text-red-600 text-2xl" />
+                ) : (
+                  <FaCheckCircle className="text-blue-600 text-2xl" />
+                )}
+              </div>
+              <h3 className="text-xl font-bold mb-2 text-gray-900">{confirmationModal.title}</h3>
+              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+                {confirmationModal.message}
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={() => setConfirmationModal(prev => ({ ...prev, open: false }))}
+                  className="flex-1 py-2.5 rounded-xl font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={confirmationModal.onConfirm}
+                  className={`flex-1 py-2.5 rounded-xl font-bold text-white transition-colors shadow-lg ${confirmationModal.isDestructive
+                      ? 'bg-red-600 hover:bg-red-700 shadow-red-500/30'
+                      : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
+                    }`}
+                >
+                  Confirm
+                </button>
+              </div>
             </div>
           </div>
         </div>
