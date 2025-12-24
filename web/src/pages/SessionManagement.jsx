@@ -38,6 +38,8 @@ const SessionManagement = () => {
   const [isSearching, setIsSearching] = useState(false);
 
   const [isRefreshing, setIsRefreshing] = useState(false);
+  const [showLogoutAllModal, setShowLogoutAllModal] = useState(false);
+  const [logoutAllTargetSession, setLogoutAllTargetSession] = useState(null);
 
   // Debounced search effect
   useEffect(() => {
@@ -194,10 +196,6 @@ const SessionManagement = () => {
   };
 
   const forceLogoutAllUserSessions = async (userId, reason) => {
-    if (!window.confirm('Are you sure you want to log out all sessions for this user?')) {
-      return;
-    }
-
     try {
       const res = await fetch(`${import.meta.env.VITE_API_BASE_URL || ''}/api/session-management/admin/force-logout-all`, {
         method: 'POST',
@@ -225,7 +223,15 @@ const SessionManagement = () => {
     } catch (error) {
       console.error('Error force logging out all sessions:', error);
       toast.error('Failed to force logout all sessions');
+    } finally {
+      setShowLogoutAllModal(false);
+      setLogoutAllTargetSession(null);
     }
+  };
+
+  const openLogoutAllModal = (session) => {
+    setLogoutAllTargetSession(session);
+    setShowLogoutAllModal(true);
   };
 
   const openForceLogoutModal = (session) => {
@@ -574,7 +580,7 @@ const SessionManagement = () => {
                                 {revokingSession === session.sessionId ? <FaSync className="animate-spin" /> : <FaSignOutAlt />}
                               </button>
                               <button
-                                onClick={() => forceLogoutAllUserSessions(session.userId, 'Admin action')}
+                                onClick={() => openLogoutAllModal(session)}
                                 className="text-orange-600 hover:text-orange-900 hover:bg-orange-50 p-2 rounded-lg transition-colors"
                                 title="Logout All User Sessions"
                               >
@@ -708,6 +714,71 @@ const SessionManagement = () => {
                   className="px-5 py-2.5 text-sm font-bold text-white bg-red-600 border border-transparent rounded-xl hover:bg-red-700 shadow-lg shadow-red-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-red-500 transition-all flex items-center gap-2"
                 >
                   <FaSignOutAlt /> Force Logout
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Logout All Sessions Confirmation Modal */}
+      {showLogoutAllModal && logoutAllTargetSession && (
+        <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
+          <div className="relative mx-auto bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in border border-gray-100">
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 px-6 py-4 border-b border-orange-100 flex items-center gap-3">
+              <div className="bg-white p-2 rounded-full shadow-sm text-orange-500">
+                <FaUserSlash />
+              </div>
+              <h3 className="text-lg font-bold text-orange-900">Logout All Sessions</h3>
+            </div>
+
+            <div className="p-6">
+              <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
+                <div className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shadow-sm">
+                      {logoutAllTargetSession.username.charAt(0).toUpperCase()}
+                    </div>
+                    <div>
+                      <p className="text-sm font-bold text-gray-900">{logoutAllTargetSession.username}</p>
+                      <p className="text-xs text-gray-500">{logoutAllTargetSession.email}</p>
+                    </div>
+                  </div>
+                  <div className="h-px bg-gray-200 mx-1"></div>
+                  <div className="text-sm">
+                    <span className="text-xs text-gray-400 block mb-1 uppercase tracking-wider">Role</span>
+                    <span className="font-medium text-gray-700">{logoutAllTargetSession.role}</span>
+                  </div>
+                </div>
+              </div>
+
+              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
+                <div className="flex items-start gap-3">
+                  <FaExclamationTriangle className="text-orange-500 mt-0.5 flex-shrink-0" />
+                  <div>
+                    <p className="text-sm font-semibold text-orange-900 mb-1">Warning</p>
+                    <p className="text-xs text-orange-700">
+                      This will forcefully log out all active sessions for this user across all devices. This action cannot be undone.
+                    </p>
+                  </div>
+                </div>
+              </div>
+
+              <div className="flex justify-end gap-3 pt-2">
+                <button
+                  onClick={() => {
+                    setShowLogoutAllModal(false);
+                    setLogoutAllTargetSession(null);
+                  }}
+                  className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
+                >
+                  Cancel
+                </button>
+                <button
+                  onClick={() => forceLogoutAllUserSessions(logoutAllTargetSession.userId, 'Admin action - Logout all sessions')}
+                  className="px-5 py-2.5 text-sm font-bold text-white bg-orange-600 border border-transparent rounded-xl hover:bg-orange-700 shadow-lg shadow-orange-500/30 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-orange-500 transition-all flex items-center gap-2"
+                >
+                  <FaUserSlash /> Logout All Sessions
                 </button>
               </div>
             </div>
