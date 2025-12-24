@@ -1,6 +1,5 @@
 import React, { useState, useEffect } from 'react';
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
-import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaEdit, FaPhone, FaMobileAlt, FaAndroid, FaDownload, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import { downloadAndroidApp, getDownloadButtonText } from '../utils/androidDownload';
@@ -663,9 +662,6 @@ export default function AdminAbout() {
         </div>
         <div className="text-xs text-gray-500 mt-2">&copy; {new Date().getFullYear()} UrbanSetu. All rights reserved.</div>
       </div>
-
-      {/* Contact Support Wrapper */}
-      <ContactSupportWrapper />
     </div>
   );
 }

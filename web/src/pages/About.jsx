@@ -1,11 +1,9 @@
 import React, { useState, useEffect } from 'react'
 import AboutSkeleton from '../components/skeletons/AboutSkeleton';
-import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import { FaBullseye, FaGlobe, FaUsers, FaShieldAlt, FaUserFriends, FaEnvelope, FaStar, FaPhone, FaMobileAlt, FaDownload, FaAndroid, FaEye, FaCog, FaRocket, FaHeart, FaLock, FaCheckCircle, FaQuestionCircle, FaChevronDown, FaChevronUp } from 'react-icons/fa';
 import { useSelector } from 'react-redux';
 import { downloadAndroidApp, isAndroidDevice, isMobileDevice, getDownloadMessage, getDownloadButtonText } from '../utils/androidDownload';
 import { toast } from 'react-toastify';
-
 import { usePageTitle } from '../hooks/usePageTitle';
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || 'https://urbansetu.onrender.com';
 
@@ -383,9 +381,6 @@ export default function About() {
         </div>
         <div className="text-xs text-gray-500 mt-2">&copy; {new Date().getFullYear()} UrbanSetu. All rights reserved.</div>
       </div>
-
-      {/* Contact Support Wrapper */}
-      <ContactSupportWrapper />
     </div>
   )
 }
