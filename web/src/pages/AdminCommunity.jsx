@@ -1178,7 +1178,7 @@ export default function AdminCommunity() {
                                                         <FaSmile className="text-base" />
                                                     </button>
                                                     {showEmojiPicker.show && showEmojiPicker.type === 'edit-post' && showEmojiPicker.id === post._id && (
-                                                        <div className="absolute top-full right-0 z-[100] mt-2 shadow-xl animate-fade-in">
+                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
                                                             <EmojiPicker
                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-post', post._id)}
                                                                 width={300}
@@ -1323,7 +1323,7 @@ export default function AdminCommunity() {
                                                                                     <FaSmile className="text-sm" />
                                                                                 </button>
                                                                                 {showEmojiPicker.show && showEmojiPicker.type === 'edit-comment' && showEmojiPicker.id === comment._id && (
-                                                                                    <div className="absolute top-full right-0 z-[100] mt-2 shadow-xl animate-fade-in">
+                                                                                    <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
                                                                                         <EmojiPicker
                                                                                             onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-comment', comment._id)}
                                                                                             width={300}
@@ -1528,7 +1528,7 @@ export default function AdminCommunity() {
                                                                                                                         <FaSmile className="text-sm" />
                                                                                                                     </button>
                                                                                                                     {showEmojiPicker.show && showEmojiPicker.type === 'edit-reply' && showEmojiPicker.id === reply._id && (
-                                                                                                                        <div className="absolute top-full right-0 z-[100] mt-2 shadow-xl animate-fade-in">
+                                                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in">
                                                                                                                             <EmojiPicker
                                                                                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-reply', reply._id)}
                                                                                                                                 width={300}
