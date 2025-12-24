@@ -476,7 +476,7 @@ export default function OnDemandServices() {
                       <button onClick={() => {
                         setConfirmationModal({
                           open: true,
-                          title: 'delete Movers Request?',
+                          title: 'Delete Movers Request?',
                           message: 'Are you sure you want to delete this movers request permanently? This action cannot be undone.',
                           isDestructive: true,
                           onConfirm: async () => {
