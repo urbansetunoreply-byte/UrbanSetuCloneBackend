@@ -11,7 +11,7 @@ import {
     ArrowRight,
     Filter
 } from 'lucide-react';
-import Footer from '../components/Footer';
+
 import UpdatesSkeleton from '../components/skeletons/UpdatesSkeleton';
 
 import { usePageTitle } from '../hooks/usePageTitle';
@@ -228,8 +228,6 @@ const Updates = () => {
                     </div>
                 )}
             </div>
-
-            <Footer />
         </div>
     );
 };
