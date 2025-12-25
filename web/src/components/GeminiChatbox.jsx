@@ -4194,7 +4194,8 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
             // Restore protected HTML tags
             const restoredPart = part.replace(/__HTML_PROTECTED_(\d+)__/g, (match, id) => {
-                return protectedParts[parseInt(id)];
+                const restored = protectedParts[parseInt(id)];
+                return restored !== undefined ? restored : match; // Return match (placeholder) if undefined
             });
 
             return <span key={index} className={isSentMessage ? "text-white" : ""} dangerouslySetInnerHTML={{ __html: restoredPart }} />;
