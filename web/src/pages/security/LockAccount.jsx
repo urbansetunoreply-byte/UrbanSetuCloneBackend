@@ -1,24 +1,50 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaLock, FaExclamationTriangle, FaCheckCircle, FaSpinner } from 'react-icons/fa';
-// Removed socket import as per new guidance (using useSuspensionFetch in App.js usually handles global stuff, but here we just need API call)
+import ContactSupportWrapper from '../../components/ContactSupportWrapper';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-import ContactSupportWrapper from '../../components/ContactSupportWrapper';
-
 export default function LockAccount() {
     const { token } = useParams();
-    // ... (existing code, not repeating entirely)
+    const navigate = useNavigate();
+    const [status, setStatus] = useState('confirm'); // confirm, processing, success, error
+    const [message, setMessage] = useState('');
+
     const handleLock = async () => {
-        // ... existing handleLock code
+        try {
+            setStatus('processing');
+            setMessage('Locking your account...');
+
+            const res = await fetch(`${API_BASE_URL}/api/auth/lock-account`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ token }),
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                setStatus('success');
+                setMessage(data.message || 'Your account has been successfully locked.');
+            } else {
+                setStatus('error');
+                setMessage(data.message || 'Failed to lock account. The link may be invalid or expired.');
+            }
+        } catch (error) {
+            setStatus('error');
+            setMessage('An unexpected error occurred. Please try again or contact support.');
+            console.error("Lock error:", error);
+        }
     };
 
     return (
         <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-                    {/* ... existing content ... */}
+
                     {status === 'confirm' && (
                         <>
                             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">

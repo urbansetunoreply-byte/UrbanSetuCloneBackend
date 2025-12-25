@@ -1,16 +1,49 @@
 import React, { useEffect, useState } from 'react';
 import { useParams, useNavigate } from 'react-router-dom';
 import { FaUnlock, FaCheckCircle, FaExclamationTriangle, FaSpinner } from 'react-icons/fa';
+import ContactSupportWrapper from '../../components/ContactSupportWrapper';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
-import ContactSupportWrapper from '../../components/ContactSupportWrapper';
-
 export default function UnlockAccount() {
     const { token } = useParams();
-    // ... (existing code, not repeating entirely)
+    const navigate = useNavigate();
+    const [status, setStatus] = useState('processing');
+    const [message, setMessage] = useState('Verifying security token...');
+
     useEffect(() => {
-        // ... existing useEffect code
+        const unlockAccount = async () => {
+            try {
+                const res = await fetch(`${API_BASE_URL}/api/auth/unlock-account`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify({ token }),
+                });
+
+                const data = await res.json();
+
+                if (res.ok) {
+                    setStatus('success');
+                    setMessage(data.message || 'Account successfully unlocked.');
+                } else {
+                    setStatus('error');
+                    setMessage(data.message || 'Invalid or expired unlock token.');
+                }
+            } catch (error) {
+                setStatus('error');
+                setMessage('An unexpected error occurred. Please try again or contact support.');
+                console.error("Unlock error:", error);
+            }
+        };
+
+        if (token) {
+            unlockAccount();
+        } else {
+            setStatus('error');
+            setMessage('No token provided.');
+        }
     }, [token]);
 
     return (
