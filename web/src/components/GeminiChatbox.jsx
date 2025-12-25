@@ -3956,7 +3956,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const formatTextWithLinks = (text, isSentMessage = false) => {
         if (!text || typeof text !== 'string') return text;
 
-        // URL regex pattern with negative lookbehind to exclude trailing punctuation like ), ., etc.
+        // URL regex with negative lookbehind to exclude trailing punctuation
         const urlRegex = /((?:https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)(?<![\.,?!:;()\]]))/gi;
 
         const parts = text.split(urlRegex);
@@ -4081,6 +4081,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         // Process other markdown elements
         processedText = processedText
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer">$1</a>') // Links
             .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>') // Bold
             .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>') // Italic
             .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>') // H3
@@ -4106,7 +4107,9 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         const markdownProcessed = renderMarkdown(text);
 
         // Then process links in the markdown-processed text
-        const urlRegex = /(https?:\/\/[^<>\s]+|www\.[^<>\s]+\.[^<>\s]{2,}(?:\/[^<>\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^<>\s]*)?)/gi;
+        // Then process links in the markdown-processed text - strict regex to avoid double-linking HTML attributes
+        // Excludes matches preceded by href=" or href=' and excludes trailing punctuation
+        const urlRegex = /((?<!href=["'])(?:https?:\/\/[^<>\s]+|www\.[^<>\s]+\.[^<>\s]{2,}(?:\/[^<>\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^<>\s]*)?)(?<![\.,?!:;()\]]))/gi;
 
         // Split by URLs and process each part
         const parts = markdownProcessed.split(urlRegex);

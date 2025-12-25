@@ -1,4 +1,3 @@
-
 import Listing from "../models/listing.model.js";
 
 /**
