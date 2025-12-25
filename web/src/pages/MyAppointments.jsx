@@ -8032,10 +8032,10 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           <div className="mb-2">• Press Esc to close chatbox.</div>
                           <div className="border-t border-gray-600 pt-2 mt-2">
                             <div className="font-semibold mb-2">📎 File Upload Guidelines:</div>
-                            <div>• Photos: JPG, PNG, GIF, WebP (≤ 5MB)</div>
-                            <div>• Videos: MP4, WebM, MOV, MKV, OGG (≤ 5MB)</div>
-                            <div>• Documents: PDF, DOCX, XLSX, TXT and more (≤ 5MB)</div>
-                            <div>• Audio: MP3, WAV, M4A, OGG (≤ 5MB)</div>
+                            <div>• Photos: JPG, PNG, GIF, WebP (≤ 10MB)</div>
+                            <div>• Videos: MP4, WebM, MOV, MKV, OGG (≤ 100MB)</div>
+                            <div>• Documents: PDF, DOCX, XLSX, TXT and more (≤ 10MB)</div>
+                            <div>• Audio: MP3, WAV, M4A, OGG (≤ 10MB)</div>
                             <div>• Camera: Direct photo capture from device</div>
                             <div>• Add captions to all media types</div>
                           </div>
