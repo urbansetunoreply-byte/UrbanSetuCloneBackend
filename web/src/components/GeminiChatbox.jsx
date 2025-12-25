@@ -4161,7 +4161,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         // URL regex with negative lookbehind to exclude trailing punctuation
         // Note: No need for checks against href=" since tags are now masked
-        const urlRegex = /((?!(?:__HTML_PROTECTED_\d+__))(?:https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)(?<![\.,?!:;()\]]))/gi;
+        const urlRegex = /((?:https?:\/\/(?:(?!(?:__HTML_PROTECTED))[^\s])+|www\.(?:(?!(?:__HTML_PROTECTED))[^\s])+\.(?:(?!(?:__HTML_PROTECTED))[^\s]){2,}(?:\/(?:(?!(?:__HTML_PROTECTED))[^\s])*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/(?:(?!(?:__HTML_PROTECTED))[^\s])*)?)(?<![\.,?!:;()\]]))/gi;
 
         // Split by URLs and process each part
         const parts = maskedText.split(urlRegex);
