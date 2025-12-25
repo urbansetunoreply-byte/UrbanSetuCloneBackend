@@ -685,6 +685,22 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         // Hide modals if rate limit is not exceeded
                         setShowSignInModal(false);
                     }
+
+                    // For public users: If rate limit is reset (remaining equals limit), clear the persisted history
+                    if (!currentUser && data.rateLimit.remaining === data.rateLimit.limit && data.rateLimit.limit > 0) {
+                        console.log('Public user rate limit reset detected. Clearing local history.');
+                        localStorage.removeItem('gemini_public_history');
+                        // Only reset messages if we aren't currently typing or loading (to avoid interrupting active session)
+                        if (!isLoading && !isTyping) {
+                            setMessages([
+                                {
+                                    role: 'assistant',
+                                    content: 'Hello! I\'m SetuAI your AI assistant powered by Groq. How can I help you with your real estate needs today?',
+                                    timestamp: new Date().toISOString()
+                                }
+                            ]);
+                        }
+                    }
                 }
             } else {
                 console.error('Frontend - Rate limit status failed:', response.status, response.statusText);
@@ -1277,6 +1293,19 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             loadBookmarkedMessages(currentSessionId);
         } else if (!currentUser) {
             setIsHistoryLoaded(true);
+            // Load public history from localStorage
+            try {
+                const savedPublicHistory = localStorage.getItem('gemini_public_history');
+                if (savedPublicHistory) {
+                    const parsedHistory = JSON.parse(savedPublicHistory);
+                    if (Array.isArray(parsedHistory) && parsedHistory.length > 0) {
+                        setMessages(parsedHistory);
+                        console.log('Loaded public chat history from storage');
+                    }
+                }
+            } catch (error) {
+                console.error('Failed to load public history:', error);
+            }
         }
         // Restore draft input
         const draftKey = `gemini_draft_${currentSessionId}`;
@@ -1415,6 +1444,21 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             return () => clearInterval(cleanupInterval);
         }
     }, [dataRetention, currentUser]);
+
+    // Persist messages for public users
+    useEffect(() => {
+        if (!currentUser && messages.length > 0) {
+            // Don't save if it's just the default welcome message (optimization)
+            if (messages.length === 1 && messages[0].role === 'assistant' && messages[0].content.startsWith("Hello! I'm SetuAI")) {
+                return;
+            }
+            try {
+                localStorage.setItem('gemini_public_history', JSON.stringify(messages));
+            } catch (error) {
+                console.error('Failed to save public history:', error);
+            }
+        }
+    }, [messages, currentUser]);
 
     // Disable auto-save, high contrast, and smart suggestions for public users
     // Also set default AI settings for public users
