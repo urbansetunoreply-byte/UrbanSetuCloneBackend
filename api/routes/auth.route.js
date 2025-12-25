@@ -188,7 +188,7 @@ router.post('/verify-password', verifyToken, async (req, res) => {
 });
 
 // Security Lock/Unlock routes
-router.post('/security/lock', lockAccountByToken);
-router.post('/security/unlock', unlockAccountByToken);
+router.post('/lock-account', lockAccountByToken);
+router.post('/unlock-account', unlockAccountByToken);
 
 export default router
