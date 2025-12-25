@@ -4139,7 +4139,6 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     };
 
     // Combined function to render text with both links and markdown
-    // Combined function to render text with both links and markdown
     const renderTextWithMarkdownAndLinks = (text, isSentMessage = false) => {
         if (!text || typeof text !== 'string') return text;
 
