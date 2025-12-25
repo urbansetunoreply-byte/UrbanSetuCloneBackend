@@ -186,7 +186,7 @@ app.use(globalRateLimiter);
 
 // Increase payload size limit for large file uploads
 app.use((req, res, next) => {
-  if (req.url.includes('/api/deployment/upload')) {
+  if (req.url.includes('/api/deployment/upload') || req.url.includes('/api/upload')) {
     req.setTimeout(600000); // 10 minutes timeout for file uploads
     res.setTimeout(600000);
   }

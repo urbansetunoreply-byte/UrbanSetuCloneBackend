@@ -19,12 +19,12 @@ cloudinary.v2.config({
 const validateCloudinaryConfig = () => {
   const required = ['CLOUDINARY_CLOUD_NAME', 'CLOUDINARY_API_KEY', 'CLOUDINARY_API_SECRET'];
   const missing = required.filter(key => !process.env[key]);
-  
+
   if (missing.length > 0) {
     console.error('Missing Cloudinary environment variables:', missing);
     throw new Error(`Missing required Cloudinary environment variables: ${missing.join(', ')}`);
   }
-  
+
   console.log('Cloudinary configuration validated successfully');
 };
 
@@ -77,8 +77,10 @@ const audioStorage = new CloudinaryStorage({
   },
 });
 
-// Standard file size limit (10MB for better compatibility)
+// Standard file size limit (10MB for images/docs/audio)
 const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+// Video file size limit (100MB)
+const MAX_VIDEO_SIZE = 100 * 1024 * 1024; // 100MB
 
 // Configure multer per type
 const uploadImage = multer({
@@ -92,7 +94,7 @@ const uploadImage = multer({
 
 const uploadVideo = multer({
   storage: videoStorage,
-  limits: { fileSize: MAX_FILE_SIZE },
+  limits: { fileSize: MAX_VIDEO_SIZE },
   fileFilter: (req, file, cb) => {
     if (file.mimetype.startsWith('video/')) return cb(null, true);
     return cb(new Error('Only video files are allowed!'));
@@ -136,7 +138,7 @@ router.post('/image', uploadImage.single('image'), async (req, res) => {
       api_key: process.env.CLOUDINARY_API_KEY ? 'Set' : 'Not set',
       api_secret: process.env.CLOUDINARY_API_SECRET ? 'Set' : 'Not set'
     });
-    
+
     if (!req.file) {
       return res.status(400).json({ message: 'No image file provided' });
     }
@@ -156,46 +158,48 @@ router.post('/image', uploadImage.single('image'), async (req, res) => {
 // Enhanced error handling middleware for multer and Cloudinary
 router.use((error, req, res, next) => {
   console.error('Upload error:', error);
-  
+
   if (error instanceof multer.MulterError) {
     if (error.code === 'LIMIT_FILE_SIZE') {
-      return res.status(400).json({ 
+      // Determine which limit was exceeded based on the field name or request path (imperfect but helpful)
+      // Since we don't know exactly which limit triggered it here easily without context, we'll give a generic or high-level message
+      return res.status(400).json({
         success: false,
-        message: `File size too large. Maximum size is ${MAX_FILE_SIZE / (1024 * 1024)}MB.` 
+        message: `File size too large. Maximum size is 10MB for images/docs/audio and 100MB for videos.`
       });
     }
     if (error.code === 'LIMIT_UNEXPECTED_FILE') {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Unexpected file field. Please use the correct form field name.' 
+        message: 'Unexpected file field. Please use the correct form field name.'
       });
     }
     if (error.code === 'LIMIT_FILE_COUNT') {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'Too many files. Only one file allowed per upload.' 
+        message: 'Too many files. Only one file allowed per upload.'
       });
     }
-    return res.status(400).json({ 
+    return res.status(400).json({
       success: false,
-      message: 'File upload error', 
-      error: error.message 
+      message: 'File upload error',
+      error: error.message
     });
   }
-  
+
   // Handle Cloudinary-specific errors
   if (error.message && error.message.includes('Cloudinary')) {
-    return res.status(500).json({ 
+    return res.status(500).json({
       success: false,
-      message: 'Cloudinary upload failed', 
-      error: error.message 
+      message: 'Cloudinary upload failed',
+      error: error.message
     });
   }
-  
+
   if (error) {
-    return res.status(400).json({ 
+    return res.status(400).json({
       success: false,
-      message: error.message || 'Upload error' 
+      message: error.message || 'Upload error'
     });
   }
   next();
@@ -227,9 +231,9 @@ router.post('/images', uploadImage.array('images', 10), async (req, res) => {
 router.delete('/image/:publicId', async (req, res) => {
   try {
     const { publicId } = req.params;
-    
+
     const result = await cloudinary.v2.uploader.destroy(publicId);
-    
+
     if (result.result === 'ok') {
       res.status(200).json({ message: 'Image deleted successfully' });
     } else {
@@ -287,11 +291,11 @@ router.post('/audio', uploadAudio.single('audio'), async (req, res) => {
       mimeType: req.file?.mimetype,
       originalName: req.file?.originalname
     });
-    
+
     if (!req.file) {
-      return res.status(400).json({ 
+      return res.status(400).json({
         success: false,
-        message: 'No audio file provided' 
+        message: 'No audio file provided'
       });
     }
 
@@ -312,10 +316,10 @@ router.post('/audio', uploadAudio.single('audio'), async (req, res) => {
     });
   } catch (error) {
     console.error('Audio upload error:', error);
-    res.status(500).json({ 
+    res.status(500).json({
       success: false,
-      message: 'Error uploading audio', 
-      error: error.message 
+      message: 'Error uploading audio',
+      error: error.message
     });
   }
 });
