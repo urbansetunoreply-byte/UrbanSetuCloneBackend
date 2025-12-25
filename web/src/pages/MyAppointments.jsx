@@ -2872,9 +2872,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
         return;
       }
 
-      // Validate file size (5MB limit)
-      if (file.size > 5 * 1024 * 1024) {
-        errors.push(`File ${index + 1}: File size must be less than 5MB`);
+      // Validate file size (10MB limit)
+      if (file.size > 10 * 1024 * 1024) {
+        errors.push(`File ${index + 1}: File size must be less than 10MB`);
         return;
       }
 
@@ -9952,8 +9952,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             onChange={(e) => {
                               const file = e.target.files && e.target.files[0];
                               if (file) {
-                                if (file.size > 5 * 1024 * 1024) {
-                                  toast.error('Maximum video size is 5MB');
+                                if (file.size > 100 * 1024 * 1024) {
+                                  toast.error('Maximum video size is 100MB');
                                 } else {
                                   setSelectedVideo(file);
                                   setShowVideoPreviewModal(true);
@@ -9976,8 +9976,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             onChange={(e) => {
                               const file = e.target.files && e.target.files[0];
                               if (file) {
-                                if (file.size > 5 * 1024 * 1024) {
-                                  toast.error('Maximum document size is 5MB');
+                                if (file.size > 10 * 1024 * 1024) {
+                                  toast.error('Maximum document size is 10MB');
                                 } else {
                                   setSelectedDocument(file);
                                   setShowDocumentPreviewModal(true);
@@ -10002,8 +10002,8 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             onChange={(e) => {
                               const file = e.target.files && e.target.files[0];
                               if (file) {
-                                if (file.size > 5 * 1024 * 1024) {
-                                  toast.error('Maximum audio size is 5MB');
+                                if (file.size > 10 * 1024 * 1024) {
+                                  toast.error('Maximum audio size is 10MB');
                                 } else {
                                   setSelectedAudio(file);
                                   setShowAudioPreviewModal(true);
