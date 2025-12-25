@@ -479,7 +479,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
         </li>
       </Link>
 
-      {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin') && currentUser.adminApprovalStatus === 'approved' && (
+      {currentUser && currentUser.role === 'rootadmin' && currentUser.adminApprovalStatus === 'approved' && (
         <Link to="/admin/requests" onClick={onNavigate}>
           <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base relative flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
             <FaUserCheck className={`${mobile ? 'text-lg text-orange-500' : 'text-base text-orange-500'}`} />
