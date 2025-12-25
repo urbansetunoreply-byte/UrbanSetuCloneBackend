@@ -1,6 +1,7 @@
 import User from "../models/user.model.js";
 import PasswordLockout from "../models/passwordLockout.model.js";
 import bcryptjs from "bcryptjs";
+import crypto from 'crypto';
 import { errorHandler } from "../utils/error.js";
 import jwt from 'jsonwebtoken'
 import { generateOTP, sendSignupOTPEmail, sendLoginOTPEmail, sendPasswordResetSuccessEmail, sendPasswordChangeSuccessEmail, sendWelcomeEmail, sendReferralBonusEmail, sendReferredWelcomeEmail } from "../utils/emailService.js";
@@ -16,7 +17,7 @@ import {
     logSessionAction,
     revokeSessionFromDB
 } from "../utils/sessionManager.js";
-import { sendNewLoginEmail, sendSuspiciousLoginEmail, sendAccountLockoutEmail } from "../utils/emailService.js";
+import { sendNewLoginEmail, sendSuspiciousLoginEmail, sendAccountLockoutEmail, sendAccountLockedEmail, sendAccountUnlockedEmail } from "../utils/emailService.js";
 
 import OtpTracking from "../models/otpTracking.model.js";
 import DeletedAccount from "../models/deletedAccount.model.js";
@@ -1555,31 +1556,50 @@ export const lockAccountByToken = async (req, res, next) => {
         const user = await User.findOne({
             securityLockToken: token,
             securityLockExpires: { $gt: Date.now() }
-        }).select('+securityLockToken +securityLockExpires');
+        }).select('+securityLockToken +securityLockExpires +username +email');
 
         if (!user) {
             return next(errorHandler(400, 'Invalid or expired lock token'));
         }
 
+        let message = 'Account has been successfully locked';
         // Already locked?
         if (user.isLocked) {
-            return res.status(200).json({ success: true, message: 'Account is already locked' });
+            message = 'Account is already locked';
         }
 
         // Lock the account
         user.isLocked = true;
         user.lockReason = 'Emergency Lock by User';
 
-        // Clear the used token (One-time usage)
+        // Clear the used lock token
         user.securityLockToken = undefined;
         user.securityLockExpires = undefined;
+
+        // GENERATE UNLOCK TOKEN NOW
+        const unlockToken = crypto.randomBytes(32).toString('hex');
+        // Critical: Unlock token should NOT expire soon as it's the only key. Set to 10 years.
+        const tokenExpiry = new Date(Date.now() + 10 * 365 * 24 * 60 * 60 * 1000);
+
+        user.securityUnlockToken = unlockToken;
+        user.securityUnlockExpires = tokenExpiry;
 
         await user.save();
 
         // Log event
         logSecurityEvent('account_emergency_locked', { userId: user._id, email: user.email });
 
-        res.status(200).json({ success: true, message: 'Account has been successfully locked' });
+        // SEND LOCKED EMAIL WITH NEW UNLOCK LINK
+        const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+        const unlockLink = `${clientUrl}/security/unlock-account/${unlockToken}`;
+
+        try {
+            await sendAccountLockedEmail(user.email, user.username, unlockLink);
+        } catch (emailErr) {
+            console.error("Failed to send account locked email:", emailErr);
+        }
+
+        res.status(200).json({ success: true, message });
     } catch (error) {
         next(error);
     }
@@ -1594,10 +1614,15 @@ export const unlockAccountByToken = async (req, res, next) => {
         const user = await User.findOne({
             securityUnlockToken: token,
             securityUnlockExpires: { $gt: Date.now() }
-        }).select('+securityUnlockToken +securityUnlockExpires');
+        }).select('+securityUnlockToken +securityUnlockExpires +securityLockToken +securityLockExpires +username +email');
 
         if (!user) {
             return next(errorHandler(400, 'Invalid or expired unlock token'));
+        }
+
+        let message = 'Account has been successfully unlocked';
+        if (!user.isLocked) {
+            message = 'Account is already active';
         }
 
         // Unlock the account
@@ -1622,7 +1647,14 @@ export const unlockAccountByToken = async (req, res, next) => {
         // Log event
         logSecurityEvent('account_emergency_unlocked', { userId: user._id, email: user.email });
 
-        res.status(200).json({ success: true, message: 'Account has been successfully unlocked' });
+        // SEND UNLOCKED EMAIL
+        try {
+            await sendAccountUnlockedEmail(user.email, user.username);
+        } catch (emailErr) {
+            console.error("Failed to send account unlocked email:", emailErr);
+        }
+
+        res.status(200).json({ success: true, message });
     } catch (error) {
         next(error);
     }

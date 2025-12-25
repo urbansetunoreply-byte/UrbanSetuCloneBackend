@@ -38,19 +38,18 @@ export const trackFailedAttempt = async (identifier, userId = null) => {
 
                 // Generate Security Tokens
                 const lockToken = crypto.randomBytes(32).toString('hex');
-                const unlockToken = crypto.randomBytes(32).toString('hex');
+                // Unlock token will be generated ONLY IF the user actually decides to lock the account.
                 const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
 
-                // Save tokens to user
+                // Save lock token to user (Clear any existing unlock tokens from previous attempts)
                 user.securityLockToken = lockToken;
-                user.securityUnlockToken = unlockToken;
+                user.securityUnlockToken = undefined;
                 user.securityLockExpires = tokenExpiry;
-                user.securityUnlockExpires = tokenExpiry;
+                user.securityUnlockExpires = undefined;
                 await user.save();
 
                 const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
                 const lockLink = `${clientUrl}/security/lock-account/${lockToken}`;
-                const unlockLink = `${clientUrl}/security/unlock-account/${unlockToken}`;
 
                 // Send Critical Alert Email to Root Admin (Reminder/Warning, NOT Lockout)
                 const location = getLocationFromIP(identifier);
@@ -59,8 +58,7 @@ export const trackFailedAttempt = async (identifier, userId = null) => {
                     attempts,
                     ipAddress: identifier,
                     location,
-                    lockLink,
-                    unlockLink
+                    lockLink
                 });
 
                 return { attempts };

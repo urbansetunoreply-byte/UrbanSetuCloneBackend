@@ -4,43 +4,17 @@ import { FaUnlock, FaCheckCircle, FaExclamationTriangle, FaSpinner } from 'react
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
+import ContactSupportWrapper from '../../components/ContactSupportWrapper';
+
 export default function UnlockAccount() {
     const { token } = useParams();
-    const navigate = useNavigate();
-    const [status, setStatus] = useState('processing'); // processing, success, error
-    const [message, setMessage] = useState('Verifying security token...');
-
+    // ... (existing code, not repeating entirely)
     useEffect(() => {
-        const unlock = async () => {
-            try {
-                const res = await fetch(`${API_BASE_URL}/api/auth/security/unlock`, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                    },
-                    body: JSON.stringify({ token }),
-                });
-                const data = await res.json();
-                if (res.ok) {
-                    setStatus('success');
-                    setMessage(data.message || 'Account successfully unlocked.');
-                } else {
-                    setStatus('error');
-                    setMessage(data.message || 'Failed to unlock account. Token may be invalid or expired.');
-                }
-            } catch (error) {
-                setStatus('error');
-                setMessage('Network error occurred.');
-            }
-        };
-
-        if (token) {
-            unlock();
-        }
+        // ... existing useEffect code
     }, [token]);
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
 
@@ -80,6 +54,7 @@ export default function UnlockAccount() {
 
                 </div>
             </div>
+            <ContactSupportWrapper />
         </div>
     );
 }

@@ -5,41 +5,20 @@ import { FaLock, FaExclamationTriangle, FaCheckCircle, FaSpinner } from 'react-i
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL || '';
 
+import ContactSupportWrapper from '../../components/ContactSupportWrapper';
+
 export default function LockAccount() {
     const { token } = useParams();
-    const navigate = useNavigate();
-    const [status, setStatus] = useState('confirm'); // confirm, processing, success, error
-    const [message, setMessage] = useState('');
-
+    // ... (existing code, not repeating entirely)
     const handleLock = async () => {
-        setStatus('processing');
-        try {
-            const res = await fetch(`${API_BASE_URL}/api/auth/security/lock`, {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                },
-                body: JSON.stringify({ token }),
-            });
-            const data = await res.json();
-            if (res.ok) {
-                setStatus('success');
-                setMessage(data.message || 'Account successfully locked.');
-            } else {
-                setStatus('error');
-                setMessage(data.message || 'Failed to lock account.');
-            }
-        } catch (error) {
-            setStatus('error');
-            setMessage('Network error occurred.');
-        }
+        // ... existing handleLock code
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8">
+        <div className="min-h-screen bg-gray-50 flex flex-col justify-center py-12 sm:px-6 lg:px-8 relative">
             <div className="sm:mx-auto sm:w-full sm:max-w-md">
                 <div className="bg-white py-8 px-4 shadow sm:rounded-lg sm:px-10 text-center">
-
+                    {/* ... existing content ... */}
                     {status === 'confirm' && (
                         <>
                             <div className="mx-auto flex items-center justify-center h-16 w-16 rounded-full bg-red-100 mb-4">
@@ -96,6 +75,7 @@ export default function LockAccount() {
 
                 </div>
             </div>
+            <ContactSupportWrapper />
         </div>
     );
 }

@@ -13883,10 +13883,10 @@ export const sendAccountLockoutEmail = async (email, details) => {
   }
 };
 
-// Send Root Admin Attack Email
+// Send Root Admin Attack Email (Lock Link Only)
 export const sendRootAdminAttackEmail = async (email, details) => {
   try {
-    const { username, attempts, ipAddress, location, lockLink, unlockLink } = details;
+    const { username, attempts, ipAddress, location, lockLink } = details;
     const subject = '🚨 CRITICAL: Attack Attempt on Root Admin Account';
 
     const html = `
@@ -13943,16 +13943,13 @@ export const sendRootAdminAttackEmail = async (email, details) => {
                   <a href="${lockLink}" style="background-color: #dc2626; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
                      🔒 Lock Account Now
                   </a>
-                  <a href="${unlockLink}" style="background-color: #16a34a; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
-                     🔓 Unlock Account
-                  </a>
                </div>
 
                <p style="font-size: 12px; color: #881337; font-weight: bold; text-align: center;">
-                 ⚠️ IMPORTANT: To unlock this account later, you must use the "Unlock Account" link provided above. Please preserve this email.
+                 ⚠️ NOTE: If you lock your account, we will immediately send you a separate email with a secure link to unlock it.
                </p>
                <p style="font-size: 12px; color: #64748b; text-align: center; margin-bottom: 0;">
-                 These secure links will expire in 1 hour.
+                 This secure lock link will expire in 1 hour.
                </p>
             </div>
             
@@ -13981,6 +13978,125 @@ export const sendRootAdminAttackEmail = async (email, details) => {
   }
 };
 
+// Send Account Locked Confirmation Email with Unlock Link
+export const sendAccountLockedEmail = async (email, username, unlockLink) => {
+  try {
+    const subject = '🚨 Account Locked - Emergency Unlock Link';
+
+    const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Account Locked</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937;">
+          <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <div style="background: linear-gradient(135deg, #1f2937 0%, #111827 100%); padding: 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Account Locking Confirmed</h1>
+              <p style="color: #9ca3af; margin: 10px 0 0; font-size: 16px;">Action Successful</p>
+            </div>
+            
+            <div style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6;">
+                Hello <strong>${username}</strong>,
+              </p>
+              <p style="margin: 0 0 25px; font-size: 16px; line-height: 1.6;">
+                As requested, your account has been <strong>successfully locked</strong>. All active sessions have been terminated.
+              </p>
+  
+              <div style="background-color: #fefce8; border-left: 4px solid #eab308; padding: 20px; margin-bottom: 25px; border-radius: 4px;">
+                 <h3 style="color: #854d0e; margin-top: 0;">Restoring Access</h3>
+                 <p style="margin-bottom: 15px; font-size: 14px; color: #713f12;">
+                    To regain access to your account, you must use the secure link below. This is the <strong>ONLY</strong> way to unlock your account via email.
+                 </p>
+                 
+                 <div style="display: flex; justify-content: center; margin: 20px 0;">
+                    <a href="${unlockLink}" style="background-color: #16a34a; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; display: inline-block;">
+                       🔓 Unlock My Account
+                    </a>
+                 </div>
+  
+                 <p style="font-size: 12px; color: #854d0e; font-weight: bold; text-align: center; margin-bottom: 0;">
+                   ⚠️ PLEASE PRESERVE THIS EMAIL.
+                 </p>
+
+              </div>
+            </div>
+            
+            <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu Security</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending account locked email:', error);
+  }
+};
+
+// Send Account Unlocked Confirmation Email
+export const sendAccountUnlockedEmail = async (email, username) => {
+  try {
+    const subject = '✅ Account Unlocked - Access Restored';
+
+    const html = `
+        <!DOCTYPE html>
+        <html>
+        <head>
+          <meta charset="utf-8">
+          <meta name="viewport" content="width=device-width, initial-scale=1.0">
+          <title>Account Unlocked</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f3f4f6; color: #1f2937;">
+          <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);">
+            <div style="background: linear-gradient(135deg, #059669 0%, #047857 100%); padding: 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Account Unlocked</h1>
+              <p style="color: #d1fae5; margin: 10px 0 0; font-size: 16px;">Access Restored Successfully</p>
+            </div>
+            
+            <div style="padding: 40px 30px;">
+              <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6;">
+                Hello <strong>${username}</strong>,
+              </p>
+              <p style="margin: 0 0 25px; font-size: 16px; line-height: 1.6;">
+                Your account has been successfully unlocked. You can now sign in normally.
+              </p>
+  
+              <div style="text-align: center; margin-top: 30px;">
+                 <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/sign-in" style="background-color: #2563eb; color: white; padding: 12px 25px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; display: inline-block;">
+                    Sign In to UrbanSetu
+                 </a>
+              </div>
+            </div>
+            
+            <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu Security</p>
+            </div>
+          </div>
+        </body>
+        </html>
+      `;
+
+    return await sendEmailWithRetry({
+      to: email,
+      subject: subject,
+      html: html
+    });
+  } catch (error) {
+    console.error('Error sending account unlocked email:', error);
+  }
+};
+
+
 // Send Community Post Confirmation Email
 export const sendCommunityPostConfirmationEmail = async (email, username, postTitle, postId) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
@@ -13989,7 +14105,7 @@ export const sendCommunityPostConfirmationEmail = async (email, username, postTi
     to: email,
     subject: 'Your Discussion is Live! 💬 - UrbanSetu Community',
     html: `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
         <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
           <h2 style="color: #0f766e; margin: 0; font-size: 24px;">UrbanSetu Community</h2>
         </div>
@@ -14014,8 +14130,8 @@ export const sendCommunityPostConfirmationEmail = async (email, username, postTi
             <p>© ${new Date().getFullYear()} UrbanSetu Community Team</p>
           </div>
         </div>
-      </div>
-    `
+      </div >
+  `
   };
   return sendEmailWithRetry(mailOptions);
 };
@@ -14028,7 +14144,7 @@ export const sendCommunityReportAcknowledgementEmail = async (email, username, i
     to: email,
     subject: 'Report Received - UrbanSetu Community Safety 🛡️',
     html: `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
          <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
           <h2 style="color: #2563eb; margin: 0; font-size: 24px;">Community Safety</h2>
         </div>
@@ -14048,8 +14164,8 @@ export const sendCommunityReportAcknowledgementEmail = async (email, username, i
             <p>© ${new Date().getFullYear()} UrbanSetu Trust & Safety</p>
           </div>
         </div>
-      </div>
-    `
+      </div >
+  `
   };
   return sendEmailWithRetry(mailOptions);
 };
@@ -14060,7 +14176,7 @@ export const sendSearchAlertEmail = async (email, username, searchCriteria, newP
 
   // Generate preview cards for up to 3 properties
   const propertyCards = newProperties.slice(0, 3).map(prop => `
-    <div style="background-color: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 15px; overflow: hidden; display: flex;">
+  < div style = "background-color: white; border: 1px solid #e5e7eb; border-radius: 8px; margin-bottom: 15px; overflow: hidden; display: flex;" >
       <div style="width: 120px; height: 100px; background-color: #f3f4f6; flex-shrink: 0;">
         <img src="${prop.image || 'https://via.placeholder.com/120x100?text=Property'}" alt="${prop.title}" style="width: 100%; height: 100%; object-fit: cover;">
       </div>
@@ -14069,7 +14185,7 @@ export const sendSearchAlertEmail = async (email, username, searchCriteria, newP
         <p style="margin: 0 0 5px; color: #4b5563; font-size: 14px;">${prop.location}</p>
         <p style="margin: 0; color: #059669; font-weight: 600;">₹${prop.price.toLocaleString('en-IN')}/mo</p>
       </div>
-    </div>
+    </div >
   `).join('');
 
   const mailOptions = {
@@ -14077,7 +14193,7 @@ export const sendSearchAlertEmail = async (email, username, searchCriteria, newP
     to: email,
     subject: `New Homes in ${searchCriteria.location} match your search! 🏠`,
     html: `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
         <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
           <h2 style="color: #2563eb; margin: 0; font-size: 24px;">UrbanSetu Alerts</h2>
         </div>
@@ -14104,8 +14220,8 @@ export const sendSearchAlertEmail = async (email, username, searchCriteria, newP
             <p>© ${new Date().getFullYear()} UrbanSetu Real Estate</p>
           </div>
         </div>
-      </div>
-    `
+      </div >
+  `
   };
   return sendEmailWithRetry(mailOptions);
 };
@@ -14120,7 +14236,7 @@ export const sendLeaseRenewalReminderEmail = async (email, username, contractDet
     to: email,
     subject: `${isUrgent ? '📅 Action Required:' : '🔔 Reminder:'} Lease Expiring in ${daysRemaining} Days`,
     html: `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
         <div style="background-color: ${isUrgent ? '#fef2f2' : '#f0f9ff'}; padding: 20px; text-align: center; border-bottom: 2px solid ${isUrgent ? '#fee2e2' : '#e0f2fe'};">
           <h2 style="color: ${isUrgent ? '#dc2626' : '#0284c7'}; margin: 0; font-size: 24px;">Lease Renewal</h2>
         </div>
@@ -14155,8 +14271,8 @@ export const sendLeaseRenewalReminderEmail = async (email, username, contractDet
             <p>© ${new Date().getFullYear()} UrbanSetu Legal Team</p>
           </div>
         </div>
-      </div>
-    `
+      </div >
+  `
   };
   return sendEmailWithRetry(mailOptions);
 };
@@ -14170,7 +14286,7 @@ export const sendIncompleteListingOnboardingEmail = async (email, username, list
     to: email,
     subject: 'Almost there! Finish listing your property 🏡',
     html: `
-      <div style="font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;">
+  < div style = "font-family: 'Segoe UI', Arial, sans-serif; max-width: 600px; margin: 0 auto; color: #333; line-height: 1.6;" >
         <div style="background-color: #f8fafc; padding: 20px; text-align: center; border-bottom: 2px solid #e2e8f0;">
           <h2 style="color: #059669; margin: 0; font-size: 24px;">Finish Your Listing</h2>
         </div>
@@ -14200,8 +14316,8 @@ export const sendIncompleteListingOnboardingEmail = async (email, username, list
             <p>© ${new Date().getFullYear()} UrbanSetu Team</p>
           </div>
         </div>
-      </div>
-    `
+      </div >
+  `
   };
   return sendEmailWithRetry(mailOptions);
 };
@@ -14213,71 +14329,71 @@ export const sendReferralBonusEmail = async (email, username, friendName, amount
     to: email,
     subject: 'Congratulations! You earned a Referral Bonus 💎 - UrbanSetu',
     html: `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
+  <!DOCTYPE html>
+  <html>
+    <head>
+      <meta charset="utf-8">
         <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Referral Bonus Earned</title>
-      </head>
-      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          
-          <!-- Header -->
-          <div style="background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); padding: 40px 30px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Referral Bonus Unlocked! 🚀</h1>
-            <p style="color: #e0e7ff; margin: 10px 0 0; font-size: 16px;">Thanks for growing our community</p>
-          </div>
-          
-          <!-- Content -->
-          <div style="padding: 40px 30px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Fantastic News, ${username}!</h2>
-              <p style="color: #4b5563; margin: 0; font-size: 16px; line-height: 1.6;">
-                Your friend <strong>${friendName}</strong> just joined UrbanSetu using your personal referral link.
+          <title>Referral Bonus Earned</title>
+        </head>
+        <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5;">
+          <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+            <!-- Header -->
+            <div style="background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); padding: 40px 30px; text-align: center;">
+              <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Referral Bonus Unlocked! 🚀</h1>
+              <p style="color: #e0e7ff; margin: 10px 0 0; font-size: 16px;">Thanks for growing our community</p>
+            </div>
+
+            <!-- Content -->
+            <div style="padding: 40px 30px;">
+              <div style="text-align: center; margin-bottom: 30px;">
+                <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Fantastic News, ${username}!</h2>
+                <p style="color: #4b5563; margin: 0; font-size: 16px; line-height: 1.6;">
+                  Your friend <strong>${friendName}</strong> just joined UrbanSetu using your personal referral link.
+                </p>
+              </div>
+
+              <!-- Bonus Card -->
+              <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border: 2px dashed #f59e0b; border-radius: 12px; padding: 30px; margin-bottom: 30px; text-align: center;">
+                <span style="display: block; font-size: 14px; color: #b45309; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">You Earned</span>
+                <div style="font-size: 42px; font-weight: 800; color: #d97706; margin: 10px 0;">
+                  +${amount} <span style="font-size: 32px;">🪙</span>
+                </div>
+                <p style="color: #92400e; margin: 0; font-weight: 600;">SetuCoins Added to Wallet</p>
+              </div>
+
+              <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
+                <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600; text-align: center;">✨ What Can You Do With SetuCoins?</h3>
+                <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                  <li><strong>Pay Rent:</strong> Use coins to discount your monthly rent payments.</li>
+                  <li><strong>Unlock Features:</strong> Access premium listing analytics.</li>
+                  <li><strong>Gift Cards:</strong> Redeem for popular shopping vouchers.</li>
+                </ul>
+              </div>
+
+              <div style="text-align: center;">
+                <a href="${clientBaseUrl}/user/rewards"
+                  style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.25); transition: all 0.3s ease;">
+                  🪙 Check My Wallet
+                </a>
+              </div>
+
+              <p style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px;">
+                Keep referring friends! Check your dashboard for your unique referral link.
               </p>
             </div>
-            
-            <!-- Bonus Card -->
-            <div style="background: linear-gradient(135deg, #fef3c7 0%, #fffbeb 100%); border: 2px dashed #f59e0b; border-radius: 12px; padding: 30px; margin-bottom: 30px; text-align: center;">
-              <span style="display: block; font-size: 14px; color: #b45309; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">You Earned</span>
-              <div style="font-size: 42px; font-weight: 800; color: #d97706; margin: 10px 0;">
-                +${amount} <span style="font-size: 32px;">🪙</span>
-              </div>
-              <p style="color: #92400e; margin: 0; font-weight: 600;">SetuCoins Added to Wallet</p>
+
+            <!-- Footer -->
+            <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+              <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+                © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+              </p>
             </div>
-            
-            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
-              <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600; text-align: center;">✨ What Can You Do With SetuCoins?</h3>
-              <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                <li><strong>Pay Rent:</strong> Use coins to discount your monthly rent payments.</li>
-                <li><strong>Unlock Features:</strong> Access premium listing analytics.</li>
-                <li><strong>Gift Cards:</strong> Redeem for popular shopping vouchers.</li>
-              </ul>
-            </div>
-            
-            <div style="text-align: center;">
-              <a href="${clientBaseUrl}/user/rewards" 
-                 style="display: inline-block; background: linear-gradient(135deg, #6366f1 0%, #4338ca 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px rgba(99, 102, 241, 0.25); transition: all 0.3s ease;">
-                🪙 Check My Wallet
-              </a>
-            </div>
-            
-            <p style="text-align: center; margin-top: 30px; color: #6b7280; font-size: 14px;">
-              Keep referring friends! Check your dashboard for your unique referral link.
-            </p>
           </div>
-          
-          <!-- Footer -->
-          <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </body>
+        </body>
       </html>
-    `
+      `
   };
 
   try {
@@ -14298,67 +14414,67 @@ export const sendReferredWelcomeEmail = async (email, username, referrerName, am
     to: email,
     subject: `Welcome to UrbanSetu! You joined via ${referrerName}'s invitation 🎁`,
     html: `
-      <!DOCTYPE html>
-      <html>
-      <head>
-        <meta charset="utf-8">
-        <meta name="viewport" content="width=device-width, initial-scale=1.0">
-        <title>Welcome Bonus</title>
-      </head>
-      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5;">
-        <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
-          
-          <!-- Header -->
-          <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
-            <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Welcome to the Family! 🏡</h1>
-            <p style="color: #ecfdf5; margin: 10px 0 0; font-size: 16px;">Your journey starts with a reward</p>
-          </div>
-          
-          <!-- Content -->
-          <div style="padding: 40px 30px;">
-            <div style="text-align: center; margin-bottom: 30px;">
-              <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Hello ${username},</h2>
-              <p style="color: #4b5563; margin: 0; font-size: 16px; line-height: 1.6;">
-                We are thrilled to have you join UrbanSetu via <strong>${referrerName}'s</strong> special invitation.
-              </p>
-            </div>
-            
-            <!-- Bonus Card -->
-            <div style="background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%); border: 2px dashed #3b82f6; border-radius: 12px; padding: 30px; margin-bottom: 30px; text-align: center;">
-              <span style="display: block; font-size: 14px; color: #1e40af; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Your Welcome Gift</span>
-              <div style="font-size: 42px; font-weight: 800; color: #2563eb; margin: 10px 0;">
-                +${amount} <span style="font-size: 32px;">🪙</span>
-              </div>
-              <p style="color: #1e3a8a; margin: 0; font-weight: 600;">SetuCoins Credited Instantly</p>
-            </div>
-            
-            <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
-              <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600; text-align: center;">🚀 Maximizing Your Experience</h3>
-              <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
-                <li><strong>Complete Profile:</strong> Earn 20 SetuCoins by finishing your profile setup.</li>
-                <li><strong>Browse Listings:</strong> Find verified properties with zero brokerage options.</li>
-                <li><strong>Refer Friends:</strong> Share your own link to earn even more!</li>
-              </ul>
-            </div>
-            
-            <div style="text-align: center;">
-              <a href="${clientBaseUrl}/user/dashboard" 
-                 style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25); transition: all 0.3s ease;">
-                🎁 Claim My Bonus & Start
-              </a>
-            </div>
-          </div>
-          
-          <!-- Footer -->
-          <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
-            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
-              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
-            </p>
-          </div>
-        </div>
-      </body>
-      </html>
-    `
+        <!DOCTYPE html>
+        <html>
+          <head>
+            <meta charset="utf-8">
+              <meta name="viewport" content="width=device-width, initial-scale=1.0">
+                <title>Welcome Bonus</title>
+              </head>
+              <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5;">
+                <div style="max-width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+
+                  <!-- Header -->
+                  <div style="background: linear-gradient(135deg, #10b981 0%, #059669 100%); padding: 40px 30px; text-align: center;">
+                    <h1 style="color: #ffffff; margin: 0; font-size: 28px; font-weight: 700;">Welcome to the Family! 🏡</h1>
+                    <p style="color: #ecfdf5; margin: 10px 0 0; font-size: 16px;">Your journey starts with a reward</p>
+                  </div>
+
+                  <!-- Content -->
+                  <div style="padding: 40px 30px;">
+                    <div style="text-align: center; margin-bottom: 30px;">
+                      <h2 style="color: #1f2937; margin: 0 0 15px; font-size: 24px; font-weight: 600;">Hello ${username},</h2>
+                      <p style="color: #4b5563; margin: 0; font-size: 16px; line-height: 1.6;">
+                        We are thrilled to have you join UrbanSetu via <strong>${referrerName}'s</strong> special invitation.
+                      </p>
+                    </div>
+
+                    <!-- Bonus Card -->
+                    <div style="background: linear-gradient(135deg, #dbeafe 0%, #eff6ff 100%); border: 2px dashed #3b82f6; border-radius: 12px; padding: 30px; margin-bottom: 30px; text-align: center;">
+                      <span style="display: block; font-size: 14px; color: #1e40af; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; margin-bottom: 5px;">Your Welcome Gift</span>
+                      <div style="font-size: 42px; font-weight: 800; color: #2563eb; margin: 10px 0;">
+                        +${amount} <span style="font-size: 32px;">🪙</span>
+                      </div>
+                      <p style="color: #1e3a8a; margin: 0; font-weight: 600;">SetuCoins Credited Instantly</p>
+                    </div>
+
+                    <div style="background-color: #f3f4f6; padding: 25px; border-radius: 8px; margin-bottom: 30px;">
+                      <h3 style="color: #1f2937; margin: 0 0 15px; font-size: 18px; font-weight: 600; text-align: center;">🚀 Maximizing Your Experience</h3>
+                      <ul style="color: #4b5563; font-size: 15px; line-height: 1.8; margin: 0; padding-left: 20px;">
+                        <li><strong>Complete Profile:</strong> Earn 20 SetuCoins by finishing your profile setup.</li>
+                        <li><strong>Browse Listings:</strong> Find verified properties with zero brokerage options.</li>
+                        <li><strong>Refer Friends:</strong> Share your own link to earn even more!</li>
+                      </ul>
+                    </div>
+
+                    <div style="text-align: center;">
+                      <a href="${clientBaseUrl}/user/dashboard"
+                        style="display: inline-block; background: linear-gradient(135deg, #10b981 0%, #059669 100%); color: #ffffff; text-decoration: none; padding: 16px 32px; border-radius: 50px; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px rgba(16, 185, 129, 0.25); transition: all 0.3s ease;">
+                        🎁 Claim My Bonus & Start
+                      </a>
+                    </div>
+                  </div>
+
+                  <!-- Footer -->
+                  <div style="background-color: #f8fafc; padding: 30px; text-align: center; border-top: 1px solid #e5e7eb;">
+                    <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+                      © ${new Date().getFullYear()} UrbanSetu. All rights reserved.
+                    </p>
+                  </div>
+                </div>
+              </body>
+            </html>
+            `
   };
 
   try {
@@ -14398,44 +14514,44 @@ export const sendYearInReviewEmail = async (email, username, year, role = 'user'
     to: email,
     subject: subject,
     html: `
-      <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff;">
-        <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 40px 30px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);">
-          <div style="margin-bottom: 30px;">
-            <h1 style="color: #3b82f6; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.025em;">UrbanSetu</h1>
-            <div style="height: 4px; width: 40px; background: #3b82f6; margin: 12px auto; border-radius: 2px;"></div>
-          </div>
-          
-          <h2 style="font-size: 28px; line-height: 1.2; margin-bottom: 20px; font-weight: 700;">Hi ${username}! <br>Ready to relive your ${year}?</h2>
-          
-          <p style="color: #94a3b8; font-size: 18px; line-height: 1.6; margin-bottom: 35px;">
-            ${messageStr}
-          </p>
-          
-          <div style="background: rgba(59, 130, 246, 0.1); padding: 30px; border-radius: 16px; margin-bottom: 35px; border: 1px dashed rgba(59, 130, 246, 0.3);">
-            <p style="margin: 0; font-size: 16px; color: #60a5fa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">${heading}</p>
-            <p style="margin: 10px 0 0 0; font-size: 14px; color: #94a3b8;">${subHeading}</p>
-          </div>
-          
-          <div style="margin-top: 20px;">
-            <a href="${flashbackUrl}" style="display: inline-block; background: #3b82f6; color: #ffffff; text-decoration: none; padding: 18px 40px; border-radius: 50px; font-weight: 700; font-size: 18px; transition: all 0.3s ease; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);">
-              Watch Your Flashback 🎬
-            </a>
-          </div>
-          
-          <p style="color: #64748b; margin-top: 40px; font-size: 14px;">
-            Can't click the button? Copy this link: <br>
-            <a href="${flashbackUrl}" style="color: #3b82f6; text-decoration: none;">${flashbackUrl}</a>
-          </p>
-          
-          <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
-            <p style="color: #475569; margin: 0; font-size: 12px; font-weight: 500;">
-              © ${new Date().getFullYear()} UrbanSetu. All rights reserved. <br>
-              Making property journeys simpler and more beautiful.
-            </p>
-          </div>
-        </div>
-      </div>
-    `
+            <div style="font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #0f172a; color: #ffffff;">
+              <div style="background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%); padding: 40px 30px; border-radius: 24px; box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1), 0 10px 10px -5px rgba(0, 0, 0, 0.04); text-align: center; border: 1px solid rgba(255, 255, 255, 0.1);">
+                <div style="margin-bottom: 30px;">
+                  <h1 style="color: #3b82f6; margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.025em;">UrbanSetu</h1>
+                  <div style="height: 4px; width: 40px; background: #3b82f6; margin: 12px auto; border-radius: 2px;"></div>
+                </div>
+
+                <h2 style="font-size: 28px; line-height: 1.2; margin-bottom: 20px; font-weight: 700;">Hi ${username}! <br>Ready to relive your ${year}?</h2>
+
+                <p style="color: #94a3b8; font-size: 18px; line-height: 1.6; margin-bottom: 35px;">
+                  ${messageStr}
+                </p>
+
+                <div style="background: rgba(59, 130, 246, 0.1); padding: 30px; border-radius: 16px; margin-bottom: 35px; border: 1px dashed rgba(59, 130, 246, 0.3);">
+                  <p style="margin: 0; font-size: 16px; color: #60a5fa; font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em;">${heading}</p>
+                  <p style="margin: 10px 0 0 0; font-size: 14px; color: #94a3b8;">${subHeading}</p>
+                </div>
+
+                <div style="margin-top: 20px;">
+                  <a href="${flashbackUrl}" style="display: inline-block; background: #3b82f6; color: #ffffff; text-decoration: none; padding: 18px 40px; border-radius: 50px; font-weight: 700; font-size: 18px; transition: all 0.3s ease; box-shadow: 0 10px 15px -3px rgba(59, 130, 246, 0.4);">
+                    Watch Your Flashback 🎬
+                  </a>
+                </div>
+
+                <p style="color: #64748b; margin-top: 40px; font-size: 14px;">
+                  Can't click the button? Copy this link: <br>
+                    <a href="${flashbackUrl}" style="color: #3b82f6; text-decoration: none;">${flashbackUrl}</a>
+                </p>
+
+                <div style="margin-top: 50px; padding-top: 30px; border-top: 1px solid rgba(255, 255, 255, 0.1);">
+                  <p style="color: #475569; margin: 0; font-size: 12px; font-weight: 500;">
+                    © ${new Date().getFullYear()} UrbanSetu. All rights reserved. <br>
+                      Making property journeys simpler and more beautiful.
+                  </p>
+                </div>
+              </div>
+            </div>
+            `
   };
 
   try {
@@ -14447,3 +14563,4 @@ export const sendYearInReviewEmail = async (email, username, year, role = 'user'
     return createErrorResponse(error, 'year_in_review');
   }
 };
+
