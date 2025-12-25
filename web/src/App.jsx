@@ -132,6 +132,8 @@ const Rewards = lazy(() => import('./pages/Rewards'));
 const YearInReview = lazy(() => import('./pages/YearInReview'));
 const AdminUpdates = lazy(() => import('./pages/AdminUpdates'));
 const Updates = lazy(() => import('./pages/Updates'));
+const LockAccount = lazy(() => import('./pages/security/LockAccount'));
+const UnlockAccount = lazy(() => import('./pages/security/UnlockAccount'));
 
 
 // Loading component
@@ -721,6 +723,8 @@ function AppRoutes({ bootstrapped }) {
             <Route path="/ai/share/:shareToken" element={<SharedChatView />} />
             <Route path="/view/:documentId" element={<ViewDocument />} />
             <Route path="/view-chat/preview" element={<ViewChatDocument />} />
+            <Route path="/security/lock-account/:token" element={<LockAccount />} />
+            <Route path="/security/unlock-account/:token" element={<UnlockAccount />} />
 
             {/* User Routes (Protected) */}
             <Route element={<Private bootstrapped={bootstrapped} />}>

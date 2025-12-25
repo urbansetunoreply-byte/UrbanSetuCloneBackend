@@ -13886,7 +13886,7 @@ export const sendAccountLockoutEmail = async (email, details) => {
 // Send Root Admin Attack Email
 export const sendRootAdminAttackEmail = async (email, details) => {
   try {
-    const { username, attempts, ipAddress, location } = details;
+    const { username, attempts, ipAddress, location, lockLink, unlockLink } = details;
     const subject = '🚨 CRITICAL: Attack Attempt on Root Admin Account';
 
     const html = `
@@ -13934,9 +13934,30 @@ export const sendRootAdminAttackEmail = async (email, details) => {
               <li style="margin-bottom: 10px;">Review your audit logs immediately.</li>
               <li style="margin-bottom: 10px;">Change your password if you suspect compromise.</li>
             </ul>
+
+            <div style="margin-top: 30px; margin-bottom: 30px; padding: 20px; background-color: #fff1f2; border: 1px dashed #e11d48; border-radius: 8px;">
+               <h3 style="color: #9f1239; margin-top: 0;">Emergency Controls</h3>
+               <p style="margin-bottom: 15px; font-size: 14px;">If you believe your account is compromised, you can manually lock it immediately using the link below.</p>
+               
+               <div style="display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; margin-bottom: 20px;">
+                  <a href="${lockLink}" style="background-color: #dc2626; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
+                     🔒 Lock Account Now
+                  </a>
+                  <a href="${unlockLink}" style="background-color: #16a34a; color: white; padding: 12px 20px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 14px; display: inline-block;">
+                     🔓 Unlock Account
+                  </a>
+               </div>
+
+               <p style="font-size: 12px; color: #881337; font-weight: bold; text-align: center;">
+                 ⚠️ IMPORTANT: To unlock this account later, you must use the "Unlock Account" link provided above. Please preserve this email.
+               </p>
+               <p style="font-size: 12px; color: #64748b; text-align: center; margin-bottom: 0;">
+                 These secure links will expire in 1 hour.
+               </p>
+            </div>
             
             <div style="text-align: center;">
-               <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/admin-dashboard?tab=security" style="background-color: #dc2626; color: white; padding: 14px 28px; text-decoration: none; border-radius: 6px; font-weight: 600; font-size: 16px; display: inline-block;">
+               <a href="${process.env.CLIENT_URL || 'https://urbansetu.vercel.app'}/admin-dashboard?tab=security" style="color: #4b5563; text-decoration: underline; font-weight: 600; font-size: 14px;">
                   Go to Security Dashboard
                </a>
             </div>

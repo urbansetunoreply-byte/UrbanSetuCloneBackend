@@ -1545,3 +1545,85 @@ setInterval(() => {
         }
     }
 }, 5 * 60 * 1000); // Clean up every 5 minutes
+
+// Lock account via security token
+export const lockAccountByToken = async (req, res, next) => {
+    try {
+        const { token } = req.body;
+        if (!token) return next(errorHandler(400, 'Token is required'));
+
+        const user = await User.findOne({
+            securityLockToken: token,
+            securityLockExpires: { $gt: Date.now() }
+        }).select('+securityLockToken +securityLockExpires');
+
+        if (!user) {
+            return next(errorHandler(400, 'Invalid or expired lock token'));
+        }
+
+        // Already locked?
+        if (user.isLocked) {
+            return res.status(200).json({ success: true, message: 'Account is already locked' });
+        }
+
+        // Lock the account
+        user.isLocked = true;
+        user.lockReason = 'Emergency Lock by User';
+
+        // Clear the used token (One-time usage)
+        user.securityLockToken = undefined;
+        user.securityLockExpires = undefined;
+
+        await user.save();
+
+        // Log event
+        logSecurityEvent('account_emergency_locked', { userId: user._id, email: user.email });
+
+        res.status(200).json({ success: true, message: 'Account has been successfully locked' });
+    } catch (error) {
+        next(error);
+    }
+};
+
+// Unlock account via security token
+export const unlockAccountByToken = async (req, res, next) => {
+    try {
+        const { token } = req.body;
+        if (!token) return next(errorHandler(400, 'Token is required'));
+
+        const user = await User.findOne({
+            securityUnlockToken: token,
+            securityUnlockExpires: { $gt: Date.now() }
+        }).select('+securityUnlockToken +securityUnlockExpires');
+
+        if (!user) {
+            return next(errorHandler(400, 'Invalid or expired unlock token'));
+        }
+
+        // Unlock the account
+        user.isLocked = false;
+        user.lockReason = null;
+
+        // Clear the used token
+        user.securityUnlockToken = undefined;
+        user.securityUnlockExpires = undefined;
+
+        // Also clear lock token if it exists (cleanup)
+        user.securityLockToken = undefined;
+        user.securityLockExpires = undefined;
+
+        // Also clear PasswordLockout entries if any exist
+        try {
+            await PasswordLockout.deleteMany({ userId: user._id });
+        } catch (_) { }
+
+        await user.save();
+
+        // Log event
+        logSecurityEvent('account_emergency_unlocked', { userId: user._id, email: user.email });
+
+        res.status(200).json({ success: true, message: 'Account has been successfully unlocked' });
+    } catch (error) {
+        next(error);
+    }
+};

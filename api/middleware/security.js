@@ -1,4 +1,5 @@
 import { errorHandler } from '../utils/error.js';
+import crypto from 'crypto';
 import User from '../models/user.model.js';
 import PasswordLockout from '../models/passwordLockout.model.js';
 import LoginAttempt from '../models/loginAttempt.model.js';
@@ -35,13 +36,31 @@ export const trackFailedAttempt = async (identifier, userId = null) => {
                 console.log(`⚠️ Prevented lockout for rootadmin ${userId}`);
                 sendAdminAlert('root_admin_attack_attempt', { identifier, userId, attempts });
 
+                // Generate Security Tokens
+                const lockToken = crypto.randomBytes(32).toString('hex');
+                const unlockToken = crypto.randomBytes(32).toString('hex');
+                const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+
+                // Save tokens to user
+                user.securityLockToken = lockToken;
+                user.securityUnlockToken = unlockToken;
+                user.securityLockExpires = tokenExpiry;
+                user.securityUnlockExpires = tokenExpiry;
+                await user.save();
+
+                const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+                const lockLink = `${clientUrl}/security/lock-account/${lockToken}`;
+                const unlockLink = `${clientUrl}/security/unlock-account/${unlockToken}`;
+
                 // Send Critical Alert Email to Root Admin (Reminder/Warning, NOT Lockout)
                 const location = getLocationFromIP(identifier);
                 await sendRootAdminAttackEmail(user.email, {
                     username: user.username,
                     attempts,
                     ipAddress: identifier,
-                    location
+                    location,
+                    lockLink,
+                    unlockLink
                 });
 
                 return { attempts };
@@ -158,6 +177,12 @@ export const bruteForceProtection = async (req, res, next) => {
         // Check if account is locked
         if (email) {
             const user = await User.findOne({ email: email.toLowerCase() });
+
+            // Check manual emergency lock
+            if (user && user.isLocked) {
+                return next(errorHandler(423, 'Your account has been manually locked for security reasons. Please use the unlock link sent to your email or contact support.'));
+            }
+
             if (user && await isAccountLocked(user._id)) {
                 const remainingMs = await getAccountLockRemainingMs(user._id, user.email);
                 const remainingMinutes = Math.max(1, Math.ceil(remainingMs / (60 * 1000)));

@@ -1,5 +1,5 @@
 import express from 'express'
-import { SignUp, SignIn, Google, Signout, verifyAuth, forgotPassword, resetPassword, sendLoginOTP, verifyLoginOTP } from '../controllers/auth.controller.js'
+import { SignUp, SignIn, Google, Signout, verifyAuth, forgotPassword, resetPassword, sendLoginOTP, verifyLoginOTP, lockAccountByToken, unlockAccountByToken } from '../controllers/auth.controller.js'
 import { validateRecaptcha } from '../middleware/recaptcha.js';
 import OtpTracking from '../models/otpTracking.model.js';
 import bcryptjs from 'bcryptjs';
@@ -186,5 +186,9 @@ router.post('/verify-password', verifyToken, async (req, res) => {
     res.status(500).json({ success: false, message: 'Server error' });
   }
 });
+
+// Security Lock/Unlock routes
+router.post('/security/lock', lockAccountByToken);
+router.post('/security/unlock', unlockAccountByToken);
 
 export default router

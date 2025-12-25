@@ -248,6 +248,19 @@ const userSchema = new mongoose.Schema({
   yearInReviewSent: {
     type: [Number], // Array of years for which review has been sent
     default: []
+  },
+  // Security Lock Fields
+  securityLockToken: { type: String, select: false },
+  securityLockExpires: { type: Date, select: false },
+  securityUnlockToken: { type: String, select: false },
+  securityUnlockExpires: { type: Date, select: false },
+  isLocked: {
+    type: Boolean,
+    default: false
+  },
+  lockReason: {
+    type: String,
+    default: null
   }
 }, { timestamps: true });
 
