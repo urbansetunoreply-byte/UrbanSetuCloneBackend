@@ -37,16 +37,22 @@ export const trackFailedAttempt = async (identifier, userId = null) => {
                 sendAdminAlert('root_admin_attack_attempt', { identifier, userId, attempts });
 
                 // Generate Security Tokens
-                const lockToken = crypto.randomBytes(32).toString('hex');
-                // Unlock token will be generated ONLY IF the user actually decides to lock the account.
-                const tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+                let lockToken = user.securityLockToken;
+                let tokenExpiry = user.securityLockExpires;
 
-                // Save lock token to user (Clear any existing unlock tokens from previous attempts)
-                user.securityLockToken = lockToken;
-                user.securityUnlockToken = undefined;
-                user.securityLockExpires = tokenExpiry;
-                user.securityUnlockExpires = undefined;
-                await user.save();
+                // Reuse existing valid token to prevent link invalidation during high-volume attacks
+                if (!lockToken || !tokenExpiry || tokenExpiry < Date.now()) {
+                    lockToken = crypto.randomBytes(32).toString('hex');
+                    tokenExpiry = new Date(Date.now() + 60 * 60 * 1000); // 1 hour expiry
+
+                    user.securityLockToken = lockToken;
+                    user.securityLockExpires = tokenExpiry;
+                    // Reset unlock token only when generating a NEW lock token
+                    user.securityUnlockToken = undefined;
+                    user.securityUnlockExpires = undefined;
+
+                    await user.save();
+                }
 
                 const clientUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
                 const lockLink = `${clientUrl}/security/lock-account/${lockToken}`;
