@@ -31,7 +31,7 @@ export const trackFailedAttempt = async (identifier, userId = null) => {
         // If too many attempts, lock the account
         if (attempts >= 5 && userId) {
             // Check if user is rootadmin before locking (Prevent DoS on root admin)
-            const user = await User.findById(userId);
+            const user = await User.findById(userId).select('+securityLockToken +securityLockExpires');
             if (user && user.role === 'rootadmin') {
                 console.log(`⚠️ Prevented lockout for rootadmin ${userId}`);
                 sendAdminAlert('root_admin_attack_attempt', { identifier, userId, attempts });
