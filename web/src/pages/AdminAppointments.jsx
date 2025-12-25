@@ -9173,23 +9173,23 @@ function AdminAppointmentRow({
                           if (file.type.startsWith('image/')) {
                             handleImageFiles([file]);
                           } else if (file.type.startsWith('video/')) {
-                            if (file.size > 5 * 1024 * 1024) {
-                              toast.error('Maximum video size is 5MB');
+                            if (file.size > 100 * 1024 * 1024) {
+                              toast.error('Maximum video size is 100MB');
                             } else {
                               setSelectedVideo(file);
                               setShowVideoPreviewModal(true);
                             }
                           } else if (file.type.startsWith('audio/')) {
-                            if (file.size > 5 * 1024 * 1024) {
-                              toast.error('Maximum audio size is 5MB');
+                            if (file.size > 10 * 1024 * 1024) {
+                              toast.error('Maximum audio size is 10MB');
                             } else {
                               setSelectedAudio(file);
                               setShowAudioPreviewModal(true);
                             }
                           } else {
                             // Treat as document
-                            if (file.size > 5 * 1024 * 1024) {
-                              toast.error('Maximum document size is 5MB');
+                            if (file.size > 10 * 1024 * 1024) {
+                              toast.error('Maximum document size is 10MB');
                             } else {
                               setSelectedDocument(file);
                               setShowDocumentPreviewModal(true);
