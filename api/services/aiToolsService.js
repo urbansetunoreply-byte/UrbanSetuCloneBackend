@@ -29,12 +29,21 @@ export const searchProperties = async ({
         // Price Range
         if (minPrice || maxPrice) {
             query.regularPrice = {};
-            if (minPrice) query.regularPrice.$gte = Number(minPrice);
-            if (maxPrice) query.regularPrice.$lte = Number(maxPrice);
+            if (minPrice) {
+                const min = Number(minPrice);
+                if (!isNaN(min)) query.regularPrice.$gte = min;
+            }
+            if (maxPrice) {
+                const max = Number(maxPrice);
+                if (!isNaN(max)) query.regularPrice.$lte = max;
+            }
         }
 
         // Bedrooms
-        if (bedrooms) query.bedrooms = Number(bedrooms);
+        if (bedrooms) {
+            const bhk = Number(bedrooms);
+            if (!isNaN(bhk)) query.bedrooms = bhk;
+        }
 
         // Visibility Enforcement (Public only)
         query.visibility = 'public';
@@ -99,11 +108,11 @@ export const toolDefinitions = [
                         description: "City name (e.g., 'Mumbai', 'Bangalore')"
                     },
                     minPrice: {
-                        type: "number",
+                        type: ["string", "number"],
                         description: "Minimum price in INR"
                     },
                     maxPrice: {
-                        type: "number",
+                        type: ["string", "number"],
                         description: "Maximum price in INR"
                     },
                     type: {
@@ -112,7 +121,7 @@ export const toolDefinitions = [
                         description: "Type of listing: for sale or rent"
                     },
                     bedrooms: {
-                        type: "number",
+                        type: ["string", "number"],
                         description: "Number of bedrooms required"
                     }
                 },
