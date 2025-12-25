@@ -4125,7 +4125,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
 
         // Process other markdown elements
         processedText = processedText
-            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer">$1</a>') // Links
+            .replace(/\[([^\]]+)\]\(([^)]+)\)/g, (match, text, url) => `<a href="${url.trim()}" target="_blank" rel="noopener noreferrer" class="text-blue-600 hover:text-blue-800 underline transition-colors duration-200 cursor-pointer">${text}</a>`) // Links
             .replace(/\*\*(.*?)\*\*/g, '<strong class="font-bold">$1</strong>') // Bold
             .replace(/\*(.*?)\*/g, '<em class="italic">$1</em>') // Italic
             .replace(/^### (.*$)/gim, '<h3 class="text-lg font-semibold mt-4 mb-2">$1</h3>') // H3
@@ -4139,6 +4139,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     };
 
     // Combined function to render text with both links and markdown
+    // Combined function to render text with both links and markdown
     const renderTextWithMarkdownAndLinks = (text, isSentMessage = false) => {
         if (!text || typeof text !== 'string') return text;
 
@@ -4150,16 +4151,25 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         // First process markdown
         const markdownProcessed = renderMarkdown(text);
 
-        // Then process links in the markdown-processed text
-        // Then process links in the markdown-processed text - strict regex to avoid double-linking HTML attributes
-        // Excludes matches preceded by href=" or href=' and excludes trailing punctuation
-        const urlRegex = /((?<!href=["'])(?:https?:\/\/[^<>\s]+|www\.[^<>\s]+\.[^<>\s]{2,}(?:\/[^<>\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^<>\s]*)?)(?<![\.,?!:;()\]]))/gi;
+        // Protect functionality: Extract generated <a> tags and other HTML from the string
+        // We only want to auto-link URLs that appear in clear text, not inside existing tags
+        // Mask ALL HTML tags to be safe (including code blocks, tables, bold, italic)
+        const protectedParts = [];
+        const maskedText = markdownProcessed.replace(/<[^>]+>/g, (match) => {
+            protectedParts.push(match);
+            return `__HTML_PROTECTED_${protectedParts.length - 1}__`;
+        });
+
+        // URL regex with negative lookbehind to exclude trailing punctuation
+        // Note: No need for checks against href=" since tags are now masked
+        const urlRegex = /((?:https?:\/\/[^\s]+|www\.[^\s]+\.[^\s]{2,}(?:\/[^\s]*)?|[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?(?:\.[a-zA-Z0-9](?:[a-zA-Z0-9-]{0,61}[a-zA-Z0-9])?)*\.[a-zA-Z]{2,}(?:\/[^\s]*)?)(?<![\.,?!:;()\]]))/gi;
 
         // Split by URLs and process each part
-        const parts = markdownProcessed.split(urlRegex);
+        const parts = maskedText.split(urlRegex);
 
         return parts.map((part, index) => {
-            if (urlRegex.test(part)) {
+            // Check if this part is a URL (odd indices in split result are the captured groups)
+            if (index % 2 === 1 && urlRegex.test(part)) {
                 let url = part;
                 if (!url.startsWith('http://') && !url.startsWith('https://')) {
                     url = 'https://' + url;
@@ -4177,11 +4187,18 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                         rel="noopener noreferrer"
                         className={linkClasses}
                         onClick={(e) => e.stopPropagation()}
-                        dangerouslySetInnerHTML={{ __html: part }}
-                    />
+                    >
+                        {part}
+                    </a>
                 );
             }
-            return <span key={index} className={isSentMessage ? "text-white" : ""} dangerouslySetInnerHTML={{ __html: part }} />;
+
+            // Restore protected HTML tags
+            const restoredPart = part.replace(/__HTML_PROTECTED_(\d+)__/g, (match, id) => {
+                return protectedParts[parseInt(id)];
+            });
+
+            return <span key={index} className={isSentMessage ? "text-white" : ""} dangerouslySetInnerHTML={{ __html: restoredPart }} />;
         });
     };
 
