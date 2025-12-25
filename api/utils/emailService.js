@@ -13547,7 +13547,7 @@ export const sendReEngagementEmail = async (email, username) => {
             </div>
             
             <div style="text-align: center; display: flex; justify-content: center; gap: 15px; flex-wrap: wrap;">
-               <a href="${clientBaseUrl}/explore" style="color:#2563eb; text-decoration:none; font-size: 14px;">🔍 Explore Properties</a> | 
+               <a href="${clientBaseUrl}/search" style="color:#2563eb; text-decoration:none; font-size: 14px;">🔍 Explore Properties</a> | 
                <a href="${clientBaseUrl}/user/community" style="color:#2563eb; text-decoration:none; font-size: 14px;">💬 Join Discussion</a>
             </div>
 
