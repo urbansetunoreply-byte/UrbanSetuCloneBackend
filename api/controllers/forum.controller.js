@@ -279,9 +279,15 @@ export const deleteComment = async (req, res, next) => {
             return next(errorHandler(403, 'You are not allowed to delete this comment'));
         }
 
-        comment.deleteOne();
+        // comment.deleteOne();
+        comment.isDeleted = true;
+        comment.deletedBy = req.user.id;
+
         await post.save();
-        req.app.get('io').emit('forum:commentDeleted', { postId: req.params.id, commentId: req.params.commentId });
+        // Emit updated event instead of deleted, so frontend can re-render as "deleted"
+        // We emit 'forum:postUpdated' or specific event. Let's use commentUpdated to trigger re-render of that comment
+        // But commentUpdated payload usually is the comment object.
+        req.app.get('io').emit('forum:commentUpdated', { postId: req.params.id, comment: comment });
         res.status(200).json('Comment has been deleted');
     } catch (error) {
         next(error);
@@ -370,9 +376,13 @@ export const deleteReply = async (req, res, next) => {
             return next(errorHandler(403, 'Not authorized'));
         }
 
-        reply.deleteOne();
+        // reply.deleteOne();
+        reply.isDeleted = true;
+        reply.deletedBy = req.user.id;
+
         await post.save();
-        req.app.get('io').emit('forum:replyDeleted', { postId: req.params.id, commentId: req.params.commentId, replyId: req.params.replyId });
+        // Emit replyUpdated so frontend can re-render
+        req.app.get('io').emit('forum:replyUpdated', { postId: req.params.id, commentId: req.params.commentId, reply: reply });
         res.status(200).json('Reply deleted');
     } catch (error) {
         next(error);

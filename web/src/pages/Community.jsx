@@ -592,7 +592,12 @@ export default function Community() {
                             if (post._id === postId) {
                                 return {
                                     ...post,
-                                    comments: post.comments.filter(c => c._id !== commentId)
+                                    comments: post.comments.map(c => {
+                                        if (c._id === commentId) {
+                                            return { ...c, isDeleted: true, deletedBy: currentUser._id };
+                                        }
+                                        return c;
+                                    })
                                 };
                             }
                             return post;
@@ -745,7 +750,12 @@ export default function Community() {
                                         if (c._id === commentId) {
                                             return {
                                                 ...c,
-                                                replies: c.replies ? c.replies.filter(r => r._id !== replyId) : []
+                                                replies: c.replies ? c.replies.map(r => {
+                                                    if (r._id === replyId) {
+                                                        return { ...r, isDeleted: true, deletedBy: currentUser._id };
+                                                    }
+                                                    return r;
+                                                }) : []
                                             };
                                         }
                                         return c;
@@ -1327,38 +1337,71 @@ export default function Community() {
                                                                             </div>
                                                                         </form>
                                                                     ) : (
-                                                                        <p className="text-sm text-gray-700 leading-relaxed break-words overflow-hidden">
-                                                                            {formatContent(comment.content)}
-                                                                            {comment.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                        <p className={`text-sm ${comment.isDeleted ? 'text-gray-500 italic' : 'text-gray-700'} leading-relaxed break-words overflow-hidden`}>
+                                                                            {comment.isDeleted
+                                                                                ? (comment.deletedBy === comment.user?._id ? "This comment was deleted." : "This comment is deleted by admin.")
+                                                                                : formatContent(comment.content)}
+                                                                            {!comment.isDeleted && comment.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
                                                                         </p>
                                                                     )}
 
                                                                     {/* Actions */}
-                                                                    <div className="flex items-center gap-4 mt-2">
-                                                                        <button
-                                                                            onClick={() => {
-                                                                                setActiveReplyInput(comment._id);
-                                                                                setReplyingTo({ postId: post._id, commentId: comment._id });
-                                                                            }}
-                                                                            className="text-xs font-bold text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
-                                                                        >
-                                                                            Reply
-                                                                        </button>
-                                                                        <div className="flex items-center gap-3">
+                                                                    {!comment.isDeleted && (
+                                                                        <div className="flex items-center gap-4 mt-2">
                                                                             <button
-                                                                                onClick={() => handleCommentReaction(post._id, comment._id, 'like')}
-                                                                                className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.likes?.includes(currentUser._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+                                                                                onClick={() => {
+                                                                                    setActiveReplyInput(comment._id);
+                                                                                    setReplyingTo({ postId: post._id, commentId: comment._id });
+                                                                                }}
+                                                                                className="text-xs font-bold text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
                                                                             >
-                                                                                <FaThumbsUp size={10} /> {comment.likes?.length || 0}
+                                                                                Reply
                                                                             </button>
-                                                                            <button
-                                                                                onClick={() => handleCommentReaction(post._id, comment._id, 'dislike')}
-                                                                                className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
-                                                                            >
-                                                                                <FaThumbsDown size={10} /> {comment.dislikes?.length || 0}
-                                                                            </button>
+                                                                            <div className="flex items-center gap-3">
+                                                                                <button
+                                                                                    onClick={() => handleCommentReaction(post._id, comment._id, 'like')}
+                                                                                    className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.likes?.includes(currentUser._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+                                                                                >
+                                                                                    <FaThumbsUp size={10} /> {comment.likes?.length || 0}
+                                                                                </button>
+                                                                                <button
+                                                                                    onClick={() => handleCommentReaction(post._id, comment._id, 'dislike')}
+                                                                                    className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                                                                >
+                                                                                    <FaThumbsDown size={10} /> {comment.dislikes?.length || 0}
+                                                                                </button>
+                                                                            </div>
+                                                                            {comment.replies && comment.replies.length > 0 && (
+                                                                                <button
+                                                                                    onClick={() => setExpandedReplies(prev => ({ ...prev, [comment._id]: !prev[comment._id] }))}
+                                                                                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                                                >
+                                                                                    {expandedReplies[comment._id] ? <FaTimes size={10} /> : <FaComment size={10} />}
+                                                                                    {comment.replies.length} Replies
+                                                                                </button>
+                                                                            )}
+
+                                                                            {/* Report Comment Button */}
+                                                                            {currentUser && currentUser._id !== comment.user?._id && (
+                                                                                <button
+                                                                                    onClick={() => setReportModal({
+                                                                                        isOpen: true,
+                                                                                        type: 'comment',
+                                                                                        id: post._id,
+                                                                                        commentId: comment._id
+                                                                                    })}
+                                                                                    className="text-gray-400 hover:text-red-500 ml-2"
+                                                                                    title="Report Comment"
+                                                                                >
+                                                                                    <FaFlag size={10} />
+                                                                                </button>
+                                                                            )}
                                                                         </div>
-                                                                        {comment.replies && comment.replies.length > 0 && (
+                                                                    )}
+
+                                                                    {/* If deleted, still show reply toggle if there are replies */}
+                                                                    {comment.isDeleted && comment.replies && comment.replies.length > 0 && (
+                                                                        <div className="mt-2">
                                                                             <button
                                                                                 onClick={() => setExpandedReplies(prev => ({ ...prev, [comment._id]: !prev[comment._id] }))}
                                                                                 className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
@@ -1366,27 +1409,11 @@ export default function Community() {
                                                                                 {expandedReplies[comment._id] ? <FaTimes size={10} /> : <FaComment size={10} />}
                                                                                 {comment.replies.length} Replies
                                                                             </button>
-                                                                        )}
-
-                                                                        {/* Report Comment Button */}
-                                                                        {currentUser && currentUser._id !== comment.user?._id && (
-                                                                            <button
-                                                                                onClick={() => setReportModal({
-                                                                                    isOpen: true,
-                                                                                    type: 'comment',
-                                                                                    id: post._id,
-                                                                                    commentId: comment._id
-                                                                                })}
-                                                                                className="text-gray-400 hover:text-red-500 ml-2"
-                                                                                title="Report Comment"
-                                                                            >
-                                                                                <FaFlag size={10} />
-                                                                            </button>
-                                                                        )}
-                                                                    </div>
+                                                                        </div>
+                                                                    )}
 
 
-                                                                    {currentUser && currentUser._id === comment.user?._id && (
+                                                                    {!comment.isDeleted && currentUser && currentUser._id === comment.user?._id && (
                                                                         <button
                                                                             onClick={() => setEditingContent({ type: 'comment', id: comment._id, content: comment.content })}
                                                                             className="absolute right-8 top-2 p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all opacity-0 group-hover/comment:opacity-100"
@@ -1395,7 +1422,7 @@ export default function Community() {
                                                                             <FaEdit className="text-xs" />
                                                                         </button>
                                                                     )}
-                                                                    {currentUser && (currentUser._id === comment.user?._id || currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+                                                                    {!comment.isDeleted && currentUser && (currentUser._id === comment.user?._id || currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
                                                                         <button
                                                                             onClick={() => handleDeleteComment(post._id, comment._id)}
                                                                             className="absolute right-2 top-2 p-1.5 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/comment:opacity-100"
@@ -1510,6 +1537,7 @@ export default function Community() {
                                                                                                         </div>
                                                                                                         {editingContent.id === reply._id && editingContent.type === 'reply' ? (
                                                                                                             <form onSubmit={(e) => handleUpdateReply(e, post._id, comment._id, reply._id)} className="w-full mb-2">
+                                                                                                                {/* ... (keep form same) ... */}
                                                                                                                 <div className="relative">
                                                                                                                     <textarea
                                                                                                                         value={editingContent.content}
@@ -1569,60 +1597,64 @@ export default function Community() {
                                                                                                                 </div>
                                                                                                             </form>
                                                                                                         ) : (
-                                                                                                            <p className="text-sm text-gray-700 leading-relaxed break-words overflow-hidden">
-                                                                                                                {formatContent(reply.content)}
-                                                                                                                {reply.isEdited && <span className="text-xs text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                                                            <p className={`text-sm ${reply.isDeleted ? 'text-gray-500 italic' : 'text-gray-700'} leading-relaxed break-words overflow-hidden`}>
+                                                                                                                {reply.isDeleted
+                                                                                                                    ? (reply.deletedBy === reply.user?._id ? "This reply was deleted." : "This reply is deleted by admin.")
+                                                                                                                    : formatContent(reply.content)}
+                                                                                                                {!reply.isDeleted && reply.isEdited && <span className="text-xs text-gray-400 italic font-normal ml-2">(edited)</span>}
                                                                                                             </p>
                                                                                                         )}
-                                                                                                        <div className="flex items-center gap-3 mt-1">
-                                                                                                            <button
-                                                                                                                onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
-                                                                                                                className={`flex items-center gap-1 text-xs font-bold ${currentUser && reply.likes?.includes(currentUser._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
-                                                                                                            >
-                                                                                                                <FaThumbsUp size={10} /> {reply.likes?.length || 0}
-                                                                                                            </button>
-                                                                                                            <button
-                                                                                                                onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
-                                                                                                                className={`flex items-center gap-1 text-xs font-bold ${currentUser && reply.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
-                                                                                                            >
-                                                                                                                <FaThumbsDown size={10} /> {reply.dislikes?.length || 0}
-                                                                                                            </button>
-                                                                                                            <button
-                                                                                                                onClick={() => {
-                                                                                                                    setActiveReplyInput(reply._id);
-                                                                                                                    if (reply.user) {
-                                                                                                                        setReplyingTo({ userId: reply.user._id, username: reply.user.username });
-                                                                                                                    }
-                                                                                                                }}
-                                                                                                                className="text-xs font-bold text-gray-400 hover:text-blue-600 outline-none"
-                                                                                                            >
-                                                                                                                Reply
-                                                                                                            </button>
-                                                                                                            {subReplies.length > 0 && (
+                                                                                                        {!reply.isDeleted && (
+                                                                                                            <div className="flex items-center gap-3 mt-1">
                                                                                                                 <button
-                                                                                                                    onClick={() => setExpandedReplies(prev => ({ ...prev, [reply._id]: !prev[reply._id] }))}
-                                                                                                                    className="text-[9px] font-bold text-blue-600 hover:text-blue-800 outline-none"
+                                                                                                                    onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
+                                                                                                                    className={`flex items-center gap-1 text-xs font-bold ${currentUser && reply.likes?.includes(currentUser._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
                                                                                                                 >
-                                                                                                                    {expandedReplies[reply._id] ? 'Hide' : `View ${subReplies.length} Replies`}
+                                                                                                                    <FaThumbsUp size={10} /> {reply.likes?.length || 0}
                                                                                                                 </button>
-                                                                                                            )}
-                                                                                                            {/* Report Reply Button */}
-                                                                                                            {currentUser && currentUser._id !== reply.user?._id && (
                                                                                                                 <button
-                                                                                                                    onClick={() => setReportModal({
-                                                                                                                        isOpen: true,
-                                                                                                                        type: 'reply',
-                                                                                                                        id: post._id,
-                                                                                                                        commentId: comment._id,
-                                                                                                                        replyId: reply._id
-                                                                                                                    })}
-                                                                                                                    className="text-gray-400 hover:text-red-500 ml-1"
-                                                                                                                    title="Report Reply"
+                                                                                                                    onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
+                                                                                                                    className={`flex items-center gap-1 text-xs font-bold ${currentUser && reply.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
                                                                                                                 >
-                                                                                                                    <FaFlag size={8} />
+                                                                                                                    <FaThumbsDown size={10} /> {reply.dislikes?.length || 0}
                                                                                                                 </button>
-                                                                                                            )}
-                                                                                                        </div>
+                                                                                                                <button
+                                                                                                                    onClick={() => {
+                                                                                                                        setActiveReplyInput(reply._id);
+                                                                                                                        if (reply.user) {
+                                                                                                                            setReplyingTo({ userId: reply.user._id, username: reply.user.username });
+                                                                                                                        }
+                                                                                                                    }}
+                                                                                                                    className="text-xs font-bold text-gray-400 hover:text-blue-600 outline-none"
+                                                                                                                >
+                                                                                                                    Reply
+                                                                                                                </button>
+                                                                                                            </div>
+                                                                                                        )}    {subReplies.length > 0 && (
+                                                                                                            <button
+                                                                                                                onClick={() => setExpandedReplies(prev => ({ ...prev, [reply._id]: !prev[reply._id] }))}
+                                                                                                                className="text-[9px] font-bold text-blue-600 hover:text-blue-800 outline-none"
+                                                                                                            >
+                                                                                                                {expandedReplies[reply._id] ? 'Hide' : `View ${subReplies.length} Replies`}
+                                                                                                            </button>
+                                                                                                        )}
+                                                                                                        {/* Report Reply Button */}
+                                                                                                        {currentUser && currentUser._id !== reply.user?._id && (
+                                                                                                            <button
+                                                                                                                onClick={() => setReportModal({
+                                                                                                                    isOpen: true,
+                                                                                                                    type: 'reply',
+                                                                                                                    id: post._id,
+                                                                                                                    commentId: comment._id,
+                                                                                                                    replyId: reply._id
+                                                                                                                })}
+                                                                                                                className="text-gray-400 hover:text-red-500 ml-1"
+                                                                                                                title="Report Reply"
+                                                                                                            >
+                                                                                                                <FaFlag size={8} />
+                                                                                                            </button>
+                                                                                                        )}
+
 
                                                                                                         {currentUser && currentUser._id === reply.user?._id && (
                                                                                                             <button
@@ -1999,6 +2031,6 @@ export default function Community() {
                     onReport={(reason) => handleReport(reason)}
                 />
             </div>
-        </div>
+        </div >
     );
 }

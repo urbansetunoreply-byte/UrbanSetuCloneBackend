@@ -1315,6 +1315,7 @@ export default function AdminCommunity() {
                                                                     </div>
                                                                     {editingContent.id === comment._id && editingContent.type === 'comment' ? (
                                                                         <form onSubmit={(e) => handleUpdateComment(e, post._id, comment._id)} className="w-full mb-2">
+                                                                            {/* ... (keep form same) ... */}
                                                                             <div className="relative">
                                                                                 <textarea
                                                                                     value={editingContent.content}
@@ -1374,10 +1375,18 @@ export default function AdminCommunity() {
                                                                             </div>
                                                                         </form>
                                                                     ) : (
-                                                                        <p className="text-sm text-gray-700 break-words overflow-hidden leading-relaxed">
-                                                                            {formatContent(comment.content)}
-                                                                            {comment.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
-                                                                        </p>
+                                                                        <div className="flex flex-col gap-1">
+                                                                            {comment.isDeleted && (
+                                                                                <div className="flex items-center gap-2 bg-red-50 border border-red-100 p-1.5 rounded text-xs text-red-600 mb-1">
+                                                                                    <FaShieldAlt className="text-red-500" />
+                                                                                    <span className="font-semibold">This comment is deleted by admin</span>
+                                                                                </div>
+                                                                            )}
+                                                                            <p className={`text-sm text-gray-700 break-words overflow-hidden leading-relaxed ${comment.isDeleted ? 'opacity-60 italic' : ''}`}>
+                                                                                {formatContent(comment.content)}
+                                                                                {comment.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                            </p>
+                                                                        </div>
                                                                     )}
 
                                                                     {/* Report Indicator */}
@@ -1544,6 +1553,7 @@ export default function AdminCommunity() {
                                                                                                         </div>
                                                                                                         {editingContent.id === reply._id && editingContent.type === 'reply' ? (
                                                                                                             <form onSubmit={(e) => handleUpdateReply(e, post._id, comment._id, reply._id)} className="w-full mb-2">
+                                                                                                                {/* ... (keep form same) ... */}
                                                                                                                 <div className="relative">
                                                                                                                     <textarea
                                                                                                                         value={editingContent.content}
@@ -1603,10 +1613,18 @@ export default function AdminCommunity() {
                                                                                                                 </div>
                                                                                                             </form>
                                                                                                         ) : (
-                                                                                                            <p className="text-sm text-gray-700 break-words overflow-hidden leading-relaxed">
-                                                                                                                {formatContent(reply.content)}
-                                                                                                                {reply.isEdited && <span className="text-xs text-gray-400 italic font-normal ml-2">(edited)</span>}
-                                                                                                            </p>
+                                                                                                            <div className="flex flex-col gap-1">
+                                                                                                                {reply.isDeleted && (
+                                                                                                                    <div className="flex items-center gap-2 bg-red-50 border border-red-100 p-1.5 rounded text-xs text-red-600 mb-1">
+                                                                                                                        <FaShieldAlt className="text-red-500" />
+                                                                                                                        <span className="font-semibold">This reply is deleted by admin</span>
+                                                                                                                    </div>
+                                                                                                                )}
+                                                                                                                <p className={`text-sm text-gray-700 break-words overflow-hidden leading-relaxed ${reply.isDeleted ? 'opacity-60 italic' : ''}`}>
+                                                                                                                    {formatContent(reply.content)}
+                                                                                                                    {reply.isEdited && <span className="text-xs text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                                                                </p>
+                                                                                                            </div>
                                                                                                         )}
 
                                                                                                         {/* Report Indicator */}

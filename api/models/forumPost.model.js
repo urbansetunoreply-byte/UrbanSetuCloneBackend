@@ -16,6 +16,14 @@ const forumCommentSchema = new mongoose.Schema({
         type: Boolean,
         default: false
     },
+    isDeleted: {
+        type: Boolean,
+        default: false
+    },
+    deletedBy: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: 'User'
+    },
     likes: [{
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
@@ -37,7 +45,9 @@ const forumCommentSchema = new mongoose.Schema({
             createdAt: { type: Date, default: Date.now }
         }],
         createdAt: { type: Date, default: Date.now },
-        isEdited: { type: Boolean, default: false }
+        isEdited: { type: Boolean, default: false },
+        isDeleted: { type: Boolean, default: false },
+        deletedBy: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
     }],
     reports: [{
         user: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
