@@ -9,13 +9,14 @@ import '../styles/routePlannerSuggestions.css';
 
 import { usePageTitle } from '../hooks/usePageTitle';
 import { useHeader } from '../contexts/HeaderContext';
+import { motion, AnimatePresence } from 'framer-motion';
 
 const MAPBOX_ACCESS_TOKEN = import.meta.env.VITE_MAPBOX_ACCESS_TOKEN;
 
 export default function RoutePlanner() {
   // Set page title
   usePageTitle("Advanced Route Planner - Navigation Tool");
-  
+
   // Header context
   const { hideHeader, showHeader } = useHeader();
 
@@ -28,7 +29,7 @@ export default function RoutePlanner() {
   const [mapReady, setMapReady] = useState(false);
   const [map, setMap] = useState(null);
   const [mapError, setMapError] = useState(null);
-  
+
   // Advanced features state
   const [travelMode, setTravelMode] = useState('driving');
   const [mapStyle, setMapStyle] = useState('streets');
@@ -69,13 +70,13 @@ export default function RoutePlanner() {
     { id: 'driving', name: 'Driving', icon: FaCar, color: '#3B82F6' },
     { id: 'walking', name: 'Walking', icon: FaWalking, color: '#10B981' },
     { id: 'cycling', name: 'Cycling', icon: FaBicycle, color: '#8B5CF6' },
-    { id: 'driving-traffic', name: 'Driving (Traffic)', icon: FaCar, color: '#F59E0B' }
+    { id: 'driving-traffic', name: 'Traffic', icon: FaCar, color: '#F59E0B' }
   ];
 
   const addStop = () => setStops(s => [...s, { address: '', coordinates: null }]);
   const removeStop = (i) => setStops(s => s.filter((_, idx) => idx !== i));
   const updateStop = (i, value, coordinates = null) => {
-    setStops(s => s.map((st, idx) => 
+    setStops(s => s.map((st, idx) =>
       idx === i ? { address: value, coordinates } : st
     ));
   };
@@ -87,7 +88,7 @@ export default function RoutePlanner() {
       setMapError('Mapbox access token not configured');
       return;
     }
-    
+
     try {
       mapboxgl.accessToken = MAPBOX_ACCESS_TOKEN;
       setMapReady(true);
@@ -118,14 +119,14 @@ export default function RoutePlanner() {
         console.log('Map loaded successfully');
         setMap(mapInstance);
         setMapError(null);
-        
+
         // Add navigation controls
         mapInstance.addControl(new mapboxgl.NavigationControl({
           showCompass: true,
           showZoom: true,
           visualizePitch: true
         }), 'top-right');
-        
+
         // Add geolocate control
         const geolocate = new mapboxgl.GeolocateControl({
           positionOptions: {
@@ -135,19 +136,19 @@ export default function RoutePlanner() {
           showUserHeading: true,
           showAccuracyCircle: true
         });
-        
+
         geolocate.on('geolocate', (e) => {
           setCurrentLocation([e.coords.longitude, e.coords.latitude]);
         });
-        
+
         mapInstance.addControl(geolocate, 'top-right');
-        
+
         // Add scale control
         mapInstance.addControl(new mapboxgl.ScaleControl({
           maxWidth: 100,
           unit: 'metric'
         }), 'bottom-left');
-        
+
         // Add fullscreen control
         mapInstance.addControl(new mapboxgl.FullscreenControl(), 'top-right');
       });
@@ -184,7 +185,7 @@ export default function RoutePlanner() {
   // Clear all route sources and layers
   const clearRoutes = useCallback(() => {
     if (!map) return;
-    
+
     // Clear main route
     try {
       if (map.getLayer('route-main')) {
@@ -196,7 +197,7 @@ export default function RoutePlanner() {
     } catch (error) {
       console.warn('Error removing main route:', error);
     }
-    
+
     // Clear alternative routes
     routeSourcesRef.current.forEach((sourceId) => {
       try {
@@ -233,7 +234,7 @@ export default function RoutePlanner() {
       if (stop.coordinates) {
         const isStart = index === 0;
         const isEnd = index === stops.length - 1;
-        
+
         // Create custom marker element
         const el = document.createElement('div');
         el.className = 'custom-marker';
@@ -256,7 +257,7 @@ export default function RoutePlanner() {
         const marker = new mapboxgl.Marker(el)
           .setLngLat(stop.coordinates)
           .addTo(map);
-        
+
         // Add popup with stop information
         const popup = new mapboxgl.Popup({ offset: 25 })
           .setHTML(`
@@ -269,7 +270,7 @@ export default function RoutePlanner() {
               </button>
             </div>
           `);
-        
+
         marker.setPopup(popup);
         markersRef.current.push(marker);
       }
@@ -294,16 +295,16 @@ export default function RoutePlanner() {
   // Toggle traffic layer
   const toggleTraffic = () => {
     if (!map) return;
-    
+
     setShowTraffic(!showTraffic);
-    
+
     if (!showTraffic) {
       // Add traffic layer
       map.addSource('traffic', {
         type: 'vector',
         url: 'mapbox://mapbox.mapbox-traffic-v1'
       });
-      
+
       map.addLayer({
         id: 'traffic',
         type: 'line',
@@ -336,18 +337,18 @@ export default function RoutePlanner() {
   const computePlanFallback = () => {
     const valid = stops.map(s => s.address.trim()).filter(Boolean);
     const now = new Date();
-    return valid.map((addr, idx) => ({ 
-      addr, 
-      eta: new Date(now.getTime() + idx * 20 * 60000) 
+    return valid.map((addr, idx) => ({
+      addr,
+      eta: new Date(now.getTime() + idx * 20 * 60000)
     }));
   };
 
   // Enhanced route planning with alternatives
   const optimize = async () => {
     const validStops = stops.filter(s => s.address.trim() && s.coordinates);
-    if (validStops.length < 2) { 
+    if (validStops.length < 2) {
       toast.error('Please add at least 2 valid addresses with coordinates');
-      return; 
+      return;
     }
 
     if (!map || !map.isStyleLoaded()) {
@@ -360,7 +361,7 @@ export default function RoutePlanner() {
     try {
       // Prepare coordinates for Mapbox Directions API
       const coordinates = validStops.map(stop => stop.coordinates).join(';');
-      
+
       // Build request parameters
       const params = new URLSearchParams({
         geometries: 'geojson',
@@ -372,7 +373,7 @@ export default function RoutePlanner() {
 
       if (avoidTolls) params.append('exclude', 'toll');
       if (avoidHighways) params.append('exclude', 'motorway');
-      
+
       // Call Mapbox Directions API
       const response = await fetch(
         `https://api.mapbox.com/directions/v5/mapbox/${travelMode}/${coordinates}?${params}`
@@ -387,22 +388,22 @@ export default function RoutePlanner() {
       if (data.routes && data.routes.length > 0) {
         // Clear existing routes
         clearRoutes();
-        
+
         // Process main route
         const mainRoute = data.routes[0];
         setRouteData(mainRoute);
-        
+
         // Process alternatives if available
         if (data.routes.length > 1) {
           setAlternatives(data.routes.slice(1));
         } else {
           setAlternatives([]);
         }
-        
+
         // Add main route to map
         const mainSourceId = 'route-main';
         routeSourcesRef.current.push(mainSourceId);
-        
+
         map.addSource(mainSourceId, {
           type: 'geojson',
           data: {
@@ -431,7 +432,7 @@ export default function RoutePlanner() {
         alternatives.forEach((altRoute, index) => {
           const altSourceId = `route-alt-${index}`;
           routeSourcesRef.current.push(altSourceId);
-          
+
           map.addSource(altSourceId, {
             type: 'geojson',
             data: {
@@ -468,7 +469,7 @@ export default function RoutePlanner() {
             const legDuration = mainRoute.legs[idx - 1]?.duration * 1000 || 0;
             cumulativeDuration += legDuration;
           }
-          
+
           return {
             addr: stop.address,
             eta: new Date(now + cumulativeDuration),
@@ -506,7 +507,7 @@ export default function RoutePlanner() {
           timestamp: new Date(),
           travelMode: travelMode
         };
-        
+
         setRouteHistory(prev => [routeRecord, ...prev.slice(0, 9)]); // Keep last 10 routes
 
         toast.success('Route planned successfully!');
@@ -637,7 +638,7 @@ export default function RoutePlanner() {
     }
 
     try {
-      const deletePromises = savedRoutes.map(route => 
+      const deletePromises = savedRoutes.map(route =>
         fetch(`${import.meta.env.VITE_API_BASE_URL}/api/route-planner/saved/${route._id}`, {
           method: 'DELETE',
           credentials: 'include'
@@ -679,16 +680,16 @@ export default function RoutePlanner() {
   <trk>
     <name>Route</name>
     <trkseg>`;
-    
+
     coordinates.forEach(coord => {
       gpx += `
       <trkpt lat="${coord[1]}" lon="${coord[0]}"></trkpt>`;
     });
-    
+
     gpx += `
     </trkseg>
   </trk>`;
-    
+
     waypoints.forEach((waypoint, index) => {
       if (waypoint.coordinates) {
         gpx += `
@@ -698,7 +699,7 @@ export default function RoutePlanner() {
   </wpt>`;
       }
     });
-    
+
     gpx += `
 </gpx>`;
     return gpx;
@@ -742,7 +743,7 @@ export default function RoutePlanner() {
   // Handle address input with debounced geocoding
   const onChangeAddress = useCallback(async (i, value) => {
     updateStop(i, value);
-    
+
     if (!value || value.length < 3) {
       setPredictions(prev => {
         const copy = [...prev];
@@ -788,7 +789,7 @@ export default function RoutePlanner() {
 
     // Set loading state for this specific button
     setLoadingLocation(index);
-    
+
     // Show loading toast
     const loadingToast = toast.loading('Getting your current location...');
 
@@ -807,40 +808,40 @@ export default function RoutePlanner() {
 
       const { latitude, longitude } = position.coords;
       const coordinates = [longitude, latitude];
-      
+
       // Update current location state
       setCurrentLocation(coordinates);
-      
+
       // Get address from coordinates using reverse geocoding
       try {
         const response = await fetch(
           `https://api.mapbox.com/geocoding/v5/mapbox.places/${longitude},${latitude}.json?access_token=${MAPBOX_ACCESS_TOKEN}&types=address,poi`
         );
         const data = await response.json();
-        
+
         let address = 'Current Location';
         if (data.features && data.features.length > 0) {
           address = data.features[0].place_name;
         }
-        
+
         // Update the stop with current location
         updateStop(index, address, coordinates);
-        
+
         toast.dismiss(loadingToast);
         toast.success('Current location added successfully!');
-        
+
       } catch (geocodingError) {
         console.warn('Reverse geocoding failed:', geocodingError);
         // Still update with coordinates even if reverse geocoding fails
         updateStop(index, 'Current Location', coordinates);
-        
+
         toast.dismiss(loadingToast);
         toast.success('Current location added!');
       }
-      
+
     } catch (error) {
       toast.dismiss(loadingToast);
-      
+
       switch (error.code) {
         case error.PERMISSION_DENIED:
           toast.error('Location access denied. Please enable location permissions in your browser settings.');
@@ -873,568 +874,446 @@ export default function RoutePlanner() {
     } else {
       document.body.style.overflow = 'unset';
     }
-    
+
     // Cleanup on unmount
     return () => {
       document.body.style.overflow = 'unset';
     };
   }, [showSettings]);
 
+  // Animation variants
+  const containerVariants = {
+    hidden: { opacity: 0 },
+    visible: {
+      opacity: 1,
+      transition: { duration: 0.5, staggerChildren: 0.1 }
+    }
+  };
+
+  const itemVariants = {
+    hidden: { y: 20, opacity: 0 },
+    visible: { y: 0, opacity: 1 }
+  };
+
   return (
-    <div className={`${isFullscreen ? 'fixed inset-0 z-40 bg-white overflow-auto p-4' : 'max-w-7xl mx-auto px-2 sm:px-4 py-6 sm:py-10'}`}>
-      {!isFullscreen && (
-        <div className="flex items-center justify-between mb-6">
-          <h1 className="text-2xl font-bold flex items-center gap-2">
-            <FaRoute className="text-blue-600"/> Advanced Route Planner
-          </h1>
-          <div className="flex items-center gap-2">
-            <button
-              onClick={() => {
-                const newFullscreen = !isFullscreen;
-                setIsFullscreen(newFullscreen);
-                if (newFullscreen) {
-                  hideHeader();
-                } else {
-                  showHeader();
-                }
-              }}
-              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-              title="Toggle Fullscreen"
-            >
-              <FaMapPin className="text-gray-600" />
-            </button>
-            <button
-              onClick={() => setShowSettings(!showSettings)}
-              className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-              title="Saved Routes"
-            >
-              <FaBookmark className="text-gray-600" />
-            </button>
+    <div className={`flex flex-col lg:flex-row h-screen lg:h-[calc(100vh-64px)] bg-gray-50 overflow-hidden relative ${isFullscreen ? 'fixed inset-0 z-50 h-screen' : ''}`}>
+
+      {/* LEFT SIDEBAR - CONTROLS & RESULTS */}
+      <div className="w-full lg:w-[420px] h-[50vh] lg:h-full bg-white shadow-2xl z-20 flex flex-col order-2 lg:order-1 border-r border-gray-200">
+
+        {/* Header Section */}
+        <div className="p-4 bg-gradient-to-r from-blue-700 to-purple-700 text-white shadow-md flex-shrink-0">
+          <div className="flex items-center justify-between">
+            <h1 className="text-xl font-bold flex items-center gap-2">
+              <FaRoute className="text-yellow-300" />
+              <span>Route Planner</span>
+            </h1>
+            <div className="flex gap-2">
+              <button
+                onClick={() => setShowSettings(!showSettings)}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm"
+                title="Saved Routes & History"
+              >
+                <FaBookmark className="text-white text-sm" />
+              </button>
+              <button
+                onClick={() => {
+                  const newFullscreen = !isFullscreen;
+                  setIsFullscreen(newFullscreen);
+                  if (newFullscreen) hideHeader(); else showHeader();
+                }}
+                className="p-2 rounded-full bg-white/20 hover:bg-white/30 transition-colors backdrop-blur-sm lg:hidden"
+                title="Toggle Fullscreen"
+              >
+                <FaMapPin className="text-white text-sm" />
+              </button>
+            </div>
           </div>
         </div>
-      )}
 
-      {/* Fullscreen Controls */}
-      {isFullscreen && (
-        <div className="fixed top-4 right-4 z-50 flex gap-2">
-          <button
-            onClick={() => setShowSettings(!showSettings)}
-            className="p-3 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
-            title="Saved Routes"
+        {/* Scrollable Content */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6 custom-scrollbar">
+
+          {/* 1. Travel Mode & Options */}
+          <motion.div
+            initial="hidden" animate="visible" variants={containerVariants}
+            className="space-y-4"
           >
-            <FaBookmark className="text-gray-600 text-lg" />
-          </button>
-          <button
-            onClick={() => {
-              setIsFullscreen(false);
-              showHeader();
-            }}
-            className="p-3 rounded-full bg-white shadow-lg hover:bg-gray-50 transition-colors border border-gray-200"
-            title="Exit Fullscreen"
-          >
-            <FaMapPin className="text-gray-600 text-lg" />
-          </button>
-        </div>
-      )}
-      
-      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6">
-        {/* Route Planning Panel */}
-        <div className="lg:col-span-1 space-y-4">
-          {/* Travel Mode Selection */}
-          <div className="bg-white rounded-xl shadow p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <FaDirections className="text-blue-600" /> Travel Mode
-            </h3>
-            <div className="grid grid-cols-2 gap-2">
+            {/* Travel Mode Tabs */}
+            <div className="bg-gray-100 p-1.5 rounded-xl flex gap-1">
               {travelModes.map((mode) => {
                 const Icon = mode.icon;
+                const isActive = travelMode === mode.id;
                 return (
                   <button
                     key={mode.id}
                     onClick={() => setTravelMode(mode.id)}
-                    className={`p-3 rounded-lg border-2 transition-all flex items-center gap-2 ${
-                      travelMode === mode.id
-                        ? 'border-blue-500 bg-blue-50 text-blue-700'
-                        : 'border-gray-200 hover:border-gray-300'
-                    }`}
+                    className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-medium flex flex-col items-center gap-1 transition-all ${isActive
+                        ? 'bg-white text-blue-600 shadow-sm scale-100'
+                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                      }`}
                   >
-                    <Icon style={{ color: mode.color }} />
-                    <span className="text-sm font-medium">{mode.name}</span>
+                    <Icon className={isActive ? 'text-lg' : 'text-base'} />
+                    <span className="hidden sm:inline">{mode.name.split(' ')[0]}</span>
                   </button>
                 );
               })}
             </div>
-          </div>
 
-          {/* Route Options */}
-          <div className="bg-white rounded-xl shadow p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <FaFilter className="text-green-600" /> Route Options
-            </h3>
-            <div className="space-y-3">
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={routeOptimization}
-                  onChange={(e) => setRouteOptimization(e.target.checked)}
-                  className="rounded"
-                />
-                <span className="text-sm">Optimize waypoints</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={avoidTolls}
-                  onChange={(e) => setAvoidTolls(e.target.checked)}
-                  className="rounded"
-                />
-                <span className="text-sm">Avoid tolls</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={avoidHighways}
-                  onChange={(e) => setAvoidHighways(e.target.checked)}
-                  className="rounded"
-                />
-                <span className="text-sm">Avoid highways</span>
-              </label>
-              <label className="flex items-center gap-2">
-                <input
-                  type="checkbox"
-                  checked={showAlternatives}
-                  onChange={(e) => setShowAlternatives(e.target.checked)}
-                  className="rounded"
-                />
-                <span className="text-sm">Show alternatives</span>
-              </label>
+            {/* Collapsible Options */}
+            <div className="border border-gray-100 rounded-xl overflow-hidden">
+              <button
+                onClick={() => setRouteOptimization(prev => !prev)}
+                className="w-full flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors"
+              >
+                <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                  <FaFilter className="text-blue-500" /> Route Preferences
+                </span>
+                <FaCog className="text-gray-400 text-xs" />
+              </button>
+              <div className="p-3 bg-gray-50 grid grid-cols-2 gap-3">
+                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded border border-gray-100 hover:border-blue-200 transition-colors">
+                  <input type="checkbox" checked={routeOptimization} onChange={(e) => setRouteOptimization(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
+                  <span className="text-xs text-gray-700">Optimize Stops</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded border border-gray-100 hover:border-blue-200 transition-colors">
+                  <input type="checkbox" checked={avoidTolls} onChange={(e) => setAvoidTolls(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
+                  <span className="text-xs text-gray-700">Avoid Tolls</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded border border-gray-100 hover:border-blue-200 transition-colors">
+                  <input type="checkbox" checked={avoidHighways} onChange={(e) => setAvoidHighways(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
+                  <span className="text-xs text-gray-700">Avoid Highways</span>
+                </label>
+                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded border border-gray-100 hover:border-blue-200 transition-colors">
+                  <input type="checkbox" checked={showAlternatives} onChange={(e) => setShowAlternatives(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
+                  <span className="text-xs text-gray-700">Alternatives</span>
+                </label>
+              </div>
             </div>
-          </div>
+          </motion.div>
 
-          {/* Stops Input */}
-          <div className="bg-white rounded-xl shadow p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <FaMapMarkerAlt className="text-red-600" /> Stops
-            </h3>
-            
-            {stops.map((s, i) => (
-              <div key={i} className="flex flex-col gap-1 relative mb-3">
-                <div className="flex gap-2">
-                  <div className="flex-1 relative">
-                    <input 
-                      className="w-full border rounded p-2 text-sm pr-8" 
-                      value={s.address} 
-                      onChange={e => onChangeAddress(i, e.target.value)} 
-                      placeholder={`Stop ${i+1} address`}
-                    />
-                    {s.coordinates && (
-                      <FaMapMarkerAlt className="absolute right-2 top-1/2 transform -translate-y-1/2 text-green-500" />
-                    )}
-                  </div>
-                  <button
-                    onClick={() => useCurrentLocation(i)}
-                    disabled={loadingLocation === i}
-                    className={`px-2 py-2 rounded transition-colors ${
-                      loadingLocation === i 
-                        ? 'bg-gray-100 text-gray-400 cursor-not-allowed' 
-                        : 'bg-blue-100 text-blue-600 hover:bg-blue-200'
-                    }`}
-                    title={loadingLocation === i ? "Getting location..." : "Use current location"}
+          {/* 2. Stops Input */}
+          <motion.div variants={itemVariants} className="space-y-3">
+            <div className="flex items-center justify-between">
+              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+                <FaMapMarkerAlt className="text-red-500" /> Stops ({stops.length})
+              </h3>
+              <button onClick={addStop} className="text-xs font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded transition-colors">
+                <FaPlus /> Add Stop
+              </button>
+            </div>
+
+            <div className="space-y-3 relative">
+              {/* Connecting Line Visual */}
+              <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-gray-200 z-0"></div>
+
+              <AnimatePresence>
+                {stops.map((s, i) => (
+                  <motion.div
+                    key={i}
+                    layout
+                    initial={{ opacity: 0, x: -20 }}
+                    animate={{ opacity: 1, x: 0 }}
+                    exit={{ opacity: 0, scale: 0.9 }}
+                    className="relative z-10"
                   >
-                    {loadingLocation === i ? (
-                      <div className="w-4 h-4 border-2 border-gray-400 border-t-transparent rounded-full animate-spin"></div>
-                    ) : (
-                      <FaLocationArrow />
-                    )}
-                  </button>
-                  {stops.length > 1 && (
-                    <button 
-                      onClick={() => removeStop(i)} 
-                      className="px-2 py-2 rounded bg-red-100 text-red-600 hover:bg-red-200 transition-colors"
-                    >
-                      <FaTrash/>
-                    </button>
-                  )}
-                </div>
-                
-                {predictions[i] && predictions[i].length > 0 && (
-                  <div className="suggestions-panel">
-                    <ul className="suggestions-list suggestions-scroll">
-                      {predictions[i].map((prediction, idx) => (
-                        <li 
-                          key={idx} 
-                          className="suggestion-item" 
-                          onMouseDown={() => pickPrediction(i, prediction)}
-                        >
-                          <div className="suggestion-name">{prediction.place_name}</div>
-                          {prediction.context && (
-                            <div className="suggestion-context">
-                              {prediction.context.map(ctx => ctx.text).join(', ')}
+                    <div className="flex gap-2 items-start">
+                      {/* Marker Number */}
+                      <div className={`w-8 h-8 flex-shrink-0 rounded-full flex items-center justify-center text-white text-xs font-bold shadow-sm mt-1 z-10 ring-2 ring-white
+                          ${i === 0 ? 'bg-green-500' : i === stops.length - 1 ? 'bg-red-500' : 'bg-blue-500'}
+                        `}>
+                        {i + 1}
+                      </div>
+
+                      {/* Input Area */}
+                      <div className="flex-1 bg-white p-2 rounded-lg border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all flex gap-2">
+                        <div className="flex-1 relative">
+                          <input
+                            value={s.address}
+                            onChange={e => onChangeAddress(i, e.target.value)}
+                            placeholder={i === 0 ? "Start Location" : "Destination"}
+                            className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
+                          />
+                          {/* Suggestions Dropdown */}
+                          {predictions[i] && predictions[i].length > 0 && (
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden">
+                              {predictions[i].map((pred, idx) => (
+                                <div
+                                  key={idx}
+                                  onMouseDown={() => pickPrediction(i, pred)}
+                                  className="p-2 hover:bg-blue-50 cursor-pointer text-xs border-b border-gray-50 last:border-0"
+                                >
+                                  <div className="font-medium text-gray-800">{pred.place_name}</div>
+                                </div>
+                              ))}
                             </div>
                           )}
-                        </li>
-                      ))}
-                    </ul>
-                  </div>
-                )}
-              </div>
-            ))}
-            
-            <div className="flex flex-col gap-2">
-              <button 
-                onClick={addStop} 
-                className="px-3 py-2 rounded bg-gray-100 hover:bg-gray-200 flex items-center gap-2 justify-center transition-colors"
-              >
-                <FaPlus/> Add Stop
-              </button>
-              <button 
-                onClick={optimize} 
-                disabled={optimizing || !map || !map.isStyleLoaded()} 
-                className="px-4 py-2 rounded bg-gradient-to-r from-blue-600 to-purple-600 text-white disabled:opacity-60 hover:from-blue-700 hover:to-purple-700 transition-all"
-              >
-                {optimizing ? 'Planning...' : 'Plan Route'}
-              </button>
-            </div>
-          </div>
+                        </div>
 
-          {/* Route Actions */}
-          {routeData && (
-            <div className="bg-white rounded-xl shadow p-4">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <FaInfoCircle className="text-purple-600" /> Route Actions
-              </h3>
-              <div className="grid grid-cols-2 gap-2">
-                <button
-                  onClick={saveRoute}
-                  className={`p-2 rounded transition-colors flex items-center gap-2 justify-center ${
-                    isRouteSaved 
-                      ? 'bg-green-200 text-green-700 cursor-default' 
-                      : 'bg-green-100 text-green-600 hover:bg-green-200'
-                  }`}
-                  disabled={isRouteSaved}
-                >
-                  <FaBookmark />
-                  <span className="text-sm">{isRouteSaved ? 'Saved' : 'Save'}</span>
-                </button>
-                <button
-                  onClick={exportRoute}
-                  className="p-2 rounded bg-blue-100 text-blue-600 hover:bg-blue-200 transition-colors flex items-center gap-2 justify-center"
-                >
-                  <FaDownload />
-                  <span className="text-sm">Export</span>
-                </button>
-                <button
-                  onClick={shareRoute}
-                  className="p-2 rounded bg-purple-100 text-purple-600 hover:bg-purple-200 transition-colors flex items-center gap-2 justify-center"
-                >
-                  <FaShare />
-                  <span className="text-sm">Share</span>
-                </button>
-                <button
-                  onClick={() => setShowSettings(!showSettings)}
-                  className="p-2 rounded bg-gray-100 text-gray-600 hover:bg-gray-200 transition-colors flex items-center gap-2 justify-center"
-                >
-                  <FaBookmark />
-                  <span className="text-sm">Saved Routes</span>
-                </button>
-              </div>
-            </div>
-          )}
-
-          {/* Route Statistics */}
-          {routeStats && (
-            <div className="bg-white rounded-xl shadow p-4">
-              <h3 className="font-semibold mb-3 flex items-center gap-2">
-                <FaInfoCircle className="text-orange-600" /> Route Statistics
-              </h3>
-              <div className="space-y-2 text-sm">
-                <div className="flex justify-between">
-                  <span>Distance:</span>
-                  <span className="font-medium">{routeStats.distance} km</span>
-                </div>
-                <div className="flex justify-between">
-                  <span>Duration:</span>
-                  <span className="font-medium">{routeStats.duration} min</span>
-                </div>
-                {routeStats.fuelCost > 0 && (
-                  <div className="flex justify-between">
-                    <span>Fuel Cost:</span>
-                    <span className="font-medium">₹{routeStats.fuelCost}</span>
-                  </div>
-                )}
-                {routeStats.co2Emission > 0 && (
-                  <div className="flex justify-between">
-                    <span>CO₂ Emission:</span>
-                    <span className="font-medium">{routeStats.co2Emission}g</span>
-                  </div>
-                )}
-              </div>
-            </div>
-          )}
-        </div>
-
-        {/* Map Container */}
-        <div className="lg:col-span-2">
-          <div className="bg-white rounded-xl shadow overflow-hidden">
-            {MAPBOX_ACCESS_TOKEN ? (
-              <div className="h-64 sm:h-80 lg:h-96 relative">
-                {mapError ? (
-                  <div className="h-full flex items-center justify-center text-gray-500">
-                    <div className="text-center">
-                      <FaRoute className="text-4xl mb-2 mx-auto text-red-500" />
-                      <p className="text-red-600">{mapError}</p>
-                      <button 
-                        onClick={() => {
-                          setMapError(null);
-                          setMapReady(false);
-                          setTimeout(() => setMapReady(true), 100);
-                        }}
-                        className="mt-2 text-sm text-blue-600 hover:text-blue-800 underline"
-                      >
-                        Retry
-                      </button>
+                        <div className="flex gap-1 border-l pl-2 border-gray-100">
+                          <button
+                            onClick={() => useCurrentLocation(i)}
+                            disabled={loadingLocation === i}
+                            className={`p-1.5 rounded hover:bg-gray-100 text-gray-500 transition-colors ${loadingLocation === i ? 'animate-pulse' : ''}`}
+                            title="Current Location"
+                          >
+                            <FaLocationArrow className="text-xs" />
+                          </button>
+                          {stops.length > 1 && (
+                            <button
+                              onClick={() => removeStop(i)}
+                              className="p-1.5 rounded hover:bg-red-50 text-gray-400 hover:text-red-500 transition-colors"
+                              title="Remove Stop"
+                            >
+                              <FaTrash className="text-xs" />
+                            </button>
+                          )}
+                        </div>
+                      </div>
                     </div>
+                  </motion.div>
+                ))}
+              </AnimatePresence>
+            </div>
+          </motion.div>
+
+          {/* 3. Action Button */}
+          <motion.div variants={itemVariants} className="sticky bottom-0 bg-white/50 backdrop-blur-sm pt-2">
+            <button
+              onClick={optimize}
+              disabled={optimizing || !map}
+              className="w-full py-3 bg-gray-900 hover:bg-black text-white rounded-lg font-bold shadow-lg shadow-blue-500/20 disabled:opacity-50 disabled:cursor-not-allowed transition-all transform active:scale-95 flex items-center justify-center gap-2"
+            >
+              {optimizing ? (
+                <>
+                  <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin"></div>
+                  Calculaint Route...
+                </>
+              ) : (
+                <>
+                  <FaDirections className="text-lg" /> Plan Route
+                </>
+              )}
+            </button>
+          </motion.div>
+
+          {/* 4. Results Section (Conditional) */}
+          <AnimatePresence>
+            {routeData && (
+              <motion.div
+                initial={{ opacity: 0, height: 0 }}
+                animate={{ opacity: 1, height: 'auto' }}
+                exit={{ opacity: 0, height: 0 }}
+                className="space-y-4 pt-4 border-t border-gray-100 mt-4"
+              >
+                {/* Stats Cards */}
+                <div className="grid grid-cols-2 gap-3">
+                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
+                    <div className="text-blue-500 text-xs font-semibold uppercase">Total Distance</div>
+                    <div className="text-xl font-bold text-gray-800">{routeStats?.distance} <span className="text-sm font-normal text-gray-500">km</span></div>
                   </div>
-                ) : (
-                  <div ref={mapRef} className="w-full h-full" />
-                )}
+                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
+                    <div className="text-purple-500 text-xs font-semibold uppercase">Est. Duration</div>
+                    <div className="text-xl font-bold text-gray-800">{routeStats?.duration} <span className="text-sm font-normal text-gray-500">min</span></div>
+                  </div>
+                </div>
+
+                {/* Quick Actions Bar */}
+                <div className="flex gap-2 justify-between">
+                  <button onClick={saveRoute} disabled={isRouteSaved} className={`flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition-colors ${isRouteSaved ? 'bg-green-100 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}>
+                    <FaBookmark /> {isRouteSaved ? 'Saved' : 'Save'}
+                  </button>
+                  <button onClick={shareRoute} className="flex-1 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
+                    <FaShare /> Share
+                  </button>
+                  <button onClick={exportRoute} className="flex-1 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
+                    <FaDownload /> GPX
+                  </button>
+                </div>
+
+                {/* Itinerary */}
+                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
+                  <div className="bg-gray-50 px-4 py-2 border-b border-gray-100 font-semibold text-xs text-gray-500 uppercase tracking-wide">
+                    Trip Timeline
+                  </div>
+                  <div>
+                    {plan.map((p, idx) => (
+                      <div key={idx} className="flex group hover:bg-blue-50/50 transition-colors p-3 items-center gap-3 border-b border-gray-50 last:border-0 relative">
+                        {idx !== plan.length - 1 && (
+                          <div className="absolute left-[27px] top-8 bottom-[-8px] w-0.5 bg-gray-200 group-hover:bg-blue-100 transition-colors"></div>
+                        )}
+                        <div className="w-8 h-8 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-xs font-bold z-10
+                                  bg-white text-gray-600 group-hover:scale-110 transition-transform
+                               ">
+                          {idx + 1}
+                        </div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-900 truncate">{p.addr}</div>
+                          <div className="text-xs text-gray-500 flex items-center gap-1">
+                            <FaClock className="text-gray-300" /> {p.eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          </div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {/* CO2 & Fuel */}
+                <div className="bg-gray-900 rounded-lg p-3 text-white flex justify-around text-center">
+                  <div>
+                    <div className="text-gray-400 text-xs">Est. Fuel Cost</div>
+                    <div className="font-bold text-lg">₹{routeStats?.fuelCost}</div>
+                  </div>
+                  <div className="w-px bg-gray-700"></div>
+                  <div>
+                    <div className="text-gray-400 text-xs">CO₂ Emission</div>
+                    <div className="font-bold text-lg">{routeStats?.co2Emission}g</div>
+                  </div>
+                </div>
+              </motion.div>
+            )}
+          </AnimatePresence>
+
+        </div>
+      </div>
+
+      {/* RIGHT/BOTTOM - MAP AREA */}
+      <div className="flex-1 h-[50vh] lg:h-full relative order-1 lg:order-2">
+        {/* Map Container */}
+        {MAPBOX_ACCESS_TOKEN ? (
+          <div className="w-full h-full relative">
+            <div ref={mapRef} className="w-full h-full" />
+
+            {/* Floating Map Controls */}
+            <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
+              <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden flex flex-col">
+                {Object.entries(mapStyles).slice(0, 3).map(([key, value]) => (
+                  <button
+                    key={key}
+                    onClick={() => changeMapStyle(key)}
+                    className={`p-2 px-3 text-xs font-medium text-left hover:bg-gray-50 transition-colors ${mapStyle === key ? 'bg-blue-50 text-blue-600 border-l-2 border-blue-600' : 'text-gray-600'}`}
+                    title={key}
+                  >
+                    {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
+                  </button>
+                ))}
+                <button onClick={toggleTraffic} className={`p-2 px-3 text-xs font-medium text-left border-t border-gray-100 hover:bg-gray-50 transition-colors ${showTraffic ? 'text-red-600 bg-red-50' : 'text-gray-600'}`}>
+                  Traffic {showTraffic ? 'On' : 'Off'}
+                </button>
               </div>
-            ) : (
-              <div className="h-64 sm:h-80 lg:h-96 flex items-center justify-center text-gray-500">
-                <div className="text-center">
-                  <FaRoute className="text-4xl mb-2 mx-auto" />
-                  <p>Tip: Set VITE_MAPBOX_ACCESS_TOKEN to enable interactive map and directions.</p>
+            </div>
+
+            {/* Fullscreen Toggle (Desktop) */}
+            <div className="absolute top-4 right-14 z-10 hidden lg:block">
+              <button
+                onClick={() => {
+                  const newFullscreen = !isFullscreen;
+                  setIsFullscreen(newFullscreen);
+                  if (newFullscreen) hideHeader(); else showHeader();
+                }}
+                className="p-3 bg-white hover:bg-gray-50 text-gray-700 rounded-lg shadow-lg transition-all"
+                title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
+              >
+                <FaMapPin />
+              </button>
+            </div>
+
+            {/* Error Overlay */}
+            {mapError && (
+              <div className="absolute inset-0 bg-white/80 backdrop-blur-sm flex items-center justify-center z-20">
+                <div className="text-center p-6 bg-white rounded-xl shadow-2xl">
+                  <FaRoute className="text-4xl text-red-500 mx-auto mb-3" />
+                  <p className="text-red-600 font-medium mb-2">{mapError}</p>
+                  <button onClick={() => { setMapError(null); setMapReady(false); setTimeout(() => setMapReady(true), 100); }} className="text-blue-600 hover:underline text-sm">Retry Connection</button>
                 </div>
               </div>
             )}
           </div>
-
-          {/* Map Controls */}
-          <div className="mt-4 bg-white rounded-xl shadow p-4">
-            <h3 className="font-semibold mb-3 flex items-center gap-2">
-              <FaCog className="text-gray-600" /> Map Controls
-            </h3>
-            <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-              {Object.entries(mapStyles).map(([key, value]) => (
-                <button
-                  key={key}
-                  onClick={() => changeMapStyle(key)}
-                  className={`p-2 rounded text-sm capitalize ${
-                    mapStyle === key
-                      ? 'bg-blue-100 text-blue-700 border-2 border-blue-300'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                  }`}
-                >
-                  {key.replace(/([A-Z])/g, ' $1').trim()}
-                </button>
-              ))}
-              <button
-                onClick={toggleTraffic}
-                className={`p-2 rounded text-sm ${
-                  showTraffic
-                    ? 'bg-red-100 text-red-700 border-2 border-red-300'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
-                }`}
-              >
-                Traffic
-              </button>
+        ) : (
+          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+            <div className="text-center p-8">
+              <FaRoute className="text-6xl text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-700 mb-2">Map Unavailable</h3>
+              <p className="text-gray-500">Please configure your Mapbox Access Token to view the map.</p>
             </div>
           </div>
-        </div>
+        )}
       </div>
 
-      {/* Route Itinerary */}
-      {plan.length > 0 && (
-        <div className="mt-6 bg-white rounded-xl shadow p-5">
-          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <FaClock className="text-blue-600"/> Visit Itinerary
-          </h2>
-          <ol className="space-y-3">
-            {plan.map((p, idx) => (
-              <li key={idx} className="flex items-center gap-3 p-3 bg-gray-50 rounded-lg">
-                <div className={`w-8 h-8 rounded-full flex items-center justify-center text-white font-bold text-sm ${
-                  idx === 0 ? 'bg-green-500' : idx === plan.length - 1 ? 'bg-red-500' : 'bg-blue-500'
-                }`}>
-                  {idx + 1}
-                </div>
-                <div className="flex-1">
-                  <div className="font-medium text-gray-900">{p.addr}</div>
-                  <div className="text-sm text-gray-500">
-                    ETA: {p.eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
-                  </div>
-                </div>
-              </li>
-            ))}
-          </ol>
-          <div className="mt-4 p-3 bg-blue-50 rounded-lg">
-            <p className="text-sm text-blue-800">
-              <strong>Route optimized using Mapbox Directions API</strong> - Real-time routing with traffic considerations.
-            </p>
-          </div>
-        </div>
-      )}
-
-      {/* Alternative Routes */}
-      {alternatives.length > 0 && (
-        <div className="mt-6 bg-white rounded-xl shadow p-5">
-          <h2 className="text-lg font-semibold mb-3 flex items-center gap-2">
-            <FaRoute className="text-gray-600"/> Alternative Routes
-          </h2>
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
-            {alternatives.map((alt, idx) => (
-              <div key={idx} className="p-3 border rounded-lg hover:bg-gray-50 cursor-pointer">
-                <div className="flex justify-between items-center mb-2">
-                  <span className="font-medium">Route {idx + 2}</span>
-                  <span className="text-sm text-gray-500">
-                    {Math.round(alt.duration / 60)} min
-                  </span>
-                </div>
-                <div className="text-sm text-gray-600">
-                  {(alt.distance / 1000).toFixed(2)} km
-                </div>
-              </div>
-            ))}
-          </div>
-        </div>
-      )}
-
-
-      {/* Saved Routes & History Panel */}
-      {showSettings && (
-        <div 
-          className="fixed inset-0 bg-black bg-opacity-50 z-50 flex items-center justify-center p-2 sm:p-4"
-          style={{ overflow: 'hidden' }}
-        >
-          <div className="bg-white rounded-xl shadow-xl max-w-2xl w-full max-h-[95vh] sm:max-h-[90vh] overflow-y-auto">
-            <div className="p-4 sm:p-6">
-              <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h2 className="text-xl sm:text-2xl font-bold flex items-center gap-2">
-                  <FaBookmark className="text-blue-600" />
-                  <span className="hidden sm:inline">Saved Routes & History</span>
-                  <span className="sm:hidden">Saved Routes</span>
+      {/* Saved Routes Modal */}
+      <AnimatePresence>
+        {showSettings && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed inset-0 bg-black/60 backdrop-blur-sm z-50 flex items-center justify-center p-4"
+            onClick={(e) => { if (e.target === e.currentTarget) setShowSettings(false); }}
+          >
+            <motion.div
+              initial={{ scale: 0.95, opacity: 0 }}
+              animate={{ scale: 1, opacity: 1 }}
+              exit={{ scale: 0.95, opacity: 0 }}
+              className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+            >
+              <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
+                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                  <FaBookmark className="text-blue-600" /> Saved Routes & History
                 </h2>
-                <div className="flex items-center gap-2">
-                  <button
-                    onClick={fetchSavedRoutes}
-                    className="p-2 rounded-lg bg-blue-100 hover:bg-blue-200 transition-colors"
-                    title="Refresh saved routes"
-                  >
-                    <svg className="w-4 h-4 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={() => setShowSettings(false)}
-                    className="p-2 rounded-lg bg-gray-100 hover:bg-gray-200 transition-colors"
-                  >
-                    ✕
-                  </button>
-                </div>
-              </div>
-
-              <div className="space-y-4 sm:space-y-6">
-
-                {/* Saved Routes */}
-                <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                  <div className="flex items-center justify-between mb-3 sm:mb-4">
-                    <h3 className="text-base sm:text-lg font-semibold flex items-center gap-2">
-                      <FaBookmark className="text-purple-600" />
-                      Saved Routes
-                    </h3>
-                    {savedRoutes.length > 0 && (
-                      <button
-                        onClick={deleteAllSavedRoutes}
-                        className="px-2 sm:px-3 py-1 bg-red-100 text-red-600 rounded text-xs sm:text-sm hover:bg-red-200 transition-colors"
-                      >
-                        <span className="hidden sm:inline">Delete All</span>
-                        <span className="sm:hidden">Clear</span>
-                      </button>
-                    )}
-                  </div>
-                  {savedRoutes.length > 0 ? (
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {savedRoutes.map((route) => (
-                        <div key={route._id || route.id} className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-xs sm:text-sm truncate">{route.name}</div>
-                            <div className="text-xs text-gray-500">
-                              {new Date(route.timestamp).toLocaleDateString()}
-                            </div>
-                          </div>
-                          <div className="flex items-center gap-1 sm:gap-2 ml-2">
-                            <button
-                              onClick={() => {
-                                loadRoute(route);
-                                setShowSettings(false);
-                              }}
-                              className="px-2 sm:px-3 py-1 bg-blue-100 text-blue-600 rounded text-xs sm:text-sm hover:bg-blue-200 transition-colors"
-                            >
-                              Load
-                            </button>
-                            <button
-                              onClick={() => deleteSavedRoute(route._id || route.id)}
-                              className="px-2 py-1 bg-red-100 text-red-600 rounded text-xs sm:text-sm hover:bg-red-200 transition-colors"
-                              title="Delete route"
-                            >
-                              <FaTrash className="text-xs" />
-                            </button>
-                          </div>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 text-sm">No saved routes yet</p>
-                  )}
-                </div>
-
-                {/* Route History */}
-                <div className="bg-gray-50 rounded-lg p-3 sm:p-4">
-                  <h3 className="text-base sm:text-lg font-semibold mb-3 sm:mb-4 flex items-center gap-2">
-                    <FaHistory className="text-orange-600" />
-                    Recent Routes
-                  </h3>
-                  {routeHistory.length > 0 ? (
-                    <div className="space-y-2 max-h-40 overflow-y-auto">
-                      {routeHistory.slice(0, 5).map((route) => (
-                        <div key={route.id} className="flex items-center justify-between p-2 sm:p-3 bg-white rounded-lg border">
-                          <div className="flex-1 min-w-0">
-                            <div className="font-medium text-xs sm:text-sm truncate">
-                              {route.stops.map(s => s.address.split(',')[0]).join(' → ')}
-                            </div>
-                            <div className="text-xs text-gray-500">
-                              {route.timestamp.toLocaleString()}
-                            </div>
-                          </div>
-                          <button
-                            onClick={() => {
-                              loadRoute(route);
-                              setShowSettings(false);
-                            }}
-                            className="px-2 sm:px-3 py-1 bg-green-100 text-green-600 rounded text-xs sm:text-sm hover:bg-green-200 transition-colors ml-2"
-                          >
-                            Load
-                          </button>
-                        </div>
-                      ))}
-                    </div>
-                  ) : (
-                    <p className="text-gray-500 text-xs sm:text-sm">No recent routes</p>
-                  )}
-                </div>
-              </div>
-
-              <div className="flex justify-end mt-4 sm:mt-6 pt-3 sm:pt-4 border-t">
-                <button
-                  onClick={() => setShowSettings(false)}
-                  className="px-4 sm:px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors text-sm sm:text-base"
-                >
-                  Close
+                <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500">
+                  ✕
                 </button>
               </div>
-            </div>
-          </div>
-        </div>
-      )}
+
+              <div className="flex-1 overflow-y-auto p-5 space-y-8">
+                {/* Saved Section */}
+                <div>
+                  <div className="flex items-center justify-between mb-4">
+                    <h3 className="font-bold text-gray-700 flex items-center gap-2"><div className="w-2 h-6 bg-blue-500 rounded-full"></div> Saved Routes</h3>
+                    {savedRoutes.length > 0 && <button onClick={deleteAllSavedRoutes} className="text-xs text-red-600 hover:underline">Clear All</button>}
+                  </div>
+                  {savedRoutes.length > 0 ? (
+                    <div className="grid gap-3">
+                      {savedRoutes.map((route) => (
+                        <div key={route._id || route.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow flex justify-between items-center group">
+                          <div>
+                            <div className="font-semibold text-gray-800">{route.name}</div>
+                            <div className="text-xs text-gray-500 mt-1">{new Date(route.timestamp).toLocaleDateString()} • {route.travelMode}</div>
+                          </div>
+                          <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <button onClick={() => { loadRoute(route); setShowSettings(false); }} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100">Load</button>
+                            <button onClick={() => deleteSavedRoute(route._id || route.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><FaTrash /></button>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  ) : (
+                    <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-gray-400">No saved routes used yet.</div>
+                  )}
+                </div>
+
+                {/* History Section */}
+                <div>
+                  <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><div className="w-2 h-6 bg-orange-500 rounded-full"></div> Recent History</h3>
+                  <div className="space-y-2">
+                    {routeHistory.slice(0, 5).map((route) => (
+                      <div key={route.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-gray-100" onClick={() => { loadRoute(route); setShowSettings(false); }}>
+                        <div className="bg-orange-100 p-2 rounded-lg text-orange-600"><FaHistory /></div>
+                        <div className="flex-1 min-w-0">
+                          <div className="text-sm font-medium text-gray-800 truncate">{route.stops.map(s => s.address.split(',')[0]).join(' → ')}</div>
+                          <div className="text-xs text-gray-500">{route.timestamp.toLocaleString()}</div>
+                        </div>
+                        <FaDirections className="text-gray-300" />
+                      </div>
+                    ))}
+                    {routeHistory.length === 0 && <div className="text-sm text-gray-400 italic">No recent history available.</div>}
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
     </div>
   );
 }
