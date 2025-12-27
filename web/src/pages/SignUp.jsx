@@ -573,7 +573,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                           </button>
                         ) : (
                           (!emailEditMode) && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20 bg-gray-100 pl-1 rounded-l-sm">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -588,10 +588,10 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                                 title="Edit email"
                                 aria-label="Edit email"
                               >
-                                <FaEdit className="w-4 h-4" />
+                                <FaEdit className="text-sm" />
                               </button>
                               <div className="text-green-600">
-                                <FaCheck className="w-4 h-4" />
+                                <FaCheck className="text-xl" />
                               </div>
                             </div>
                           )

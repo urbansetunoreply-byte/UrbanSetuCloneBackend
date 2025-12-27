@@ -613,7 +613,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         </button>
                       ) : (
                         (!emailEditMode && !otpLoading) && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20 bg-gray-100 pl-1 rounded-l-sm">
                             <button
                               type="button"
                               onClick={() => {
@@ -629,10 +629,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                               title="Edit email"
                               aria-label="Edit email"
                             >
-                              <FaEdit className="w-4 h-4" />
+                              <FaEdit className="text-sm" />
                             </button>
                             <div className="text-green-600">
-                              <FaCheck className="w-4 h-4" />
+                              <FaCheck className="text-xl" />
                             </div>
                           </div>
                         )
@@ -928,11 +928,11 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         setStep(1);
                         navigate('/forgot-password?step=1', { replace: true });
                       }}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 hover:text-green-700 p-1 rounded hover:bg-green-50 transition-all z-20"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 bg-gray-100 hover:text-green-700 p-1 rounded hover:bg-green-50 transition-all z-20"
                       title="Edit email address"
                       aria-label="Edit email address"
                     >
-                      <FaEdit className="w-4 h-4" />
+                      <FaEdit className="text-sm" />
                     </button>
                   }
                 />
