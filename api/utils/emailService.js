@@ -726,17 +726,15 @@ export const sendUpdateAnnouncementEmail = async (email, update) => {
               View Full Changelog
             </a>
             
-            <a href="${clientBaseUrl}/sign-in" style="display: inline-block; background-color: #ffffff; color: #2563eb; text-decoration: none; padding: 10px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; border: 2px solid #2563eb; margin: 5px;">
-              Sign In to Explore
-            </a>
-
             ${update.actionUrl ? `
-              <div style="margin-top: 10px;">
-                <a href="${update.actionUrl}" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 10px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; margin: 5px;">
-                  Explore Feature
-                </a>
-              </div>
-            ` : ''}
+              <a href="${update.actionUrl}" style="display: inline-block; background-color: #10b981; color: #ffffff; text-decoration: none; padding: 12px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; margin: 5px;">
+                Explore Feature
+              </a>
+            ` : `
+              <a href="${clientBaseUrl}/sign-in" style="display: inline-block; background-color: #ffffff; color: #2563eb; text-decoration: none; padding: 10px 25px; border-radius: 6px; font-weight: bold; font-size: 15px; border: 2px solid #2563eb; margin: 5px;">
+                Sign In to Explore
+              </a>
+            `}
           </div>
           
           <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
