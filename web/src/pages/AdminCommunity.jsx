@@ -1444,23 +1444,27 @@ export default function AdminCommunity() {
                                                                         )}
                                                                     </div>
 
-                                                                    {/* Admin Edit Comment Button */}
-                                                                    <button
-                                                                        onClick={() => setEditingContent({ type: 'comment', id: comment._id, content: comment.content })}
-                                                                        className="absolute right-8 top-2 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
-                                                                        title="Edit Comment (Admin)"
-                                                                    >
-                                                                        <FaEdit className="text-xs" />
-                                                                    </button>
+                                                                    {!comment.isDeleted && (
+                                                                        <>
+                                                                            {/* Admin Edit Comment Button */}
+                                                                            <button
+                                                                                onClick={() => setEditingContent({ type: 'comment', id: comment._id, content: comment.content })}
+                                                                                className="absolute right-8 top-2 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                                                                title="Edit Comment (Admin)"
+                                                                            >
+                                                                                <FaEdit className="text-xs" />
+                                                                            </button>
 
-                                                                    {/* Admin Delete Comment Button */}
-                                                                    <button
-                                                                        onClick={() => handleDeleteComment(post._id, comment._id)}
-                                                                        className="absolute right-2 top-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
-                                                                        title="Delete Comment (Admin)"
-                                                                    >
-                                                                        <FaTimes className="text-xs" />
-                                                                    </button>
+                                                                            {/* Admin Delete Comment Button */}
+                                                                            <button
+                                                                                onClick={() => handleDeleteComment(post._id, comment._id)}
+                                                                                className="absolute right-2 top-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                                                                title="Delete Comment (Admin)"
+                                                                            >
+                                                                                <FaTimes className="text-xs" />
+                                                                            </button>
+                                                                        </>
+                                                                    )}
                                                                 </div>
 
                                                                 {/* Top level Reply Input */}
@@ -1681,23 +1685,27 @@ export default function AdminCommunity() {
                                                                                                             )}
                                                                                                         </div>
 
-                                                                                                        {/* Admin Edit Reply Button */}
-                                                                                                        <button
-                                                                                                            onClick={() => setEditingContent({ type: 'reply', id: reply._id, content: reply.content })}
-                                                                                                            className="absolute right-6 top-1 p-1 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
-                                                                                                            title="Edit Reply (Admin)"
-                                                                                                        >
-                                                                                                            <FaEdit size={10} />
-                                                                                                        </button>
+                                                                                                        {!reply.isDeleted && (
+                                                                                                            <>
+                                                                                                                {/* Admin Edit Reply Button */}
+                                                                                                                <button
+                                                                                                                    onClick={() => setEditingContent({ type: 'reply', id: reply._id, content: reply.content })}
+                                                                                                                    className="absolute right-6 top-1 p-1 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
+                                                                                                                    title="Edit Reply (Admin)"
+                                                                                                                >
+                                                                                                                    <FaEdit size={10} />
+                                                                                                                </button>
 
-                                                                                                        {/* Admin Delete Reply Button */}
-                                                                                                        <button
-                                                                                                            onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
-                                                                                                            className="absolute right-1 top-1 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
-                                                                                                            title="Delete Reply (Admin)"
-                                                                                                        >
-                                                                                                            <FaTimes size={10} />
-                                                                                                        </button>
+                                                                                                                {/* Admin Delete Reply Button */}
+                                                                                                                <button
+                                                                                                                    onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
+                                                                                                                    className="absolute right-1 top-1 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
+                                                                                                                    title="Delete Reply (Admin)"
+                                                                                                                >
+                                                                                                                    <FaTimes size={10} />
+                                                                                                                </button>
+                                                                                                            </>
+                                                                                                        )}
                                                                                                     </div>
                                                                                                     {/* Reply Input for Nested Reply */}
                                                                                                     {activeReplyInput === reply._id && (

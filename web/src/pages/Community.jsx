@@ -1656,7 +1656,7 @@ export default function Community() {
                                                                                                         )}
 
 
-                                                                                                        {currentUser && currentUser._id === reply.user?._id && (
+                                                                                                        {!reply.isDeleted && currentUser && currentUser._id === reply.user?._id && (
                                                                                                             <button
                                                                                                                 onClick={() => setEditingContent({ type: 'reply', id: reply._id, content: reply.content })}
                                                                                                                 className="absolute right-6 top-1 p-1 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
@@ -1665,7 +1665,7 @@ export default function Community() {
                                                                                                                 <FaEdit size={10} />
                                                                                                             </button>
                                                                                                         )}
-                                                                                                        {currentUser && (currentUser._id === reply.user?._id || currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
+                                                                                                        {!reply.isDeleted && currentUser && (currentUser._id === reply.user?._id || currentUser.role === 'admin' || currentUser.role === 'rootadmin') && (
                                                                                                             <button
                                                                                                                 onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
                                                                                                                 className="absolute right-1 top-1 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
