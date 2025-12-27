@@ -573,7 +573,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                           </button>
                         ) : (
                           (!emailEditMode) && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                            <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -584,19 +584,20 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                                   setResendTimer(0);
                                   setEmailVerified(false);
                                 }}
-                                className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                                className="text-blue-600 hover:text-blue-700 bg-white p-1.5 rounded-md shadow-sm border border-gray-200 transition-all"
                                 title="Edit email"
+                                aria-label="Edit email"
                               >
-                                <FaEdit className="text-sm" />
+                                <FaEdit className="w-4 h-4" />
                               </button>
-                              <div className="text-green-600">
-                                <FaCheck className="text-xl" />
+                              <div className="text-green-600 bg-white p-1.5 rounded-md shadow-sm border border-green-200 flex items-center justify-center">
+                                <FaCheck className="w-4 h-4" />
                               </div>
                             </div>
                           )
                         )
                       }
-                      inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
+                      inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-24' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
                       required
                     />
                     {fieldErrors.email && (
