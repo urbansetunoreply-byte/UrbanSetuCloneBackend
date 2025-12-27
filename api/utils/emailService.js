@@ -14564,3 +14564,109 @@ export const sendYearInReviewEmail = async (email, username, year, role = 'user'
   }
 };
 
+// Send Coin Expiry Warning Email
+export const sendCoinExpiryWarningEmail = async (email, username, daysLeft, balance, expiryDate) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: `${process.env.EMAIL_FROM_NAME || 'UrbanSetu'} <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: `⏳ Action Required: Your ${balance} SetuCoins expiring in ${daysLeft} days!`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <meta name="viewport" content="width=device-width, initial-scale=1.0">
+        <title>SetuCoins Expiry Warning</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #fef2f2;">
+        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <div style="background: linear-gradient(135deg, #ef4444 0%, #b91c1c 100%); padding: 30px; text-align: center;">
+            <h1 style="color: #ffffff; margin: 0; font-size: 24px; font-weight: 700;">Use It or Lose It!</h1>
+            <p style="color: #fee2e2; margin: 10px 0 0; font-size: 16px;">SetuCoins Expiry Alert</p>
+          </div>
+
+          <div style="padding: 40px 30px;">
+            <p style="margin: 0 0 20px; font-size: 16px; line-height: 1.6; color: #374151;">
+              Hello <strong>${username}</strong>,
+            </p>
+            <p style="margin: 0 0 25px; font-size: 16px; line-height: 1.6; color: #374151;">
+              This is a friendly reminder that your SetuCoins balance is approaching its expiration date due to inactivity.
+            </p>
+
+            <div style="background-color: #fff1f2; border: 2px dashed #f87171; border-radius: 12px; padding: 25px; text-align: center; margin-bottom: 30px;">
+              <p style="margin: 0; color: #991b1b; font-size: 14px; text-transform: uppercase; font-weight: 700; letter-spacing: 1px;">Expiring Balance</p>
+              <div style="font-size: 36px; font-weight: 800; color: #dc2626; margin: 10px 0;">
+                ${balance} <span style="font-size: 24px;">🪙</span>
+              </div>
+              <p style="margin: 0; color: #7f1d1d; font-size: 14px;">Expires on: <strong>${new Date(expiryDate).toLocaleDateString()}</strong></p>
+            </div>
+
+            <p style="text-align: center; color: #4b5563; margin-bottom: 30px;">
+              Don't let your rewards go to waste! Redeem them now for rent discounts or other services.
+            </p>
+
+            <div style="text-align: center;">
+              <a href="${clientBaseUrl}/user/rewards" 
+                 style="display: inline-block; background-color: #dc2626; color: white; padding: 14px 30px; border-radius: 50px; text-decoration: none; font-weight: 700; font-size: 16px; box-shadow: 0 4px 6px rgba(220, 38, 38, 0.25);">
+                 Redeem Now ➔
+              </a>
+              <div style="margin-top: 20px;">
+                 <a href="${clientBaseUrl}/contact" style="color: #9ca3af; text-decoration: none; font-size: 13px;">Contact Support</a>
+              </div>
+            </div>
+          </div>
+
+          <div style="background-color: #f9fafb; padding: 20px; text-align: center; border-top: 1px solid #e5e7eb;">
+             <p style="color: #9ca3af; margin: 0; font-size: 12px;">© ${new Date().getFullYear()} UrbanSetu</p>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+  return sendEmailWithRetry(mailOptions);
+};
+
+// Send Coins Frozen Email
+export const sendCoinsFrozenEmail = async (email, username, frozenAmount, expiryDate) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: `${process.env.EMAIL_FROM_NAME || 'UrbanSetu'} <${process.env.EMAIL_USER}>`,
+    to: email,
+    subject: `🧊 Notice: Your ${frozenAmount} SetuCoins have expired`,
+    html: `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="utf-8">
+        <title>SetuCoins Expired</title>
+      </head>
+      <body style="margin: 0; padding: 0; font-family: 'Segoe UI', sans-serif; background-color: #f3f4f6;">
+        <div style="max-width: 600px; margin: 40px auto; background-color: #ffffff; border-radius: 12px; overflow: hidden;">
+          <div style="background-color: #9ca3af; padding: 30px; text-align: center;">
+            <h1 style="color: white; margin: 0; font-size: 24px;">Coins Frozen</h1>
+          </div>
+          <div style="padding: 40px 30px;">
+             <p style="color: #374151; font-size: 16px;">Hello <strong>${username}</strong>,</p>
+             <p style="color: #4b5563; line-height: 1.6;">
+               We regret to inform you that your SetuCoins balance of <strong>${frozenAmount} 🪙</strong> has expired and been frozen due to inactivity over the last 12 months.
+             </p>
+             <p style="color: #6b7280; font-size: 14px; margin-top: 20px;">
+               Expiry Date: ${new Date(expiryDate).toLocaleDateString()}
+             </p>
+             <div style="margin-top: 30px; text-align: center;">
+                <a href="${clientBaseUrl}/user/rewards" style="color: #2563eb; text-decoration: none; font-weight: 600;">View Transaction History</a>
+                <span style="margin: 0 10px; color: #d1d5db;">|</span>
+                <a href="${clientBaseUrl}/contact" style="color: #6b7280; text-decoration: none;">Contact Support</a>
+             </div>
+          </div>
+        </div>
+      </body>
+      </html>
+    `
+  };
+  return sendEmailWithRetry(mailOptions);
+};
+

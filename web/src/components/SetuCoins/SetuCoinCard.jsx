@@ -4,7 +4,7 @@ import { Link } from 'react-router-dom';
 import SetuCoinInfoModal from './SetuCoinInfoModal';
 import { getCoinValue, COIN_CONFIG } from '../../utils/coinUtils';
 
-const SetuCoinCard = ({ balance = 0, streak = 0, loading = false, onViewHistory }) => {
+const SetuCoinCard = ({ balance = 0, streak = 0, expiryDate = null, loading = false, onViewHistory }) => {
     const [showInfo, setShowInfo] = useState(false);
 
     const inrValue = getCoinValue(balance, 'INR').toFixed(2);
@@ -92,6 +92,11 @@ const SetuCoinCard = ({ balance = 0, streak = 0, loading = false, onViewHistory 
                                 <FaQuestionCircle size={14} title={`${COIN_CONFIG.RATES.INR} Coins = ₹1 | ${COIN_CONFIG.RATES.USD} Coins = $1`} />
                             </button>
                         </div>
+                        {expiryDate && balance > 0 && (
+                            <div className="mt-2 text-xs text-white/70 font-medium bg-black/10 inline-block px-2 py-1 rounded-md">
+                                Expires on: <span className="font-bold text-white">{new Date(expiryDate).toLocaleDateString()}</span>
+                            </div>
+                        )}
                     </div>
                 </div>
 

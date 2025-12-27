@@ -80,6 +80,7 @@ import { indexAllWebsiteData } from "./services/dataSyncService.js";
 import { setupAllHooks } from "./middleware/dataSyncHooks.js";
 import { startScheduledSync } from "./services/scheduledSyncService.js";
 import { initializeYearInReviewScheduler } from "./utils/yearInReviewScheduler.js";
+import { startCoinExpiryScheduler } from "./schedulers/coinExpiryScheduler.js";
 
 import cors from 'cors';
 import cookieParser from 'cookie-parser';
@@ -169,6 +170,7 @@ connectToMongoDB().then(() => {
   initializeTrendingEmailScheduler();
   startReferralReminderScheduler();
   initializeYearInReviewScheduler();
+  startCoinExpiryScheduler();
 });
 
 const __dirname = path.resolve();

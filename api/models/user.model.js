@@ -224,6 +224,19 @@ const userSchema = new mongoose.Schema({
     hasReceivedProfileCompletionBonus: {
       type: Boolean,
       default: false
+    },
+    // Expiry Tracking
+    lastCoinTransaction: {
+      type: Date,
+      default: null
+    },
+    coinsExpiryDate: {
+      type: Date,
+      default: null
+    },
+    frozenCoins: { // Amount lost due to expiry
+      type: Number,
+      default: 0
     }
   },
 

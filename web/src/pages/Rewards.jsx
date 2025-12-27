@@ -45,7 +45,7 @@ export default function Rewards() {
 
     const isProfileComplete = currentUser && currentUser.gender && currentUser.address && currentUser.mobileNumber;
 
-    const [coinData, setCoinData] = useState({ balance: 0, totalEarned: 0, streak: 0, loading: true });
+    const [coinData, setCoinData] = useState({ balance: 0, totalEarned: 0, streak: 0, expiryDate: null, frozenCoins: 0, loading: true });
     const [history, setHistory] = useState([]);
     const [historyLoading, setHistoryLoading] = useState(false);
     const [showCoinBurst, setShowCoinBurst] = useState(false);
@@ -77,6 +77,8 @@ export default function Rewards() {
                     balance: data.setuCoinsBalance || 0,
                     totalEarned: data.totalCoinsEarned || 0,
                     streak: data.currentStreak || 0,
+                    expiryDate: data.coinsExpiryDate || null,
+                    frozenCoins: data.frozenCoins || 0,
                     loading: false
                 });
             }
@@ -212,6 +214,16 @@ export default function Rewards() {
                             <div className="bg-yellow-400 text-indigo-900 px-3 py-1 rounded-full text-xs font-black shadow-lg">
                                 ≈ ₹{(coinData.balance / 10).toFixed(2)} VALUATION
                             </div>
+                            {coinData.expiryDate && coinData.balance > 0 && (
+                                <p className="text-[10px] text-white/60 mt-2 font-bold uppercase tracking-widest bg-black/20 px-2 py-0.5 rounded-md">
+                                    Expires: {new Date(coinData.expiryDate).toLocaleDateString()}
+                                </p>
+                            )}
+                            {coinData.frozenCoins > 0 && (
+                                <p className="text-[10px] text-red-200 mt-1 font-bold uppercase tracking-widest bg-red-500/20 px-2 py-0.5 rounded-md">
+                                    Frozen: {coinData.frozenCoins.toLocaleString()}
+                                </p>
+                            )}
                         </div>
                     </div>
                 </div>

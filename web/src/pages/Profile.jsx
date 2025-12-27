@@ -308,7 +308,7 @@ export default function Profile() {
   const navigate = useNavigate();
 
   // SetuCoins State
-  const [coinData, setCoinData] = useState({ balance: 0, streak: 0, loading: true });
+  const [coinData, setCoinData] = useState({ balance: 0, streak: 0, expiryDate: null, frozenCoins: 0, loading: true });
   const [showCoinHistory, setShowCoinHistory] = useState(false);
   const [showReferralModal, setShowReferralModal] = useState(false);
 
@@ -341,6 +341,8 @@ export default function Profile() {
           setCoinData({
             balance: data.setuCoinsBalance || 0,
             streak: data.currentStreak || 0,
+            expiryDate: data.coinsExpiryDate || null,
+            frozenCoins: data.frozenCoins || 0,
             loading: false
           });
         }
@@ -2025,6 +2027,8 @@ export default function Profile() {
               <SetuCoinCard
                 balance={coinData.balance}
                 streak={coinData.streak}
+                expiryDate={coinData.expiryDate}
+                frozenCoins={coinData.frozenCoins}
                 loading={coinData.loading}
                 onViewHistory={() => {
                   setShowCoinHistory(!showCoinHistory);

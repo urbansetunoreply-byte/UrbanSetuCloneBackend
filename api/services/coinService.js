@@ -60,6 +60,12 @@ class CoinService {
         user.gamification.setuCoinsBalance += amount;
         user.gamification.totalCoinsEarned += amount;
 
+        // Update expiry tracking
+        const now = new Date();
+        const oneYearFromNow = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+        user.gamification.lastCoinTransaction = now;
+        user.gamification.coinsExpiryDate = oneYearFromNow;
+
         // Save user
         await user.save({ session });
 
@@ -113,6 +119,12 @@ class CoinService {
 
         // Update balance
         user.gamification.setuCoinsBalance -= amount;
+
+        // Update expiry tracking (Activity resets the timer)
+        const now = new Date();
+        const oneYearFromNow = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
+        user.gamification.lastCoinTransaction = now;
+        user.gamification.coinsExpiryDate = oneYearFromNow;
 
         // Save user
         await user.save({ session });
@@ -315,6 +327,48 @@ class CoinService {
         return {
             referralsCount,
             totalEarned
+        };
+    }
+
+    /**
+     * Expire (Freeze) Coins for a user
+     * @param {string} userId
+     * @param {Object} session
+     */
+    async expireCoins(userId, session = null) {
+        const user = await User.findById(userId).session(session);
+        if (!user || !user.gamification || user.gamification.setuCoinsBalance <= 0) {
+            return { success: false, message: 'No coins to expire' };
+        }
+
+        const balanceToFreeze = user.gamification.setuCoinsBalance;
+
+        // Move balance to frozen
+        user.gamification.frozenCoins = (user.gamification.frozenCoins || 0) + balanceToFreeze;
+        user.gamification.setuCoinsBalance = 0;
+
+        // Reset expiry dates (balance is 0)
+        user.gamification.lastCoinTransaction = new Date();
+        user.gamification.coinsExpiryDate = null; // No active balance means no expiry date pending
+
+        // Save User
+        await user.save({ session });
+
+        // Record Transaction
+        const transaction = new CoinTransaction({
+            userId,
+            type: 'debit',
+            amount: balanceToFreeze,
+            source: 'other', // Using 'other' as 'expiry' not in enum.
+            description: 'Coins Expired due to Inactivity (Frozen)',
+            balanceAfter: 0
+        });
+
+        await transaction.save({ session });
+
+        return {
+            success: true,
+            frozenAmount: balanceToFreeze
         };
     }
 }

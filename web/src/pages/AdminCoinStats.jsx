@@ -81,11 +81,25 @@ export default function AdminCoinStats() {
         }
     };
 
-    const selectUser = (user) => {
+    const selectUser = async (user) => {
+        // Set basic info first so UI updates immediately
         setSelectedUser(user);
         setSearchQuery(user.email);
         setSearchResults([]);
+
+        // Fetch history
         fetchUserHistory(user._id);
+
+        // Fetch full user details (including gamification)
+        try {
+            const res = await authenticatedFetch(`${API_BASE_URL}/api/user/id/${user._id}`);
+            const fullUserData = await res.json();
+            if (fullUserData) {
+                setSelectedUser(fullUserData);
+            }
+        } catch (error) {
+            console.error("Error fetching full user details:", error);
+        }
     };
 
     const handleAdjustment = async () => {
@@ -286,6 +300,20 @@ export default function AdminCoinStats() {
                                     <p className="text-indigo-100 flex items-center gap-2 text-sm">
                                         <FaUser className="text-xs" /> {selectedUser.email}
                                     </p>
+                                    <div className="flex flex-wrap gap-4 mt-1 text-xs font-semibold">
+                                        {selectedUser.gamification?.coinsExpiryDate && (
+                                            <div className="bg-white/20 px-2 py-1 rounded text-white border border-white/20 flex items-center gap-1">
+                                                <span>Expires:</span>
+                                                <span className="text-indigo-100">{new Date(selectedUser.gamification.coinsExpiryDate).toLocaleDateString()}</span>
+                                            </div>
+                                        )}
+                                        {selectedUser.gamification?.frozenCoins > 0 && (
+                                            <div className="bg-red-500/30 px-2 py-1 rounded text-white border border-red-400/30 flex items-center gap-1">
+                                                <span>Frozen:</span>
+                                                <span className="text-red-100">{selectedUser.gamification.frozenCoins.toLocaleString()}</span>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
                             <div className="flex gap-3">
