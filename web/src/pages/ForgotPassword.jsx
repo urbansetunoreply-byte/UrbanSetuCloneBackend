@@ -613,7 +613,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         </button>
                       ) : (
                         (!emailEditMode && !otpLoading) && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2">
+                          <div className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
                             <button
                               type="button"
                               onClick={() => {
@@ -625,19 +625,20 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                                 setResendTimer(0);
                                 setEmailVerified(false);
                               }}
-                              className="text-red-600 hover:text-red-800 transition-colors duration-200 p-1 rounded hover:bg-red-50"
+                              className="text-red-600 hover:text-red-700 bg-white p-1.5 rounded-md shadow-sm border border-gray-200 transition-all"
                               title="Edit email"
+                              aria-label="Edit email"
                             >
-                              <FaEdit className="text-sm" />
+                              <FaEdit className="w-4 h-4" />
                             </button>
-                            <div className="text-green-600">
-                              <FaCheck className="text-xl" />
+                            <div className="text-green-600 bg-white p-1.5 rounded-md shadow-sm border border-green-200 flex items-center justify-center">
+                              <FaCheck className="w-4 h-4" />
                             </div>
                           </div>
                         )
                       )
                     }
-                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-red-500/20 ${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500' : (emailVerified ? 'border-green-500' : 'border-gray-300')} hover:border-red-500`}
+                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-red-500/20 ${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-24' : (emailVerified ? 'border-green-500' : 'border-gray-300')} hover:border-red-500`}
                     required
                   />
                   {/* If captcha required before OTP field is open, show below email (outside input wrapper to avoid layout shift on button) */}
@@ -919,7 +920,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   readOnly
                   disabled
                   startIcon={<Mail className="w-5 h-5" />}
-                  inputClassName="bg-gray-100 cursor-not-allowed text-gray-600 pr-12"
+                  inputClassName="bg-gray-100 cursor-not-allowed text-gray-600 pr-14"
                   endAdornment={
                     <button
                       type="button"
@@ -927,10 +928,11 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         setStep(1);
                         navigate('/forgot-password?step=1', { replace: true });
                       }}
-                      className="absolute inset-y-0 right-3 flex items-center text-green-600 hover:text-green-800 transition-colors duration-200"
+                      className="absolute right-2 top-1/2 transform -translate-y-1/2 text-green-600 hover:text-green-700 bg-white p-1.5 rounded-md shadow-sm border border-gray-200 transition-all"
                       title="Edit email address"
+                      aria-label="Edit email address"
                     >
-                      <FaEdit className="text-lg" />
+                      <FaEdit className="w-4 h-4" />
                     </button>
                   }
                 />
