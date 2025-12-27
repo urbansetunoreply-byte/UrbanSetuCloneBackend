@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useCallback } from 'react';
-import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle } from 'react-icons/fa';
+import { FaRoute, FaPlus, FaTrash, FaClock, FaMapMarkerAlt, FaCar, FaWalking, FaBicycle, FaBus, FaCog, FaDownload, FaShare, FaBookmark, FaHistory, FaFilter, FaSearch, FaLocationArrow, FaMapPin, FaDirections, FaInfoCircle, FaTrafficLight } from 'react-icons/fa';
 import { toast } from 'react-toastify';
 import mapboxgl from 'mapbox-gl';
 import MapboxGeocoder from '@mapbox/mapbox-gl-geocoder';
@@ -70,7 +70,7 @@ export default function RoutePlanner() {
     { id: 'driving', name: 'Driving', icon: FaCar, color: '#3B82F6' },
     { id: 'walking', name: 'Walking', icon: FaWalking, color: '#10B981' },
     { id: 'cycling', name: 'Cycling', icon: FaBicycle, color: '#8B5CF6' },
-    { id: 'driving-traffic', name: 'Traffic', icon: FaCar, color: '#F59E0B' }
+    { id: 'driving-traffic', name: 'Traffic', icon: FaTrafficLight, color: '#F59E0B' }
   ];
 
   const addStop = () => setStops(s => [...s, { address: '', coordinates: null }]);
@@ -949,8 +949,8 @@ export default function RoutePlanner() {
                     key={mode.id}
                     onClick={() => setTravelMode(mode.id)}
                     className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-medium flex flex-col items-center gap-1 transition-all ${isActive
-                        ? 'bg-white text-blue-600 shadow-sm scale-100'
-                        : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                      ? 'bg-white text-blue-600 shadow-sm scale-100'
+                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
                       }`}
                   >
                     <Icon className={isActive ? 'text-lg' : 'text-base'} />
