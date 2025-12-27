@@ -28,6 +28,10 @@ const platformUpdateSchema = new mongoose.Schema({
         type: String,
         default: ''
     },
+    videoUrl: {
+        type: String,
+        default: ''
+    },
     releaseDate: {
         type: Date,
         default: Date.now

@@ -4,7 +4,7 @@ import { toast } from 'react-toastify';
 import { usePageTitle } from '../hooks/usePageTitle';
 import {
     Plus, Edit, Trash2, Search, Filter,
-    Calendar, Tag, Image as ImageIcon, CheckCircle, XCircle
+    Calendar, Tag, Image as ImageIcon, CheckCircle, XCircle, Video, Loader, Upload
 } from 'lucide-react';
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
@@ -28,9 +28,12 @@ export default function AdminUpdates() {
         category: 'new_feature',
         tags: '',
         imageUrl: '',
+        videoUrl: '',
         isActive: true
     });
     const [submitting, setSubmitting] = useState(false);
+    const [uploadingImage, setUploadingImage] = useState(false);
+    const [uploadingVideo, setUploadingVideo] = useState(false);
 
     // Delete Confirmation State
     const [showDeleteModal, setShowDeleteModal] = useState(false);
@@ -69,6 +72,7 @@ export default function AdminUpdates() {
             category: 'new_feature',
             tags: '',
             imageUrl: '',
+            videoUrl: '',
             isActive: true
         });
         setEditingUpdate(null);
@@ -88,6 +92,7 @@ export default function AdminUpdates() {
             category: update.category,
             tags: update.tags.join(', '),
             imageUrl: update.imageUrl || '',
+            videoUrl: update.videoUrl || '',
             isActive: update.isActive
         });
         setShowModal(true);
@@ -118,6 +123,60 @@ export default function AdminUpdates() {
         } finally {
             setShowDeleteModal(false);
             setDeleteTargetId(null);
+        }
+    };
+
+
+    const handleFileUpload = async (file, type) => {
+        if (!file) return;
+
+        // Validation
+        if (type === 'image') {
+            if (!file.type.startsWith('image/')) return toast.error('Please upload an image file');
+            if (file.size > 5 * 1024 * 1024) return toast.error('Image size must be less than 5MB');
+            setUploadingImage(true);
+        } else {
+            if (!file.type.startsWith('video/')) return toast.error('Please upload a video file');
+            if (file.size > 10 * 1024 * 1024) return toast.error('Video size must be less than 10MB');
+            setUploadingVideo(true);
+        }
+
+        try {
+            const uploadFormData = new FormData();
+            uploadFormData.append(type === 'image' ? 'image' : 'video', file);
+
+            const endpoint = type === 'image' ? '/api/upload/image' : '/api/upload/video';
+
+            const res = await fetch(`${API_BASE_URL}${endpoint}`, {
+                method: 'POST',
+                credentials: 'include',
+                body: uploadFormData,
+            });
+
+            const data = await res.json();
+
+            if (data.success || res.ok) {
+                // Determine the correct key based on API response structure
+                const url = type === 'image' ? (data.imageUrl || data.url) : (data.videoUrl || data.url);
+
+                if (url) {
+                    setFormData(prev => ({
+                        ...prev,
+                        [type === 'image' ? 'imageUrl' : 'videoUrl']: url
+                    }));
+                    toast.success(`${type === 'image' ? 'Image' : 'Video'} uploaded successfully`);
+                } else {
+                    toast.error('Upload successful but no URL returned');
+                }
+            } else {
+                toast.error(data.message || 'Upload failed');
+            }
+        } catch (error) {
+            console.error(error);
+            toast.error('Error uploading file');
+        } finally {
+            if (type === 'image') setUploadingImage(false);
+            else setUploadingVideo(false);
         }
     };
 
@@ -390,16 +449,94 @@ export default function AdminUpdates() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Image URL (Optional)</label>
-                                <div className="flex items-center border border-gray-300 rounded-lg px-3 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
-                                    <ImageIcon size={18} className="text-gray-400 mr-2" />
-                                    <input
-                                        type="text"
-                                        className="w-full py-2 outline-none"
-                                        placeholder="https://example.com/image.jpg"
-                                        value={formData.imageUrl}
-                                        onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
-                                    />
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Media</label>
+                                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                                    {/* Image Upload */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <label className="text-xs font-semibold text-gray-500 uppercase">Image</label>
+                                            {uploadingImage && <Loader size={14} className="animate-spin text-blue-600" />}
+                                        </div>
+                                        <div className="flex items-center border border-gray-300 rounded-lg px-3 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+                                            <ImageIcon size={18} className="text-gray-400 mr-2 flex-shrink-0" />
+                                            <input
+                                                type="text"
+                                                className="w-full py-2 outline-none text-sm"
+                                                placeholder="Image URL"
+                                                value={formData.imageUrl}
+                                                onChange={(e) => setFormData({ ...formData, imageUrl: e.target.value })}
+                                            />
+                                            <label className="cursor-pointer p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                                <Upload size={16} className="text-gray-500" />
+                                                <input
+                                                    type="file"
+                                                    className="hidden"
+                                                    accept="image/*"
+                                                    onChange={(e) => handleFileUpload(e.target.files[0], 'image')}
+                                                />
+                                            </label>
+                                        </div>
+                                        {formData.imageUrl && (
+                                            <div className="mt-2 relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 h-32 flex items-center justify-center">
+                                                <img
+                                                    src={formData.imageUrl}
+                                                    alt="Preview"
+                                                    className="max-h-full max-w-full object-contain"
+                                                    onError={(e) => e.target.src = 'https://via.placeholder.com/300?text=Invalid+Image+URL'}
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, imageUrl: '' })}
+                                                    className="absolute top-1 right-1 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
+                                                >
+                                                    <XCircle size={14} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
+
+                                    {/* Video Upload */}
+                                    <div className="space-y-2">
+                                        <div className="flex items-center gap-2 mb-1">
+                                            <label className="text-xs font-semibold text-gray-500 uppercase">Video</label>
+                                            {uploadingVideo && <Loader size={14} className="animate-spin text-blue-600" />}
+                                        </div>
+                                        <div className="flex items-center border border-gray-300 rounded-lg px-3 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white">
+                                            <Video size={18} className="text-gray-400 mr-2 flex-shrink-0" />
+                                            <input
+                                                type="text"
+                                                className="w-full py-2 outline-none text-sm"
+                                                placeholder="Video URL"
+                                                value={formData.videoUrl}
+                                                onChange={(e) => setFormData({ ...formData, videoUrl: e.target.value })}
+                                            />
+                                            <label className="cursor-pointer p-2 hover:bg-gray-100 rounded-full transition-colors">
+                                                <Upload size={16} className="text-gray-500" />
+                                                <input
+                                                    type="file"
+                                                    className="hidden"
+                                                    accept="video/*"
+                                                    onChange={(e) => handleFileUpload(e.target.files[0], 'video')}
+                                                />
+                                            </label>
+                                        </div>
+                                        {formData.videoUrl && (
+                                            <div className="mt-2 relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 h-32 flex items-center justify-center">
+                                                <video
+                                                    src={formData.videoUrl}
+                                                    className="max-h-full max-w-full"
+                                                    controls
+                                                />
+                                                <button
+                                                    type="button"
+                                                    onClick={() => setFormData({ ...formData, videoUrl: '' })}
+                                                    className="absolute top-1 right-1 z-10 bg-black/50 text-white rounded-full p-1 hover:bg-black/70"
+                                                >
+                                                    <XCircle size={14} />
+                                                </button>
+                                            </div>
+                                        )}
+                                    </div>
                                 </div>
                             </div>
 
