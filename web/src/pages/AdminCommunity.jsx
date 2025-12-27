@@ -235,7 +235,12 @@ export default function AdminCommunity() {
                 if (post._id === postId) {
                     return {
                         ...post,
-                        comments: post.comments.filter(c => c._id !== commentId)
+                        comments: post.comments.map(c => {
+                            if (c._id === commentId) {
+                                return { ...c, isDeleted: true }; // Mark as deleted to preserve thread
+                            }
+                            return c;
+                        })
                     };
                 }
                 return post;
@@ -272,10 +277,47 @@ export default function AdminCommunity() {
                             if (comment._id === commentId) {
                                 return {
                                     ...comment,
-                                    replies: comment.replies ? comment.replies.filter(r => r._id !== replyId) : []
+                                    replies: comment.replies ? comment.replies.map(r => {
+                                        if (r._id === replyId) {
+                                            return { ...r, isDeleted: true }; // Mark as deleted to preserve thread
+                                        }
+                                        return r;
+                                    }) : []
                                 };
                             }
                             return comment;
+                        })
+                    };
+                }
+                return post;
+            }));
+        };
+
+        const handleCommentUpdated = ({ postId, comment }) => {
+            setPosts(prev => prev.map(post => {
+                if (post._id === postId) {
+                    return {
+                        ...post,
+                        comments: post.comments.map(c => c._id === comment._id ? { ...c, ...comment } : c)
+                    };
+                }
+                return post;
+            }));
+        };
+
+        const handleReplyUpdated = ({ postId, commentId, reply }) => {
+            setPosts(prev => prev.map(post => {
+                if (post._id === postId) {
+                    return {
+                        ...post,
+                        comments: post.comments.map(c => {
+                            if (c._id === commentId) {
+                                return {
+                                    ...c,
+                                    replies: c.replies ? c.replies.map(r => r._id === reply._id ? { ...r, ...reply } : r) : []
+                                };
+                            }
+                            return c;
                         })
                     };
                 }
@@ -288,8 +330,10 @@ export default function AdminCommunity() {
         socket.on('forum:postUpdated', handlePostUpdated);
         socket.on('forum:commentAdded', handleCommentAdded);
         socket.on('forum:commentDeleted', handleCommentDeleted);
+        socket.on('forum:commentUpdated', handleCommentUpdated);
         socket.on('forum:replyAdded', handleReplyAdded);
         socket.on('forum:replyDeleted', handleReplyDeleted);
+        socket.on('forum:replyUpdated', handleReplyUpdated);
 
         return () => {
             socket.off('forum:postCreated', handlePostCreated);
@@ -297,8 +341,10 @@ export default function AdminCommunity() {
             socket.off('forum:postUpdated', handlePostUpdated);
             socket.off('forum:commentAdded', handleCommentAdded);
             socket.off('forum:commentDeleted', handleCommentDeleted);
+            socket.off('forum:commentUpdated', handleCommentUpdated);
             socket.off('forum:replyAdded', handleReplyAdded);
             socket.off('forum:replyDeleted', handleReplyDeleted);
+            socket.off('forum:replyUpdated', handleReplyUpdated);
         };
     }, [activeTab]);
 
