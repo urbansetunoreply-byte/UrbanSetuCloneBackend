@@ -697,19 +697,23 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
         </>
       ) : (
         <>
-          <Link to="/sign-up" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
-              <UserPlus className={`${mobile ? 'text-lg text-green-500' : 'text-base text-green-500'}`} />
-              <span>Get Started</span>
-            </li>
-          </Link>
+          {location.pathname !== '/sign-up' && (
+            <Link to="/sign-up" onClick={onNavigate}>
+              <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+                <UserPlus className={`${mobile ? 'text-lg text-green-500' : 'text-base text-green-500'}`} />
+                <span>Get Started</span>
+              </li>
+            </Link>
+          )}
 
-          <Link to="/sign-in" onClick={onNavigate}>
-            <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
-              <LogIn className={`${mobile ? 'text-lg text-blue-500' : 'text-base text-blue-500'}`} />
-              <span>Sign In</span>
-            </li>
-          </Link>
+          {location.pathname !== '/sign-in' && (
+            <Link to="/sign-in" onClick={onNavigate}>
+              <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+                <LogIn className={`${mobile ? 'text-lg text-blue-500' : 'text-base text-blue-500'}`} />
+                <span>Sign In</span>
+              </li>
+            </Link>
+          )}
         </>
       )}
     </ul>
