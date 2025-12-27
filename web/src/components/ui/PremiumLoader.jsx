@@ -53,6 +53,14 @@ const PremiumLoader = ({ onComplete }) => {
             </div>
 
             <p className="text-sm text-gray-400 mt-4 font-medium tracking-wide">SECURE LOGIN</p>
+
+            {/* Skip Button */}
+            <button
+                onClick={onComplete}
+                className="absolute bottom-8 text-gray-400 hover:text-gray-600 text-sm font-medium transition-colors border-b border-transparent hover:border-gray-300 pb-0.5"
+            >
+                Skip
+            </button>
         </div>
     );
 };
