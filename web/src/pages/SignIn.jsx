@@ -806,13 +806,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 type="button"
                                                 onClick={handleEmailEdit}
                                                 disabled={loading || authInProgress !== null}
-                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 p-1.5 bg-white rounded-md shadow-sm border border-gray-200 transition-all ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 aria-label="Edit email"
                                             >
                                                 <FaEdit className="w-4 h-4" />
                                             </button>
                                         ) : null}
-                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${emailStep ? 'bg-gray-50 text-gray-600' : ''}`}
+                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${emailStep ? 'bg-gray-50 text-gray-600 pr-12' : ''}`}
                                         required
                                     />
 
@@ -934,13 +934,13 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     setOtpSuccessMessage("");
                                                 }}
                                                 disabled={loading || authInProgress !== null}
-                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+                                                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 p-1.5 bg-white rounded-md shadow-sm border border-gray-200 transition-all"
                                                 aria-label="Edit email"
                                             >
                                                 <FaEdit className="w-4 h-4" />
                                             </button>
                                         ) : null}
-                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${otpSent ? 'bg-gray-50 text-gray-600' : ''}`}
+                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${otpSent ? 'bg-gray-50 text-gray-600 pr-12' : ''}`}
                                         required
                                     />
                                 </div>
