@@ -352,6 +352,7 @@ export default function AdminCoinStats() {
                                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Activity</th>
                                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Source</th>
                                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Date</th>
+                                            <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Expiry</th>
                                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-right">Amount</th>
                                         </tr>
                                     </thead>
@@ -382,6 +383,9 @@ export default function AdminCoinStats() {
                                                     </td>
                                                     <td className="px-6 py-4 text-xs font-medium text-gray-500">
                                                         {new Date(tx.createdAt).toLocaleDateString()}
+                                                    </td>
+                                                    <td className="px-6 py-4 text-xs font-medium text-gray-400">
+                                                        {tx.expiryDate ? new Date(tx.expiryDate).toLocaleDateString() : '-'}
                                                     </td>
                                                     <td className={`px-6 py-4 text-right font-black text-lg ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
                                                         {tx.type === 'credit' ? '+' : '-'}{tx.amount}

@@ -83,6 +83,11 @@ const CoinHistory = ({ initialOpen = false }) => {
                                             <span className="flex items-center gap-1"><FaCalendarAlt className="text-[10px]" /> {new Date(tx.createdAt).toLocaleDateString()}</span>
                                             <span className={`px-1.5 rounded uppercase text-[10px] tracking-wider ${tx.source === 'referral' ? 'bg-purple-100 text-purple-700 font-bold' : 'bg-gray-200'
                                                 }`}>{tx.source.replace('_', ' ')}</span>
+                                            {tx.type === 'credit' && tx.expiryDate && (
+                                                <span className="text-orange-600 font-bold bg-orange-50 px-1.5 rounded text-[10px] border border-orange-100">
+                                                    Exp: {new Date(tx.expiryDate).toLocaleDateString()}
+                                                </span>
+                                            )}
                                         </div>
                                     </div>
                                 </div>

@@ -421,6 +421,7 @@ export default function Rewards() {
                                             <th className="px-6 py-4">Transaction Details</th>
                                             <th className="px-6 py-4">Status</th>
                                             <th className="px-6 py-4">Date & Time</th>
+                                            <th className="px-6 py-4">Expiry</th>
                                             <th className="px-6 py-4 text-right">Amount</th>
                                         </tr>
                                     </thead>
@@ -460,6 +461,9 @@ export default function Rewards() {
                                                         {new Date(tx.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                                                         <br />
                                                         <span className="text-[10px] opacity-60 font-normal">{new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
+                                                    </td>
+                                                    <td className="px-6 py-4 text-xs font-medium text-slate-400">
+                                                        {tx.expiryDate ? new Date(tx.expiryDate).toLocaleDateString() : '-'}
                                                     </td>
                                                     <td className={`px-6 py-4 text-right font-black text-lg ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
                                                         {tx.type === 'credit' ? '+' : '-'}{tx.amount}

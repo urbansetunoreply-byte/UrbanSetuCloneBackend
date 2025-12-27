@@ -64,7 +64,7 @@ class CoinService {
         const now = new Date();
         const oneYearFromNow = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
         user.gamification.lastCoinTransaction = now;
-        user.gamification.coinsExpiryDate = oneYearFromNow;
+        // user.gamification.coinsExpiryDate = oneYearFromNow; // Removed: We now track expiry per transaction
 
         // Save user
         await user.save({ session });
@@ -79,6 +79,8 @@ class CoinService {
             referenceModel,
             description,
             balanceAfter: user.gamification.setuCoinsBalance,
+            expiryDate: oneYearFromNow, // Per-transaction expiry
+            remainingBalance: amount,   // Initial remaining balance
             adminId
         });
 
@@ -119,17 +121,34 @@ class CoinService {
 
         // Update balance
         user.gamification.setuCoinsBalance -= amount;
+        user.gamification.lastCoinTransaction = new Date();
 
-        // Update expiry tracking (Activity resets the timer)
-        const now = new Date();
-        const oneYearFromNow = new Date(now.getTime() + 365 * 24 * 60 * 60 * 1000);
-        user.gamification.lastCoinTransaction = now;
-        user.gamification.coinsExpiryDate = oneYearFromNow;
+        // FIFO Deduction Logic: Deduct from oldest active credits
+        let amountRemainingToDebit = amount;
+        try {
+            const activeCredits = await CoinTransaction.find({
+                userId,
+                type: 'credit',
+                expiryDate: { $gt: new Date() },
+                remainingBalance: { $gt: 0 }
+            }).sort({ expiryDate: 1 }).session(session);
+
+            for (const creditTx of activeCredits) {
+                if (amountRemainingToDebit <= 0) break;
+                const deduction = Math.min(creditTx.remainingBalance, amountRemainingToDebit);
+                creditTx.remainingBalance -= deduction;
+                amountRemainingToDebit -= deduction;
+                await creditTx.save({ session });
+            }
+        } catch (fifoError) {
+            console.error("Error in FIFO deduction:", fifoError);
+            // Proceed without failing the transaction, relying on master balance
+        }
 
         // Save user
         await user.save({ session });
 
-        // Create transaction record
+        // Create debit transaction record
         const transaction = new CoinTransaction({
             userId,
             type: 'debit',
@@ -337,38 +356,51 @@ class CoinService {
      */
     async expireCoins(userId, session = null) {
         const user = await User.findById(userId).session(session);
-        if (!user || !user.gamification || user.gamification.setuCoinsBalance <= 0) {
+        if (!user || !user.gamification) {
+            return { success: false, message: 'User not found' };
+        }
+
+        const now = new Date();
+        // Find expired transactions that still have remaining balance
+        const expiredCredits = await CoinTransaction.find({
+            userId,
+            type: 'credit',
+            expiryDate: { $lte: now },
+            remainingBalance: { $gt: 0 }
+        }).session(session);
+
+        if (expiredCredits.length === 0) {
             return { success: false, message: 'No coins to expire' };
         }
 
-        const balanceToFreeze = user.gamification.setuCoinsBalance;
+        let totalExpired = 0;
+        for (const tx of expiredCredits) {
+            totalExpired += tx.remainingBalance;
+            tx.remainingBalance = 0;
+            await tx.save({ session });
+        }
 
-        // Move balance to frozen
-        user.gamification.frozenCoins = (user.gamification.frozenCoins || 0) + balanceToFreeze;
-        user.gamification.setuCoinsBalance = 0;
+        if (totalExpired > 0) {
+            user.gamification.setuCoinsBalance = Math.max(0, user.gamification.setuCoinsBalance - totalExpired);
+            user.gamification.frozenCoins = (user.gamification.frozenCoins || 0) + totalExpired;
 
-        // Reset expiry dates (balance is 0)
-        user.gamification.lastCoinTransaction = new Date();
-        user.gamification.coinsExpiryDate = null; // No active balance means no expiry date pending
+            await user.save({ session });
 
-        // Save User
-        await user.save({ session });
-
-        // Record Transaction
-        const transaction = new CoinTransaction({
-            userId,
-            type: 'debit',
-            amount: balanceToFreeze,
-            source: 'other', // Using 'other' as 'expiry' not in enum.
-            description: 'Coins Expired due to Inactivity (Frozen)',
-            balanceAfter: 0
-        });
-
-        await transaction.save({ session });
+            // Record Transaction
+            const transaction = new CoinTransaction({
+                userId,
+                type: 'debit',
+                amount: totalExpired,
+                source: 'other',
+                description: 'Coins Expired (Tx Based)',
+                balanceAfter: user.gamification.setuCoinsBalance
+            });
+            await transaction.save({ session });
+        }
 
         return {
             success: true,
-            frozenAmount: balanceToFreeze
+            frozenAmount: totalExpired
         };
     }
 }

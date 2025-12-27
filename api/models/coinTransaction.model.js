@@ -48,6 +48,12 @@ const coinTransactionSchema = new mongoose.Schema({
     balanceAfter: { // Snapshot of balance at the time of transaction for easy audits
         type: Number
     },
+    expiryDate: { // For credit transactions: when this specific amount expires
+        type: Date
+    },
+    remainingBalance: { // For credit transactions: how much of this specific credit is still unspent (FIFO)
+        type: Number
+    },
     adminId: { // If updated by admin
         type: mongoose.Schema.Types.ObjectId,
         ref: 'User'
