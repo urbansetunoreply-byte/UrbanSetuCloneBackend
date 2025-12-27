@@ -99,8 +99,8 @@ export default function AdminUpdates() {
             description: update.description,
             category: update.category,
             tags: update.tags.join(', '),
-            imageUrls: update.imageUrls || (update.imageUrl ? [update.imageUrl] : []),
-            videoUrls: update.videoUrls || (update.videoUrl ? [update.videoUrl] : []),
+            imageUrls: (update.imageUrls && update.imageUrls.length > 0) ? update.imageUrls : (update.imageUrl ? [update.imageUrl] : []),
+            videoUrls: (update.videoUrls && update.videoUrls.length > 0) ? update.videoUrls : (update.videoUrl ? [update.videoUrl] : []),
             isActive: update.isActive
         });
         setShowModal(true);
