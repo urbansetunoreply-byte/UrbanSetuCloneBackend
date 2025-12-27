@@ -573,7 +573,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                           </button>
                         ) : (
                           (!emailEditMode) && (
-                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-10">
+                            <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20">
                               <button
                                 type="button"
                                 onClick={() => {
@@ -597,7 +597,7 @@ export default function SignUp({ bootstrapped, sessionChecked }) {
                           )
                         )
                       }
-                      inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-20' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
+                      inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-green-500/20 ${((emailVerified || otpSent) && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-24' : (fieldErrors.email ? 'border-red-500' : (emailVerified ? 'border-green-500' : 'border-gray-300'))} ${authInProgress === 'google' ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-green-500`}
                       required
                     />
                     {fieldErrors.email && (
