@@ -24,14 +24,14 @@ const platformUpdateSchema = new mongoose.Schema({
         type: String,
         trim: true
     }],
-    imageUrl: {
+    imageUrls: [{
         type: String,
-        default: ''
-    },
-    videoUrl: {
+        trim: true
+    }],
+    videoUrls: [{
         type: String,
-        default: ''
-    },
+        trim: true
+    }],
     releaseDate: {
         type: Date,
         default: Date.now

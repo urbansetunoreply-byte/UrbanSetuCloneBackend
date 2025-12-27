@@ -693,9 +693,9 @@ export const sendUpdateAnnouncementEmail = async (email, update) => {
         <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
           
           <!-- Header Image (if available) or Default -->
-          ${update.imageUrl ?
+          ${update.imageUrls && update.imageUrls.length > 0 ?
         `<div style="margin-bottom: 20px; border-radius: 8px; overflow: hidden;">
-               <img src="${update.imageUrl}" alt="Update Image" style="width: 100%; height: auto; display: block;">
+               <img src="${update.imageUrls[0]}" alt="Update Image" style="width: 100%; height: auto; display: block;">
              </div>` : ''
       }
           
@@ -746,6 +746,7 @@ export const sendUpdateAnnouncementEmail = async (email, update) => {
     return createErrorResponse(error, 'update_announcement');
   }
 };
+
 export const sendNewLoginEmail = async (email, device, ip, location, loginTime) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
