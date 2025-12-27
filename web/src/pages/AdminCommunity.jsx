@@ -4,7 +4,7 @@ import { Link, useNavigate } from 'react-router-dom';
 import {
     FaUsers, FaMapMarkerAlt, FaBullhorn, FaShieldAlt,
     FaStore, FaComment, FaThumbsUp, FaThumbsDown, FaShare, FaPlus, FaSearch,
-    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaExclamationTriangle, FaEdit, FaSmile
+    FaCalendarAlt, FaEllipsisH, FaTimes, FaImage, FaArrowRight, FaLock, FaFlag, FaExclamationTriangle, FaEdit, FaSmile, FaUserTimes
 } from 'react-icons/fa';
 import EmojiPicker from 'emoji-picker-react';
 import { toast } from 'react-toastify';
@@ -643,7 +643,12 @@ export default function AdminCommunity() {
                             if (post._id === postId) {
                                 return {
                                     ...post,
-                                    comments: post.comments.filter(c => c._id !== commentId)
+                                    comments: post.comments.map(c => {
+                                        if (c._id === commentId) {
+                                            return { ...c, isDeleted: true, deletedBy: currentUser._id };
+                                        }
+                                        return c;
+                                    })
                                 };
                             }
                             return post;
@@ -732,7 +737,12 @@ export default function AdminCommunity() {
                                         if (c._id === commentId) {
                                             return {
                                                 ...c,
-                                                replies: c.replies.filter(r => r._id !== replyId)
+                                                replies: c.replies.map(r => {
+                                                    if (r._id === replyId) {
+                                                        return { ...r, isDeleted: true, deletedBy: currentUser._id };
+                                                    }
+                                                    return r;
+                                                })
                                             };
                                         }
                                         return c;
@@ -1377,9 +1387,9 @@ export default function AdminCommunity() {
                                                                     ) : (
                                                                         <div className="flex flex-col gap-1">
                                                                             {comment.isDeleted && (
-                                                                                <div className="flex items-center gap-2 bg-red-50 border border-red-100 p-1.5 rounded text-xs text-red-600 mb-1">
-                                                                                    <FaShieldAlt className="text-red-500" />
-                                                                                    <span className="font-semibold">This comment is deleted by admin</span>
+                                                                                <div className={`flex items-center gap-2 ${comment.deletedBy === comment.user?._id ? 'bg-gray-100 border-gray-200 text-gray-600' : 'bg-red-50 border-red-100 text-red-600'} border p-1.5 rounded text-xs mb-1`}>
+                                                                                    {comment.deletedBy === comment.user?._id ? <FaUserTimes /> : <FaShieldAlt className="text-red-500" />}
+                                                                                    <span className="font-semibold">{comment.deletedBy === comment.user?._id ? "This comment was deleted by user" : "This comment is deleted by admin"}</span>
                                                                                 </div>
                                                                             )}
                                                                             <p className={`text-sm text-gray-700 break-words overflow-hidden leading-relaxed ${comment.isDeleted ? 'opacity-60 italic' : ''}`}>
@@ -1615,9 +1625,9 @@ export default function AdminCommunity() {
                                                                                                         ) : (
                                                                                                             <div className="flex flex-col gap-1">
                                                                                                                 {reply.isDeleted && (
-                                                                                                                    <div className="flex items-center gap-2 bg-red-50 border border-red-100 p-1.5 rounded text-xs text-red-600 mb-1">
-                                                                                                                        <FaShieldAlt className="text-red-500" />
-                                                                                                                        <span className="font-semibold">This reply is deleted by admin</span>
+                                                                                                                    <div className={`flex items-center gap-2 ${reply.deletedBy === reply.user?._id ? 'bg-gray-100 border-gray-200 text-gray-600' : 'bg-red-50 border-red-100 text-red-600'} border p-1.5 rounded text-xs mb-1`}>
+                                                                                                                        {reply.deletedBy === reply.user?._id ? <FaUserTimes /> : <FaShieldAlt className="text-red-500" />}
+                                                                                                                        <span className="font-semibold">{reply.deletedBy === reply.user?._id ? "This reply was deleted by user" : "This reply is deleted by admin"}</span>
                                                                                                                     </div>
                                                                                                                 )}
                                                                                                                 <p className={`text-sm text-gray-700 break-words overflow-hidden leading-relaxed ${reply.isDeleted ? 'opacity-60 italic' : ''}`}>
