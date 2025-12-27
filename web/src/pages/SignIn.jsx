@@ -806,7 +806,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 type="button"
                                                 onClick={handleEmailEdit}
                                                 disabled={loading || authInProgress !== null}
-                                                className={`absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 p-1.5 bg-white rounded-md shadow-sm border border-gray-200 transition-all ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 p-1 rounded hover:bg-blue-50 transition-colors ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
                                                 aria-label="Edit email"
                                             >
                                                 <FaEdit className="w-4 h-4" />
@@ -934,7 +934,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     setOtpSuccessMessage("");
                                                 }}
                                                 disabled={loading || authInProgress !== null}
-                                                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 p-1.5 bg-white rounded-md shadow-sm border border-gray-200 transition-all"
+                                                className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 p-1 rounded hover:bg-blue-50 transition-colors"
                                                 aria-label="Edit email"
                                             >
                                                 <FaEdit className="w-4 h-4" />
