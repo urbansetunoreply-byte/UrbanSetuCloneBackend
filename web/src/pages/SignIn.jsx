@@ -7,7 +7,7 @@ import RecaptchaWidget from "../components/RecaptchaWidget";
 import { usePageTitle } from '../hooks/usePageTitle';
 
 import { reconnectSocket } from "../utils/socket";
-import { FaEye, FaEyeSlash } from "react-icons/fa";
+import { FaEye, FaEyeSlash, FaEdit } from "react-icons/fa";
 import { areCookiesEnabled, createAuthenticatedFetchOptions } from '../utils/auth';
 import { focusWithoutKeyboard, isMobileDevice } from '../utils/mobileUtils';
 import { authenticatedFetch, getCSRFToken } from '../utils/csrf';
@@ -807,8 +807,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 onClick={handleEmailEdit}
                                                 disabled={loading || authInProgress !== null}
                                                 className={`absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors ${loading || authInProgress !== null ? 'opacity-50 cursor-not-allowed' : ''}`}
+                                                aria-label="Edit email"
                                             >
-                                                Change
+                                                <FaEdit className="w-4 h-4" />
                                             </button>
                                         ) : null}
                                         inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${emailStep ? 'bg-gray-50 text-gray-600' : ''}`}
@@ -934,8 +935,9 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 }}
                                                 disabled={loading || authInProgress !== null}
                                                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-blue-600 hover:text-blue-700 font-medium text-sm transition-colors"
+                                                aria-label="Edit email"
                                             >
-                                                Change
+                                                <FaEdit className="w-4 h-4" />
                                             </button>
                                         ) : null}
                                         inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${otpSent ? 'bg-gray-50 text-gray-600' : ''}`}
