@@ -32,6 +32,10 @@ export default function AdminUpdates() {
     });
     const [submitting, setSubmitting] = useState(false);
 
+    // Delete Confirmation State
+    const [showDeleteModal, setShowDeleteModal] = useState(false);
+    const [deleteTargetId, setDeleteTargetId] = useState(null);
+
     useEffect(() => {
         fetchUpdates();
     }, []);
@@ -89,23 +93,31 @@ export default function AdminUpdates() {
         setShowModal(true);
     };
 
-    const handleDelete = async (id) => {
-        if (!window.confirm('Are you sure you want to delete this update?')) return;
+    const handleDelete = (id) => {
+        setDeleteTargetId(id);
+        setShowDeleteModal(true);
+    };
+
+    const confirmDelete = async () => {
+        if (!deleteTargetId) return;
 
         try {
-            const res = await fetch(`${API_BASE_URL}/api/updates/${id}`, {
+            const res = await fetch(`${API_BASE_URL}/api/updates/${deleteTargetId}`, {
                 method: 'DELETE',
                 credentials: 'include'
             });
             const data = await res.json();
             if (data.success) {
                 toast.success('Update deleted successfully');
-                setUpdates(prev => prev.filter(u => u._id !== id));
+                setUpdates(prev => prev.filter(u => u._id !== deleteTargetId));
             } else {
                 toast.error(data.message || 'Failed to delete update');
             }
         } catch (error) {
             toast.error('Error deleting update');
+        } finally {
+            setShowDeleteModal(false);
+            setDeleteTargetId(null);
         }
     };
 
@@ -422,6 +434,37 @@ export default function AdminUpdates() {
                                 </button>
                             </div>
                         </form>
+                    </div>
+                </div>
+            )}
+
+            {/* Delete Confirmation Modal */}
+            {showDeleteModal && (
+                <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-100 opacity-100">
+                        <div className="p-6 text-center">
+                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Trash2 className="text-red-600" size={32} />
+                            </div>
+                            <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Update?</h3>
+                            <p className="text-gray-500 mb-6">
+                                Are you sure you want to delete this update? This action cannot be undone.
+                            </p>
+                            <div className="flex gap-3">
+                                <button
+                                    onClick={() => setShowDeleteModal(false)}
+                                    className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                                >
+                                    Cancel
+                                </button>
+                                <button
+                                    onClick={confirmDelete}
+                                    className="flex-1 py-2.5 bg-red-600 hover:bg-red-700 text-white rounded-xl font-medium transition-colors shadow-lg shadow-red-200"
+                                >
+                                    Delete
+                                </button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             )}
