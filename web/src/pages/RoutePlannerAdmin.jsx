@@ -6,7 +6,5 @@ export default function RoutePlannerAdmin() {
   // Set page title
   usePageTitle("Route Planner Admin - Navigation Management");
 
-  return <RoutePlanner/>;
+  return <RoutePlanner />;
 }
-
-
