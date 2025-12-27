@@ -274,13 +274,19 @@ export default function Header() {
                 {/* Mobile auth links when logged out */}
                 {!currentUser && (
                   <div className="md:hidden flex items-center gap-3">
-                    <Link to="/sign-up" className="flex items-center gap-1 text-white/80 hover:text-white text-sm" title="Sign Up">
-                      <UserPlus className="text-xs" />
-                    </Link>
-                    <span className="text-white/40">|</span>
-                    <Link to="/sign-in" className="flex items-center gap-1 text-white/80 hover:text-white text-sm" title="Sign In">
-                      <LogIn className="text-xs rotate-180" />
-                    </Link>
+                    {location.pathname !== '/sign-up' && (
+                      <Link to="/sign-up" className="flex items-center gap-1 text-white/80 hover:text-white text-sm" title="Sign Up">
+                        <UserPlus className="text-xs" />
+                      </Link>
+                    )}
+                    {location.pathname !== '/sign-up' && location.pathname !== '/sign-in' && (
+                      <span className="text-white/40">|</span>
+                    )}
+                    {location.pathname !== '/sign-in' && (
+                      <Link to="/sign-in" className="flex items-center gap-1 text-white/80 hover:text-white text-sm" title="Sign In">
+                        <LogIn className="text-xs rotate-180" />
+                      </Link>
+                    )}
                   </div>
                 )}
                 {/* Mobile signout button for logged-in users */}
