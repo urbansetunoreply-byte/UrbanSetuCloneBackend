@@ -8134,7 +8134,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                 {/* Footer Info */}
                                 <div className={`text-center pt-6 pb-2 border-t ${isDarkMode ? 'border-gray-700' : 'border-gray-100'}`}>
                                     <p className={`text-xs ${isDarkMode ? 'text-gray-500' : 'text-gray-400'}`}>
-                                        SetuAI v2.5.0 • Build 2024.12 • Powered by UrbanSetu Tech Labs
+                                        SetuAI v2.5.0 • Build 2024.12 • Powered by Sentinel UrbanSetu Tech Labs
                                     </p>
                                 </div>
                             </div>
