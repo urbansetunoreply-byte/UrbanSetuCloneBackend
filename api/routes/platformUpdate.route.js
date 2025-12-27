@@ -1,5 +1,7 @@
 import express from 'express';
 import PlatformUpdate from '../models/platformUpdate.model.js';
+import User from '../models/user.model.js';
+import { sendUpdateAnnouncementEmail } from '../utils/emailService.js';
 import { verifyToken } from '../utils/verify.js'; // Assuming you have verifyToken middleware
 
 const router = express.Router();
@@ -48,6 +50,30 @@ router.post('/', verifyToken, async (req, res, next) => {
         });
 
         const savedUpdate = await newUpdate.save();
+
+        // Send email broadcast if active
+        if (savedUpdate.isActive) {
+            // Execute in background
+            (async () => {
+                try {
+                    console.log('Starting update bioadcast...');
+                    const users = await User.find({}, 'email');
+                    for (const user of users) {
+                        try {
+                            if (user.email) {
+                                await sendUpdateAnnouncementEmail(user.email, savedUpdate);
+                            }
+                        } catch (err) {
+                            console.error(`Failed to send announcement to ${user.email}`, err);
+                        }
+                    }
+                    console.log(`Update broadcast completed for ${users.length} users.`);
+                } catch (err) {
+                    console.error('Error in update broadcast:', err);
+                }
+            })();
+        }
+
         res.status(201).json({ success: true, data: savedUpdate });
     } catch (error) {
         next(error);

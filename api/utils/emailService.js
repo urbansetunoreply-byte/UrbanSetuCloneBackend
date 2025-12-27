@@ -681,7 +681,71 @@ export const sendContractConfirmationOTPEmail = async (email, otp) => {
   }
 };
 
-// Send new login notification email
+// Send Update Announcement Email
+export const sendUpdateAnnouncementEmail = async (email, update) => {
+  const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
+  const mailOptions = {
+    from: process.env.EMAIL_USER,
+    to: email,
+    subject: `New Update: ${update.title} - UrbanSetu`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f8f9fa;">
+        <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);">
+          
+          <!-- Header Image (if available) or Default -->
+          ${update.imageUrl ?
+        `<div style="margin-bottom: 20px; border-radius: 8px; overflow: hidden;">
+               <img src="${update.imageUrl}" alt="Update Image" style="width: 100%; height: auto; display: block;">
+             </div>` : ''
+      }
+          
+          <div style="text-align: center; margin-bottom: 25px;">
+            <h1 style="color: #2563eb; margin: 0; font-size: 26px;">${update.title}</h1>
+            <p style="color: #6b7280; margin: 10px 0 0 0; font-size: 14px; text-transform: uppercase; letter-spacing: 1px;">
+              ${update.category ? update.category.replace('_', ' ') : 'Update Announcement'} • ${update.version || 'v1.0'}
+            </p>
+          </div>
+          
+          <div style="background-color: #f0f9ff; padding: 25px; border-radius: 8px; margin-bottom: 25px; border-left: 4px solid #2563eb;">
+            <h2 style="color: #1f2937; margin: 0 0 15px 0; font-size: 18px;">What's New?</h2>
+            <div style="color: #4b5563; line-height: 1.6; white-space: pre-wrap;">${update.description}</div>
+            
+            ${update.tags && update.tags.length > 0 ? `
+              <div style="margin-top: 15px; padding-top: 15px; border-top: 1px solid #e0e7ff;">
+                <p style="margin: 0; font-size: 12px; color: #6b7280;">Tags: 
+                  ${update.tags.map(tag => `<span style="background: #ffffff; color: #2563eb; padding: 2px 8px; border-radius: 12px; border: 1px solid #bfdbfe; margin-left: 5px;">${tag}</span>`).join('')}
+                </p>
+              </div>
+            ` : ''}
+          </div>
+          
+          <div style="text-align: center; margin-bottom: 20px;">
+            <p style="color: #374151; margin-bottom: 15px;">Explore all the changes on our updates page.</p>
+            <a href="${clientBaseUrl}/updates" style="display: inline-block; background-color: #2563eb; color: #ffffff; text-decoration: none; padding: 12px 30px; border-radius: 6px; font-weight: bold; font-size: 16px;">
+              View Full Changelog
+            </a>
+          </div>
+          
+          <div style="text-align: center; margin-top: 30px; padding-top: 20px; border-top: 1px solid #e5e7eb;">
+            <p style="color: #9ca3af; margin: 0; font-size: 12px;">
+              © ${new Date().getFullYear()} UrbanSetu. All rights reserved.<br>
+              You received this email because you are a registered user of UrbanSetu.
+            </p>
+          </div>
+        </div>
+      </div>
+    `
+  };
+
+  try {
+    const result = await sendEmailWithRetry(mailOptions);
+    return result.success ?
+      createSuccessResponse(result.messageId, 'update_announcement') :
+      createErrorResponse(new Error(result.error), 'update_announcement');
+  } catch (error) {
+    return createErrorResponse(error, 'update_announcement');
+  }
+};
 export const sendNewLoginEmail = async (email, device, ip, location, loginTime) => {
   const clientBaseUrl = process.env.CLIENT_URL || 'https://urbansetu.vercel.app';
   const mailOptions = {
