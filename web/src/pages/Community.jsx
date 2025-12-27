@@ -1154,6 +1154,29 @@ export default function Community() {
                                                     >
                                                         Cancel
                                                     </button>
+
+                                                    {showEmojiPicker.show && showEmojiPicker.type === 'edit-post' && (
+                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
+                                                            <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
+                                                                <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                <button
+                                                                    type="button"
+                                                                    onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
+                                                                    className="text-gray-400 hover:text-red-500 transition-colors"
+                                                                >
+                                                                    <FaTimes size={12} />
+                                                                </button>
+                                                            </div>
+                                                            <EmojiPicker
+                                                                onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-post')}
+                                                                width={300}
+                                                                height={350}
+                                                                searchDisabled={false}
+                                                                skinTonesDisabled
+                                                                previewConfig={{ showPreview: false }}
+                                                            />
+                                                        </div>
+                                                    )}
                                                     <button
                                                         type="submit"
                                                         className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"
@@ -1265,18 +1288,23 @@ export default function Community() {
                                                                                     <FaSmile className="text-sm" />
                                                                                 </button>
                                                                                 {showEmojiPicker.show && showEmojiPicker.type === 'edit-comment' && showEmojiPicker.id === comment._id && (
-                                                                                    <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in relative">
-                                                                                        <button
-                                                                                            type="button"
-                                                                                            onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                                            className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
-                                                                                        >
-                                                                                            <FaTimes size={12} />
-                                                                                        </button>
+                                                                                    <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
+                                                                                        <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
+                                                                                            <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                                            <button
+                                                                                                type="button"
+                                                                                                onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
+                                                                                                className="text-gray-400 hover:text-red-500 transition-colors"
+                                                                                            >
+                                                                                                <FaTimes size={12} />
+                                                                                            </button>
+                                                                                        </div>
                                                                                         <EmojiPicker
                                                                                             onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-comment', comment._id)}
                                                                                             width={300}
-                                                                                            height={400}
+                                                                                            height={350}
+                                                                                            searchDisabled={false}
+                                                                                            skinTonesDisabled
                                                                                             previewConfig={{ showPreview: false }}
                                                                                         />
                                                                                     </div>
@@ -1502,18 +1530,23 @@ export default function Community() {
                                                                                                                         <FaSmile className="text-sm" />
                                                                                                                     </button>
                                                                                                                     {showEmojiPicker.show && showEmojiPicker.type === 'edit-reply' && showEmojiPicker.id === reply._id && (
-                                                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in relative">
-                                                                                                                            <button
-                                                                                                                                type="button"
-                                                                                                                                onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                                                                                className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
-                                                                                                                            >
-                                                                                                                                <FaTimes size={12} />
-                                                                                                                            </button>
+                                                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
+                                                                                                                            <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
+                                                                                                                                <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                                                                                <button
+                                                                                                                                    type="button"
+                                                                                                                                    onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
+                                                                                                                                    className="text-gray-400 hover:text-red-500 transition-colors"
+                                                                                                                                >
+                                                                                                                                    <FaTimes size={12} />
+                                                                                                                                </button>
+                                                                                                                            </div>
                                                                                                                             <EmojiPicker
                                                                                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-reply', reply._id)}
                                                                                                                                 width={300}
-                                                                                                                                height={400}
+                                                                                                                                height={350}
+                                                                                                                                searchDisabled={false}
+                                                                                                                                skinTonesDisabled
                                                                                                                                 previewConfig={{ showPreview: false }}
                                                                                                                             />
                                                                                                                         </div>
@@ -1643,18 +1676,23 @@ export default function Community() {
                                                                                                                             <FaSmile className="text-sm" />
                                                                                                                         </button>
                                                                                                                         {showEmojiPicker.show && showEmojiPicker.type === 'reply' && showEmojiPicker.id === reply._id && (
-                                                                                                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in relative">
-                                                                                                                                <button
-                                                                                                                                    type="button"
-                                                                                                                                    onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                                                                                    className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
-                                                                                                                                >
-                                                                                                                                    <FaTimes size={12} />
-                                                                                                                                </button>
+                                                                                                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
+                                                                                                                                <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
+                                                                                                                                    <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                                                                                    <button
+                                                                                                                                        type="button"
+                                                                                                                                        onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
+                                                                                                                                        className="text-gray-400 hover:text-red-500 transition-colors"
+                                                                                                                                    >
+                                                                                                                                        <FaTimes size={12} />
+                                                                                                                                    </button>
+                                                                                                                                </div>
                                                                                                                                 <EmojiPicker
                                                                                                                                     onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'reply', reply._id)}
                                                                                                                                     width={300}
-                                                                                                                                    height={400}
+                                                                                                                                    height={350}
+                                                                                                                                    searchDisabled={false}
+                                                                                                                                    skinTonesDisabled
                                                                                                                                     previewConfig={{ showPreview: false }}
                                                                                                                                 />
                                                                                                                             </div>
@@ -1732,18 +1770,23 @@ export default function Community() {
                                                             <FaSmile className="text-base" />
                                                         </button>
                                                         {showEmojiPicker.show && showEmojiPicker.type === 'comment' && showEmojiPicker.id === post._id && (
-                                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in relative">
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                    className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
-                                                                >
-                                                                    <FaTimes size={12} />
-                                                                </button>
+                                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
+                                                                <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
+                                                                    <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                    <button
+                                                                        type="button"
+                                                                        onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
+                                                                        className="text-gray-400 hover:text-red-500 transition-colors"
+                                                                    >
+                                                                        <FaTimes size={12} />
+                                                                    </button>
+                                                                </div>
                                                                 <EmojiPicker
                                                                     onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'comment', post._id)}
                                                                     width={300}
-                                                                    height={400}
+                                                                    height={350}
+                                                                    searchDisabled={false}
+                                                                    skinTonesDisabled
                                                                     previewConfig={{ showPreview: false }}
                                                                 />
                                                             </div>
@@ -1897,18 +1940,23 @@ export default function Community() {
                                             <FaSmile className="text-lg" />
                                         </button>
                                         {showEmojiPicker.show && showEmojiPicker.type === 'post' && (
-                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in relative">
-                                                <button
-                                                    type="button"
-                                                    onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                    className="absolute top-2 right-2 bg-white text-gray-400 hover:text-red-500 rounded-full p-1 shadow-md border border-gray-100 z-[101] transform hover:scale-110 transition-all"
-                                                >
-                                                    <FaTimes size={12} />
-                                                </button>
+                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
+                                                <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
+                                                    <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                    <button
+                                                        type="button"
+                                                        onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
+                                                        className="text-gray-400 hover:text-red-500 transition-colors"
+                                                    >
+                                                        <FaTimes size={12} />
+                                                    </button>
+                                                </div>
                                                 <EmojiPicker
                                                     onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'post', 'new-post')}
                                                     width={300}
-                                                    height={400}
+                                                    height={350}
+                                                    searchDisabled={false}
+                                                    skinTonesDisabled
                                                     previewConfig={{ showPreview: false }}
                                                 />
                                             </div>
