@@ -192,9 +192,44 @@ const Updates = () => {
                                         {update.description}
                                     </div>
 
-                                    {update.imageUrl && (
-                                        <div className="mt-4 rounded-xl overflow-hidden border border-gray-100 shadow-sm">
-                                            <img src={update.imageUrl} alt={update.title} className="w-full h-auto object-cover transform hover:scale-105 transition-transform duration-500" />
+                                    {/* Media Gallery */}
+                                    <div className="space-y-4 mt-4">
+                                        {/* Images */}
+                                        {(update.imageUrls?.length > 0 ? update.imageUrls : (update.imageUrl ? [update.imageUrl] : [])).map((url, i) => (
+                                            <div key={`img-${i}`} className="rounded-xl overflow-hidden border border-gray-100 shadow-sm group/image relative">
+                                                <img
+                                                    src={url}
+                                                    alt={`${update.title} ${i + 1}`}
+                                                    className="w-full h-auto object-cover transform hover:scale-[1.02] transition-transform duration-500"
+                                                />
+                                            </div>
+                                        ))}
+
+                                        {/* Videos */}
+                                        {(update.videoUrls?.length > 0 ? update.videoUrls : (update.videoUrl ? [update.videoUrl] : [])).map((url, i) => (
+                                            <div key={`vid-${i}`} className="rounded-xl overflow-hidden border border-gray-100 shadow-sm bg-black">
+                                                <video
+                                                    src={url}
+                                                    className="w-full h-auto"
+                                                    controls
+                                                    playsInline
+                                                />
+                                            </div>
+                                        ))}
+                                    </div>
+
+                                    {/* Action Link */}
+                                    {update.actionUrl && (
+                                        <div className="mt-5 pt-4 border-t border-gray-100">
+                                            <a
+                                                href={update.actionUrl}
+                                                target="_blank"
+                                                rel="noopener noreferrer"
+                                                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold group/link transition-colors"
+                                            >
+                                                Explore it here
+                                                <ArrowRight className="w-4 h-4 transform group-hover/link:translate-x-1 transition-transform" />
+                                            </a>
                                         </div>
                                     )}
                                 </div>

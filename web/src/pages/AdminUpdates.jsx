@@ -35,6 +35,7 @@ export default function AdminUpdates() {
         description: '',
         category: 'new_feature',
         tags: '',
+        actionUrl: '',
         imageUrls: [],
         videoUrls: [],
         isActive: true
@@ -79,6 +80,7 @@ export default function AdminUpdates() {
             description: '',
             category: 'new_feature',
             tags: '',
+            actionUrl: '',
             imageUrls: [],
             videoUrls: [],
             isActive: true
@@ -99,6 +101,7 @@ export default function AdminUpdates() {
             description: update.description,
             category: update.category,
             tags: update.tags.join(', '),
+            actionUrl: update.actionUrl || '',
             imageUrls: (update.imageUrls && update.imageUrls.length > 0) ? update.imageUrls : (update.imageUrl ? [update.imageUrl] : []),
             videoUrls: (update.videoUrls && update.videoUrls.length > 0) ? update.videoUrls : (update.videoUrl ? [update.videoUrl] : []),
             isActive: update.isActive
@@ -462,6 +465,20 @@ export default function AdminUpdates() {
                                         placeholder="e.g. ui, performance, security"
                                         value={formData.tags}
                                         onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                                    />
+                                </div>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-gray-700 mb-1">Target Link (Optional)</label>
+                                <div className="flex items-center border border-gray-300 rounded-lg px-3 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                                    <Search size={18} className="text-gray-400 mr-2" />
+                                    <input
+                                        type="url"
+                                        className="w-full py-2 outline-none"
+                                        placeholder="e.g. https://urbansetu.com/new-feature"
+                                        value={formData.actionUrl}
+                                        onChange={(e) => setFormData({ ...formData, actionUrl: e.target.value })}
                                     />
                                 </div>
                             </div>

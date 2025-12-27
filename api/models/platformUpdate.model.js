@@ -32,6 +32,11 @@ const platformUpdateSchema = new mongoose.Schema({
         type: String,
         trim: true
     }],
+    actionUrl: {
+        type: String,
+        trim: true,
+        default: ''
+    },
     releaseDate: {
         type: Date,
         default: Date.now
