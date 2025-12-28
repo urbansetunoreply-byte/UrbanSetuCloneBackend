@@ -39,7 +39,7 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
       // Check if user is property owner by fetching listing details
       const res = await fetch(`${API_BASE_URL}/api/listing/get/${listingId}`);
       const listingData = await res.json();
-      
+
       if (res.ok && listingData.userRef === currentUser._id) {
         setUserCanReview(false);
         setRestrictionReason('Property owners cannot review their own properties.');
@@ -50,11 +50,11 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
       const reviewRes = await fetch(`${API_BASE_URL}/api/review/user`, {
         credentials: 'include',
       });
-      
+
       if (reviewRes.ok) {
         const userReviews = await reviewRes.json();
         const existingUserReview = userReviews.find(review => review.listingId === listingId);
-        
+
         if (existingUserReview && !existingReview) {
           setUserCanReview(false);
           setRestrictionReason('You have already reviewed this property.');
@@ -72,7 +72,7 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
+
     if (!rating || !comment.trim()) {
       setError('Please provide both rating and comment');
       return;
@@ -87,12 +87,12 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
     setError('');
 
     try {
-      const url = isEditing 
+      const url = isEditing
         ? `${API_BASE_URL}/api/review/update/${existingReview._id}`
         : `${API_BASE_URL}/api/review/create`;
-      
+
       const method = isEditing ? 'PUT' : 'POST';
-      
+
       const res = await fetch(url, {
         method,
         headers: {
@@ -144,9 +144,8 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
     return [...Array(5)].map((_, index) => (
       <FaStar
         key={index}
-        className={`text-2xl cursor-pointer transition-colors ${
-          index < rating ? 'text-yellow-400' : 'text-gray-300'
-        } hover:text-yellow-400`}
+        className={`text-2xl cursor-pointer transition-colors ${index < rating ? 'text-yellow-400' : 'text-gray-300'
+          } hover:text-yellow-400`}
         onClick={() => setRating(index + 1)}
       />
     ));
@@ -155,8 +154,8 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
   // If user cannot review, show restriction message
   if (!userCanReview) {
     return (
-      <div className="bg-gray-50 border border-gray-200 rounded-lg p-4 mb-6">
-        <div className="flex items-center justify-center text-gray-600">
+      <div className="bg-gray-50 dark:bg-gray-900 border border-gray-200 dark:border-gray-700 rounded-lg p-4 mb-6">
+        <div className="flex items-center justify-center text-gray-600 dark:text-gray-300">
           <FaTimes className="mr-2 text-red-500" />
           <span className="font-medium">{restrictionReason}</span>
         </div>
@@ -165,15 +164,15 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
   }
 
   return (
-    <div className="bg-white border border-gray-200 rounded-lg p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-6 mb-6">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-lg font-semibold text-gray-800">
+        <h3 className="text-lg font-semibold text-gray-800 dark:text-white">
           {isEditing ? 'Edit Your Review' : 'Write a Review'}
         </h3>
         {isEditing && (
           <button
             onClick={handleCancelEdit}
-            className="text-gray-500 hover:text-gray-700"
+            className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"
           >
             <FaTimes />
           </button>
@@ -183,12 +182,12 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
       <form onSubmit={handleSubmit} className="space-y-4">
         {/* Rating */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Rating *
           </label>
           <div className="flex items-center space-x-1">
             {renderStars()}
-            <span className="ml-2 text-sm text-gray-600">
+            <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">
               {rating > 0 ? `${rating} star${rating > 1 ? 's' : ''}` : 'Select rating'}
             </span>
           </div>
@@ -196,22 +195,22 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
 
         {/* Comment */}
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-2">
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
             Comment *
           </label>
           <textarea
             value={comment}
             onChange={(e) => setComment(e.target.value)}
             rows="4"
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
             placeholder="Share your experience with this property..."
             maxLength="500"
           />
           <div className="flex justify-between items-center mt-1">
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               Minimum 10 characters required
             </span>
-            <span className="text-xs text-gray-500">
+            <span className="text-xs text-gray-500 dark:text-gray-400">
               {comment.length}/500
             </span>
           </div>
@@ -219,8 +218,8 @@ export default function ReviewForm({ listingId, existingReview, onReviewSubmitte
 
         {/* Error Message */}
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-md p-3">
-            <p className="text-red-800 text-sm">{error}</p>
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-md p-3">
+            <p className="text-red-800 dark:text-red-300 text-sm">{error}</p>
           </div>
         )}
 

@@ -163,7 +163,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
     };
 
     return (
-        <div className="bg-white rounded-2xl shadow-xl overflow-hidden border border-gray-100">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl overflow-hidden border border-gray-100 dark:border-gray-700">
             <div className="bg-gradient-to-r from-violet-600 to-indigo-600 p-6 text-white">
                 <div className="flex items-center gap-3 mb-2">
                     <Sparkles className="w-6 h-6 text-yellow-300 animate-pulse" />
@@ -178,7 +178,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                 {/* New: Image Selector Strip including Upload */}
                 <div className="mb-6">
                     <div className="flex justify-between items-end mb-3">
-                        <h4 className="text-sm font-semibold text-gray-700 uppercase tracking-wider">Select Room to Stage</h4>
+                        <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 uppercase tracking-wider">Select Room to Stage</h4>
                         <button
                             onClick={() => fileInputRef.current?.click()}
                             className="text-violet-600 text-xs font-bold flex items-center gap-1 hover:underline"
@@ -204,7 +204,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                                         setSelectedImage(img);
                                         setGeneratedImage(null); // Reset result when image changes
                                     }}
-                                    className={`relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-violet-600 ring-2 ring-violet-200' : 'border-gray-200 hover:border-violet-400'}`}
+                                    className={`relative flex-shrink-0 w-24 h-24 rounded-lg overflow-hidden border-2 transition-all ${selectedImage === img ? 'border-violet-600 ring-2 ring-violet-200 dark:ring-violet-900' : 'border-gray-200 dark:border-gray-600 hover:border-violet-400'}`}
                                 >
                                     <img src={img} alt={`Room ${idx + 1}`} className="w-full h-full object-cover" crossOrigin="anonymous" />
                                     {selectedImage === img && (
@@ -219,7 +219,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
 
                             {/* Loading state for upload */}
                             {isUploading && (
-                                <div className="flex-shrink-0 w-24 h-24 rounded-lg bg-gray-100 flex items-center justify-center border-2 border-dashed border-violet-300 animate-pulse">
+                                <div className="flex-shrink-0 w-24 h-24 rounded-lg bg-gray-100 dark:bg-gray-700 flex items-center justify-center border-2 border-dashed border-violet-300 animate-pulse">
                                     <RefreshCw className="w-6 h-6 text-violet-400 animate-spin" />
                                 </div>
                             )}
@@ -228,7 +228,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                     {displayImages.length === 0 && !isUploading && (
                         <div
                             onClick={() => fileInputRef.current?.click()}
-                            className="border-2 border-dashed border-gray-300 rounded-xl p-6 text-center cursor-pointer hover:border-violet-400 hover:bg-violet-50 transition-colors"
+                            className="border-2 border-dashed border-gray-300 dark:border-gray-600 rounded-xl p-6 text-center cursor-pointer hover:border-violet-400 hover:bg-violet-50 dark:hover:bg-violet-900/20 transition-colors"
                         >
                             <Upload className="w-8 h-8 text-gray-400 mx-auto mb-2" />
                             <p className="text-sm text-gray-500">No images found. <span className="text-violet-600 font-semibold">Upload a room photo</span> to start.</p>
@@ -238,13 +238,13 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
 
                 {/* Style Selection */}
                 <div className="mb-6">
-                    <h4 className="text-sm font-semibold text-gray-700 mb-3 uppercase tracking-wider">Select Style</h4>
+                    <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-3 uppercase tracking-wider">Select Style</h4>
                     <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-4">
                         {availableStyles.map((style) => (
                             <div
                                 key={style.id}
                                 onClick={() => setSelectedStyle(style.id)}
-                                className={`relative group cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${selectedStyle === style.id ? 'border-violet-600 ring-2 ring-violet-200' : 'border-transparent hover:border-gray-200'}`}
+                                className={`relative group cursor-pointer rounded-xl overflow-hidden border-2 transition-all ${selectedStyle === style.id ? 'border-violet-600 ring-2 ring-violet-200 dark:ring-violet-900' : 'border-transparent hover:border-gray-200 dark:hover:border-gray-600'}`}
                             >
                                 <img src={style.image} alt={style.name} className="w-full h-24 object-cover" />
                                 <div className={`absolute inset-0 bg-black/40 flex items-center justify-center transition-opacity ${selectedStyle === style.id ? 'opacity-100' : 'opacity-0 group-hover:opacity-100'}`}>
@@ -261,7 +261,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
 
                     <button
                         onClick={handleLoadMoreStyles}
-                        className="w-full py-2 bg-gray-50 border border-gray-200 rounded-lg text-sm font-medium text-gray-600 hover:bg-gray-100 hover:text-indigo-600 transition-colors flex items-center justify-center gap-2"
+                        className="w-full py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-600 hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors flex items-center justify-center gap-2"
                     >
                         <RefreshCw className="w-3 h-3" /> Load More Styles
                     </button>
@@ -270,7 +270,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                 {/* Visualization Area */}
                 <div className="grid md:grid-cols-2 gap-6 relative">
                     {/* Original */}
-                    <div className="relative rounded-xl overflow-hidden bg-gray-100 border border-gray-200 aspect-video">
+                    <div className="relative rounded-xl overflow-hidden bg-gray-100 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 aspect-video">
                         <span className="absolute top-3 left-3 bg-black/50 text-white text-xs px-2 py-1 rounded backdrop-blur">Original Room</span>
                         {selectedImage ? (
                             <img src={selectedImage} alt="Original" className="w-full h-full object-cover" crossOrigin="anonymous" />
@@ -283,7 +283,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                     </div>
 
                     {/* Generated */}
-                    <div className="relative rounded-xl overflow-hidden bg-gray-50 border border-gray-200 aspect-video flex items-center justify-center">
+                    <div className="relative rounded-xl overflow-hidden bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 aspect-video flex items-center justify-center">
                         <span className="absolute top-3 left-3 bg-violet-600 text-white text-xs px-2 py-1 rounded backdrop-blur z-10">
                             {isGenerating ? "Generating..." : "AI Staged Result"}
                         </span>
@@ -291,7 +291,7 @@ const VirtualStagingTool = ({ originalImage, listingImages = [] }) => {
                         {isGenerating ? (
                             <div className="text-center px-4">
                                 <div className="w-12 h-12 border-4 border-violet-200 border-t-violet-600 rounded-full animate-spin mx-auto mb-4"></div>
-                                <p className="text-sm font-medium text-gray-600 animate-pulse">Designing your room...</p>
+                                <p className="text-sm font-medium text-gray-600 dark:text-gray-300 animate-pulse">Designing your room...</p>
                                 <p className="text-xs text-gray-400 mt-1">Applying {availableStyles.find(s => s.id === selectedStyle)?.name || 'Custom'} style</p>
                             </div>
                         ) : generatedImage ? (

@@ -2465,23 +2465,23 @@ export default function Listing() {
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="bg-blue-50 p-4 rounded-lg">
-                    <h5 className="font-semibold text-blue-800 mb-2">Current Price</h5>
-                    <p className="text-2xl font-bold text-blue-600">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                    <h5 className="font-semibold text-blue-800 dark:text-blue-100 mb-2">Current Price</h5>
+                    <p className="text-2xl font-bold text-blue-600 dark:text-blue-300">
                       {formatINR(listing.offer ? listing.discountPrice : listing.regularPrice)}
                       {listing.type === "rent" && " / month"}
                     </p>
                     {listing.offer && (
-                      <p className="text-sm text-green-600 mt-1">
+                      <p className="text-sm text-green-600 dark:text-green-400 mt-1">
                         Save {formatINR(listing.regularPrice - listing.discountPrice)} ({getDiscountPercentage()}% off)
                       </p>
                     )}
                   </div>
 
                   {listing.type === "sale" && (
-                    <div className="bg-green-50 p-4 rounded-lg">
+                    <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-semibold text-green-800">EMI Calculator</h5>
+                        <h5 className="font-semibold text-green-800 dark:text-green-100">EMI Calculator</h5>
                         <button
                           onClick={() => setShowCalculatorModal(true)}
                           className="p-2 text-green-600 hover:text-green-700 hover:bg-green-100 rounded-full transition-colors"
@@ -2490,18 +2490,18 @@ export default function Listing() {
                           <FaCalculator className="text-lg" />
                         </button>
                       </div>
-                      <p className="text-lg font-bold text-green-600">
+                      <p className="text-lg font-bold text-green-600 dark:text-green-300">
                         ₹{calculateEMI(listing.offer ? listing.discountPrice : listing.regularPrice).toLocaleString('en-IN')} / month
                       </p>
-                      <p className="text-xs text-gray-600 mt-1">@ 8.5% for 20 years</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">@ 8.5% for 20 years</p>
                     </div>
                   )}
 
                   {/* Investment Tools Link - Only for logged-in users */}
                   {currentUser && (
-                    <div className="bg-blue-50 p-4 rounded-lg">
+                    <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
                       <div className="flex items-center justify-between mb-2">
-                        <h5 className="font-semibold text-blue-800">Investment Tools</h5>
+                        <h5 className="font-semibold text-blue-800 dark:text-blue-100">Investment Tools</h5>
                         <Link
                           to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/investment-tools' : '/user/investment-tools'}
                           className="p-2 text-blue-600 hover:text-blue-700 hover:bg-blue-100 rounded-full transition-colors"
@@ -2510,12 +2510,12 @@ export default function Listing() {
                           <FaChartLine className="text-lg" />
                         </Link>
                       </div>
-                      <p className="text-sm text-blue-600 mb-2">
+                      <p className="text-sm text-blue-600 dark:text-blue-300 mb-2">
                         Advanced ROI, Mortgage, Portfolio & Risk Analysis Tools
                       </p>
                       <Link
                         to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/investment-tools' : '/user/investment-tools'}
-                        className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 text-sm font-medium transition-colors"
+                        className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-300 hover:text-blue-700 dark:hover:text-blue-200 text-sm font-medium transition-colors"
                       >
                         <FaCalculator className="text-xs" />
                         Open Investment Tools
@@ -2533,12 +2533,12 @@ export default function Listing() {
                   </div>
 
                   {neighborhood && (
-                    <div className="bg-yellow-50 p-4 rounded-lg">
-                      <h5 className="font-semibold text-yellow-800 mb-2">Area Average</h5>
-                      <p className="text-lg font-bold text-yellow-600">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg">
+                      <h5 className="font-semibold text-yellow-800 dark:text-yellow-100 mb-2">Area Average</h5>
+                      <p className="text-lg font-bold text-yellow-600 dark:text-yellow-300">
                         ₹{neighborhood.averagePriceNearby?.toLocaleString('en-IN') || 'N/A'}
                       </p>
-                      <p className="text-xs text-gray-600 mt-1">Average price in {neighborhood.city}</p>
+                      <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Average price in {neighborhood.city}</p>
                     </div>
                   )}
                 </div>
@@ -2843,35 +2843,35 @@ export default function Listing() {
           {/* Admin Information - Only show for admins */}
           {isAdmin && isAdminContext && (
             <>
-              <div className="p-6 bg-blue-50 shadow-md rounded-lg mb-6">
-                <h4 className="text-xl font-bold text-blue-800 mb-4">Admin Information</h4>
+              <div className="p-6 bg-blue-50 dark:bg-blue-900/20 shadow-md rounded-lg mb-6">
+                <h4 className="text-xl font-bold text-blue-800 dark:text-blue-300 mb-4">Admin Information</h4>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div>
-                    <p className="text-sm text-gray-600">Property ID</p>
-                    <p className="font-semibold text-gray-800">{listing._id}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Property ID</p>
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">{listing._id}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Created Date</p>
-                    <p className="font-semibold text-gray-800">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Created Date</p>
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">
                       {new Date(listing.createdAt).toLocaleDateString('en-GB')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Last Updated</p>
-                    <p className="font-semibold text-gray-800">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Last Updated</p>
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">
                       {new Date(listing.updatedAt).toLocaleDateString('en-GB')}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-gray-600">Created By</p>
-                    <p className="font-semibold text-gray-800">{listing.userRef || 'Unknown'}</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Created By</p>
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">{listing.userRef || 'Unknown'}</p>
                   </div>
                   <div>
                     <div className="flex items-center justify-between">
-                      <p className="text-sm text-gray-600">Watchlist Count</p>
-                      <button onClick={refreshWatchlistCount} className="text-xs text-blue-600 hover:text-blue-800 underline">Refresh</button>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">Watchlist Count</p>
+                      <button onClick={refreshWatchlistCount} className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline">Refresh</button>
                     </div>
-                    <p className="font-semibold text-purple-800 flex items-center gap-1">
+                    <p className="font-semibold text-purple-800 dark:text-purple-300 flex items-center gap-1">
                       <FaEye className="text-sm" />
                       {watchlistCount} user{watchlistCount !== 1 ? 's' : ''} watching
                     </p>
@@ -2879,28 +2879,28 @@ export default function Listing() {
                 </div>
               </div>
               {/* Property Owner Details Section */}
-              <div className="p-6 bg-green-50 shadow-md rounded-lg mb-6">
-                <h4 className="text-xl font-bold text-green-800 mb-4">Property Owner Details</h4>
+              <div className="p-6 bg-green-50 dark:bg-green-900/20 shadow-md rounded-lg mb-6">
+                <h4 className="text-xl font-bold text-green-800 dark:text-green-300 mb-4">Property Owner Details</h4>
                 {ownerLoading ? (
-                  <p className="text-gray-500">Loading owner details...</p>
+                  <p className="text-gray-500 dark:text-gray-400">Loading owner details...</p>
                 ) : ownerDetails && ownerStatus.isActive ? (
                   <div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-4">
                       <div>
-                        <p className="text-sm text-gray-600">Owner Name</p>
-                        <p className="font-semibold text-gray-800">{ownerDetails.username}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Owner Name</p>
+                        <p className="font-semibold text-gray-800 dark:text-gray-200">{ownerDetails.username}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Owner Email</p>
-                        <p className="font-semibold text-gray-800">{ownerDetails.email}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Owner Email</p>
+                        <p className="font-semibold text-gray-800 dark:text-gray-200">{ownerDetails.email}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Mobile Number</p>
-                        <p className="font-semibold text-gray-800">{ownerDetails.mobileNumber}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Mobile Number</p>
+                        <p className="font-semibold text-gray-800 dark:text-gray-200">{ownerDetails.mobileNumber}</p>
                       </div>
                       <div>
-                        <p className="text-sm text-gray-600">Owner ID</p>
-                        <p className="font-semibold text-gray-800">{ownerDetails._id}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">Owner ID</p>
+                        <p className="font-semibold text-gray-800 dark:text-gray-200">{ownerDetails._id}</p>
                       </div>
                     </div>
                     {isAdmin && (
@@ -3218,7 +3218,7 @@ export default function Listing() {
             <div className="mt-8">
               <div className="border-t border-gray-200 pt-8">
                 <div className="flex items-center justify-between mb-6">
-                  <h3 className="text-2xl font-bold text-gray-800 flex items-center">
+                  <h3 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center">
                     <FaStar className="text-yellow-500 mr-2" />
                     Reviews
                     {listing.averageRating > 0 && (
@@ -3251,43 +3251,43 @@ export default function Listing() {
 
           {/* Rental Ratings Section (for rental properties) */}
           {listing.type === "rent" && showPropertyRatings && propertyRatings && (
-            <div className="mt-8 border-t border-gray-200 pt-8">
+            <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8">
               <div className="mb-6">
-                <h3 className="text-2xl font-bold text-gray-800 flex items-center mb-4">
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center mb-4">
                   <FaStar className="text-blue-500 mr-2" />
                   Rental Ratings
                 </h3>
                 {propertyRatings.statistics && (
                   <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-6">
-                    <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                      <p className="text-sm text-blue-700 mb-1">Total Ratings</p>
-                      <p className="text-2xl font-bold text-blue-800">{propertyRatings.statistics.totalRatings}</p>
+                    <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                      <p className="text-sm text-blue-700 dark:text-blue-300 mb-1">Total Ratings</p>
+                      <p className="text-2xl font-bold text-blue-800 dark:text-blue-200">{propertyRatings.statistics.totalRatings}</p>
                     </div>
-                    <div className="bg-green-50 border border-green-200 rounded-lg p-4">
-                      <p className="text-sm text-green-700 mb-1">Landlord Ratings</p>
-                      <p className="text-2xl font-bold text-green-800">
+                    <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4">
+                      <p className="text-sm text-green-700 dark:text-green-300 mb-1">Landlord Ratings</p>
+                      <p className="text-2xl font-bold text-green-800 dark:text-green-200">
                         {propertyRatings.statistics.landlordRatings || 0}
                       </p>
                       {propertyRatings.statistics.averageLandlordRating && (
-                        <p className="text-xs text-green-600 mt-1">
+                        <p className="text-xs text-green-600 dark:text-green-400 mt-1">
                           Avg: {propertyRatings.statistics.averageLandlordRating.toFixed(1)} ⭐
                         </p>
                       )}
                     </div>
-                    <div className="bg-purple-50 border border-purple-200 rounded-lg p-4">
-                      <p className="text-sm text-purple-700 mb-1">Tenant Ratings</p>
-                      <p className="text-2xl font-bold text-purple-800">
+                    <div className="bg-purple-50 dark:bg-purple-900/20 border border-purple-200 dark:border-purple-800 rounded-lg p-4">
+                      <p className="text-sm text-purple-700 dark:text-purple-300 mb-1">Tenant Ratings</p>
+                      <p className="text-2xl font-bold text-purple-800 dark:text-purple-200">
                         {propertyRatings.statistics.tenantRatings || 0}
                       </p>
                       {propertyRatings.statistics.averageTenantRating && (
-                        <p className="text-xs text-purple-600 mt-1">
+                        <p className="text-xs text-purple-600 dark:text-purple-400 mt-1">
                           Avg: {propertyRatings.statistics.averageTenantRating.toFixed(1)} ⭐
                         </p>
                       )}
                     </div>
-                    <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                      <p className="text-sm text-yellow-700 mb-1">Overall Average</p>
-                      <p className="text-2xl font-bold text-yellow-800">
+                    <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                      <p className="text-sm text-yellow-700 dark:text-yellow-300 mb-1">Overall Average</p>
+                      <p className="text-2xl font-bold text-yellow-800 dark:text-yellow-200">
                         {propertyRatings.statistics.overallAverage?.toFixed(1) || '0.0'} ⭐
                       </p>
                     </div>
@@ -3300,7 +3300,7 @@ export default function Listing() {
                   <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
                     <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Tenant Feedback Highlights</h4>
                     {propertyRatings.detailedRatings.tenantHighlights?.length > 0 ? (
-                      <ul className="space-y-2 text-sm text-gray-700">
+                      <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                         {propertyRatings.detailedRatings.tenantHighlights.map((highlight, idx) => (
                           <li key={idx} className="flex items-start gap-2">
                             <span className="text-blue-500">•</span>
@@ -3309,13 +3309,13 @@ export default function Listing() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-gray-500 text-sm">No tenant highlights available.</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">No tenant highlights available.</p>
                     )}
                   </div>
                   <div className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm">
                     <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Landlord Feedback Highlights</h4>
                     {propertyRatings.detailedRatings.landlordHighlights?.length > 0 ? (
-                      <ul className="space-y-2 text-sm text-gray-700">
+                      <ul className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                         {propertyRatings.detailedRatings.landlordHighlights.map((highlight, idx) => (
                           <li key={idx} className="flex items-start gap-2">
                             <span className="text-purple-500">•</span>
@@ -3324,7 +3324,7 @@ export default function Listing() {
                         ))}
                       </ul>
                     ) : (
-                      <p className="text-gray-500 text-sm">No landlord highlights available.</p>
+                      <p className="text-gray-500 dark:text-gray-400 text-sm">No landlord highlights available.</p>
                     )}
                   </div>
                 </div>
@@ -3354,7 +3354,7 @@ export default function Listing() {
                       >
                         <button
                           onClick={() => setExpandedFAQ(expandedFAQ === faq._id ? null : faq._id)}
-                          className="w-full px-6 py-4 text-left hover:bg-gray-50 focus:outline-none focus:bg-gray-50 transition-colors"
+                          className="w-full px-6 py-4 text-left hover:bg-gray-50 dark:hover:bg-gray-700 focus:outline-none focus:bg-gray-50 dark:focus:bg-gray-700 transition-colors"
                         >
                           <div className="flex justify-between items-center">
                             <h4 className="text-lg font-semibold text-gray-900 dark:text-white pr-4">
@@ -3370,22 +3370,22 @@ export default function Listing() {
                           </div>
                         </button>
                         {expandedFAQ === faq._id && (
-                          <div className="px-6 pb-4 border-t border-gray-100">
+                          <div className="px-6 pb-4 border-t border-gray-100 dark:border-gray-700">
                             <div className="pt-4">
-                              <p className="text-gray-700 leading-relaxed mb-4">
+                              <p className="text-gray-700 dark:text-gray-300 leading-relaxed mb-4">
                                 {faq.answer}
                               </p>
 
                               {/* FAQ Rating Section */}
-                              <div className="flex items-center justify-between pt-4 border-t border-gray-100">
-                                <span className="text-sm text-gray-600">Was this helpful?</span>
+                              <div className="flex items-center justify-between pt-4 border-t border-gray-100 dark:border-gray-700">
+                                <span className="text-sm text-gray-600 dark:text-gray-400">Was this helpful?</span>
                                 <div className="flex items-center space-x-2">
                                   <button
                                     onClick={() => handleFAQReaction(faq._id, 'like')}
                                     disabled={faqReactionLoading[faq._id]}
                                     className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'like'
-                                      ? 'text-green-700 bg-green-100 border-green-300'
-                                      : 'text-green-600 hover:text-green-700 bg-green-50 hover:bg-green-100 border-green-200'
+                                      ? 'text-green-700 bg-green-100 dark:bg-green-900/30 dark:text-green-400 border-green-300 dark:border-green-800'
+                                      : 'text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 bg-green-50 dark:bg-green-900/20 hover:bg-green-100 dark:hover:bg-green-900/40 border-green-200 dark:border-green-800'
                                       } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   >
                                     {userFAQReactions[faq._id] === 'like' ? <FaThumbsUp /> : <FaRegThumbsUp />}
@@ -3397,8 +3397,8 @@ export default function Listing() {
                                     onClick={() => handleFAQReaction(faq._id, 'dislike')}
                                     disabled={faqReactionLoading[faq._id]}
                                     className={`flex items-center space-x-1 px-3 py-2 rounded-lg transition-all duration-200 border text-sm font-medium ${userFAQReactions[faq._id] === 'dislike'
-                                      ? 'text-red-700 bg-red-100 border-red-300'
-                                      : 'text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 border-red-200'
+                                      ? 'text-red-700 bg-red-100 dark:bg-red-900/30 dark:text-red-400 border-red-300 dark:border-red-800'
+                                      : 'text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 border-red-200 dark:border-red-800'
                                       } ${faqReactionLoading[faq._id] ? 'opacity-50 cursor-not-allowed' : ''}`}
                                   >
                                     {userFAQReactions[faq._id] === 'dislike' ? <FaThumbsDown /> : <FaRegThumbsDown />}
@@ -3430,7 +3430,7 @@ export default function Listing() {
                 {blogLoading ? (
                   <div className="text-center py-8">
                     <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-green-600 mx-auto"></div>
-                    <p className="mt-2 text-gray-600">Loading articles...</p>
+                    <p className="mt-2 text-gray-600 dark:text-gray-400">Loading articles...</p>
                   </div>
                 ) : (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
@@ -3450,7 +3450,7 @@ export default function Listing() {
                         )}
                         <div className="p-6">
                           <div className="mb-3">
-                            <span className="inline-block bg-green-100 text-green-800 text-xs font-semibold px-2.5 py-0.5 rounded-full">
+                            <span className="inline-block bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-300 text-xs font-semibold px-2.5 py-0.5 rounded-full">
                               {blog.category}
                             </span>
                           </div>
@@ -3462,7 +3462,7 @@ export default function Listing() {
                               {blog.title}
                             </Link>
                           </h4>
-                          <p className="text-gray-600 mb-4 line-clamp-3">
+                          <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-3">
                             {blog.excerpt || blog.content.slice(0, 120) + '...'}
                           </p>
                           {blog.tags && blog.tags.length > 0 && (
@@ -3470,20 +3470,20 @@ export default function Listing() {
                               {blog.tags.slice(0, 3).map((tag, index) => (
                                 <span
                                   key={index}
-                                  className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 text-gray-700"
+                                  className="inline-flex items-center px-2 py-1 rounded text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300"
                                 >
                                   <FaTag className="mr-1" />
                                   {tag}
                                 </span>
                               ))}
                               {blog.tags.length > 3 && (
-                                <span className="text-xs text-gray-500">
+                                <span className="text-xs text-gray-500 dark:text-gray-400">
                                   +{blog.tags.length - 3} more
                                 </span>
                               )}
                             </div>
                           )}
-                          <div className="flex flex-col space-y-2 text-sm text-gray-500">
+                          <div className="flex flex-col space-y-2 text-sm text-gray-500 dark:text-gray-400">
                             <div className="flex items-center space-x-1">
                               <FaUser />
                               <span>{blog.author?.username || 'UrbanSetu Team'}</span>
@@ -3535,27 +3535,27 @@ export default function Listing() {
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 <Link
                   to={isAdmin ? "/admin/blogs" : currentUser ? "/user/blogs" : "/blogs"}
-                  className="bg-blue-50 hover:bg-blue-100 border border-blue-200 rounded-lg p-4 text-center transition-colors group"
+                  className="bg-blue-50 dark:bg-blue-900/10 hover:bg-blue-100 dark:hover:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 text-center transition-colors group"
                 >
-                  <FaBookOpen className="text-blue-600 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                  <h4 className="font-semibold text-gray-900 mb-1">Real Estate Blog</h4>
-                  <p className="text-sm text-gray-600">{isAdmin ? "Manage blog posts" : "Read latest insights and tips"}</p>
+                  <FaBookOpen className="text-blue-600 dark:text-blue-400 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">Real Estate Blog</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{isAdmin ? "Manage blog posts" : "Read latest insights and tips"}</p>
                 </Link>
                 <Link
                   to={isAdmin ? "/admin/faqs" : currentUser ? "/user/faqs" : "/faqs"}
-                  className="bg-orange-50 hover:bg-orange-100 border border-orange-200 rounded-lg p-4 text-center transition-colors group"
+                  className="bg-orange-50 dark:bg-orange-900/10 hover:bg-orange-100 dark:hover:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-lg p-4 text-center transition-colors group"
                 >
-                  <FaQuestionCircle className="text-orange-600 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                  <h4 className="font-semibold text-gray-900 mb-1">FAQs</h4>
-                  <p className="text-sm text-gray-600">{isAdmin ? "Manage FAQ content" : "Find answers to common questions"}</p>
+                  <FaQuestionCircle className="text-orange-600 dark:text-orange-400 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">FAQs</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{isAdmin ? "Manage FAQ content" : "Find answers to common questions"}</p>
                 </Link>
                 <Link
                   to={isAdmin ? "/admin/about" : currentUser ? "/user/about" : "/about"}
-                  className="bg-green-50 hover:bg-green-100 border border-green-200 rounded-lg p-4 text-center transition-colors group"
+                  className="bg-green-50 dark:bg-green-900/10 hover:bg-green-100 dark:hover:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 text-center transition-colors group"
                 >
-                  <FaInfoCircle className="text-green-600 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
-                  <h4 className="font-semibold text-gray-900 mb-1">About UrbanSetu</h4>
-                  <p className="text-sm text-gray-600">{isAdmin ? "Manage about page content" : "Learn more about our platform"}</p>
+                  <FaInfoCircle className="text-green-600 dark:text-green-400 text-2xl mx-auto mb-2 group-hover:scale-110 transition-transform" />
+                  <h4 className="font-semibold text-gray-900 dark:text-white mb-1">About UrbanSetu</h4>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">{isAdmin ? "Manage about page content" : "Learn more about our platform"}</p>
                 </Link>
               </div>
             </div>
@@ -3566,10 +3566,10 @@ export default function Listing() {
       {/* Reason Modal */}
       {showReasonModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handleReasonSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaTrash /> Reason for Deletion</h3>
+          <form onSubmit={handleReasonSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4 border border-transparent dark:border-gray-700">
+            <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaTrash /> Reason for Deletion</h3>
             <textarea
-              className="border rounded p-2 w-full"
+              className="border rounded p-2 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               placeholder="Enter reason for deleting this property"
               value={deleteReason}
               onChange={e => setDeleteReason(e.target.value)}
@@ -3578,7 +3578,7 @@ export default function Listing() {
             />
             {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setShowReasonModal(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold">Cancel</button>
+              <button type="button" onClick={() => setShowReasonModal(false)} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
               <button type="submit" className="px-4 py-2 rounded bg-red-600 text-white font-semibold">Next</button>
             </div>
           </form>
@@ -3587,11 +3587,11 @@ export default function Listing() {
       {/* Password Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handlePasswordSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+          <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4 border border-transparent dark:border-gray-700">
+            <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaLock /> Confirm Password</h3>
             <input
               type="password"
-              className="border rounded p-2 w-full"
+              className="border rounded p-2 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               placeholder="Enter your password"
               value={deletePassword}
               onChange={e => setDeletePassword(e.target.value)}
@@ -3599,7 +3599,7 @@ export default function Listing() {
             />
             {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold">Cancel</button>
+              <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white font-semibold hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
               <button type="submit" className="px-4 py-2 rounded bg-blue-700 text-white font-semibold" disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Confirm & Delete'}</button>
             </div>
           </form>
@@ -3710,17 +3710,17 @@ export default function Listing() {
       {/* Confirm Modal */}
       {confirmModal.open && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-[999] p-4">
-          <div className="bg-white rounded-lg shadow-xl w-full max-w-sm">
-            <div className="px-4 py-3 border-b border-gray-200 font-semibold">Confirm</div>
-            <div className="px-4 py-4 text-gray-700 text-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-xl w-full max-w-sm border border-transparent dark:border-gray-700">
+            <div className="px-4 py-3 border-b border-gray-200 dark:border-gray-700 font-semibold text-gray-900 dark:text-white">Confirm</div>
+            <div className="px-4 py-4 text-gray-700 dark:text-gray-300 text-sm">
               <p>{confirmModal.message}</p>
               {confirmModal.type === 'root-verify' && (
                 <div className="mt-3">
-                  <label className="block text-xs font-bold text-gray-700 mb-1">
+                  <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1">
                     Verification Reason <span className="text-red-500">*</span>
                   </label>
                   <textarea
-                    className="w-full border border-gray-300 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full border border-gray-300 dark:border-gray-600 rounded p-2 text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     placeholder="Enter reason for bypassing verification..."
                     rows={3}
                     value={rootVerificationReason}
@@ -3729,8 +3729,8 @@ export default function Listing() {
                 </div>
               )}
             </div>
-            <div className="px-4 py-3 border-t border-gray-200 flex gap-2 justify-end">
-              <button onClick={closeConfirm} className="px-4 py-2 rounded bg-gray-200 text-gray-800 text-sm">Cancel</button>
+            <div className="px-4 py-3 border-t border-gray-200 dark:border-gray-700 flex gap-2 justify-end">
+              <button onClick={closeConfirm} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-white text-sm hover:bg-gray-300 dark:hover:bg-gray-600">Cancel</button>
               <button
                 onClick={confirmYes}
                 disabled={confirmModal.type === 'root-verify' && !rootVerificationReason.trim()}
@@ -3748,27 +3748,27 @@ export default function Listing() {
       {/* Deassign Owner Modal */}
       {showDeassignModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 p-4">
-          <div className="bg-white rounded-lg shadow-lg w-full max-w-md">
-            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200">
-              <h3 className="text-lg font-bold text-red-700 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg w-full max-w-md border border-transparent dark:border-gray-700">
+            <div className="flex items-center justify-between px-6 py-4 border-b border-gray-200 dark:border-gray-700">
+              <h3 className="text-lg font-bold text-red-700 dark:text-red-500 flex items-center gap-2">
                 <FaBan /> Remove Property Owner
               </h3>
               <button
                 onClick={() => setShowDeassignModal(false)}
-                className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
               >
                 <FaTimes />
               </button>
             </div>
             <form onSubmit={handleDeassignOwnerSubmit} className="px-6 py-5 space-y-4">
-              <p className="text-sm text-gray-600">
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 This note will be shared with the previous owner via email. Please be clear and professional.
               </p>
               <textarea
                 value={deassignReason}
                 onChange={(e) => setDeassignReason(e.target.value)}
                 rows={4}
-                className="w-full border border-gray-300 rounded-lg p-3 focus:ring-2 focus:ring-red-300 focus:border-red-400"
+                className="w-full border border-gray-300 dark:border-gray-600 rounded-lg p-3 focus:ring-2 focus:ring-red-300 focus:border-red-400 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 placeholder="Example: Owner unresponsive to tenant support despite repeated reminders."
                 disabled={deassignLoading}
               />
@@ -3777,7 +3777,7 @@ export default function Listing() {
                 <button
                   type="button"
                   onClick={() => setShowDeassignModal(false)}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
+                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600"
                   disabled={deassignLoading}
                 >
                   Cancel

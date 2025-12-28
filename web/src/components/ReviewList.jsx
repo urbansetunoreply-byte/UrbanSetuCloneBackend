@@ -741,7 +741,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
   if (reviews.length === 0) {
     return (
       <div className="text-center py-8">
-        <p className="text-gray-600">No reviews yet. Be the first to review this property!</p>
+        <p className="text-gray-600 dark:text-gray-400">No reviews yet. Be the first to review this property!</p>
       </div>
     );
   }
@@ -749,28 +749,28 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
   return (
     <div className="space-y-4">
       <div className="flex items-center justify-between mb-4">
-        <h3 className="text-xl font-semibold text-gray-800">
+        <h3 className="text-xl font-semibold text-gray-800 dark:text-white">
           Reviews ({reviews.filter(r => r.status === 'approved').length})
         </h3>
 
         {/* Sort Options */}
         <div className="flex items-center gap-2">
-          <span className="text-sm text-gray-600">Sort by:</span>
+          <span className="text-sm text-gray-600 dark:text-gray-400">Sort by:</span>
           <button
             onClick={() => handleSort('date')}
-            className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             Date {getSortIcon('date')}
           </button>
           <button
             onClick={() => handleSort('rating')}
-            className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             Rating {getSortIcon('rating')}
           </button>
           <button
             onClick={() => handleSort('helpful')}
-            className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors"
+            className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
           >
             Helpful {getSortIcon('helpful')}
           </button>
@@ -778,7 +778,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       </div>
 
       {reviews.filter(r => r.status === 'approved').map((review) => (
-        <div key={review._id} className="bg-white rounded-lg shadow-md p-6 border border-gray-200">
+        <div key={review._id} className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700">
           <div className="flex items-start justify-between">
             <div className="flex items-center space-x-3 mb-3">
               {!isAdminUser(review) && (
@@ -797,7 +797,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                       From organization <FaCheckCircle className="text-green-500" />
                     </span>
                   ) : (
-                    <h4 className="font-semibold text-gray-800">{review.userName}</h4>
+                    <h4 className="font-semibold text-gray-800 dark:text-white">{review.userName}</h4>
                   )}
                   {(review.isVerified || review.verifiedByBooking) && !isAdminUser(review) && (
                     <span className="flex items-center text-green-600 text-sm">
@@ -808,7 +808,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 </div>
                 <div className="flex items-center space-x-1">
                   {renderStars(review.rating)}
-                  <span className="text-sm text-gray-600 ml-2">
+                  <span className="text-sm text-gray-600 dark:text-gray-400 ml-2">
                     {review.rating} star{review.rating > 1 ? 's' : ''}
                   </span>
                 </div>
@@ -855,9 +855,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               )}
           </div>
 
-          <p className="text-gray-700 mb-3">{review.comment}</p>
+          <p className="text-gray-700 dark:text-gray-300 mb-3">{review.comment}</p>
 
-          <div className="flex items-center justify-between text-sm text-gray-500">
+          <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400">
             <span>{formatDate(review.createdAt)}</span>
 
             {/* Helpful Vote Button */}
@@ -865,12 +865,12 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               <button
                 onClick={() => handleHelpfulVote(review._id)}
                 className={`flex items-center gap-1 px-3 py-1 rounded-lg transition-colors ${hasUserVoted(review)
-                    ? 'bg-blue-100 text-blue-700'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
                 disabled={review.status !== 'approved'}
               >
-                <FaThumbsUp className={hasUserVoted(review) ? 'text-blue-600' : ''} />
+                <FaThumbsUp className={hasUserVoted(review) ? 'text-blue-600 dark:text-blue-400' : ''} />
                 <span>Helpful</span>
                 {review.helpfulCount > 0 && (
                   <span className="ml-1">({review.helpfulCount})</span>
@@ -879,8 +879,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               <button
                 onClick={() => handleDislikeReview(review._id)}
                 className={`flex items-center gap-1 px-3 py-1 rounded-lg transition-colors ${review.dislikes?.some(d => d.userId === currentUser?._id)
-                    ? 'bg-red-100 text-red-700'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300'
+                  : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
               >
                 <span role="img" aria-label="dislike">👎</span>
@@ -913,7 +913,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
 
           {/* Owner response (if any) */}
           {review.ownerResponse && (
-            <div className="mt-3 p-3 bg-blue-50 rounded-md border border-blue-200 flex justify-between items-center">
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800 flex justify-between items-center">
               <div className="flex-1">
                 {editingOwnerResponse === review._id ? (
                   <>
@@ -938,7 +938,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                   </>
                 ) : (
                   <>
-                    <p className="text-sm text-blue-800 flex items-center gap-2">
+                    <p className="text-sm text-blue-800 dark:text-blue-300 flex items-center gap-2">
                       <FaReply className="inline-block text-blue-500" />
                       <strong>Owner Response:</strong> {review.ownerResponse}
                     </p>
@@ -996,7 +996,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
             {expandedReplies[review._id] && (
               <div className="space-y-3 animate-slideDown">
                 {replies[review._id]?.map(reply => (
-                  <div key={reply._id} className="bg-gradient-to-r from-gray-50 to-white rounded-lg p-3 border border-gray-200 shadow-sm hover:shadow-md transition-all duration-200">
+                  <div key={reply._id} className="bg-gradient-to-r from-gray-50 to-white dark:from-gray-700 dark:to-gray-800 rounded-lg p-3 border border-gray-200 dark:border-gray-700 shadow-sm hover:shadow-md transition-all duration-200">
                     <div className="flex items-center gap-2 mb-2">
                       {!isAdminUser(reply) && (
                         <UserAvatar
@@ -1045,7 +1045,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                     {editingReply && editingReply._id === reply._id ? (
                       <div className="space-y-2">
                         <textarea
-                          className="w-full border border-blue-300 rounded p-2 text-sm"
+                          className="w-full border border-blue-300 rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           value={editingReply.comment}
                           onChange={e => setEditingReply({ ...editingReply, comment: e.target.value })}
                           rows={2}
@@ -1066,15 +1066,15 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                         </div>
                       </div>
                     ) : (
-                      <div className="text-gray-700 text-sm leading-relaxed">{reply.comment}</div>
+                      <div className="text-gray-700 dark:text-gray-300 text-sm leading-relaxed">{reply.comment}</div>
                     )}
 
                     <div className="flex gap-3 mt-2 text-xs">
                       <button
                         onClick={() => handleLikeDislikeReply(reply._id, 'like', review._id)}
                         className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${reply.likes?.includes(currentUser?._id)
-                            ? 'bg-blue-100 text-blue-700'
-                            : 'text-gray-500 hover:bg-gray-100'
+                          ? 'bg-blue-100 text-blue-700'
+                          : 'text-gray-500 hover:bg-gray-100'
                           }`}
                         disabled={replyLikeLoading[reply._id]}
                       >
@@ -1083,8 +1083,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                       <button
                         onClick={() => handleLikeDislikeReply(reply._id, 'dislike', review._id)}
                         className={`flex items-center gap-1 px-2 py-1 rounded transition-colors ${reply.dislikes?.includes(currentUser?._id)
-                            ? 'bg-red-100 text-red-700'
-                            : 'text-gray-500 hover:bg-gray-100'
+                          ? 'bg-red-100 text-red-700'
+                          : 'text-gray-500 hover:bg-gray-100'
                           }`}
                         disabled={replyLikeLoading[reply._id]}
                       >
@@ -1095,7 +1095,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 ))}
 
                 {/* Reply form */}
-                <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+                <div className="bg-blue-50 dark:bg-gray-900/50 rounded-lg p-3 border border-blue-200 dark:border-gray-700">
                   <ReplyForm reviewId={review._id} onReplyAdded={() => fetchReplies(review._id)} />
                 </div>
               </div>
@@ -1103,7 +1103,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
 
             {/* Show reply form if no replies exist */}
             {(!replies[review._id] || replies[review._id].length === 0) && (
-              <div className="bg-blue-50 rounded-lg p-3 border border-blue-200">
+              <div className="bg-blue-50 dark:bg-gray-900/50 rounded-lg p-3 border border-blue-200 dark:border-gray-700">
                 <ReplyForm reviewId={review._id} onReplyAdded={() => fetchReplies(review._id)} />
               </div>
             )}
@@ -1126,8 +1126,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       {/* Edit form modal */}
       {editingReview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4">Edit Review</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-transparent dark:border-gray-700">
+            <h3 className="text-lg font-semibold mb-4 text-gray-800 dark:text-white">Edit Review</h3>
             <ReviewForm
               listingId={listingId}
               existingReview={editingReview}
@@ -1146,8 +1146,8 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       {/* Report Modal */}
       {reportingReview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50">
-          <div className="bg-white rounded-lg p-6 max-w-md w-full mx-4">
-            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-yellow-700">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-6 max-w-md w-full mx-4 border border-transparent dark:border-gray-700">
+            <h3 className="text-lg font-semibold mb-4 flex items-center gap-2 text-yellow-700 dark:text-yellow-500">
               <FaExclamationTriangle /> Report an Issue
             </h3>
             <div className="space-y-4">
@@ -1156,7 +1156,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 <select
                   value={reportCategory}
                   onChange={(e) => setReportCategory(e.target.value)}
-                  className="w-full p-2 border border-yellow-300 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900"
+                  className="w-full p-2 border border-yellow-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-yellow-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                 >
                   <option value="">Select a category</option>
                   <option value="inappropriate">Inappropriate Content</option>
@@ -1172,11 +1172,11 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
               </div>
               {reportCategory && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {reportCategory === 'other' ? 'Additional Details *' : 'Additional Details (Optional)'}
                   </label>
                   <textarea
-                    className="w-full border border-yellow-300 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    className="w-full border border-yellow-300 dark:border-gray-600 rounded-md p-2 text-sm focus:outline-none focus:ring-2 focus:ring-yellow-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                     rows="3"
                     value={reportReason}
                     onChange={e => setReportReason(e.target.value)}
@@ -1214,14 +1214,14 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
       {/* Removal Modal */}
       {showRemovalModal && reviewToRemove && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
-          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-xs sm:max-w-md w-full mx-2 sm:mx-4">
-            <h2 className="text-xl font-semibold mb-4">Remove Review</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-xs sm:max-w-md w-full mx-2 sm:mx-4 border border-transparent dark:border-gray-700">
+            <h2 className="text-xl font-semibold mb-4 text-gray-800 dark:text-white">Remove Review</h2>
             <p className="text-gray-600 mb-4">
               Are you sure you want to remove this review? This action cannot be undone.
             </p>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Removal Reason *
                 </label>
                 <select
@@ -1232,7 +1232,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                       toast.info(`Selected removal reason: ${e.target.value}`);
                     }
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">Select a reason</option>
                   <option value="spam">Spam</option>
@@ -1242,14 +1242,14 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Additional Note (Optional)
                 </label>
                 <textarea
                   value={removalNote}
                   onChange={(e) => setRemovalNote(e.target.value)}
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                   placeholder="Provide additional details..."
                 />
               </div>
