@@ -233,11 +233,11 @@ const CookieConsent = () => {
                 <div className="p-2 bg-gradient-to-br from-amber-400 to-amber-600 rounded-xl shadow-lg transform -rotate-12">
                   <Cookie className="w-6 h-6 text-white" />
                 </div>
-                <h3 className="text-xl font-bold text-gray-900 tracking-tight">We value your privacy</h3>
+                <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-tight">We value your privacy</h3>
               </div>
-              <p className="text-gray-600 text-sm leading-relaxed max-w-2xl">
+              <p className="text-gray-600 dark:text-gray-400 text-sm leading-relaxed max-w-2xl">
                 We use cookies to enhance your browsing experience, serve personalized ads or content, and analyze our traffic. By clicking "Accept All", you consent to our use of cookies.
-                <Link to="/cookie-policy" className="text-blue-600 hover:text-blue-700 font-semibold ml-1 inline-flex items-center gap-0.5 group">
+                <Link to="/cookie-policy" className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold ml-1 inline-flex items-center gap-0.5 group transition-colors">
                   Read Policy <ChevronRight className="w-3 h-3 group-hover:translate-x-0.5 transition-transform" />
                 </Link>
               </p>
@@ -245,19 +245,19 @@ const CookieConsent = () => {
             <div className="flex flex-col sm:flex-row gap-3 w-full md:w-auto min-w-fit">
               <button
                 onClick={openSettings}
-                className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
+                className="px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-all hover:scale-105 active:scale-95 flex items-center justify-center gap-2"
               >
                 <Settings className="w-4 h-4" /> Manage
               </button>
               <button
                 onClick={handleRejectAll}
-                className="px-5 py-2.5 text-sm font-semibold text-gray-700 bg-white border border-gray-200 hover:bg-gray-50 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-sm"
+                className="px-5 py-2.5 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-950 border border-gray-200 dark:border-gray-800 hover:bg-gray-50 dark:hover:bg-gray-900 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-sm"
               >
                 Reject All
               </button>
               <button
                 onClick={handleAcceptAll}
-                className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
+                className="px-6 py-2.5 text-sm font-semibold text-white bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-700 hover:to-indigo-700 dark:from-blue-700 dark:to-indigo-800 rounded-xl transition-all hover:scale-105 active:scale-95 shadow-md hover:shadow-lg"
               >
                 Accept All
               </button>
@@ -276,18 +276,18 @@ const CookieConsent = () => {
           />
 
           {/* Modal Content */}
-          <div className="relative bg-white rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto animate-zoom-in-up border border-gray-100">
+          <div className="relative bg-white dark:bg-gray-950 rounded-3xl shadow-2xl max-w-2xl w-full max-h-[85vh] overflow-y-auto animate-zoom-in-up border border-gray-100 dark:border-gray-800 transition-colors">
             {/* Header */}
-            <div className="sticky top-0 z-10 bg-white/80 backdrop-blur-md px-6 py-5 border-b border-gray-100 flex items-center justify-between">
+            <div className="sticky top-0 z-10 bg-white/80 dark:bg-gray-950/80 backdrop-blur-md px-6 py-5 border-b border-gray-100 dark:border-gray-800 flex items-center justify-between transition-colors">
               <div className="flex items-center gap-3">
-                <div className="p-2 bg-blue-50 rounded-xl">
-                  <Settings className="w-6 h-6 text-blue-600" />
+                <div className="p-2 bg-blue-50 dark:bg-blue-900/30 rounded-xl transition-colors">
+                  <Settings className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
-                <h2 className="text-2xl font-bold text-gray-900">Cookie Preferences</h2>
+                <h2 className="text-2xl font-bold text-gray-900 dark:text-white transition-colors">Cookie Preferences</h2>
               </div>
               <button
                 onClick={closeSettings}
-                className="p-2 text-gray-400 hover:text-gray-900 hover:bg-gray-100 rounded-full transition-all"
+                className="p-2 text-gray-400 dark:text-gray-500 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all"
               >
                 <X className="w-6 h-6" />
               </button>
@@ -295,8 +295,8 @@ const CookieConsent = () => {
 
             {/* Content */}
             <div className="p-6 md:p-8 space-y-8">
-              <div className="bg-gray-50 p-6 rounded-2xl border border-gray-100">
-                <p className="text-gray-600 leading-relaxed text-sm">
+              <div className="bg-gray-50 dark:bg-gray-900 p-6 rounded-2xl border border-gray-100 dark:border-gray-800 transition-colors">
+                <p className="text-gray-600 dark:text-gray-400 leading-relaxed text-sm transition-colors">
                   When you visit our website, we store cookies on your browser to collect information. The information collected might relate to you, your preferences or your device, and is mostly used to make the site work as you expect it to and to provide a more personalized web experience.
                 </p>
               </div>
@@ -307,7 +307,7 @@ const CookieConsent = () => {
                 <PreferenceToggle
                   title="Necessary Cookies"
                   description="Essential for the website's core functionality. These cannot be disabled."
-                  icon={<Shield className="w-5 h-5 text-green-600" />}
+                  icon={<Shield className="w-5 h-5 text-green-600 dark:text-green-400" />}
                   isEnabled={preferences.necessary}
                   isLocked={true}
                   onChange={() => { }}
@@ -317,7 +317,7 @@ const CookieConsent = () => {
                 <PreferenceToggle
                   title="Analytics Cookies"
                   description="Help us improve our website by collecting and reporting information on its usage."
-                  icon={<BarChart className="w-5 h-5 text-blue-600" />}
+                  icon={<BarChart className="w-5 h-5 text-blue-600 dark:text-blue-400" />}
                   isEnabled={preferences.analytics}
                   onChange={() => handlePreferenceChange('analytics')}
                 />
@@ -326,7 +326,7 @@ const CookieConsent = () => {
                 <PreferenceToggle
                   title="Marketing Cookies"
                   description="Used to track visitors across websites to allow publishers to display relevant ads."
-                  icon={<FileText className="w-5 h-5 text-purple-600" />}
+                  icon={<FileText className="w-5 h-5 text-purple-600 dark:text-purple-400" />}
                   isEnabled={preferences.marketing}
                   onChange={() => handlePreferenceChange('marketing')}
                 />
@@ -335,7 +335,7 @@ const CookieConsent = () => {
                 <PreferenceToggle
                   title="Functional Cookies"
                   description="Allow the website to remember choices you make (such as your user name, language or the region you are in)."
-                  icon={<Settings className="w-5 h-5 text-orange-600" />}
+                  icon={<Settings className="w-5 h-5 text-orange-600 dark:text-orange-400" />}
                   isEnabled={preferences.functional}
                   onChange={() => handlePreferenceChange('functional')}
                 />
@@ -343,10 +343,10 @@ const CookieConsent = () => {
             </div>
 
             {/* Action Buttons */}
-            <div className="sticky bottom-0 z-10 bg-white border-t border-gray-100 p-6 flex flex-col md:flex-row gap-4">
+            <div className="sticky bottom-0 z-10 bg-white dark:bg-gray-950 border-t border-gray-100 dark:border-gray-800 p-6 flex flex-col md:flex-row gap-4 transition-colors">
               <button
                 onClick={handleRejectAll}
-                className="px-6 py-3 text-sm font-semibold text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-xl transition-colors md:flex-1"
+                className="px-6 py-3 text-sm font-semibold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-xl transition-colors md:flex-1"
               >
                 Reject All
               </button>
@@ -372,34 +372,34 @@ const CookieConsent = () => {
 
 // Helper Components
 const BannerWrapper = ({ children, isClosing }) => (
-  <div className={`fixed bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 z-[90] bg-white/95 backdrop-blur-md border border-gray-200/50 shadow-2xl rounded-2xl p-6 transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isClosing ? 'opacity-0 translate-y-20 scale-95' : 'opacity-100 translate-y-0 scale-100'
+  <div className={`fixed bottom-4 sm:bottom-6 left-4 sm:left-6 right-4 sm:right-6 z-[90] bg-white/95 dark:bg-gray-950/95 backdrop-blur-md border border-gray-200/50 dark:border-gray-800/50 shadow-2xl rounded-2xl p-6 transform transition-all duration-500 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isClosing ? 'opacity-0 translate-y-20 scale-95' : 'opacity-100 translate-y-0 scale-100'
     }`}>
     {children}
   </div>
 );
 
 const PreferenceToggle = ({ title, description, icon, isEnabled, isLocked, onChange }) => (
-  <div className="group border border-gray-100 hover:border-blue-100 bg-white p-5 rounded-2xl transition-all duration-200 hover:shadow-md">
+  <div className="group border border-gray-100 dark:border-gray-800 hover:border-blue-100 dark:hover:border-blue-900 bg-white dark:bg-gray-950 p-5 rounded-2xl transition-all duration-200 hover:shadow-md">
     <div className="flex items-start gap-4">
-      <div className={`p-2.5 rounded-xl ${isEnabled ? 'bg-blue-50' : 'bg-gray-50'} transition-colors`}>
+      <div className={`p-2.5 rounded-xl ${isEnabled ? 'bg-blue-50 dark:bg-blue-900/40' : 'bg-gray-50 dark:bg-gray-800/50'} transition-colors`}>
         {icon}
       </div>
       <div className="flex-1">
         <div className="flex items-center justify-between mb-2">
-          <h3 className="font-semibold text-gray-900 group-hover:text-blue-700 transition-colors">{title}</h3>
+          <h3 className="font-semibold text-gray-900 dark:text-white group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">{title}</h3>
           <button
             onClick={onChange}
             disabled={isLocked}
-            className={`relative w-12 h-7 rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isEnabled ? 'bg-blue-600' : 'bg-gray-200'
+            className={`relative w-12 h-7 rounded-full transition-all duration-300 ease-in-out focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500 ${isEnabled ? 'bg-blue-600' : 'bg-gray-200 dark:bg-gray-700'
               } ${isLocked ? 'cursor-not-allowed opacity-70' : 'cursor-pointer'}`}
           >
             <span
-              className={`absolute top-1 left-1 bg-white w-5 h-5 rounded-full shadow-sm transform transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isEnabled ? 'translate-x-5' : 'translate-x-0'
+              className={`absolute top-1 left-1 bg-white dark:bg-gray-200 w-5 h-5 rounded-full shadow-sm transform transition-transform duration-300 ease-[cubic-bezier(0.34,1.56,0.64,1)] ${isEnabled ? 'translate-x-5' : 'translate-x-0'
                 }`}
             />
           </button>
         </div>
-        <p className="text-sm text-gray-500 leading-relaxed">{description}</p>
+        <p className="text-sm text-gray-500 dark:text-gray-400 leading-relaxed transition-colors">{description}</p>
       </div>
     </div>
   </div>

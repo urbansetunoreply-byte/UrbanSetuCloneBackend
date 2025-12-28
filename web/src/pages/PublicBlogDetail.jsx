@@ -239,7 +239,7 @@ const PublicBlogDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-slate-800 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans text-slate-800 dark:text-gray-100 pb-20 transition-colors duration-300">
       {/* Hero Header */}
       <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white relative overflow-hidden">
         {/* Abstract Background Shapes */}
@@ -302,7 +302,7 @@ const PublicBlogDetail = () => {
         {/* Main Content Column */}
         <div className="lg:col-span-8 space-y-8">
           {/* Detailed Content Card */}
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-up">
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden animate-fade-in-up transition-colors">
 
             {/* Media Gallery */}
             <div className="relative group bg-gray-900">
@@ -374,33 +374,33 @@ const PublicBlogDetail = () => {
             <div className="p-8 md:p-12">
               {/* Property Link if Exists */}
               {blog.propertyId && (
-                <div className="mb-8 p-4 bg-blue-50/50 rounded-2xl border border-blue-100 flex items-center justify-between group hover:bg-blue-50 transition-colors cursor-pointer" onClick={() => navigate(`/listing/${blog.propertyId._id}`)}>
+                <div className="mb-8 p-4 bg-blue-50/50 dark:bg-blue-900/20 rounded-2xl border border-blue-100 dark:border-blue-800 flex items-center justify-between group hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors cursor-pointer" onClick={() => navigate(`/listing/${blog.propertyId._id}`)}>
                   <div className="flex items-center gap-4">
-                    <div className="w-12 h-12 rounded-xl bg-blue-100 flex items-center justify-center text-blue-600">
+                    <div className="w-12 h-12 rounded-xl bg-blue-100 dark:bg-blue-900/40 flex items-center justify-center text-blue-600 dark:text-blue-400 transition-colors">
                       <Home className="w-6 h-6" />
                     </div>
                     <div>
-                      <h3 className="font-bold text-gray-800 text-sm md:text-base">Related Property</h3>
-                      <p className="text-blue-600 font-medium text-xs md:text-sm group-hover:underline">{blog.propertyId.name}</p>
+                      <h3 className="font-bold text-gray-800 dark:text-white text-sm md:text-base transition-colors">Related Property</h3>
+                      <p className="text-blue-600 dark:text-blue-400 font-medium text-xs md:text-sm group-hover:underline transition-colors">{blog.propertyId.name}</p>
                     </div>
                   </div>
                   <ArrowLeft className="rotate-180 w-5 h-5 text-blue-400 group-hover:translate-x-1 transition-transform" />
                 </div>
               )}
 
-              <div className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-blue-600 prose-img:rounded-2xl">
+              <div className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-600 dark:prose-p:text-gray-400 prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-2xl transition-colors">
                 <div dangerouslySetInnerHTML={{ __html: blog.content }} />
               </div>
 
               {/* Actions Bar */}
-              <div className="mt-12 pt-8 border-t border-gray-100 flex flex-wrap gap-4 justify-between items-center">
+              <div className="mt-12 pt-8 border-t border-gray-100 dark:border-gray-800 flex flex-wrap gap-4 justify-between items-center transition-colors">
                 <div className="flex gap-4">
                   <button
                     onClick={handleLike}
                     disabled={likeLoading}
                     className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all ${liked
-                      ? 'bg-red-50 text-red-600 border border-red-100 shadow-sm'
-                      : 'bg-gray-50 text-gray-600 hover:bg-gray-100 border border-transparent'
+                      ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800 shadow-sm'
+                      : 'bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700 border border-transparent dark:border-gray-700'
                       }`}
                   >
                     <Heart className={`w-5 h-5 ${liked ? 'fill-current' : ''}`} />
@@ -409,7 +409,7 @@ const PublicBlogDetail = () => {
 
                   <button
                     onClick={handleShare}
-                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-gray-50 text-gray-600 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                    className="flex items-center gap-2 px-6 py-3 rounded-xl font-bold bg-gray-50 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 transition-all border border-transparent dark:border-gray-700"
                   >
                     <Share2 className="w-5 h-5" />
                     <span>Share</span>
@@ -418,7 +418,7 @@ const PublicBlogDetail = () => {
 
                 <button
                   onClick={() => setShowComments(!showComments)}
-                  className="flex items-center gap-2 text-gray-500 hover:text-blue-600 font-medium"
+                  className="flex items-center gap-2 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 font-medium transition-colors"
                 >
                   <MessageSquare className="w-5 h-5" />
                   <span>{comments.length} Comments</span>
@@ -429,8 +429,8 @@ const PublicBlogDetail = () => {
 
           {/* Comments Section */}
           {showComments && (
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 animate-fade-in-up">
-              <h3 className="text-2xl font-bold text-gray-900 mb-8 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-800 p-8 animate-fade-in-up transition-colors">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-8 flex items-center gap-2 transition-colors">
                 <MessageSquare className="w-6 h-6 text-blue-500" /> Discussion
               </h3>
 
@@ -440,7 +440,7 @@ const PublicBlogDetail = () => {
                   value={comment}
                   onChange={handleCommentChange}
                   placeholder="Share your thoughts..."
-                  className="w-full pl-5 pr-16 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all resize-none min-h-[80px]"
+                  className="w-full pl-5 pr-16 py-4 bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-2xl focus:bg-white dark:focus:bg-gray-900 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900/40 outline-none text-gray-900 dark:text-white transition-all resize-none min-h-[80px]"
                 />
                 <button
                   type="submit"
@@ -461,19 +461,19 @@ const PublicBlogDetail = () => {
                   comments.map((comment, index) => {
                     const isAdmin = comment.user?.username === 'UrbanSetuBlogManagement';
                     return (
-                      <div key={index} className={`flex gap-4 ${isAdmin ? 'bg-blue-50/50 p-4 rounded-2xl border border-blue-100' : ''}`}>
-                        <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white shadow-sm ${isAdmin ? 'bg-blue-600' : 'bg-gray-400'}`}>
+                      <div key={index} className={`flex gap-4 ${isAdmin ? 'bg-blue-50/50 dark:bg-blue-900/20 p-4 rounded-2xl border border-blue-100 dark:border-blue-800' : ''}`}>
+                        <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white shadow-sm transition-colors ${isAdmin ? 'bg-blue-600' : 'bg-gray-400'}`}>
                           {comment.user?.username?.[0]?.toUpperCase() || 'A'}
                         </div>
                         <div className="flex-grow">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className={`font-bold text-sm ${isAdmin ? 'text-blue-700' : 'text-gray-900'}`}>
+                            <span className={`font-bold text-sm transition-colors ${isAdmin ? 'text-blue-700 dark:text-blue-400' : 'text-gray-900 dark:text-white'}`}>
                               {isAdmin ? 'UrbanSetu Team' : comment.user?.username || 'Anonymous'}
                             </span>
-                            {isAdmin && <span className="text-[10px] bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
-                            <span className="text-xs text-gray-400">• {new Date(comment.createdAt).toLocaleDateString()}</span>
+                            {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
+                            <span className="text-xs text-gray-400 dark:text-gray-500">• {new Date(comment.createdAt).toLocaleDateString()}</span>
                           </div>
-                          <p className="text-gray-700 leading-relaxed text-sm">{comment.content}</p>
+                          <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm transition-colors">{comment.content}</p>
                         </div>
                       </div>
                     )
@@ -487,27 +487,27 @@ const PublicBlogDetail = () => {
         {/* Sidebar Column */}
         <div className="lg:col-span-4 space-y-8">
           {/* Author/CTA Card */}
-          <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 text-center lg:sticky lg:top-8 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+          <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-800 p-6 text-center lg:sticky lg:top-8 animate-fade-in-up transition-colors" style={{ animationDelay: '0.1s' }}>
             <div className="w-20 h-20 rounded-full bg-gradient-to-tr from-blue-500 to-purple-600 mx-auto mb-4 flex items-center justify-center text-2xl font-bold text-white shadow-lg">
               {blog.author?.username?.[0]?.toUpperCase() || 'U'}
             </div>
-            <h3 className="text-xl font-bold text-gray-900 mb-1">{blog.author?.username || 'UrbanSetu Team'}</h3>
-            <p className="text-sm text-gray-500 mb-6">Real Estate Expert</p>
-            <button onClick={() => navigate('/contact')} className="w-full py-3 bg-gray-900 text-white rounded-xl font-bold hover:bg-gray-800 transition-colors shadow-lg hover:shadow-xl">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 transition-colors">{blog.author?.username || 'UrbanSetu Team'}</h3>
+            <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 transition-colors">Real Estate Expert</p>
+            <button onClick={() => navigate('/contact')} className="w-full py-3 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-xl font-bold hover:bg-gray-800 dark:hover:bg-gray-100 transition-all shadow-lg hover:shadow-xl">
               Contact Author
             </button>
           </div>
 
           {/* Related Posts */}
           {relatedBlogs.length > 0 && (
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              <h3 className="font-bold text-gray-900 text-lg mb-6 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-900 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-800 p-6 animate-fade-in-up transition-colors" style={{ animationDelay: '0.2s' }}>
+              <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-6 flex items-center gap-2 transition-colors">
                 <Clock className="w-5 h-5 text-blue-500" /> Real Estate Reads
               </h3>
               <div className="space-y-6">
                 {relatedBlogs.map((related, i) => (
                   <div key={related._id} className="group cursor-pointer" onClick={() => navigate(`/blog/${related.slug || related._id}`)}>
-                    <div className="aspect-video rounded-xl overflow-hidden mb-3 relative bg-gray-100/50">
+                    <div className="aspect-video rounded-xl overflow-hidden mb-3 relative bg-gray-100/50 dark:bg-gray-800/50">
                       {related.thumbnail ? (
                         <img src={related.thumbnail} className="w-full h-full object-cover transition-transform duration-500 group-hover:scale-110" alt={related.title} />
                       ) : (related.imageUrls && related.imageUrls.length > 0) ? (
@@ -543,10 +543,10 @@ const PublicBlogDetail = () => {
                         <span className="text-white text-xs font-bold border border-white/50 px-3 py-1 rounded-full backdrop-blur-sm">Read Article</span>
                       </div>
                     </div>
-                    <h4 className="font-bold text-gray-800 leading-snug group-hover:text-blue-600 transition-colors line-clamp-2 mb-1">
+                    <h4 className="font-bold text-gray-800 dark:text-gray-200 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
                       {related.title}
                     </h4>
-                    <p className="text-xs text-gray-500">
+                    <p className="text-xs text-gray-500 dark:text-gray-400 transition-colors">
                       {new Date(related.publishedAt || related.createdAt).toLocaleDateString(undefined, { month: 'long', day: 'numeric' })}
                     </p>
                   </div>

@@ -210,7 +210,7 @@ const PublicFAQs = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-slate-800 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 font-sans text-slate-800 dark:text-gray-100 pb-20 transition-colors duration-300">
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-900 to-indigo-900 text-white relative overflow-hidden">
         {/* Abstract Background Shapes */}
@@ -239,9 +239,9 @@ const PublicFAQs = () => {
                 placeholder="Search for answers..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-14 pr-6 py-5 bg-white/95 backdrop-blur-xl border border-white/20 rounded-2xl text-lg text-gray-800 placeholder-gray-400 shadow-2xl focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all"
+                className="w-full pl-14 pr-6 py-5 bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl border border-white/20 dark:border-gray-700 rounded-2xl text-lg text-gray-800 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 shadow-2xl focus:outline-none focus:ring-2 focus:ring-blue-400/50 transition-all"
               />
-              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 w-6 h-6" />
+              <Search className="absolute left-5 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 w-6 h-6" />
               <button
                 type="submit"
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 bg-blue-600 text-white p-2.5 rounded-xl hover:bg-blue-700 transition-colors shadow-lg"
@@ -256,18 +256,18 @@ const PublicFAQs = () => {
       <div className="max-w-7xl mx-auto px-4 -mt-16 relative z-20">
 
         {/* Categories & Filter */}
-        <div className="bg-white rounded-2xl shadow-xl p-6 mb-8 border border-gray-100 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl p-6 mb-8 border border-gray-100 dark:border-gray-800 animate-fade-in-up transition-colors">
           <div className="flex flex-col md:flex-row items-center gap-4">
-            <div className="flex items-center gap-2 text-gray-700 font-semibold min-w-max">
-              <Filter className="w-5 h-5 text-blue-500" />
+            <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 font-semibold min-w-max transition-colors">
+              <Filter className="w-5 h-5 text-blue-500 dark:text-blue-400" />
               <span>Filter by Category:</span>
             </div>
             <div className="flex flex-wrap gap-2 w-full">
               <button
                 onClick={() => setSelectedCategory('all')}
                 className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === 'all'
-                  ? 'bg-blue-600 text-white shadow-md transform scale-105'
-                  : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                  ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md transform scale-105'
+                  : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
               >
                 All Categories
@@ -277,8 +277,8 @@ const PublicFAQs = () => {
                   key={category}
                   onClick={() => setSelectedCategory(category)}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === category
-                    ? 'bg-blue-600 text-white shadow-md transform scale-105'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
+                    ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-md transform scale-105'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                     }`}
                 >
                   {category}
@@ -291,12 +291,12 @@ const PublicFAQs = () => {
         {/* FAQs List */}
         <div className="space-y-4">
           {faqs.length === 0 ? (
-            <div className="bg-white rounded-3xl p-16 text-center shadow-lg border border-gray-100 animate-fade-in-up">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-6">
-                <Search className="w-10 h-10 text-gray-400" />
+            <div className="bg-white dark:bg-gray-900 rounded-3xl p-16 text-center shadow-lg border border-gray-100 dark:border-gray-800 animate-fade-in-up transition-colors">
+              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center mx-auto mb-6 transition-colors">
+                <Search className="w-10 h-10 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-2xl font-bold text-gray-900 mb-2">No results found</h3>
-              <p className="text-gray-500 max-w-md mx-auto">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 transition-colors">No results found</h3>
+              <p className="text-gray-500 dark:text-gray-400 max-w-md mx-auto transition-colors">
                 {searchTerm || selectedCategory !== 'all'
                   ? 'We couldn\'t find any FAQs matching your search criteria. Try adjusting your filters.'
                   : 'No FAQs are universally available at the moment.'
@@ -304,7 +304,7 @@ const PublicFAQs = () => {
               </p>
               <button
                 onClick={() => { setSearchTerm(''); setSelectedCategory('all'); }}
-                className="mt-6 px-6 py-2 bg-blue-100 text-blue-700 font-semibold rounded-xl hover:bg-blue-200 transition-colors"
+                className="mt-6 px-6 py-2 bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 font-semibold rounded-xl hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-all"
               >
                 Clear Filters
               </button>
@@ -314,9 +314,9 @@ const PublicFAQs = () => {
               {faqs.map((faq, index) => (
                 <div
                   key={faq._id}
-                  className={`bg-white rounded-2xl border transition-all duration-300 overflow-hidden ${expandedFAQ === faq._id
-                    ? 'shadow-lg border-blue-200 ring-1 ring-blue-100'
-                    : 'shadow-sm border-gray-100 hover:shadow-md hover:border-gray-200'
+                  className={`bg-white dark:bg-gray-900 rounded-2xl border transition-all duration-300 overflow-hidden ${expandedFAQ === faq._id
+                    ? 'shadow-lg border-blue-200 dark:border-blue-900 ring-1 ring-blue-100 dark:ring-blue-900/40'
+                    : 'shadow-sm border-gray-100 dark:border-gray-800 hover:shadow-md hover:border-gray-200 dark:hover:border-gray-700'
                     }`}
                   style={{ animationDelay: `${index * 50}ms` }}
                 >
@@ -326,15 +326,15 @@ const PublicFAQs = () => {
                   >
                     <div className="flex-1">
                       <div className="flex items-center gap-2 mb-2">
-                        <span className="px-2 py-0.5 bg-blue-50 text-blue-600 text-xs font-bold uppercase tracking-wider rounded-md border border-blue-100">
+                        <span className="px-2 py-0.5 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 text-xs font-bold uppercase tracking-wider rounded-md border border-blue-100 dark:border-blue-800 transition-colors">
                           {faq.category}
                         </span>
                       </div>
-                      <h3 className={`text-lg font-bold transition-colors ${expandedFAQ === faq._id ? 'text-blue-700' : 'text-gray-800 group-hover:text-blue-600'}`}>
+                      <h3 className={`text-lg font-bold transition-colors ${expandedFAQ === faq._id ? 'text-blue-700 dark:text-blue-400' : 'text-gray-800 dark:text-gray-100 group-hover:text-blue-600 dark:group-hover:text-blue-400'}`}>
                         {faq.question}
                       </h3>
                     </div>
-                    <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${expandedFAQ === faq._id ? 'bg-blue-100 text-blue-600 rotate-180' : 'bg-gray-100 text-gray-500 group-hover:bg-blue-50 group-hover:text-blue-500'
+                    <div className={`mt-1 flex-shrink-0 w-8 h-8 rounded-full flex items-center justify-center transition-all duration-300 ${expandedFAQ === faq._id ? 'bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400 rotate-180' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/30 group-hover:text-blue-500 dark:group-hover:text-blue-300'
                       }`}>
                       <ChevronDown className="w-5 h-5" />
                     </div>
@@ -345,25 +345,25 @@ const PublicFAQs = () => {
                       }`}
                   >
                     <div className="px-6 pb-6 pt-2">
-                      <div className="p-5 bg-gray-50 rounded-xl border border-gray-100 text-gray-700 leading-relaxed mb-4">
+                      <div className="p-5 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 text-gray-700 dark:text-gray-300 leading-relaxed mb-4 transition-colors">
                         {faq.answer}
                       </div>
 
                       <div className="flex flex-wrap items-center justify-between gap-4">
-                        <div className="text-xs text-gray-400 flex items-center gap-1">
+                        <div className="text-xs text-gray-400 dark:text-gray-500 flex items-center gap-1 transition-colors">
                           <Info className="w-3 h-3" />
                           Last updated: {new Date(faq.updatedAt).toLocaleDateString()}
                         </div>
 
                         <div className="flex items-center gap-3">
-                          <span className="text-sm font-medium text-gray-500">Was this helpful?</span>
+                          <span className="text-sm font-medium text-gray-500 dark:text-gray-400">Was this helpful?</span>
 
                           <button
                             onClick={(e) => handleRating(faq._id, 'like', e)}
                             disabled={reactionLoading[faq._id]}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${userReactions[faq._id] === 'like'
-                              ? 'bg-green-100 text-green-700 border border-green-200'
-                              : 'bg-white text-gray-500 border border-gray-200 hover:border-green-300 hover:text-green-600'
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 border border-green-200 dark:border-green-800'
+                              : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-600 hover:text-green-600 dark:hover:text-green-400'
                               }`}
                           >
                             <ThumbsUp className={`w-4 h-4 ${userReactions[faq._id] === 'like' ? 'fill-current' : ''}`} />
@@ -374,8 +374,8 @@ const PublicFAQs = () => {
                             onClick={(e) => handleRating(faq._id, 'dislike', e)}
                             disabled={reactionLoading[faq._id]}
                             className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-sm font-bold transition-all ${userReactions[faq._id] === 'dislike'
-                              ? 'bg-red-100 text-red-700 border border-red-200'
-                              : 'bg-white text-gray-500 border border-gray-200 hover:border-red-300 hover:text-red-600'
+                              ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-400 border border-red-200 dark:border-red-800'
+                              : 'bg-white dark:bg-gray-800 text-gray-500 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-600 hover:text-red-600 dark:hover:text-red-400'
                               }`}
                           >
                             <ThumbsDown className={`w-4 h-4 ${userReactions[faq._id] === 'dislike' ? 'fill-current' : ''}`} />
@@ -394,11 +394,11 @@ const PublicFAQs = () => {
         {/* Pagination */}
         {pagination.pages > 1 && (
           <div className="mt-12 flex justify-center">
-            <div className="flex items-center gap-2 bg-white p-2 rounded-2xl shadow-md border border-gray-100">
+            <div className="flex items-center gap-2 bg-white dark:bg-gray-900 p-2 rounded-2xl shadow-md border border-gray-100 dark:border-gray-800 transition-colors">
               <button
                 onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
                 disabled={pagination.current === 1}
-                className="p-2 rounded-xl text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
               >
                 <ChevronDown className="w-5 h-5 rotate-90" />
               </button>
@@ -412,20 +412,20 @@ const PublicFAQs = () => {
                       onClick={() => setPagination(prev => ({ ...prev, current: page }))}
                       className={`w-8 h-8 rounded-lg flex items-center justify-center transition-all ${pagination.current === page
                         ? 'bg-blue-600 text-white shadow-md'
-                        : 'text-gray-600 hover:bg-gray-100'
+                        : 'text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
                         }`}
                     >
                       {page}
                     </button>
                   );
                 })}
-                {pagination.pages > 5 && <span className="text-gray-400">...</span>}
+                {pagination.pages > 5 && <span className="text-gray-400 dark:text-gray-500">...</span>}
               </div>
 
               <button
                 onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
                 disabled={pagination.current === pagination.pages}
-                className="p-2 rounded-xl text-gray-500 hover:bg-gray-100 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
+                className="p-2 rounded-xl text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 disabled:opacity-30 disabled:hover:bg-transparent transition-colors"
               >
                 <ChevronDown className="w-5 h-5 -rotate-90" />
               </button>
@@ -434,16 +434,16 @@ const PublicFAQs = () => {
         )}
 
         {/* CTA Section */}
-        <div className="mt-16 mb-12 bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden relative group">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 rounded-full blur-3xl -mr-16 -mt-16"></div>
-          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 rounded-full blur-3xl -ml-16 -mb-16"></div>
+        <div className="mt-16 mb-12 bg-white dark:bg-gray-900 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-800 overflow-hidden relative group transition-colors">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-blue-500/5 dark:bg-blue-400/10 rounded-full blur-3xl -mr-16 -mt-16"></div>
+          <div className="absolute bottom-0 left-0 w-64 h-64 bg-purple-500/5 dark:bg-purple-400/10 rounded-full blur-3xl -ml-16 -mb-16"></div>
 
-          <div className="p-8 md:p-12 text-center relative z-10">
-            <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600 border border-blue-100 shadow-sm">
+          <div className="p-8 md:p-12 text-center relative z-10 transition-colors">
+            <div className="w-16 h-16 bg-blue-50 dark:bg-blue-900/30 rounded-2xl flex items-center justify-center mx-auto mb-6 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800 shadow-sm transition-colors">
               <HelpCircle className="w-8 h-8" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-4">Still have questions?</h2>
-            <p className="text-gray-500 text-lg max-w-2xl mx-auto mb-8">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-4 transition-colors">Still have questions?</h2>
+            <p className="text-gray-500 dark:text-gray-400 text-lg max-w-2xl mx-auto mb-8 transition-colors">
               Can't find the answer you're looking for? Please chat to our friendly team.
             </p>
 
@@ -452,7 +452,7 @@ const PublicFAQs = () => {
                 <MessageSquare className="w-5 h-5" />
                 Contact Support
               </a>
-              <a href="mailto:support@urbansetu.com" className="flex items-center justify-center gap-2 px-8 py-3 bg-white text-gray-700 border border-gray-200 rounded-xl font-bold hover:bg-gray-50 transition-all">
+              <a href="mailto:support@urbansetu.com" className="flex items-center justify-center gap-2 px-8 py-3 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-700 rounded-xl font-bold hover:bg-gray-50 dark:hover:bg-gray-700 transition-all">
                 <Mail className="w-5 h-5" />
                 Email Us
               </a>

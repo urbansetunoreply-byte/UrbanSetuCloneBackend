@@ -27,7 +27,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
   const [isAtBottom, setIsAtBottom] = useState(true);
   const messagesContainerRef = useRef(null);
   const messagesEndRef = useRef(null);
-  
+
   // Confirmation modal state
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState(null);
@@ -105,7 +105,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
       messagesContainer.addEventListener('scroll', checkIfAtBottom);
       // Check initial position
       checkIfAtBottom();
-      
+
       return () => {
         messagesContainer.removeEventListener('scroll', checkIfAtBottom);
       };
@@ -149,7 +149,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     const diffInMinutes = Math.floor(diffInMs / (1000 * 60));
     const diffInHours = Math.floor(diffInMs / (1000 * 60 * 60));
     const diffInDays = Math.floor(diffInMs / (1000 * 60 * 60 * 24));
-    
+
     if (diffInMinutes < 1) {
       return 'Just now';
     } else if (diffInMinutes < 60) {
@@ -174,7 +174,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
 
   const handleConfirmDelete = async () => {
     if (!messageToDelete) return;
-    
+
     setIsDeleting(true);
     try {
       const response = await fetch(`${API_BASE_URL}/api/contact/user-messages/${messageToDelete}?email=${encodeURIComponent(currentUser.email)}`, {
@@ -185,12 +185,12 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
       if (response.ok) {
         // Remove the message from the local state
         setUserMessages(prev => prev.filter(msg => msg._id !== messageToDelete));
-        
+
         // Recalculate unread replies count
         const updatedMessages = userMessages.filter(msg => msg._id !== messageToDelete);
         const unreadCount = updatedMessages.filter(msg => msg.adminReply && msg.status === 'unread').length;
         setUnreadReplies(unreadCount);
-        
+
         toast.success('Message deleted successfully!');
       } else {
         const errorData = await response.json();
@@ -235,12 +235,12 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
   const getIconColor = () => {
     const path = location.pathname;
     const searchParams = new URLSearchParams(location.search);
-    
+
     // Check if we're on the reset password step (step=2)
     if (path === '/forgot-password' && searchParams.get('step') === '2') {
       return '#059669'; // Emerald for reset password step
     }
-    
+
     switch (path) {
       case '/sign-in':
         return '#6366f1'; // Indigo for sign-in
@@ -311,7 +311,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
         <button
           onClick={() => setIsModalOpen(true)}
           className="relative group w-12 h-12 rounded-full shadow-2xl hover:shadow-3xl transition-all duration-300 transform hover:scale-110 hover:rotate-12 flex items-center justify-center"
-          style={{ 
+          style={{
             background: `linear-gradient(135deg, ${getIconColor()}, ${getIconColor()}dd)`,
             boxShadow: `0 10px 25px ${getIconColor()}40`
           }}
@@ -324,24 +324,24 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
               border: `3px solid ${getIconColor()}55`, // semi-transparent color
             }}
           ></div>
-          
+
           {/* Icon */}
           <FaHeadset className="w-5 h-5 text-white drop-shadow-lg" />
-          
+
           {/* Unread replies badge for logged-in users */}
           {currentUser && unreadReplies > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs rounded-full h-6 w-6 flex items-center justify-center font-bold animate-pulse">
               {unreadReplies > 99 ? '99+' : unreadReplies}
             </span>
           )}
-          
+
           {/* Enhanced Hover Tooltip */}
           <div className="absolute bottom-full right-0 mb-3 bg-white text-gray-800 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 transform -translate-y-1 transition-all duration-200">
             <div className="flex items-center gap-2">
               <span className="text-lg">💬</span>
               <span className="font-medium">
-                {currentUser && unreadReplies > 0 
-                  ? `${unreadReplies} new repl${unreadReplies !== 1 ? 'ies' : 'y'}` 
+                {currentUser && unreadReplies > 0
+                  ? `${unreadReplies} new repl${unreadReplies !== 1 ? 'ies' : 'y'}`
                   : 'Need help? Contact us!'}
               </span>
             </div>
@@ -354,19 +354,19 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
       {/* Enhanced Modal */}
       {isModalOpen && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fadeIn">
-          <div className="bg-white rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slideUp">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto animate-slideUp transition-colors">
             {/* Header */}
-            <div className="flex items-center justify-between p-6 border-b border-gray-100 bg-gradient-to-r from-gray-50 to-white rounded-t-2xl">
+            <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-800 bg-gradient-to-r from-gray-50 dark:from-gray-800/50 to-white dark:to-gray-900 rounded-t-2xl transition-colors">
               <div className="flex items-center gap-3">
-                <div 
+                <div
                   className="w-10 h-10 rounded-full flex items-center justify-center"
                   style={{ backgroundColor: getIconColor() }}
                 >
                   <FaHeadset className="w-5 h-5 text-white" />
                 </div>
                 <div>
-                  <h3 className="text-xl font-bold text-gray-900">Contact Support</h3>
-                  <p className="text-sm text-gray-600">We're here to help you!</p>
+                  <h3 className="text-xl font-bold text-gray-900 dark:text-white transition-colors">Contact Support</h3>
+                  <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors">We're here to help you!</p>
                 </div>
               </div>
               <div className="flex items-center gap-2">
@@ -381,7 +381,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                 )}
                 <button
                   onClick={handleModalClose}
-                  className="text-gray-400 hover:text-gray-600 transition-colors p-2 hover:bg-gray-100 rounded-full"
+                  className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
                 >
                   <FaTimes className="w-5 h-5" />
                 </button>
@@ -390,24 +390,22 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
 
             {/* Tabs for logged-in users */}
             {currentUser && (
-              <div className="flex border-b border-gray-200">
+              <div className="flex border-b border-gray-200 dark:border-gray-800 transition-colors">
                 <button
                   onClick={() => setActiveTab('send')}
-                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${
-                    activeTab === 'send'
-                      ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'send'
+                      ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
                 >
                   Send Message
                 </button>
                 <button
                   onClick={() => setActiveTab('messages')}
-                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors relative ${
-                    activeTab === 'messages'
-                      ? 'text-blue-600 border-b-2 border-blue-600 bg-blue-50'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
-                  }`}
+                  className={`flex-1 px-6 py-3 text-sm font-medium transition-colors relative ${activeTab === 'messages'
+                      ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    }`}
                 >
                   My Messages
                   {unreadReplies > 0 && (
@@ -424,34 +422,34 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
               <form onSubmit={handleSubmit} className="p-6 space-y-6">
                 {/* Status Messages */}
                 {submitStatus === 'success' && (
-                  <div className="p-4 bg-green-50 border border-green-200 text-green-800 rounded-xl flex items-center gap-3 animate-bounce">
+                  <div className="p-4 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 text-green-800 dark:text-green-300 rounded-xl flex items-center gap-3 animate-bounce transition-colors">
                     <div className="w-6 h-6 bg-green-500 rounded-full flex items-center justify-center">
                       <svg className="w-4 h-4 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M5 13l4 4L19 7" />
                       </svg>
                     </div>
                     <div>
-                      <p className="font-medium">Message sent successfully!</p>
-                      <p className="text-sm">We'll get back to you within 24 hours.</p>
+                      <p className="font-medium text-sm md:text-base">Message sent successfully!</p>
+                      <p className="text-xs md:text-sm opacity-90 transition-colors">We'll get back to you within 24 hours.</p>
                     </div>
                   </div>
                 )}
 
                 {submitStatus === 'error' && (
-                  <div className="p-4 bg-red-50 border border-red-200 text-red-800 rounded-xl flex items-center gap-3">
+                  <div className="p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-800 dark:text-red-300 rounded-xl flex items-center gap-3 transition-colors">
                     <div className="w-6 h-6 bg-red-500 rounded-full flex items-center justify-center">
                       <FaTimes className="w-3 h-3 text-white" />
                     </div>
                     <div>
-                      <p className="font-medium">Failed to send message</p>
-                      <p className="text-sm">Please try again or contact us directly.</p>
+                      <p className="font-medium text-sm md:text-base">Failed to send message</p>
+                      <p className="text-xs md:text-sm opacity-90 transition-colors">Please try again or contact us directly.</p>
                     </div>
                   </div>
                 )}
 
                 {/* Name Field */}
                 <div className="space-y-2">
-                  <label htmlFor="name" className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <label htmlFor="name" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
                     <FaUser className="w-4 h-4" />
                     Your Name *
                   </label>
@@ -462,14 +460,14 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     value={formData.name}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                     placeholder="Enter your full name"
                   />
                 </div>
 
                 {/* Email Field */}
                 <div className="space-y-2">
-                  <label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <label htmlFor="email" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
                     <FaEnvelope className="w-4 h-4" />
                     Email Address *
                   </label>
@@ -480,14 +478,14 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     value={formData.email}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                     placeholder="your@email.com"
                   />
                 </div>
 
                 {/* Subject Field */}
                 <div className="space-y-2">
-                  <label htmlFor="subject" className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <label htmlFor="subject" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
                     <FaFileAlt className="w-4 h-4" />
                     Subject *
                   </label>
@@ -498,14 +496,14 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     value={formData.subject}
                     onChange={handleChange}
                     required
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200"
                     placeholder="Brief description of your issue"
                   />
                 </div>
 
                 {/* Message Field */}
                 <div className="space-y-2">
-                  <label htmlFor="message" className="flex items-center gap-2 text-sm font-medium text-gray-700">
+                  <label htmlFor="message" className="flex items-center gap-2 text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">
                     <FaHeadset className="w-4 h-4" />
                     Message *
                   </label>
@@ -516,7 +514,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     onChange={handleChange}
                     required
                     rows={5}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 resize-none"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 focus:border-transparent transition-all duration-200 resize-none"
                     placeholder="Please describe your issue or question in detail..."
                   />
                 </div>
@@ -526,7 +524,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                   <button
                     type="button"
                     onClick={handleModalClose}
-                    className="flex-1 px-6 py-3 text-gray-700 bg-gray-100 rounded-xl hover:bg-gray-200 transition-all duration-200 font-medium contact-support-action-btn"
+                    className="flex-1 px-6 py-3 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-xl hover:bg-gray-200 dark:hover:bg-gray-700 transition-all duration-200 font-medium contact-support-action-btn"
                   >
                     Cancel
                   </button>
@@ -534,7 +532,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                     type="submit"
                     disabled={isSubmitting}
                     className="flex-1 px-6 py-3 text-white rounded-xl disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 font-medium flex items-center justify-center gap-2 contact-support-action-btn"
-                    style={{ 
+                    style={{
                       backgroundColor: getIconColor(),
                       boxShadow: `0 4px 14px ${getIconColor()}40`
                     }}
@@ -558,16 +556,16 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
               <div className="p-6">
                 {loadingMessages ? (
                   <div className="text-center py-8">
-                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 mx-auto mb-4"></div>
-                    <p className="text-gray-500 font-medium">Loading your messages...</p>
+                    <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400 mx-auto mb-4"></div>
+                    <p className="text-gray-500 dark:text-gray-400 font-medium transition-colors">Loading your messages...</p>
                   </div>
                 ) : userMessages.length === 0 ? (
-                  <div className="text-center py-8 text-gray-500">
-                    <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 rounded-full flex items-center justify-center">
-                      <FaEnvelope className="w-10 h-10 text-gray-400" />
+                  <div className="text-center py-8 text-gray-500 dark:text-gray-400 transition-colors">
+                    <div className="w-20 h-20 mx-auto mb-4 bg-gray-100 dark:bg-gray-800 rounded-full flex items-center justify-center transition-colors">
+                      <FaEnvelope className="w-10 h-10 text-gray-400 dark:text-gray-500" />
                     </div>
-                    <h4 className="text-lg font-medium mb-2">No messages yet</h4>
-                    <p className="text-sm mb-4">Send a support message to get started</p>
+                    <h4 className="text-lg font-medium mb-2 text-gray-900 dark:text-white transition-colors">No messages yet</h4>
+                    <p className="text-sm mb-4 transition-colors">Send a support message to get started</p>
                     <button
                       onClick={() => setActiveTab('send')}
                       className="px-6 py-2 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors"
@@ -578,52 +576,51 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                 ) : (
                   <div ref={messagesContainerRef} className="space-y-4 max-h-96 overflow-y-auto relative">
                     {userMessages.map((message) => (
-                      <div key={message._id} className="border border-gray-200 rounded-lg p-4">
+                      <div key={message._id} className="border border-gray-200 dark:border-gray-800 rounded-lg p-4 transition-colors">
                         <div className="flex items-start justify-between mb-3">
                           <div className="flex-1">
                             <div className="flex items-center gap-3 mb-2">
-                              <h4 className="font-semibold text-gray-900">{message.subject}</h4>
+                              <h4 className="font-semibold text-gray-900 dark:text-white transition-colors">{message.subject}</h4>
                               {message.ticketId && (
-                                <span className="text-xs font-mono bg-blue-100 text-blue-800 px-2 py-1 rounded">
+                                <span className="text-xs font-mono bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300 px-2 py-1 rounded transition-colors">
                                   {message.ticketId}
                                 </span>
                               )}
                             </div>
-                            <div className="flex items-center gap-2 mt-1 text-sm text-gray-500">
+                            <div className="flex items-center gap-2 mt-1 text-sm text-gray-500 dark:text-gray-400 transition-colors">
                               <FaClock className="w-3 h-3" />
                               {formatDate(message.createdAt)}
-                              <span className="text-gray-400">•</span>
-                              <span className={`px-2 py-1 text-xs rounded-full ${
-                                message.status === 'replied' 
-                                  ? 'bg-green-100 text-green-800' 
+                              <span className="text-gray-400 dark:text-gray-600">•</span>
+                              <span className={`px-2 py-1 text-xs rounded-full transition-colors ${message.status === 'replied'
+                                  ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
                                   : message.status === 'read'
-                                  ? 'bg-blue-100 text-blue-800'
-                                  : 'bg-yellow-100 text-yellow-800'
-                              }`}>
-                                {message.status === 'replied' ? 'Replied' : 
-                                 message.status === 'read' ? 'Read' : 'Unread'}
+                                    ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300'
+                                    : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300'
+                                }`}>
+                                {message.status === 'replied' ? 'Replied' :
+                                  message.status === 'read' ? 'Read' : 'Unread'}
                               </span>
                             </div>
                           </div>
                         </div>
 
                         {/* User Message */}
-                        <div className="bg-gray-50 p-3 rounded-lg mb-3">
-                          <p className="text-gray-800 whitespace-pre-wrap leading-relaxed text-sm">
+                        <div className="bg-gray-50 dark:bg-gray-800/50 p-3 rounded-lg mb-3 transition-colors">
+                          <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-sm transition-colors">
                             {message.message}
                           </p>
                         </div>
 
                         {/* Admin Reply */}
                         {message.adminReply && (
-                          <div className="bg-green-50 p-3 rounded-lg border border-green-200">
+                          <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-200 dark:border-green-800 transition-colors">
                             <div className="flex items-center justify-between mb-2">
-                              <h6 className="font-medium text-green-700 text-sm">Admin Reply</h6>
-                              <span className="text-xs text-gray-500">
+                              <h6 className="font-medium text-green-700 dark:text-green-400 text-sm transition-colors">Admin Reply</h6>
+                              <span className="text-xs text-gray-500 dark:text-gray-500 transition-colors">
                                 {formatDate(message.adminReplyAt)}
                               </span>
                             </div>
-                            <p className="text-gray-800 whitespace-pre-wrap leading-relaxed text-sm">
+                            <p className="text-gray-800 dark:text-gray-200 whitespace-pre-wrap leading-relaxed text-sm transition-colors">
                               {message.adminReply}
                             </p>
                           </div>
@@ -641,13 +638,13 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                         </div>
                       </div>
                     ))}
-                    
+
                     <div ref={messagesEndRef} />
                   </div>
                 )}
               </div>
             )}
-            
+
             {/* Floating Scroll to bottom button - WhatsApp style */}
             {!isAtBottom && userMessages.length > 0 && activeTab === 'messages' && (
               <div className="absolute bottom-6 right-6 z-20">

@@ -515,7 +515,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 .delay-200 { animation-delay: 200ms; }
               `}
             </style>
-            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-600 to-red-700 relative overflow-hidden">
+            <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-orange-600 to-red-700 dark:from-orange-950 dark:to-red-950 relative overflow-hidden transition-colors duration-300">
               <div className="absolute inset-0 bg-black opacity-20"></div>
               <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
                 <div className="text-center max-w-md">
@@ -563,29 +563,29 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
       >
 
         {/* Right Side - Verification Form */}
-        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 min-h-screen">
+        <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors duration-300">
           <div className="w-full max-w-[440px] animate-fade-in">
             <div className="text-center mb-10">
               <StepIndicator steps={["Verify Email", "Reset Password"]} current={0} className="mb-8" />
-              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 text-red-600 mb-6 shadow-sm">
+              <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 mb-6 shadow-sm transition-colors">
                 <HelpCircle className="w-8 h-8" />
               </div>
-              <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight transition-colors">
                 Forgot Password
               </h2>
-              <p className="text-gray-500 text-lg">Enter your registered email to reset your password.</p>
+              <p className="text-gray-500 dark:text-gray-400 text-lg transition-colors">Enter your registered email to reset your password.</p>
             </div>
 
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 relative overflow-hidden transition-colors">
               {/* Decorative background element for card */}
-              <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+              <div className="absolute top-0 right-0 w-32 h-32 bg-red-50 dark:bg-red-900/10 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
 
               <form onSubmit={handleVerification} className="space-y-5 relative z-10">
                 <div>
-                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                  <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1 transition-colors">
                     Registered Email
                     {emailVerified && (
-                      <span className="ml-2 text-green-600">
+                      <span className="ml-2 text-green-600 dark:text-green-400">
                         <FaCheck className="inline" />
                       </span>
                     )}
@@ -607,13 +607,13 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                           type="button"
                           onClick={handleSendOTP}
                           disabled={otpLoading || !formData.email || !canResend}
-                          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-red-600 text-white rounded-md text-sm font-medium hover:bg-red-700 disabled:opacity-50 disabled:cursor-not-allowed z-10 transition-colors"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 px-3 py-1 bg-red-600 dark:bg-red-700 text-white rounded-md text-sm font-medium hover:bg-red-700 dark:hover:bg-red-600 disabled:opacity-50 disabled:cursor-not-allowed z-10 transition-colors"
                         >
                           {otpLoading ? "Sending..." : "Send OTP"}
                         </button>
                       ) : (
                         (!emailEditMode && !otpLoading) && (
-                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20 bg-gray-100 pl-1 rounded-l-sm">
+                          <div className="absolute right-3 top-1/2 -translate-y-1/2 flex items-center gap-2 z-20 bg-gray-100 dark:bg-gray-800 pl-1 rounded-l-sm transition-colors">
                             <button
                               type="button"
                               onClick={() => {
@@ -625,20 +625,20 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                                 setResendTimer(0);
                                 setEmailVerified(false);
                               }}
-                              className="text-red-600 hover:text-red-700 p-1 rounded hover:bg-red-50 transition-colors"
+                              className="text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 p-1 rounded hover:bg-red-50 dark:hover:bg-red-900/30 transition-colors"
                               title="Edit email"
                               aria-label="Edit email"
                             >
                               <FaEdit className="text-sm" />
                             </button>
-                            <div className="text-green-600">
+                            <div className="text-green-600 dark:text-green-400 transition-colors">
                               <FaCheck className="text-xl" />
                             </div>
                           </div>
                         )
                       )
                     }
-                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-red-500/20 ${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-24' : (emailVerified ? 'border-green-500' : 'border-gray-300')} hover:border-red-500`}
+                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-red-500/20 ${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed border-green-500 pr-24' : (emailVerified ? 'border-green-500' : 'border-gray-300 dark:border-gray-700')} hover:border-red-500`}
                     required
                   />
                   {/* If captcha required before OTP field is open, show below email (outside input wrapper to avoid layout shift on button) */}
@@ -656,25 +656,25 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         />
                       </div>
                       {otpCaptchaMessage && (
-                        <p className="text-red-500 text-sm mt-2 text-center">{otpCaptchaMessage}</p>
+                        <p className="text-red-500 dark:text-red-400 text-sm mt-2 text-center transition-colors">{otpCaptchaMessage}</p>
                       )}
                     </div>
                   )}
                   {otpSent && !emailVerified && (
-                    <p className="text-sm text-gray-600 mt-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2 transition-colors">
                       OTP sent to {formData.email}
                     </p>
                   )}
                   {/* OTP Error Message - Show below email field when OTP field is not open */}
                   {otpError && !otpSent && (
-                    <p className="text-red-500 text-sm mt-2">{otpError}</p>
+                    <p className="text-red-500 dark:text-red-400 text-sm mt-2 transition-colors">{otpError}</p>
                   )}
                 </div>
 
                 {/* OTP Verification Field - Moved here to appear right after email */}
                 {otpSent && !emailVerified && (
                   <div>
-                    <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                    <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1 transition-colors">
                       Enter OTP
                     </label>
                     <div className="flex flex-row gap-2">
@@ -698,7 +698,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                             }
                           }
                         }}
-                        className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                        className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : ''
                           }`}
                         maxLength="6"
                       />
@@ -712,12 +712,12 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                       </button>
                     </div>
                     <div className="flex items-center justify-between mt-2">
-                      <p className="text-xs text-gray-500">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 transition-colors">
                         Enter the 6-digit code sent to your email
                       </p>
                       <div className="flex items-center gap-2">
                         {resendTimer > 0 ? (
-                          <span className="text-xs text-gray-500">
+                          <span className="text-xs text-gray-500 dark:text-gray-400 transition-colors">
                             Resend in {Math.floor(resendTimer / 60)}:{(resendTimer % 60).toString().padStart(2, '0')}
                           </span>
                         ) : (
@@ -725,7 +725,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                             type="button"
                             onClick={handleSendOTP}
                             disabled={otpLoading || verifyLoading}
-                            className="text-xs text-red-600 hover:text-red-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                            className="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                           >
                             {otpLoading ? "Sending..." : "Resend OTP"}
                           </button>
@@ -734,7 +734,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     </div>
                     {/* OTP Error Message and conditional reCAPTCHA below OTP field */}
                     {otpError && (
-                      <p className="text-red-500 text-sm mt-2">{otpError}</p>
+                      <p className="text-red-500 dark:text-red-400 text-sm mt-2 transition-colors">{otpError}</p>
                     )}
                     {otpCaptchaRequired && (
                       <div className="flex justify-center mt-3">
@@ -769,8 +769,8 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
                 {/* reCAPTCHA Error */}
                 {recaptchaError && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-4">
-                    <p className="text-red-600 text-sm">{recaptchaError}</p>
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-3 mb-4 transition-colors">
+                    <p className="text-red-600 dark:text-red-400 text-sm transition-colors">{recaptchaError}</p>
                   </div>
                 )}
 
@@ -785,18 +785,18 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 </PrimaryButton>
 
                 {error && (
-                  <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <p className="text-red-600 text-sm">{error}</p>
+                  <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 transition-colors">
+                    <p className="text-red-600 dark:text-red-400 text-sm transition-colors">{error}</p>
                   </div>
                 )}
               </form>
 
-              <div className="mt-6 text-center">
-                <p className="text-gray-600">
+              <div className="mt-6 text-center transition-colors">
+                <p className="text-gray-600 dark:text-gray-400">
                   Remember your password?{" "}
                   <Link
                     to="/sign-in"
-                    className={`text-orange-600 hover:text-orange-800 font-semibold hover:underline transition-colors duration-200 ${verifyLoading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    className={`text-orange-600 dark:text-orange-400 hover:text-orange-800 dark:hover:text-orange-300 font-semibold hover:underline transition-colors duration-200 ${verifyLoading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                       }`}
                   >
                     Sign In
@@ -841,7 +841,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                 .delay-200 { animation-delay: 200ms; }
               `}
           </style>
-          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-teal-700 relative overflow-hidden">
+          <div className="hidden lg:flex lg:w-1/2 bg-gradient-to-br from-green-600 to-teal-700 dark:from-green-950 dark:to-teal-950 relative overflow-hidden transition-colors duration-300">
             <div className="absolute inset-0 bg-black opacity-20"></div>
             <div className="relative z-10 flex flex-col justify-center items-center text-white p-12">
               <div className="text-center max-w-md">
@@ -889,27 +889,27 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
     >
 
       {/* Right Side - Reset Password Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 min-h-screen">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-950 min-h-screen transition-colors duration-300">
         <div className="w-full max-w-[440px] animate-fade-in">
           <div className="text-center mb-10">
             <StepIndicator steps={["Verify Email", "Reset Password"]} current={1} className="mb-8" />
-            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 text-green-600 mb-6 shadow-sm">
+            <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-400 mb-6 shadow-sm transition-colors">
               <RotateCcw className="w-8 h-8" />
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
+            <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight transition-colors">
               Reset Password
             </h2>
-            <p className="text-gray-500 text-lg">Create a new strong password to secure your account.</p>
+            <p className="text-gray-500 dark:text-gray-400 text-lg transition-colors">Create a new strong password to secure your account.</p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-8 relative overflow-hidden transition-colors">
             {/* Decorative background element for card */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-green-50 dark:bg-green-900/10 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
 
             <form onSubmit={handleResetPassword} className="space-y-5 relative z-10">
               {/* Email Field - Disabled with Edit Option */}
               <div>
-                <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors">
                   Email Address
                 </label>
                 <FormField
@@ -920,7 +920,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   readOnly
                   disabled
                   startIcon={<Mail className="w-5 h-5" />}
-                  inputClassName="bg-gray-100 cursor-not-allowed text-gray-600 pr-20"
+                  inputClassName="bg-gray-100 dark:bg-gray-800 cursor-not-allowed text-gray-600 dark:text-gray-400 pr-20"
                   endAdornment={
                     <button
                       type="button"
@@ -928,7 +928,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         setStep(1);
                         navigate('/forgot-password?step=1', { replace: true });
                       }}
-                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 bg-gray-100 hover:text-green-700 p-1 rounded hover:bg-green-50 transition-all z-20"
+                      className="absolute right-3 top-1/2 transform -translate-y-1/2 text-green-600 dark:text-green-400 bg-gray-100 dark:bg-gray-800 hover:text-green-700 dark:hover:text-green-300 p-1 rounded hover:bg-green-50 dark:hover:bg-green-900/30 transition-all z-20"
                       title="Edit email address"
                       aria-label="Edit email address"
                     >
@@ -936,17 +936,17 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                     </button>
                   }
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                   Click the edit icon to change your email address
                 </p>
               </div>
 
               {/* New Password Field */}
               <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 transition-colors">
                   New Password
                 </label>
-                <p className="text-xs text-gray-500 mb-2">(Enter your new strong password)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 transition-colors">(Enter your new strong password)</p>
                 <FormField
                   label={undefined}
                   id="newPassword"
@@ -959,10 +959,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   startIcon={<Lock className="w-5 h-5" />}
                   endAdornment={
                     <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowPassword(!showPassword)}>
-                      {showPassword ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                      {showPassword ? (<FaEyeSlash className="text-gray-600 dark:text-gray-400" />) : (<FaEye className="text-gray-600 dark:text-gray-400" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12 focus:ring-green-500 focus:border-green-500 hover:border-green-500`}
+                  inputClassName={`${loading ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'bg-white dark:bg-gray-800 dark:text-white dark:border-gray-700'} pr-12 focus:ring-green-500 focus:border-green-500 hover:border-green-500 transition-colors`}
                   required
                 />
               </div>
@@ -971,14 +971,14 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               {formData.newPassword && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Password Strength:</span>
-                    <span className={`text-sm font-semibold ${getPasswordStrengthColor(passwordStrength.level)}`}>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300 transition-colors">Password Strength:</span>
+                    <span className={`text-sm font-semibold transition-colors ${getPasswordStrengthColor(passwordStrength.level)}`}>
                       {getPasswordStrengthText(passwordStrength.level)}
                     </span>
                   </div>
 
                   {/* Strength Bar */}
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2 transition-colors">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
                         passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
@@ -991,11 +991,11 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
                   {/* Feedback */}
                   {passwordStrength.feedback.length > 0 && (
-                    <div className={`p-3 rounded-lg ${getPasswordStrengthBgColor(passwordStrength.level)}`}>
-                      <p className="text-sm font-medium text-gray-700 mb-1">To improve your password:</p>
+                    <div className={`p-3 rounded-lg transition-colors ${getPasswordStrengthBgColor(passwordStrength.level)} dark:bg-gray-800/50 dark:border dark:border-gray-700`}>
+                      <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To improve your password:</p>
                       <ul className="text-xs space-y-1">
                         {passwordStrength.feedback.map((item, index) => (
-                          <li key={index} className="flex items-center">
+                          <li key={index} className="flex items-center text-gray-600 dark:text-gray-400">
                             <span className="mr-2">•</span>
                             {item}
                           </li>
@@ -1005,7 +1005,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   )}
 
                   {/* Security Tips */}
-                  <div className="text-xs text-gray-500 space-y-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1 transition-colors">
                     <p>💡 <strong>Tip:</strong> Use a unique password for this account</p>
                     <p>🔒 <strong>Security:</strong> Consider using a password manager</p>
                   </div>
@@ -1014,10 +1014,10 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
 
               {/* Confirm Password */}
               <div>
-                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                <label htmlFor="confirmPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1 transition-colors">
                   Confirm New Password
                 </label>
-                <p className="text-xs text-gray-500 mb-2 ml-1">(Re-enter your new password)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2 ml-1 transition-colors">(Re-enter your new password)</p>
                 <FormField
                   label={undefined}
                   id="confirmPassword"
@@ -1029,11 +1029,11 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                   placeholder="Confirm your password"
                   startIcon={<Lock className="w-5 h-5 text-gray-400" />}
                   endAdornment={
-                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer hover:text-gray-600 transition-colors" onClick={() => setShowCPassword(!showCPassword)}>
+                    <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer hover:text-gray-600 dark:hover:text-white transition-colors" onClick={() => setShowCPassword(!showCPassword)}>
                       {showCPassword ? (<FaEyeSlash className="text-gray-400" />) : (<FaEye className="text-gray-400" />)}
                     </div>
                   }
-                  inputClassName={`${loading ? 'bg-gray-100 cursor-not-allowed' : ''} pr-12 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 hover:border-green-500`}
+                  inputClassName={`${loading ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed' : 'bg-white dark:bg-gray-800 dark:text-white dark:border-gray-700'} pr-12 transition-all duration-200 focus:ring-2 focus:ring-green-500/20 focus:border-green-500 hover:border-green-500`}
                   required
                 />
               </div>
@@ -1055,14 +1055,14 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               {/* reCAPTCHA Error */}
               {recaptchaError && (
                 <div className="mb-4">
-                  <p className="text-red-600 text-sm text-center">{recaptchaError}</p>
+                  <p className="text-red-600 dark:text-red-400 text-sm text-center transition-colors">{recaptchaError}</p>
                 </div>
               )}
 
               {/* Locked message for too many attempts */}
               {isLocked && (
-                <div className="mb-4 p-4 bg-red-50 border border-red-200 rounded-lg">
-                  <p className="text-red-600 text-sm text-center font-medium">
+                <div className="mb-4 p-4 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg transition-colors">
+                  <p className="text-red-600 dark:text-red-400 text-sm text-center font-medium transition-colors">
                     Multiple failed reset attempts. Please try again later.
                   </p>
                 </div>
@@ -1084,32 +1084,32 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
               </PrimaryButton>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 flex items-start gap-3 animate-fade-in">
-                  <div className="text-red-600 mt-0.5">
+                <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 flex items-start gap-3 animate-fade-in transition-colors">
+                  <div className="text-red-600 dark:text-red-400 mt-0.5">
                     <svg className="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
                       <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z" />
                     </svg>
                   </div>
-                  <p className="text-red-800 text-sm font-medium">{error}</p>
+                  <p className="text-red-800 dark:text-red-400 text-sm font-medium transition-colors">{error}</p>
                 </div>
               )}
 
               {success && (
-                <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-start gap-3 animate-fade-in">
-                  <div className="text-green-600 mt-0.5">
+                <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-start gap-3 animate-fade-in transition-colors">
+                  <div className="text-green-600 dark:text-green-400 mt-0.5">
                     <FaCheck className="text-lg" />
                   </div>
-                  <p className="text-green-800 text-sm font-medium">{success}</p>
+                  <p className="text-green-800 dark:text-green-400 text-sm font-medium transition-colors">{success}</p>
                 </div>
               )}
             </form>
 
-            <div className="mt-8 text-center">
-              <p className="text-gray-500 font-medium">
+            <div className="mt-8 text-center transition-colors">
+              <p className="text-gray-500 dark:text-gray-400 font-medium">
                 Remembered your password?{" "}
                 <Link
                   to="/sign-in"
-                  className={`font-bold text-green-600 hover:text-green-700 hover:underline transition-colors ${(verifyLoading || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                  className={`font-bold text-green-600 dark:text-green-400 hover:text-green-700 dark:hover:text-green-300 hover:underline transition-colors ${(verifyLoading || loading) ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                     }`}
                 >
                   Back to Sign In

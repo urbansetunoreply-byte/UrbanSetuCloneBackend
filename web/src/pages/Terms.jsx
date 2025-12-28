@@ -7,12 +7,12 @@ export default function Terms() {
   usePageTitle("Terms & Conditions - Legal Information");
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4">
-      <h1 className="text-4xl font-bold mb-6 text-blue-700">Terms & Conditions</h1>
-      <div className="space-y-6 text-gray-800 text-base">
+    <div className="max-w-4xl mx-auto py-10 px-4 transition-colors duration-300">
+      <h1 className="text-4xl font-bold mb-6 text-blue-700 dark:text-blue-400 transition-colors">Terms & Conditions</h1>
+      <div className="space-y-6 text-gray-800 dark:text-gray-300 text-base transition-colors">
         <p className="text-lg">Welcome to UrbanSetu, our comprehensive real estate platform. By using our services, you agree to the following terms and conditions. Please read them carefully. By registering, you must select a role (user or admin) and provide explicit consent to our Terms & Privacy Policy.</p>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Platform Overview & Services</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">1. Platform Overview & Services</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Real Estate Marketplace:</strong> We provide a platform for buying, selling, and renting properties with advanced search and matching capabilities.</li>
           <li><strong>Smart Features:</strong> AI-powered search, price monitoring, fraud detection, and intelligent property recommendations.</li>
@@ -21,7 +21,7 @@ export default function Terms() {
           <li><strong>Analytics & Insights:</strong> Market data, price trends, and property analytics for informed decision-making.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">2. User Registration & Account Management</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">2. User Registration & Account Management</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Account Creation:</strong> You must provide accurate information including name, email, unique mobile number (10 digits), and select an appropriate role.</li>
           <li><strong>Verification:</strong> Mobile number verification via OTP is required for account activation and security.</li>
@@ -30,7 +30,7 @@ export default function Terms() {
           <li><strong>Multiple Accounts:</strong> Creating multiple accounts to circumvent restrictions is prohibited.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">3. Property Listings & Content</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">3. Property Listings & Content</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Accurate Information:</strong> All property details, images, and descriptions must be truthful and current.</li>
           <li><strong>Image Rights:</strong> You must own or have permission to use all uploaded images and content.</li>
@@ -39,7 +39,7 @@ export default function Terms() {
           <li><strong>Content Moderation:</strong> We reserve the right to review, edit, or remove content that violates our guidelines.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">4. Smart Features & AI Services</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">4. Smart Features & AI Services</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Natural Language Search:</strong> Our AI processes search queries to provide relevant property recommendations.</li>
           <li><strong>Price Monitoring:</strong> Watchlist features track price changes and send notifications about market movements.</li>
@@ -48,7 +48,7 @@ export default function Terms() {
           <li><strong>Data Usage:</strong> Your interaction data helps improve our AI algorithms and service quality.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">5. User Responsibilities & Conduct</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">5. User Responsibilities & Conduct</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Fair Dealing:</strong> All users must act honestly and fairly in all transactions and communications.</li>
           <li><strong>No Discrimination:</strong> Discrimination based on race, gender, religion, or any protected status is strictly prohibited.</li>
@@ -57,7 +57,7 @@ export default function Terms() {
           <li><strong>Prohibited Activities:</strong> No spam, harassment, fraud, or misuse of platform features.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">6. Admin Responsibilities</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">6. Admin Responsibilities</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Impartial Review:</strong> Admins must review listings and requests without bias or personal interest.</li>
           <li><strong>Platform Integrity:</strong> Maintain platform quality by enforcing rules and removing inappropriate content.</li>
@@ -66,7 +66,7 @@ export default function Terms() {
           <li><strong>Security Monitoring:</strong> Monitor for security threats and take appropriate action.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">7. Transactions & Payments</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">7. Transactions & Payments</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Direct Transactions:</strong> Property transactions occur directly between users. We facilitate connections but are not party to transactions.</li>
           <li><strong>Payment Processing:</strong> Any payment features are provided by third-party services with their own terms.</li>
@@ -74,7 +74,7 @@ export default function Terms() {
           <li><strong>Dispute Resolution:</strong> Users are responsible for resolving transaction disputes. We may provide mediation services.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">8. Privacy & Data Protection</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">8. Privacy & Data Protection</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Consent:</strong> Explicit consent is required for data processing and certain platform features.</li>
           <li><strong>Data Usage:</strong> Your data is used to provide services, improve platform functionality, and ensure security.</li>
@@ -82,7 +82,7 @@ export default function Terms() {
           <li><strong>Security Measures:</strong> We implement industry-standard security measures to protect your data.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">9. Platform Rules & Enforcement</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">9. Platform Rules & Enforcement</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Content Standards:</strong> All content must be appropriate, legal, and relevant to real estate.</li>
           <li><strong>Account Suspension:</strong> We may suspend or terminate accounts for violations of these terms.</li>
@@ -90,14 +90,14 @@ export default function Terms() {
           <li><strong>Platform Modifications:</strong> We reserve the right to modify or discontinue features with notice.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">10. Intellectual Property</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">10. Intellectual Property</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Platform Rights:</strong> We own all rights to the platform, including software, design, and content.</li>
           <li><strong>User Content:</strong> You retain rights to your content but grant us license to use it on the platform.</li>
           <li><strong>Prohibited Use:</strong> No copying, reverse engineering, or unauthorized use of platform features.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">11. Limitation of Liability</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">11. Limitation of Liability</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Service Availability:</strong> We strive for uptime but do not guarantee uninterrupted service.</li>
           <li><strong>Third-Party Actions:</strong> We are not responsible for actions of other users or third parties.</li>
@@ -105,7 +105,7 @@ export default function Terms() {
           <li><strong>Damages:</strong> Our liability is limited to the maximum extent permitted by law.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">12. Property Transactions & Escrow</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">12. Property Transactions & Escrow</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Escrow Services:</strong> We may hold deposits in trust during property transactions. All escrow accounts are maintained in accordance with applicable real estate laws and regulations.</li>
           <li><strong>Transaction Timeline:</strong> Property purchases and sales follow agreed timelines. Any deviation requires mutual consent in writing.</li>
@@ -114,7 +114,7 @@ export default function Terms() {
           <li><strong>Title & Documentation:</strong> All property documentation, title insurance, and legal paperwork are the responsibility of the transacting parties and their legal representatives.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">13. Fair Housing & Non-Discrimination</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">13. Fair Housing & Non-Discrimination</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Legal Compliance:</strong> We comply with the Fair Housing Act and applicable fair housing laws in all jurisdictions.</li>
           <li><strong>No Discrimination:</strong> Discrimination in property sales, rentals, or services based on race, color, national origin, religion, sex, familial status, disability, sexual orientation, or gender identity is strictly prohibited.</li>
@@ -122,7 +122,7 @@ export default function Terms() {
           <li><strong>Accessibility:</strong> All properties and services must be made accessible to individuals with disabilities to the extent legally required.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">14. Broker Commissions & Fees</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">14. Broker Commissions & Fees</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Transparency:</strong> All commissions and fees must be disclosed upfront and agreed upon before services are rendered.</li>
           <li><strong>Commission Structure:</strong> Standard commissions (typically 5-6% split between buyer and seller agents) may vary by transaction and agreement.</li>
@@ -131,7 +131,7 @@ export default function Terms() {
           <li><strong>Dispute Resolution:</strong> Commission disputes are resolved through negotiation, mediation, or arbitration as agreed.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">15. Property Disclosures & Representations</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">15. Property Disclosures & Representations</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Seller Obligations:</strong> Sellers must disclose known material defects, property condition, title issues, and environmental concerns.</li>
           <li><strong>Latent Defects:</strong> Sellers must disclose latent defects (not readily apparent) that would affect property value or habitability.</li>
@@ -140,7 +140,7 @@ export default function Terms() {
           <li><strong>Consequences of Misrepresentation:</strong> Deliberate misrepresentation may result in legal liability, financial damages, or criminal charges.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">16. Insurance & Risk Management</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">16. Insurance & Risk Management</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Homeowners Insurance:</strong> Buyers are required to obtain homeowners insurance before closing. Proof of insurance is required by lenders.</li>
           <li><strong>Title Insurance:</strong> Title insurance protects against ownership disputes and is typically paid by the seller at closing.</li>
@@ -148,7 +148,7 @@ export default function Terms() {
           <li><strong>User Responsibility:</strong> Users should obtain appropriate insurance for their properties and activities.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">17. Regional Compliance & Regulations</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">17. Regional Compliance & Regulations</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>India Real Estate Laws:</strong> Transactions comply with the Real Estate (Regulation and Development) Act (RERA) and state-specific regulations.</li>
           <li><strong>GST Compliance:</strong> Goods and Services Tax (GST) is applied per applicable rates and regulations.</li>
@@ -157,7 +157,7 @@ export default function Terms() {
           <li><strong>Currency & Taxation:</strong> International transactions include currency conversion details and applicable tax reporting.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">18. Dispute Resolution & Mediation</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">18. Dispute Resolution & Mediation</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Negotiation First:</strong> All disputes should first be resolved through direct negotiation between parties.</li>
           <li><strong>Mediation:</strong> If negotiation fails, parties agree to attempt mediation through a neutral third party.</li>
@@ -166,7 +166,7 @@ export default function Terms() {
           <li><strong>Admin Role:</strong> Admins may provide mediation services but are not party to disputes and maintain impartiality.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">19. Fraud Prevention & Security</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">19. Fraud Prevention & Security</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Identity Verification:</strong> All users must provide verified identity documentation for high-value transactions.</li>
           <li><strong>Fraud Detection:</strong> We employ AI and manual monitoring to detect and prevent fraudulent activities.</li>
@@ -175,10 +175,10 @@ export default function Terms() {
           <li><strong>Consequences:</strong> Fraudulent activities result in account termination, legal referral, and potential criminal prosecution.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">20. Changes to Terms</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">20. Changes to Terms</h2>
         <p className="ml-6">We may update these terms from time to time. Significant changes will be communicated through email or platform notifications. Continued use of the platform constitutes acceptance of the updated terms.</p>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">21. Rent-Lock & Booking Governance</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">21. Rent-Lock & Booking Governance</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Lock Windows:</strong> When a rent-lock contract is issued, listings automatically exit public search until the contract is signed, cancelled or expires.</li>
           <li><strong>Call & Chat Monitoring:</strong> Audio/video calls initiated through UrbanSetu may be mirrored in admin dashboards to resolve disputes and enforce safety policies.</li>
@@ -186,7 +186,7 @@ export default function Terms() {
           <li><strong>Multi-deal Prevention:</strong> Users cannot hold overlapping rent-locks on the same property unless explicitly approved by the property owner and UrbanSetu.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">22. Fees, Taxes & Payouts</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">22. Fees, Taxes & Payouts</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Payout Verification:</strong> Sellers/landlords must complete KYC and banking verification before receiving any payout.</li>
           <li><strong>Tax Responsibility:</strong> Users are responsible for reporting rental income, capital gains, GST, or other taxes applicable in their jurisdiction.</li>
@@ -194,7 +194,7 @@ export default function Terms() {
           <li><strong>Service Bundles:</strong> Optional services (movers, cleaning, legal, staging) are billed separately and subject to their own cancellation windows.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">23. Support, Audits & Enforcement</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">23. Support, Audits & Enforcement</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Ticket SLA:</strong> Critical issues (payment failures, fraud, safety) receive responses within 6 business hours; standard requests follow a 24–48 hour SLA.</li>
           <li><strong>Evidence Preservation:</strong> We may preserve chat transcripts, call recordings, and checklist media for at least 18 months for legal or compliance purposes.</li>
@@ -202,7 +202,7 @@ export default function Terms() {
           <li><strong>Account Termination:</strong> Severe violations (fraud, harassment, repeated policy abuse) can result in immediate termination without refund.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">24. SetuCoins Loyalty Program</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">24. SetuCoins Loyalty Program</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Nature of Program:</strong> SetuCoins are virtual loyalty points and do not constitute legal tender, currency, or property. They have no cash value outside of authorized platform redemptions.</li>
           <li><strong>Earning Rewards:</strong> Coins are earned through verified activities including on-time rent payments (1% back), maintaining payment streaks, booking home services, and successful referrals.</li>
@@ -213,31 +213,31 @@ export default function Terms() {
           <li><strong>Program Modifications:</strong> We reserve the right to modify, suspend, or terminate the loyalty program or change earning/redemption rules at any time.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">25. Investment Tools & Route Planning</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">25. Investment Tools & Route Planning</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Advisory Nature:</strong> Investment tools, price trends, and ROI calculators are for informational purposes only. They do not constitute financial or legal advice.</li>
           <li><strong>Data Accuracy:</strong> While we strive for accuracy, market projections and commute time estimates (Route Planner) are based on third-party data and may vary in reality.</li>
           <li><strong>User Discretion:</strong> Users are encouraged to conduct independent due diligence before making significant financial commitments based on platform-generated insights.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">26. Enhanced Fraud Protection & AI Monitoring</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">26. Enhanced Fraud Protection & AI Monitoring</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Automated Scanning:</strong> All listings and user communications are subject to AI-driven fraud detection to identify potential scams, bait-and-switch listings, or abusive behavior.</li>
           <li><strong>Account Verification:</strong> Mandatory verification (OTP/ID) for high-risk regions or high-value listings is enforced to protect the platform ecosystem.</li>
           <li><strong>Reporting Obligation:</strong> Users must report any suspicious listing or "too good to be true" offer immediately through the "Report" feature.</li>
         </ul>
 
-        <div className="mt-8 p-6 bg-blue-50 rounded-lg border border-blue-200">
-          <h3 className="text-lg font-semibold text-blue-800 mb-2">Contact Information</h3>
-          <p className="text-gray-700">For questions about these terms or our services, please contact us:</p>
-          <ul className="mt-2 space-y-1 text-gray-700">
+        <div className="mt-8 p-6 bg-blue-50 dark:bg-blue-900/30 rounded-lg border border-blue-200 dark:border-blue-800 transition-colors">
+          <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-200 mb-2 transition-colors">Contact Information</h3>
+          <p className="text-gray-700 dark:text-gray-300 transition-colors">For questions about these terms or our services, please contact us:</p>
+          <ul className="mt-2 space-y-1 text-gray-700 dark:text-gray-300 transition-colors">
             <li>📧 Email: legal@urbansetu.com</li>
             <li>📞 Phone: +1 (555) 123-4567</li>
             <li>🏢 Address: UrbanSetu Legal Team, Real Estate Platform</li>
           </ul>
         </div>
 
-        <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {
+        <p className="mt-6 text-sm text-gray-600 dark:text-gray-400 transition-colors">Last updated: {new Date().toLocaleDateString(`en-IN`, {
           year: 'numeric',
           month: 'long',
           day: 'numeric'

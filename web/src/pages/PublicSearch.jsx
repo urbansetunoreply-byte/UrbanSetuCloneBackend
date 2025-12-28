@@ -175,10 +175,10 @@ export default function PublicSearch() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col font-sans text-slate-800 dark:text-gray-100 transition-colors duration-300">
 
             {/* Search Header / Hero */}
-            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 pb-16 pt-10 px-4 shadow-lg mb-8 relative">
+            <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 dark:from-blue-900 dark:via-indigo-950 dark:to-purple-950 pb-16 pt-10 px-4 shadow-lg mb-8 relative transition-colors duration-300">
                 {/* Abstract shapes for visual interest */}
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
                     <div className="absolute top-[-50%] left-[-10%] w-[500px] h-[500px] rounded-full bg-white mix-blend-overlay filter blur-3xl animate-float"></div>
@@ -194,7 +194,7 @@ export default function PublicSearch() {
                     </p>
 
                     <form onSubmit={handleSubmit} className="max-w-4xl mx-auto relative group">
-                        <div className="flex flex-col md:flex-row gap-2 bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-2xl hover:bg-white/20 transition-all duration-300 relative z-30">
+                        <div className="flex flex-col md:flex-row gap-2 bg-white/10 dark:bg-black/20 backdrop-blur-md p-2 rounded-2xl border border-white/20 dark:border-white/10 shadow-2xl hover:bg-white/20 dark:hover:bg-black/30 transition-all duration-300 relative z-30">
 
                             {/* Search Input */}
                             <div className="relative flex-grow group-focus-within:ring-2 ring-blue-400 rounded-xl transition-all z-50">
@@ -209,7 +209,7 @@ export default function PublicSearch() {
                                     onChange={handleChanges}
                                     onFocus={handleSearchInputFocus}
                                     onBlur={handleSearchInputBlur}
-                                    className="block w-full pl-10 pr-3 py-4 border-none rounded-xl bg-white/90 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:bg-white transition-colors text-lg"
+                                    className="block w-full pl-10 pr-3 py-4 border-none rounded-xl bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-0 focus:bg-white dark:focus:bg-gray-700 transition-colors text-lg"
                                 />
                                 <SearchSuggestions
                                     searchTerm={formData.searchTerm}
@@ -243,10 +243,10 @@ export default function PublicSearch() {
                             {/* State Select */}
                             <div className="relative">
                                 <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                                    <MapPin className="h-4 w-4 text-gray-500" />
+                                    <MapPin className="h-4 w-4 text-gray-500 dark:text-gray-400" />
                                 </div>
                                 <select
-                                    className="w-full pl-10 pr-4 py-3 bg-white/90 border-none rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm cursor-pointer hover:bg-white transition-colors"
+                                    className="w-full pl-10 pr-4 py-3 bg-white/90 dark:bg-gray-800/90 border-none rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm cursor-pointer hover:bg-white dark:hover:bg-gray-700 transition-colors"
                                     value={locationFilter.state || ""}
                                     onChange={(e) => handleLocationChange({ ...locationFilter, state: e.target.value, city: "" })}
                                 >
@@ -261,15 +261,15 @@ export default function PublicSearch() {
                             </div>
 
                             {/* Type Toggle */}
-                            <div className="bg-white/90 rounded-xl p-1 flex shadow-sm">
+                            <div className="bg-white/90 dark:bg-gray-800/90 rounded-xl p-1 flex shadow-sm transition-colors duration-300">
                                 {['all', 'rent', 'sale'].map((t) => (
                                     <button
                                         key={t}
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, type: t }))}
                                         className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
-                                            ? 'bg-blue-100 text-blue-700 shadow-sm'
-                                            : 'text-gray-500 hover:bg-gray-100'
+                                            ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 shadow-sm'
+                                            : 'text-gray-500 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-700'
                                             }`}
                                     >
                                         {t}
@@ -285,7 +285,7 @@ export default function PublicSearch() {
                                     placeholder="Min Price"
                                     value={formData.minPrice}
                                     onChange={handleChanges}
-                                    className="w-full px-4 py-3 bg-white/90 border-none rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
+                                    className="w-full px-4 py-3 bg-white/90 dark:bg-gray-800/90 border-none rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm transition-colors"
                                     min={0}
                                 />
                                 <input
@@ -294,7 +294,7 @@ export default function PublicSearch() {
                                     placeholder="Max Price"
                                     value={formData.maxPrice}
                                     onChange={handleChanges}
-                                    className="w-full px-4 py-3 bg-white/90 border-none rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
+                                    className="w-full px-4 py-3 bg-white/90 dark:bg-gray-800/90 border-none rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm transition-colors"
                                     min={0}
                                 />
                             </div>
@@ -307,7 +307,7 @@ export default function PublicSearch() {
                                     placeholder="Beds"
                                     value={formData.bedrooms}
                                     onChange={handleChanges}
-                                    className="w-full px-4 py-3 bg-white/90 border-none rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
+                                    className="w-full px-4 py-3 bg-white/90 dark:bg-gray-800/90 border-none rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm transition-colors"
                                     min={0}
                                 />
                                 <input
@@ -316,7 +316,7 @@ export default function PublicSearch() {
                                     placeholder="Baths"
                                     value={formData.bathrooms}
                                     onChange={handleChanges}
-                                    className="w-full px-4 py-3 bg-white/90 border-none rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm"
+                                    className="w-full px-4 py-3 bg-white/90 dark:bg-gray-800/90 border-none rounded-xl text-gray-700 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm transition-colors"
                                     min={0}
                                 />
                             </div>
@@ -329,14 +329,14 @@ export default function PublicSearch() {
                                         setFormData((prev) => ({ ...prev, sort, order }));
                                     }}
                                     value={`${formData.sort}_${formData.order}`}
-                                    className="w-full px-4 py-3 bg-white/90 border-none rounded-xl text-gray-700 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm cursor-pointer hover:bg-white appearance-none"
+                                    className="w-full px-4 py-3 bg-white/90 dark:bg-gray-800/90 border-none rounded-xl text-gray-700 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-yellow-400 shadow-sm cursor-pointer hover:bg-white dark:hover:bg-gray-700 appearance-none transition-colors"
                                 >
                                     <option value="regularPrice_desc">Price: High to Low</option>
                                     <option value="regularPrice_asc">Price: Low to High</option>
                                     <option value="createdAt_desc">Newest First</option>
                                     <option value="createdAt_asc">Oldest First</option>
                                 </select>
-                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 pointer-events-none" />
+                                <ChevronDown className="absolute right-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-gray-400 dark:text-gray-500 pointer-events-none" />
                             </div>
                         </div>
 
@@ -370,22 +370,22 @@ export default function PublicSearch() {
 
             {/* Mobile Filters Modal/Drawer */}
             {isFiltersOpen && (
-                <div className="fixed inset-0 z-50 bg-black/50 backdrop-blur-sm md:hidden" onClick={() => setIsFiltersOpen(false)}>
-                    <div className="absolute right-0 top-0 h-full w-4/5 max-w-sm bg-white shadow-2xl p-6 flex flex-col gap-4 overflow-y-auto animate-slide-in-right" onClick={e => e.stopPropagation()}>
+                <div className="fixed inset-0 z-50 bg-black/60 backdrop-blur-sm md:hidden" onClick={() => setIsFiltersOpen(false)}>
+                    <div className="absolute right-0 top-0 h-full w-4/5 max-w-sm bg-white dark:bg-gray-900 shadow-2xl p-6 flex flex-col gap-4 overflow-y-auto animate-slide-in-right" onClick={e => e.stopPropagation()}>
                         <div className="flex justify-between items-center mb-4">
-                            <h2 className="text-xl font-bold text-gray-800">Filters</h2>
-                            <button onClick={() => setIsFiltersOpen(false)} className="text-gray-500 hover:text-gray-800">Close</button>
+                            <h2 className="text-xl font-bold text-gray-800 dark:text-white">Filters</h2>
+                            <button onClick={() => setIsFiltersOpen(false)} className="text-gray-500 dark:text-gray-400 hover:text-gray-800 dark:hover:text-white transition-colors">Close</button>
                         </div>
 
                         {/* Mobile Filters Content */}
 
                         {/* State Filter */}
                         <div className="mb-4">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Location</label>
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Location</label>
                             <div className="relative">
-                                <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
+                                <MapPin className="absolute left-3 top-3 h-5 w-5 text-gray-400 dark:text-gray-500" />
                                 <select
-                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all"
+                                    className="w-full pl-10 pr-4 py-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
                                     value={locationFilter.state || ""}
                                     onChange={(e) => handleLocationChange({ ...locationFilter, state: e.target.value, city: "" })}
                                 >
@@ -402,16 +402,16 @@ export default function PublicSearch() {
 
                         {/* Type Filter */}
                         <div className="mb-4">
-                            <label className="block text-sm font-semibold text-gray-700 mb-2">Property Type</label>
-                            <div className="flex bg-gray-100 p-1 rounded-xl">
+                            <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Property Type</label>
+                            <div className="flex bg-gray-100 dark:bg-gray-800 p-1 rounded-xl transition-colors">
                                 {['all', 'rent', 'sale'].map((t) => (
                                     <button
                                         key={t}
                                         type="button"
                                         onClick={() => setFormData(prev => ({ ...prev, type: t }))}
                                         className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
-                                            ? 'bg-white text-blue-600 shadow-sm'
-                                            : 'text-gray-500 hover:text-gray-700'
+                                            ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                                            : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                                             }`}
                                     >
                                         {t}
@@ -421,9 +421,9 @@ export default function PublicSearch() {
                         </div>
 
                         {/* Sort Filter */}
-                        <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
+                        <label className="block text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Sort By</label>
                         <select
-                            className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all mb-4"
+                            className="w-full p-3 border border-gray-200 dark:border-gray-700 rounded-xl bg-gray-50 dark:bg-gray-800 text-gray-900 dark:text-gray-100 focus:bg-white dark:focus:bg-gray-700 focus:ring-2 focus:ring-blue-500 outline-none transition-all mb-4"
                             onChange={(e) => {
                                 const [sort, order] = e.target.value.split("_");
                                 setFormData((prev) => ({ ...prev, sort, order }));
@@ -436,21 +436,21 @@ export default function PublicSearch() {
                             <option value="createdAt_asc">Oldest First</option>
                         </select>
 
-                        <div className="p-3 bg-gray-50 rounded-xl">
-                            <label className="block text-sm font-semibold mb-2">Detailed Filters</label>
+                        <div className="p-3 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700 transition-colors">
+                            <label className="block text-sm font-semibold dark:text-gray-200 mb-2">Detailed Filters</label>
                             <div className="grid grid-cols-2 gap-4">
-                                <input type="number" name="minPrice" placeholder="Min ₹" value={formData.minPrice} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
-                                <input type="number" name="maxPrice" placeholder="Max ₹" value={formData.maxPrice} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
-                                <input type="number" name="bedrooms" placeholder="Beds" value={formData.bedrooms} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
-                                <input type="number" name="bathrooms" placeholder="Baths" value={formData.bathrooms} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
+                                <input type="number" name="minPrice" placeholder="Min ₹" value={formData.minPrice} onChange={handleChanges} className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
+                                <input type="number" name="maxPrice" placeholder="Max ₹" value={formData.maxPrice} onChange={handleChanges} className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
+                                <input type="number" name="bedrooms" placeholder="Beds" value={formData.bedrooms} onChange={handleChanges} className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
+                                <input type="number" name="bathrooms" placeholder="Baths" value={formData.bathrooms} onChange={handleChanges} className="p-2 border border-gray-200 dark:border-gray-700 rounded-lg w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100" />
                             </div>
                         </div>
 
                         <div className="flex flex-col gap-3">
                             {['parking', 'furnished', 'offer'].map(item => (
-                                <label key={item} className="flex items-center gap-2">
-                                    <input type="checkbox" name={item} checked={formData[item]} onChange={handleChanges} className="w-5 h-5 accent-blue-600" />
-                                    <span className="capitalize">{item}</span>
+                                <label key={item} className="flex items-center gap-2 cursor-pointer">
+                                    <input type="checkbox" name={item} checked={formData[item]} onChange={handleChanges} className="w-5 h-5 accent-blue-600 dark:accent-blue-400" />
+                                    <span className="capitalize text-gray-700 dark:text-gray-300">{item}</span>
                                 </label>
                             ))}
                         </div>
@@ -460,7 +460,7 @@ export default function PublicSearch() {
                                 handleSubmit({ preventDefault: () => { } });
                                 setIsFiltersOpen(false);
                             }}
-                            className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold mt-4"
+                            className="w-full bg-blue-600 dark:bg-blue-700 text-white py-3 rounded-xl font-bold mt-4 shadow-lg hover:bg-blue-700 dark:hover:bg-blue-600 transition-all"
                         >
                             Apply Filters
                         </button>
@@ -472,16 +472,16 @@ export default function PublicSearch() {
             <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-10 relative z-10 pb-20">
 
                 {/* Active Filters Display */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-8">
+                <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-4 mb-8 transition-colors duration-300">
                     <FilterChips formData={formData} onClear={clearAllFilters} onRemove={removeFilter} />
                 </div>
 
                 {/* Listings Grid */}
                 <div className="flex flex-col gap-6">
                     <div className="flex items-center justify-between">
-                        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2 transition-colors">
                             Property Results
-                            <span className="text-sm font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full">
+                            <span className="text-sm font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-800 px-2 py-1 rounded-full transition-colors">
                                 {listings.length} found
                             </span>
                         </h2>
@@ -497,15 +497,15 @@ export default function PublicSearch() {
                             <button onClick={() => window.location.reload()} className="mt-4 text-blue-600 hover:underline">Try refreshing the page</button>
                         </div>
                     ) : listings.length === 0 ? (
-                        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-10 text-center animate-fade-in-up">
-                            <img src={duckImg} alt="No listings found" className="w-[280px] h-[280px] object-contain mx-auto opacity-90 hover:scale-105 transition-transform duration-500" />
-                            <h3 className="text-2xl font-bold text-gray-700 mb-2">No properties matched your search</h3>
-                            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+                        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-10 text-center animate-fade-in-up transition-colors duration-300">
+                            <img src={duckImg} alt="No listings found" className="w-[280px] h-[280px] object-contain mx-auto opacity-90 dark:opacity-80 hover:scale-105 transition-transform duration-500" />
+                            <h3 className="text-2xl font-bold text-gray-700 dark:text-gray-200 mb-2 transition-colors">No properties matched your search</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto transition-colors">
                                 We couldn't find exactly what you're looking for. Try adjusting your price range or removing some filters.
                             </p>
                             <button
                                 onClick={clearAllFilters}
-                                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-600 rounded-full font-semibold hover:bg-blue-100 transition-colors"
+                                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-full font-semibold hover:bg-blue-100 dark:hover:bg-blue-900/50 transition-colors"
                             >
                                 <RefreshCw className="w-4 h-4" /> Clear all filters
                             </button>
@@ -529,7 +529,7 @@ export default function PublicSearch() {
                                     <button
                                         type="button"
                                         onClick={showMoreListingClick}
-                                        className="group relative px-8 py-3 bg-white text-gray-800 font-bold rounded-full shadow-md hover:shadow-lg hover:text-blue-600 transition-all border border-gray-200"
+                                        className="group relative px-8 py-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 font-bold rounded-full shadow-md hover:shadow-lg hover:text-blue-600 dark:hover:text-blue-400 transition-all border border-gray-200 dark:border-gray-700"
                                     >
                                         <span className="relative z-10 flex items-center gap-2">Show More Properties <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" /></span>
                                     </button>

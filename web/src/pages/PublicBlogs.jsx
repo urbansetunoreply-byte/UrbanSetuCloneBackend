@@ -133,7 +133,7 @@ const PublicBlogs = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-950 flex flex-col font-sans text-slate-800 dark:text-gray-100 transition-colors duration-300">
       {/* Search Header / Hero */}
       <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 pb-24 pt-12 px-4 shadow-lg mb-8 relative overflow-hidden">
         {/* Abstract shapes for visual interest */}
@@ -168,14 +168,14 @@ const PublicBlogs = () => {
             <form onSubmit={handleSearch}>
               <div className="relative">
                 <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none z-10">
-                  <SearchIcon className="h-5 w-5 text-gray-500 group-focus-within:text-blue-500 transition-colors" />
+                  <SearchIcon className="h-5 w-5 text-gray-500 dark:text-gray-400 group-focus-within:text-blue-500 transition-colors" />
                 </div>
                 <input
                   type="text"
                   placeholder="Search articles, topics, or keywords..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-12 pr-4 py-4 border-none rounded-2xl bg-white/95 backdrop-blur-xl text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-4 focus:ring-blue-500/20 shadow-2xl transition-all text-lg relative"
+                  className="block w-full pl-12 pr-4 py-4 border-none rounded-2xl bg-white/95 dark:bg-gray-800/95 backdrop-blur-xl text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-4 focus:ring-blue-500/20 shadow-2xl transition-all text-lg relative"
                 />
                 <button type="submit" className="absolute right-2 top-2 bottom-2 bg-blue-600 hover:bg-blue-700 text-white px-6 rounded-xl font-medium transition-colors shadow-md z-10">
                   Search
@@ -190,20 +190,20 @@ const PublicBlogs = () => {
       <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-20 relative z-10 pb-20">
 
         {/* Filters Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-800 p-6 mb-8 animate-fade-in-up transition-colors">
           <div className="flex flex-col lg:flex-row gap-8">
             {/* Categories */}
             <div className="flex-1">
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
-                <Filter className="w-4 h-4 text-blue-600" />
-                <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Categories</span>
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100 dark:border-gray-800">
+                <Filter className="w-4 h-4 text-blue-600 dark:text-blue-400" />
+                <span className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Categories</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedCategory('all')}
                   className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === 'all'
-                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                    : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                    ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/40'
+                    : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                     }`}
                 >
                   All
@@ -213,8 +213,8 @@ const PublicBlogs = () => {
                     key={category}
                     onClick={() => setSelectedCategory(category)}
                     className={`px-4 py-2 rounded-xl text-sm font-medium transition-all duration-300 ${selectedCategory === category
-                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200'
-                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200 hover:text-gray-900'
+                      ? 'bg-blue-600 text-white shadow-md shadow-blue-200 dark:shadow-blue-900/40'
+                      : 'bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700 hover:text-gray-900 dark:hover:text-white'
                       }`}
                   >
                     {category}
@@ -224,17 +224,17 @@ const PublicBlogs = () => {
             </div>
 
             {/* Tags */}
-            <div className="flex-1 border-t lg:border-t-0 lg:border-l border-gray-100 pt-6 lg:pt-0 lg:pl-8">
-              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100">
-                <Tag className="w-4 h-4 text-green-600" />
-                <span className="text-sm font-bold text-gray-500 uppercase tracking-wide">Popular Tags</span>
+            <div className="flex-1 border-t lg:border-t-0 lg:border-l border-gray-100 dark:border-gray-800 pt-6 lg:pt-0 lg:pl-8 transition-colors">
+              <div className="flex items-center gap-2 mb-4 pb-2 border-b border-gray-100 dark:border-gray-800">
+                <Tag className="w-4 h-4 text-green-600 dark:text-green-400" />
+                <span className="text-sm font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wide">Popular Tags</span>
               </div>
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setSelectedTag('all')}
                   className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${selectedTag === 'all'
-                    ? 'bg-green-600 text-white shadow-md shadow-green-200'
-                    : 'bg-green-50 text-green-700 hover:bg-green-100'
+                    ? 'bg-green-600 text-white shadow-md shadow-green-200 dark:shadow-green-900/40'
+                    : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40'
                     }`}
                 >
                   All
@@ -244,8 +244,8 @@ const PublicBlogs = () => {
                     key={tag}
                     onClick={() => setSelectedTag(tag)}
                     className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all duration-300 ${selectedTag === tag
-                      ? 'bg-green-600 text-white shadow-md shadow-green-200'
-                      : 'bg-green-50 text-green-700 hover:bg-green-100'
+                      ? 'bg-green-600 text-white shadow-md shadow-green-200 dark:shadow-green-900/40'
+                      : 'bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 hover:bg-green-100 dark:hover:bg-green-900/40'
                       }`}
                   >
                     {tag}
@@ -258,12 +258,12 @@ const PublicBlogs = () => {
 
         {/* Blogs Grid */}
         {blogs.length === 0 ? (
-          <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-16 text-center animate-fade-in-up">
-            <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-50 rounded-full mb-6">
-              <SearchIcon className="w-10 h-10 text-blue-400" />
+          <div className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-16 text-center animate-fade-in-up transition-colors">
+            <div className="inline-flex items-center justify-center w-20 h-20 bg-blue-50 dark:bg-blue-900/30 rounded-full mb-6">
+              <SearchIcon className="w-10 h-10 text-blue-400 dark:text-blue-300" />
             </div>
-            <h3 className="text-2xl font-bold text-gray-800 mb-2">No articles found</h3>
-            <p className="text-gray-500 mb-6 max-w-md mx-auto">
+            <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2 transition-colors">No articles found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6 max-w-md mx-auto transition-colors">
               We couldn't find any blog posts matching your criteria. Try different keywords or filters.
             </p>
             <button
@@ -282,7 +282,7 @@ const PublicBlogs = () => {
             {blogs.map((blog, index) => (
               <article
                 key={blog._id}
-                className="bg-white rounded-2xl shadow-md hover:shadow-2xl border border-gray-100 overflow-hidden transition-all duration-500 group flex flex-col h-full animate-fade-in-up"
+                className="bg-white dark:bg-gray-900 rounded-2xl shadow-md hover:shadow-2xl border border-gray-100 dark:border-gray-800 overflow-hidden transition-all duration-500 group flex flex-col h-full animate-fade-in-up"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 {/* Thumbnail */}
@@ -308,35 +308,35 @@ const PublicBlogs = () => {
 
                 {/* Content */}
                 <div className="p-6 flex-grow flex flex-col">
-                  <h2 className="text-xl font-bold text-gray-900 mb-3 line-clamp-2 leading-snug group-hover:text-blue-600 transition-colors">
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3 line-clamp-2 leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors">
                     <Link to={`/blog/${blog.slug || blog._id}`}>
                       {blog.title}
                     </Link>
                   </h2>
 
-                  <p className="text-gray-600 mb-4 line-clamp-3 text-sm flex-grow leading-relaxed">
+                  <p className="text-gray-600 dark:text-gray-400 mb-4 line-clamp-3 text-sm flex-grow leading-relaxed transition-colors">
                     {truncateText(blog.excerpt || blog.content, 120)}
                   </p>
 
-                  <div className="border-t border-gray-100 pt-4 mt-auto">
-                    <div className="flex items-center justify-between text-sm text-gray-500 mb-4">
+                  <div className="border-t border-gray-100 dark:border-gray-800 pt-4 mt-auto transition-colors">
+                    <div className="flex items-center justify-between text-sm text-gray-500 dark:text-gray-400 mb-4">
                       <div className="flex items-center gap-2">
-                        <div className="w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-xs">
+                        <div className="w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400 font-bold text-xs transition-colors">
                           {blog.author?.username?.[0]?.toUpperCase() || 'U'}
                         </div>
                         <span className="font-medium truncate max-w-[100px]">{blog.author?.username || 'Team'}</span>
                       </div>
                       <div className="flex items-center gap-3">
                         <div className="flex items-center gap-1" title="Views">
-                          <Eye className="w-4 h-4 text-gray-400" />
+                          <Eye className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                           <span>{blog.views || 0}</span>
                         </div>
                         <div className="flex items-center gap-1" title="Likes">
-                          <Heart className="w-4 h-4 text-red-400" />
+                          <Heart className="w-4 h-4 text-red-400 dark:text-red-500" />
                           <span>{blog.likes || 0}</span>
                         </div>
                         <div className="flex items-center gap-1" title="Date">
-                          <Calendar className="w-4 h-4 text-gray-400" />
+                          <Calendar className="w-4 h-4 text-gray-400 dark:text-gray-500" />
                           <span>{new Date(blog.publishedAt || blog.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric' })}</span>
                         </div>
                       </div>
@@ -346,19 +346,19 @@ const PublicBlogs = () => {
                     {blog.tags && blog.tags.length > 0 && (
                       <div className="flex flex-wrap gap-2 mb-4">
                         {blog.tags.slice(0, 2).map((tag, idx) => (
-                          <span key={idx} className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-md flex items-center gap-1">
+                          <span key={idx} className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded-md flex items-center gap-1 transition-colors">
                             <Tag className="w-3 h-3" /> {tag}
                           </span>
                         ))}
                         {blog.tags.length > 2 && (
-                          <span className="bg-gray-100 text-gray-600 text-xs px-2 py-1 rounded-md">+{blog.tags.length - 2}</span>
+                          <span className="bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 text-xs px-2 py-1 rounded-md transition-colors">+{blog.tags.length - 2}</span>
                         )}
                       </div>
                     )}
 
                     <Link
                       to={`/blog/${blog.slug || blog._id}`}
-                      className="flex items-center justify-center w-full gap-2 px-4 py-3 bg-gray-50 text-gray-700 rounded-xl font-semibold hover:bg-blue-600 hover:text-white transition-all duration-300 group-hover:shadow-md"
+                      className="flex items-center justify-center w-full gap-2 px-4 py-3 bg-gray-50 dark:bg-gray-800 text-gray-700 dark:text-gray-300 rounded-xl font-semibold hover:bg-blue-600 dark:hover:bg-blue-600 hover:text-white dark:hover:text-white transition-all duration-300 group-hover:shadow-md"
                     >
                       Read Article <ArrowRight className="w-4 h-4 transition-transform group-hover:translate-x-1" />
                     </Link>
@@ -372,23 +372,23 @@ const PublicBlogs = () => {
         {/* Pagination */}
         {pagination.pages > 1 && (
           <div className="mt-16 flex justify-center">
-            <div className="bg-white rounded-full shadow-lg p-2 flex items-center gap-2 border border-gray-100">
+            <div className="bg-white dark:bg-gray-900 rounded-full shadow-lg p-2 flex items-center gap-2 border border-gray-100 dark:border-gray-800 transition-colors">
               <button
                 onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
                 disabled={pagination.current === 1}
-                className="w-10 h-10 flex items-center justify-center rounded-full text-gray-600 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                className="w-10 h-10 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
               >
                 <ChevronLeft className="w-5 h-5" />
               </button>
 
-              <div className="flex items-center px-4 font-medium text-gray-700">
-                Page {pagination.current} <span className="text-gray-400 mx-2">/</span> {pagination.pages}
+              <div className="flex items-center px-4 font-medium text-gray-700 dark:text-gray-300 transition-colors">
+                Page {pagination.current} <span className="text-gray-400 dark:text-gray-500 mx-2">/</span> {pagination.pages}
               </div>
 
               <button
                 onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
                 disabled={pagination.current === pagination.pages}
-                className="w-10 h-10 flex items-center justify-center rounded-full text-gray-600 hover:bg-blue-50 hover:text-blue-600 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
+                className="w-10 h-10 flex items-center justify-center rounded-full text-gray-600 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 disabled:opacity-30 disabled:hover:bg-transparent transition-all"
               >
                 <ChevronRight className="w-5 h-5" />
               </button>
