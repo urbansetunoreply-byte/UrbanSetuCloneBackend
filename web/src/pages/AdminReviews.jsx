@@ -41,6 +41,12 @@ export default function AdminReviews() {
   const [responseError, setResponseError] = useState({});
   const [search, setSearch] = useState('');
 
+  // Status Confirmation Modal State
+  const [showStatusConfirmModal, setShowStatusConfirmModal] = useState(false);
+  const [reviewToUpdateStatus, setReviewToUpdateStatus] = useState(null);
+  const [statusAction, setStatusAction] = useState({ type: '', label: '' });
+  const [statusActionNote, setStatusActionNote] = useState('');
+
   // Analytics state
   const [analytics, setAnalytics] = useState({
     totalReviews: 0,
@@ -528,6 +534,26 @@ export default function AdminReviews() {
     setRemovalReason('');
     setRemovalNote('');
     setShowRemovalModal(true);
+  };
+
+  const handleOpenStatusConfirmModal = (review, type) => {
+    setReviewToUpdateStatus(review);
+    setStatusAction({
+      type: type,
+      label: type === 'approved' ? 'Approve' : 'Reject'
+    });
+    setStatusActionNote('');
+    setShowStatusConfirmModal(true);
+  };
+
+  const confirmStatusChange = () => {
+    if (reviewToUpdateStatus && statusAction.type) {
+      handleStatusChange(reviewToUpdateStatus._id, statusAction.type, statusActionNote);
+      setShowStatusConfirmModal(false);
+      setReviewToUpdateStatus(null);
+      setStatusAction({ type: '', label: '' });
+      setStatusActionNote('');
+    }
   };
 
   const renderStars = (rating) => {
@@ -1112,14 +1138,14 @@ export default function AdminReviews() {
                     {review.status === 'pending' ? (
                       <div className="flex flex-col gap-2 w-full">
                         <button
-                          onClick={() => handleStatusChange(review._id, 'approved')}
+                          onClick={() => handleOpenStatusConfirmModal(review, 'approved')}
                           className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors shadow-sm font-medium"
                           title="Approve"
                         >
                           <FaCheck size={14} /> Approve
                         </button>
                         <button
-                          onClick={() => handleStatusChange(review._id, 'rejected')}
+                          onClick={() => handleOpenStatusConfirmModal(review, 'rejected')}
                           className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 text-sm rounded-lg transition-colors font-medium"
                           title="Reject"
                         >
@@ -1139,7 +1165,7 @@ export default function AdminReviews() {
                         )}
                         {review.status === 'removed' && (
                           <button
-                            onClick={() => handleStatusChange(review._id, 'approved')}
+                            onClick={() => handleOpenStatusConfirmModal(review, 'approved')}
                             className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 dark:text-green-400 dark:bg-green-900/20 dark:hover:bg-green-900/40 rounded-lg transition-colors"
                           >
                             <FaUndo size={14} /> Restore
@@ -1694,6 +1720,56 @@ export default function AdminReviews() {
                   ))}
                 </div>
               )}
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Status Confirmation Modal */}
+      {showStatusConfirmModal && reviewToUpdateStatus && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-xs sm:max-w-md w-full mx-2 sm:mx-4 transition-colors">
+            <h2 className={`text-xl font-semibold mb-4 ${statusAction.type === 'approved' ? 'text-green-600' : 'text-red-600'}`}>
+              {statusAction.label} Review
+            </h2>
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
+              Are you sure you want to <strong>{statusAction.label.toLowerCase()}</strong> this review?
+            </p>
+
+            <div className="mb-4">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                Admin Note (Optional)
+              </label>
+              <textarea
+                value={statusActionNote}
+                onChange={(e) => setStatusActionNote(e.target.value)}
+                rows="3"
+                className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
+                placeholder={statusAction.type === 'rejected' ? "Reason for rejection..." : "Add a note..."}
+              />
+            </div>
+
+            <div className="flex space-x-3 mt-6">
+              <button
+                onClick={confirmStatusChange}
+                className={`flex-1 text-white px-4 py-2 rounded-md transition-colors ${statusAction.type === 'approved'
+                  ? 'bg-green-600 hover:bg-green-700'
+                  : 'bg-red-600 hover:bg-red-700'
+                  }`}
+              >
+                Confirm {statusAction.label}
+              </button>
+              <button
+                onClick={() => {
+                  setShowStatusConfirmModal(false);
+                  setReviewToUpdateStatus(null);
+                  setStatusAction({ type: '', label: '' });
+                  setStatusActionNote('');
+                }}
+                className="flex-1 bg-gray-500 text-white px-4 py-2 rounded-md hover:bg-gray-600 transition-colors"
+              >
+                Cancel
+              </button>
             </div>
           </div>
         </div>
