@@ -2370,24 +2370,24 @@ export default function Profile() {
       {/* Update Profile Password Modal */}
       {showUpdatePasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
-          <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
             <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Profile Update</h3>
-              <p className="mb-4 text-gray-600">Please enter your password to confirm the profile changes.</p>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Confirm Profile Update</h3>
+              <p className="mb-4 text-gray-600 dark:text-gray-300">Please enter your password to confirm the profile changes.</p>
               <input
                 ref={updatePasswordRef}
                 type="password"
-                className="w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 placeholder="Enter your password"
                 value={updatePassword}
                 onChange={e => setUpdatePassword(e.target.value)}
                 onKeyDown={e => { if (e.key === 'Enter') { e.preventDefault(); handleConfirmUpdate(); } }}
               />
-              {updatePasswordError && <div className="text-red-600 text-sm mb-2">{updatePasswordError}</div>}
+              {updatePasswordError && <div className="text-red-600 dark:text-red-400 text-sm mb-2">{updatePasswordError}</div>}
               <div className="flex justify-end space-x-3">
                 <button
                   onClick={() => { localStorage.removeItem(PROFILE_PASSWORD_ATTEMPT_KEY); setShowUpdatePasswordModal(false); setUpdatePassword(""); setUpdatePasswordError(""); }}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 dark:bg-gray-600 dark:hover:bg-gray-700 transition-colors"
                 >Cancel</button>
                 <button
                   onClick={handleConfirmUpdate}

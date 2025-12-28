@@ -638,7 +638,7 @@ export default function ForgotPassword({ bootstrapped, sessionChecked }) {
                         )
                       )
                     }
-                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-red-500/20 ${(emailVerified && !emailEditMode) || otpLoading ? 'bg-gray-100 dark:bg-gray-800 cursor-not-allowed border-green-500 pr-24' : (emailVerified ? 'border-green-500' : 'border-gray-300 dark:border-gray-700')} hover:border-red-500`}
+                    inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-red-500/20 ${(emailVerified && !emailEditMode) || otpLoading || (otpSent && !emailEditMode) ? 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 cursor-not-allowed border-green-500 pr-24' : (emailVerified ? 'border-green-500 dark:bg-gray-800 dark:text-white' : 'border-gray-300 dark:border-gray-700 dark:bg-gray-800 dark:text-white')} hover:border-red-500`}
                     required
                   />
                   {/* If captcha required before OTP field is open, show below email (outside input wrapper to avoid layout shift on button) */}
