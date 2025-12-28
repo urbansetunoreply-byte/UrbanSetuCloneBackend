@@ -167,18 +167,18 @@ export default function ConditionImageUpload({
     <div className="space-y-6">
       {/* Image Upload Section */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
           <FaImage className="inline mr-2" />
           Property Condition Images
         </label>
         {!readOnly && (
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 border border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100 mb-4">
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/20 border border-blue-300 dark:border-blue-700 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/30 mb-4 transition-colors">
             {uploadingImage ? (
-              <FaSpinner className="animate-spin" />
+              <FaSpinner className="animate-spin text-blue-700 dark:text-blue-300" />
             ) : (
-              <FaUpload />
+              <FaUpload className="text-blue-700 dark:text-blue-300" />
             )}
-            <span className="text-sm font-medium text-blue-700">
+            <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
               {uploadingImage ? 'Uploading...' : 'Upload Images'}
             </span>
             <input
@@ -195,8 +195,8 @@ export default function ConditionImageUpload({
         {images.length > 0 && (
           <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
             {images.map((img, index) => (
-              <div key={index} className="border rounded-lg p-2 space-y-2">
-                <div className="relative aspect-square bg-gray-100 rounded overflow-hidden group">
+              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 space-y-2">
+                <div className="relative aspect-square bg-gray-100 dark:bg-gray-700 rounded overflow-hidden group">
                   <img
                     src={img.url}
                     alt={`Property condition ${index + 1}`}
@@ -235,7 +235,7 @@ export default function ConditionImageUpload({
                     <select
                       value={img.room || 'living_room'}
                       onChange={(e) => updateImage(index, { room: e.target.value })}
-                      className="w-full text-xs border rounded p-1"
+                      className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {ROOM_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -246,15 +246,15 @@ export default function ConditionImageUpload({
                       placeholder="Description (optional)"
                       value={img.description || ''}
                       onChange={(e) => updateImage(index, { description: e.target.value })}
-                      className="w-full text-xs border rounded p-1"
+                      className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </>
                 ) : (
                   <div className="text-xs">
-                    <div className="font-medium">{ROOM_OPTIONS.find(o => o.value === img.room)?.label || img.room}</div>
-                    {img.description && <div className="text-gray-600">{img.description}</div>}
+                    <div className="font-medium dark:text-gray-200">{ROOM_OPTIONS.find(o => o.value === img.room)?.label || img.room}</div>
+                    {img.description && <div className="text-gray-600 dark:text-gray-400">{img.description}</div>}
                     {getUploaderLabel(img.uploadedBy) && (
-                      <div className="text-xs text-blue-600 mt-1 italic">{getUploaderLabel(img.uploadedBy)}</div>
+                      <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 italic">{getUploaderLabel(img.uploadedBy)}</div>
                     )}
                   </div>
                 )}
@@ -266,18 +266,18 @@ export default function ConditionImageUpload({
 
       {/* Video Upload Section */}
       <div>
-        <label className="block text-sm font-medium text-gray-700 mb-2">
+        <label className="block text-sm font-medium text-gray-700 dark:text-white mb-2">
           <FaVideo className="inline mr-2" />
           Property Condition Videos
         </label>
         {!readOnly && (
-          <label className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 border border-purple-300 rounded-lg cursor-pointer hover:bg-purple-100 mb-4">
+          <label className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/20 border border-purple-300 dark:border-purple-700 rounded-lg cursor-pointer hover:bg-purple-100 dark:hover:bg-purple-900/30 mb-4 transition-colors">
             {uploadingVideo ? (
-              <FaSpinner className="animate-spin" />
+              <FaSpinner className="animate-spin text-purple-700 dark:text-purple-300" />
             ) : (
-              <FaUpload />
+              <FaUpload className="text-purple-700 dark:text-purple-300" />
             )}
-            <span className="text-sm font-medium text-purple-700">
+            <span className="text-sm font-medium text-purple-700 dark:text-purple-300">
               {uploadingVideo ? 'Uploading...' : 'Upload Video'}
             </span>
             <input
@@ -293,8 +293,8 @@ export default function ConditionImageUpload({
         {videos.length > 0 && (
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mt-4">
             {videos.map((vid, index) => (
-              <div key={index} className="border rounded-lg p-2 space-y-2">
-                <div className="relative bg-gray-100 rounded aspect-video overflow-hidden group">
+              <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-2 space-y-2">
+                <div className="relative bg-gray-100 dark:bg-gray-700 rounded aspect-video overflow-hidden group">
                   <video src={vid.url} className="w-full h-full object-cover" />
                   <div
                     className="absolute inset-0 flex items-center justify-center bg-black bg-opacity-30 group-hover:bg-opacity-20 cursor-pointer transition-all"
@@ -320,7 +320,7 @@ export default function ConditionImageUpload({
                     <select
                       value={vid.room || 'living_room'}
                       onChange={(e) => updateVideo(index, { room: e.target.value })}
-                      className="w-full text-xs border rounded p-1"
+                      className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {ROOM_OPTIONS.map(opt => (
                         <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -331,15 +331,15 @@ export default function ConditionImageUpload({
                       placeholder="Description (optional)"
                       value={vid.description || ''}
                       onChange={(e) => updateVideo(index, { description: e.target.value })}
-                      className="w-full text-xs border rounded p-1"
+                      className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     />
                   </>
                 ) : (
                   <div className="text-xs">
-                    <div className="font-medium">{ROOM_OPTIONS.find(o => o.value === vid.room)?.label || vid.room}</div>
-                    {vid.description && <div className="text-gray-600">{vid.description}</div>}
+                    <div className="font-medium dark:text-gray-200">{ROOM_OPTIONS.find(o => o.value === vid.room)?.label || vid.room}</div>
+                    {vid.description && <div className="text-gray-600 dark:text-gray-400">{vid.description}</div>}
                     {getUploaderLabel(vid.uploadedBy) && (
-                      <div className="text-xs text-blue-600 mt-1 italic">{getUploaderLabel(vid.uploadedBy)}</div>
+                      <div className="text-xs text-blue-600 dark:text-blue-400 mt-1 italic">{getUploaderLabel(vid.uploadedBy)}</div>
                     )}
                   </div>
                 )}
