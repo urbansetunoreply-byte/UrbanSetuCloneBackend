@@ -745,7 +745,7 @@ export default function UserReviews() {
               <div key={review._id} className={`group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${viewMode === 'list' ? 'flex flex-col sm:flex-row' : 'flex flex-col'}`}>
 
                 {/* Card Header: Property Info & Status */}
-                <div className={`relative p-5 ${viewMode === 'list' ? 'sm:w-1/3 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-750' : 'bg-gray-50 dark:bg-gray-750 border-b border-gray-100 dark:border-gray-700'}`}>
+                <div className={`relative p-5 ${viewMode === 'list' ? 'sm:w-1/3 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-700' : 'bg-gray-50 dark:bg-gray-700 border-b border-gray-100 dark:border-gray-700'}`}>
                   <div className="absolute top-4 right-4 z-10">
                     {getStatusBadge(review.status)}
                   </div>
