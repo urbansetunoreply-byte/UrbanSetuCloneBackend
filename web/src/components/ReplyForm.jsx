@@ -46,7 +46,7 @@ export default function ReplyForm({ reviewId, onReplyAdded }) {
         value={comment}
         onChange={e => setComment(e.target.value)}
         rows={2}
-        className="w-full border border-gray-300 rounded p-2 text-sm"
+        className="w-full border border-gray-300 rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
         placeholder="Write a reply..."
         disabled={loading}
       />

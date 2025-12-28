@@ -1008,13 +1008,13 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                         />
                       )}
                       {isAdminUser(reply) ? (
-                        <span className="font-semibold text-blue-700 flex items-center gap-1 text-xs">
+                        <span className="font-semibold text-blue-700 dark:text-blue-400 flex items-center gap-1 text-xs">
                           From organization <FaCheckCircle className="text-green-500" />
                         </span>
                       ) : (
-                        <span className="font-medium text-gray-800 text-xs">{reply.userName}</span>
+                        <span className="font-medium text-gray-800 dark:text-white text-xs">{reply.userName}</span>
                       )}
-                      <span className="text-xs text-gray-500">{new Date(reply.createdAt).toLocaleString()}</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400">{new Date(reply.createdAt).toLocaleString()}</span>
                       {currentUser && (
                         <div className="flex gap-2 ml-auto">
                           {(
@@ -1280,29 +1280,29 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
 
       {/* User Delete Confirmation Modal */}
       {showDeleteModal && reviewToDelete && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-lg max-w-md w-full mx-4 shadow-xl">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 text-left">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full mx-4 shadow-xl border border-transparent dark:border-gray-700">
             <div className="p-4 sm:p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaTrash className="text-red-500" />
                 Delete Review
               </h3>
 
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Are you sure you want to delete this review? This action cannot be undone.
               </p>
 
               {/* Show review details for confirmation */}
-              <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">
                 <div className="flex items-center gap-2 mb-2">
                   {renderStars(reviewToDelete.rating)}
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-300">
                     {reviewToDelete.rating} star{reviewToDelete.rating > 1 ? 's' : ''}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700 line-clamp-3">{reviewToDelete.comment}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-200 line-clamp-3">{reviewToDelete.comment}</p>
                 {reviewToDelete.listingId && (
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                     Property: {reviewToDelete.listingId.name}
                   </p>
                 )}
@@ -1315,7 +1315,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                     setShowDeleteModal(false);
                     setReviewToDelete(null);
                   }}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancel
                 </button>
