@@ -8,7 +8,10 @@ const MyListingsSkeleton = () => {
                     {/* Header Skeleton */}
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                         <div className="h-8 w-48 bg-gray-200 rounded animate-pulse mb-4 md:mb-0"></div>
-                        <div className="h-10 w-full sm:w-48 bg-gray-200 rounded-lg animate-pulse"></div>
+                        <div className="flex flex-col sm:flex-row gap-3 w-full sm:w-auto mt-4 md:mt-0">
+                            <div className="h-10 w-full sm:w-40 bg-gray-200 rounded-lg animate-pulse"></div>
+                            <div className="h-10 w-full sm:w-48 bg-gray-200 rounded-lg animate-pulse"></div>
+                        </div>
                     </div>
 
                     {/* Filters Skeleton */}
