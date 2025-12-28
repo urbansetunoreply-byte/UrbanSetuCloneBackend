@@ -187,14 +187,14 @@ export default function VerificationStatus({ verification, listing, currentUser,
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-          <FaShieldAlt className="text-blue-600" />
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+          <FaShieldAlt className="text-blue-600 dark:text-blue-400" />
           Verification Status
         </h2>
         {onClose && (
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 text-2xl"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
           >
             <FaTimes />
           </button>
@@ -202,10 +202,10 @@ export default function VerificationStatus({ verification, listing, currentUser,
       </div>
 
       {/* Property Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-800 mb-1">{listing.name}</h3>
-        <p className="text-sm text-blue-700">{listing.address}</p>
-        <div className="mt-2 text-xs text-blue-600">
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <h3 className="font-semibold text-blue-800 dark:text-blue-100 mb-1">{listing.name}</h3>
+        <p className="text-sm text-blue-700 dark:text-blue-200">{listing.address}</p>
+        <div className="mt-2 text-xs text-blue-600 dark:text-blue-300">
           Verification ID: <span className="font-mono">{verification.verificationId}</span>
         </div>
       </div>
@@ -234,17 +234,17 @@ export default function VerificationStatus({ verification, listing, currentUser,
 
       {/* Documents Verification */}
       <div>
-        <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+        <h3 className="font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
           <FaFileAlt /> Document Verification
         </h3>
         <div className="space-y-3">
           {/* Ownership Proof */}
-          <div className="border rounded-lg p-4">
+          <div className="border dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <FaFileAlt className="text-blue-600" />
-                <span className="font-medium">Ownership Proof</span>
-                <span className="text-xs text-gray-500">({verification.documents.ownershipProof.documentType})</span>
+                <FaFileAlt className="text-blue-600 dark:text-blue-400" />
+                <span className="font-medium dark:text-gray-200">Ownership Proof</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">({verification.documents.ownershipProof.documentType})</span>
               </div>
               <div className={`flex items-center gap-1 ${getDocumentStatus(verification.documents.ownershipProof).color}`}>
                 {getDocumentStatus(verification.documents.ownershipProof).icon}
@@ -266,7 +266,7 @@ export default function VerificationStatus({ verification, listing, currentUser,
                         window.open(`${basePath}/view/preview?url=${encodedUrl}&type=document&name=OwnershipProof`, '_blank');
                       }
                     }}
-                    className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                   >
                     <FaFileAlt /> View
                   </button>
@@ -279,7 +279,7 @@ export default function VerificationStatus({ verification, listing, currentUser,
                         'ownership-proof'
                       );
                     }}
-                    className="text-gray-500 hover:text-blue-600 cursor-pointer"
+                    className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
                     title="Download Document"
                   >
                     <FaDownload />
@@ -288,24 +288,24 @@ export default function VerificationStatus({ verification, listing, currentUser,
               </div>
             )}
             {verification.documents.ownershipProof.verifiedAt && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Verified on: {new Date(verification.documents.ownershipProof.verifiedAt).toLocaleString()}
               </div>
             )}
             {verification.documents.ownershipProof.rejectionReason && (
-              <div className="text-xs text-red-600 mt-1">
+              <div className="text-xs text-red-600 dark:text-red-400 mt-1">
                 Reason: {verification.documents.ownershipProof.rejectionReason}
               </div>
             )}
           </div>
 
           {/* Identity Proof */}
-          <div className="border rounded-lg p-4">
+          <div className="border dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <FaFileAlt className="text-green-600" />
-                <span className="font-medium">Identity Proof</span>
-                <span className="text-xs text-gray-500">({verification.documents.identityProof.documentType})</span>
+                <FaFileAlt className="text-green-600 dark:text-green-400" />
+                <span className="font-medium dark:text-gray-200">Identity Proof</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">({verification.documents.identityProof.documentType})</span>
               </div>
               <div className={`flex items-center gap-1 ${getDocumentStatus(verification.documents.identityProof).color}`}>
                 {getDocumentStatus(verification.documents.identityProof).icon}
@@ -327,7 +327,7 @@ export default function VerificationStatus({ verification, listing, currentUser,
                         window.open(`${basePath}/view/preview?url=${encodedUrl}&type=document&name=IdentityProof`, '_blank');
                       }
                     }}
-                    className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                   >
                     <FaFileAlt /> View
                   </button>
@@ -340,7 +340,7 @@ export default function VerificationStatus({ verification, listing, currentUser,
                         'identity-proof'
                       );
                     }}
-                    className="text-gray-500 hover:text-blue-600 cursor-pointer"
+                    className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
                     title="Download Document"
                   >
                     <FaDownload />
@@ -349,24 +349,24 @@ export default function VerificationStatus({ verification, listing, currentUser,
               </div>
             )}
             {verification.documents.identityProof.verifiedAt && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Verified on: {new Date(verification.documents.identityProof.verifiedAt).toLocaleString()}
               </div>
             )}
             {verification.documents.identityProof.rejectionReason && (
-              <div className="text-xs text-red-600 mt-1">
+              <div className="text-xs text-red-600 dark:text-red-400 mt-1">
                 Reason: {verification.documents.identityProof.rejectionReason}
               </div>
             )}
           </div>
 
           {/* Address Proof */}
-          <div className="border rounded-lg p-4">
+          <div className="border dark:border-gray-700 rounded-lg p-4">
             <div className="flex items-center justify-between mb-2">
               <div className="flex items-center gap-2">
-                <FaFileAlt className="text-purple-600" />
-                <span className="font-medium">Address Proof</span>
-                <span className="text-xs text-gray-500">({verification.documents.addressProof.documentType})</span>
+                <FaFileAlt className="text-purple-600 dark:text-purple-400" />
+                <span className="font-medium dark:text-gray-200">Address Proof</span>
+                <span className="text-xs text-gray-500 dark:text-gray-400">({verification.documents.addressProof.documentType})</span>
               </div>
               <div className={`flex items-center gap-1 ${getDocumentStatus(verification.documents.addressProof).color}`}>
                 {getDocumentStatus(verification.documents.addressProof).icon}
@@ -388,7 +388,7 @@ export default function VerificationStatus({ verification, listing, currentUser,
                         window.open(`${basePath}/view/preview?url=${encodedUrl}&type=document&name=AddressProof`, '_blank');
                       }
                     }}
-                    className="text-sm text-blue-600 hover:underline flex items-center gap-1 cursor-pointer font-medium"
+                    className="text-sm text-blue-600 dark:text-blue-400 hover:underline flex items-center gap-1 cursor-pointer font-medium"
                   >
                     <FaFileAlt /> View
                   </button>
@@ -401,7 +401,7 @@ export default function VerificationStatus({ verification, listing, currentUser,
                         'address-proof'
                       );
                     }}
-                    className="text-gray-500 hover:text-blue-600 cursor-pointer"
+                    className="text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer"
                     title="Download Document"
                   >
                     <FaDownload />
@@ -410,12 +410,12 @@ export default function VerificationStatus({ verification, listing, currentUser,
               </div>
             )}
             {verification.documents.addressProof.verifiedAt && (
-              <div className="text-xs text-gray-500 mt-1">
+              <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                 Verified on: {new Date(verification.documents.addressProof.verifiedAt).toLocaleString()}
               </div>
             )}
             {verification.documents.addressProof.rejectionReason && (
-              <div className="text-xs text-red-600 mt-1">
+              <div className="text-xs text-red-600 dark:text-red-400 mt-1">
                 Reason: {verification.documents.addressProof.rejectionReason}
               </div>
             )}
@@ -425,37 +425,37 @@ export default function VerificationStatus({ verification, listing, currentUser,
 
       {/* Property Inspection */}
       <div>
-        <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
+        <h3 className="font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
           <FaHome /> Property Inspection
         </h3>
         <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
-          <div className="border rounded-lg p-3">
+          <div className="border dark:border-gray-700 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Photos Verified</span>
+              <span className="text-sm font-medium dark:text-gray-200">Photos Verified</span>
               {verification.photosVerified ? (
-                <FaCheckCircle className="text-green-600" />
+                <FaCheckCircle className="text-green-600 dark:text-green-400" />
               ) : (
-                <FaClock className="text-yellow-600" />
+                <FaClock className="text-yellow-600 dark:text-yellow-400" />
               )}
             </div>
           </div>
-          <div className="border rounded-lg p-3">
+          <div className="border dark:border-gray-700 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Location Verified</span>
+              <span className="text-sm font-medium dark:text-gray-200">Location Verified</span>
               {verification.locationVerified ? (
-                <FaCheckCircle className="text-green-600" />
+                <FaCheckCircle className="text-green-600 dark:text-green-400" />
               ) : (
-                <FaClock className="text-yellow-600" />
+                <FaClock className="text-yellow-600 dark:text-yellow-400" />
               )}
             </div>
           </div>
-          <div className="border rounded-lg p-3">
+          <div className="border dark:border-gray-700 rounded-lg p-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm font-medium">Amenities Verified</span>
+              <span className="text-sm font-medium dark:text-gray-200">Amenities Verified</span>
               {verification.amenitiesVerified ? (
-                <FaCheckCircle className="text-green-600" />
+                <FaCheckCircle className="text-green-600 dark:text-green-400" />
               ) : (
-                <FaClock className="text-yellow-600" />
+                <FaClock className="text-yellow-600 dark:text-yellow-400" />
               )}
             </div>
           </div>
@@ -464,11 +464,11 @@ export default function VerificationStatus({ verification, listing, currentUser,
 
       {/* Rejection Reason */}
       {isRejected && verification.rejectionReason && (
-        <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-          <h4 className="font-semibold text-red-800 mb-2">Rejection Reason</h4>
-          <p className="text-sm text-red-700">{verification.rejectionReason}</p>
+        <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4">
+          <h4 className="font-semibold text-red-800 dark:text-red-200 mb-2">Rejection Reason</h4>
+          <p className="text-sm text-red-700 dark:text-red-300">{verification.rejectionReason}</p>
           {verification.rejectedAt && (
-            <div className="text-xs text-red-600 mt-2">
+            <div className="text-xs text-red-600 dark:text-red-400 mt-2">
               Rejected on: {new Date(verification.rejectedAt).toLocaleString()}
             </div>
           )}
@@ -477,26 +477,26 @@ export default function VerificationStatus({ verification, listing, currentUser,
 
       {/* Admin Notes */}
       {verification.adminNotes && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h4 className="font-semibold text-gray-800 mb-2">Admin Notes</h4>
-          <p className="text-sm text-gray-700">{verification.adminNotes}</p>
+        <div className="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Admin Notes</h4>
+          <p className="text-sm text-gray-700 dark:text-gray-300">{verification.adminNotes}</p>
         </div>
       )}
 
       {/* Admin Actions */}
       {isAdmin && isAdminView && !isVerified && !isRejected && (
-        <div className="bg-gray-50 border border-gray-200 rounded-lg p-4">
-          <h4 className="font-semibold text-gray-800 mb-3">Admin Actions</h4>
+        <div className="bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-lg p-4">
+          <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Admin Actions</h4>
           <div className="space-y-3">
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Admin Notes (Optional)
               </label>
               <textarea
                 value={adminNotes}
                 onChange={(e) => setAdminNotes(e.target.value)}
                 placeholder="Add any notes about this verification..."
-                className="w-full p-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
+                className="w-full p-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent text-sm"
                 rows={3}
               />
             </div>

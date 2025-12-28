@@ -164,16 +164,16 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
     const isUploading = uploading[section];
 
     return (
-      <div className="border rounded-lg p-4 space-y-3">
-        <h4 className="font-semibold text-gray-800">{title} <span className="text-red-500">*</span></h4>
+      <div className="border dark:border-gray-700 rounded-lg p-4 space-y-3">
+        <h4 className="font-semibold text-gray-800 dark:text-white">{title} <span className="text-red-500">*</span></h4>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Document Type</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Document Type</label>
           <select
             name="documentType"
             value={formData[section].documentType}
             onChange={(e) => handleInputChange(e, section)}
-            className="w-full px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+            className="w-full px-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
           >
             {documentTypes.map(type => (
               <option key={type.value} value={type.value}>{type.label}</option>
@@ -182,15 +182,15 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
         </div>
 
         <div>
-          <label className="block text-sm font-medium text-gray-700 mb-1">Upload Document</label>
+          <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Upload Document</label>
           {!hasDocument ? (
-            <label className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 border-2 border-dashed border-blue-300 rounded-lg cursor-pointer hover:bg-blue-100">
+            <label className="flex items-center justify-center gap-2 px-4 py-3 bg-blue-50 dark:bg-blue-900/10 border-2 border-dashed border-blue-300 dark:border-blue-800 rounded-lg cursor-pointer hover:bg-blue-100 dark:hover:bg-blue-900/20 transaction-colors">
               {isUploading ? (
-                <FaSpinner className="animate-spin text-blue-600" />
+                <FaSpinner className="animate-spin text-blue-600 dark:text-blue-400" />
               ) : (
-                <FaUpload className="text-blue-600" />
+                <FaUpload className="text-blue-600 dark:text-blue-400" />
               )}
-              <span className="text-sm font-medium text-blue-700">
+              <span className="text-sm font-medium text-blue-700 dark:text-blue-300">
                 {isUploading ? 'Uploading...' : 'Click to upload document'}
               </span>
               <input
@@ -202,10 +202,10 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
               />
             </label>
           ) : (
-            <div className="flex items-center gap-3 p-3 bg-green-50 border border-green-200 rounded-lg">
-              <FaCheckCircle className="text-green-600 shrink-0" />
+            <div className="flex items-center gap-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg">
+              <FaCheckCircle className="text-green-600 dark:text-green-400 shrink-0" />
               <span
-                className="flex-1 text-sm text-green-700 font-medium hover:underline cursor-pointer truncate"
+                className="flex-1 text-sm text-green-700 dark:text-green-300 font-medium hover:underline cursor-pointer truncate"
                 onClick={() => {
                   const encodedUrl = encodeURIComponent(formData[section].documentUrl);
                   const name = formData[section].originalName || 'Document';
@@ -218,7 +218,7 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
               <button
                 type="button"
                 onClick={() => removeDocument(section)}
-                className="px-3 py-1 bg-red-100 text-red-700 rounded hover:bg-red-200 text-sm"
+                className="px-3 py-1 bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 rounded hover:bg-red-200 dark:hover:bg-red-900/50 text-sm"
               >
                 Remove
               </button>
@@ -232,23 +232,23 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
       <div className="flex items-center justify-between mb-4">
-        <h2 className="text-2xl font-bold text-gray-800">Request Property Verification</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Request Property Verification</h2>
         <button
           type="button"
           onClick={onCancel}
-          className="text-gray-400 hover:text-gray-600 text-2xl"
+          className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
         >
           <FaTimes />
         </button>
       </div>
 
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-4">
-        <h3 className="font-semibold text-blue-800 mb-2">{listing.name}</h3>
-        <p className="text-sm text-blue-700">{listing.address}</p>
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4 mb-4">
+        <h3 className="font-semibold text-blue-800 dark:text-blue-100 mb-2">{listing.name}</h3>
+        <p className="text-sm text-blue-700 dark:text-blue-200">{listing.address}</p>
       </div>
 
-      <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-4">
-        <p className="text-sm text-yellow-800">
+      <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-4">
+        <p className="text-sm text-yellow-800 dark:text-yellow-200">
           <strong>Note:</strong> Please upload clear, legible documents. All documents will be verified by our admin team.
           Verification typically takes 2-5 business days.
         </p>
@@ -279,11 +279,11 @@ export default function VerificationForm({ listing, onSuccess, onCancel }) {
       )}
 
       {/* Actions */}
-      <div className="flex justify-end gap-3 pt-4 border-t">
+      <div className="flex justify-end gap-3 pt-4 border-t dark:border-gray-700">
         <button
           type="button"
           onClick={onCancel}
-          className="px-6 py-2 border rounded-lg hover:bg-gray-50"
+          className="px-6 py-2 border dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
         >
           Cancel
         </button>
