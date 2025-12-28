@@ -204,11 +204,11 @@ export default function AdminMyListings() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-950 py-10 px-2 md:px-8 transition-colors duration-300">
         <div className="max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8 py-8 overflow-x-hidden">
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-colors duration-300">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 drop-shadow">My Listings (Admin)</h3>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-400 drop-shadow">My Listings (Admin)</h3>
               {listings.length > 0 && (
                 <Link
                   to="/admin/create-listing"
@@ -221,31 +221,31 @@ export default function AdminMyListings() {
 
             {/* Filters */}
             {listings.length > 0 && (
-              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
+              <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3 text-gray-900 dark:text-white">
                 <input
                   type="text"
                   value={filters.searchTerm}
                   onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })}
-                  className="border rounded px-3 py-2 text-sm"
+                  className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700"
                   placeholder="Search by name/address/city/state"
                 />
-                <select className="border rounded px-3 py-2 text-sm" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
+                <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
                   <option value="all">All Types</option>
                   <option value="sale">Sale</option>
                   <option value="rent">Rent</option>
                 </select>
-                <select className="border rounded px-3 py-2 text-sm" value={filters.offer} onChange={(e) => setFilters({ ...filters, offer: e.target.value })}>
+                <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700" value={filters.offer} onChange={(e) => setFilters({ ...filters, offer: e.target.value })}>
                   <option value="all">Offer: Any</option>
                   <option value="true">Offer: Yes</option>
                   <option value="false">Offer: No</option>
                 </select>
                 <div className="grid grid-cols-2 gap-2">
-                  <select className="border rounded px-3 py-2 text-sm" value={filters.furnished} onChange={(e) => setFilters({ ...filters, furnished: e.target.value })}>
+                  <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700" value={filters.furnished} onChange={(e) => setFilters({ ...filters, furnished: e.target.value })}>
                     <option value="all">Furnished: Any</option>
                     <option value="true">Furnished</option>
                     <option value="false">Unfurnished</option>
                   </select>
-                  <select className="border rounded px-3 py-2 text-sm" value={filters.parking} onChange={(e) => setFilters({ ...filters, parking: e.target.value })}>
+                  <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700" value={filters.parking} onChange={(e) => setFilters({ ...filters, parking: e.target.value })}>
                     <option value="all">Parking: Any</option>
                     <option value="true">With Parking</option>
                     <option value="false">No Parking</option>
@@ -255,14 +255,14 @@ export default function AdminMyListings() {
                   type="text"
                   value={filters.city}
                   onChange={(e) => setFilters({ ...filters, city: e.target.value })}
-                  className="border rounded px-3 py-2 text-sm"
+                  className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700"
                   placeholder="City"
                 />
                 <input
                   type="text"
                   value={filters.state}
                   onChange={(e) => setFilters({ ...filters, state: e.target.value })}
-                  className="border rounded px-3 py-2 text-sm"
+                  className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700"
                   placeholder="State"
                 />
               </div>
@@ -271,8 +271,8 @@ export default function AdminMyListings() {
             {listings.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">🏠</div>
-                <h4 className="text-xl font-semibold text-gray-600 mb-2">No listings yet</h4>
-                <p className="text-gray-500 mb-6">Start by creating your first property listing</p>
+                <h4 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No listings yet</h4>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">Start by creating your first property listing</p>
                 <Link
                   to="/admin/create-listing"
                   className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold inline-flex items-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto justify-center"
@@ -284,9 +284,9 @@ export default function AdminMyListings() {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                   {filteredListings.slice(0, visibleCount).map((listing) => (
-                    <div key={listing._id} className="bg-white border border-gray-200 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
+                    <div key={listing._id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg overflow-hidden shadow-lg hover:shadow-xl transition-shadow">
                       {/* Image */}
-                      <div className="relative h-48 bg-gray-200">
+                      <div className="relative h-48 bg-gray-200 dark:bg-gray-700">
                         {listing.imageUrls && listing.imageUrls.length > 0 ? (
                           <img
                             src={listing.imageUrls[0]}
@@ -299,7 +299,7 @@ export default function AdminMyListings() {
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center">
-                            <div className="text-center text-gray-500">
+                            <div className="text-center text-gray-500 dark:text-gray-400">
                               <div className="text-4xl mb-2">🏠</div>
                               <p className="text-sm">No Image</p>
                             </div>
@@ -308,7 +308,9 @@ export default function AdminMyListings() {
 
                         {/* Type Badge */}
                         <div className="absolute top-2 left-2">
-                          <span className={`px-2 py-1 text-xs font-semibold rounded-full text-white ${listing.type === 'rent' ? 'bg-blue-500' : 'bg-green-500'
+                          <span className={`px-2 py-1 text-xs font-semibold rounded-full ${listing.type === 'rent'
+                            ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
+                            : 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
                             }`}>
                             {listing.type === 'rent' ? 'For Rent' : 'For Sale'}
                           </span>
@@ -317,7 +319,7 @@ export default function AdminMyListings() {
                         {/* Offer Badge */}
                         {listing.offer && (
                           <div className="absolute top-2 right-2">
-                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-500 text-white">
+                            <span className="px-2 py-1 text-xs font-semibold rounded-full bg-yellow-400 text-gray-900 shadow-sm animate-pulse">
                               {getDiscountPercentage(listing)}% OFF
                             </span>
                           </div>
@@ -326,8 +328,8 @@ export default function AdminMyListings() {
 
                       {/* Content */}
                       <div className="p-4">
-                        <h4 className="text-lg font-semibold text-gray-800 mb-2 line-clamp-1">{listing.name}</h4>
-                        <p className="text-gray-600 text-sm mb-3 line-clamp-2">
+                        <h4 className="text-lg font-semibold text-gray-800 dark:text-white mb-2 line-clamp-1">{listing.name}</h4>
+                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 line-clamp-2">
                           {maskAddress(
                             // Create address object if structured fields exist, otherwise use legacy address
                             listing.propertyNumber || listing.city ? {
@@ -344,19 +346,19 @@ export default function AdminMyListings() {
 
                         {/* Price */}
                         <div className="mb-3">
-                          <span className="text-xl font-bold text-blue-600">
+                          <span className="text-xl font-bold text-blue-600 dark:text-blue-400">
                             {formatPrice(listing.regularPrice)}
                           </span>
-                          {listing.type === 'rent' && <span className="text-gray-500 text-sm">/month</span>}
+                          {listing.type === 'rent' && <span className="text-gray-500 dark:text-gray-400 text-sm">/month</span>}
                           {listing.offer && (
-                            <div className="text-sm text-gray-500 line-through">
+                            <div className="text-sm text-gray-500 dark:text-gray-500 line-through">
                               {formatPrice(listing.regularPrice)}
                             </div>
                           )}
                         </div>
 
                         {/* Property Details */}
-                        <div className="flex justify-between text-sm text-gray-600 mb-4">
+                        <div className="flex justify-between text-sm text-gray-600 dark:text-gray-400 mb-4">
                           <span>{listing.bedrooms} bed</span>
                           <span>{listing.bathrooms} bath</span>
                           <span>{listing.furnished ? 'Furnished' : 'Unfurnished'}</span>
@@ -404,20 +406,20 @@ export default function AdminMyListings() {
         </div>
       </div>
       {showPasswordModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handlePasswordSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm z-50">
+          <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaLock /> Confirm Password</h3>
             <input
               type="password"
-              className="border rounded p-2 w-full"
+              className="border dark:border-gray-700 rounded p-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
               placeholder="Enter your password"
               value={deletePassword}
               onChange={e => setDeletePassword(e.target.value)}
               autoFocus
             />
-            {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
+            {deleteError && <div className="text-red-600 dark:text-red-400 text-sm">{deleteError}</div>}
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold">Cancel</button>
+              <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold">Cancel</button>
               <button type="submit" className="px-4 py-2 rounded bg-red-600 text-white font-semibold" disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Confirm & Delete'}</button>
             </div>
           </form>

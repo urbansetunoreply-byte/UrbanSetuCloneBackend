@@ -178,7 +178,10 @@ const PaymentDashboard = () => {
   };
 
   const statusBadge = (status) => {
-    const cls = status === 'completed' ? 'bg-green-100 text-green-700' : status === 'failed' ? 'bg-red-100 text-red-700' : status === 'refunded' || status === 'partially_refunded' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700';
+    const cls = status === 'completed' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' :
+      status === 'failed' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300' :
+        status === 'refunded' || status === 'partially_refunded' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' :
+          'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300';
     return <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${cls}`}>{status}</span>;
   };
 
@@ -808,7 +811,7 @@ const PaymentDashboard = () => {
                     </h3>
                     <button
                       onClick={() => setShowPreviewModal(false)}
-                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors bg-gray-100 dark:bg-gray-700 rounded-full p-2"
                     >
                       <FaTimes className="text-xl" />
                     </button>
@@ -839,10 +842,10 @@ const PaymentDashboard = () => {
                       <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Payment Type</div>
                       <div className="font-semibold text-gray-800 dark:text-white">
                         {selectedPayment.paymentType ? (
-                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                            selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                              selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                                'bg-gray-100 text-gray-700'
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' :
+                            selectedPayment.paymentType === 'advance' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' :
+                              selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300' :
+                                'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                             }`}>
                             {selectedPayment.paymentType === 'monthly_rent' ? 'Monthly Rent' :
                               selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
@@ -1072,14 +1075,14 @@ const PaymentDashboard = () => {
               <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaLock /> Confirm Password</h3>
               <input
                 type="password"
-                className="border rounded p-2 w-full"
+                className="border dark:border-gray-700 rounded p-2 w-full bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none"
                 placeholder="Enter your password"
                 value={exportPassword}
                 onChange={e => setExportPassword(e.target.value)}
                 autoFocus
                 required
               />
-              {exportPasswordError && <div className="text-red-600 text-sm">{exportPasswordError}</div>}
+              {exportPasswordError && <div className="text-red-600 dark:text-red-400 text-sm font-medium">{exportPasswordError}</div>}
               <div className="flex gap-2 justify-end">
                 <button
                   type="button"

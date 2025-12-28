@@ -100,13 +100,13 @@ export default function SharedChatView() {
 
     if (error) {
         return (
-            <div className="min-h-screen bg-gray-50 flex items-center justify-center p-4">
-                <div className="bg-white p-8 rounded-2xl shadow-xl max-w-md w-full text-center">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaExclamationTriangle className="text-red-500 text-3xl" />
+            <div className="min-h-screen bg-transparent dark:bg-gray-950 flex items-center justify-center p-4 transition-colors duration-300">
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl max-w-md w-full text-center border dark:border-gray-700">
+                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FaExclamationTriangle className="text-red-500 dark:text-red-400 text-3xl" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Unavailable</h2>
-                    <p className="text-gray-600 mb-6">{error}</p>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Unavailable</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 font-medium">{error}</p>
 
                     {/* Manual Token Input */}
                     <div className="mb-6 text-left">
@@ -116,7 +116,7 @@ export default function SharedChatView() {
                                 value={inputToken}
                                 onChange={(e) => setInputToken(e.target.value)}
                                 placeholder="Paste token here..."
-                                className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
+                                className="w-full px-4 py-3 pr-12 rounded-xl border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all outline-none"
                                 onKeyDown={(e) => {
                                     if (e.key === 'Enter') {
                                         handleManualSubmit();
@@ -125,16 +125,16 @@ export default function SharedChatView() {
                             />
                             <button
                                 onClick={handleManualSubmit}
-                                className="absolute right-2 top-2 hover:bg-blue-50 text-blue-600 rounded-lg transition-colors p-1.5"
+                                className="absolute right-2 top-2 hover:bg-blue-50 dark:hover:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-lg transition-colors p-1.5"
                             >
                                 <FaArrowRight size={20} />
                             </button>
                         </div>
-                        <p className="text-xs text-gray-500 mt-2">If you have a valid token, paste it above to view.</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 mt-2">If you have a valid token, paste it above to view.</p>
                     </div>
 
                     <div className="flex gap-4 justify-center">
-                        <a href="/" className="inline-block bg-gray-100 text-gray-700 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 transition-colors">
+                        <a href="/" className="inline-block bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 px-6 py-2 rounded-lg font-medium hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">
                             Go Home
                         </a>
                         <a href="/ai" className="inline-block bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 transition-colors">
@@ -147,24 +147,24 @@ export default function SharedChatView() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col">
+        <div className="min-h-screen bg-transparent dark:bg-gray-950 flex flex-col transition-colors duration-300">
             {/* Header */}
-            <header className="bg-white border-b border-gray-200 sticky top-0 z-10 shadow-sm">
+            <header className="bg-white/80 dark:bg-gray-900/80 backdrop-blur-md border-b border-gray-200 dark:border-gray-800 sticky top-0 z-10 shadow-sm">
                 <div className="max-w-4xl mx-auto px-4 py-4 flex justify-between items-center">
                     <div className="flex items-center gap-3">
                         <div className="w-10 h-10 bg-gradient-to-br from-blue-600 to-purple-600 rounded-xl flex items-center justify-center text-white shadow-lg">
                             <FaRobot size={20} />
                         </div>
                         <div>
-                            <h1 className="font-bold text-gray-900 text-lg leading-tight">{chatData.title}</h1>
-                            <div className="text-xs text-gray-500 flex items-center gap-2">
+                            <h1 className="font-bold text-gray-900 dark:text-white text-lg leading-tight">{chatData.title}</h1>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-2">
                                 <span className="flex items-center gap-1"><FaCalendar size={10} /> {chatData.date ? new Date(chatData.date).toLocaleDateString() : new Date().toLocaleDateString()}</span>
-                                <span className="w-1 h-1 bg-gray-300 rounded-full"></span>
-                                <span className="text-blue-600 font-medium">Shared via SetuAI</span>
+                                <span className="w-1 h-1 bg-gray-300 dark:bg-gray-700 rounded-full"></span>
+                                <span className="text-blue-600 dark:text-blue-400 font-medium">Shared via SetuAI</span>
                             </div>
                         </div>
                     </div>
-                    <a href="/ai" className="hidden sm:block text-sm font-medium text-blue-600 hover:text-blue-800 bg-blue-50 hover:bg-blue-100 px-4 py-2 rounded-lg transition-colors">
+                    <a href="/ai" className="hidden sm:block text-sm font-medium text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 bg-blue-50 dark:bg-blue-900/30 hover:bg-blue-100 dark:hover:bg-blue-900/50 px-4 py-2 rounded-lg transition-colors">
                         Try SetuAI
                     </a>
                 </div>
@@ -174,18 +174,18 @@ export default function SharedChatView() {
             <main className="flex-1 max-w-4xl w-full mx-auto p-4 sm:p-6 space-y-6">
                 {chatData.messages.map((msg, idx) => (
                     <div key={idx} className={`flex gap-4 ${msg.role === 'user' ? 'flex-row-reverse' : ''}`}>
-                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-gray-200 text-gray-600' : 'bg-blue-100 text-blue-600'
+                        <div className={`w-8 h-8 rounded-full flex items-center justify-center flex-shrink-0 ${msg.role === 'user' ? 'bg-gray-200 dark:bg-gray-700 text-gray-600 dark:text-gray-400' : 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
                             }`}>
                             {msg.role === 'user' ? <FaUser size={14} /> : <FaRobot size={16} />}
                         </div>
 
                         <div className={`flex-1 max-w-[85%] rounded-2xl p-4 shadow-sm ${msg.role === 'user'
-                            ? 'bg-gradient-to-br from-gray-800 to-gray-900 text-white rounded-tr-none'
-                            : 'bg-white border border-gray-100 text-gray-800 rounded-tl-none'
+                            ? 'bg-gradient-to-br from-gray-800 to-gray-900 dark:from-indigo-700 dark:to-blue-800 text-white rounded-tr-none'
+                            : 'bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 text-gray-800 dark:text-gray-100 rounded-tl-none'
                             }`}>
                             {/* Check for restricted content */}
                             {msg.isRestricted ? (
-                                <div className={`flex items-center gap-2 p-3 rounded-lg border ${msg.role === 'user' ? 'bg-red-900/30 border-red-500/50 text-red-200' : 'bg-red-50 border-red-100 text-red-600'}`}>
+                                <div className={`flex items-center gap-2 p-3 rounded-lg border ${msg.role === 'user' ? 'bg-red-900/30 border-red-500/50 text-red-200' : 'bg-red-50 dark:bg-red-900/30 border-red-100 dark:border-red-900/50 text-red-600 dark:text-red-400'}`}>
                                     <FaExclamationTriangle className="flex-shrink-0" />
                                     <span className="italic text-sm">Content hidden due to safety policy violation.</span>
                                 </div>
@@ -194,7 +194,7 @@ export default function SharedChatView() {
                                     {formatText(msg.content)}
                                 </div>
                             )}
-                            <div className={`mt-2 text-xs flex justify-end ${msg.role === 'user' ? 'text-gray-400' : 'text-gray-400'}`}>
+                            <div className={`mt-2 text-xs flex justify-end ${msg.role === 'user' ? 'text-gray-400' : 'text-gray-500 dark:text-gray-500'}`}>
                                 <FaClock className="mr-1 mt-0.5" />
                                 {msg.timestamp ? new Date(msg.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }) : ''}
                             </div>
@@ -204,10 +204,10 @@ export default function SharedChatView() {
             </main>
 
             {/* Footer CTA */}
-            <footer className="bg-white border-t border-gray-200 py-8 mt-8">
+            <footer className="bg-white dark:bg-gray-900 border-t border-gray-200 dark:border-gray-800 py-8 mt-8 transition-colors duration-300">
                 <div className="max-w-4xl mx-auto px-4 text-center">
-                    <h3 className="text-xl font-bold text-gray-900 mb-2">Start your own conversation with SetuAI</h3>
-                    <p className="text-gray-600 mb-6">Get instant answers about real estate, market trends, and more.</p>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Start your own conversation with SetuAI</h3>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6 font-medium">Get instant answers about real estate, market trends, and more.</p>
                     <a href="/ai" className="inline-block bg-gradient-to-r from-blue-600 to-purple-600 text-white px-8 py-3 rounded-xl font-bold shadow-lg hover:shadow-xl transform hover:-translate-y-1 transition-all">
                         Launch SetuAI
                     </a>

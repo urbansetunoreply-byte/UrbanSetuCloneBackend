@@ -146,8 +146,8 @@ export default function AdminCoinStats() {
     if (loading) return (
         <div className="p-6 max-w-7xl mx-auto space-y-8 pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 animate-pulse">
-                <div className="h-10 w-64 bg-gray-200 rounded-xl"></div>
-                <div className="h-12 w-96 bg-gray-200 rounded-xl"></div>
+                <div className="h-10 w-64 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                <div className="h-12 w-96 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[1, 2, 3, 4].map((i) => (
@@ -208,7 +208,7 @@ export default function AdminCoinStats() {
                                 <button
                                     key={user._id}
                                     onClick={() => selectUser(user)}
-                                    className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3 transition-colors border-b last:border-none border-gray-50"
+                                    className="w-full px-4 py-3 text-left hover:bg-indigo-50 dark:hover:bg-indigo-900/40 flex items-center gap-3 transition-colors border-b last:border-none border-gray-50 dark:border-gray-700"
                                 >
                                     <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs font-bold">
                                         {user.username?.[0]?.toUpperCase() || 'U'}
@@ -237,7 +237,7 @@ export default function AdminCoinStats() {
                         </div>
                     </div>
                     <div className="mt-4 flex items-center text-xs text-gray-500">
-                        <span className="bg-indigo-50 text-indigo-600 px-2 py-0.5 rounded-full font-bold">Active Assets</span>
+                        <span className="bg-indigo-50 dark:bg-indigo-900/40 text-indigo-600 dark:text-indigo-400 px-2 py-0.5 rounded-full font-bold">Active Assets</span>
                     </div>
                 </div>
 
@@ -252,7 +252,7 @@ export default function AdminCoinStats() {
                         </div>
                     </div>
                     <div className="mt-4 flex items-center text-xs text-gray-500">
-                        <span className="bg-green-50 text-green-600 px-2 py-0.5 rounded-full font-bold">Total Minted</span>
+                        <span className="bg-green-50 dark:bg-green-900/40 text-green-600 dark:text-green-400 px-2 py-0.5 rounded-full font-bold">Total Minted</span>
                     </div>
                 </div>
 
@@ -267,7 +267,7 @@ export default function AdminCoinStats() {
                         </div>
                     </div>
                     <div className="mt-4 flex items-center text-xs text-gray-500">
-                        <span className="bg-red-50 text-red-600 px-2 py-0.5 rounded-full font-bold">Total Burned</span>
+                        <span className="bg-red-50 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-2 py-0.5 rounded-full font-bold">Total Burned</span>
                     </div>
                 </div>
 
@@ -282,7 +282,7 @@ export default function AdminCoinStats() {
                         </div>
                     </div>
                     <div className="mt-4 flex items-center text-xs text-gray-500">
-                        <span className="bg-blue-50 text-blue-600 px-2 py-0.5 rounded-full font-bold">Unique Users</span>
+                        <span className="bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 px-2 py-0.5 rounded-full font-bold">Unique Users</span>
                     </div>
                 </div>
             </div>
@@ -376,7 +376,7 @@ export default function AdminCoinStats() {
                                                         </div>
                                                     </td>
                                                     <td className="px-6 py-4">
-                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase ${tx.source === 'referral' ? 'bg-purple-100 text-purple-700' : 'bg-gray-100 text-gray-600'
+                                                        <span className={`px-2 py-0.5 rounded text-[10px] font-black tracking-widest uppercase ${tx.source === 'referral' ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400'
                                                             }`}>
                                                             {tx.source.replace('_', ' ')}
                                                         </span>
@@ -484,9 +484,9 @@ export default function AdminCoinStats() {
                             </div>
 
                             {adjustmentType === 'debit' && (
-                                <div className="bg-amber-50 p-4 rounded-2xl flex gap-3 border border-amber-100">
-                                    <FaExclamationTriangle className="text-amber-500 mt-1 flex-shrink-0" />
-                                    <p className="text-xs text-amber-700 leading-relaxed font-medium">
+                                <div className="bg-amber-50 dark:bg-amber-900/30 p-4 rounded-2xl flex gap-3 border border-amber-100 dark:border-amber-900/50">
+                                    <FaExclamationTriangle className="text-amber-500 dark:text-amber-400 mt-1 flex-shrink-0" />
+                                    <p className="text-xs text-amber-700 dark:text-amber-300 leading-relaxed font-medium">
                                         Revoking coins will immediately deduct them from the user's balance.
                                         An automated notification email will be sent with your reason.
                                     </p>
@@ -503,7 +503,7 @@ export default function AdminCoinStats() {
                                 <button
                                     disabled={isProcessing}
                                     onClick={handleAdjustment}
-                                    className={`flex-1 py-3.5 rounded-2xl font-bold text-white shadow-lg transition-all active:scale-95 ${adjustmentType === 'credit' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-100' : 'bg-red-600 hover:bg-red-700 shadow-red-100'
+                                    className={`flex-1 py-3.5 rounded-2xl font-bold text-white shadow-lg transition-all active:scale-95 ${adjustmentType === 'credit' ? 'bg-indigo-600 hover:bg-indigo-700 shadow-indigo-500/20' : 'bg-red-600 hover:bg-red-700 shadow-red-500/20'
                                         } ${isProcessing ? 'opacity-50 cursor-not-allowed' : ''}`}
                                 >
                                     {isProcessing ? 'Processing...' : (adjustmentType === 'credit' ? 'Confirm Grant' : 'Confirm Revoke')}

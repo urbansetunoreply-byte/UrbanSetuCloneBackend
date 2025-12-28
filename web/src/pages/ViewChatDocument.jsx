@@ -228,22 +228,22 @@ export default function ViewChatDocument() {
 
     if (loading || verifying) {
         return (
-            <div className="min-h-screen flex flex-col gap-4 items-center justify-center bg-gray-100">
-                <FaSpinner className="animate-spin text-4xl text-blue-600" />
-                <p className="text-gray-600 font-medium">Loading document...</p>
+            <div className="min-h-screen flex flex-col gap-4 items-center justify-center bg-gray-100 dark:bg-gray-950 transition-colors duration-300">
+                <FaSpinner className="animate-spin text-4xl text-blue-600 dark:text-blue-400" />
+                <p className="text-gray-600 dark:text-gray-400 font-medium">Loading document...</p>
             </div>
         );
     }
 
     if (error) {
         return (
-            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 p-4">
-                <div className="bg-white p-8 rounded-xl shadow-lg max-w-md w-full text-center">
-                    <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                        <FaFileAlt className="text-2xl text-red-600" />
+            <div className="min-h-screen flex flex-col items-center justify-center bg-gray-100 dark:bg-gray-950 p-4 transition-colors duration-300">
+                <div className="bg-white dark:bg-gray-800 p-8 rounded-xl shadow-lg max-w-md w-full text-center border dark:border-gray-700">
+                    <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                        <FaFileAlt className="text-2xl text-red-600 dark:text-red-400" />
                     </div>
-                    <h2 className="text-2xl font-bold text-gray-800 mb-2">Error Loading Document</h2>
-                    <p className="text-gray-600 mb-6">{error}</p>
+                    <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Error Loading Document</h2>
+                    <p className="text-gray-600 dark:text-gray-400 mb-6">{error}</p>
                     <button
                         onClick={() => navigate(-1)}
                         className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
@@ -261,17 +261,17 @@ export default function ViewChatDocument() {
     const isPdf = fileType === 'pdf';
 
     return (
-        <div className="min-h-screen bg-gray-100 flex flex-col">
+        <div className="min-h-screen bg-transparent dark:bg-gray-950 flex flex-col transition-colors duration-300">
             {/* Header */}
-            <div className="bg-white shadow px-4 sm:px-6 py-4 flex items-center justify-between z-10 gap-2">
+            <div className="bg-white dark:bg-gray-800 shadow-md dark:shadow-gray-900/50 px-4 sm:px-6 py-4 flex items-center justify-between z-10 gap-2 border-b dark:border-gray-700">
                 <div className="flex items-center gap-3 sm:gap-4 flex-1 min-w-0">
                     <button
                         onClick={() => navigate(-1)}
-                        className="p-2 hover:bg-gray-100 rounded-full text-gray-600 transition-colors shrink-0"
+                        className="p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full text-gray-600 dark:text-gray-400 transition-colors shrink-0"
                     >
                         <FaArrowLeft />
                     </button>
-                    <h1 className="text-lg sm:text-xl font-semibold text-gray-800 truncate pr-2">
+                    <h1 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white truncate pr-2">
                         {document.name || 'Document View'}
                     </h1>
                 </div>
@@ -295,15 +295,15 @@ export default function ViewChatDocument() {
             </div>
 
             {/* Content */}
-            <div className="flex-1 p-4 md:p-8 flex items-center justify-center overflow-auto">
-                <div className="bg-white rounded-lg shadow-xl overflow-hidden w-full max-w-6xl h-[80vh] flex items-center justify-center relative">
+            <div className="flex-1 p-4 md:p-8 flex items-center justify-center overflow-auto bg-gray-100 dark:bg-gray-950 transition-colors duration-300">
+                <div className="bg-white dark:bg-gray-900 rounded-lg shadow-2xl overflow-hidden w-full max-w-6xl h-[80vh] flex items-center justify-center relative border dark:border-gray-800">
                     {isRestricted ? (
-                        <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50/50 w-full h-full">
-                            <div className="w-16 h-16 bg-blue-100 rounded-full flex items-center justify-center mb-4">
-                                <FaLock className="text-2xl text-blue-600" />
+                        <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50/50 dark:bg-gray-800/50 w-full h-full">
+                            <div className="w-16 h-16 bg-blue-100 dark:bg-blue-900/30 rounded-full flex items-center justify-center mb-4">
+                                <FaLock className="text-2xl text-blue-600 dark:text-blue-400" />
                             </div>
-                            <h2 className="text-2xl font-bold text-gray-800 mb-2">Restricted Access</h2>
-                            <p className="text-gray-600 mb-6 max-w-md">
+                            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Restricted Access</h2>
+                            <p className="text-gray-600 dark:text-gray-400 mb-6 max-w-md">
                                 {!currentUser
                                     ? "This document is private. Please sign in to view and download."
                                     : "You are not authorized to view or download this document."}
@@ -324,8 +324,8 @@ export default function ViewChatDocument() {
                     ) : ((isPdf && !isMobile) || fileType === 'text') ? (
                         !pdfBlobUrl && loading ? (
                             <div className="flex flex-col items-center justify-center">
-                                <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
-                                <p className="text-gray-600">Loading Document...</p>
+                                <FaSpinner className="animate-spin text-4xl text-blue-600 dark:text-blue-400 mb-4" />
+                                <p className="text-gray-600 dark:text-gray-400">Loading Document...</p>
                             </div>
                         ) : (
                             <iframe
@@ -342,12 +342,12 @@ export default function ViewChatDocument() {
                         />
                     ) : (
                         /* Unsupported types - Show placeholder */
-                        <div className="flex flex-col items-center justify-center p-8 text-center">
-                            <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mb-4">
-                                <FaFileAlt className="text-4xl text-gray-400" />
+                        <div className="flex flex-col items-center justify-center p-8 text-center bg-gray-50/50 dark:bg-gray-800/50 w-full h-full">
+                            <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mb-4">
+                                <FaFileAlt className="text-4xl text-gray-400 dark:text-gray-500" />
                             </div>
-                            <h3 className="text-xl font-semibold text-gray-800 mb-2">Preview Not Available</h3>
-                            <p className="text-gray-500 max-w-md mb-6">
+                            <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">Preview Not Available</h3>
+                            <p className="text-gray-500 dark:text-gray-400 max-w-md mb-6">
                                 This file type cannot be previewed in the browser. Please download the file to view it.
                             </p>
                             <button

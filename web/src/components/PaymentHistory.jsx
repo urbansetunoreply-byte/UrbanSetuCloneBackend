@@ -64,17 +64,17 @@ const PaymentHistory = ({ userId }) => {
   const getStatusColor = (status) => {
     switch (status) {
       case 'completed':
-        return 'text-green-600 bg-green-100';
+        return 'text-green-600 dark:text-green-400 bg-green-100 dark:bg-green-900/30';
       case 'pending':
-        return 'text-yellow-600 bg-yellow-100';
+        return 'text-yellow-600 dark:text-yellow-400 bg-yellow-100 dark:bg-yellow-900/30';
       case 'failed':
-        return 'text-red-600 bg-red-100';
+        return 'text-red-600 dark:text-red-400 bg-red-100 dark:bg-red-900/30';
       case 'refunded':
-        return 'text-blue-600 bg-blue-100';
+        return 'text-blue-600 dark:text-blue-400 bg-blue-100 dark:bg-blue-900/30';
       case 'partially_refunded':
-        return 'text-orange-600 bg-orange-100';
+        return 'text-orange-600 dark:text-orange-400 bg-orange-100 dark:bg-orange-900/30';
       default:
-        return 'text-gray-600 bg-gray-100';
+        return 'text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700/50';
     }
   };
 
@@ -124,9 +124,9 @@ const PaymentHistory = ({ userId }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 transition-colors duration-300">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">Payment History</h2>
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">Payment History</h2>
       </div>
 
       {/* Filters */}
@@ -134,7 +134,7 @@ const PaymentHistory = ({ userId }) => {
         <select
           value={filters.status}
           onChange={(e) => handleFilterChange('status', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         >
           <option value="">All Status</option>
           <option value="completed">Completed</option>
@@ -147,7 +147,7 @@ const PaymentHistory = ({ userId }) => {
         <select
           value={filters.paymentType}
           onChange={(e) => handleFilterChange('paymentType', e.target.value)}
-          className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
         >
           <option value="">All Types</option>
           <option value="advance">Advance Payment</option>
@@ -168,26 +168,25 @@ const PaymentHistory = ({ userId }) => {
       ) : (
         <div className="space-y-4">
           {payments.map((payment) => (
-            <div key={payment._id} className={`border rounded-lg p-4 hover:shadow-md transition-shadow ${
-              payment.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' : 
-              payment.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' : 
-              payment.status === 'refunded' || payment.status === 'partially_refunded' ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50' :
-              'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'
-            }`}>
+            <div key={payment._id} className={`border dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow ${payment.status === 'completed' ? 'border-green-200 dark:border-green-800 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20' :
+                payment.status === 'failed' ? 'border-red-200 dark:border-red-800 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20' :
+                  payment.status === 'refunded' || payment.status === 'partially_refunded' ? 'border-blue-200 dark:border-blue-800 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20' :
+                    'border-yellow-200 dark:border-yellow-800 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20'
+              }`}>
               <div className="flex items-center justify-between mb-3">
                 <div className="flex items-center gap-3">
                   {getStatusIcon(payment.status)}
                   <div>
-                    <h3 className="font-semibold text-gray-800">
+                    <h3 className="font-semibold text-gray-800 dark:text-white">
                       {payment.appointmentId?.propertyName || 'Property Payment'}
                     </h3>
-                    <p className="text-sm text-gray-600">
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
                       {formatPaymentType(payment.paymentType)}
                     </p>
                   </div>
                 </div>
                 <div className="text-right">
-                  <div className="text-lg font-bold text-gray-800">
+                  <div className="text-lg font-bold text-gray-800 dark:text-white">
                     {(payment.currency || 'USD') === 'INR' ? `₹ ${Number(payment.amount).toFixed(2)}` : `$ ${Number(payment.amount).toFixed(2)}`}
                   </div>
                   <span className={`px-2 py-1 rounded-full text-xs font-medium ${getStatusColor(payment.status)}`}>
@@ -196,38 +195,38 @@ const PaymentHistory = ({ userId }) => {
                 </div>
               </div>
 
-              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 mb-3">
+              <div className="grid grid-cols-2 md:grid-cols-4 gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
                 <div>
                   <span className="font-medium">Payment ID:</span>
                   <p className="font-mono text-xs">{payment.paymentId}</p>
                 </div>
                 <div>
                   <span className="font-medium">Date:</span>
-                  <p>
+                  <div className="text-gray-700 dark:text-gray-300">
                     {payment.completedAt ? (
                       <div>
                         <div>Paid: {new Date(payment.completedAt).toLocaleDateString('en-GB')}</div>
-                        <div className="text-xs text-gray-500">{new Date(payment.completedAt).toLocaleTimeString('en-GB')}</div>
-                        <div className="text-xs text-gray-400 mt-1">Created: {new Date(payment.createdAt).toLocaleDateString('en-GB')}</div>
-                        <div className="text-xs text-gray-400">{new Date(payment.createdAt).toLocaleTimeString('en-GB')}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-500">{new Date(payment.completedAt).toLocaleTimeString('en-GB')}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">Created: {new Date(payment.createdAt).toLocaleDateString('en-GB')}</div>
+                        <div className="text-xs text-gray-400 dark:text-gray-500">{new Date(payment.createdAt).toLocaleTimeString('en-GB')}</div>
                         {payment.refundedAt && (
                           <>
-                            <div className="text-xs text-red-400 mt-1">Refunded: {new Date(payment.refundedAt).toLocaleDateString('en-GB')}</div>
-                            <div className="text-xs text-red-300">{new Date(payment.refundedAt).toLocaleTimeString('en-GB')}</div>
+                            <div className="text-xs text-red-500 dark:text-red-400 mt-1">Refunded: {new Date(payment.refundedAt).toLocaleDateString('en-GB')}</div>
+                            <div className="text-xs text-red-400 dark:text-red-500">{new Date(payment.refundedAt).toLocaleTimeString('en-GB')}</div>
                           </>
                         )}
                       </div>
                     ) : (
                       <div>
                         <div>Created: {new Date(payment.createdAt).toLocaleDateString('en-GB')}</div>
-                        <div className="text-xs text-gray-500">{new Date(payment.createdAt).toLocaleTimeString('en-GB')}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-500">{new Date(payment.createdAt).toLocaleTimeString('en-GB')}</div>
                       </div>
                     )}
-                  </p>
+                  </div>
                 </div>
                 <div>
                   <span className="font-medium">Property:</span>
-                  <p className="truncate">{payment.listingId?.name || 'N/A'}</p>
+                  <p className="truncate text-gray-700 dark:text-gray-300">{payment.listingId?.name || 'N/A'}</p>
                 </div>
                 <div>
                   <span className="font-medium">Receipt:</span>
@@ -236,31 +235,31 @@ const PaymentHistory = ({ userId }) => {
               </div>
 
               {payment.refundAmount > 0 && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-3 mb-3">
+                <div className="bg-red-50 dark:bg-red-950/20 border border-red-200 dark:border-red-900/50 rounded-lg p-3 mb-3">
                   <div className="flex items-center justify-between">
                     <div>
-                      <span className="text-red-800 font-medium">Refunded Amount:</span>
-                      <p className="text-red-600">
+                      <span className="text-red-800 dark:text-red-300 font-medium">Refunded Amount:</span>
+                      <p className="text-red-600 dark:text-red-400">
                         {(payment.currency || 'USD') === 'INR' ? '₹' : '$'} {Number(payment.refundAmount).toFixed(2)}
                       </p>
                     </div>
                     <div className="text-right">
-                      <p className="text-sm text-red-600">
+                      <p className="text-sm text-red-600 dark:text-red-400">
                         {payment.refundedAt ? new Date(payment.refundedAt).toLocaleDateString('en-GB') : 'N/A'}
                       </p>
-                      <p className="text-xs text-red-500">
+                      <p className="text-xs text-red-500 dark:text-red-400/70">
                         {payment.refundedAt ? new Date(payment.refundedAt).toLocaleTimeString('en-GB') : ''}
                       </p>
                       {payment.refundReason && (
-                        <p className="text-xs text-red-500">{payment.refundReason}</p>
+                        <p className="text-xs text-red-500 dark:text-red-400">{payment.refundReason}</p>
                       )}
                     </div>
                   </div>
                 </div>
               )}
 
-                <div className="flex items-center justify-between">
-                <div className="text-sm text-gray-500">
+              <div className="flex items-center justify-between">
+                <div className="text-sm text-gray-500 dark:text-gray-400">
                   {payment.completedAt ? (
                     <span>Completed on {new Date(payment.completedAt).toLocaleDateString('en-GB')}</span>
                   ) : (
@@ -269,11 +268,11 @@ const PaymentHistory = ({ userId }) => {
                 </div>
                 <div className="flex gap-2">
                   {payment.gateway && (
-                    <span className="px-2 py-1 text-[10px] rounded bg-gray-100 text-gray-700 border border-gray-200">
+                    <span className="px-2 py-1 text-[10px] rounded bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                       {payment.gateway.toUpperCase()} {payment.currency === 'INR' ? '₹' : '$'}
                     </span>
                   )}
-                  <button onClick={() => downloadReceipt(payment.receiptUrl)} className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-1">
+                  <button onClick={() => downloadReceipt(payment.receiptUrl)} className="px-3 py-1 bg-blue-100 dark:bg-blue-900/40 text-blue-600 dark:text-blue-300 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/60 transition-colors flex items-center gap-1">
                     <FaDownload className="text-xs" /> Receipt
                   </button>
                   <button
@@ -281,7 +280,7 @@ const PaymentHistory = ({ userId }) => {
                       // Navigate to payment details
                       window.location.href = `/user/payment-details/${payment.paymentId}`;
                     }}
-                    className="px-3 py-1 bg-gray-100 text-gray-600 rounded-lg hover:bg-gray-200 transition-colors flex items-center gap-1"
+                    className="px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-400 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors flex items-center gap-1"
                   >
                     <FaEye className="text-xs" />
                     Details
@@ -299,19 +298,19 @@ const PaymentHistory = ({ userId }) => {
           <button
             onClick={() => setCurrentPage(prev => Math.max(prev - 1, 1))}
             disabled={currentPage === 1}
-            className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Previous
           </button>
-          
-          <span className="px-4 py-2 text-gray-600">
+
+          <span className="px-4 py-2 text-gray-600 dark:text-gray-400">
             Page {currentPage} of {totalPages}
           </span>
-          
+
           <button
             onClick={() => setCurrentPage(prev => Math.min(prev + 1, totalPages))}
             disabled={currentPage === totalPages}
-            className="px-3 py-2 border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed"
+            className="px-3 py-2 border border-gray-300 dark:border-gray-700 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 disabled:opacity-50 disabled:cursor-not-allowed"
           >
             Next
           </button>

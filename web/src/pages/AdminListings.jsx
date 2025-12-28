@@ -421,11 +421,11 @@ export default function AdminListings() {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-950 py-10 px-2 md:px-8 transition-colors duration-300">
         <div className="max-w-6xl w-full mx-auto px-2 sm:px-4 md:px-8 py-8 overflow-x-hidden">
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 transition-colors duration-300">
             <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
-              <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 drop-shadow">All Listings (Admin)</h3>
+              <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-blue-400 drop-shadow">All Listings (Admin)</h3>
               <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 mt-4 md:mt-0">
                 <Link
                   to="/admin/deleted-listings"
@@ -457,40 +457,40 @@ export default function AdminListings() {
 
             {/* Filters */}
             <div className="mb-4 grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-3">
-              <input type="text" value={filters.searchTerm} onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="Search by name/address/city/state" />
-              <select className="border rounded px-3 py-2 text-sm" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
+              <input type="text" value={filters.searchTerm} onChange={(e) => setFilters({ ...filters, searchTerm: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Search by name/address/city/state" />
+              <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" value={filters.type} onChange={(e) => setFilters({ ...filters, type: e.target.value })}>
                 <option value="all">All Types</option>
                 <option value="sale">Sale</option>
                 <option value="rent">Rent</option>
               </select>
-              <select className="border rounded px-3 py-2 text-sm" value={filters.offer} onChange={(e) => setFilters({ ...filters, offer: e.target.value })}>
+              <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" value={filters.offer} onChange={(e) => setFilters({ ...filters, offer: e.target.value })}>
                 <option value="all">Offer: Any</option>
                 <option value="true">Offer: Yes</option>
                 <option value="false">Offer: No</option>
               </select>
               <div className="grid grid-cols-2 gap-2">
-                <select className="border rounded px-3 py-2 text-sm" value={filters.furnished} onChange={(e) => setFilters({ ...filters, furnished: e.target.value })}>
+                <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" value={filters.furnished} onChange={(e) => setFilters({ ...filters, furnished: e.target.value })}>
                   <option value="all">Furnished: Any</option>
                   <option value="true">Furnished</option>
                   <option value="false">Unfurnished</option>
                 </select>
-                <select className="border rounded px-3 py-2 text-sm" value={filters.parking} onChange={(e) => setFilters({ ...filters, parking: e.target.value })}>
+                <select className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" value={filters.parking} onChange={(e) => setFilters({ ...filters, parking: e.target.value })}>
                   <option value="all">Parking: Any</option>
                   <option value="true">With Parking</option>
                   <option value="false">No Parking</option>
                 </select>
               </div>
-              <input type="number" min="0" value={filters.minPrice} onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="Min Price" />
-              <input type="number" min="0" value={filters.maxPrice} onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="Max Price" />
-              <input type="text" value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="City" />
-              <input type="text" value={filters.state} onChange={(e) => setFilters({ ...filters, state: e.target.value })} className="border rounded px-3 py-2 text-sm" placeholder="State" />
+              <input type="number" min="0" value={filters.minPrice} onChange={(e) => setFilters({ ...filters, minPrice: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Min Price" />
+              <input type="number" min="0" value={filters.maxPrice} onChange={(e) => setFilters({ ...filters, maxPrice: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="Max Price" />
+              <input type="text" value={filters.city} onChange={(e) => setFilters({ ...filters, city: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="City" />
+              <input type="text" value={filters.state} onChange={(e) => setFilters({ ...filters, state: e.target.value })} className="border dark:border-gray-700 rounded px-3 py-2 text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" placeholder="State" />
             </div>
 
             {listings.length === 0 ? (
               <div className="text-center py-12">
                 <div className="text-gray-400 text-6xl mb-4">🏠</div>
-                <h4 className="text-xl font-semibold text-gray-600 mb-2">No listings yet</h4>
-                <p className="text-gray-500 mb-6">Start by creating your first property listing</p>
+                <h4 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No listings yet</h4>
+                <p className="text-gray-500 dark:text-gray-400 mb-6">Start by creating your first property listing</p>
                 <Link
                   to="/admin/create-listing"
                   className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold inline-flex items-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto justify-center"
@@ -502,9 +502,9 @@ export default function AdminListings() {
               <>
                 <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 xl:grid-cols-3 gap-4 sm:gap-6">
                   {listings.map((listing) => (
-                    <div key={listing._id} className="bg-white border border-gray-200 rounded-lg shadow-sm hover:shadow-md transition-shadow">
+                    <div key={listing._id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm hover:shadow-md transition-shadow">
                       {/* Image */}
-                      <div className="relative h-48 bg-gray-200 rounded-t-lg overflow-hidden">
+                      <div className="relative h-48 bg-gray-200 dark:bg-gray-700 rounded-t-lg overflow-hidden">
                         {listing.imageUrls && listing.imageUrls.length > 0 ? (
                           <img
                             src={listing.imageUrls[0]}
@@ -534,8 +534,8 @@ export default function AdminListings() {
 
                         <div className="absolute top-2 right-2">
                           <span className={`px-2 py-1 rounded-full text-xs font-bold ${listing.type === 'sale'
-                            ? 'bg-green-100 text-green-700'
-                            : 'bg-blue-100 text-blue-700'
+                            ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300'
+                            : 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300'
                             }`}>
                             {listing.type === 'sale' ? 'For Sale' : 'For Rent'}
                           </span>
@@ -544,22 +544,22 @@ export default function AdminListings() {
 
                       {/* Content */}
                       <div className="p-4">
-                        <h4 className="font-semibold text-lg text-gray-800 mb-2 truncate">{listing.name}</h4>
+                        <h4 className="font-semibold text-lg text-gray-800 dark:text-white mb-2 truncate">{listing.name}</h4>
 
                         {/* Verification Status Badge */}
                         <div className="mb-2">
                           {listing.isVerified ? (
-                            <span className="px-2 py-1 bg-green-100 text-green-700 rounded text-xs font-semibold flex items-center gap-1 w-fit">
+                            <span className="px-2 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300 rounded text-xs font-semibold flex items-center gap-1 w-fit">
                               <FaCheckCircle className="text-xs" /> Verified
                             </span>
                           ) : (
-                            <span className="px-2 py-1 bg-yellow-100 text-yellow-700 rounded text-xs font-semibold flex items-center gap-1 w-fit">
+                            <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300 rounded text-xs font-semibold flex items-center gap-1 w-fit">
                               ⚠️ Not Verified
                             </span>
                           )}
                         </div>
 
-                        <p className="text-gray-600 text-sm mb-2 truncate">
+                        <p className="text-gray-600 dark:text-gray-400 text-sm mb-2 truncate">
                           {maskAddress(
                             // Create address object if structured fields exist, otherwise use legacy address
                             listing.propertyNumber || listing.city ? {
@@ -574,7 +574,7 @@ export default function AdminListings() {
                           )}
                         </p>
 
-                        <div className="flex items-center gap-4 text-sm text-gray-500 mb-3">
+                        <div className="flex items-center gap-4 text-sm text-gray-500 dark:text-gray-400 mb-3">
                           <span>{listing.bedrooms} bed</span>
                           <span>{listing.bathrooms} bath</span>
                           {listing.parking && <span>Parking</span>}
@@ -582,23 +582,23 @@ export default function AdminListings() {
                         </div>
 
                         <div className="flex items-center justify-between mb-4">
-                          <div className="text-lg font-bold text-blue-600">
+                          <div className="text-lg font-bold text-blue-600 dark:text-blue-400">
                             {listing.offer && getDiscountPercentage(listing) > 0 ? (
                               <div className="flex items-center gap-2">
                                 <span>{formatPrice(listing.discountPrice)}</span>
-                                <span className="text-sm text-gray-500 line-through">
+                                <span className="text-sm text-gray-500 dark:text-gray-500 line-through">
                                   {formatPrice(listing.regularPrice)}
                                 </span>
                               </div>
                             ) : (
                               <span>
                                 {formatPrice(listing.regularPrice)}
-                                {listing.type === 'rent' && <span className="text-sm text-gray-500">/month</span>}
+                                {listing.type === 'rent' && <span className="text-sm text-gray-500 dark:text-gray-400">/month</span>}
                               </span>
                             )}
                           </div>
                           {listing.offer && getDiscountPercentage(listing) > 0 && (
-                            <span className="text-sm text-green-600 font-medium">
+                            <span className="text-sm text-green-600 dark:text-green-400 font-medium">
                               Save {formatPrice(listing.regularPrice - listing.discountPrice)}
                             </span>
                           )}
@@ -650,20 +650,20 @@ export default function AdminListings() {
       <ContactSupportWrapper />
       {/* Reason Modal */}
       {showReasonModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handleReasonSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaTrash /> Reason for Deletion</h3>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm z-50">
+          <form onSubmit={handleReasonSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaTrash /> Reason for Deletion</h3>
             <textarea
               ref={reasonInputRef}
-              className="border rounded p-2 w-full"
+              className="border dark:border-gray-700 rounded p-2 w-full bg-white dark:bg-gray-700 dark:text-white"
               placeholder="Enter reason for deleting this property"
               value={deleteReason}
               onChange={e => setDeleteReason(e.target.value)}
               rows={3}
             />
-            {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
+            {deleteError && <div className="text-red-600 dark:text-red-400 text-sm">{deleteError}</div>}
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setShowReasonModal(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold">Cancel</button>
+              <button type="button" onClick={() => setShowReasonModal(false)} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold">Cancel</button>
               <button type="submit" className="px-4 py-2 rounded bg-red-600 text-white font-semibold">Next</button>
             </div>
           </form>
@@ -671,20 +671,20 @@ export default function AdminListings() {
       )}
       {/* Password Modal */}
       {showPasswordModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handlePasswordSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 backdrop-blur-sm z-50">
+          <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
+            <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaLock /> Confirm Password</h3>
             <input
               ref={passwordInputRef}
               type="password"
-              className="border rounded p-2 w-full"
+              className="border dark:border-gray-700 rounded p-2 w-full bg-white dark:bg-gray-700 dark:text-white"
               placeholder="Enter your password"
               value={deletePassword}
               onChange={e => setDeletePassword(e.target.value)}
             />
-            {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
+            {deleteError && <div className="text-red-600 dark:text-red-400 text-sm">{deleteError}</div>}
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold">Cancel</button>
+              <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold">Cancel</button>
               <button type="submit" className="px-4 py-2 rounded bg-blue-700 text-white font-semibold" disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Confirm & Delete'}</button>
             </div>
           </form>
@@ -693,75 +693,72 @@ export default function AdminListings() {
 
       {/* Property Reports Modal */}
       {showPropertyReportsModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 backdrop-blur-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col transition-colors duration-300">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-pink-50">
-              <h2 className="text-xl sm:text-2xl font-bold text-red-700 flex items-center gap-2">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/10 dark:to-pink-900/10">
+              <h2 className="text-xl sm:text-2xl font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
                 <FaFlag />
                 Property Reports
               </h2>
               <button
                 onClick={() => setShowPropertyReportsModal(false)}
-                className="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+                className="text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-2 transition-colors"
               >
                 <FaTimes className="w-5 h-5" />
               </button>
             </div>
 
             {/* Filters */}
-            <div className="p-2 sm:p-4 lg:p-6 border-b border-gray-200 bg-gray-50">
-              {/* Mobile: Collapsible filters, Desktop: Always visible */}
+            <div className="p-2 sm:p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900/50">
               <div className="space-y-3">
-                {/* Primary filters - always visible but compact on mobile */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">From Date</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
                     <input
                       type="date"
                       value={propertyReportsFilters.dateFrom}
                       onChange={(e) => setPropertyReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">To Date</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
                     <input
                       type="date"
                       value={propertyReportsFilters.dateTo}
                       onChange={(e) => setPropertyReportsFilters(prev => ({ ...prev, dateTo: e.target.value }))}
-                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Reporter</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Reporter</label>
                     <input
                       type="text"
                       placeholder="Reporter"
                       value={propertyReportsFilters.reporter}
                       onChange={(e) => setPropertyReportsFilters(prev => ({ ...prev, reporter: e.target.value }))}
-                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                     />
                   </div>
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">Search</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Search</label>
                     <input
                       type="text"
                       placeholder="Search..."
                       value={propertyReportsFilters.search}
                       onChange={(e) => setPropertyReportsFilters(prev => ({ ...prev, search: e.target.value }))}
-                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                     />
                   </div>
                 </div>
 
-                {/* Secondary controls - compact on mobile */}
                 <div className="flex flex-col sm:flex-row gap-2 sm:gap-4 items-stretch sm:items-center justify-between">
                   <div className="flex gap-2">
                     <select
                       value={propertyReportsFilters.sortBy}
                       onChange={(e) => setPropertyReportsFilters(prev => ({ ...prev, sortBy: e.target.value }))}
-                      className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="flex-1 px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                     >
                       <option value="date">Date</option>
                       <option value="reporter">Reporter</option>
@@ -771,7 +768,7 @@ export default function AdminListings() {
                     <select
                       value={propertyReportsFilters.sortOrder}
                       onChange={(e) => setPropertyReportsFilters(prev => ({ ...prev, sortOrder: e.target.value }))}
-                      className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="px-2 py-1.5 sm:px-3 sm:py-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-1 focus:ring-red-500"
                     >
                       <option value="desc">↓</option>
                       <option value="asc">↑</option>
@@ -789,7 +786,7 @@ export default function AdminListings() {
                           sortOrder: 'desc'
                         });
                       }}
-                      className="px-2 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-gray-200 text-gray-700 rounded-md hover:bg-gray-300 transition"
+                      className="px-2 py-1.5 sm:px-4 sm:py-2 text-xs sm:text-sm bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-300 dark:hover:bg-gray-600 transition"
                     >
                       Clear
                     </button>
@@ -816,24 +813,15 @@ export default function AdminListings() {
             </div>
 
             {/* Reports List */}
-            <div className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-6 min-h-0">
-              {/* Debug info */}
-              <div className="mb-2 sm:mb-4 p-1.5 sm:p-2 bg-yellow-100 border border-yellow-300 rounded text-xs">
-                <div className="hidden sm:block">
-                  Debug: Loading={propertyReportsLoading.toString()}, Error={propertyReportsError}, Total Reports={propertyReports.length}, Filtered={filteredPropertyReports.length}
-                </div>
-                <div className="sm:hidden">
-                  L:{propertyReportsLoading.toString()} | T:{propertyReports.length} | F:{filteredPropertyReports.length}
-                </div>
-              </div>
+            <div className="flex-1 overflow-y-auto p-2 sm:p-4 lg:p-6 min-h-0 bg-white dark:bg-gray-800 transition-colors duration-300">
               {propertyReportsLoading ? (
-                <div className="flex items-center justify-center py-8">
+                <div className="flex items-center justify-center py-20">
                   <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div>
-                  <span className="ml-2 text-gray-600">Loading property reports...</span>
+                  <span className="ml-2 text-gray-600 dark:text-gray-400">Loading property reports...</span>
                 </div>
               ) : propertyReportsError ? (
-                <div className="text-center py-8">
-                  <div className="text-red-600 mb-2">{propertyReportsError}</div>
+                <div className="text-center py-20 bg-red-50 dark:bg-red-950/20 rounded-xl border border-red-100 dark:border-red-900/30">
+                  <p className="text-red-600 dark:text-red-400 font-medium mb-4">{propertyReportsError}</p>
                   <button
                     onClick={fetchPropertyReports}
                     className="px-4 py-2 bg-red-600 text-white rounded-md hover:bg-red-700 transition"
@@ -842,106 +830,73 @@ export default function AdminListings() {
                   </button>
                 </div>
               ) : filteredPropertyReports.length === 0 ? (
-                <div className="text-center py-8">
-                  <FaFlag className="w-12 h-12 text-gray-300 mx-auto mb-4" />
-                  <p className="text-gray-500 text-lg">
-                    {propertyReports.length === 0 ? 'No property reports found' : 'No reports match your filters'}
-                  </p>
-                  <p className="text-gray-400 text-sm">
-                    {propertyReports.length === 0 ? 'Reports will appear here when users report properties' : 'Try adjusting your search criteria'}
-                  </p>
+                <div className="text-center py-20 bg-gray-50 dark:bg-gray-900/50 rounded-xl border border-gray-100 dark:border-gray-700">
+                  <FaFlag className="w-12 h-12 text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+                  <p className="text-gray-500 dark:text-gray-400 font-medium text-lg">No property reports found.</p>
                 </div>
               ) : (
                 <div className="space-y-4">
-                  <div className="text-sm text-gray-600 mb-4">
-                    Showing {filteredPropertyReports.length} of {propertyReports.length} report{propertyReports.length !== 1 ? 's' : ''}
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-4">
+                    Showing {filteredPropertyReports.length} of {propertyReports.length} reports
                   </div>
                   {filteredPropertyReports.map((report, index) => (
-                    <div key={report.notificationId || index} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={report.notificationId || index} className="bg-white dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg p-4 shadow-sm hover:shadow-md transition-all">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-950/40 text-red-800 dark:text-red-300">
                               <FaFlag className="mr-1" />
                               Property Report
                             </span>
-                            <span className="text-xs text-gray-500">
-                              {new Date(report.createdAt).toLocaleDateString('en-US', {
-                                year: 'numeric',
-                                month: 'short',
-                                day: 'numeric',
-                                hour: '2-digit',
-                                minute: '2-digit'
-                              })}
+                            <span className="text-xs text-gray-500 dark:text-gray-400">
+                              {new Date(report.createdAt).toLocaleDateString()}
                             </span>
                           </div>
                           <div className="space-y-2">
                             <div>
-                              <span className="font-medium text-gray-700">Property: </span>
-                              <span className="text-gray-900">{report.propertyName}</span>
+                              <span className="font-medium text-gray-700 dark:text-gray-300">Property: </span>
+                              <span className="text-gray-900 dark:text-white font-semibold">{report.propertyName}</span>
                             </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
+                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2 text-sm">
                               <div>
-                                <span className="font-medium text-gray-700">Reporter: </span>
-                                <span className="text-gray-900">{report.reporter || report.reporterUsername || 'Unknown'}</span>
+                                <span className="font-medium text-gray-700 dark:text-gray-300">Reporter: </span>
+                                <span className="text-gray-900 dark:text-white">{report.reporter || 'Unknown'}</span>
                               </div>
                               <div>
-                                <span className="font-medium text-gray-700">Email: </span>
-                                <span className="text-gray-900">{report.reporterEmail || 'Not available'}</span>
-                              </div>
-                            </div>
-                            <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
-                              <div>
-                                <span className="font-medium text-gray-700">Phone: </span>
-                                <span className="text-gray-900">{report.reporterPhone || 'Not available'}</span>
-                              </div>
-                              <div>
-                                <span className="font-medium text-gray-700">Role: </span>
-                                <span className="text-gray-900 capitalize">{report.reporterRole || 'Not available'}</span>
+                                <span className="font-medium text-gray-700 dark:text-gray-300">Email: </span>
+                                <span className="text-gray-900 dark:text-white">{report.reporterEmail || 'N/A'}</span>
                               </div>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-700">Category: </span>
-                              <span className="text-gray-900">{report.category}</span>
+                              <span className="font-medium text-gray-700 dark:text-gray-300 text-sm">Category: </span>
+                              <span className="text-gray-900 dark:text-white text-sm">{report.category}</span>
                             </div>
                             {report.details && (
-                              <div>
-                                <span className="font-medium text-gray-700">Details: </span>
-                                <span className="text-gray-900">{report.details}</span>
+                              <div className="mt-2 bg-gray-50 dark:bg-gray-800 p-2 rounded border-l-4 border-red-500">
+                                <span className="font-medium text-gray-700 dark:text-gray-300 text-sm block mb-1">Details:</span>
+                                <span className="text-gray-900 dark:text-white text-sm whitespace-pre-wrap">{report.details}</span>
                               </div>
                             )}
                           </div>
                         </div>
-                        <div className="flex flex-col sm:flex-row gap-2">
+                        <div className="flex flex-col sm:flex-row gap-2 self-start">
                           {report.listingId && (
-                            <a
-                              href={`/admin/listing/${report.listingId}`}
-                              target="_blank"
-                              rel="noopener noreferrer"
-                              className="px-3 py-1 text-sm bg-blue-100 text-blue-700 rounded-md hover:bg-blue-200 transition text-center"
+                            <Link
+                              to={`/admin/listing/${report.listingId}`}
+                              className="px-3 py-1.5 text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 rounded hover:bg-blue-200 transition text-center font-semibold"
+                              onClick={() => setShowPropertyReportsModal(false)}
                             >
                               View Property
-                            </a>
+                            </Link>
                           )}
                           <a
                             href={report.reporterEmail ? `mailto:${report.reporterEmail}` : '#'}
-                            className={`px-3 py-1 text-sm rounded-md transition text-center ${report.reporterEmail
-                              ? 'bg-purple-100 text-purple-700 hover:bg-purple-200'
-                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
+                            className={`px-3 py-1.5 text-xs rounded transition text-center font-semibold ${report.reporterEmail
+                              ? 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300 hover:bg-purple-200'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-400 cursor-not-allowed'
                               }`}
-                            onClick={!report.reporterEmail ? (e) => e.preventDefault() : undefined}
                           >
                             Email Reporter
-                          </a>
-                          <a
-                            href={report.reporterPhone ? `tel:${report.reporterPhone}` : '#'}
-                            className={`px-3 py-1 text-sm rounded-md transition text-center ${report.reporterPhone
-                              ? 'bg-orange-100 text-orange-700 hover:bg-orange-200'
-                              : 'bg-gray-100 text-gray-400 cursor-not-allowed'
-                              }`}
-                            onClick={!report.reporterPhone ? (e) => e.preventDefault() : undefined}
-                          >
-                            Call Reporter
                           </a>
                         </div>
                       </div>
@@ -950,9 +905,14 @@ export default function AdminListings() {
                 </div>
               )}
             </div>
+            {/* Footer */}
+            <div className="p-4 bg-gray-50 dark:bg-gray-900/80 border-t border-gray-200 dark:border-gray-700 flex justify-between items-center text-xs text-gray-500 dark:text-gray-400">
+              <p>UrbanSetu Moderation Tools</p>
+              <p>{filteredPropertyReports.length} Reports Found</p>
+            </div>
           </div>
         </div>
       )}
     </>
   );
-} 
+}
