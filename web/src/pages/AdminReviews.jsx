@@ -519,6 +519,17 @@ export default function AdminReviews() {
     }
   };
 
+  const handleViewReview = (review) => {
+    setSelectedReview(review);
+  };
+
+  const handleOpenRemoveModal = (review) => {
+    setReviewToRemove(review);
+    setRemovalReason('');
+    setRemovalNote('');
+    setShowRemovalModal(true);
+  };
+
   const renderStars = (rating) => {
     return [...Array(5)].map((_, index) => (
       <FaStar
@@ -1146,7 +1157,10 @@ export default function AdminReviews() {
                         <FaEye size={14} />
                       </button>
                       <button
-                        onClick={() => handleDeleteReview(review._id)}
+                        onClick={() => {
+                          setReviewToDelete(review);
+                          setShowDeleteModal(true);
+                        }}
                         className="flex-1 flex items-center justify-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg transition-colors"
                         title="Delete Permanently"
                       >
