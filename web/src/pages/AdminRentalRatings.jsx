@@ -128,17 +128,17 @@ export default function AdminRentalRatings() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
                 <FaStar className="text-yellow-600" />
                 Admin Rental Ratings
               </h1>
-              <p className="text-gray-600 mt-2">View and manage all rental ratings across the platform</p>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">View and manage all rental ratings across the platform</p>
             </div>
           </div>
 
@@ -156,13 +156,13 @@ export default function AdminRentalRatings() {
                     fetchAllRatings();
                   }
                 }}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
               />
             </div>
             <select
               value={roleFilter}
               onChange={(e) => setRoleFilter(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
             >
               <option value="all">All Ratings</option>
               <option value="tenant">Tenant Ratings</option>
@@ -179,19 +179,19 @@ export default function AdminRentalRatings() {
 
         {/* Stats */}
         <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-          <div className="bg-white rounded-xl shadow-lg p-4">
-            <div className="text-sm text-gray-600 mb-1">Total Ratings</div>
-            <div className="text-2xl font-bold text-gray-800">{ratings.length}</div>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Ratings</div>
+            <div className="text-2xl font-bold text-gray-800 dark:text-white">{ratings.length}</div>
           </div>
-          <div className="bg-white rounded-xl shadow-lg p-4">
-            <div className="text-sm text-gray-600 mb-1">Complete Ratings</div>
-            <div className="text-2xl font-bold text-green-600">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Complete Ratings</div>
+            <div className="text-2xl font-bold text-green-600 dark:text-green-400">
               {ratings.filter(r => r.bothRated).length}
             </div>
           </div>
-          <div className="bg-white rounded-xl shadow-lg p-4">
-            <div className="text-sm text-gray-600 mb-1">Partial Ratings</div>
-            <div className="text-2xl font-bold text-yellow-600">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4">
+            <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Partial Ratings</div>
+            <div className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
               {ratings.filter(r => !r.bothRated).length}
             </div>
           </div>
@@ -199,10 +199,10 @@ export default function AdminRentalRatings() {
 
         {/* Ratings List */}
         {filteredRatings.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-            <FaStar className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Ratings Found</h3>
-            <p className="text-gray-500">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+            <FaStar className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No Ratings Found</h3>
+            <p className="text-gray-500 dark:text-gray-400">
               {searchQuery || roleFilter !== 'all'
                 ? 'No ratings match your filters'
                 : 'No rental ratings have been submitted yet'}
@@ -218,27 +218,27 @@ export default function AdminRentalRatings() {
               return (
                 <div
                   key={rating._id}
-                  className="bg-white rounded-xl shadow-lg p-6 border-2 hover:shadow-xl transition-all"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-2 dark:border-gray-700 hover:shadow-xl transition-all"
                 >
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-gray-800">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                           {contract?.listingId?.name || 'Property'}
                         </h3>
                         {rating.bothRated && (
-                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                          <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold flex items-center gap-1">
                             <FaCheckCircle /> Complete
                           </span>
                         )}
                         {!rating.bothRated && (
-                          <span className="px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                          <span className="px-3 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 rounded-full text-xs font-semibold flex items-center gap-1">
                             <FaClock /> Partial
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mb-3">{contract?.listingId?.address || 'Address not available'}</p>
-                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 mb-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">{contract?.listingId?.address || 'Address not available'}</p>
+                      <div className="flex flex-wrap items-center gap-4 text-sm text-gray-600 dark:text-gray-400 mb-3">
                         <div className="flex items-center gap-2">
                           <FaUser className="text-gray-400" />
                           <span>Tenant: {rating.tenantId?.username || rating.tenantId?.email || 'N/A'}</span>
@@ -255,23 +255,23 @@ export default function AdminRentalRatings() {
 
                       {/* Tenant to Landlord Rating */}
                       {tenantRating?.overallRating ? (
-                        <div className="mb-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
+                        <div className="mb-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="font-semibold text-blue-800">Tenant → Landlord</span>
+                            <span className="font-semibold text-blue-800 dark:text-blue-200">Tenant → Landlord</span>
                             {tenantRating.ratedAt && (
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {new Date(tenantRating.ratedAt).toLocaleDateString()}
                               </span>
                             )}
                           </div>
                           {renderStarRating(tenantRating.overallRating)}
                           {tenantRating.comment && (
-                            <p className="text-sm text-gray-700 mt-2 line-clamp-2">{tenantRating.comment}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 line-clamp-2">{tenantRating.comment}</p>
                           )}
                         </div>
                       ) : (
-                        <div className="mb-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                          <span className="text-sm text-yellow-700 flex items-center gap-1">
+                        <div className="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                          <span className="text-sm text-yellow-700 dark:text-yellow-300 flex items-center gap-1">
                             <FaClock /> Tenant rating pending
                           </span>
                         </div>
@@ -279,23 +279,23 @@ export default function AdminRentalRatings() {
 
                       {/* Landlord to Tenant Rating */}
                       {landlordRating?.overallRating ? (
-                        <div className="mb-3 p-3 bg-green-50 rounded-lg border border-green-200">
+                        <div className="mb-3 p-3 bg-green-50 dark:bg-green-900/20 rounded-lg border border-green-200 dark:border-green-800">
                           <div className="flex items-center justify-between mb-2">
-                            <span className="font-semibold text-green-800">Landlord → Tenant</span>
+                            <span className="font-semibold text-green-800 dark:text-green-200">Landlord → Tenant</span>
                             {landlordRating.ratedAt && (
-                              <span className="text-xs text-gray-500">
+                              <span className="text-xs text-gray-500 dark:text-gray-400">
                                 {new Date(landlordRating.ratedAt).toLocaleDateString()}
                               </span>
                             )}
                           </div>
                           {renderStarRating(landlordRating.overallRating)}
                           {landlordRating.comment && (
-                            <p className="text-sm text-gray-700 mt-2 line-clamp-2">{landlordRating.comment}</p>
+                            <p className="text-sm text-gray-700 dark:text-gray-300 mt-2 line-clamp-2">{landlordRating.comment}</p>
                           )}
                         </div>
                       ) : (
-                        <div className="mb-3 p-3 bg-yellow-50 rounded-lg border border-yellow-200">
-                          <span className="text-sm text-yellow-700 flex items-center gap-1">
+                        <div className="mb-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border border-yellow-200 dark:border-yellow-800">
+                          <span className="text-sm text-yellow-700 dark:text-yellow-300 flex items-center gap-1">
                             <FaClock /> Landlord rating pending
                           </span>
                         </div>
@@ -312,7 +312,7 @@ export default function AdminRentalRatings() {
                       {contract?.listingId?._id && (
                         <button
                           onClick={() => navigate(`/admin/listing/${contract.listingId._id}`)}
-                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 flex items-center justify-center gap-2"
+                          className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
                         >
                           <FaHome /> View Listing
                         </button>
@@ -338,11 +338,11 @@ export default function AdminRentalRatings() {
           >
             <div className="flex min-h-full items-center justify-center p-4">
               <div
-                className="bg-white rounded-xl shadow-2xl max-w-4xl w-full relative"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full relative"
                 onClick={(e) => e.stopPropagation()}
               >
-                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100">
-                  <h3 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+                <div className="flex items-center justify-between px-6 py-4 border-b border-gray-100 dark:border-gray-700">
+                  <h3 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
                     <FaStar className="text-yellow-500" /> Rating Details
                   </h3>
                   <button
@@ -350,7 +350,7 @@ export default function AdminRentalRatings() {
                       setShowRatingDisplay(false);
                       setSelectedRating(null);
                     }}
-                    className="p-2 rounded-full hover:bg-gray-100 text-gray-500"
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-700 text-gray-500 dark:text-gray-400"
                   >
                     <FaTimes />
                   </button>

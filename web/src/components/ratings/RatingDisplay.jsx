@@ -18,8 +18,8 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
           <FaStar
             key={i}
             className={`text-lg ${i < fullStars ? 'text-yellow-400 fill-current' :
-                i === fullStars && hasHalfStar ? 'text-yellow-400 fill-current opacity-50' :
-                  'text-gray-300'
+              i === fullStars && hasHalfStar ? 'text-yellow-400 fill-current opacity-50' :
+                'text-gray-300'
               }`}
           />
         ))}
@@ -72,28 +72,28 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
   return (
     <div className="space-y-6">
       {/* Contract Info */}
-      <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-        <h3 className="font-semibold text-blue-800 mb-1">{contract.listingId?.name || 'Property'}</h3>
-        <p className="text-sm text-blue-700">Contract ID: {contract.contractId}</p>
-        <p className="text-sm text-blue-700">Rent: ₹{contract.lockedRentAmount?.toLocaleString()}/month</p>
+      <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+        <h3 className="font-semibold text-blue-800 dark:text-blue-200 mb-1">{contract.listingId?.name || 'Property'}</h3>
+        <p className="text-sm text-blue-700 dark:text-blue-300">Contract ID: {contract.contractId}</p>
+        <p className="text-sm text-blue-700 dark:text-blue-300">Rent: ₹{contract.lockedRentAmount?.toLocaleString()}/month</p>
       </div>
 
       {/* Tenant to Landlord Rating */}
       <div>
-        <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-          <FaUser className="text-blue-600" />
+        <h3 className="font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+          <FaUser className="text-blue-600 dark:text-blue-400" />
           Tenant's Rating of Landlord
         </h3>
         {tenantRating?.overallRating ? (
-          <div className="border rounded-lg p-4 bg-blue-50 space-y-3">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-blue-50 dark:bg-blue-900/10 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <UserAvatar user={rating.tenantId} size="w-8 h-8" textSize="text-sm" />
-                  <span className="font-medium text-gray-800">{rating.tenantId?.username || 'Tenant'}</span>
+                  <span className="font-medium text-gray-800 dark:text-white">{rating.tenantId?.username || 'Tenant'}</span>
                 </div>
                 {tenantRating.ratedAt && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Rated on: {new Date(tenantRating.ratedAt).toLocaleString()}
                   </p>
                 )}
@@ -104,15 +104,15 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
             {renderDetailedRatings(tenantRating, true)}
 
             {tenantRating.comment && (
-              <div className="mt-3 pt-3 border-t border-blue-200">
-                <p className="text-sm font-medium text-gray-700 mb-1">Comment:</p>
-                <p className="text-sm text-gray-700">{tenantRating.comment}</p>
+              <div className="mt-3 pt-3 border-t border-blue-200 dark:border-blue-800">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Comment:</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">{tenantRating.comment}</p>
               </div>
             )}
           </div>
         ) : (
-          <div className="border rounded-lg p-4 bg-yellow-50 border-yellow-200">
-            <div className="flex items-center gap-2 text-yellow-700">
+          <div className="border rounded-lg p-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+            <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
               <FaClock /> Tenant rating pending
             </div>
           </div>
@@ -121,20 +121,20 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
 
       {/* Landlord to Tenant Rating */}
       <div>
-        <h3 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-          <FaUser className="text-green-600" />
+        <h3 className="font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+          <FaUser className="text-green-600 dark:text-green-400" />
           Landlord's Rating of Tenant
         </h3>
         {landlordRating?.overallRating ? (
-          <div className="border rounded-lg p-4 bg-green-50 space-y-3">
+          <div className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 bg-green-50 dark:bg-green-900/10 space-y-3">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
               <div>
                 <div className="flex items-center gap-2 mb-2">
                   <UserAvatar user={rating.landlordId} size="w-8 h-8" textSize="text-sm" />
-                  <span className="font-medium text-gray-800">{rating.landlordId?.username || 'Landlord'}</span>
+                  <span className="font-medium text-gray-800 dark:text-white">{rating.landlordId?.username || 'Landlord'}</span>
                 </div>
                 {landlordRating.ratedAt && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Rated on: {new Date(landlordRating.ratedAt).toLocaleString()}
                   </p>
                 )}
@@ -145,15 +145,15 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
             {renderDetailedRatings(landlordRating, false)}
 
             {landlordRating.comment && (
-              <div className="mt-3 pt-3 border-t border-green-200">
-                <p className="text-sm font-medium text-gray-700 mb-1">Comment:</p>
-                <p className="text-sm text-gray-700">{landlordRating.comment}</p>
+              <div className="mt-3 pt-3 border-t border-green-200 dark:border-green-800">
+                <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Comment:</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300">{landlordRating.comment}</p>
               </div>
             )}
           </div>
         ) : (
-          <div className="border rounded-lg p-4 bg-yellow-50 border-yellow-200">
-            <div className="flex items-center gap-2 text-yellow-700">
+          <div className="border rounded-lg p-4 bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800">
+            <div className="flex items-center gap-2 text-yellow-700 dark:text-yellow-300">
               <FaClock /> Landlord rating pending
             </div>
           </div>
@@ -162,11 +162,11 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
 
       {/* Status */}
       {rating.bothRated && (
-        <div className="bg-green-50 border border-green-200 rounded-lg p-4 flex items-center gap-2">
-          <FaCheckCircle className="text-green-600" />
-          <span className="font-semibold text-green-800">Both parties have completed their ratings</span>
+        <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 flex items-center gap-2">
+          <FaCheckCircle className="text-green-600 dark:text-green-400" />
+          <span className="font-semibold text-green-800 dark:text-green-200">Both parties have completed their ratings</span>
           {rating.allRatingsCompletedAt && (
-            <span className="text-xs text-green-600 ml-auto">
+            <span className="text-xs text-green-600 dark:text-green-400 ml-auto">
               Completed: {new Date(rating.allRatingsCompletedAt).toLocaleDateString()}
             </span>
           )}
@@ -174,7 +174,7 @@ export default function RatingDisplay({ rating, contract, currentUser, onUpdate 
       )}
 
       {/* Rating ID */}
-      <div className="text-xs text-gray-500 pt-4 border-t">
+      <div className="text-xs text-gray-500 dark:text-gray-400 pt-4 border-t dark:border-gray-700">
         Rating ID: <span className="font-mono">{rating.ratingId}</span>
       </div>
     </div>

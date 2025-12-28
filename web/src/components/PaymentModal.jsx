@@ -1086,41 +1086,41 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
 
   return (
     <div className="fixed inset-0 bg-gradient-to-br from-blue-900/40 to-purple-900/40 backdrop-blur-sm flex items-center justify-center z-50 p-4" style={{ overscrollBehavior: 'contain' }}>
-      <div className="rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50">
+      <div className="rounded-xl shadow-2xl max-w-md w-full max-h-[90vh] overflow-y-auto bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900">
         {!paymentSuccess ? (
           <>
             {/* Header */}
-            <div className="p-6 border-b border-blue-100 bg-gradient-to-r from-blue-50 to-purple-50">
+            <div className="p-6 border-b border-blue-100 dark:border-gray-700 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-800 dark:to-gray-800">
               <div className="flex items-center justify-between">
-                <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 flex items-center gap-2">
-                  <FaCreditCard className="text-blue-600" />
+                <h2 className="text-2xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-blue-700 to-purple-700 dark:from-blue-400 dark:to-purple-400 flex items-center gap-2">
+                  <FaCreditCard className="text-blue-600 dark:text-blue-400" />
                   Payment Required
                 </h2>
                 <button
                   onClick={handleClose}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors"
                 >
                   <FaTimes className="text-xl" />
                 </button>
               </div>
-              <p className="text-gray-600 mt-2">
+              <p className="text-gray-600 dark:text-gray-300 mt-2">
                 Complete your advance payment to confirm the booking
               </p>
               {paymentData && paymentData.payment && !paymentSuccess && (
-                <div className="mt-4 p-3 rounded-lg border-2 bg-gradient-to-r from-yellow-50 to-orange-50 border-yellow-300 shadow-md">
+                <div className="mt-4 p-3 rounded-lg border-2 bg-gradient-to-r from-yellow-50 to-orange-50 dark:from-yellow-900/20 dark:to-orange-900/20 border-yellow-300 dark:border-yellow-700 shadow-md">
                   <div className="flex items-center justify-center gap-3">
-                    <span className="text-gray-700 font-medium text-base">⏱️ Time remaining:</span>
+                    <span className="text-gray-700 dark:text-gray-300 font-medium text-base">⏱️ Time remaining:</span>
                     <span className={`text-2xl font-bold px-4 py-2 rounded-lg ${timeRemaining < 60
-                      ? 'bg-red-100 text-red-700 border-2 border-red-400 animate-pulse'
+                      ? 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-2 border-red-400 dark:border-red-600 animate-pulse'
                       : timeRemaining < 300
-                        ? 'bg-orange-100 text-orange-700 border-2 border-orange-400'
-                        : 'bg-green-100 text-green-700 border-2 border-green-400'
+                        ? 'bg-orange-100 dark:bg-orange-900/30 text-orange-700 dark:text-orange-300 border-2 border-orange-400 dark:border-orange-600'
+                        : 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-2 border-green-400 dark:border-green-600'
                       }`}>
                       {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
                     </span>
                   </div>
                   {timeRemaining < 300 && (
-                    <p className="text-center mt-2 text-xs font-medium text-gray-600">
+                    <p className="text-center mt-2 text-xs font-medium text-gray-600 dark:text-gray-400">
                       Please complete your payment soon
                     </p>
                   )}
@@ -1132,30 +1132,30 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
             <div className="p-6">
               {processingPayment ? (
                 <div className="flex flex-col items-center justify-center py-12">
-                  <FaSpinner className="animate-spin text-4xl text-blue-600 mb-4" />
-                  <h3 className="text-xl font-semibold text-gray-800 mb-2">Processing Payment...</h3>
-                  <p className="text-gray-600 text-center">
+                  <FaSpinner className="animate-spin text-4xl text-blue-600 dark:text-blue-400 mb-4" />
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">Processing Payment...</h3>
+                  <p className="text-gray-600 dark:text-gray-300 text-center">
                     Please wait while we verify your payment. Do not close this window.
                   </p>
                 </div>
               ) : loading && !paymentData ? (
                 <div className="flex items-center justify-center py-8">
-                  <FaSpinner className="animate-spin text-2xl text-blue-600" />
-                  <span className="ml-2 text-gray-600">Preparing payment...</span>
+                  <FaSpinner className="animate-spin text-2xl text-blue-600 dark:text-blue-400" />
+                  <span className="ml-2 text-gray-600 dark:text-gray-300">Preparing payment...</span>
                 </div>
               ) : paymentData ? (
                 <>
                   {/* Method Selection - Only show if no existing payment (allow changing region for new intents only) */}
                   {/* Method Selection - Show for all new intents, OR if we have monthly rent context to recreate */}
                   {(!existingPayment || monthlyRentContext) && (
-                    <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                      <h5 className="font-semibold text-gray-800 mb-2">Select Region</h5>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
+                      <h5 className="font-semibold text-gray-800 dark:text-white mb-2">Select Region</h5>
                       <div className="flex items-center gap-4 text-sm">
-                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <label className="inline-flex items-center gap-2 cursor-pointer text-gray-700 dark:text-gray-300">
                           <input type="radio" name="region" value="india" checked={preferredMethod === 'razorpay'} onChange={() => { const m = 'razorpay'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
                           <span>India (Razorpay - INR)</span>
                         </label>
-                        <label className="inline-flex items-center gap-2 cursor-pointer">
+                        <label className="inline-flex items-center gap-2 cursor-pointer text-gray-700 dark:text-gray-300">
                           <input type="radio" name="region" value="international" checked={preferredMethod === 'paypal'} onChange={() => { const m = 'paypal'; setPreferredMethod(m); setLoading(true); setPaymentData(null); paymentDataRef.current = null; setPaymentInitiatedTime(null); setTimeout(() => createPaymentIntent(m), 0); }} />
                           <span>International (PayPal - USD)</span>
                         </label>
@@ -1163,22 +1163,22 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                     </div>
                   )}
                   {/* Property Info */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
-                    <h3 className="font-semibold text-gray-800 mb-2">{appointment.propertyName}</h3>
-                    <p className="text-sm text-gray-600 mb-2">{appointment.propertyDescription}</p>
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 mb-6 border border-blue-100 dark:border-blue-800">
+                    <h3 className="font-semibold text-gray-800 dark:text-white mb-2">{appointment.propertyName}</h3>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-2">{appointment.propertyDescription}</p>
                     <div className="flex items-center justify-between mb-1">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         Payment Type:
                       </span>
-                      <span className="text-sm font-medium text-blue-600">
+                      <span className="text-sm font-medium text-blue-600 dark:text-blue-400">
                         {appointment.paymentType === 'monthly_rent' ? 'Monthly Rent' : 'Appointment Booking'}
                       </span>
                     </div>
                     <div className="flex items-center justify-between">
-                      <span className="text-sm text-gray-500">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">
                         {appointment.paymentType === 'monthly_rent' ? 'Rent Period:' : 'Appointment Date:'}
                       </span>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {appointment.paymentType === 'monthly_rent' && monthlyRentContext
                           ? `${new Date(0, monthlyRentContext.month - 1).toLocaleString('default', { month: 'long' })} ${monthlyRentContext.year}`
                           : new Date(appointment.date).toLocaleDateString('en-GB')
@@ -1187,13 +1187,13 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                     </div>
                     {appointment.paymentType !== 'monthly_rent' && (
                       <div className="flex items-center justify-between">
-                        <span className="text-sm text-gray-500">Time:</span>
-                        <span className="text-sm font-medium">{appointment.time}</span>
+                        <span className="text-sm text-gray-500 dark:text-gray-400">Time:</span>
+                        <span className="text-sm font-medium text-gray-700 dark:text-gray-300">{appointment.time}</span>
                       </div>
                     )}
                     <div className="flex items-center justify-between mt-2">
-                      <span className="text-sm text-gray-500">Payment Initiated:</span>
-                      <span className="text-sm font-medium">
+                      <span className="text-sm text-gray-500 dark:text-gray-400">Payment Initiated:</span>
+                      <span className="text-sm font-medium text-gray-700 dark:text-gray-300">
                         {paymentInitiatedTime
                           ? paymentInitiatedTime.toLocaleString('en-GB', {
                             day: '2-digit',
@@ -1226,12 +1226,12 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                   </div>
 
                   {/* Payment Summary */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
-                    <h4 className="font-semibold text-blue-800 mb-3">Payment Summary</h4>
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 mb-6 border border-blue-100 dark:border-blue-800">
+                    <h4 className="font-semibold text-blue-800 dark:text-blue-300 mb-3">Payment Summary</h4>
                     <div className="space-y-2">
                       {/* Original Amount (if discount applied) */}
                       {paymentData?.payment?.metadata?.coinDiscount > 0 && (
-                        <div className="flex justify-between text-gray-500 text-sm">
+                        <div className="flex justify-between text-gray-500 dark:text-gray-400 text-sm">
                           <span>Subtotal</span>
                           <span>₹ {Number(paymentData.payment.metadata.originalAmount).toFixed(2)}</span>
                         </div>
@@ -1239,22 +1239,22 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
 
                       {/* Discount Row */}
                       {paymentData?.payment?.metadata?.coinDiscount > 0 && (
-                        <div className="flex justify-between text-green-600 text-sm font-medium">
+                        <div className="flex justify-between text-green-600 dark:text-green-400 text-sm font-medium">
                           <span className="flex items-center gap-1"><FaCoins className="text-xs" /> SetuCoins Discount</span>
                           <span>- ₹ {Number(paymentData.payment.metadata.coinDiscount).toFixed(2)}</span>
                         </div>
                       )}
 
                       <div className="flex justify-between">
-                        <span className="text-gray-600">
+                        <span className="text-gray-600 dark:text-gray-300">
                           {appointment.paymentType === 'monthly_rent' ? 'Monthly Rent Payment' : 'Advance Payment (Flat)'}
                         </span>
-                        <span className="font-medium">
+                        <span className="font-medium text-gray-800 dark:text-white">
                           {preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'INR' ? 100 : 0))).toFixed(2)}` : `$ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'USD' ? 5 : 0))).toFixed(2)}`}
                         </span>
                       </div>
 
-                      <div className="flex justify-between text-sm text-gray-500">
+                      <div className="flex justify-between text-sm text-gray-500 dark:text-gray-400">
                         <span>Note</span>
                         <span>
                           {appointment.paymentType === 'monthly_rent'
@@ -1264,8 +1264,8 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                       </div>
                     </div>
 
-                    <div className="border-t border-blue-200 mt-3 pt-3">
-                      <div className="flex justify-between font-semibold text-blue-800">
+                    <div className="border-t border-blue-200 dark:border-blue-800 mt-3 pt-3">
+                      <div className="flex justify-between font-semibold text-blue-800 dark:text-blue-300">
                         <span>Total Amount</span>
                         <span>{preferredMethod === 'razorpay' ? `₹ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'INR' ? 100 : 0))).toFixed(2)}` : `$ ${Number((paymentData?.payment?.amount || (paymentData?.payment?.currency === 'USD' ? 5 : 0))).toFixed(2)}`}</span>
                       </div>
@@ -1273,21 +1273,21 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
 
                     {/* Completion Reward Preview */}
                     {preferredMethod === 'razorpay' && paymentData?.payment?.amount >= 1000 && (
-                      <div className="mt-3 bg-yellow-100 rounded-lg p-2 flex items-center justify-between border border-yellow-200">
-                        <span className="text-xs font-semibold text-yellow-800 flex items-center gap-1">
-                          <FaCoins className="text-yellow-600" /> You will earn:
+                      <div className="mt-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg p-2 flex items-center justify-between border border-yellow-200 dark:border-yellow-700">
+                        <span className="text-xs font-semibold text-yellow-800 dark:text-yellow-300 flex items-center gap-1">
+                          <FaCoins className="text-yellow-600 dark:text-yellow-400" /> You will earn:
                         </span>
-                        <span className="text-sm font-bold text-yellow-700">
+                        <span className="text-sm font-bold text-yellow-700 dark:text-yellow-400">
                           {Math.floor(paymentData?.payment?.amount / 1000)} SetuCoins
                         </span>
                       </div>
                     )}
                     {preferredMethod === 'paypal' && paymentData?.payment?.amount >= 12 && (
-                      <div className="mt-3 bg-yellow-100 rounded-lg p-2 flex items-center justify-between border border-yellow-200">
-                        <span className="text-xs font-semibold text-yellow-800 flex items-center gap-1">
-                          <FaCoins className="text-yellow-600" /> You will earn:
+                      <div className="mt-3 bg-yellow-100 dark:bg-yellow-900/30 rounded-lg p-2 flex items-center justify-between border border-yellow-200 dark:border-yellow-700">
+                        <span className="text-xs font-semibold text-yellow-800 dark:text-yellow-300 flex items-center gap-1">
+                          <FaCoins className="text-yellow-600 dark:text-yellow-400" /> You will earn:
                         </span>
-                        <span className="text-sm font-bold text-yellow-700">
+                        <span className="text-sm font-bold text-yellow-700 dark:text-yellow-400">
                           {Math.floor(paymentData?.payment?.amount / 12)} SetuCoins
                         </span>
                       </div>
@@ -1295,10 +1295,10 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                   </div>
 
                   {/* Payment Method */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
-                    <h5 className="font-semibold text-gray-800 mb-2">Payment Platform</h5>
-                    <div className="text-sm text-gray-700">{preferredMethod === 'razorpay' ? 'Razorpay' : 'PayPal'}</div>
-                    <ul className="list-disc pl-5 mt-3 text-sm text-gray-600 space-y-1">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 mb-6 border border-blue-100 dark:border-blue-800">
+                    <h5 className="font-semibold text-gray-800 dark:text-white mb-2">Payment Platform</h5>
+                    <div className="text-sm text-gray-700 dark:text-gray-300">{preferredMethod === 'razorpay' ? 'Razorpay' : 'PayPal'}</div>
+                    <ul className="list-disc pl-5 mt-3 text-sm text-gray-600 dark:text-gray-400 space-y-1">
                       {appointment.paymentType === 'monthly_rent' ? (
                         <>
                           {preferredMethod === 'razorpay' ? (
@@ -1334,28 +1334,28 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                   </div>
 
                   {/* Technical Details */}
-                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 rounded-lg p-4 mb-6 border border-blue-100">
-                    <h5 className="font-semibold text-gray-800 mb-2">Payment Technical Details</h5>
-                    <div className="text-xs text-gray-600 space-y-1">
+                  <div className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 mb-6 border border-blue-100 dark:border-blue-800">
+                    <h5 className="font-semibold text-gray-800 dark:text-white mb-2">Payment Technical Details</h5>
+                    <div className="text-xs text-gray-600 dark:text-gray-400 space-y-1">
                       {preferredMethod === 'razorpay' && paymentData?.razorpay && (
                         <>
-                          <div>Order ID: <span className="font-mono">{paymentData.razorpay.orderId}</span></div>
-                          <div>Amount (paise): <span className="font-mono">{paymentData.razorpay.amount}</span></div>
+                          <div>Order ID: <span className="font-mono text-gray-800 dark:text-gray-300">{paymentData.razorpay.orderId}</span></div>
+                          <div>Amount (paise): <span className="font-mono text-gray-800 dark:text-gray-300">{paymentData.razorpay.amount}</span></div>
                         </>
                       )}
                       {preferredMethod === 'paypal' && (
-                        <div>Amount: <span className="font-mono">{paymentData?.paypal?.amount || paymentData?.payment?.amount}</span> USD</div>
+                        <div>Amount: <span className="font-mono text-gray-800 dark:text-gray-300">{paymentData?.paypal?.amount || paymentData?.payment?.amount}</span> USD</div>
                       )}
                     </div>
                   </div>
 
                   {/* Security Notice */}
-                  <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-6">
+                  <div className="bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded-lg p-4 mb-6">
                     <div className="flex items-start gap-3">
-                      <FaShieldAlt className="text-green-600 mt-1" />
+                      <FaShieldAlt className="text-green-600 dark:text-green-400 mt-1" />
                       <div>
-                        <h5 className="font-semibold text-green-800 mb-1">Secure Payment via {preferredMethod === 'razorpay' ? 'Razorpay' : 'PayPal'}</h5>
-                        <p className="text-sm text-green-700">Your payment is processed securely. You can request a full refund if the appointment is cancelled.</p>
+                        <h5 className="font-semibold text-green-800 dark:text-green-300 mb-1">Secure Payment via {preferredMethod === 'razorpay' ? 'Razorpay' : 'PayPal'}</h5>
+                        <p className="text-sm text-green-700 dark:text-green-400">Your payment is processed securely. You can request a full refund if the appointment is cancelled.</p>
                       </div>
                     </div>
                   </div>
@@ -1373,7 +1373,7 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
                 </>
               ) : (
                 <div className="text-center py-8">
-                  <p className="text-gray-600">Failed to initialize payment. Please try again.</p>
+                  <p className="text-gray-600 dark:text-gray-300">Failed to initialize payment. Please try again.</p>
                   <button
                     onClick={createPaymentIntent}
                     className="mt-4 bg-blue-600 text-white px-4 py-2 rounded-lg hover:bg-blue-700 transition-colors"
@@ -1390,26 +1390,26 @@ const PaymentModal = ({ isOpen, onClose, appointment, onPaymentSuccess, existing
             <div className="p-6 text-center">
               <div className="mb-6">
                 <FaCheckCircle className="text-6xl text-green-500 mx-auto mb-4" />
-                <h2 className="text-2xl font-bold text-gray-800 mb-2">Payment Successful!</h2>
-                <p className="text-gray-600">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Payment Successful!</h2>
+                <p className="text-gray-600 dark:text-gray-300">
                   Your {appointment.paymentType === 'monthly_rent' ? 'rent payment' : 'advance payment'} has been processed successfully.
                 </p>
               </div>
 
-              <div className="bg-gray-50 rounded-lg p-4 mb-6">
-                <h3 className="font-semibold text-gray-800 mb-2">Payment Details</h3>
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
+                <h3 className="font-semibold text-gray-800 dark:text-white mb-2">Payment Details</h3>
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Amount Paid:</span>
-                    <span className="font-medium">$ {Number(paymentData.payment.amount).toFixed(2)}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Amount Paid:</span>
+                    <span className="font-medium text-gray-800 dark:text-white">$ {Number(paymentData.payment.amount).toFixed(2)}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Payment ID:</span>
-                    <span className="font-mono text-xs">{paymentData.payment.paymentId}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Payment ID:</span>
+                    <span className="font-mono text-xs text-gray-800 dark:text-white">{paymentData.payment.paymentId}</span>
                   </div>
                   <div className="flex justify-between">
-                    <span className="text-gray-600">Receipt No:</span>
-                    <span className="font-mono text-xs">{paymentData.payment.receiptNumber}</span>
+                    <span className="text-gray-600 dark:text-gray-400">Receipt No:</span>
+                    <span className="font-mono text-xs text-gray-800 dark:text-white">{paymentData.payment.receiptNumber}</span>
                   </div>
                 </div>
               </div>
