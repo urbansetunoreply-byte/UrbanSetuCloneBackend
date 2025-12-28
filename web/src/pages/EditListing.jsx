@@ -482,13 +482,13 @@ export default function EditListing() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-      <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
-        <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-950 dark:to-gray-900 min-h-screen py-10 px-2 md:px-8 transition-colors duration-300">
+      <div className="max-w-4xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg p-6 relative transition-colors">
+        <h3 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 text-center drop-shadow transition-colors">
           Edit Listing
         </h3>
         {isLocked && (
-          <div className="bg-amber-50 border-l-4 border-amber-500 p-4 mb-6 rounded shadow-sm">
+          <div className="bg-amber-50 dark:bg-amber-900/20 border-l-4 border-amber-500 p-4 mb-6 rounded shadow-sm transition-colors">
             <div className="flex items-start">
               <div className="flex-shrink-0">
                 <svg className="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
@@ -496,10 +496,10 @@ export default function EditListing() {
                 </svg>
               </div>
               <div className="ml-3">
-                <p className="text-sm text-amber-700 font-medium">
+                <p className="text-sm text-amber-700 dark:text-amber-400 font-medium">
                   Active Rent-Lock Plan
                 </p>
-                <p className="text-sm text-amber-600 mt-1">
+                <p className="text-sm text-amber-600 dark:text-amber-500 mt-1">
                   This property is currently under an active Rent-Lock contract. Critical details like address, price, and property type cannot be modified until the contract ends.
                 </p>
               </div>
@@ -508,8 +508,8 @@ export default function EditListing() {
         )}
         <form onSubmit={onSubmitForm} className="space-y-6">
           {/* Basic Information */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3">Basic Information</h4>
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg transition-colors">
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 transition-colors">Basic Information</h4>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
               <input
                 type="text"
@@ -518,7 +518,7 @@ export default function EditListing() {
                 required
                 onChange={onHandleChanges}
                 value={formData.name}
-                className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
               />
             </div>
             <textarea
@@ -527,17 +527,17 @@ export default function EditListing() {
               required
               onChange={onHandleChanges}
               value={formData.description}
-              className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4 resize-y"
+              className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mt-4 resize-y transition-colors"
               rows={4}
             />
           </div>
 
           {/* Address Information */}
           <fieldset disabled={isLocked} className="contents">
-            <div className="bg-gray-50 p-4 rounded-lg relative">
-              {isLocked && <div className="absolute inset-0 bg-gray-100/50 z-10 rounded-lg cursor-not-allowed" title="Address cannot be changed during active Rent-Lock"></div>}
-              <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                Address Information {isLocked && <span className="text-xs font-normal text-amber-600 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">Locked</span>}
+            <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg relative transition-colors">
+              {isLocked && <div className="absolute inset-0 bg-gray-100/50 dark:bg-gray-900/50 z-10 rounded-lg cursor-not-allowed" title="Address cannot be changed during active Rent-Lock"></div>}
+              <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2 transition-colors">
+                Address Information {isLocked && <span className="text-xs font-normal text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">Locked</span>}
               </h4>
               <div className="mb-4">
                 <LocationSelector value={locationState} onChange={setLocationState} mode="form" />
@@ -550,7 +550,7 @@ export default function EditListing() {
                   required
                   onChange={onHandleChanges}
                   value={formData.propertyNumber}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
                 <input
                   type="text"
@@ -558,7 +558,7 @@ export default function EditListing() {
                   placeholder="Landmark (optional)"
                   onChange={onHandleChanges}
                   value={formData.landmark}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
                 <input
                   type="text"
@@ -567,7 +567,7 @@ export default function EditListing() {
                   required
                   onChange={onHandleChanges}
                   value={formData.pincode}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                   pattern="[0-9]*"
                   inputMode="numeric"
                   maxLength="6"
@@ -583,45 +583,45 @@ export default function EditListing() {
                   placeholder="Google Maps Location Link (Optional)"
                   onChange={onHandleChanges}
                   value={formData.locationLink}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
               </div>
             </div>
           </fieldset>
 
           {/* Property Type */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3">Property Type</h4>
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg transition-colors">
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 transition-colors">Property Type</h4>
             <fieldset disabled={isLocked} className="contents">
               <div className="flex gap-6 relative">
-                {isLocked && <div className="absolute inset-0 bg-gray-100/50 z-10 rounded-lg cursor-not-allowed" title="Property Type cannot be changed during active Rent-Lock"></div>}
-                <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
+                {isLocked && <div className="absolute inset-0 bg-gray-100/50 dark:bg-gray-900/50 z-10 rounded-lg cursor-not-allowed" title="Property Type cannot be changed during active Rent-Lock"></div>}
+                <label className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors">
                   <input
                     type="radio"
                     name="type"
                     value="sale"
                     onChange={onHandleChanges}
                     checked={formData.type === "sale"}
-                    className="text-blue-600"
+                    className="text-blue-600 dark:text-blue-400"
                   />
-                  <span className="font-medium">For Sale</span>
+                  <span className="font-medium dark:text-gray-200">For Sale</span>
                 </label>
-                <label className="flex items-center gap-2 p-3 bg-white rounded-lg shadow-sm">
+                <label className="flex items-center gap-2 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm transition-colors">
                   <input
                     type="radio"
                     name="type"
                     value="rent"
                     onChange={onHandleChanges}
                     checked={formData.type === "rent"}
-                    className="text-blue-600"
+                    className="text-blue-600 dark:text-blue-400"
                   />
-                  <span className="font-medium">For Rent</span>
+                  <span className="font-medium dark:text-gray-200">For Rent</span>
                 </label>
               </div>
             </fieldset>
             <div className="mt-4">
               <div className="flex flex-col">
-                <span className="text-gray-700 font-medium mb-1">Area (sq ft) *</span>
+                <span className="text-gray-700 dark:text-gray-300 font-medium mb-1 transition-colors">Area (sq ft) *</span>
                 <input
                   type="number"
                   id="area"
@@ -629,9 +629,9 @@ export default function EditListing() {
                   required
                   onChange={onHandleChanges}
                   value={formData.area}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                   Area refers to the total built-up area of the property including all rooms, kitchen, bathrooms, and common areas
                 </p>
               </div>
@@ -639,7 +639,7 @@ export default function EditListing() {
 
             <div className="mt-4">
               <div className="flex flex-col">
-                <span className="text-gray-700 font-medium mb-1">Floor Number *</span>
+                <span className="text-gray-700 dark:text-gray-300 font-medium mb-1 transition-colors">Floor Number *</span>
                 <input
                   type="number"
                   id="floor"
@@ -648,9 +648,9 @@ export default function EditListing() {
                   min="0"
                   onChange={onHandleChanges}
                   value={formData.floor}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                   Floor number refers to which floor the property is located on (Ground floor = 0, First floor = 1, Second floor = 2, etc.)
                 </p>
               </div>
@@ -658,7 +658,7 @@ export default function EditListing() {
 
             <div className="mt-4">
               <div className="flex flex-col">
-                <span className="text-gray-700 font-medium mb-1">Property Age (years) *</span>
+                <span className="text-gray-700 dark:text-gray-300 font-medium mb-1 transition-colors">Property Age (years) *</span>
                 <input
                   type="number"
                   id="propertyAge"
@@ -667,9 +667,9 @@ export default function EditListing() {
                   min="0"
                   onChange={onHandleChanges}
                   value={formData.propertyAge}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                 />
-                <p className="text-xs text-gray-500 mt-1">
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                   Property age refers to how many years ago the property was constructed/built
                 </p>
               </div>
@@ -678,15 +678,15 @@ export default function EditListing() {
             {/* Rent-Lock Plan Configuration (only for rental properties) */}
             {formData.type === "rent" && (
               <fieldset disabled={isLocked} className="contents">
-                <div className="mt-6 border-t pt-4 relative">
-                  {isLocked && <div className="absolute inset-0 bg-gray-100/50 z-10 rounded-lg cursor-not-allowed" title="Rent-Lock Plan cannot be changed during active Rent-Lock"></div>}
-                  <h5 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                    Rent-Lock Plan Configuration {isLocked && <span className="text-xs font-normal text-amber-600 bg-amber-100 px-2 py-0.5 rounded border border-amber-200">Locked</span>}
+                <div className="mt-6 border-t dark:border-gray-700 pt-4 relative transition-colors">
+                  {isLocked && <div className="absolute inset-0 bg-gray-100/50 dark:bg-gray-900/50 z-10 rounded-lg cursor-not-allowed" title="Rent-Lock Plan cannot be changed during active Rent-Lock"></div>}
+                  <h5 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 flex items-center gap-2 transition-colors">
+                    Rent-Lock Plan Configuration {isLocked && <span className="text-xs font-normal text-amber-600 dark:text-amber-400 bg-amber-100 dark:bg-amber-900/30 px-2 py-0.5 rounded border border-amber-200 dark:border-amber-800">Locked</span>}
                   </h5>
                   <div className="space-y-4">
                     {/* Rent-Lock Plan Selection */}
                     <div className="flex flex-col">
-                      <span className="text-gray-700 font-medium mb-2">Rent-Lock Plan *</span>
+                      <span className="text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors">Rent-Lock Plan *</span>
                       <select
                         id="rentLockPlan"
                         name="defaultPlan"
@@ -704,14 +704,14 @@ export default function EditListing() {
                           }));
                         }}
                         value={formData.rentLockPlans?.defaultPlan || '1_year'}
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                       >
                         <option value="1_year">1 Year Rent-Lock</option>
                         <option value="3_year">3 Year Rent-Lock</option>
                         <option value="5_year">5 Year Rent-Lock</option>
                         <option value="custom">Custom Duration</option>
                       </select>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                         Select the rent-lock plan duration. Rent will remain fixed for this period.
                       </p>
                     </div>
@@ -719,7 +719,7 @@ export default function EditListing() {
                     {/* Custom Lock Duration (if custom plan selected) */}
                     {formData.rentLockPlans?.defaultPlan === "custom" && (
                       <div className="flex flex-col">
-                        <span className="text-gray-700 font-medium mb-2">Custom Lock Duration (months) *</span>
+                        <span className="text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors">Custom Lock Duration (months) *</span>
                         <input
                           type="number"
                           id="customLockDuration"
@@ -728,9 +728,9 @@ export default function EditListing() {
                           onChange={onHandleChanges}
                           value={formData.customLockDuration}
                           placeholder="Enter duration in months (1-60)"
-                          className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                         />
-                        <p className="text-xs text-gray-500 mt-1">
+                        <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                           Enter the lock duration in months (minimum 1 month, maximum 60 months).
                         </p>
                       </div>
@@ -738,7 +738,7 @@ export default function EditListing() {
 
                     {/* Monthly Rent */}
                     <div className="flex flex-col">
-                      <span className="text-gray-700 font-medium mb-2">Monthly Rent (₹) *</span>
+                      <span className="text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors">Monthly Rent (₹) *</span>
                       <input
                         type="number"
                         id="monthlyRent"
@@ -746,16 +746,16 @@ export default function EditListing() {
                         onChange={onHandleChanges}
                         value={formData.monthlyRent}
                         placeholder="Enter monthly rent amount"
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                         The fixed monthly rent amount that will remain unchanged during the rent-lock period.
                       </p>
                     </div>
 
                     {/* Security Deposit */}
                     <div className="flex flex-col">
-                      <span className="text-gray-700 font-medium mb-2">Security Deposit (months of rent) *</span>
+                      <span className="text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors">Security Deposit (months of rent) *</span>
                       <input
                         type="number"
                         id="securityDepositMonths"
@@ -764,16 +764,16 @@ export default function EditListing() {
                         onChange={onHandleChanges}
                         value={formData.securityDepositMonths}
                         placeholder="Enter months (typically 2-3 months)"
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                         Number of months of rent as security deposit (typically 2-3 months).
                       </p>
                     </div>
 
                     {/* Maintenance Charges */}
                     <div className="flex flex-col">
-                      <span className="text-gray-700 font-medium mb-2">Maintenance Charges (₹/month) (Optional)</span>
+                      <span className="text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors">Maintenance Charges (₹/month) (Optional)</span>
                       <input
                         type="number"
                         id="maintenanceCharges"
@@ -781,16 +781,16 @@ export default function EditListing() {
                         onChange={onHandleChanges}
                         value={formData.maintenanceCharges}
                         placeholder="Enter monthly maintenance charges (0 if none)"
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                         Monthly maintenance charges, if applicable. Leave 0 if no maintenance charges.
                       </p>
                     </div>
 
                     {/* Advance Rent */}
                     <div className="flex flex-col">
-                      <span className="text-gray-700 font-medium mb-2">Advance Rent (months) (Optional)</span>
+                      <span className="text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors">Advance Rent (months) (Optional)</span>
                       <input
                         type="number"
                         id="advanceRentMonths"
@@ -799,19 +799,19 @@ export default function EditListing() {
                         onChange={onHandleChanges}
                         value={formData.advanceRentMonths}
                         placeholder="Enter months of advance rent (0 if none)"
-                        className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                        className="w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                       />
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                         Number of months of rent to be paid in advance, if required. Leave 0 if no advance rent.
                       </p>
                     </div>
 
                     {/* Available Plans (multi-select) */}
                     <div className="flex flex-col">
-                      <span className="text-gray-700 font-medium mb-2">Available Plans (Select all that apply)</span>
+                      <span className="text-gray-700 dark:text-gray-300 font-medium mb-2 transition-colors">Available Plans (Select all that apply)</span>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
                         {['1_year', '3_year', '5_year', 'custom'].map((plan) => (
-                          <label key={plan} className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm cursor-pointer">
+                          <label key={plan} className="flex items-center space-x-2 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm cursor-pointer border dark:border-gray-700 transition-colors">
                             <input
                               type="checkbox"
                               checked={formData.rentLockPlans?.availablePlans.includes(plan)}
@@ -827,9 +827,9 @@ export default function EditListing() {
                                   }
                                 }));
                               }}
-                              className="text-blue-600"
+                              className="text-blue-600 dark:text-blue-400"
                             />
-                            <span className="text-gray-700 text-sm font-medium">
+                            <span className="text-gray-700 dark:text-gray-300 text-sm font-medium transition-colors">
                               {plan === '1_year' ? '1 Year' :
                                 plan === '3_year' ? '3 Years' :
                                   plan === '5_year' ? '5 Years' : 'Custom'}
@@ -837,7 +837,7 @@ export default function EditListing() {
                           </label>
                         ))}
                       </div>
-                      <p className="text-xs text-gray-500 mt-1">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mt-1 transition-colors">
                         Select all rent-lock plans you want to offer to tenants. At least one plan should be selected.
                       </p>
                     </div>
@@ -847,44 +847,12 @@ export default function EditListing() {
             )}
           </div>
 
-          {/* Property Details */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3">Property Details</h4>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
+          {/* Property Details Grid */}
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg transition-colors">
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 transition-colors">Property Pricing Summary</h4>
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div className="flex flex-col">
-                <span className="text-gray-700 font-medium mb-1">Bedrooms</span>
-                <input
-                  type="number"
-                  id="bedrooms"
-                  onChange={onHandleChanges}
-                  value={formData.bedrooms}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-gray-700 font-medium mb-1">Bathrooms</span>
-                <input
-                  type="number"
-                  id="bathrooms"
-                  onChange={onHandleChanges}
-                  value={formData.bathrooms}
-                  className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-gray-700 font-medium mb-1">Regular Price (₹)</span>
-                <input
-                  type="number"
-                  id="regularPrice"
-                  disabled={formData.type === 'rent'}
-                  onChange={onHandleChanges}
-                  value={formData.type === 'rent' ? formData.monthlyRent : formData.regularPrice}
-                  placeholder="Enter price"
-                  className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' ? 'bg-gray-100 cursor-not-allowed' : ''}`}
-                />
-              </div>
-              <div className="flex flex-col">
-                <span className="text-gray-700 font-medium mb-1">Regular Price (₹)</span>
+                <span className="text-gray-700 dark:text-gray-300 font-medium mb-1 transition-colors">{formData.type === 'rent' ? 'Monthly Rent (₹)' : 'Regular Price (₹)'}</span>
                 <fieldset disabled={isLocked || formData.type === 'rent'} className="contents">
                   <input
                     type="number"
@@ -893,12 +861,12 @@ export default function EditListing() {
                     onChange={onHandleChanges}
                     value={formData.type === 'rent' ? formData.monthlyRent : formData.regularPrice}
                     placeholder="Enter price"
-                    className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' || isLocked ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    className={`w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${formData.type === 'rent' || isLocked ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : ''}`}
                   />
                 </fieldset>
               </div>
               <div className="flex flex-col">
-                <span className="text-gray-700 font-medium mb-1">Discount Price (₹)</span>
+                <span className="text-gray-700 dark:text-gray-300 font-medium mb-1 transition-colors">Discount Price (₹)</span>
                 <fieldset disabled={isLocked || formData.type === 'rent'} className="contents">
                   <input
                     type="number"
@@ -907,7 +875,7 @@ export default function EditListing() {
                     onChange={onHandleChanges}
                     value={formData.type === 'rent' ? 0 : formData.discountPrice}
                     placeholder="Enter discount"
-                    className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${formData.type === 'rent' || isLocked ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    className={`w-full p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${formData.type === 'rent' || isLocked ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : ''}`}
                   />
                 </fieldset>
               </div>
@@ -915,28 +883,28 @@ export default function EditListing() {
           </div>
 
           {/* Property Features */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3">Property Features</h4>
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg transition-colors">
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 transition-colors">Property Amenities</h4>
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
               {["parking", "furnished", "offer"].map((item) => (
-                <label key={item} className="flex items-center space-x-2 p-3 bg-white rounded-lg shadow-sm">
+                <label key={item} className="flex items-center space-x-2 p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 cursor-pointer transition-colors">
                   <input
                     type="checkbox"
                     id={item}
                     onChange={onHandleChanges}
                     checked={formData[item]}
-                    className="text-blue-600"
+                    className="text-blue-600 dark:text-blue-400 w-5 h-5 transition-colors"
                   />
-                  <span className="text-gray-700 font-medium capitalize">{item}</span>
+                  <span className="text-gray-700 dark:text-gray-300 font-medium capitalize transition-colors">{item}</span>
                 </label>
               ))}
             </div>
           </div>
 
           {/* Property Images */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3">Property Images</h4>
-            <p className="text-gray-600 text-sm mb-3">
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg transition-colors">
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 transition-colors">Property Images</h4>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 transition-colors">
               Upload images directly or add image URLs. Supported formats: JPG, PNG, GIF, WebP, SVG (max 5MB per image)
             </p>
             <div className="space-y-3">
@@ -948,10 +916,10 @@ export default function EditListing() {
                       placeholder={`Image URL ${index + 1} (e.g., https://example.com/image.jpg)`}
                       value={url || ""}
                       onChange={(e) => handleImageChange(index, e.target.value)}
-                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${imageErrors[index] ? 'border-red-500' : ''
+                      className={`flex-1 p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${imageErrors[index] ? 'border-red-500' : ''
                         }`}
                     />
-                    <label className={`p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center gap-2 ${uploadingImages[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <label className={`p-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all flex items-center gap-2 ${uploadingImages[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       <input
                         type="file"
                         accept="image/*"
@@ -1029,9 +997,9 @@ export default function EditListing() {
           </div>
 
           {/* Property Videos */}
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h4 className="font-semibold text-gray-800 mb-3">Property Videos</h4>
-            <p className="text-gray-600 text-sm mb-3">
+          <div className="bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg transition-colors">
+            <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3 transition-colors">Property Videos</h4>
+            <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 transition-colors">
               Upload videos directly or add video URLs. Supported formats: MP4, WebM, OGG, MOV, MKV (max 5MB per video)
             </p>
             <div className="space-y-3">
@@ -1043,10 +1011,10 @@ export default function EditListing() {
                       placeholder={`Video URL ${index + 1} (e.g., https://example.com/video.mp4)`}
                       value={url || ""}
                       onChange={(e) => handleVideoUrlChange(index, e.target.value)}
-                      className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${videoErrors[index] ? 'border-red-500' : ''
+                      className={`flex-1 p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors ${videoErrors[index] ? 'border-red-500' : ''
                         }`}
                     />
-                    <label className={`p-3 border-2 border-dashed border-gray-300 rounded-lg cursor-pointer hover:border-blue-400 hover:bg-blue-50 transition-all flex items-center gap-2 ${uploadingVideos[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                    <label className={`p-3 border-2 border-dashed border-gray-300 dark:border-gray-700 rounded-lg cursor-pointer hover:border-blue-400 dark:hover:border-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-all flex items-center gap-2 ${uploadingVideos[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
                       <input
                         type="file"
                         accept="video/*"
@@ -1104,20 +1072,20 @@ export default function EditListing() {
           </div>
 
           {/* 360° Virtual Tour Images (New) */}
-          <div className={`bg-gray-50 p-4 rounded-lg border-2 ${formData.isVerified ? 'border-indigo-100' : 'border-dashed border-gray-300 relative'}`}>
+          <div className={`bg-gray-50 dark:bg-gray-800/50 p-4 rounded-lg border-2 ${formData.isVerified ? 'border-indigo-100 dark:border-indigo-900/30' : 'border-dashed border-gray-300 dark:border-gray-700 relative'} transition-colors`}>
 
             {/* Locked Overlay for Unverified Properties */}
             {!formData.isVerified && (
-              <div className="absolute inset-0 bg-white/60 z-10 flex items-center justify-center rounded-lg backdrop-blur-[2px]">
-                <div className="bg-white p-6 rounded-xl shadow-xl border border-indigo-100 max-w-md text-center transform hover:scale-105 transition-transform duration-300">
-                  <div className="bg-gradient-to-br from-indigo-100 to-purple-100 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
-                    <FaCompass className="text-indigo-600 text-2xl" />
+              <div className="absolute inset-0 bg-white/60 dark:bg-gray-900/60 z-10 flex items-center justify-center rounded-lg backdrop-blur-[2px] transition-colors">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-xl shadow-xl border border-indigo-100 dark:border-indigo-900 max-w-md text-center transform hover:scale-105 transition-transform duration-300">
+                  <div className="bg-gradient-to-br from-indigo-100 to-purple-100 dark:from-indigo-900/50 dark:to-purple-900/50 w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm">
+                    <FaCompass className="text-indigo-600 dark:text-indigo-400 text-2xl" />
                   </div>
-                  <h4 className="font-bold text-gray-900 text-lg mb-2">Premium Feature Locked 🔒</h4>
-                  <p className="text-gray-600 text-sm mb-4 leading-relaxed">
-                    360° virtual tours are a <span className="font-semibold text-indigo-600">premium feature</span> available exclusively for verified properties.
+                  <h4 className="font-bold text-gray-900 dark:text-white text-lg mb-2 transition-colors">Premium Feature Locked 🔒</h4>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed transition-colors">
+                    360° virtual tours are a <span className="font-semibold text-indigo-600 dark:text-indigo-400">premium feature</span> available exclusively for verified properties.
                   </p>
-                  <div className="text-xs text-indigo-700 font-medium bg-indigo-50 py-3 px-4 rounded-lg border border-indigo-100">
+                  <div className="text-xs text-indigo-700 dark:text-indigo-300 font-medium bg-indigo-50 dark:bg-indigo-900/30 py-3 px-4 rounded-lg border border-indigo-100 dark:border-indigo-800 transition-colors">
                     ✨ Verify this property to unlock this immersive feature!
                   </div>
                 </div>
@@ -1126,10 +1094,10 @@ export default function EditListing() {
 
             <div className={!formData.isVerified ? "opacity-40 pointer-events-none filter blur-[1px] select-none" : ""}>
               <div className="flex items-center gap-2 mb-3">
-                <FaCompass className="text-indigo-600 text-xl animate-pulse" />
-                <h4 className="font-semibold text-gray-800">360° Virtual Tours</h4>
+                <FaCompass className="text-indigo-600 dark:text-indigo-400 text-xl animate-pulse" />
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 transition-colors">360° Virtual Tours</h4>
               </div>
-              <p className="text-gray-600 text-sm mb-3">
+              <p className="text-gray-600 dark:text-gray-400 text-sm mb-3 transition-colors">
                 Upload equirectangular panoramic images for an immersive 360° view.
               </p>
               <div className="space-y-3">
@@ -1141,9 +1109,9 @@ export default function EditListing() {
                         placeholder={`360 Image URL ${index + 1}`}
                         value={url || ""}
                         onChange={(e) => handleVirtualTourUrlChange(index, e.target.value)}
-                        className={`flex-1 p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 ${virtualTourErrors[index] ? 'border-red-500' : ''}`}
+                        className={`flex-1 p-3 border dark:border-gray-700 dark:bg-gray-800 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 transition-colors ${virtualTourErrors[index] ? 'border-red-500' : ''}`}
                       />
-                      <label className={`p-3 border-2 border-dashed border-indigo-300 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 transition-all flex items-center gap-2 ${uploadingVirtualTour[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
+                      <label className={`p-3 border-2 border-dashed border-indigo-300 dark:border-indigo-900/50 rounded-lg cursor-pointer hover:border-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-900/20 transition-all flex items-center gap-2 ${uploadingVirtualTour[index] ? 'opacity-50 cursor-not-allowed' : ''}`}>
                         <input
                           type="file"
                           accept="image/*"
@@ -1154,10 +1122,10 @@ export default function EditListing() {
                         {uploadingVirtualTour[index] ? (
                           <>
                             <div className="animate-spin w-4 h-4 border-2 border-indigo-500 border-t-transparent rounded-full"></div>
-                            <span className="text-sm text-indigo-600">Uploading...</span>
+                            <span className="text-sm text-indigo-600 dark:text-indigo-400">Uploading...</span>
                           </>
                         ) : (
-                          <span className="text-sm text-indigo-600 font-medium">Upload 360°</span>
+                          <span className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">Upload 360°</span>
                         )}
                       </label>
                       <button
@@ -1174,8 +1142,8 @@ export default function EditListing() {
                     )}
                     {url && (
                       <div className="mt-2">
-                        <p className="text-xs text-green-600 font-semibold mb-1">✓ 360° Image Ready</p>
-                        <img src={url} alt="360 Preview" className="h-20 w-auto rounded border border-gray-300 object-cover" />
+                        <p className="text-xs text-green-600 dark:text-green-400 font-semibold mb-1">✓ 360° Image Ready</p>
+                        <img src={url} alt="360 Preview" className="h-20 w-auto rounded border border-gray-300 dark:border-gray-700 object-cover" />
                       </div>
                     )}
                   </div>
@@ -1183,7 +1151,7 @@ export default function EditListing() {
                 <button
                   type="button"
                   onClick={() => setFormData({ ...formData, virtualTourImages: [...(formData.virtualTourImages || []), ""] })}
-                  className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition mt-2 flex items-center gap-2"
+                  className="bg-indigo-500 text-white px-4 py-2 rounded-lg hover:bg-indigo-600 transition mt-2 flex items-center gap-2 shadow-md"
                 >
                   <span>+</span> Add 360° Image
                 </button>
@@ -1202,17 +1170,17 @@ export default function EditListing() {
 
           {/* Consent Checkbox for Users */}
           {currentUser.role !== 'admin' && currentUser.role !== 'rootadmin' && (
-            <div className="flex items-center gap-2 mt-2">
+            <div className="flex items-center gap-2 mt-2 transition-colors">
               <input
                 type="checkbox"
                 id="consent"
                 checked={consent}
                 onChange={e => setConsent(e.target.checked)}
-                className="accent-blue-600 w-4 h-4"
+                className="accent-blue-600 w-4 h-4 dark:bg-gray-800 dark:border-gray-700"
                 required
               />
-              <label htmlFor="consent" className="text-sm text-gray-700 select-none">
-                I confirm that <span className="font-semibold text-blue-700">all the information provided in this listing is true and genuine to the best of my knowledge</span>. Providing false information may result in account suspension or legal action.
+              <label htmlFor="consent" className="text-sm text-gray-700 dark:text-gray-300 select-none transition-colors">
+                I confirm that <span className="font-semibold text-blue-700 dark:text-blue-400 transition-colors">all the information provided in this listing is true and genuine to the best of my knowledge</span>. Providing false information may result in account suspension or legal action.
               </label>
             </div>
           )}

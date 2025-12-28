@@ -44,7 +44,7 @@ const Footer = () => {
   }, []);
 
   return (
-    <footer className="bg-gray-900 text-white">
+    <footer className="bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
       <div className="max-w-7xl mx-auto px-4 py-8 md:py-12">
         <div className="grid grid-cols-2 md:grid-cols-2 lg:grid-cols-4 gap-x-4 gap-y-8 md:gap-8">
           {/* Company Info */}
@@ -53,13 +53,13 @@ const Footer = () => {
               <div className="p-2 bg-yellow-400 rounded-lg">
                 <FaHome className="text-xl text-gray-900" />
               </div>
-              <h3 className="text-xl font-bold">UrbanSetu</h3>
+              <h3 className="text-xl font-bold dark:text-white">UrbanSetu</h3>
             </div>
-            <p className="text-gray-400 text-xs md:text-sm leading-relaxed max-w-sm">
+            <p className="text-gray-600 dark:text-gray-400 text-xs md:text-sm leading-relaxed max-w-sm transition-colors">
               Your trusted partner in finding the perfect property.
               We make real estate simple, smart, and secure.
             </p>
-            <div className="space-y-2 text-xs md:text-sm text-gray-300">
+            <div className="space-y-2 text-xs md:text-sm text-gray-700 dark:text-gray-300 transition-colors">
               <div className="flex items-center gap-2">
                 <FaPhone className="text-yellow-400" />
                 <span>+1 (555) 123-4567</span>
@@ -77,25 +77,25 @@ const Footer = () => {
 
           {/* Quick Links */}
           <div className="space-y-3">
-            <h4 className="text-lg font-semibold">Quick Links</h4>
+            <h4 className="text-lg font-semibold dark:text-white">Quick Links</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/" className="text-gray-300 hover:text-yellow-400 transition-colors">
+                <Link to="/" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Home
                 </Link>
               </li>
               <li>
-                <Link to="/search" className="text-gray-300 hover:text-yellow-400 transition-colors">
+                <Link to="/search" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Search Properties
                 </Link>
               </li>
               <li>
-                <Link to="/about" className="text-gray-300 hover:text-yellow-400 transition-colors">
+                <Link to="/about" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   About Us
                 </Link>
               </li>
               <li>
-                <Link to="/contact" className="text-gray-300 hover:text-yellow-400 transition-colors">
+                <Link to="/contact" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Contact
                 </Link>
               </li>
@@ -104,25 +104,25 @@ const Footer = () => {
 
           {/* Services */}
           <div className="space-y-3">
-            <h4 className="text-lg font-semibold">Services</h4>
+            <h4 className="text-lg font-semibold dark:text-white">Services</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/user/create-listing" className="text-gray-300 hover:text-yellow-400 transition-colors">
+                <Link to="/user/create-listing" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   List Property
                 </Link>
               </li>
               <li>
-                <Link to="/user/appointment" className="text-gray-300 hover:text-yellow-400 transition-colors">
+                <Link to="/user/appointment" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Book Appointment
                 </Link>
               </li>
               <li>
-                <Link to="/user/ai" className="text-gray-300 hover:text-yellow-400 transition-colors">
+                <Link to="/user/ai" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   AI Assistant
                 </Link>
               </li>
               <li>
-                <Link to="/user/route-planner" className="text-gray-300 hover:text-yellow-400 transition-colors">
+                <Link to="/user/route-planner" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors">
                   Route Planner
                 </Link>
               </li>
@@ -131,16 +131,16 @@ const Footer = () => {
 
           {/* Legal & Privacy */}
           <div className="space-y-3">
-            <h4 className="text-lg font-semibold">Legal & Privacy</h4>
+            <h4 className="text-lg font-semibold dark:text-white">Legal & Privacy</h4>
             <ul className="space-y-2 text-sm">
               <li>
-                <Link to="/terms" className="text-gray-300 hover:text-yellow-400 transition-colors flex items-center gap-2">
+                <Link to="/terms" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors flex items-center gap-2">
                   <FaFileContract className="text-xs" />
                   Terms of Service
                 </Link>
               </li>
               <li>
-                <Link to="/privacy" className="text-gray-300 hover:text-yellow-400 transition-colors flex items-center gap-2">
+                <Link to="/privacy" className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors flex items-center gap-2">
                   <FaShieldAlt className="text-xs" />
                   Privacy Policy
                 </Link>
@@ -154,7 +154,7 @@ const Footer = () => {
                         ? "/user/cookie-policy"
                         : "/cookie-policy"
                   }
-                  className="text-gray-300 hover:text-yellow-400 transition-colors flex items-center gap-2"
+                  className="text-gray-600 dark:text-gray-300 hover:text-blue-600 dark:hover:text-yellow-400 transition-colors flex items-center gap-2"
                 >
                   <FaCookie className="text-xs" />
                   Cookie Policy
@@ -165,16 +165,16 @@ const Footer = () => {
         </div>
 
         {/* Bottom Bar */}
-        <div className="border-t border-gray-700 mt-6 pt-6 md:mt-8 md:pt-8">
+        <div className="border-t border-gray-300 dark:border-gray-800 mt-6 pt-6 md:mt-8 md:pt-8 transition-colors">
           <div className="flex flex-col md:flex-row justify-between items-center gap-3 md:gap-4">
-            <p className="text-sm text-gray-400">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               © {new Date().getFullYear()} UrbanSetu. All rights reserved.
             </p>
-            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-sm text-gray-400">
-              <div className="flex items-center gap-2 px-3 py-1.5 bg-gray-800 rounded-lg border border-gray-600">
-                <FaEye className="text-blue-400" />
-                <span className="text-gray-300">
-                  Today's Visitors: <span className="font-semibold text-blue-400">{dailyVisitorCount}</span>
+            <div className="flex flex-col sm:flex-row items-center gap-3 sm:gap-4 text-sm text-gray-500 dark:text-gray-400">
+              <div className="flex items-center gap-2 px-3 py-1.5 bg-white dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 transition-colors">
+                <FaEye className="text-blue-500 dark:text-blue-400" />
+                <span className="text-gray-600 dark:text-gray-300">
+                  Today's Visitors: <span className="font-semibold text-blue-600 dark:text-blue-400">{dailyVisitorCount}</span>
                 </span>
               </div>
               <span>Made with ❤️ for real estate</span>

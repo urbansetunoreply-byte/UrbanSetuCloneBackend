@@ -7,12 +7,12 @@ export default function AdminPrivacy() {
   usePageTitle("Admin Privacy Policy - Data Protection");
 
   return (
-    <div className="max-w-4xl mx-auto py-10 px-4">
-      <h1 className="text-4xl font-bold mb-6 text-blue-700">Admin Privacy Policy</h1>
-      <div className="space-y-6 text-gray-800 text-base">
+    <div className="max-w-4xl mx-auto py-10 px-4 transition-colors duration-300">
+      <h1 className="text-4xl font-bold mb-6 text-blue-700 dark:text-blue-400 transition-colors">Admin Privacy Policy</h1>
+      <div className="space-y-6 text-gray-800 dark:text-gray-300 text-base transition-colors">
         <p className="text-lg">This policy explains how we collect, use, and protect your information as an admin on UrbanSetu.</p>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">1. Information We Collect</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">1. Information We Collect</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Admin Profile:</strong> Name, email, validated mobile number (unique 10 digits), role (admin/rootadmin), and authentication credentials.</li>
           <li><strong>Admin Activity:</strong> Listing approvals, edits, removals, reviews, unlocks, and other moderation actions.</li>
@@ -20,7 +20,7 @@ export default function AdminPrivacy() {
           <li><strong>Technical Data:</strong> IP address, device and browser details, usage analytics, and error logs.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">2. How We Use Admin Information</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">2. How We Use Admin Information</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Operations:</strong> Perform admin duties and maintain platform integrity.</li>
           <li><strong>Security:</strong> Monitor threats, manage lockouts, and prevent abuse.</li>
@@ -28,27 +28,27 @@ export default function AdminPrivacy() {
           <li><strong>Improvement:</strong> Use analytics and feedback to improve tooling.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">3. Admin Rights</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">3. Admin Rights</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li>Access your data and request corrections.</li>
           <li>Request account deletion (may be limited for default admins).</li>
           <li>Receive important operational and security notifications.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">4. Sharing & Third Parties</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">4. Sharing & Third Parties</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>No Sale:</strong> We do not sell admin information.</li>
           <li><strong>Service Providers:</strong> Infrastructure, monitoring, analytics under strict agreements.</li>
           <li><strong>Legal:</strong> Disclosures required by law or to protect our users and platform.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">5. Security</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">5. Security</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li>Role-based access, encryption, audit logging, and incident response.</li>
           <li>Despite safeguards, no system is perfect—use admin tools responsibly.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">6. Real Estate Data & Transaction Access</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">6. Real Estate Data & Transaction Access</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Scoped Access:</strong> Admins may view transaction histories, rent locks, wallet activity, and call/chat logs only for legitimate operational reasons.</li>
           <li><strong>Document Handling:</strong> Access to sale/rent agreements, KYC files, and ownership documents is restricted to senior or compliance-approved admins.</li>
@@ -56,21 +56,21 @@ export default function AdminPrivacy() {
           <li><strong>Download Controls:</strong> Downloading or exporting sensitive documents must follow internal policies and legal obligations.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">7. Audit Logs & Monitoring</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">7. Audit Logs & Monitoring</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Action Logs:</strong> Critical admin actions (approvals, removals, refunds, locks/unlocks) are logged with timestamp, IP, and admin identity.</li>
           <li><strong>Review & Oversight:</strong> Logs may be periodically reviewed by senior admins or compliance teams.</li>
           <li><strong>Misuse Detection:</strong> Unusual viewing or export patterns may trigger internal review.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">8. Data Retention & Legal Compliance</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">8. Data Retention & Legal Compliance</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Retention:</strong> Admin activity logs, moderation records, and escalation notes may be retained for extended periods for legal, audit, and fraud‑prevention purposes.</li>
           <li><strong>Access on Need Basis:</strong> Only authorized roles (e.g., compliance, legal, founders) may access historical admin logs.</li>
           <li><strong>Lawful Requests:</strong> Where required, relevant admin activity data may be shared with regulators, law‑enforcement, or courts.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">9. Live Monitor & Recording Data</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">9. Live Monitor & Recording Data</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Limited Use:</strong> Live call monitoring, screen sharing, or remote assistance tools are restricted to dispute handling, fraud reviews, or urgent safety escalations.</li>
           <li><strong>Secure Storage:</strong> Any captured audio/video snippets or screenshots are stored in encrypted evidence vaults with strict access logging.</li>
@@ -78,25 +78,25 @@ export default function AdminPrivacy() {
           <li><strong>Retention Windows:</strong> Monitoring artifacts are deleted once a case is closed unless regulators require longer retention.</li>
         </ul>
 
-        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600">11. AI Oversight & Rewards Management</h2>
+        <h2 className="text-2xl font-semibold mt-8 mb-4 text-blue-600 dark:text-blue-300 transition-colors">11. AI Oversight & Rewards Management</h2>
         <ul className="list-disc ml-6 space-y-3">
           <li><strong>Moderation Tools:</strong> Admins use AI insights to review flagged content. Access to raw chat logs is strictly for safety audits.</li>
           <li><strong>Referral Audits:</strong> Admins may review referral chains and SetuCoin accounts to detect and prevent system exploitation.</li>
           <li><strong>Service Coordination:</strong> Scoped access to on-demand service requests (movers, cleaning) is granted for vendor allotment and quality control.</li>
         </ul>
 
-        <div className="mt-8 p-6 bg-gray-50 rounded-lg border border-gray-200">
-          <h3 className="text-lg font-semibold text-gray-800 mb-2">Related Policies</h3>
-          <p className="text-gray-700 mb-3">For information about how we use cookies and similar technologies, please review our:</p>
+        <div className="mt-8 p-6 bg-gray-50 dark:bg-gray-900 rounded-lg border border-gray-200 dark:border-gray-800 transition-colors">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-2 transition-colors">Related Policies</h3>
+          <p className="text-gray-700 dark:text-gray-300 mb-3 transition-colors">For information about how we use cookies and similar technologies, please review our:</p>
           <a
             href="/admin/cookie-policy"
-            className="inline-flex items-center text-blue-600 hover:text-blue-700 font-medium transition-colors"
+            className="inline-flex items-center text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-colors"
           >
             🍪 Cookie Policy
           </a>
         </div>
 
-        <p className="mt-6 text-sm text-gray-600">Last updated: {new Date().toLocaleDateString(`en-IN`, {
+        <p className="mt-6 text-sm text-gray-600 dark:text-gray-400 transition-colors">Last updated: {new Date().toLocaleDateString(`en-IN`, {
           year: 'numeric',
           month: 'long',
           day: 'numeric'
