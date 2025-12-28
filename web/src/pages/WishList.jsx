@@ -297,18 +297,18 @@ const WishList = () => {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8 overflow-x-hidden">
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-2 sm:p-4 lg:p-6">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-950 dark:to-gray-900 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8 overflow-x-hidden transition-colors duration-300">
+      <div className="max-w-6xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-purple-900/10 p-2 sm:p-4 lg:p-6 border border-transparent dark:border-gray-800 transition-colors duration-300">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
           <div className="flex items-center gap-3">
-            <FaBookmark className="text-3xl text-purple-700" />
+            <FaBookmark className="text-3xl text-purple-700 dark:text-purple-400" />
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-purple-700">My Wishlist</h1>
-              <p className="text-sm text-gray-600">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-purple-700 dark:text-purple-400">My Wishlist</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {filteredAndSortedItems.length} of {items.length} properties
                 {stats.totalValue > 0 && (
-                  <span className="ml-2 text-purple-600 font-semibold">• Total Value: ₹{stats.totalValue.toLocaleString('en-IN')}</span>
+                  <span className="ml-2 text-purple-600 dark:text-purple-400 font-semibold">• Total Value: ₹{stats.totalValue.toLocaleString('en-IN')}</span>
                 )}
               </p>
             </div>
@@ -316,23 +316,23 @@ const WishList = () => {
           <div className="flex flex-col sm:flex-row gap-2 sm:gap-2">
             <div className="flex flex-wrap items-center gap-2">
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
-                <button onClick={() => setViewMode('grid')} className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white shadow' : 'text-gray-500'}`} title="Grid View"><FaBars className="text-sm" /></button>
-                <button onClick={() => setViewMode('list')} className={`p-2 rounded ${viewMode === 'list' ? 'bg-white shadow' : 'text-gray-500'}`} title="List View"><FaBars className="rotate-90 text-sm" /></button>
+              <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
+                <button onClick={() => setViewMode('grid')} className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow dark:text-white' : 'text-gray-500'}`} title="Grid View"><FaBars className="text-sm" /></button>
+                <button onClick={() => setViewMode('list')} className={`p-2 rounded ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow dark:text-white' : 'text-gray-500'}`} title="List View"><FaBars className="rotate-90 text-sm" /></button>
               </div>
               {/* Stats Toggle */}
-              <button onClick={() => setShowStats(!showStats)} className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              <button onClick={() => setShowStats(!showStats)} className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
                 <FaChartLine className="text-xs sm:text-sm" />
                 <span className="hidden sm:inline">Stats</span>
               </button>
               {/* AI Recommendations Toggle */}
-              <button onClick={() => setShowAIRecommendations(!showAIRecommendations)} className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showAIRecommendations ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              <button onClick={() => setShowAIRecommendations(!showAIRecommendations)} className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showAIRecommendations ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
                 <FaRobot className="text-xs sm:text-sm" />
                 <span className="hidden sm:inline">Advanced AI</span>
               </button>
               {/* Bulk Actions */}
               {items.length > 0 && (
-                <button onClick={() => setBulkActionMode(!bulkActionMode)} className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${bulkActionMode ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+                <button onClick={() => setBulkActionMode(!bulkActionMode)} className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${bulkActionMode ? 'bg-red-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'}`}>
                   <FaCheck className="text-xs sm:text-sm" />
                   <span className="hidden sm:inline">Select</span>
                 </button>
@@ -341,12 +341,12 @@ const WishList = () => {
             {/* Second row for mobile */}
             <div className="flex flex-wrap items-center gap-2">
               {/* Export */}
-              <button onClick={handleExport} className="px-2 sm:px-3 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm" disabled={items.length === 0}>
+              <button onClick={handleExport} className="px-2 sm:px-3 py-2 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm" disabled={items.length === 0}>
                 <FaDownload className="text-xs sm:text-sm" />
                 <span className="hidden sm:inline">Export</span>
               </button>
               {/* Share */}
-              <button onClick={handleShare} className="px-2 sm:px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm" disabled={items.length === 0}>
+              <button onClick={handleShare} className="px-2 sm:px-3 py-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm" disabled={items.length === 0}>
                 <FaShare className="text-xs sm:text-sm" />
                 <span className="hidden sm:inline">Share</span>
               </button>
@@ -362,17 +362,17 @@ const WishList = () => {
 
         {/* Add Property Search Section */}
         {showAddProperty && (
-          <div className="mb-6 bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <div className="mb-6 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-purple-800">Search and Add Properties</h3>
-              <button onClick={() => setShowAddProperty(false)} className="text-purple-600 hover:text-purple-800"><FaTimes className="text-lg" /></button>
+              <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-300">Search and Add Properties</h3>
+              <button onClick={() => setShowAddProperty(false)} className="text-purple-600 dark:text-purple-400 hover:text-purple-800 dark:hover:text-purple-200"><FaTimes className="text-lg" /></button>
             </div>
             <div className="flex gap-2 mb-4">
               <div className="flex-1 relative">
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                <input ref={searchInputRef} type="text" placeholder="Search properties by name, city, or state..." value={propertySearchTerm} onChange={handleSearchInputChange} onKeyPress={(e) => e.key === 'Enter' && searchProperties()} onFocus={() => propertySearchTerm.length >= 2 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+                <input ref={searchInputRef} type="text" placeholder="Search properties by name, city, or state..." value={propertySearchTerm} onChange={handleSearchInputChange} onKeyPress={(e) => e.key === 'Enter' && searchProperties()} onFocus={() => propertySearchTerm.length >= 2 && setShowSuggestions(true)} onBlur={() => setTimeout(() => setShowSuggestions(false), 200)} className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors" />
                 {showSuggestions && (searchSuggestions.length > 0 || suggestionLoading) && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                     {suggestionLoading ? (
                       <div className="p-3 text-center text-gray-500">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mx-auto"></div>
@@ -380,17 +380,17 @@ const WishList = () => {
                       </div>
                     ) : (
                       searchSuggestions.map((listing) => (
-                        <div key={listing._id} onClick={() => selectSuggestion(listing)} className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0">
+                        <div key={listing._id} onClick={() => selectSuggestion(listing)} className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0">
                           <div className="flex items-center gap-3">
                             {listing.imageUrls && listing.imageUrls.length > 0 ? (
                               <img src={listing.imageUrls[0]} alt={listing.name} className="w-12 h-12 object-cover rounded-md" onError={(e) => { e.target.src = "https://via.placeholder.com/48x48?text=No+Image"; }} />
                             ) : (
-                              <div className="w-12 h-12 bg-gray-200 rounded-md flex items-center justify-center"><span className="text-gray-400 text-lg">🏠</span></div>
+                              <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-md flex items-center justify-center"><span className="text-gray-400 text-lg">🏠</span></div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-gray-800 truncate">{listing.name}</h4>
-                              <p className="text-sm text-gray-600 truncate">{listing.city}, {listing.state}</p>
-                              <p className="text-sm text-gray-500">{listing.type} • {listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''} • ₹{listing.regularPrice?.toLocaleString('en-IN')}</p>
+                              <h4 className="font-semibold text-gray-800 dark:text-gray-200 truncate">{listing.name}</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{listing.city}, {listing.state}</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-500">{listing.type} • {listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''} • ₹{listing.regularPrice?.toLocaleString('en-IN')}</p>
                             </div>
                           </div>
                         </div>
@@ -409,11 +409,11 @@ const WishList = () => {
             {searchResults.length > 0 && (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {searchResults.map((listing) => (
-                  <div key={listing._id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                  <div key={listing._id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-800">{listing.name}</h4>
-                      <p className="text-sm text-gray-600">{listing.city}, {listing.state}</p>
-                      <p className="text-sm text-gray-500">{listing.type} • {listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''} • ₹{listing.regularPrice?.toLocaleString('en-IN')}</p>
+                      <h4 className="font-semibold text-gray-800 dark:text-gray-200">{listing.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{listing.city}, {listing.state}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-500">{listing.type} • {listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''} • ₹{listing.regularPrice?.toLocaleString('en-IN')}</p>
                     </div>
                     <button onClick={() => addToWishlist(listing)} disabled={isInWishlist(listing._id)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-colors ${isInWishlist(listing._id) ? 'bg-gray-300 text-gray-500 cursor-not-allowed' : 'bg-purple-600 text-white hover:bg-purple-700'}`}>
                       {isInWishlist(listing._id) ? 'Added' : 'Add to Wishlist'}
@@ -427,17 +427,17 @@ const WishList = () => {
 
         {/* Stats Section */}
         {showStats && items.length > 0 && (
-          <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
-            <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2"><FaChartLine className="text-purple-600" />Wishlist Statistics</h3>
+          <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 p-6 rounded-lg border border-purple-200 dark:border-purple-800">
+            <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-300 mb-4 flex items-center gap-2"><FaChartLine className="text-purple-600" />Wishlist Statistics</h3>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm"><p className="text-xs sm:text-sm text-gray-600">Total Properties</p><p className="text-lg sm:text-2xl font-bold text-purple-600">{items.length}</p></div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm"><p className="text-xs sm:text-sm text-gray-600">Average Price</p><p className="text-sm sm:text-2xl font-bold text-green-600">₹{stats.averagePrice.toLocaleString('en-IN')}</p></div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1"><p className="text-xs sm:text-sm text-gray-600">Price Range</p><p className="text-xs sm:text-lg font-bold text-blue-600">₹{stats.priceRange.min.toLocaleString('en-IN')} - ₹{stats.priceRange.max.toLocaleString('en-IN')}</p></div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1"><p className="text-xs sm:text-sm text-gray-600">Total Value</p><p className="text-sm sm:text-2xl font-bold text-indigo-600">₹{stats.totalValue.toLocaleString('en-IN')}</p></div>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm border border-transparent dark:border-gray-700"><p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Properties</p><p className="text-lg sm:text-2xl font-bold text-purple-600">{items.length}</p></div>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm border border-transparent dark:border-gray-700"><p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Average Price</p><p className="text-sm sm:text-2xl font-bold text-green-600">₹{stats.averagePrice.toLocaleString('en-IN')}</p></div>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1 border border-transparent dark:border-gray-700"><p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Price Range</p><p className="text-xs sm:text-lg font-bold text-blue-600">₹{stats.priceRange.min.toLocaleString('en-IN')} - ₹{stats.priceRange.max.toLocaleString('en-IN')}</p></div>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1 border border-transparent dark:border-gray-700"><p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Value</p><p className="text-sm sm:text-2xl font-bold text-indigo-600">₹{stats.totalValue.toLocaleString('en-IN')}</p></div>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <h4 className="font-semibold text-gray-800 mb-3">By Type</h4>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-transparent dark:border-gray-700">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">By Type</h4>
                 <div className="space-y-2">
                   {Object.entries(stats.typeDistribution).map(([type, count]) => (
                     <div key={type} className="flex items-center justify-between">
@@ -450,8 +450,8 @@ const WishList = () => {
                   ))}
                 </div>
               </div>
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <h4 className="font-semibold text-gray-800 mb-3">By City</h4>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-transparent dark:border-gray-700">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">By City</h4>
                 <div className="space-y-2">
                   {Object.entries(stats.cityDistribution).sort((a, b) => b[1] - a[1]).slice(0, 5).map(([city, count]) => (
                     <div key={city} className="flex items-center justify-between">
@@ -487,10 +487,10 @@ const WishList = () => {
 
         {/* Bulk Actions Bar - mirror watchlist */}
         {bulkActionMode && (
-          <div className="mb-6 bg-red-50 p-3 sm:p-4 rounded-lg border border-red-200">
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 p-3 sm:p-4 rounded-lg border border-red-200 dark:border-red-800">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
-                <button onClick={handleSelectAll} className="flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 text-sm">
+                <button onClick={handleSelectAll} className="flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors">
                   <FaCheck className="text-sm" />
                   {selectedItems.length === filteredAndSortedItems.length ? 'Deselect All' : 'Select All'}
                 </button>
@@ -518,12 +518,12 @@ const WishList = () => {
           <div className="mb-6 space-y-4">
             <div className="relative">
               <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-              <input type="text" placeholder="Search properties by name, city, or state..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent" />
+              <input type="text" placeholder="Search properties by name, city, or state..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors" />
             </div>
             <div className="flex flex-col sm:flex-row gap-4">
               <div className="flex items-center gap-2">
                 <FaFilter className="text-gray-500" />
-                <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <select value={filterType} onChange={(e) => setFilterType(e.target.value)} className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors">
                   <option value="all">All Types</option>
                   <option value="sale">For Sale</option>
                   <option value="rent">For Rent</option>
@@ -531,7 +531,7 @@ const WishList = () => {
               </div>
               <div className="flex items-center gap-2">
                 <FaSort className="text-gray-500" />
-                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent">
+                <select value={sortBy} onChange={(e) => setSortBy(e.target.value)} className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors">
                   <option value="dateAdded">Date Added</option>
                   <option value="price-low">Price: Low to High</option>
                   <option value="price-high">Price: High to Low</option>
@@ -546,8 +546,8 @@ const WishList = () => {
         {items.length === 0 ? (
           <div className="text-center py-10 sm:py-16">
             <div className="text-6xl sm:text-8xl mb-4">🔖</div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2">Your wishlist is empty</h3>
-            <p className="text-gray-600 mb-6">Add properties to compare prices later.</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">Your wishlist is empty</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Add properties to compare prices later.</p>
             <Link to="/search" className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors">
               <FaSearch />
               Browse Properties
@@ -556,8 +556,8 @@ const WishList = () => {
         ) : filteredAndSortedItems.length === 0 ? (
           <div className="text-center py-10">
             <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No properties found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">No properties found</h3>
+            <p className="text-gray-600 dark:text-gray-400">Try adjusting your search or filter criteria.</p>
           </div>
         ) : (
           <div className={viewMode === 'grid' ? "grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-3 sm:gap-4 lg:gap-6" : "space-y-4 overflow-x-hidden"}>
@@ -566,7 +566,7 @@ const WishList = () => {
               const has = s && s.baseline != null && s.current != null;
               const statusColor = s.status === 'dropped' ? 'text-green-600' : (s.status === 'increased' ? 'text-red-600' : 'text-gray-600');
               return (
-                <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
+                <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700 w-full overflow-hidden transition-colors' : ''}`}>
                   <div className="absolute top-2 left-2 z-10">
                     {(s.status === 'dropped') && (
                       <span className="bg-green-500 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1"><FaArrowDown className="text-[10px] sm:text-xs" /> Price dropped</span>
@@ -583,8 +583,8 @@ const WishList = () => {
                   <div className={viewMode === 'list' ? 'flex-1' : ''}>
                     <ListingItem listing={listing} onWishToggle={handleWishToggle} />
                     {has && (
-                      <div className="mt-2 px-2 py-2 bg-gray-50 border rounded-md text-xs sm:text-sm flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-1 text-gray-600"><FaCalendarAlt className="text-gray-500" /><span>Added: {s.addedAt ? new Date(s.addedAt).toLocaleDateString() : '-'}</span></div>
+                      <div className="mt-2 px-2 py-2 bg-gray-50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 rounded-md text-xs sm:text-sm flex flex-wrap items-center gap-3">
+                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400"><FaCalendarAlt className="text-gray-500" /><span>Added: {s.addedAt ? new Date(s.addedAt).toLocaleDateString() : '-'}</span></div>
                         {/* Removed At add / Today / No change info as requested */}
                       </div>
                     )}
@@ -606,12 +606,12 @@ const WishList = () => {
           title="Open Watchlist"
         >
           <span className="w-7 h-7 text-white text-2xl">👁️</span>
-          <div className="absolute bottom-full right-0 mb-3 bg-white text-gray-800 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 transform -translate-y-1 transition-all duration-200">
+          <div className="absolute bottom-full right-0 mb-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 dark:border-gray-700 transform -translate-y-1 transition-all duration-200">
             <div className="flex items-center gap-2">
               <span className="text-lg">👁️</span>
               <span className="font-medium">Watchlist</span>
             </div>
-            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
+            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white dark:border-t-gray-800"></div>
           </div>
         </button>
       </div>

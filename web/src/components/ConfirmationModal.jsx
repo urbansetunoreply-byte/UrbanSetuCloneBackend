@@ -1,17 +1,17 @@
 import React from 'react';
 import { FaTimes, FaExclamationTriangle, FaCheck, FaTrash } from 'react-icons/fa';
 
-export default function ConfirmationModal({ 
-  isOpen, 
-  onClose, 
-  onConfirm, 
-  title = "Confirm Action", 
-  message = "Are you sure you want to proceed?", 
-  confirmText = "Confirm", 
+export default function ConfirmationModal({
+  isOpen,
+  onClose,
+  onConfirm,
+  title = "Confirm Action",
+  message = "Are you sure you want to proceed?",
+  confirmText = "Confirm",
   cancelText = "Cancel",
   confirmButtonColor = "bg-blue-600 hover:bg-blue-700",
   isDestructive = false,
-  isLoading = false 
+  isLoading = false
 }) {
   if (!isOpen) return null;
 
@@ -38,16 +38,16 @@ export default function ConfirmationModal({
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[10000] p-4 animate-fadeIn">
-      <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full animate-slideUp">
+      <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full animate-slideUp border border-transparent dark:border-gray-700">
         {/* Header */}
-        <div className="flex items-center justify-between p-6 border-b border-gray-100">
+        <div className="flex items-center justify-between p-6 border-b border-gray-100 dark:border-gray-700">
           <div className="flex items-center gap-3">
             {getIcon()}
-            <h3 className="text-lg font-semibold text-gray-900">{title}</h3>
+            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">{title}</h3>
           </div>
           <button
             onClick={onClose}
-            className="text-gray-400 hover:text-gray-600 transition-colors p-1 hover:bg-gray-100 rounded-full"
+            className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition-colors p-1 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full"
             disabled={isLoading}
           >
             <FaTimes className="w-4 h-4" />
@@ -56,7 +56,7 @@ export default function ConfirmationModal({
 
         {/* Content */}
         <div className="p-6">
-          <p className="text-gray-700 leading-relaxed">{message}</p>
+          <p className="text-gray-700 dark:text-gray-300 leading-relaxed">{message}</p>
         </div>
 
         {/* Actions */}
@@ -64,7 +64,7 @@ export default function ConfirmationModal({
           <button
             onClick={onClose}
             disabled={isLoading}
-            className="flex-1 px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+            className="flex-1 px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors font-medium disabled:opacity-50 disabled:cursor-not-allowed"
           >
             {cancelText}
           </button>

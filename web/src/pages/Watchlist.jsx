@@ -420,18 +420,18 @@ export default function Watchlist() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-purple-50 to-pink-100 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8 overflow-x-hidden">
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-2 sm:p-4 lg:p-6">
+    <div className="bg-gradient-to-br from-purple-50 to-pink-100 dark:from-gray-950 dark:to-gray-900 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8 overflow-x-hidden transition-colors duration-300">
+      <div className="max-w-6xl mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-purple-900/10 p-2 sm:p-4 lg:p-6 border border-transparent dark:border-gray-800 transition-colors duration-300">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
           <div className="flex items-center gap-3">
-            <FaEye className="text-3xl text-purple-700" />
+            <FaEye className="text-3xl text-purple-700 dark:text-purple-400" />
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-purple-700">My Watchlist</h1>
-              <p className="text-sm text-gray-600">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-purple-700 dark:text-purple-400">My Watchlist</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {filteredAndSortedItems.length} of {items.length} properties
                 {watchlistStats.totalValue > 0 && (
-                  <span className="ml-2 text-purple-600 font-semibold">
+                  <span className="ml-2 text-purple-600 dark:text-purple-400 font-semibold">
                     • Total Value: ₹{watchlistStats.totalValue.toLocaleString('en-IN')}
                   </span>
                 )}
@@ -442,17 +442,17 @@ export default function Watchlist() {
             {/* Mobile: Stack buttons vertically, Desktop: Horizontal */}
             <div className="flex flex-wrap items-center gap-2">
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex bg-gray-100 dark:bg-gray-800 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white shadow' : 'text-gray-500'}`}
+                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white dark:bg-gray-700 shadow dark:text-white' : 'text-gray-500'}`}
                   title="Grid View"
                 >
                   <FaBars className="text-sm" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-white shadow' : 'text-gray-500'}`}
+                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-white dark:bg-gray-700 shadow dark:text-white' : 'text-gray-500'}`}
                   title="List View"
                 >
                   <FaBars className="rotate-90 text-sm" />
@@ -462,7 +462,7 @@ export default function Watchlist() {
               {/* Stats Toggle */}
               <button
                 onClick={() => setShowStats(!showStats)}
-                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                   }`}
               >
                 <FaChartLine className="text-xs sm:text-sm" />
@@ -473,7 +473,7 @@ export default function Watchlist() {
               {items.length > 0 && (
                 <button
                   onClick={() => setBulkActionMode(!bulkActionMode)}
-                  className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${bulkActionMode ? 'bg-red-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${bulkActionMode ? 'bg-red-600 text-white' : 'bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-700'
                     }`}
                 >
                   <FaCheck className="text-xs sm:text-sm" />
@@ -487,7 +487,7 @@ export default function Watchlist() {
               {/* Export */}
               <button
                 onClick={handleExportWatchlist}
-                className="px-2 sm:px-3 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+                className="px-2 sm:px-3 py-2 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
                 disabled={items.length === 0}
               >
                 <FaDownload className="text-xs sm:text-sm" />
@@ -497,7 +497,7 @@ export default function Watchlist() {
               {/* Share */}
               <button
                 onClick={handleShareWatchlist}
-                className="px-2 sm:px-3 py-2 rounded-lg bg-blue-100 text-blue-700 hover:bg-blue-200 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
+                className="px-2 sm:px-3 py-2 rounded-lg bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm"
                 disabled={items.length === 0}
               >
                 <FaShare className="text-xs sm:text-sm" />
@@ -519,9 +519,9 @@ export default function Watchlist() {
 
         {/* Add Property Search Section */}
         {showAddProperty && (
-          <div className="mb-6 bg-purple-50 p-4 rounded-lg border border-purple-200">
+          <div className="mb-6 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
             <div className="flex items-center justify-between mb-4">
-              <h3 className="text-lg font-semibold text-purple-800">Search and Add Properties</h3>
+              <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-300">Search and Add Properties</h3>
               <button
                 onClick={() => setShowAddProperty(false)}
                 className="text-purple-600 hover:text-purple-800"
@@ -540,12 +540,12 @@ export default function Watchlist() {
                   onKeyPress={(e) => e.key === 'Enter' && searchProperties()}
                   onFocus={() => propertySearchTerm.length >= 2 && setShowSuggestions(true)}
                   onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                 />
 
                 {/* Search Suggestions Dropdown */}
                 {showSuggestions && (searchSuggestions.length > 0 || suggestionLoading) && (
-                  <div className="absolute top-full left-0 right-0 mt-1 bg-white border border-gray-300 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
+                  <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg shadow-lg z-50 max-h-60 overflow-y-auto">
                     {suggestionLoading ? (
                       <div className="p-3 text-center text-gray-500">
                         <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-purple-600 mx-auto"></div>
@@ -556,7 +556,7 @@ export default function Watchlist() {
                         <div
                           key={listing._id}
                           onClick={() => selectSuggestion(listing)}
-                          className="p-3 hover:bg-gray-50 cursor-pointer border-b border-gray-100 last:border-b-0"
+                          className="p-3 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer border-b border-gray-100 dark:border-gray-700 last:border-b-0"
                         >
                           <div className="flex items-center gap-3">
                             {listing.imageUrls && listing.imageUrls.length > 0 ? (
@@ -574,9 +574,9 @@ export default function Watchlist() {
                               </div>
                             )}
                             <div className="flex-1 min-w-0">
-                              <h4 className="font-semibold text-gray-800 truncate">{listing.name}</h4>
-                              <p className="text-sm text-gray-600 truncate">{listing.city}, {listing.state}</p>
-                              <p className="text-sm text-gray-500">
+                              <h4 className="font-semibold text-gray-800 dark:text-gray-200 truncate">{listing.name}</h4>
+                              <p className="text-sm text-gray-600 dark:text-gray-400 truncate">{listing.city}, {listing.state}</p>
+                              <p className="text-sm text-gray-500 dark:text-gray-500">
                                 {listing.type} • {listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''} • ₹{listing.regularPrice?.toLocaleString('en-IN')}
                               </p>
                             </div>
@@ -615,11 +615,11 @@ export default function Watchlist() {
             {searchResults.length > 0 && (
               <div className="space-y-2 max-h-60 overflow-y-auto">
                 {searchResults.map((listing) => (
-                  <div key={listing._id} className="flex items-center justify-between p-3 bg-white rounded-lg border border-gray-200">
+                  <div key={listing._id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-800">{listing.name}</h4>
-                      <p className="text-sm text-gray-600">{listing.city}, {listing.state}</p>
-                      <p className="text-sm text-gray-500">
+                      <h4 className="font-semibold text-gray-800 dark:text-gray-200">{listing.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">{listing.city}, {listing.state}</p>
+                      <p className="text-sm text-gray-500 dark:text-gray-500">
                         {listing.type} • {listing.bedrooms} bed{listing.bedrooms !== 1 ? 's' : ''} • ₹{listing.regularPrice?.toLocaleString('en-IN')}
                       </p>
                     </div>
@@ -642,36 +642,36 @@ export default function Watchlist() {
 
         {/* Stats Section */}
         {showStats && items.length > 0 && (
-          <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
-            <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
+          <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 p-6 rounded-lg border border-purple-200 dark:border-purple-800">
+            <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-300 mb-4 flex items-center gap-2">
               <FaChartLine className="text-purple-600" />
               Watchlist Statistics
             </h3>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Total Properties</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm border border-transparent dark:border-gray-700">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Properties</p>
                 <p className="text-lg sm:text-2xl font-bold text-purple-600">{items.length}</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Average Price</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm border border-transparent dark:border-gray-700">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Average Price</p>
                 <p className="text-sm sm:text-2xl font-bold text-green-600">₹{watchlistStats.averagePrice.toLocaleString('en-IN')}</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1">
-                <p className="text-xs sm:text-sm text-gray-600">Price Range</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1 border border-transparent dark:border-gray-700">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Price Range</p>
                 <p className="text-xs sm:text-lg font-bold text-blue-600">
                   ₹{watchlistStats.priceRange.min.toLocaleString('en-IN')} - ₹{watchlistStats.priceRange.max.toLocaleString('en-IN')}
                 </p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1">
-                <p className="text-xs sm:text-sm text-gray-600">Total Value</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm col-span-2 lg:col-span-1 border border-transparent dark:border-gray-700">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Value</p>
                 <p className="text-sm sm:text-2xl font-bold text-indigo-600">₹{watchlistStats.totalValue.toLocaleString('en-IN')}</p>
               </div>
             </div>
 
             {/* Distribution Charts */}
             <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mt-6">
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <h4 className="font-semibold text-gray-800 mb-3">By Type</h4>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-transparent dark:border-gray-700">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">By Type</h4>
                 <div className="space-y-2">
                   {Object.entries(watchlistStats.typeDistribution).map(([type, count]) => (
                     <div key={type} className="flex items-center justify-between">
@@ -690,8 +690,8 @@ export default function Watchlist() {
                 </div>
               </div>
 
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <h4 className="font-semibold text-gray-800 mb-3">By City</h4>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm border border-transparent dark:border-gray-700">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">By City</h4>
                 <div className="space-y-2">
                   {Object.entries(watchlistStats.cityDistribution)
                     .sort((a, b) => b[1] - a[1])
@@ -718,12 +718,12 @@ export default function Watchlist() {
 
         {/* Bulk Actions Bar */}
         {bulkActionMode && (
-          <div className="mb-6 bg-red-50 p-3 sm:p-4 rounded-lg border border-red-200">
+          <div className="mb-6 bg-red-50 dark:bg-red-900/20 p-3 sm:p-4 rounded-lg border border-red-200 dark:border-red-800">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
               <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-4">
                 <button
                   onClick={handleSelectAll}
-                  className="flex items-center justify-center gap-2 px-3 py-2 bg-white rounded-lg border border-gray-300 hover:bg-gray-50 text-sm"
+                  className="flex items-center justify-center gap-2 px-3 py-2 bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-200 rounded-lg border border-gray-300 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 text-sm transition-colors"
                 >
                   <FaCheck className="text-sm" />
                   {selectedItems.length === filteredAndSortedItems.length ? 'Deselect All' : 'Select All'}
@@ -768,7 +768,7 @@ export default function Watchlist() {
                 placeholder="Search properties by name, city, or state..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
               />
             </div>
 
@@ -780,7 +780,7 @@ export default function Watchlist() {
                 <select
                   value={filterType}
                   onChange={(e) => setFilterType(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                 >
                   <option value="all">All Types</option>
                   <option value="sale">For Sale</option>
@@ -794,7 +794,7 @@ export default function Watchlist() {
                 <select
                   value={sortBy}
                   onChange={(e) => setSortBy(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                  className="px-3 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg text-gray-900 dark:text-white focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-colors"
                 >
                   <option value="dateAdded">Date Added</option>
                   <option value="price-low">Price: Low to High</option>

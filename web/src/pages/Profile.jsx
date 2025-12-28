@@ -1512,7 +1512,7 @@ export default function Profile() {
                                 <label className="text-xs font-medium mb-1">{key}</label>
                                 <input
                                   type="text"
-                                  className="border p-2 rounded-lg"
+                                  className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                                   value={dicebearAvatar.filters[key] || ''}
                                   onChange={e => setDicebearAvatar(prev => ({ ...prev, filters: { ...prev.filters, [key]: e.target.value } }))}
                                   placeholder="Enter a name or keyword (e.g. John, robot, flower...)"
@@ -1536,7 +1536,7 @@ export default function Profile() {
                             <label className="text-xs font-medium mb-1">rotate</label>
                             <input
                               type="number"
-                              className="border p-2 rounded-lg w-24"
+                              className="border border-gray-300 dark:border-gray-600 dark:bg-gray-800 dark:text-white p-2 rounded-lg w-24 focus:outline-none focus:ring-2 focus:ring-blue-500 transition-colors"
                               value={dicebearAvatar.filters.rotate ?? avataaarsSchema.properties.rotate.default ?? ''}
                               min={avataaarsSchema.properties.rotate.minimum}
                               max={avataaarsSchema.properties.rotate.maximum}
@@ -1628,13 +1628,13 @@ export default function Profile() {
                       onChange={handleChangeWithValidation}
                       readOnly={!emailEditMode || (emailEditMode && otpSent) || otpLoading}
                       disabled={otpLoading}
-                      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${!emailEditMode || (emailEditMode && otpSent) || otpLoading
-                        ? 'bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-not-allowed border-green-500 pr-20'
+                      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all dark:bg-gray-700 dark:text-white ${!emailEditMode || (emailEditMode && otpSent) || otpLoading
+                        ? 'bg-gray-100 dark:bg-gray-800 dark:border-gray-600 cursor-not-allowed border-green-500 pr-20'
                         : emailValidation.available === false
                           ? 'border-red-500 focus:ring-red-500 pr-12'
                           : emailValidation.available === true
                             ? 'border-green-500 focus:ring-green-500 pr-12'
-                            : 'border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 pr-12'
+                            : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500 pr-12'
                         }`}
                     />
                     {emailValidation.loading && (
@@ -1710,7 +1710,7 @@ export default function Profile() {
                         <button
                           type="button"
                           onClick={() => setEmailEditMode(true)}
-                          className="text-blue-600 hover:text-blue-800 transition-colors duration-200 p-1 rounded hover:bg-blue-50"
+                          className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 transition-colors duration-200 p-1 rounded hover:bg-blue-50 dark:hover:bg-blue-900/20"
                           title="Edit email"
                         >
                           <FaEdit className="text-sm" />
@@ -1819,7 +1819,7 @@ export default function Profile() {
                               type="button"
                               onClick={handleSendOTP}
                               disabled={otpLoading || verifyLoading || (profileRequiresCaptcha && !profileRecaptchaToken)}
-                              className="text-xs text-blue-600 hover:text-blue-800 font-medium disabled:opacity-50 disabled:cursor-not-allowed"
+                              className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200"
                             >
                               {otpLoading ? "Sending..." : "Resend OTP"}
                             </button>
@@ -1853,8 +1853,8 @@ export default function Profile() {
                     <div className="text-red-600 text-sm mt-1">{emailError}</div>
                   )}
                   {emailValidation.message && !emailError && (
-                    <div className={`text-sm mt-1 ${emailValidation.available === true ? 'text-green-600' :
-                      emailValidation.available === false ? 'text-red-600' : 'text-gray-600 dark:text-gray-400'
+                    <div className={`text-sm mt-1 ${emailValidation.available === true ? 'text-green-600 dark:text-green-400' :
+                      emailValidation.available === false ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
                       }`}>
                       {emailValidation.message}
                     </div>
@@ -1875,11 +1875,11 @@ export default function Profile() {
                       onChange={handleChangeWithValidation}
                       pattern="[0-9]{10}"
                       maxLength="10"
-                      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${mobileValidation.available === false
+                      className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all dark:bg-gray-700 dark:text-white ${mobileValidation.available === false
                         ? 'border-red-500 focus:ring-red-500'
                         : mobileValidation.available === true
                           ? 'border-green-500 focus:ring-green-500'
-                          : 'border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500'
+                          : 'border-gray-300 dark:border-gray-600 focus:ring-blue-500'
                         }`}
                     />
                     {mobileValidation.loading && (
@@ -1905,8 +1905,8 @@ export default function Profile() {
                     <div className="text-red-600 text-sm mt-1">{mobileError}</div>
                   )}
                   {mobileValidation.message && !mobileError && (
-                    <div className={`text-sm mt-1 ${mobileValidation.available === true ? 'text-green-600' :
-                      mobileValidation.available === false ? 'text-red-600' : 'text-gray-600 dark:text-gray-400'
+                    <div className={`text-sm mt-1 ${mobileValidation.available === true ? 'text-green-600 dark:text-green-400' :
+                      mobileValidation.available === false ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400'
                       }`}>
                       {mobileValidation.message}
                     </div>

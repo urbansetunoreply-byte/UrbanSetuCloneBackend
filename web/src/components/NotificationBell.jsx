@@ -598,19 +598,19 @@ export default function NotificationBell({ mobile = false }) {
                 }
               }}
             >
-              <div className="w-full sm:max-w-md bg-white sm:rounded-3xl rounded-t-3xl shadow-2xl border border-white/20 max-h-[92vh] flex flex-col overflow-hidden animate-modal-up glass-morphism">
+              <div className="w-full sm:max-w-md bg-white dark:bg-gray-900 sm:rounded-3xl rounded-t-3xl shadow-2xl border border-white/20 dark:border-gray-800 max-h-[92vh] flex flex-col overflow-hidden animate-modal-up glass-morphism transition-colors duration-300">
                 {/* Header Strip */}
                 <div className="flex items-center justify-center py-2 sm:hidden">
-                  <div className="w-12 h-1.5 bg-gray-300 rounded-full"></div>
+                  <div className="w-12 h-1.5 bg-gray-300 dark:bg-gray-700 rounded-full"></div>
                 </div>
 
                 {/* Header */}
                 <div className="px-6 pt-4 pb-2">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-2xl font-black text-gray-900 tracking-tight">Activity</h3>
+                    <h3 className="text-2xl font-black text-gray-900 dark:text-white tracking-tight">Activity</h3>
                     <button
                       onClick={() => setIsOpen(false)}
-                      className="text-gray-400 hover:text-gray-600 bg-gray-100 rounded-xl p-2.5 transition-all"
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-800 rounded-xl p-2.5 transition-all"
                     >
                       <FaTimes className="w-4 h-4" />
                     </button>
@@ -623,12 +623,12 @@ export default function NotificationBell({ mobile = false }) {
                 {/* Admin Tabs */}
                 {isAdmin() && (
                   <div className="px-6 mb-4">
-                    <div className="flex p-1 bg-gray-100 rounded-2xl">
+                    <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-2xl">
                       <button
                         onClick={() => setActiveTab('notifications')}
                         className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'notifications'
-                          ? 'bg-white text-blue-600 shadow-sm'
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                           }`}
                       >
                         <FaBell className="w-4 h-4" />
@@ -637,8 +637,8 @@ export default function NotificationBell({ mobile = false }) {
                       <button
                         onClick={() => setActiveTab('send')}
                         className={`flex-1 py-2.5 px-4 rounded-xl text-sm font-bold transition-all flex items-center justify-center gap-2 ${activeTab === 'send'
-                          ? 'bg-white text-blue-600 shadow-sm'
-                          : 'text-gray-500 hover:text-gray-700'
+                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm'
+                          : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200'
                           }`}
                       >
                         <FaEnvelope className="w-4 h-4" />
@@ -663,14 +663,14 @@ export default function NotificationBell({ mobile = false }) {
                               value={notificationSearch}
                               onChange={(e) => setNotificationSearch(e.target.value)}
                               placeholder="Search alerts..."
-                              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 text-sm font-medium text-gray-900 transition-all"
+                              className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-800 border-none rounded-2xl focus:ring-2 focus:ring-blue-500/20 text-sm font-medium text-gray-900 dark:text-white transition-all"
                             />
                           </div>
                           <button
                             onClick={() => setShowFilters(!showFilters)}
                             className={`p-2.5 rounded-2xl transition-all ${showFilters || notificationFilter !== 'all'
                               ? 'bg-blue-600 text-white'
-                              : 'bg-gray-100 text-gray-500'
+                              : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400'
                               }`}
                           >
                             <FaFilter className="w-4 h-4" />
@@ -685,7 +685,7 @@ export default function NotificationBell({ mobile = false }) {
                                 onClick={() => setNotificationFilter(filter)}
                                 className={`px-4 py-1.5 rounded-full text-xs font-bold whitespace-nowrap transition-all ${notificationFilter === filter
                                   ? 'bg-blue-600 text-white shadow-md'
-                                  : 'bg-gray-100 text-gray-500 hover:bg-gray-200'
+                                  : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'
                                   }`}
                               >
                                 {filter.charAt(0).toUpperCase() + filter.slice(1)}
@@ -1083,7 +1083,7 @@ export default function NotificationBell({ mobile = false }) {
               onClick={() => setIsOpen(false)}
             >
               <div
-                className="fixed w-[420px] bg-white rounded-3xl z-[9999] overflow-hidden glass-morphism animate-modal-up custom-shadow"
+                className="fixed w-[420px] bg-white dark:bg-gray-900 rounded-3xl z-[9999] overflow-hidden glass-morphism animate-modal-up custom-shadow border border-transparent dark:border-gray-800"
                 onClick={(e) => e.stopPropagation()}
                 style={{
                   top: '80px',
@@ -1094,12 +1094,12 @@ export default function NotificationBell({ mobile = false }) {
                 }}
               >
                 {/* Header */}
-                <div className="px-6 py-5 border-b border-gray-100/50">
+                <div className="px-6 py-5 border-b border-gray-100/50 dark:border-gray-800">
                   <div className="flex items-center justify-between mb-1">
-                    <h3 className="text-xl font-black text-gray-900 tracking-tight">Notifications</h3>
+                    <h3 className="text-xl font-black text-gray-900 dark:text-white tracking-tight">Notifications</h3>
                     <button
                       onClick={() => setIsOpen(false)}
-                      className="text-gray-400 hover:text-gray-600 bg-gray-50 rounded-xl p-2 transition-all hover:rotate-90"
+                      className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 bg-gray-50 dark:bg-gray-800 rounded-xl p-2 transition-all hover:rotate-90"
                     >
                       <FaTimes className="w-4 h-4" />
                     </button>
@@ -1115,12 +1115,12 @@ export default function NotificationBell({ mobile = false }) {
                 {/* Admin Tabs */}
                 {isAdmin() && (
                   <div className="px-6 pt-4">
-                    <div className="flex p-1 bg-gray-50 rounded-2xl border border-gray-100">
+                    <div className="flex p-1 bg-gray-50 dark:bg-gray-800 rounded-2xl border border-gray-100 dark:border-gray-700">
                       <button
                         onClick={() => setActiveTab('notifications')}
                         className={`flex-1 py-2 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 ${activeTab === 'notifications'
-                          ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5'
-                          : 'text-gray-400 hover:text-gray-600'
+                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-black/5 dark:ring-white/5'
+                          : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
                           }`}
                       >
                         <FaBell className="w-3.5 h-3.5" />
@@ -1129,8 +1129,8 @@ export default function NotificationBell({ mobile = false }) {
                       <button
                         onClick={() => setActiveTab('send')}
                         className={`flex-1 py-2 px-4 rounded-xl text-xs font-black transition-all flex items-center justify-center gap-2 ${activeTab === 'send'
-                          ? 'bg-white text-blue-600 shadow-sm ring-1 ring-black/5'
-                          : 'text-gray-400 hover:text-gray-600'
+                          ? 'bg-white dark:bg-gray-700 text-blue-600 dark:text-blue-400 shadow-sm ring-1 ring-black/5 dark:ring-white/5'
+                          : 'text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300'
                           }`}
                       >
                         <FaEnvelope className="w-3.5 h-3.5" />
@@ -1152,22 +1152,22 @@ export default function NotificationBell({ mobile = false }) {
                             value={notificationSearch}
                             onChange={(e) => setNotificationSearch(e.target.value)}
                             placeholder="Search..."
-                            className="w-full pl-10 pr-4 py-2 bg-gray-50 border-none rounded-xl text-xs font-bold text-gray-900 focus:ring-2 focus:ring-blue-100 transition-all placeholder:text-gray-300"
+                            className="w-full pl-10 pr-4 py-2 bg-gray-50 dark:bg-gray-800 border-none rounded-xl text-xs font-bold text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 transition-all placeholder:text-gray-300 dark:placeholder:text-gray-600"
                           />
                         </div>
                         <div className="flex items-center gap-2">
                           <button
                             onClick={() => setShowFilters(!showFilters)}
                             className={`p-2.5 rounded-xl transition-all ${showFilters || notificationFilter !== 'all'
-                              ? 'bg-blue-600 text-white shadow-lg shadow-blue-200'
-                              : 'bg-gray-50 text-gray-400 hover:text-gray-600'
+                              ? 'bg-blue-600 text-white shadow-lg shadow-blue-200 dark:shadow-none'
+                              : 'bg-gray-50 dark:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-200'
                               }`}
                           >
                             <FaFilter className="w-3.5 h-3.5" />
                           </button>
                           <button
                             onClick={markAllAsRead}
-                            className="p-2.5 bg-gray-50 text-emerald-500 hover:bg-emerald-500 hover:text-white rounded-xl transition-all"
+                            className="p-2.5 bg-gray-50 dark:bg-gray-800 text-emerald-500 dark:text-emerald-400 hover:bg-emerald-500 hover:text-white rounded-xl transition-all"
                             title="Mark all as read"
                           >
                             <FaCheck className="w-3.5 h-3.5" />
@@ -1205,8 +1205,8 @@ export default function NotificationBell({ mobile = false }) {
                               <div
                                 key={n._id}
                                 className={`notification-card group p-3.5 rounded-2xl border transition-all cursor-default ${!n.isRead
-                                  ? 'bg-white border-blue-50 shadow-sm'
-                                  : 'bg-white/40 border-transparent opacity-60 grayscale-[0.5]'
+                                  ? 'bg-white dark:bg-gray-800 border-blue-50 dark:border-blue-900/30 shadow-sm'
+                                  : 'bg-white/40 dark:bg-gray-800/40 border-transparent opacity-60 grayscale-[0.5]'
                                   }`}
                                 style={{ animationDelay: `${i * 0.05}s` }}
                               >
@@ -1214,14 +1214,14 @@ export default function NotificationBell({ mobile = false }) {
                                   {getNotificationIcon(n.type)}
                                   <div className="flex-1 min-w-0">
                                     <div className="flex items-start justify-between gap-2">
-                                      <h4 className={`text-xs font-black truncate leading-tight ${!n.isRead ? 'text-gray-900' : 'text-gray-500'}`}>
+                                      <h4 className={`text-xs font-black truncate leading-tight ${!n.isRead ? 'text-gray-900 dark:text-white' : 'text-gray-500 dark:text-gray-400'}`}>
                                         {n.title}
                                       </h4>
-                                      <span className="text-[9px] font-black text-gray-300 uppercase whitespace-nowrap">
+                                      <span className="text-[9px] font-black text-gray-300 dark:text-gray-600 uppercase whitespace-nowrap">
                                         {formatDate(n.createdAt)}
                                       </span>
                                     </div>
-                                    <p className={`text-[11px] mt-1.5 leading-relaxed ${!n.isRead ? 'text-gray-600 font-medium' : 'text-gray-400'}`}>
+                                    <p className={`text-[11px] mt-1.5 leading-relaxed ${!n.isRead ? 'text-gray-600 dark:text-gray-300 font-medium' : 'text-gray-400 dark:text-gray-500'}`}>
                                       {n.link ? (
                                         <button
                                           onClick={() => {
@@ -1233,7 +1233,7 @@ export default function NotificationBell({ mobile = false }) {
                                               setTimeout(() => navigate(n.link), 0);
                                             }
                                           }}
-                                          className="text-left hover:text-blue-600 transition-colors underline decoration-blue-100 underline-offset-4"
+                                          className="text-left hover:text-blue-600 dark:hover:text-blue-400 transition-colors underline decoration-blue-100 dark:decoration-blue-900 underline-offset-4"
                                         >
                                           {n.message}
                                         </button>
@@ -1245,7 +1245,7 @@ export default function NotificationBell({ mobile = false }) {
                                     <div className="flex items-center justify-between mt-3">
                                       <div className="flex gap-2">
                                         {n.adminId && (
-                                          <span className="text-[9px] font-black text-blue-500 uppercase tracking-tighter bg-blue-50 px-2 py-0.5 rounded-full">
+                                          <span className="text-[9px] font-black text-blue-500 dark:text-blue-400 uppercase tracking-tighter bg-blue-50 dark:bg-blue-900/30 px-2 py-0.5 rounded-full border border-blue-100 dark:border-blue-800">
                                             Official • STAFF
                                           </span>
                                         )}
@@ -1288,36 +1288,36 @@ export default function NotificationBell({ mobile = false }) {
                     /* Send Notification Tab Content */
                     <div className="px-6 py-4 space-y-4 overflow-y-auto" style={{ maxHeight: 'calc(100vh - 300px)' }}>
                       {/* Send to All Users */}
-                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 p-5 rounded-3xl border border-green-100 shadow-sm">
-                        <h4 className="text-xs font-black text-green-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-950/20 dark:to-emerald-950/20 p-5 rounded-3xl border border-green-100 dark:border-green-900/40 shadow-sm">
+                        <h4 className="text-xs font-black text-green-900 dark:text-green-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                           <FaUsers className="w-3.5 h-3.5" />
                           Broadcast to All Users
                         </h4>
                         <form onSubmit={sendNotificationToAll} className="space-y-3">
                           <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1.5">Title</label>
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Title</label>
                             <input
                               type="text"
                               value={allUsersTitle}
                               onChange={(e) => setAllUsersTitle(e.target.value)}
                               placeholder="Enter broadcast title..."
-                              className="w-full px-4 py-2.5 bg-white border border-green-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-green-200 focus:border-green-300 transition-all text-gray-900"
+                              className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-green-100 dark:border-green-800 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-green-200 dark:focus:ring-green-900 focus:border-green-300 dark:focus:border-green-700 transition-all text-gray-900 dark:text-white"
                               required
                               maxLength={100}
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1.5">Message</label>
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Message</label>
                             <textarea
                               value={allUsersMessage}
                               onChange={(e) => setAllUsersMessage(e.target.value)}
                               placeholder="Enter broadcast message..."
                               rows={3}
-                              className="w-full px-4 py-3 bg-white border border-green-100 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-green-200 focus:border-green-300 transition-all resize-none text-gray-900"
+                              className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-green-100 dark:border-green-800 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-green-200 dark:focus:ring-green-900 focus:border-green-300 dark:focus:border-green-700 transition-all resize-none text-gray-900 dark:text-white"
                               required
                               maxLength={500}
                             />
-                            <div className="text-[10px] text-gray-500 mt-1 text-right font-bold">
+                            <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 text-right font-bold">
                               {allUsersMessage.length}/500
                             </div>
                           </div>
@@ -1342,14 +1342,14 @@ export default function NotificationBell({ mobile = false }) {
                       </div>
 
                       {/* Send to Specific User */}
-                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 p-5 rounded-3xl border border-blue-100 shadow-sm">
-                        <h4 className="text-xs font-black text-blue-900 uppercase tracking-widest mb-4 flex items-center gap-2">
+                      <div className="bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 p-5 rounded-3xl border border-blue-100 dark:border-blue-900/40 shadow-sm">
+                        <h4 className="text-xs font-black text-blue-900 dark:text-blue-400 uppercase tracking-widest mb-4 flex items-center gap-2">
                           <FaPaperPlane className="w-3.5 h-3.5" />
                           Send to Specific User
                         </h4>
                         <form onSubmit={sendNotificationToUser} className="space-y-3">
                           <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1.5">Search User</label>
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Search User</label>
                             <input
                               type="text"
                               value={userSearch}
@@ -1358,16 +1358,16 @@ export default function NotificationBell({ mobile = false }) {
                                 if (selectedUser && e.target.value.trim()) setSelectedUser('');
                               }}
                               placeholder="Search by name, email, or mobile..."
-                              className="w-full px-4 py-2.5 bg-white border border-blue-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition-all text-gray-900"
+                              className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-blue-100 dark:border-blue-800 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-700 transition-all text-gray-900 dark:text-white"
                               disabled={fetchingUsers}
                             />
                           </div>
                           <div className="relative">
-                            <label className="block text-xs font-bold text-gray-700 mb-1.5">Select Recipient</label>
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Select Recipient</label>
                             <select
                               value={selectedUser}
                               onChange={(e) => setSelectedUser(e.target.value)}
-                              className="w-full px-4 py-2.5 bg-white border border-blue-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition-all appearance-none text-gray-900"
+                              className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-blue-100 dark:border-blue-800 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-700 transition-all appearance-none text-gray-900 dark:text-white"
                               required
                               disabled={fetchingUsers}
                             >
@@ -1405,29 +1405,29 @@ export default function NotificationBell({ mobile = false }) {
                             </div>
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1.5">Subject</label>
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Subject</label>
                             <input
                               type="text"
                               value={title}
                               onChange={(e) => setTitle(e.target.value)}
                               placeholder="Enter subject..."
-                              className="w-full px-4 py-2.5 bg-white border border-blue-100 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition-all text-gray-900"
+                              className="w-full px-4 py-2.5 bg-white dark:bg-gray-800 border border-blue-100 dark:border-blue-800 rounded-2xl text-xs font-bold focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-700 transition-all text-gray-900 dark:text-white"
                               required
                               maxLength={100}
                             />
                           </div>
                           <div>
-                            <label className="block text-xs font-bold text-gray-700 mb-1.5">Message</label>
+                            <label className="block text-xs font-bold text-gray-700 dark:text-gray-300 mb-1.5">Message</label>
                             <textarea
                               value={message}
                               onChange={(e) => setMessage(e.target.value)}
                               placeholder="Enter message..."
                               rows={3}
-                              className="w-full px-4 py-3 bg-white border border-blue-100 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-blue-200 focus:border-blue-300 transition-all resize-none text-gray-900"
+                              className="w-full px-4 py-3 bg-white dark:bg-gray-800 border border-blue-100 dark:border-blue-800 rounded-2xl text-xs font-medium focus:ring-2 focus:ring-blue-200 dark:focus:ring-blue-900 focus:border-blue-300 dark:focus:border-blue-700 transition-all resize-none text-gray-900 dark:text-white"
                               required
                               maxLength={500}
                             />
-                            <div className="text-[10px] text-gray-500 mt-1 text-right font-bold">
+                            <div className="text-[10px] text-gray-500 dark:text-gray-400 mt-1 text-right font-bold">
                               {message.length}/500
                             </div>
                           </div>
@@ -1519,6 +1519,10 @@ export default function NotificationBell({ mobile = false }) {
           -webkit-backdrop-filter: blur(12px) saturate(180%);
           border: 1px solid rgba(255, 255, 255, 0.2);
         }
+        :global(.dark) .glass-morphism {
+          background: rgba(17, 24, 39, 0.85);
+          border: 1px solid rgba(255, 255, 255, 0.05);
+        }
 
         .notification-card {
           transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
@@ -1527,6 +1531,9 @@ export default function NotificationBell({ mobile = false }) {
         .notification-card:hover {
           transform: translateX(4px);
           background: rgba(243, 244, 246, 0.8);
+        }
+        :global(.dark) .notification-card:hover {
+          background: rgba(31, 41, 55, 0.8);
         }
 
         .notification-scroll-area-mobile {

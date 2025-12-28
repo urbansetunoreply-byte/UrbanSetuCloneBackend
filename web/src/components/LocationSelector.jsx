@@ -50,16 +50,16 @@ export default function LocationSelector({ value, onChange, mode = "form" }) {
     <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
       {/* State Dropdown with fuzzy search */}
       <div>
-        <label className="block mb-1 font-semibold text-gray-700">State</label>
+        <label className="block mb-1 font-semibold text-gray-700 dark:text-gray-300 transition-colors">State</label>
         <input
           type="text"
           placeholder="Search State..."
           value={stateSearch}
           onChange={(e) => setStateSearch(e.target.value)}
-          className="w-full mb-2 p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+          className="w-full mb-2 p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors"
         />
         <select
-          className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+          className="w-full p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors"
           value={value.state || ""}
           onChange={handleStateChange}
         >
@@ -73,17 +73,17 @@ export default function LocationSelector({ value, onChange, mode = "form" }) {
       </div>
       {/* City Dropdown: single-select for both form and search modes */}
       <div>
-        <label className="block mb-1 font-semibold text-gray-700">City</label>
+        <label className="block mb-1 font-semibold text-gray-700 dark:text-gray-300 transition-colors">City</label>
         <input
           type="text"
           placeholder="Search City..."
           value={citySearch}
           onChange={(e) => setCitySearch(e.target.value)}
-          className="w-full mb-2 p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+          className="w-full mb-2 p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-950"
           disabled={!value.state}
         />
         <select
-          className="w-full p-2 border rounded-md focus:ring-2 focus:ring-blue-500"
+          className="w-full p-2 border dark:border-gray-700 rounded-md focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-800 text-gray-900 dark:text-white transition-colors disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-950"
           value={value.city || ""}
           onChange={handleCityChange}
           disabled={!value.state}

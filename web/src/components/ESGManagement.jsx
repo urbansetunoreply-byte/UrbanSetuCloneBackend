@@ -47,7 +47,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                 setCalculatedRating(esgData.esgRating);
             }
             calculateESGScore(esgData);
-            
+
             // Ensure parent gets the data with calculated values
             onESGChange(esgData);
         } else {
@@ -71,7 +71,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
             }
         };
         setEsg(newEsg);
-        
+
         // Calculate score and rating
         let score = 0;
         let factors = 0;
@@ -125,10 +125,10 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
 
         const finalScore = factors > 0 ? Math.min(Math.round(score / factors * 5), 100) : 0;
         const finalRating = getESGRating(finalScore);
-        
+
         setCalculatedScore(finalScore);
         setCalculatedRating(finalRating);
-        
+
         // Include calculated score and rating inside the esg object
         const esgWithCalculations = {
             ...newEsg,
@@ -137,7 +137,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
             lastEsgUpdate: new Date().toISOString()
         };
         onESGChange(esgWithCalculations);
-        
+
         // Simulate saving delay
         setTimeout(() => {
             setSaving(false);
@@ -146,10 +146,10 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
 
     const handleArrayChange = (category, field, value, isAdd) => {
         const currentArray = esg[category][field] || [];
-        const newArray = isAdd 
+        const newArray = isAdd
             ? [...currentArray, value]
             : currentArray.filter(item => item !== value);
-        
+
         handleChange(category, field, newArray);
     };
 
@@ -208,7 +208,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
         const finalRating = getESGRating(finalScore);
         setCalculatedScore(finalScore);
         setCalculatedRating(finalRating);
-        
+
         // Update parent with calculated values
         const esgWithCalculations = {
             ...esgData,
@@ -274,17 +274,17 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
     ];
 
     return (
-        <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 p-6 transition-colors">
             <div className="flex items-center justify-between mb-6">
                 <div className="flex items-center gap-3">
                     <FaLeaf className="text-green-500" />
                     <FaUsers className="text-blue-500" />
                     <FaShieldAlt className="text-purple-500" />
-                    <h3 className="text-xl font-semibold text-gray-800">ESG Management</h3>
+                    <h3 className="text-xl font-semibold text-gray-800 dark:text-white transition-colors">ESG Management</h3>
                 </div>
                 <div className="flex items-center gap-2">
                     {saving && (
-                        <div className="flex items-center gap-2 px-3 py-2 bg-green-100 text-green-700 rounded-lg">
+                        <div className="flex items-center gap-2 px-3 py-2 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-400 rounded-lg transition-colors">
                             <FaSave className="animate-spin" />
                             Saving ESG...
                         </div>
@@ -292,7 +292,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     <button
                         type="button"
                         onClick={() => setShowCalculator(!showCalculator)}
-                        className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-100 text-blue-700 rounded-lg hover:bg-blue-200 transition-colors"
+                        className="flex items-center gap-2 px-3 py-2 text-sm bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-400 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors"
                     >
                         <FaCalculator />
                         {showCalculator ? 'Hide' : 'Show'} Calculator
@@ -302,17 +302,17 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
 
             {/* ESG Score Calculator */}
             {showCalculator && (
-                <div className="mb-6 p-4 bg-blue-50 rounded-lg">
+                <div className="mb-6 p-4 bg-blue-50 dark:bg-blue-900/20 rounded-lg transition-colors">
                     <div className="flex items-center justify-between">
                         <div>
-                            <h4 className="font-semibold text-gray-800">Calculated ESG Score</h4>
-                            <p className="text-sm text-gray-600">Based on current inputs</p>
+                            <h4 className="font-semibold text-gray-800 dark:text-white transition-colors">Calculated ESG Score</h4>
+                            <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors">Based on current inputs</p>
                         </div>
                         <div className="text-right">
-                            <div className={`text-2xl font-bold px-3 py-2 rounded-lg ${getScoreColor(calculatedScore)}`}>
+                            <div className={`text-2xl font-bold px-3 py-2 rounded-lg transition-colors ${getScoreColor(calculatedScore).replace('bg-', 'dark:bg-').replace('text-', 'dark:text-')}`}>
                                 {calculatedScore}/100
                             </div>
-                            <div className="text-sm font-medium text-gray-600 mt-1">
+                            <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-1 transition-colors">
                                 Rating: {calculatedRating}
                             </div>
                         </div>
@@ -325,17 +325,17 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-4">
                         <FaLeaf className="text-green-500" />
-                        <h4 className="font-semibold text-gray-800">Environmental</h4>
+                        <h4 className="font-semibold text-gray-800 dark:text-white transition-colors">Environmental</h4>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Energy Rating
                         </label>
                         <select
                             value={esg.environmental.energyRating}
                             onChange={(e) => handleChange('environmental', 'energyRating', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         >
                             <option value="Not Rated">Not Rated</option>
                             <option value="A+">A+</option>
@@ -350,25 +350,25 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Carbon Footprint (kg CO₂/year)
                         </label>
                         <input
                             type="number"
                             value={esg.environmental.carbonFootprint}
                             onChange={(e) => handleChange('environmental', 'carbonFootprint', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Water Efficiency
                         </label>
                         <select
                             value={esg.environmental.waterEfficiency}
                             onChange={(e) => handleChange('environmental', 'waterEfficiency', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         >
                             <option value="Not Rated">Not Rated</option>
                             <option value="Excellent">Excellent</option>
@@ -379,13 +379,13 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Green Certification
                         </label>
                         <select
                             value={esg.environmental.greenCertification}
                             onChange={(e) => handleChange('environmental', 'greenCertification', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-green-500 focus:border-green-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         >
                             <option value="None">None</option>
                             <option value="LEED">LEED</option>
@@ -403,25 +403,25 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                                 onChange={(e) => handleChange('environmental', 'renewableEnergy', e.target.checked)}
                                 className="mr-2"
                             />
-                            <span className="text-sm">☀️ Renewable Energy</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 transition-colors">☀️ Renewable Energy</span>
                         </label>
-                        <label className="flex items-center">
+                        <label className="flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={esg.environmental.solarPanels}
                                 onChange={(e) => handleChange('environmental', 'solarPanels', e.target.checked)}
-                                className="mr-2"
+                                className="mr-2 accent-green-600"
                             />
-                            <span className="text-sm">🔋 Solar Panels</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 transition-colors">🔋 Solar Panels</span>
                         </label>
-                        <label className="flex items-center">
+                        <label className="flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={esg.environmental.rainwaterHarvesting}
                                 onChange={(e) => handleChange('environmental', 'rainwaterHarvesting', e.target.checked)}
-                                className="mr-2"
+                                className="mr-2 accent-green-600"
                             />
-                            <span className="text-sm">💧 Rainwater Harvesting</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 transition-colors">💧 Rainwater Harvesting</span>
                         </label>
                     </div>
                 </div>
@@ -430,17 +430,17 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-4">
                         <FaUsers className="text-blue-500" />
-                        <h4 className="font-semibold text-gray-800">Social</h4>
+                        <h4 className="font-semibold text-gray-800 dark:text-white transition-colors">Social</h4>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Accessibility
                         </label>
                         <select
                             value={esg.social.accessibility}
                             onChange={(e) => handleChange('social', 'accessibility', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         >
                             <option value="Not Rated">Not Rated</option>
                             <option value="Fully Accessible">Fully Accessible</option>
@@ -450,7 +450,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Community Impact Score (0-100)
                         </label>
                         <input
@@ -464,29 +464,29 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Local Employment (jobs created)
                         </label>
                         <input
                             type="number"
                             value={esg.social.localEmployment}
                             onChange={(e) => handleChange('social', 'localEmployment', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         />
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Social Amenities
                         </label>
                         <div className="grid grid-cols-2 gap-2">
                             {socialAmenitiesOptions.map((amenity) => (
-                                <label key={amenity} className="flex items-center text-sm">
+                                <label key={amenity} className="flex items-center text-sm text-gray-700 dark:text-gray-300 cursor-pointer transition-colors">
                                     <input
                                         type="checkbox"
                                         checked={esg.social.socialAmenities.includes(amenity)}
                                         onChange={(e) => handleArrayChange('social', 'socialAmenities', amenity, e.target.checked)}
-                                        className="mr-2"
+                                        className="mr-2 accent-blue-600"
                                     />
                                     {amenity}
                                 </label>
@@ -495,14 +495,14 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     </div>
 
                     <div className="space-y-2">
-                        <label className="flex items-center">
+                        <label className="flex items-center cursor-pointer">
                             <input
                                 type="checkbox"
                                 checked={esg.social.affordableHousing}
                                 onChange={(e) => handleChange('social', 'affordableHousing', e.target.checked)}
-                                className="mr-2"
+                                className="mr-2 accent-blue-600"
                             />
-                            <span className="text-sm">🏠 Affordable Housing</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 transition-colors">🏠 Affordable Housing</span>
                         </label>
                     </div>
                 </div>
@@ -511,17 +511,17 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                 <div className="space-y-4">
                     <div className="flex items-center gap-2 mb-4">
                         <FaShieldAlt className="text-purple-500" />
-                        <h4 className="font-semibold text-gray-800">Governance</h4>
+                        <h4 className="font-semibold text-gray-800 dark:text-white transition-colors">Governance</h4>
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Transparency
                         </label>
                         <select
                             value={esg.governance.transparency}
                             onChange={(e) => handleChange('governance', 'transparency', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         >
                             <option value="Not Rated">Not Rated</option>
                             <option value="Excellent">Excellent</option>
@@ -532,13 +532,13 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Ethical Standards
                         </label>
                         <select
                             value={esg.governance.ethicalStandards}
                             onChange={(e) => handleChange('governance', 'ethicalStandards', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         >
                             <option value="Not Rated">Not Rated</option>
                             <option value="Excellent">Excellent</option>
@@ -549,13 +549,13 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Compliance
                         </label>
                         <select
                             value={esg.governance.compliance}
                             onChange={(e) => handleChange('governance', 'compliance', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         >
                             <option value="Not Rated">Not Rated</option>
                             <option value="Fully Compliant">Fully Compliant</option>
@@ -566,13 +566,13 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Risk Management
                         </label>
                         <select
                             value={esg.governance.riskManagement}
                             onChange={(e) => handleChange('governance', 'riskManagement', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         >
                             <option value="Not Rated">Not Rated</option>
                             <option value="Excellent">Excellent</option>
@@ -583,13 +583,13 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                     </div>
 
                     <div>
-                        <label className="block text-sm font-medium text-gray-700 mb-1">
+                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1 transition-colors">
                             Stakeholder Engagement
                         </label>
                         <select
                             value={esg.governance.stakeholderEngagement}
                             onChange={(e) => handleChange('governance', 'stakeholderEngagement', e.target.value)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-purple-500 focus:border-purple-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         >
                             <option value="Not Rated">Not Rated</option>
                             <option value="Excellent">Excellent</option>

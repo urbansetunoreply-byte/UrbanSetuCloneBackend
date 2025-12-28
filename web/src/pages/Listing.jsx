@@ -1403,8 +1403,8 @@ export default function Listing() {
 
   return (
     <>
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-        <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-3 sm:p-6 relative overflow-x-hidden">
+      <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-950 dark:to-gray-900 min-h-screen py-10 px-2 md:px-8 transition-colors duration-300">
+        <div className="max-w-4xl w-full mx-auto bg-white dark:bg-gray-900 rounded-xl shadow-lg dark:shadow-blue-900/10 p-3 sm:p-6 relative overflow-x-hidden border border-transparent dark:border-gray-800 transition-colors duration-300">
           {listing.isDeleted && (
             <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
               <div className="flex items-center">
@@ -3807,9 +3807,9 @@ export default function Listing() {
       {/* Assign New Owner Modal */}
       {showAssignOwnerModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaEdit /> Assign New Owner</h3>
-            <p className="text-sm text-gray-600">Select a user to assign as the new owner of this property.</p>
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col gap-4 border border-transparent dark:border-gray-800">
+            <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaEdit /> Assign New Owner</h3>
+            <p className="text-sm text-gray-600 dark:text-gray-400">Select a user to assign as the new owner of this property.</p>
             <input
               type="text"
               value={assignUserSearch}
@@ -3903,14 +3903,14 @@ export default function Listing() {
       {/* EMI Calculator Modal */}
       {showCalculatorModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-900 rounded-lg shadow-lg p-6 w-full max-w-2xl max-h-[90vh] overflow-y-auto border border-transparent dark:border-gray-800">
             <div className="flex items-center justify-between mb-6">
-              <h3 className="text-xl font-bold text-green-700 flex items-center gap-2">
+              <h3 className="text-xl font-bold text-green-700 dark:text-green-400 flex items-center gap-2">
                 <FaCalculator /> EMI Calculator
               </h3>
               <button
                 onClick={() => setShowCalculatorModal(false)}
-                className="p-2 text-gray-500 hover:text-gray-700 hover:bg-gray-100 rounded-full transition-colors"
+                className="p-2 text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
               >
                 <FaTimes className="text-lg" />
               </button>

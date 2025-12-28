@@ -988,13 +988,13 @@ export default function Community() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-20 pb-12 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-950 pt-20 pb-12 font-sans text-slate-800 dark:text-gray-200 transition-colors duration-300">
             <style>{styles}</style>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="text-center mb-10">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Neighborhood Community Hub</h1>
-                    <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Neighborhood Community Hub</h1>
+                    <p className="text-lg text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
                         Connect with your neighbors, discuss local events, share safety alerts, and build a better community together.
                     </p>
                     <div className="w-24 h-1 bg-blue-600 mx-auto mt-6 rounded-full opacity-20"></div>
@@ -1009,8 +1009,8 @@ export default function Community() {
                                 key={cat.id}
                                 onClick={() => setActiveTab(cat.id)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${activeTab === cat.id
-                                    ? 'bg-blue-600 text-white shadow-lg'
-                                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                    ? 'bg-blue-600 dark:bg-blue-500 text-white shadow-lg'
+                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
                                     }`}
                             >
                                 <cat.icon className="text-sm" />
@@ -1030,14 +1030,14 @@ export default function Community() {
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onFocus={() => searchTerm.length > 2 && setShowSuggestions(true)}
                                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
-                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full pl-10 pr-4 py-2 rounded-lg border border-gray-200 dark:border-gray-700 bg-white dark:bg-gray-800 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-900/30 transition-all"
                             />
                             {showSuggestions && suggestions.length > 0 && (
-                                <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-lg mt-1 z-50 border border-gray-100 overflow-hidden">
+                                <div className="absolute top-full left-0 w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 z-50 border border-gray-100 dark:border-gray-700 overflow-hidden">
                                     {suggestions.map((s, i) => (
                                         <div
                                             key={i}
-                                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 truncate"
+                                            className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-700 dark:text-gray-300 truncate"
                                             onClick={() => handleSearchSelect(s.title)}
                                         >
                                             {s.title}
@@ -1066,10 +1066,10 @@ export default function Community() {
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-6">
                         {posts.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-                                <FaUsers className="text-6xl text-gray-200 mx-auto mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-800 mb-2">No posts found</h3>
-                                <p className="text-gray-500 mb-6">Be the first to start a conversation in this category!</p>
+                            <div className="text-center py-20 bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 transition-colors duration-300">
+                                <FaUsers className="text-6xl text-gray-200 dark:text-gray-800 mx-auto mb-4" />
+                                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-2">No posts found</h3>
+                                <p className="text-gray-500 dark:text-gray-400 mb-6">Be the first to start a conversation in this category!</p>
                                 <button
                                     onClick={() => setShowCreateModal(true)}
                                     className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -1081,7 +1081,7 @@ export default function Community() {
                             posts.map((post, index) => (
                                 <div
                                     key={post._id}
-                                    className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
+                                    className="bg-white dark:bg-gray-900 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 hover:shadow-xl dark:shadow-blue-900/10 transition-all duration-300 animate-fade-in-up"
                                     style={{ animationDelay: `${index * 0.1}s` }}
                                 >
                                     {/* Post Header */}
@@ -1100,16 +1100,16 @@ export default function Community() {
                                                 )}
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-gray-900 text-lg hover:text-blue-600 cursor-pointer transition-colors">
+                                                <h3 className="font-bold text-gray-900 dark:text-white text-lg hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
                                                     {post.author?.username}
                                                 </h3>
-                                                <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
-                                                    <span className="flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
+                                                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                    <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-full border border-gray-100 dark:border-gray-700">
                                                         <FaCalendarAlt className="text-gray-400" />
                                                         {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                                     </span>
                                                     {post.location?.city && (
-                                                        <span className="flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
+                                                        <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 px-2 py-0.5 rounded-full border border-gray-100 dark:border-gray-700">
                                                             <FaMapMarkerAlt className="text-red-400" /> {post.location.city}
                                                         </span>
                                                     )}
@@ -1132,7 +1132,7 @@ export default function Community() {
                                             {currentUser && currentUser._id !== post.author?._id && (
                                                 <button
                                                     onClick={() => setReportModal({ isOpen: true, postId: post._id })}
-                                                    className={`p-2 hover:bg-red-50 rounded-full transition-all ${post.reports?.some(r => r.user === currentUser._id) ? 'text-red-500' : 'text-gray-300 hover:text-red-500'}`}
+                                                    className={`p-2 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all ${post.reports?.some(r => r.user === currentUser._id) ? 'text-red-500' : 'text-gray-300 dark:text-gray-600 hover:text-red-500'}`}
                                                     title="Report Post"
                                                 >
                                                     <FaFlag />
@@ -1149,7 +1149,7 @@ export default function Community() {
                                                     </button>
                                                     <button
                                                         onClick={() => handleDeletePost(post._id)}
-                                                        className="p-2 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full transition-all"
+                                                        className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all"
                                                         title="Delete Post"
                                                     >
                                                         <FaTimes />
@@ -1160,8 +1160,8 @@ export default function Community() {
                                     </div>
 
                                     {/* Post Content */}
-                                    <div className="mb-6 pl-2 border-l-4 border-gray-100 hover:border-blue-100 transition-colors">
-                                        <h2 className="text-xl font-bold text-gray-900 mb-2 leading-tight">{post.title}</h2>
+                                    <div className="mb-6 pl-2 border-l-4 border-gray-100 dark:border-gray-800 hover:border-blue-100 dark:hover:border-blue-900 transition-colors">
+                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">{post.title}</h2>
 
                                         {editingPost?.id === post._id ? (
                                             <form onSubmit={(e) => handleUpdatePost(e, post._id)} className="w-full mb-2">
@@ -1169,7 +1169,7 @@ export default function Community() {
                                                     <textarea
                                                         value={editingPost.content}
                                                         onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
-                                                        className="w-full bg-white border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 min-h-[100px]"
+                                                        className="w-full bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-700 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white min-h-[100px]"
                                                         autoFocus
                                                     />
                                                     <button
@@ -1242,7 +1242,7 @@ export default function Community() {
                                                 </div>
                                             </form>
                                         ) : (
-                                            <p className="text-gray-600 whitespace-pre-line leading-relaxed">
+                                            <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
                                                 {formatContent(post.content)}
                                                 {post.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
                                             </p>
@@ -1252,27 +1252,27 @@ export default function Community() {
                                     </div>
 
                                     {/* Post Actions */}
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-800">
                                         <div className="flex items-center gap-6 w-full">
                                             <div className="flex items-center gap-4">
-                                                <div className="flex items-center gap-1 bg-gray-50 rounded-full px-1 border border-gray-100">
+                                                <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-800 rounded-full px-1 border border-gray-100 dark:border-gray-700">
                                                     <button
                                                         onClick={() => handleLike(post._id)}
                                                         className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${currentUser && post.likes?.includes(currentUser._id)
-                                                            ? 'text-blue-600'
-                                                            : 'text-gray-500 hover:text-blue-600'
+                                                            ? 'text-blue-600 dark:text-blue-400'
+                                                            : 'text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
                                                             }`}
                                                         title="Like"
                                                     >
                                                         <FaThumbsUp className={`text-base transform group-hover:scale-110 transition-transform ${currentUser && post.likes?.includes(currentUser._id) ? 'fill-current' : ''}`} />
                                                         <span className="font-semibold text-xs">{post.likes?.length || 0}</span>
                                                     </button>
-                                                    <div className="w-[1px] h-4 bg-gray-200"></div>
+                                                    <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-700"></div>
                                                     <button
                                                         onClick={() => handleDislike(post._id)}
                                                         className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${currentUser && post.dislikes?.includes(currentUser._id)
-                                                            ? 'text-red-500'
-                                                            : 'text-gray-500 hover:text-red-500'
+                                                            ? 'text-red-500 dark:text-red-400'
+                                                            : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'
                                                             }`}
                                                         title="Dislike"
                                                     >
@@ -1283,7 +1283,7 @@ export default function Community() {
 
                                                 <button
                                                     onClick={() => toggleComments(post._id)}
-                                                    className="group flex items-center gap-2 px-3 py-1.5 rounded-full text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all font-semibold text-xs"
+                                                    className="group flex items-center gap-2 px-3 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all font-semibold text-xs"
                                                 >
                                                     <FaComment className="text-base transform group-hover:scale-110 transition-transform" />
                                                     <span>{post.comments?.length || 0} Comments</span>
@@ -1292,7 +1292,7 @@ export default function Community() {
 
                                             <button
                                                 onClick={() => handleShare(post)}
-                                                className="group flex items-center gap-2 px-3 py-1.5 rounded-full text-gray-500 hover:bg-green-50 hover:text-green-600 transition-all ml-auto sm:ml-0"
+                                                className="group flex items-center gap-2 px-3 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 transition-all ml-auto sm:ml-0"
                                             >
                                                 <FaShare className="text-lg transform group-hover:scale-110 transition-transform" />
                                                 <span className="hidden sm:inline font-medium">Share</span>
@@ -1302,7 +1302,7 @@ export default function Community() {
 
                                     {/* Comments Section */}
                                     {expandedComments[post._id] && (
-                                        <div className="mt-4 pt-4 border-t border-gray-100 animate-fade-in">
+                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-800 animate-fade-in">
                                             <div className="space-y-4 mb-4">
                                                 {post.comments && post.comments.length > 0 ? (
                                                     post.comments.map((comment, idx) => (
@@ -1315,10 +1315,10 @@ export default function Community() {
                                                                 />
                                                             </div>
                                                             <div className="flex-1">
-                                                                <div className="bg-gray-50 rounded-2xl rounded-tl-none p-3 pr-8 relative">
+                                                                <div className="bg-gray-50 dark:bg-gray-800 rounded-2xl rounded-tl-none p-3 pr-8 relative">
                                                                     <div className="flex justify-between items-center mb-1">
-                                                                        <span className="font-semibold text-sm">{comment.user?.username}</span>
-                                                                        <span className="text-[10px] text-gray-500 mr-4">
+                                                                        <span className="font-semibold text-sm dark:text-gray-200">{comment.user?.username}</span>
+                                                                        <span className="text-[10px] text-gray-500 dark:text-gray-400 mr-4">
                                                                             {new Date(comment.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                         </span>
                                                                     </div>
@@ -1328,7 +1328,7 @@ export default function Community() {
                                                                                 <textarea
                                                                                     value={editingContent.content}
                                                                                     onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
-                                                                                    className="w-full bg-white border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-blue-500 min-h-[60px]"
+                                                                                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white min-h-[60px]"
                                                                                     autoFocus
                                                                                 />
                                                                                 <button
@@ -1383,7 +1383,7 @@ export default function Community() {
                                                                             </div>
                                                                         </form>
                                                                     ) : (
-                                                                        <p className={`text-sm ${comment.isDeleted ? 'text-gray-500 italic' : 'text-gray-700'} leading-relaxed break-words overflow-hidden`}>
+                                                                        <p className={`text-sm ${comment.isDeleted ? 'text-gray-500 dark:text-gray-400 italic' : 'text-gray-700 dark:text-gray-300'} leading-relaxed break-words overflow-hidden`}>
                                                                             {comment.isDeleted
                                                                                 ? (comment.deletedBy === comment.user?._id ? "This comment was deleted." : "This comment is deleted by admin.")
                                                                                 : formatContent(comment.content)}
@@ -1399,20 +1399,20 @@ export default function Community() {
                                                                                     setActiveReplyInput(comment._id);
                                                                                     setReplyingTo({ postId: post._id, commentId: comment._id });
                                                                                 }}
-                                                                                className="text-xs font-bold text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                                                                                className="text-xs font-bold text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 py-1 rounded transition-colors"
                                                                             >
                                                                                 Reply
                                                                             </button>
                                                                             <div className="flex items-center gap-3">
                                                                                 <button
                                                                                     onClick={() => handleCommentReaction(post._id, comment._id, 'like')}
-                                                                                    className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.likes?.includes(currentUser._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+                                                                                    className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.likes?.includes(currentUser._id) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400'}`}
                                                                                 >
                                                                                     <FaThumbsUp size={10} /> {comment.likes?.length || 0}
                                                                                 </button>
                                                                                 <button
                                                                                     onClick={() => handleCommentReaction(post._id, comment._id, 'dislike')}
-                                                                                    className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.dislikes?.includes(currentUser._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                                                                    className={`flex items-center gap-1 text-[10px] font-bold ${currentUser && comment.dislikes?.includes(currentUser._id) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400'}`}
                                                                                 >
                                                                                     <FaThumbsDown size={10} /> {comment.dislikes?.length || 0}
                                                                                 </button>
@@ -1420,7 +1420,7 @@ export default function Community() {
                                                                             {comment.replies && comment.replies.length > 0 && (
                                                                                 <button
                                                                                     onClick={() => setExpandedReplies(prev => ({ ...prev, [comment._id]: !prev[comment._id] }))}
-                                                                                    className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                                                    className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1"
                                                                                 >
                                                                                     {expandedReplies[comment._id] ? <FaTimes size={10} /> : <FaComment size={10} />}
                                                                                     {comment.replies.length} Replies
@@ -1450,7 +1450,7 @@ export default function Community() {
                                                                         <div className="mt-2">
                                                                             <button
                                                                                 onClick={() => setExpandedReplies(prev => ({ ...prev, [comment._id]: !prev[comment._id] }))}
-                                                                                className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                                                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1"
                                                                             >
                                                                                 {expandedReplies[comment._id] ? <FaTimes size={10} /> : <FaComment size={10} />}
                                                                                 {comment.replies.length} Replies
@@ -1495,7 +1495,7 @@ export default function Community() {
                                                                                     value={replyText}
                                                                                     onChange={(e) => handleInputChange(e, 'reply', comment._id)}
                                                                                     placeholder={`Replying to ${comment.user?.username}...`}
-                                                                                    className="w-full bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
+                                                                                    className="w-full bg-white dark:bg-gray-800 border-b-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white outline-none text-sm py-1 px-2 transition-all"
                                                                                 />
                                                                             </div>
                                                                             <div className="flex gap-1 items-center">
@@ -1507,15 +1507,15 @@ export default function Community() {
                                                                                             type: 'reply',
                                                                                             id: comment._id
                                                                                         }))}
-                                                                                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                                                                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all"
                                                                                         title="Add Emoji"
                                                                                     >
                                                                                         <FaSmile className="text-sm" />
                                                                                     </button>
                                                                                     {showEmojiPicker.show && showEmojiPicker.type === 'reply' && showEmojiPicker.id === comment._id && (
-                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
-                                                                                            <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
-                                                                                                <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                                                                                            <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-900/50 px-3 py-2 border-b border-gray-100 dark:border-gray-700 rounded-t-lg">
+                                                                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-400">Pick an emoji</span>
                                                                                                 <button
                                                                                                     type="button"
                                                                                                     onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
@@ -1528,6 +1528,7 @@ export default function Community() {
                                                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'reply', comment._id)}
                                                                                                 width={300}
                                                                                                 height={350}
+                                                                                                theme={'auto'}
                                                                                                 searchDisabled={false}
                                                                                                 skinTonesDisabled
                                                                                                 previewConfig={{ showPreview: false }}
@@ -1538,14 +1539,14 @@ export default function Community() {
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); setShowEmojiPicker({ show: false, type: null, id: null }); }}
-                                                                                    className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
+                                                                                    className="text-xs text-gray-500 dark:text-gray-400 px-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-all"
                                                                                 >
                                                                                     Cancel
                                                                                 </button>
                                                                                 <button
                                                                                     type="submit"
                                                                                     disabled={!replyText.trim()}
-                                                                                    className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full disabled:opacity-50"
+                                                                                    className="text-xs bg-blue-600 text-white px-3 py-1 rounded-full disabled:opacity-50 hover:bg-blue-700 transition-all shadow-md"
                                                                                 >
                                                                                     Reply
                                                                                 </button>
@@ -1556,7 +1557,7 @@ export default function Community() {
 
                                                                 {/* Infinite Recursive Replies */}
                                                                 {expandedReplies[comment._id] && comment.replies && (
-                                                                    <div className="mt-2 space-y-3 pl-2 sm:pl-4 border-l-2 border-gray-100 ml-1 sm:ml-2">
+                                                                    <div className="mt-2 space-y-3 pl-2 sm:pl-4 border-l-2 border-gray-100 dark:border-gray-800 ml-1 sm:ml-2">
                                                                         {(() => {
                                                                             // Small indentation test
                                                                             const renderReplies = (parentId, depth = 0) => {
@@ -1574,10 +1575,10 @@ export default function Community() {
                                                                                                     className="mt-1 text-xs"
                                                                                                 />
                                                                                                 <div className="flex-1">
-                                                                                                    <div className="bg-gray-50/50 p-2 rounded-lg relative">
+                                                                                                    <div className="bg-gray-50/50 dark:bg-gray-800/50 p-2 rounded-lg relative">
                                                                                                         <div className="flex items-center gap-2 mb-1">
-                                                                                                            <span className="text-xs font-bold text-gray-800">{reply.user?.username}</span>
-                                                                                                            <span className="text-[10px] text-gray-400">
+                                                                                                            <span className="text-xs font-bold text-gray-800 dark:text-gray-200">{reply.user?.username}</span>
+                                                                                                            <span className="text-[10px] text-gray-400 dark:text-gray-500">
                                                                                                                 {new Date(reply.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                                                             </span>
                                                                                                         </div>
@@ -1588,7 +1589,7 @@ export default function Community() {
                                                                                                                     <textarea
                                                                                                                         value={editingContent.content}
                                                                                                                         onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
-                                                                                                                        className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-blue-500 min-h-[50px]"
+                                                                                                                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-xs focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white min-h-[50px]"
                                                                                                                         autoFocus
                                                                                                                     />
                                                                                                                     <button
@@ -1671,7 +1672,7 @@ export default function Community() {
                                                                                                                             setReplyingTo({ userId: reply.user._id, username: reply.user.username });
                                                                                                                         }
                                                                                                                     }}
-                                                                                                                    className="text-xs font-bold text-gray-400 hover:text-blue-600 outline-none"
+                                                                                                                    className="text-xs font-bold text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400 outline-none transition-colors"
                                                                                                                 >
                                                                                                                     Reply
                                                                                                                 </button>
@@ -1679,7 +1680,7 @@ export default function Community() {
                                                                                                         )}    {subReplies.length > 0 && (
                                                                                                             <button
                                                                                                                 onClick={() => setExpandedReplies(prev => ({ ...prev, [reply._id]: !prev[reply._id] }))}
-                                                                                                                className="text-[9px] font-bold text-blue-600 hover:text-blue-800 outline-none"
+                                                                                                                className="text-[9px] font-bold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 outline-none"
                                                                                                             >
                                                                                                                 {expandedReplies[reply._id] ? 'Hide' : `View ${subReplies.length} Replies`}
                                                                                                             </button>
@@ -1736,7 +1737,7 @@ export default function Community() {
                                                                                                                         value={replyText}
                                                                                                                         onChange={(e) => handleInputChange(e, 'reply', comment._id)}
                                                                                                                         placeholder={`Replying to ${reply.user?.username}...`}
-                                                                                                                        className="w-full bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
+                                                                                                                        className="w-full bg-white dark:bg-gray-900 border-b-2 border-gray-200 dark:border-gray-700 focus:border-blue-500 dark:focus:border-blue-400 text-gray-900 dark:text-white outline-none text-sm py-1 px-2 transition-all"
                                                                                                                     />
                                                                                                                 </div>
                                                                                                                 <div className="flex gap-1 items-center">
@@ -1796,7 +1797,7 @@ export default function Community() {
                                                                                                     )}
                                                                                                     {/* Recursion: Render replies to this reply */}
                                                                                                     {expandedReplies[reply._id] && (
-                                                                                                        <div className={`border-l-2 border-gray-100 mt-2 animate-fade-in ${depth < 2 ? 'ml-2 sm:ml-4 pl-2 sm:pl-4' : 'ml-1 pl-1'}`}>
+                                                                                                        <div className={`border-l-2 border-gray-100 dark:border-gray-800 mt-2 animate-fade-in ${depth < 2 ? 'ml-2 sm:ml-4 pl-2 sm:pl-4' : 'ml-1 pl-1'}`}>
                                                                                                             {renderReplies(reply._id, depth + 1)}
                                                                                                         </div>
                                                                                                     )}
@@ -1815,7 +1816,7 @@ export default function Community() {
                                                         </div>
                                                     ))
                                                 ) : (
-                                                    <p className="text-center text-gray-500 text-sm py-2">No comments yet. Be the first to share your thoughts!</p>
+                                                    <p className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">No comments yet. Be the first to share your thoughts!</p>
                                                 )}
                                             </div>
 
@@ -1831,7 +1832,7 @@ export default function Community() {
                                                         <input
                                                             type="text"
                                                             placeholder="Write a comment... (use @ to mention property)"
-                                                            className="w-full bg-gray-50 border border-gray-200 rounded-full pl-4 pr-16 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                            className="w-full bg-gray-50 dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-full pl-4 pr-16 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-900/30 text-gray-900 dark:text-white text-sm transition-all"
                                                             value={commentText[post._id] || ''}
                                                             onChange={(e) => handleInputChange(e, 'comment', post._id)}
                                                         />
@@ -1889,36 +1890,36 @@ export default function Community() {
                     {/* Sidebar */}
                     <div className="hidden lg:block space-y-6">
                         {/* Community Stats */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Community Stats</h3>
+                        <div className="bg-white dark:bg-gray-900 rounded-xl shadow-sm border border-gray-100 dark:border-gray-800 p-6 transition-colors duration-300">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Community Stats</h3>
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-blue-100 rounded-full text-blue-600"><FaUsers /></div>
-                                        <span className="text-gray-700 font-medium">Active Members</span>
+                                        <div className="p-2 bg-blue-100 dark:bg-blue-800 rounded-full text-blue-600 dark:text-blue-300"><FaUsers /></div>
+                                        <span className="text-gray-700 dark:text-gray-300 font-medium">Active Members</span>
                                     </div>
-                                    <span className="font-bold text-gray-900 text-lg">{stats.activeMembers}</span>
+                                    <span className="font-bold text-gray-900 dark:text-white text-lg">{stats.activeMembers}</span>
                                 </div>
-                                <div className="flex justify-between items-center bg-green-50 p-3 rounded-lg border border-green-100">
+                                <div className="flex justify-between items-center bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-100 dark:border-green-800">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-green-100 rounded-full text-green-600"><FaComment /></div>
-                                        <span className="text-gray-700 font-medium">Daily Posts</span>
+                                        <div className="p-2 bg-green-100 dark:bg-green-800 rounded-full text-green-600 dark:text-green-300"><FaComment /></div>
+                                        <span className="text-gray-700 dark:text-gray-300 font-medium">Daily Posts</span>
                                     </div>
-                                    <span className="font-bold text-gray-900 text-lg">{stats.dailyPosts}</span>
+                                    <span className="font-bold text-gray-900 dark:text-white text-lg">{stats.dailyPosts}</span>
                                 </div>
-                                <div className="flex justify-between items-center bg-purple-50 p-3 rounded-lg border border-purple-100">
+                                <div className="flex justify-between items-center bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-100 dark:border-purple-800">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-purple-100 rounded-full text-purple-600"><FaCalendarAlt /></div>
-                                        <span className="text-gray-700 font-medium">Events This Week</span>
+                                        <div className="p-2 bg-purple-100 dark:bg-purple-800 rounded-full text-purple-600 dark:text-purple-300"><FaCalendarAlt /></div>
+                                        <span className="text-gray-700 dark:text-gray-300 font-medium">Events This Week</span>
                                     </div>
-                                    <span className="font-bold text-gray-900 text-lg">{stats.eventsThisWeek}</span>
+                                    <span className="font-bold text-gray-900 dark:text-white text-lg">{stats.eventsThisWeek}</span>
                                 </div>
                             </div>
                         </div>
 
                         {/* Trending Topics */}
                         {/* Trending Topics - Animated list */}
-                        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 rounded-xl shadow-lg border border-transparent p-6 text-white overflow-hidden relative">
+                        <div className="bg-gradient-to-br from-blue-600 to-indigo-700 dark:from-gray-900 dark:to-blue-900 rounded-xl shadow-lg border border-transparent p-6 text-white overflow-hidden relative transition-colors duration-300">
                             {/* Decorative circles */}
                             <div className="absolute top-0 right-0 w-32 h-32 bg-white opacity-10 rounded-full blur-2xl -mr-10 -mt-10"></div>
                             <div className="absolute bottom-0 left-0 w-24 h-24 bg-white opacity-10 rounded-full blur-2xl -ml-10 -mb-10"></div>
@@ -1945,8 +1946,8 @@ export default function Community() {
                 {/* Create Post Modal */}
                 {
                     showCreateModal && (
-                        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                            <div className="bg-white rounded-2xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200">
+                        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+                            <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200 shadow-2xl transition-colors duration-300">
                                 <div className="flex justify-between items-center mb-6">
                                     <h2 className="text-2xl font-bold text-gray-900">Start a Discussion</h2>
                                     <button

@@ -32,8 +32,6 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
   const [messageToDelete, setMessageToDelete] = useState(null);
   const [isDeleting, setIsDeleting] = useState(false);
-  const [showDeleteAllConfirm, setShowDeleteAllConfirm] = useState(false);
-  const [isDeletingAll, setIsDeletingAll] = useState(false);
 
   // Handle force modal opening
   useEffect(() => {
@@ -206,30 +204,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
     }
   };
 
-  const handleDeleteAllMessages = async () => {
-    setIsDeletingAll(true);
-    try {
-      // Delete each message sequentially to avoid server overload
-      const msgs = [...userMessages];
-      for (const msg of msgs) {
-        try {
-          await fetch(`${API_BASE_URL}/api/contact/user-messages/${msg._id}?email=${encodeURIComponent(currentUser.email)}`, {
-            method: 'DELETE',
-            credentials: 'include'
-          });
-        } catch (_) { /* ignore individual failures */ }
-      }
-      setUserMessages([]);
-      setUnreadReplies(0);
-      toast.success('All messages deleted successfully!');
-    } catch (error) {
-      console.error('Error deleting all messages:', error);
-      toast.error('Failed to delete all messages. Please try again.');
-    } finally {
-      setIsDeletingAll(false);
-      setShowDeleteAllConfirm(false);
-    }
-  };
+
 
   // Function to get icon color based on current route
   const getIconColor = () => {
@@ -335,19 +310,19 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
             </span>
           )}
 
-          {/* Enhanced Hover Tooltip */}
-          <div className="absolute bottom-full right-0 mb-3 bg-white text-gray-800 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 transform -translate-y-1 transition-all duration-200">
-            <div className="flex items-center gap-2">
-              <span className="text-lg">💬</span>
-              <span className="font-medium">
-                {currentUser && unreadReplies > 0
-                  ? `${unreadReplies} new repl${unreadReplies !== 1 ? 'ies' : 'y'}`
-                  : 'Need help? Contact us!'}
-              </span>
+          {/* Enhanced Hover Tooltip - Only show if there are unread replies */}
+          {currentUser && unreadReplies > 0 && (
+            <div className="absolute bottom-full right-0 mb-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 dark:border-gray-700 transform -translate-y-1 transition-all duration-200">
+              <div className="flex items-center gap-2">
+                <span className="text-lg">💬</span>
+                <span className="font-medium">
+                  {unreadReplies} new repl{unreadReplies !== 1 ? 'ies' : 'y'}
+                </span>
+              </div>
+              {/* Tooltip arrow */}
+              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white dark:border-t-gray-800"></div>
             </div>
-            {/* Tooltip arrow */}
-            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
-          </div>
+          )}
         </button>
       </div>
 
@@ -370,15 +345,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                 </div>
               </div>
               <div className="flex items-center gap-2">
-                {currentUser && activeTab === 'messages' && userMessages.length > 0 && (
-                  <button
-                    onClick={() => setShowDeleteAllConfirm(true)}
-                    className="text-red-500 hover:text-red-700 transition-colors p-2 hover:bg-red-50 rounded-full"
-                    title="Delete all messages"
-                  >
-                    <FaTrash className="w-4 h-4" />
-                  </button>
-                )}
+
                 <button
                   onClick={handleModalClose}
                   className="text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-white transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
@@ -394,8 +361,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                 <button
                   onClick={() => setActiveTab('send')}
                   className={`flex-1 px-6 py-3 text-sm font-medium transition-colors ${activeTab === 'send'
-                      ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                 >
                   Send Message
@@ -403,8 +370,8 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                 <button
                   onClick={() => setActiveTab('messages')}
                   className={`flex-1 px-6 py-3 text-sm font-medium transition-colors relative ${activeTab === 'messages'
-                      ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
-                      : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
+                    ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400 bg-blue-50 dark:bg-blue-900/20'
+                    : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-50 dark:hover:bg-gray-800'
                     }`}
                 >
                   My Messages
@@ -592,10 +559,10 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                               {formatDate(message.createdAt)}
                               <span className="text-gray-400 dark:text-gray-600">•</span>
                               <span className={`px-2 py-1 text-xs rounded-full transition-colors ${message.status === 'replied'
-                                  ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
-                                  : message.status === 'read'
-                                    ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300'
-                                    : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300'
+                                ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
+                                : message.status === 'read'
+                                  ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300'
+                                  : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300'
                                 }`}>
                                 {message.status === 'replied' ? 'Replied' :
                                   message.status === 'read' ? 'Read' : 'Unread'}
@@ -630,7 +597,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
                         <div className="flex items-center justify-end mt-2">
                           <button
                             onClick={() => deleteUserMessage(message._id)}
-                            className="text-red-500 hover:text-red-700 transition-colors p-2 rounded-full hover:bg-red-50"
+                            className="text-red-500 hover:text-red-700 dark:text-red-400 dark:hover:text-red-300 transition-colors p-2 rounded-full hover:bg-red-50 dark:hover:bg-red-900/20"
                             title="Delete this message"
                           >
                             <FaTrash className="w-4 h-4" />
@@ -740,18 +707,7 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
         isLoading={isDeleting}
       />
 
-      {/* Confirmation Modal for Delete All Messages */}
-      <ConfirmationModal
-        isOpen={showDeleteAllConfirm}
-        onClose={() => setShowDeleteAllConfirm(false)}
-        onConfirm={handleDeleteAllMessages}
-        title="Delete All Messages"
-        message="Are you sure you want to delete all your messages? This action cannot be undone."
-        confirmText="Delete All"
-        cancelText="Cancel"
-        isDestructive={true}
-        isLoading={isDeletingAll}
-      />
+
     </>
   );
 }
