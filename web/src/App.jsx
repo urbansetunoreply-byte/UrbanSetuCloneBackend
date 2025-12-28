@@ -97,6 +97,7 @@ const PaymentDashboard = lazy(() => import('./pages/PaymentDashboard'));
 const AdminSecurityModeration = lazy(() => import('./pages/AdminSecurityModeration'));
 const MyPayments = lazy(() => import('./pages/MyPayments'));
 const DeviceManagement = lazy(() => import('./pages/DeviceManagement'));
+const AdminDeletedListings = lazy(() => import("./pages/AdminDeletedListings"));
 const SessionManagement = lazy(() => import('./pages/SessionManagement'));
 const SessionAuditLogs = lazy(() => import('./pages/SessionAuditLogs'));
 const UserContact = lazy(() => import('./pages/UserContact'));
@@ -794,6 +795,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/admin/explore" element={<AdminExplore />} />
               <Route path="/admin/create-listing" element={<AdminCreateListing />} />
               <Route path="/admin/listings" element={<AdminListings />} />
+              <Route path="/admin/deleted-listings" element={<AdminDeletedListings />} />
               <Route path="/admin/my-listings" element={<AdminMyListings />} />
               <Route path="/admin/update-listing/:listingId" element={<AdminEditListing />} />
               {/* Admin wishlist removed */}
