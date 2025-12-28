@@ -1855,7 +1855,7 @@ export default function Listing() {
             {currentUser && !isAdmin && currentUser._id !== listing.userRef && (
               <button
                 onClick={() => setShowReportModal(true)}
-                className="flex items-center gap-2 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 px-3 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 text-red-600 hover:text-red-700 bg-red-50 hover:bg-red-100 dark:bg-red-900/20 dark:hover:bg-red-900/30 dark:text-red-400 dark:hover:text-red-300 px-3 py-2 rounded-lg transition-colors"
                 title="Report this property"
               >
                 <FaFlag className="text-sm" />
@@ -1864,7 +1864,7 @@ export default function Listing() {
             )}
             <button
               onClick={() => setShowSocialShare(true)}
-              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors"
+              className="flex items-center gap-2 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 dark:hover:text-blue-300 px-3 py-2 rounded-lg transition-colors"
               title="Share this property"
             >
               <FaShare className="text-sm" />
@@ -1874,7 +1874,7 @@ export default function Listing() {
             {currentUser && (
               <button
                 onClick={() => setShowAIRecommendations(true)}
-                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 px-3 py-2 rounded-lg transition-colors"
+                className="flex items-center gap-2 text-blue-600 hover:text-blue-700 bg-blue-50 hover:bg-blue-100 dark:bg-blue-900/20 dark:hover:bg-blue-900/30 dark:text-blue-400 dark:hover:text-blue-300 px-3 py-2 rounded-lg transition-colors"
                 title="AI Property Recommendations"
               >
                 <FaRobot className="text-sm" />
@@ -2764,8 +2764,8 @@ export default function Listing() {
 
               {/* Rent Prediction Display */}
               {showRentPrediction && (
-                <div className="mt-8 border-t border-gray-200 pt-8">
-                  <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                     <RentPredictionDisplay
                       prediction={rentPrediction}
                       loading={predictionLoading}
@@ -2801,8 +2801,8 @@ export default function Listing() {
 
               {/* Locality Score Display */}
               {showLocalityScore && (
-                <div className="mt-8 border-t border-gray-200 pt-8">
-                  <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="mt-8 border-t border-gray-200 dark:border-gray-700 pt-8">
+                  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                     <LocalityScoreDisplay
                       localityScore={localityScore}
                       loading={localityLoading}
