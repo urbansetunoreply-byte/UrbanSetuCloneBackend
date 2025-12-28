@@ -10,12 +10,12 @@ import AdminRentalLoansSkeleton from '../components/skeletons/AdminRentalLoansSk
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const STATUS_COLORS = {
-  pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  approved: 'bg-blue-100 text-blue-700 border-blue-200',
-  disbursed: 'bg-green-100 text-green-700 border-green-200',
-  rejected: 'bg-red-100 text-red-700 border-red-200',
-  repaid: 'bg-purple-100 text-purple-700 border-purple-200',
-  defaulted: 'bg-orange-100 text-orange-700 border-orange-200'
+  pending: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+  approved: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  disbursed: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
+  rejected: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
+  repaid: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+  defaulted: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800'
 };
 
 const STATUS_LABELS = {
@@ -316,20 +316,20 @@ export default function AdminRentalLoans() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <FaCreditCard className="text-blue-600" />
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+                <FaCreditCard className="text-blue-600 dark:text-blue-400" />
                 Admin Rental Loans
               </h1>
-              <p className="text-gray-600 mt-2">Manage all rental loan applications across the platform</p>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">Manage all rental loan applications across the platform</p>
             </div>
             <button
               onClick={() => fetchAllLoans()}
-              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors self-end md:self-auto"
+              className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 flex items-center gap-2 transition-colors self-end md:self-auto shadow-lg"
             >
               <FaSync className={loading ? "animate-spin" : ""} />
               Refresh
@@ -338,49 +338,49 @@ export default function AdminRentalLoans() {
 
           {/* Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-5 gap-4 mb-6">
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Loans</p>
-                  <p className="text-2xl font-bold text-blue-700">{stats.total}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Total Loans</p>
+                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.total}</p>
                 </div>
-                <FaCreditCard className="text-3xl text-blue-500" />
+                <FaCreditCard className="text-3xl text-blue-500 dark:text-blue-400" />
               </div>
             </div>
-            <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-700">{stats.pending}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Pending</p>
+                  <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{stats.pending}</p>
                 </div>
-                <FaClock className="text-3xl text-yellow-500" />
+                <FaClock className="text-3xl text-yellow-500 dark:text-yellow-400" />
               </div>
             </div>
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Approved</p>
-                  <p className="text-2xl font-bold text-blue-700">{stats.approved}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Approved</p>
+                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.approved}</p>
                 </div>
-                <FaCheckCircle className="text-3xl text-blue-500" />
+                <FaCheckCircle className="text-3xl text-blue-500 dark:text-blue-400" />
               </div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Disbursed</p>
-                  <p className="text-2xl font-bold text-green-700">{stats.disbursed}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Disbursed</p>
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">{stats.disbursed}</p>
                 </div>
-                <FaCheckCircle className="text-3xl text-green-500" />
+                <FaCheckCircle className="text-3xl text-green-500 dark:text-green-400" />
               </div>
             </div>
-            <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Rejected</p>
-                  <p className="text-2xl font-bold text-red-700">{stats.rejected}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-300">Rejected</p>
+                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">{stats.rejected}</p>
                 </div>
-                <FaTimesCircle className="text-3xl text-red-500" />
+                <FaTimesCircle className="text-3xl text-red-500 dark:text-red-400" />
               </div>
             </div>
           </div>
@@ -394,13 +394,13 @@ export default function AdminRentalLoans() {
                 placeholder="Search by loan ID, user, contract, or property..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -413,7 +413,7 @@ export default function AdminRentalLoans() {
             <select
               value={loanTypeFilter}
               onChange={(e) => setLoanTypeFilter(e.target.value)}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               <option value="all">All Types</option>
               <option value="security_deposit">Security Deposit</option>
@@ -424,10 +424,10 @@ export default function AdminRentalLoans() {
         </div>
 
         {filteredLoans.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-            <FaCreditCard className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Loans Found</h3>
-            <p className="text-gray-500">No loans match your search criteria.</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+            <FaCreditCard className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No Loans Found</h3>
+            <p className="text-gray-500 dark:text-gray-400">No loans match your search criteria.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -440,50 +440,50 @@ export default function AdminRentalLoans() {
               return (
                 <div
                   key={loan._id}
-                  className={`bg-white rounded-xl shadow-lg p-6 border-2 ${STATUS_COLORS[status] || STATUS_COLORS.pending}`}
+                  className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-2 ${STATUS_COLORS[status] || STATUS_COLORS.pending}`}
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-gray-800">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                           {LOAN_TYPE_LABELS[loan.loanType] || loan.loanType}
                         </h3>
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${STATUS_COLORS[status] || STATUS_COLORS.pending}`}>
                           {STATUS_LABELS[status] || status}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 font-mono mb-2">Loan ID: {loan.loanId}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-mono mb-2">Loan ID: {loan.loanId}</p>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                         <div>
-                          <p className="text-xs text-gray-500">Applicant</p>
-                          <p className="font-semibold text-gray-800">{loan.userId?.username || loan.userId?.email || 'N/A'}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Applicant</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{loan.userId?.username || loan.userId?.email || 'N/A'}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Loan Amount</p>
-                          <p className="font-semibold text-gray-800">{formatCurrency(loan.loanAmount)}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Loan Amount</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{formatCurrency(loan.loanAmount)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">EMI Amount</p>
-                          <p className="font-semibold text-gray-800">{formatCurrency(loan.emiAmount)}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">EMI Amount</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{formatCurrency(loan.emiAmount)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Interest Rate</p>
-                          <p className="font-semibold text-gray-800">{loan.interestRate}% p.a.</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Interest Rate</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{loan.interestRate}% p.a.</p>
                         </div>
                       </div>
                       {contract && (
-                        <div className="mt-3 p-3 bg-gray-50 rounded-lg">
-                          <p className="text-sm text-gray-600 mb-1">
+                        <div className="mt-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
+                          <p className="text-sm text-gray-600 dark:text-gray-300 mb-1">
                             <FaHome className="inline mr-1" /> Property:{' '}
                             {listingId ? (
-                              <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                              <Link to={`/listing/${listingId}`} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline">
                                 {listingName}
                               </Link>
                             ) : (
                               listingName
                             )}
                           </p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
                             <FaFile className="inline mr-1" /> Contract: {contract.contractId || 'Unknown'}
                           </p>
                         </div>
@@ -553,17 +553,17 @@ export default function AdminRentalLoans() {
       {showLoanDisplay && selectedLoan && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
-              <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Loan Details</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+              <div className="flex items-center justify-between mb-4 border-b dark:border-gray-700 pb-2">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Loan Details</h2>
                 <button
                   onClick={() => {
                     setShowLoanDisplay(false);
                     setSelectedLoan(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                 >
-                  ×
+                  <FaTimes />
                 </button>
               </div>
               <LoanStatusDisplay
@@ -588,35 +588,35 @@ export default function AdminRentalLoans() {
       {showApproveModal && selectedLoan && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Approve Loan</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Approve Loan</h2>
                 <button
                   onClick={() => {
                     setShowApproveModal(false);
                     resetApproveFields();
                   }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                 >
-                  ×
+                  <FaTimes />
                 </button>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
-                  <p className="text-gray-600 font-mono">{selectedLoan.loanId}</p>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Loan ID</label>
+                  <p className="text-gray-600 dark:text-gray-400 font-mono">{selectedLoan.loanId}</p>
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Eligibility Check</label>
-                  <div className="space-y-2">
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Eligibility Check</label>
+                  <div className="space-y-2 text-gray-700 dark:text-gray-300">
                     <label className="flex items-center gap-2">
                       <input
                         type="checkbox"
                         checked={eligibilityCheck.passed}
                         onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, passed: e.target.checked })}
-                        className="rounded"
+                        className="rounded dark:bg-gray-700 dark:border-gray-600"
                       />
                       <span>Eligibility Passed</span>
                     </label>
@@ -625,7 +625,7 @@ export default function AdminRentalLoans() {
                       placeholder="Credit Score (300-900)"
                       value={eligibilityCheck.creditScore || ''}
                       onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, creditScore: e.target.value ? parseInt(e.target.value) : null })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       min="300"
                       max="900"
                     />
@@ -634,7 +634,7 @@ export default function AdminRentalLoans() {
                       placeholder="Eligibility Score (0-100)"
                       value={eligibilityCheck.eligibilityScore || ''}
                       onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, eligibilityScore: e.target.value ? parseInt(e.target.value) : null })}
-                      className="w-full px-3 py-2 border rounded-lg"
+                      className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       min="0"
                       max="100"
                     />
@@ -643,7 +643,7 @@ export default function AdminRentalLoans() {
                         type="checkbox"
                         checked={eligibilityCheck.incomeVerified}
                         onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, incomeVerified: e.target.checked })}
-                        className="rounded"
+                        className="rounded dark:bg-gray-700 dark:border-gray-600"
                       />
                       <span>Income Verified</span>
                     </label>
@@ -652,7 +652,7 @@ export default function AdminRentalLoans() {
                         type="checkbox"
                         checked={eligibilityCheck.employmentVerified}
                         onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, employmentVerified: e.target.checked })}
-                        className="rounded"
+                        className="rounded dark:bg-gray-700 dark:border-gray-600"
                       />
                       <span>Employment Verified</span>
                     </label>
@@ -660,23 +660,23 @@ export default function AdminRentalLoans() {
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Disbursement Date (Optional)</label>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Disbursement Date (Optional)</label>
                   <input
                     type="date"
                     value={disbursementDate}
                     onChange={(e) => setDisbursementDate(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                   />
-                  <p className="text-xs text-gray-500 mt-1">If provided, loan will be marked as disbursed immediately</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">If provided, loan will be marked as disbursed immediately</p>
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Admin Notes (Optional)</label>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Admin Notes (Optional)</label>
                   <textarea
                     value={adminNotes}
                     onChange={(e) => setAdminNotes(e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     placeholder="Add any notes for this approval..."
                   />
                 </div>
@@ -687,7 +687,7 @@ export default function AdminRentalLoans() {
                       setShowApproveModal(false);
                       resetApproveFields();
                     }}
-                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
                   >
                     Cancel
                   </button>
@@ -717,45 +717,45 @@ export default function AdminRentalLoans() {
       {showRejectModal && selectedLoan && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Reject Loan</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Reject Loan</h2>
                 <button
                   onClick={() => {
                     setShowRejectModal(false);
                     resetRejectFields();
                   }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                 >
-                  ×
+                  <FaTimes />
                 </button>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
-                  <p className="text-gray-600 font-mono">{selectedLoan.loanId}</p>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Loan ID</label>
+                  <p className="text-gray-600 dark:text-gray-400 font-mono">{selectedLoan.loanId}</p>
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Rejection Reason *</label>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Rejection Reason *</label>
                   <textarea
                     value={rejectionReason}
                     onChange={(e) => setRejectionReason(e.target.value)}
                     rows={4}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     placeholder="Provide a reason for rejection..."
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Admin Notes (Optional)</label>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Admin Notes (Optional)</label>
                   <textarea
                     value={adminNotes}
                     onChange={(e) => setAdminNotes(e.target.value)}
                     rows={3}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     placeholder="Add any internal notes..."
                   />
                 </div>
@@ -766,7 +766,7 @@ export default function AdminRentalLoans() {
                       setShowRejectModal(false);
                       resetRejectFields();
                     }}
-                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
                   >
                     Cancel
                   </button>
@@ -796,50 +796,50 @@ export default function AdminRentalLoans() {
       {showDisburseModal && selectedLoan && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Disburse Loan</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Disburse Loan</h2>
                 <button
                   onClick={() => {
                     setShowDisburseModal(false);
                     resetDisburseFields();
                   }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                 >
-                  ×
+                  <FaTimes />
                 </button>
               </div>
 
               <div className="space-y-4">
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Loan ID</label>
-                  <p className="text-gray-600 font-mono">{selectedLoan.loanId}</p>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Loan ID</label>
+                  <p className="text-gray-600 dark:text-gray-400 font-mono">{selectedLoan.loanId}</p>
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Approved Amount</label>
-                  <p className="text-gray-600 font-semibold">{formatCurrency(selectedLoan.loanAmount)}</p>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Approved Amount</label>
+                  <p className="text-gray-600 dark:text-gray-300 font-semibold">{formatCurrency(selectedLoan.loanAmount)}</p>
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Disbursed Amount</label>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Disbursed Amount</label>
                   <input
                     type="number"
                     value={disbursedAmount}
                     onChange={(e) => setDisbursedAmount(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     placeholder={`Default: ${formatCurrency(selectedLoan.loanAmount)}`}
                     min="0"
                   />
                 </div>
 
                 <div>
-                  <label className="block text-gray-700 font-semibold mb-2">Disbursement Reference (Optional)</label>
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">Disbursement Reference (Optional)</label>
                   <input
                     type="text"
                     value={disbursementReference}
                     onChange={(e) => setDisbursementReference(e.target.value)}
-                    className="w-full px-3 py-2 border rounded-lg"
+                    className="w-full px-3 py-2 border rounded-lg dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     placeholder="Transaction reference number..."
                   />
                 </div>
@@ -850,7 +850,7 @@ export default function AdminRentalLoans() {
                       setShowDisburseModal(false);
                       resetDisburseFields();
                     }}
-                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                    className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
                   >
                     Cancel
                   </button>

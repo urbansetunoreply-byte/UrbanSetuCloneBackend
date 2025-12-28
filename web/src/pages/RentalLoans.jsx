@@ -11,12 +11,12 @@ import UserRentalLoansSkeleton from '../components/skeletons/UserRentalLoansSkel
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const STATUS_COLORS = {
-  pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  approved: 'bg-blue-100 text-blue-700 border-blue-200',
-  disbursed: 'bg-green-100 text-green-700 border-green-200',
-  rejected: 'bg-red-100 text-red-700 border-red-200',
-  repaid: 'bg-purple-100 text-purple-700 border-purple-200',
-  defaulted: 'bg-orange-100 text-orange-700 border-orange-200'
+  pending: 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800',
+  approved: 'bg-blue-100 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800',
+  disbursed: 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800',
+  rejected: 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800',
+  repaid: 'bg-purple-100 text-purple-700 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800',
+  defaulted: 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800'
 };
 
 const STATUS_LABELS = {
@@ -202,17 +202,17 @@ export default function RentalLoans() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <FaCreditCard className="text-blue-600" />
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+                <FaCreditCard className="text-blue-600 dark:text-blue-400" />
                 Rental Loans
               </h1>
-              <p className="text-gray-600 mt-2">Apply for rental loans and manage your loan applications</p>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">Apply for rental loans and manage your loan applications</p>
             </div>
           </div>
 
@@ -225,13 +225,13 @@ export default function RentalLoans() {
                 placeholder="Search loans..."
                 value={filters.search}
                 onChange={(e) => setFilters({ ...filters, search: e.target.value })}
-                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               />
             </div>
             <select
               value={filters.status}
               onChange={(e) => setFilters({ ...filters, status: e.target.value })}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               <option value="all">All Status</option>
               <option value="pending">Pending</option>
@@ -244,7 +244,7 @@ export default function RentalLoans() {
             <select
               value={filters.loanType}
               onChange={(e) => setFilters({ ...filters, loanType: e.target.value })}
-              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+              className="px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             >
               <option value="all">All Types</option>
               <option value="security_deposit">Security Deposit</option>
@@ -256,8 +256,8 @@ export default function RentalLoans() {
 
         {/* Contracts Available for Loan */}
         {contracts.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-            <h2 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
               <FaHome /> Available for Loan Application
             </h2>
             <div className="space-y-3">
@@ -275,19 +275,19 @@ export default function RentalLoans() {
                   const listingId = contract.listingId?._id || contract.listingId;
                   const listingName = contract.listingId?.name || 'Property';
                   return (
-                    <div key={contract._id} className="border rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4">
+                    <div key={contract._id} className="border dark:border-gray-700 rounded-lg p-4 flex flex-col sm:flex-row sm:items-center justify-between gap-4 dark:bg-gray-700/50">
                       <div className="flex-1">
-                        <h3 className="font-semibold text-gray-800">
+                        <h3 className="font-semibold text-gray-800 dark:text-white">
                           {listingId ? (
-                            <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                            <Link to={`/listing/${listingId}`} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline">
                               {listingName}
                             </Link>
                           ) : (
                             listingName
                           )}
                         </h3>
-                        <p className="text-sm text-gray-600">Contract ID: {contract.contractId}</p>
-                        <p className="text-sm text-gray-600">Rent: {formatCurrency(contract.lockedRentAmount)}/month</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Contract ID: {contract.contractId}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-300">Rent: {formatCurrency(contract.lockedRentAmount)}/month</p>
                       </div>
                       <button
                         onClick={() => handleApplyForLoan(contract)}
@@ -304,10 +304,10 @@ export default function RentalLoans() {
 
         {/* Loans List */}
         {filteredLoans.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-            <FaCreditCard className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Loans Found</h3>
-            <p className="text-gray-500 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+            <FaCreditCard className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No Loans Found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
               {filters.status !== 'all' || filters.loanType !== 'all' || filters.search !== ''
                 ? 'Try adjusting your filters'
                 : 'You don\'t have any loan applications yet'}
@@ -332,72 +332,72 @@ export default function RentalLoans() {
               return (
                 <div
                   key={loan._id}
-                  className="bg-white rounded-xl shadow-lg p-6 border-2 border-gray-200 hover:shadow-xl transition-all"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-2 border-gray-200 dark:border-gray-700 hover:shadow-xl transition-all"
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-gray-800">
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                           {LOAN_TYPE_LABELS[loan.loanType] || loan.loanType}
                         </h3>
                         <span className={`px-3 py-1 rounded-full text-xs font-semibold border-2 ${STATUS_COLORS[status] || STATUS_COLORS.pending}`}>
                           {STATUS_LABELS[status] || status}
                         </span>
                       </div>
-                      <p className="text-sm text-gray-600 font-mono mb-2">Loan ID: {loan.loanId}</p>
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 font-mono mb-2">Loan ID: {loan.loanId}</p>
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                         Property:{' '}
                         {listingId ? (
-                          <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                          <Link to={`/listing/${listingId}`} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline">
                             {listingName || 'Unknown'}
                           </Link>
                         ) : (
                           listingName || 'Unknown'
                         )}
                       </p>
-                      <p className="text-sm text-gray-600 mb-3">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-3">
                         Contract: {contract?.contractId || 'Unknown'}
                       </p>
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mb-3">
                         <div>
-                          <p className="text-xs text-gray-500">Loan Amount</p>
-                          <p className="font-semibold text-gray-800">{formatCurrency(loan.loanAmount)}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Loan Amount</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{formatCurrency(loan.loanAmount)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">EMI Amount</p>
-                          <p className="font-semibold text-gray-800">{formatCurrency(loan.emiAmount)}</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">EMI Amount</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{formatCurrency(loan.emiAmount)}</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Interest Rate</p>
-                          <p className="font-semibold text-gray-800">{loan.interestRate}% p.a.</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Interest Rate</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{loan.interestRate}% p.a.</p>
                         </div>
                         <div>
-                          <p className="text-xs text-gray-500">Tenure</p>
-                          <p className="font-semibold text-gray-800">{loan.tenure} months</p>
+                          <p className="text-xs text-gray-500 dark:text-gray-400">Tenure</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{loan.tenure} months</p>
                         </div>
                       </div>
                       {loan.status === 'disbursed' && (
-                        <div className="mt-3 p-3 bg-green-50 border border-green-200 rounded">
+                        <div className="mt-3 p-3 bg-green-50 dark:bg-green-900/20 border border-green-200 dark:border-green-800 rounded">
                           <div className="flex items-center gap-2 mb-1">
-                            <FaCheckCircle className="text-green-600" />
-                            <span className="text-sm font-semibold text-green-800">Disbursed</span>
+                            <FaCheckCircle className="text-green-600 dark:text-green-400" />
+                            <span className="text-sm font-semibold text-green-800 dark:text-green-300">Disbursed</span>
                           </div>
                           {loan.disbursedAt && (
-                            <p className="text-xs text-green-700">
+                            <p className="text-xs text-green-700 dark:text-green-400">
                               Disbursed on: {new Date(loan.disbursedAt).toLocaleDateString()}
                             </p>
                           )}
                           {loan.totalRemaining > 0 && (
-                            <p className="text-xs text-green-700 mt-1">
+                            <p className="text-xs text-green-700 dark:text-green-400 mt-1">
                               Outstanding: {formatCurrency(loan.totalRemaining)}
                             </p>
                           )}
                         </div>
                       )}
                       {loan.status === 'rejected' && loan.rejectionReason && (
-                        <div className="mt-3 p-3 bg-red-50 border border-red-200 rounded">
-                          <p className="text-sm font-semibold text-red-800 mb-1">Rejection Reason:</p>
-                          <p className="text-xs text-red-700">{loan.rejectionReason}</p>
+                        <div className="mt-3 p-3 bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded">
+                          <p className="text-sm font-semibold text-red-800 dark:text-red-300 mb-1">Rejection Reason:</p>
+                          <p className="text-xs text-red-700 dark:text-red-400">{loan.rejectionReason}</p>
                         </div>
                       )}
                     </div>
@@ -412,7 +412,7 @@ export default function RentalLoans() {
                       {contract && (
                         <Link
                           to={`/user/rental-contracts?contractId=${contract._id || contract}`}
-                          className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 text-center text-sm"
+                          className="px-4 py-2 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 text-center text-sm"
                         >
                           View Contract
                         </Link>
@@ -428,15 +428,15 @@ export default function RentalLoans() {
         {showLoanForm && selectedContract && (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
             <div className="flex min-h-full items-center justify-center p-4">
-              <div className="bg-white rounded-xl shadow-2xl max-w-3xl w-full p-6 relative">
-                <div className="flex items-center justify-between mb-4 border-b pb-2">
-                  <h2 className="text-2xl font-bold text-gray-800">Apply for Rental Loan</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-3xl w-full p-6 relative">
+                <div className="flex items-center justify-between mb-4 border-b dark:border-gray-700 pb-2">
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Apply for Rental Loan</h2>
                   <button
                     onClick={() => {
                       setShowLoanForm(false);
                       setSelectedContract(null);
                     }}
-                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                   >
                     <FaTimes />
                   </button>
@@ -459,15 +459,15 @@ export default function RentalLoans() {
         {showLoanDisplay && selectedLoan && (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
             <div className="flex min-h-full items-center justify-center p-4">
-              <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
-                <div className="flex items-center justify-between mb-4 border-b pb-2">
-                  <h2 className="text-2xl font-bold text-gray-800">Loan Details</h2>
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+                <div className="flex items-center justify-between mb-4 border-b dark:border-gray-700 pb-2">
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Loan Details</h2>
                   <button
                     onClick={() => {
                       setShowLoanDisplay(false);
                       setSelectedLoan(null);
                     }}
-                    className="text-gray-400 hover:text-gray-600 text-2xl"
+                    className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                   >
                     <FaTimes />
                   </button>
