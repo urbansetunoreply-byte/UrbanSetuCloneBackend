@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { FaTrash, FaUndo, FaSearch, FaFilter, FaUser, FaUserShield, FaCalendarAlt, FaExclamationTriangle } from "react-icons/fa";
 import { toast } from "react-toastify"; // Using toast directly if ToastContainer is at App level
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
+import AdminDeletedListingsSkeleton from "../components/skeletons/AdminDeletedListingsSkeleton";
 
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
@@ -146,9 +147,7 @@ export default function AdminDeletedListings() {
 
                 {/* Content */}
                 {loading ? (
-                    <div className="flex justify-center items-center py-20">
-                        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
-                    </div>
+                    <AdminDeletedListingsSkeleton />
                 ) : error ? (
                     <div className="bg-red-50 text-red-600 p-8 rounded-xl text-center">
                         <FaExclamationTriangle className="mx-auto text-4xl mb-4 opacity-50" />
@@ -215,8 +214,8 @@ export default function AdminDeletedListings() {
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col gap-1">
                                                     <span className={`inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded text-xs font-semibold ${item.deletionType === 'admin'
-                                                            ? 'bg-purple-100 text-purple-700'
-                                                            : 'bg-orange-100 text-orange-700'
+                                                        ? 'bg-purple-100 text-purple-700'
+                                                        : 'bg-orange-100 text-orange-700'
                                                         }`}>
                                                         {item.deletionType === 'admin' ? <FaUserShield className="text-[10px]" /> : <FaUser className="text-[10px]" />}
                                                         {item.deletionType === 'admin' ? 'Deleted by Admin' : 'Deleted by Owner'}
