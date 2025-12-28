@@ -1229,11 +1229,11 @@ export default function RoutePlanner() {
             )}
           </div>
         ) : (
-          <div className="w-full h-full bg-gray-100 flex items-center justify-center">
+          <div className="w-full h-full bg-gray-100 dark:bg-gray-900 flex items-center justify-center">
             <div className="text-center p-8">
-              <FaRoute className="text-6xl text-gray-300 mx-auto mb-4" />
-              <h3 className="text-xl font-bold text-gray-700 mb-2">Map Unavailable</h3>
-              <p className="text-gray-500">Please configure your Mapbox Access Token to view the map.</p>
+              <FaRoute className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+              <h3 className="text-xl font-bold text-gray-700 dark:text-gray-200 mb-2">Map Unavailable</h3>
+              <p className="text-gray-500 dark:text-gray-400">Please configure your Mapbox Access Token to view the map.</p>
             </div>
           </div>
         )}

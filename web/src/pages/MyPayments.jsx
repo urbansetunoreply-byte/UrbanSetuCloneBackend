@@ -750,20 +750,20 @@ const MyPayments = () => {
                   </div>
                 )}
                 {selectedPayment.escrowStatus && (
-                  <div className={`rounded-lg p-4 ${selectedPayment.escrowStatus === 'released' ? 'bg-green-50' :
-                    selectedPayment.escrowStatus === 'held' ? 'bg-orange-50' :
-                      'bg-gray-50'
+                  <div className={`rounded-lg p-4 ${selectedPayment.escrowStatus === 'released' ? 'bg-green-50 dark:bg-green-900/30' :
+                    selectedPayment.escrowStatus === 'held' ? 'bg-orange-50 dark:bg-orange-900/30' :
+                      'bg-gray-50 dark:bg-gray-700/50'
                     }`}>
-                    <div className={`text-sm mb-1 ${selectedPayment.escrowStatus === 'released' ? 'text-green-600' :
-                      selectedPayment.escrowStatus === 'held' ? 'text-orange-600' :
-                        'text-gray-600'
+                    <div className={`text-sm mb-1 ${selectedPayment.escrowStatus === 'released' ? 'text-green-600 dark:text-green-400' :
+                      selectedPayment.escrowStatus === 'held' ? 'text-orange-600 dark:text-orange-400' :
+                        'text-gray-600 dark:text-gray-400'
                       }`}>Escrow Status</div>
-                    <div className={`font-semibold ${selectedPayment.escrowStatus === 'released' ? 'text-green-800' :
-                      selectedPayment.escrowStatus === 'held' ? 'text-orange-800' :
-                        'text-gray-800'
+                    <div className={`font-semibold ${selectedPayment.escrowStatus === 'released' ? 'text-green-800 dark:text-green-200' :
+                      selectedPayment.escrowStatus === 'held' ? 'text-orange-800 dark:text-orange-200' :
+                        'text-gray-800 dark:text-gray-200'
                       }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
                     {selectedPayment.escrowReleasedAt && (
-                      <div className="text-xs text-gray-500 mt-1">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                         Released: {new Date(selectedPayment.escrowReleasedAt).toLocaleDateString('en-GB')}
                       </div>
                     )}
