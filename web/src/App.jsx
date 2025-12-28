@@ -140,11 +140,11 @@ const UnlockAccount = lazy(() => import('./pages/security/UnlockAccount'));
 
 // Loading component
 const LoadingSpinner = () => (
-  <div className="flex items-center justify-center min-h-screen bg-gray-50 relative overflow-hidden">
+  <div className="flex items-center justify-center min-h-screen bg-gray-50 dark:bg-gray-950 transition-colors duration-300 relative overflow-hidden">
     {/* Decorative Background Blobs */}
-    <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob"></div>
-    <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
-    <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-200 rounded-full mix-blend-multiply filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
+    <div className="absolute top-0 left-0 w-96 h-96 bg-blue-200 dark:bg-blue-900/20 rounded-full mix-blend-multiply dark:mix-blend-overlay filter blur-3xl opacity-30 animate-blob"></div>
+    <div className="absolute top-0 right-0 w-96 h-96 bg-purple-200 dark:bg-purple-900/20 rounded-full mix-blend-multiply dark:mix-blend-overlay filter blur-3xl opacity-30 animate-blob animation-delay-2000"></div>
+    <div className="absolute -bottom-32 left-20 w-96 h-96 bg-pink-200 dark:bg-pink-900/20 rounded-full mix-blend-multiply dark:mix-blend-overlay filter blur-3xl opacity-30 animate-blob animation-delay-4000"></div>
 
     <div className="relative flex flex-col items-center z-10">
       {/* Central Logo with Spinning Rings */}
@@ -154,22 +154,22 @@ const LoadingSpinner = () => (
         {/* Middle Ring */}
         <div className="absolute inset-3 rounded-full border-4 border-transparent border-t-purple-500 border-l-purple-500 animate-spin-reverse-slower"></div>
         {/* Inner Circle / Logo Container */}
-        <div className="absolute inset-6 bg-white rounded-full shadow-lg flex items-center justify-center animate-pulse-subtle">
-          <FaHome className="text-4xl text-blue-600" />
+        <div className="absolute inset-6 bg-white dark:bg-gray-800 rounded-full shadow-lg flex items-center justify-center animate-pulse-subtle transition-colors">
+          <FaHome className="text-4xl text-blue-600 dark:text-blue-400" />
         </div>
       </div>
 
       {/* Text Info */}
       <div className="text-center space-y-4">
-        <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 bg-clip-text text-transparent drop-shadow-sm">
+        <h1 className="text-4xl font-extrabold tracking-tight bg-gradient-to-r from-blue-600 via-purple-600 to-pink-600 dark:from-blue-400 dark:via-purple-400 dark:to-pink-400 bg-clip-text text-transparent drop-shadow-sm">
           UrbanSetu
         </h1>
         <div className="flex flex-col items-center justify-center gap-2">
-          <span className="text-gray-500 font-medium tracking-[0.2em] text-sm uppercase">Loading</span>
+          <span className="text-gray-500 dark:text-gray-400 font-medium tracking-[0.2em] text-sm uppercase">Loading</span>
           <div className="flex gap-1.5 mt-1">
-            <span className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
-            <span className="w-1.5 h-1.5 bg-purple-500 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
-            <span className="w-1.5 h-1.5 bg-pink-500 rounded-full animate-bounce"></span>
+            <span className="w-1.5 h-1.5 bg-blue-500 dark:bg-blue-400 rounded-full animate-bounce [animation-delay:-0.3s]"></span>
+            <span className="w-1.5 h-1.5 bg-purple-500 dark:bg-purple-400 rounded-full animate-bounce [animation-delay:-0.15s]"></span>
+            <span className="w-1.5 h-1.5 bg-pink-500 dark:bg-pink-400 rounded-full animate-bounce"></span>
           </div>
         </div>
       </div>
