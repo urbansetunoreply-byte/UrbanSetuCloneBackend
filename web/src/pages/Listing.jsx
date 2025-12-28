@@ -1643,7 +1643,7 @@ export default function Listing() {
           {/* Floating Comparison Panel - Redesigned */}
           {comparisonProperties.length > 0 && (
             <div className={`fixed bottom-0 right-0 sm:bottom-6 sm:right-6 transition-all duration-500 z-40 w-full sm:w-80 ${showComparisonPanel ? 'translate-y-0' : 'translate-y-[calc(100%-3rem)] sm:translate-y-[calc(100%-4rem)]'}`}>
-              <div className="bg-white/90 backdrop-blur-md border hover:border-purple-300 border-gray-200 shadow-2xl sm:rounded-2xl rounded-t-2xl overflow-hidden transition-all duration-300">
+              <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-md border hover:border-purple-300 border-gray-200 dark:border-gray-700 shadow-2xl sm:rounded-2xl rounded-t-2xl overflow-hidden transition-all duration-300">
 
                 {/* Header / Toggle Bar */}
                 <div
@@ -1668,10 +1668,10 @@ export default function Listing() {
 
                 {/* Content Area */}
 
-                <div className="p-3 sm:p-4 bg-gradient-to-b from-white to-indigo-50/50">
+                <div className="p-3 sm:p-4 bg-gradient-to-b from-white to-indigo-50/50 dark:from-gray-800 dark:to-gray-900">
                   <div className="space-y-2 mb-4 max-h-[40vh] sm:max-h-[300px] overflow-y-auto pr-1 custom-scrollbar">
                     {comparisonProperties.map((property) => (
-                      <div key={property._id} className="group flex items-center justify-between bg-white p-2 rounded-xl shadow-sm border border-indigo-50 hover:shadow-md transition-all hover:border-indigo-200">
+                      <div key={property._id} className="group flex items-center justify-between bg-white dark:bg-gray-700 p-2 rounded-xl shadow-sm border border-indigo-50 dark:border-gray-600 hover:shadow-md transition-all hover:border-indigo-200 dark:hover:border-indigo-500">
                         <div className="flex items-center gap-3 overflow-hidden flex-1">
                           <div className="relative w-10 h-10 sm:w-12 sm:h-12 flex-shrink-0">
                             <img
@@ -1681,7 +1681,7 @@ export default function Listing() {
                             />
                           </div>
                           <div className="min-w-0 flex-1 pr-2">
-                            <p className="text-xs sm:text-sm font-semibold text-gray-800 truncate leading-tight">{property.name}</p>
+                            <p className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-200 truncate leading-tight">{property.name}</p>
                             <p className="text-[10px] sm:text-xs text-indigo-500 font-medium truncate">
                               ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
                             </p>
@@ -1712,7 +1712,7 @@ export default function Listing() {
                   <div className="grid grid-cols-2 gap-2 sm:gap-3">
                     <button
                       onClick={() => setComparisonProperties([])}
-                      className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-gray-600 bg-gray-100 hover:bg-gray-200 hover:text-gray-800 transition-colors flex items-center justify-center gap-2"
+                      className="px-4 py-2.5 rounded-xl text-xs sm:text-sm font-semibold text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 hover:text-gray-800 dark:hover:text-white transition-colors flex items-center justify-center gap-2"
                     >
                       Clear
                     </button>
@@ -1892,9 +1892,9 @@ export default function Listing() {
           )}
 
           {/* Details Card */}
-          <div className="p-3 sm:p-6 bg-gray-50 shadow-md rounded-lg mb-6">
+          <div className="p-3 sm:p-6 bg-gray-50 dark:bg-gray-800 shadow-md rounded-lg mb-6">
             <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-              <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 break-words flex items-center gap-2">
+              <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-white break-words flex items-center gap-2">
                 {listing.name}
                 {listing.isVerified && (
                   <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
@@ -2030,7 +2030,7 @@ export default function Listing() {
               </div>
             )}
 
-            <p className="flex items-center text-gray-600 mb-4">
+            <p className="flex items-center text-gray-600 dark:text-gray-300 mb-4">
               <FaMapMarkerAlt className="mr-2 text-red-500" />
               {maskAddress(
                 // Create address object if structured fields exist, otherwise use legacy address
@@ -2100,7 +2100,7 @@ export default function Listing() {
               )}
             </div>
 
-            <p className="text-gray-700 mb-4 leading-relaxed">
+            <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
               <span className="font-semibold">Description:</span> {listing.description}
             </p>
 
@@ -2218,17 +2218,17 @@ export default function Listing() {
               </div>
             )}
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-              <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4 text-gray-700 dark:text-gray-300">
+              <div className="flex items-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm">
                 <FaBed className="mr-2 text-blue-500" /> {listing.bedrooms} {listing.bedrooms > 1 ? "beds" : "bed"}
               </div>
-              <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="flex items-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm">
                 <FaBath className="mr-2 text-blue-500" /> {listing.bathrooms} {listing.bathrooms > 1 ? "baths" : "bath"}
               </div>
-              <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="flex items-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm">
                 <FaParking className="mr-2 text-blue-500" /> {listing.parking ? "Parking" : "No Parking"}
               </div>
-              <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
+              <div className="flex items-center p-3 bg-white dark:bg-gray-700 rounded-lg shadow-sm">
                 <FaChair className="mr-2 text-blue-500" /> {listing.furnished ? "Furnished" : "Unfurnished"}
               </div>
             </div>
@@ -2237,17 +2237,17 @@ export default function Listing() {
             <div className="mt-6 space-y-4">
               {/* Property Stats */}
               <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
-                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                <div className="bg-white dark:bg-gray-700 p-3 rounded-lg shadow-sm text-center">
                   <FaRuler className="mx-auto text-green-600 mb-1" />
-                  <p className="text-xs text-gray-600">Area</p>
-                  <p className="font-semibold">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Area</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">
                     {listing.area ? `${listing.area} sq ft` : 'Not specified'}
                   </p>
                 </div>
-                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                <div className="bg-white dark:bg-gray-700 p-3 rounded-lg shadow-sm text-center">
                   <FaBuilding className="mx-auto text-purple-600 mb-1" />
-                  <p className="text-xs text-gray-600">Floor</p>
-                  <p className="font-semibold">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Floor</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">
                     {listing.floor !== undefined && listing.floor !== null && listing.floor !== '' ?
                       (listing.floor == 0 ? 'Ground Floor' : `Floor ${listing.floor}`) :
                       'Not specified'
@@ -2256,25 +2256,25 @@ export default function Listing() {
                 </div>
                 {/* View Count - Only show for admins, rootadmins, and property owners */}
                 {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin' || (listing.userRef && currentUser._id === listing.userRef)) && (
-                  <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                  <div className="bg-white dark:bg-gray-700 p-3 rounded-lg shadow-sm text-center">
                     <FaEye className="mx-auto text-blue-600 mb-1" />
-                    <p className="text-xs text-gray-600">Views</p>
-                    <p className="font-semibold">
+                    <p className="text-xs text-gray-600 dark:text-gray-400">Views</p>
+                    <p className="font-semibold text-gray-800 dark:text-gray-200">
                       {listing.viewCount || 0}
                     </p>
                   </div>
                 )}
-                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                <div className="bg-white dark:bg-gray-700 p-3 rounded-lg shadow-sm text-center">
                   <FaCalendarAlt className="mx-auto text-orange-600 mb-1" />
-                  <p className="text-xs text-gray-600">Age</p>
-                  <p className="font-semibold">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Age</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">
                     {listing.propertyAge ? `${listing.propertyAge} years` : 'Not specified'}
                   </p>
                 </div>
-                <div className="bg-white p-3 rounded-lg shadow-sm text-center">
+                <div className="bg-white dark:bg-gray-700 p-3 rounded-lg shadow-sm text-center">
                   <FaHeart className="mx-auto text-red-500 mb-1" />
-                  <p className="text-xs text-gray-600">Wishlisted</p>
-                  <p className="font-semibold">
+                  <p className="text-xs text-gray-600 dark:text-gray-400">Wishlisted</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">
                     {wishlistCount} {wishlistCount === 1 ? 'user' : 'users'}
                   </p>
                 </div>
@@ -2407,16 +2407,16 @@ export default function Listing() {
 
           {/* Amenities Section */}
           {showAmenities && (
-            <div className="p-6 bg-white shadow-md rounded-lg mb-6">
-              <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mb-6">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaHome className="text-blue-600" />
                 Property Amenities
               </h4>
               <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
                 {getAmenities().map((amenity, index) => (
-                  <div key={index} className="flex items-center p-3 bg-gray-50 rounded-lg">
+                  <div key={index} className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                     <span className={`mr-3 ${amenity.color}`}>{amenity.icon}</span>
-                    <span className="text-sm font-medium text-gray-700">{amenity.name}</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-200">{amenity.name}</span>
                   </div>
                 ))}
                 {getAmenities().length === 0 && (
@@ -2430,25 +2430,25 @@ export default function Listing() {
 
           {/* Nearby Places Section */}
           {showNearbyPlaces && currentUser && (
-            <div className="p-6 bg-white shadow-md rounded-lg mb-6">
-              <h4 className="text-xl font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <div className="p-6 bg-white dark:bg-gray-800 shadow-md rounded-lg mb-6">
+              <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaMapMarkerAlt className="text-green-600" />
                 Nearby Places
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 {getNearbyPlaces().map((place, index) => (
-                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg hover:bg-gray-100 transition-colors">
+                  <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg hover:bg-gray-100 dark:hover:bg-gray-600 transition-colors">
                     <div className="flex items-center">
                       <span className="mr-3 text-blue-600">{place.icon}</span>
                       <div>
-                        <p className="font-medium text-gray-800">{place.name}</p>
-                        <p className="text-sm text-gray-600">{place.count} {place.count === '1' ? 'place' : 'places'}</p>
-                        <p className="text-xs text-gray-500 capitalize">{place.category}</p>
+                        <p className="font-medium text-gray-800 dark:text-gray-200">{place.name}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400">{place.count} {place.count === '1' ? 'place' : 'places'}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-500 capitalize">{place.category}</p>
                       </div>
                     </div>
                     <div className="text-right">
                       <span className="text-sm font-semibold text-green-600">{place.distance}</span>
-                      <p className="text-xs text-gray-500">away</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">away</p>
                     </div>
                   </div>
                 ))}

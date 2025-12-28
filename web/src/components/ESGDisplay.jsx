@@ -11,8 +11,8 @@ const ESGDisplay = ({
 
     if (!esg) {
         return (
-            <div className={`bg-gray-50 rounded-lg p-4 ${className}`}>
-                <div className="flex items-center gap-2 text-gray-600">
+            <div className={`bg-gray-50 dark:bg-gray-800 rounded-lg p-4 transition-colors ${className}`}>
+                <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
                     <FaInfoCircle />
                     <span className="text-sm">ESG information not available</span>
                 </div>
@@ -52,9 +52,9 @@ const ESGDisplay = ({
     };
 
     return (
-        <div className={`bg-white rounded-lg shadow-sm border border-gray-200 ${className}`}>
+        <div className={`bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 transition-colors ${className}`}>
             {/* ESG Header */}
-            <div className="p-4 border-b border-gray-200">
+            <div className="p-4 border-b border-gray-200 dark:border-gray-700 transition-colors">
                 <div className="flex items-center justify-between">
                     <div className="flex items-center gap-3">
                         <div className="flex items-center gap-2">
@@ -63,8 +63,8 @@ const ESGDisplay = ({
                             <FaShieldAlt className="text-purple-500" />
                         </div>
                         <div>
-                            <h3 className="text-lg font-semibold text-gray-800">ESG Rating</h3>
-                            <p className="text-sm text-gray-600">Environmental, Social & Governance</p>
+                            <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 transition-colors">ESG Rating</h3>
+                            <p className="text-sm text-gray-600 dark:text-gray-400">Environmental, Social & Governance</p>
                         </div>
                     </div>
                     <div className="text-right">
@@ -81,47 +81,47 @@ const ESGDisplay = ({
             {/* ESG Sections */}
             <div className="p-4 space-y-4">
                 {/* Environmental Section */}
-                <div className="border border-gray-200 rounded-lg">
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg transition-colors">
                     <button
                         onClick={() => toggleSection('environmental')}
-                        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-800 dark:text-gray-200"
                     >
                         <div className="flex items-center gap-3">
                             <FaLeaf className="text-green-500" />
-                            <span className="font-medium text-gray-800">Environmental</span>
+                            <span className="font-medium">Environmental</span>
                         </div>
-                        {expandedSection === 'environmental' ? <FaChevronUp /> : <FaChevronDown />}
+                        {expandedSection === 'environmental' ? <FaChevronUp className="text-gray-400" /> : <FaChevronDown className="text-gray-400" />}
                     </button>
                     {expandedSection === 'environmental' && (
                         <div className="px-3 pb-3 space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-xs text-gray-600">Energy Rating</label>
-                                    <div className="font-medium">{esg.environmental.energyRating}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Energy Rating</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.environmental.energyRating}</div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-600">Carbon Footprint</label>
-                                    <div className="font-medium">{esg.environmental.carbonFootprint} kg CO₂/year</div>
-                                </div>
-                            </div>
-                            <div className="grid grid-cols-2 gap-3">
-                                <div>
-                                    <label className="text-xs text-gray-600">Water Efficiency</label>
-                                    <div className="font-medium">{esg.environmental.waterEfficiency}</div>
-                                </div>
-                                <div>
-                                    <label className="text-xs text-gray-600">Waste Management</label>
-                                    <div className="font-medium">{esg.environmental.wasteManagement}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Carbon Footprint</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.environmental.carbonFootprint} kg CO₂/year</div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-xs text-gray-600">Green Certification</label>
-                                    <div className="font-medium">{esg.environmental.greenCertification}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Water Efficiency</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.environmental.waterEfficiency}</div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-600">Renewable Energy</label>
-                                    <div className="font-medium">{esg.environmental.renewableEnergy ? 'Yes' : 'No'}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Waste Management</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.environmental.wasteManagement}</div>
+                                </div>
+                            </div>
+                            <div className="grid grid-cols-2 gap-3">
+                                <div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Green Certification</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.environmental.greenCertification}</div>
+                                </div>
+                                <div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Renewable Energy</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.environmental.renewableEnergy ? 'Yes' : 'No'}</div>
                                 </div>
                             </div>
                             <div className="flex gap-4 text-sm">
@@ -141,49 +141,49 @@ const ESGDisplay = ({
                 </div>
 
                 {/* Social Section */}
-                <div className="border border-gray-200 rounded-lg">
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg transition-colors">
                     <button
                         onClick={() => toggleSection('social')}
-                        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-800 dark:text-gray-200"
                     >
                         <div className="flex items-center gap-3">
                             <FaUsers className="text-blue-500" />
-                            <span className="font-medium text-gray-800">Social</span>
+                            <span className="font-medium">Social</span>
                         </div>
-                        {expandedSection === 'social' ? <FaChevronUp /> : <FaChevronDown />}
+                        {expandedSection === 'social' ? <FaChevronUp className="text-gray-400" /> : <FaChevronDown className="text-gray-400" />}
                     </button>
                     {expandedSection === 'social' && (
                         <div className="px-3 pb-3 space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-xs text-gray-600">Accessibility</label>
-                                    <div className="font-medium">{esg.social.accessibility}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Accessibility</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.social.accessibility}</div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-600">Community Impact</label>
-                                    <div className="font-medium">{esg.social.communityImpact}/100</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Community Impact</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.social.communityImpact}/100</div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-xs text-gray-600">Affordable Housing</label>
-                                    <div className="font-medium">{esg.social.affordableHousing ? 'Yes' : 'No'}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Affordable Housing</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.social.affordableHousing ? 'Yes' : 'No'}</div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-600">Local Employment</label>
-                                    <div className="font-medium">{esg.social.localEmployment} jobs</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Local Employment</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.social.localEmployment} jobs</div>
                                 </div>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-600">Diversity & Inclusion</label>
-                                <div className="font-medium">{esg.social.diversityInclusion}</div>
+                                <label className="text-xs text-gray-600 dark:text-gray-400">Diversity & Inclusion</label>
+                                <div className="font-medium text-gray-800 dark:text-gray-200">{esg.social.diversityInclusion}</div>
                             </div>
                             {esg.social.socialAmenities.length > 0 && (
                                 <div>
-                                    <label className="text-xs text-gray-600">Social Amenities</label>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Social Amenities</label>
                                     <div className="flex flex-wrap gap-1 mt-1">
                                         {esg.social.socialAmenities.map((amenity, index) => (
-                                            <span key={index} className="px-2 py-1 bg-blue-100 text-blue-800 text-xs rounded">
+                                            <span key={index} className="px-2 py-1 bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs rounded transition-colors">
                                                 {amenity}
                                             </span>
                                         ))}
@@ -195,42 +195,42 @@ const ESGDisplay = ({
                 </div>
 
                 {/* Governance Section */}
-                <div className="border border-gray-200 rounded-lg">
+                <div className="border border-gray-200 dark:border-gray-700 rounded-lg transition-colors">
                     <button
                         onClick={() => toggleSection('governance')}
-                        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 transition-colors"
+                        className="w-full p-3 flex items-center justify-between hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors text-gray-800 dark:text-gray-200"
                     >
                         <div className="flex items-center gap-3">
                             <FaShieldAlt className="text-purple-500" />
-                            <span className="font-medium text-gray-800">Governance</span>
+                            <span className="font-medium">Governance</span>
                         </div>
-                        {expandedSection === 'governance' ? <FaChevronUp /> : <FaChevronDown />}
+                        {expandedSection === 'governance' ? <FaChevronUp className="text-gray-400" /> : <FaChevronDown className="text-gray-400" />}
                     </button>
                     {expandedSection === 'governance' && (
                         <div className="px-3 pb-3 space-y-3">
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-xs text-gray-600">Transparency</label>
-                                    <div className="font-medium">{esg.governance.transparency}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Transparency</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.governance.transparency}</div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-600">Ethical Standards</label>
-                                    <div className="font-medium">{esg.governance.ethicalStandards}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Ethical Standards</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.governance.ethicalStandards}</div>
                                 </div>
                             </div>
                             <div className="grid grid-cols-2 gap-3">
                                 <div>
-                                    <label className="text-xs text-gray-600">Compliance</label>
-                                    <div className="font-medium">{esg.governance.compliance}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Compliance</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.governance.compliance}</div>
                                 </div>
                                 <div>
-                                    <label className="text-xs text-gray-600">Risk Management</label>
-                                    <div className="font-medium">{esg.governance.riskManagement}</div>
+                                    <label className="text-xs text-gray-600 dark:text-gray-400">Risk Management</label>
+                                    <div className="font-medium text-gray-800 dark:text-gray-200">{esg.governance.riskManagement}</div>
                                 </div>
                             </div>
                             <div>
-                                <label className="text-xs text-gray-600">Stakeholder Engagement</label>
-                                <div className="font-medium">{esg.governance.stakeholderEngagement}</div>
+                                <label className="text-xs text-gray-600 dark:text-gray-400">Stakeholder Engagement</label>
+                                <div className="font-medium text-gray-800 dark:text-gray-200">{esg.governance.stakeholderEngagement}</div>
                             </div>
                         </div>
                     )}
@@ -238,8 +238,8 @@ const ESGDisplay = ({
             </div>
 
             {/* ESG Footer */}
-            <div className="px-4 py-3 bg-gray-50 border-t border-gray-200">
-                <div className="flex items-center justify-between text-sm text-gray-600">
+            <div className="px-4 py-3 bg-gray-50 dark:bg-gray-900/50 border-t border-gray-200 dark:border-gray-700 transition-colors">
+                <div className="flex items-center justify-between text-sm text-gray-600 dark:text-gray-400 transition-colors">
                     <span>Last updated: {new Date(esg.lastEsgUpdate).toLocaleDateString()}</span>
                     <div className="flex items-center gap-1">
                         <FaChartLine className="text-xs" />
