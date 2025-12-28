@@ -33,6 +33,7 @@ router.get("/user/:userId", verifyToken, async (req, res, next) => {
 });
 router.delete("/delete/:id", verifyToken, deleteListing)
 router.get("/get-deleted", verifyToken, getDeletedListings)
+router.get("/user/get-deleted", verifyToken, getDeletedListings)
 router.post("/restore-deleted/:id", verifyToken, restoreDeletedListing)
 router.post("/update/:id", verifyToken, updateListing)
 router.post("/view/:listingId", async (req, res, next) => {

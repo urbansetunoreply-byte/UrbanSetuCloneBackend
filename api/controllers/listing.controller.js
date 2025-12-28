@@ -364,10 +364,9 @@ export const deleteListing = async (req, res, next) => {
 // Get all deleted listings (Admin Only)
 export const getDeletedListings = async (req, res, next) => {
   try {
-    // 1. Check permissions
-    if (req.user.role !== 'admin' && req.user.role !== 'rootadmin' && !req.user.isDefaultAdmin) {
-      return next(errorHandler(403, 'Access denied. Admin rights required.'));
-    }
+    // 1. Check permissions / Determine context
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'rootadmin' || req.user.isDefaultAdmin;
+    const isOwner = !isAdmin; // Regular users
 
     // 2. Parse query params for filtering/pagination
     const limit = parseInt(req.query.limit) || 12;
@@ -382,6 +381,11 @@ export const getDeletedListings = async (req, res, next) => {
     const query = {
       isRestored: false // Only show non-restored items in this list usually
     };
+
+    if (isOwner) {
+      // Regular users can ONLY see their own deleted listings
+      query.userRef = req.user.id;
+    }
 
     if (deletionType !== 'all') {
       query.deletionType = deletionType;
@@ -437,17 +441,31 @@ export const getDeletedListings = async (req, res, next) => {
 // Restore deleted listing (Admin Only)
 export const restoreDeletedListing = async (req, res, next) => {
   try {
-    const { id } = req.params; // matches /api/listing/restore-deleted/:id
-
-    // 1. Check permissions
-    if (req.user.role !== 'admin' && req.user.role !== 'rootadmin' && !req.user.isDefaultAdmin) {
-      return next(errorHandler(403, 'Access denied. Admin rights required.'));
-    }
-
     // 2. Find record
     const deletedRecord = await DeletedListing.findById(id);
     if (!deletedRecord) {
       return next(errorHandler(404, 'Deleted listing record not found'));
+    }
+
+    // 1. Check permissions logic (Moved after fetch to check ownership)
+    const isAdmin = req.user.role === 'admin' || req.user.role === 'rootadmin' || req.user.isDefaultAdmin;
+    const isOwner = deletedRecord.userRef.toString() === req.user.id;
+
+    if (!isAdmin) {
+      // Regular user checks
+      if (!isOwner) {
+        return next(errorHandler(403, 'Access denied. You do not own this listing record.'));
+      }
+
+      // Check if user is allowed to restore (only if they deleted it, not if admin deleted it)
+      if (deletedRecord.deletionType === 'admin') {
+        return next(errorHandler(403, 'This listing was deleted by an admin and cannot be restored by the user. Please contact support.'));
+      }
+
+      // Check expiry
+      if (deletedRecord.tokenExpiry && new Date() > new Date(deletedRecord.tokenExpiry)) {
+        return next(errorHandler(403, 'Restoration period has expired. Please contact support.'));
+      }
     }
 
     if (deletedRecord.isRestored) {

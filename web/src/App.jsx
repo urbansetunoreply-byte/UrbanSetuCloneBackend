@@ -98,6 +98,7 @@ const AdminSecurityModeration = lazy(() => import('./pages/AdminSecurityModerati
 const MyPayments = lazy(() => import('./pages/MyPayments'));
 const DeviceManagement = lazy(() => import('./pages/DeviceManagement'));
 const AdminDeletedListings = lazy(() => import("./pages/AdminDeletedListings"));
+const MyDeletedListings = lazy(() => import("./pages/MyDeletedListings"));
 const SessionManagement = lazy(() => import('./pages/SessionManagement'));
 const SessionAuditLogs = lazy(() => import('./pages/SessionAuditLogs'));
 const UserContact = lazy(() => import('./pages/UserContact'));
@@ -756,6 +757,7 @@ function AppRoutes({ bootstrapped }) {
               <Route path="/user/call-history" element={<CallHistory />} />
               <Route path="/user/my-payments" element={<MyPayments />} />
               <Route path="/user/my-listings" element={<MyListings />} />
+              <Route path="/user/deleted-listings" element={<MyDeletedListings />} />
               <Route path="/user/services" element={<OnDemandServices />} />
               <Route path="/user/route-planner" element={<RoutePlanner />} />
               <Route path="/user/change-password" element={<UserChangePassword />} />

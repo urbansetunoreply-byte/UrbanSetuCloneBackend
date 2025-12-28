@@ -198,12 +198,20 @@ export default function MyListings() {
           <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
             <h3 className="text-2xl sm:text-3xl font-extrabold text-blue-700 drop-shadow">My Listings</h3>
             {listings.length > 0 && (
-              <Link
-                to="/user/create-listing"
-                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto justify-center mt-4 md:mt-0"
-              >
-                <FaPlus /> <span>Create New Listing</span>
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-3 mt-4 md:mt-0">
+                <Link
+                  to="/user/deleted-listings"
+                  className="bg-white border border-red-200 text-red-600 px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-red-50 transition-all font-semibold flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto shadow-sm"
+                >
+                  <FaTrash className="text-sm" /> <span>View Deleted</span>
+                </Link>
+                <Link
+                  to="/user/create-listing"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold flex items-center justify-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto"
+                >
+                  <FaPlus /> <span>Create New Listing</span>
+                </Link>
+              </div>
             )}
           </div>
 
@@ -261,12 +269,20 @@ export default function MyListings() {
               <div className="text-gray-400 text-6xl mb-4">🏠</div>
               <h4 className="text-xl font-semibold text-gray-600 mb-2">No listings yet</h4>
               <p className="text-gray-500 mb-6">Start by creating your first property listing</p>
-              <Link
-                to="/user/create-listing"
-                className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold inline-flex items-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto justify-center"
-              >
-                <FaPlus /> <span>Create Your First Listing</span>
-              </Link>
+              <div className="flex flex-col sm:flex-row gap-4 justify-center">
+                <Link
+                  to="/user/deleted-listings"
+                  className="bg-white border border-red-200 text-red-600 px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:bg-red-50 transition-all font-semibold inline-flex items-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto justify-center"
+                >
+                  <FaTrash /> <span>View Deleted Listings</span>
+                </Link>
+                <Link
+                  to="/user/create-listing"
+                  className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-3 sm:px-6 py-2 sm:py-3 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow-lg font-semibold inline-flex items-center gap-1 sm:gap-2 text-sm sm:text-base w-full sm:w-auto justify-center"
+                >
+                  <FaPlus /> <span>Create Your First Listing</span>
+                </Link>
+              </div>
             </div>
           ) : (
             <>
