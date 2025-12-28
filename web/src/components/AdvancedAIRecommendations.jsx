@@ -220,7 +220,7 @@ const AdvancedAIRecommendations = ({
 
   if (loading) {
     return (
-      <div className={`relative min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8faff] to-[#eef2ff] rounded-[40px] border border-blue-100 shadow-inner ${className} overflow-hidden`}>
+      <div className={`relative min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f8faff] to-[#eef2ff] dark:from-slate-900 dark:to-slate-950 rounded-[40px] border border-blue-100 dark:border-slate-800 shadow-inner ${className} overflow-hidden`}>
         {/* Decorative scan lines */}
         <div className="absolute inset-0 opacity-[0.03] pointer-events-none bg-[linear-gradient(rgba(18,16,16,0)_50%,rgba(0,0,0,0.25)_50%),linear-gradient(90deg,rgba(255,0,0,0.06),rgba(0,255,0,0.02),rgba(0,0,255,0.06))] bg-[length:100%_2px,3px_100%]"></div>
 
@@ -234,7 +234,7 @@ const AdvancedAIRecommendations = ({
           </div>
 
           <div className="text-center">
-            <h4 className="text-2xl font-black text-slate-800 tracking-tighter uppercase mb-3 flex items-center justify-center gap-4">
+            <h4 className="text-2xl font-black text-slate-800 dark:text-white tracking-tighter uppercase mb-3 flex items-center justify-center gap-4">
               <span className="w-10 h-px bg-blue-600/30"></span>
               Setu AI Activation
               <span className="w-10 h-px bg-blue-600/30"></span>
@@ -255,7 +255,8 @@ const AdvancedAIRecommendations = ({
 
   if (error) {
     return (
-      <div className="bg-red-50 p-8 rounded-lg shadow-md border border-red-200 text-center">
+
+      <div className="bg-red-50 dark:bg-red-900/20 p-8 rounded-lg shadow-md border border-red-200 dark:border-red-800 text-center">
         <FaTimesCircle className="text-red-600 text-4xl mx-auto mb-4" />
         <p className="text-red-700 font-semibold text-lg">Error: {error}</p>
         <p className="text-red-500 text-sm mt-2">Please try again later or ensure you are logged in.</p>
@@ -265,13 +266,14 @@ const AdvancedAIRecommendations = ({
 
   if (recommendations.length === 0) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 p-8 rounded-lg shadow-md border border-blue-200 text-center">
+
+      <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-blue-900/20 dark:to-purple-900/20 p-8 rounded-lg shadow-md border border-blue-200 dark:border-blue-800 text-center">
         <FaRobot className="text-blue-500 text-4xl mx-auto mb-4" />
         <p className="text-blue-700 font-semibold text-lg">No AI recommendations available at the moment.</p>
         <p className="text-blue-500 text-sm mt-2">Try interacting more with properties to help our AI learn your preferences!</p>
-        <div className="mt-4 p-4 bg-white rounded-lg border border-blue-200">
-          <h4 className="font-semibold text-gray-800 mb-2">To get personalized recommendations:</h4>
-          <ul className="text-sm text-gray-600 text-left space-y-1">
+        <div className="mt-4 p-4 bg-white dark:bg-slate-800 rounded-lg border border-blue-200 dark:border-blue-800">
+          <h4 className="font-semibold text-gray-800 dark:text-white mb-2">To get personalized recommendations:</h4>
+          <ul className="text-sm text-gray-600 dark:text-gray-300 text-left space-y-1">
             <li>• Add 5+ properties to your wishlist</li>
             <li>• Write reviews for properties you've seen</li>
             <li>• Use the chat system to ask about properties</li>
@@ -283,11 +285,11 @@ const AdvancedAIRecommendations = ({
   }
 
   // Enhanced UI styles for Premium Feel
-  const glassStyle = "bg-white/70 backdrop-blur-md border border-white/30 shadow-xl overflow-hidden";
+  const glassStyle = "bg-white/70 dark:bg-slate-900/70 backdrop-blur-md border border-white/30 dark:border-white/10 shadow-xl overflow-hidden";
   const neonGlow = "hover:shadow-[0_0_20px_rgba(37,99,235,0.4)] transition-all duration-300";
 
   return (
-    <div className={`relative bg-gradient-to-br from-[#f8faff] to-[#eef2ff] p-6 lg:p-10 rounded-3xl shadow-2xl border border-indigo-100 ${className} overflow-hidden`}>
+    <div className={`relative bg-gradient-to-br from-[#f8faff] to-[#eef2ff] dark:from-slate-900 dark:to-slate-950 p-6 lg:p-10 rounded-3xl shadow-2xl border border-indigo-100 dark:border-slate-800 ${className} overflow-hidden`}>
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 -mr-20 -mt-20 w-64 h-64 bg-blue-200/30 rounded-full blur-3xl animate-pulse"></div>
       <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-80 h-80 bg-purple-200/30 rounded-full blur-3xl animate-pulse" style={{ animationDelay: '1s' }}></div>
@@ -295,7 +297,7 @@ const AdvancedAIRecommendations = ({
       {showTitle && (
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-4">
           <div>
-            <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900 flex items-center gap-4 tracking-tight">
+            <h3 className="text-3xl md:text-4xl font-extrabold text-slate-900 dark:text-white flex items-center gap-4 tracking-tight">
               <div className="p-3 bg-blue-600 rounded-2xl shadow-lg ring-4 ring-blue-50">
                 <FaBrain className="text-white" />
               </div>
@@ -310,17 +312,17 @@ const AdvancedAIRecommendations = ({
 
           <div className="flex items-center gap-3">
             {showModelInfo && (
-              <div className="flex bg-white/50 p-1.5 rounded-2xl border border-slate-200 shadow-sm backdrop-blur-sm">
+              <div className="flex bg-white/50 dark:bg-slate-800/50 p-1.5 rounded-2xl border border-slate-200 dark:border-slate-700 shadow-sm backdrop-blur-sm">
                 <button
                   onClick={() => setShowInfoPanel(!showInfoPanel)}
-                  className={`p-3 rounded-xl transition-all ${showInfoPanel ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-white hover:text-blue-600'}`}
+                  className={`p-3 rounded-xl transition-all ${showInfoPanel ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400'}`}
                   title="System Architecture"
                 >
                   <FaInfoCircle className="text-xl" />
                 </button>
                 <button
                   onClick={() => setShowModelDetails(!showModelDetails)}
-                  className={`p-3 rounded-xl transition-all ${showModelDetails ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 hover:bg-white hover:text-blue-600'}`}
+                  className={`p-3 rounded-xl transition-all ${showModelDetails ? 'bg-blue-600 text-white shadow-md' : 'text-slate-600 dark:text-slate-300 hover:bg-white dark:hover:bg-slate-800 hover:text-blue-600 dark:hover:text-blue-400'}`}
                   title="Neural Network Specs"
                 >
                   <FaCogs className="text-xl" />
@@ -344,25 +346,25 @@ const AdvancedAIRecommendations = ({
                 key={model.id}
                 onClick={() => setActiveTab(model.id)}
                 className={`flex flex-col items-center gap-4 p-5 min-w-[160px] rounded-[32px] transition-all duration-700 border-2 ${isActive
-                  ? 'bg-white border-blue-600 shadow-[0_20px_40px_-15px_rgba(37,99,235,0.2)] -translate-y-2 scale-105'
-                  : 'bg-white/50 border-transparent text-slate-500 hover:border-blue-200 hover:bg-white'
+                  ? 'bg-white dark:bg-slate-800 border-blue-600 shadow-[0_20px_40px_-15px_rgba(37,99,235,0.2)] -translate-y-2 scale-105'
+                  : 'bg-white/50 dark:bg-slate-800/50 border-transparent text-slate-500 dark:text-slate-400 hover:border-blue-200 dark:hover:border-blue-800 hover:bg-white dark:hover:bg-slate-800'
                   }`}
               >
-                <div className={`p-4 rounded-2xl transition-all duration-500 ${isActive ? 'bg-blue-600 text-white shadow-lg rotate-12' : 'bg-slate-100 text-slate-400'}`}>
+                <div className={`p-4 rounded-2xl transition-all duration-500 ${isActive ? 'bg-blue-600 text-white shadow-lg rotate-12' : 'bg-slate-100 dark:bg-slate-700 text-slate-400 dark:text-slate-300'}`}>
                   <IconComponent className="text-2xl" />
                 </div>
                 <div className="text-center">
                   <div className="flex flex-col">
-                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isActive ? 'text-blue-600' : 'text-slate-400'}`}>
+                    <span className={`text-[10px] font-black uppercase tracking-[0.2em] ${isActive ? 'text-blue-600 dark:text-blue-400' : 'text-slate-400 dark:text-slate-500'}`}>
                       {firstName}
                     </span>
                     {secondName && (
-                      <span className={`text-xs font-bold -mt-1 ${isActive ? 'text-slate-700' : 'text-slate-300'}`}>
+                      <span className={`text-xs font-bold -mt-1 ${isActive ? 'text-slate-700 dark:text-slate-200' : 'text-slate-300 dark:text-slate-600'}`}>
                         {secondName}
                       </span>
                     )}
                   </div>
-                  <div className={`text-[9px] font-black mt-2 px-3 py-0.5 rounded-full ${isActive ? 'bg-blue-50 text-blue-600' : 'bg-slate-50 text-slate-400'}`}>
+                  <div className={`text-[9px] font-black mt-2 px-3 py-0.5 rounded-full ${isActive ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' : 'bg-slate-50 dark:bg-slate-800 text-slate-400 dark:text-slate-500'}`}>
                     {model.accuracy} ACC
                   </div>
                 </div>
@@ -397,32 +399,32 @@ const AdvancedAIRecommendations = ({
       {(showInfoPanel || showModelDetails) && (
         <div className="relative z-20 transition-all animate-in fade-in slide-in-from-top-4">
           {showInfoPanel && (
-            <div className={`mb-8 p-6 ${glassStyle} border-blue-200/50 rounded-3xl`}>
+            <div className={`mb-8 p-6 ${glassStyle} border-blue-200/50 dark:border-blue-800/30 rounded-3xl`}>
               <div className="flex items-center justify-between mb-6">
-                <h4 className="text-xl font-bold text-slate-800 flex items-center gap-2">
+                <h4 className="text-xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                   <FaShieldAlt className="text-blue-600" /> System Architecture & Transparency
                 </h4>
-                <button onClick={() => setShowInfoPanel(false)} className="text-slate-400 hover:text-slate-600"><FaTimesCircle /></button>
+                <button onClick={() => setShowInfoPanel(false)} className="text-slate-400 hover:text-slate-600 dark:hover:text-slate-200"><FaTimesCircle /></button>
               </div>
               <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
                 <div className="space-y-4">
-                  <p className="text-slate-600 leading-relaxed">
-                    Our <span className="text-blue-600 font-bold">Setu AI</span> engine (Powered by Sentinel) doesn't just look at filters. It analyzes cross-user behavioral vectors, semantic wishlist patterns, and micro-market trends to predict your next home with surgical precision.
+                  <p className="text-slate-600 dark:text-slate-300 leading-relaxed">
+                    Our <span className="text-blue-600 dark:text-blue-400 font-bold">Setu AI</span> engine (Powered by Sentinel) doesn't just look at filters. It analyzes cross-user behavioral vectors, semantic wishlist patterns, and micro-market trends to predict your next home with surgical precision.
                   </p>
-                  <div className="bg-blue-50 p-4 rounded-xl border border-blue-100">
-                    <h5 className="font-bold text-blue-800 text-sm mb-2 flex items-center gap-2">
+                  <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl border border-blue-100 dark:border-blue-800">
+                    <h5 className="font-bold text-blue-800 dark:text-blue-300 text-sm mb-2 flex items-center gap-2">
                       <FaRocket /> Accuracy Validation
                     </h5>
-                    <p className="text-xs text-blue-700 leading-relaxed">
+                    <p className="text-xs text-blue-700 dark:text-blue-200 leading-relaxed">
                       Every recommendation is cross-validated through our Super Ensemble model to ensure less than 3% false-positives in preference matching.
                     </p>
                   </div>
                 </div>
                 <div className="grid grid-cols-2 gap-4">
                   {['Behavioral Clustering', 'Market Velocity', 'Geo-Spatial Analysis', 'Sentiment Filtering'].map((item, idx) => (
-                    <div key={idx} className="p-3 bg-white rounded-xl border border-slate-100 flex items-center gap-3">
+                    <div key={idx} className="p-3 bg-white dark:bg-slate-800 rounded-xl border border-slate-100 dark:border-slate-700 flex items-center gap-3">
                       <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
-                      <span className="text-xs font-semibold text-slate-700">{item}</span>
+                      <span className="text-xs font-semibold text-slate-700 dark:text-slate-300">{item}</span>
                     </div>
                   ))}
                 </div>
@@ -443,7 +445,7 @@ const AdvancedAIRecommendations = ({
           {/* Enhanced Grid with modern cards */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
             {recommendations.map((listing, index) => (
-              <div key={listing.property?._id || `rec-${index}`} className={`group relative rounded-3xl bg-white border border-slate-100 shadow-sm ${neonGlow} overflow-hidden`}>
+              <div key={listing.property?._id || `rec-${index}`} className={`group relative rounded-3xl bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm ${neonGlow} overflow-hidden`}>
                 {listing.property ? (
                   <div onClick={() => onRecommendationClick && onRecommendationClick(listing.property)} className="cursor-pointer">
                     {/* Badge for AI Type */}
@@ -541,34 +543,34 @@ const AdvancedAIRecommendations = ({
           {/* Dynamic AI Analysis Panel */}
           {showInsights && insights && (
             <div className="mt-16 grid grid-cols-1 lg:grid-cols-4 gap-6 relative z-10">
-              <div className={`${glassStyle} p-8 rounded-[40px] border-slate-200/50 flex flex-col items-center justify-center text-center group hover:scale-[1.02] transition-all`}>
-                <div className="text-5xl font-black text-slate-900 mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tighter">{insights.totalRecommendations}</div>
+              <div className={`${glassStyle} p-8 rounded-[40px] border-slate-200/50 dark:border-slate-700/50 flex flex-col items-center justify-center text-center group hover:scale-[1.02] transition-all`}>
+                <div className="text-5xl font-black text-slate-900 dark:text-white mb-2 group-hover:text-blue-600 transition-colors uppercase tracking-tighter">{insights.totalRecommendations}</div>
                 <div className="text-xs font-bold text-blue-600 uppercase tracking-widest">Calculated Matches</div>
               </div>
 
-              <div className={`${glassStyle} p-8 rounded-[40px] border-slate-200/50 lg:col-span-2 hover:scale-[1.01] transition-all`}>
+              <div className={`${glassStyle} p-8 rounded-[40px] border-slate-200/50 dark:border-slate-700/50 lg:col-span-2 hover:scale-[1.01] transition-all`}>
                 <div className="flex items-center justify-between mb-6">
-                  <h4 className="font-black text-slate-800 uppercase tracking-widest text-sm">System Confidence Matrix</h4>
+                  <h4 className="font-black text-slate-800 dark:text-white uppercase tracking-widest text-sm">System Confidence Matrix</h4>
                   <div className="flex gap-1">
                     {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 bg-blue-500 rounded-full animate-bounce" style={{ animationDelay: `${i * 0.2}s` }}></div>)}
                   </div>
                 </div>
                 <div className="space-y-6">
                   <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-slate-600">
+                    <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
                       <span className="flex items-center gap-2"><div className="w-2 h-2 bg-blue-600 rounded-full shadow-[0_0_5px_rgba(37,99,235,0.5)]"></div> ENSEMBLE CONSENSUS</span>
-                      <span className="font-mono text-blue-600 tracking-tighter">98.2%</span>
+                      <span className="font-mono text-blue-600 dark:text-blue-400 tracking-tighter">98.2%</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-[1px]">
+                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden p-[1px]">
                       <div className="h-full bg-gradient-to-r from-blue-600 to-indigo-600 rounded-full animate-pulse shadow-[0_0_10px_rgba(37,99,235,0.3)]" style={{ width: '98.2%' }}></div>
                     </div>
                   </div>
                   <div className="space-y-2">
-                    <div className="flex justify-between text-xs font-bold text-slate-600">
+                    <div className="flex justify-between text-xs font-bold text-slate-600 dark:text-slate-300">
                       <span className="flex items-center gap-2"><div className="w-2 h-2 bg-emerald-500 rounded-full shadow-[0_0_5px_rgba(16,185,129,0.5)]"></div> PREFERENCE ALIGNMENT</span>
-                      <span className="font-mono text-emerald-600 tracking-tighter">{Math.round(insights.averageScore * 100)}%</span>
+                      <span className="font-mono text-emerald-600 dark:text-emerald-400 tracking-tighter">{Math.round(insights.averageScore * 100)}%</span>
                     </div>
-                    <div className="h-2 w-full bg-slate-100 rounded-full overflow-hidden p-[1px]">
+                    <div className="h-2 w-full bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden p-[1px]">
                       <div className="h-full bg-gradient-to-r from-emerald-500 to-green-600 rounded-full transition-all duration-1000" style={{ width: `${insights.averageScore * 100}%` }}></div>
                     </div>
                   </div>
@@ -594,7 +596,7 @@ const AdvancedAIRecommendations = ({
       )}
 
       {/* Footer Branding */}
-      <div className="relative z-10 mt-12 pt-8 border-t border-slate-200 flex flex-col sm:flex-row items-center justify-between gap-4">
+      <div className="relative z-10 mt-12 pt-8 border-t border-slate-200 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-4">
         <div className="flex items-center gap-2 text-xs font-bold text-slate-400">
           <FaShieldAlt className="text-blue-500" /> END-TO-END ENCRYPTED AI PROCESSING
         </div>

@@ -602,7 +602,7 @@ export default function EditListing() {
                     value="sale"
                     onChange={onHandleChanges}
                     checked={formData.type === "sale"}
-                    className="text-blue-600 dark:text-blue-400"
+                    className="accent-blue-600 dark:accent-blue-500 text-blue-600 dark:text-blue-400"
                   />
                   <span className="font-medium dark:text-gray-200">For Sale</span>
                 </label>
@@ -613,7 +613,7 @@ export default function EditListing() {
                     value="rent"
                     onChange={onHandleChanges}
                     checked={formData.type === "rent"}
-                    className="text-blue-600 dark:text-blue-400"
+                    className="accent-blue-600 dark:accent-blue-500 text-blue-600 dark:text-blue-400"
                   />
                   <span className="font-medium dark:text-gray-200">For Rent</span>
                 </label>
@@ -827,7 +827,7 @@ export default function EditListing() {
                                   }
                                 }));
                               }}
-                              className="text-blue-600 dark:text-blue-400"
+                              className="accent-blue-600 dark:accent-blue-500 text-blue-600 dark:text-blue-400"
                             />
                             <span className="text-gray-700 dark:text-gray-300 text-sm font-medium transition-colors">
                               {plan === '1_year' ? '1 Year' :
@@ -893,7 +893,7 @@ export default function EditListing() {
                     id={item}
                     onChange={onHandleChanges}
                     checked={formData[item]}
-                    className="text-blue-600 dark:text-blue-400 w-5 h-5 transition-colors"
+                    className="accent-blue-600 dark:accent-blue-500 text-blue-600 dark:text-blue-400 w-5 h-5 transition-colors"
                   />
                   <span className="text-gray-700 dark:text-gray-300 font-medium capitalize transition-colors">{item}</span>
                 </label>
@@ -1176,7 +1176,7 @@ export default function EditListing() {
                 id="consent"
                 checked={consent}
                 onChange={e => setConsent(e.target.checked)}
-                className="accent-blue-600 w-4 h-4 dark:bg-gray-800 dark:border-gray-700"
+                className="accent-blue-600 dark:accent-blue-500 w-4 h-4 dark:bg-gray-800 dark:border-gray-700"
                 required
               />
               <label htmlFor="consent" className="text-sm text-gray-700 dark:text-gray-300 select-none transition-colors">

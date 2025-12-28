@@ -215,7 +215,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
     toast.success("ESG Report Securely Downloaded.");
   };
 
-  const glassStyle = "bg-white/70 backdrop-blur-xl border border-white/40 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]";
+  const glassStyle = "bg-white/70 dark:bg-slate-900/70 backdrop-blur-xl border border-white/40 dark:border-white/10 shadow-[0_8px_32px_0_rgba(31,38,135,0.07)]";
   const neonGreenGlow = "hover:shadow-[0_0_20px_rgba(34,197,94,0.3)] transition-all duration-300";
 
   const getScoreColor = (score) => {
@@ -234,14 +234,14 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
 
   if (loading) {
     return (
-      <div className={`relative min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f0fdf4] to-white rounded-[40px] border border-green-100 shadow-inner ${className}`}>
+      <div className={`relative min-h-[500px] flex items-center justify-center bg-gradient-to-br from-[#f0fdf4] to-white dark:from-slate-900 dark:to-slate-950 rounded-[40px] border border-green-100 dark:border-green-900/30 shadow-inner ${className}`}>
         <div className="flex flex-col items-center gap-8">
           <div className="relative">
             <div className="w-24 h-24 border-b-4 border-emerald-500 rounded-full animate-spin"></div>
             <FaLeaf className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 text-emerald-600 text-4xl" />
           </div>
           <div className="text-center animate-pulse">
-            <h4 className="text-xl font-black text-slate-800 tracking-tighter uppercase italic">Activating Setu AI</h4>
+            <h4 className="text-xl font-black text-slate-800 dark:text-white tracking-tighter uppercase italic">Activating Setu AI</h4>
             <div className="flex gap-1 justify-center mt-2">
               {[1, 2, 3].map(i => <div key={i} className="w-1.5 h-1.5 bg-emerald-500 rounded-full"></div>)}
             </div>
@@ -252,7 +252,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
   }
 
   return (
-    <div className={`relative bg-gradient-to-br from-[#f0f9f1] via-[#ffffff] to-[#f8fafc] p-6 lg:p-10 rounded-[40px] shadow-2xl border border-green-100/30 ${className} overflow-hidden font-sans`}>
+    <div className={`relative bg-gradient-to-br from-[#f0f9f1] via-[#ffffff] to-[#f8fafc] dark:from-slate-900 dark:via-slate-900 dark:to-slate-950 p-6 lg:p-10 rounded-[40px] shadow-2xl border border-green-100/30 dark:border-slate-800 ${className} overflow-hidden font-sans`}>
       {/* Decorative Background Elements */}
       <div className="absolute top-0 right-0 -mr-20 -mt-20 w-80 h-80 bg-green-200/20 rounded-full blur-[100px] animate-pulse"></div>
       <div className="absolute bottom-0 left-0 -ml-20 -mb-20 w-96 h-96 bg-emerald-200/20 rounded-full blur-[100px] animate-pulse" style={{ animationDelay: '2s' }}></div>
@@ -260,7 +260,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
       {showTitle && (
         <div className="relative z-10 flex flex-col md:flex-row items-start md:items-center justify-between mb-10 gap-6">
           <div>
-            <h3 className="text-3xl md:text-4xl font-black text-slate-900 flex items-center gap-4 tracking-tighter">
+            <h3 className="text-3xl md:text-4xl font-black text-slate-900 dark:text-white flex items-center gap-4 tracking-tighter">
               <div className="p-4 bg-emerald-600 rounded-2xl shadow-xl ring-8 ring-emerald-50 group hover:rotate-12 transition-transform">
                 <FaLeaf className="text-white text-2xl" />
               </div>
@@ -281,7 +281,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
             </div>
             <button
               onClick={() => setShowModelDetails(!showModelDetails)}
-              className={`flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-2xl transition-all ${showModelDetails ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white text-slate-700 hover:bg-emerald-50 border border-slate-200 shadow-sm'}`}
+              className={`flex items-center gap-2 px-6 py-3 text-sm font-bold rounded-2xl transition-all ${showModelDetails ? 'bg-emerald-600 text-white shadow-lg' : 'bg-white dark:bg-slate-800 text-slate-700 dark:text-slate-200 hover:bg-emerald-50 dark:hover:bg-slate-700 border border-slate-200 dark:border-slate-700 shadow-sm'}`}
             >
               <FaChartLine className={showModelDetails ? 'text-white' : 'text-emerald-500'} />
               {showModelDetails ? 'Close Core Metrics' : 'ESG Framework'}
@@ -291,7 +291,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
       )}
 
       {/* Tabs - Modern Pill Style */}
-      <div className="relative z-10 flex bg-slate-100/50 p-1.5 rounded-3xl mb-10 max-w-fit border border-slate-200/50 backdrop-blur-md">
+      <div className="relative z-10 flex bg-slate-100/50 dark:bg-slate-800/50 p-1.5 rounded-3xl mb-10 max-w-fit border border-slate-200/50 dark:border-slate-700/50 backdrop-blur-md">
         {tabs.map((tab) => {
           const Icon = tab.icon;
           const isActive = activeTab === tab.id;
@@ -303,8 +303,8 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
                 if (tab.id === 'analytics') fetchESGAnalytics();
               }}
               className={`px-6 py-3 rounded-2xl text-xs font-black uppercase tracking-widest transition-all flex items-center gap-3 ${isActive
-                ? 'bg-white text-emerald-700 shadow-md transform scale-[1.02]'
-                : 'text-slate-500 hover:text-emerald-600'
+                ? 'bg-white dark:bg-slate-700 text-emerald-700 dark:text-emerald-400 shadow-md transform scale-[1.02]'
+                : 'text-slate-500 dark:text-slate-400 hover:text-emerald-600 dark:hover:text-emerald-300'
                 }`}
             >
               <Icon className={isActive ? 'text-emerald-500' : 'text-slate-400'} />
@@ -336,13 +336,13 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
                 <div className="w-24 h-24 bg-emerald-100 rounded-full flex items-center justify-center mb-6 animate-pulse">
                   <FaLeaf className="text-emerald-600 text-4xl" />
                 </div>
-                <h4 className="text-2xl font-black text-slate-800 mb-4">ESG Profile Incomplete</h4>
-                <p className="max-w-md text-slate-500 font-medium leading-relaxed mb-8">
+                <h4 className="text-2xl font-black text-slate-800 dark:text-white mb-4">ESG Profile Incomplete</h4>
+                <p className="max-w-md text-slate-500 dark:text-slate-400 font-medium leading-relaxed mb-8">
                   Your sustainability footprint is emerging. Interact with green-certified properties to refine our recommendation vectors.
                 </p>
                 <div className="grid grid-cols-2 gap-4 w-full max-w-lg">
                   {['Save Green Properties', 'Review Accessibility', 'Check Efficiency', 'Rate Governance'].map(text => (
-                    <div key={text} className="p-4 bg-white border border-slate-100 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-emerald-700 flex items-center gap-2">
+                    <div key={text} className="p-4 bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 rounded-2xl text-[10px] font-bold uppercase tracking-widest text-emerald-700 dark:text-emerald-400 flex items-center gap-2">
                       <div className="w-2 h-2 bg-emerald-500 rounded-full"></div> {text}
                     </div>
                   ))}
@@ -351,7 +351,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8">
                 {recommendations.map((listing, index) => (
-                  <div key={listing.property?._id || index} className={`group relative rounded-[32px] bg-white border border-slate-100 shadow-sm ${neonGreenGlow} overflow-hidden transform hover:-translate-y-2 transition-all duration-500`}>
+                  <div key={listing.property?._id || index} className={`group relative rounded-[32px] bg-white dark:bg-slate-800 border border-slate-100 dark:border-slate-700 shadow-sm ${neonGreenGlow} overflow-hidden transform hover:-translate-y-2 transition-all duration-500`}>
                     {listing.property ? (
                       <div className="relative">
                         {/* Elite ESG Badges */}
@@ -443,19 +443,19 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
                     { title: 'Social', data: esgPreferences.social, icon: FaUsers, color: 'blue' },
                     { title: 'Governance', data: esgPreferences.governance, icon: FaShieldAlt, color: 'purple' }
                   ].map((cat, i) => (
-                    <div key={i} className={`${glassStyle} p-8 rounded-[40px] border-${cat.color}-100/50 hover:scale-[1.02] transition-transform group`}>
-                      <div className={`p-4 bg-${cat.color}-100 rounded-3xl w-fit mb-6 text-${cat.color}-600 group-hover:rotate-6 transition-transform`}>
+                    <div key={i} className={`${glassStyle} p-8 rounded-[40px] border-${cat.color}-100/50 hover:scale-[1.02] transition-transform group dark:border-slate-700`}>
+                      <div className={`p-4 bg-${cat.color}-100 dark:bg-${cat.color}-900/30 rounded-3xl w-fit mb-6 text-${cat.color}-600 dark:text-${cat.color}-400 group-hover:rotate-6 transition-transform`}>
                         <cat.icon className="text-xl" />
                       </div>
-                      <h5 className="text-sm font-black text-slate-800 uppercase tracking-widest mb-6">{cat.title}</h5>
+                      <h5 className="text-sm font-black text-slate-800 dark:text-white uppercase tracking-widest mb-6">{cat.title}</h5>
                       <div className="space-y-5">
                         {Object.entries(cat.data || {}).slice(0, 3).map(([key, val]) => (
                           <div key={key} className="space-y-2">
-                            <div className="flex justify-between text-[10px] font-bold text-slate-500 uppercase tracking-tight">
+                            <div className="flex justify-between text-[10px] font-bold text-slate-500 dark:text-slate-400 uppercase tracking-tight">
                               <span>{key.replace(/([A-Z])/g, ' $1')}</span>
-                              <span className={`text-${cat.color}-600`}>{val}%</span>
+                              <span className={`text-${cat.color}-600 dark:text-${cat.color}-400`}>{val}%</span>
                             </div>
-                            <div className="w-full h-1.5 bg-slate-100 rounded-full overflow-hidden">
+                            <div className="w-full h-1.5 bg-slate-100 dark:bg-slate-700 rounded-full overflow-hidden">
                               <div className={`h-full bg-${cat.color}-500 transition-all duration-[1.5s]`} style={{ width: `${val}%` }}></div>
                             </div>
                           </div>
@@ -485,7 +485,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
               ].map((stat, i) => (
                 <div key={i} className={`${glassStyle} p-8 rounded-[40px] hover:translate-y-[-5px] transition-all`}>
                   <div className={`text-${stat.color}-500 mb-4`}><stat.icon className="text-2xl" /></div>
-                  <div className="text-4xl font-black text-slate-900 mb-1">{stat.value || '--'}</div>
+                  <div className="text-4xl font-black text-slate-900 dark:text-white mb-1">{stat.value || '--'}</div>
                   <div className="text-[10px] font-black text-slate-400 uppercase tracking-widest">{stat.label}</div>
                 </div>
               ))}
@@ -494,8 +494,8 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
             <div className={`${glassStyle} p-10 rounded-[40px] relative overflow-hidden`}>
               <div className="flex flex-col md:flex-row items-center justify-between gap-10">
                 <div className="max-w-md">
-                  <h4 className="text-2xl font-black text-slate-800 mb-4 uppercase tracking-tighter">Carbon Alignment Matrix</h4>
-                  <p className="text-sm text-slate-500 font-medium leading-relaxed">
+                  <h4 className="text-2xl font-black text-slate-800 dark:text-white mb-4 uppercase tracking-tighter">Carbon Alignment Matrix</h4>
+                  <p className="text-sm text-slate-500 dark:text-slate-400 font-medium leading-relaxed">
                     Our AI models compare over 5,000 data points across regional energy grids and property certifications to calculate your optimal match.
                   </p>
                   <button
@@ -528,7 +528,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
           <div className="flex items-center justify-between mb-16 px-4">
             <div className="flex items-center gap-6">
               <div className="w-16 h-1.5 bg-gradient-to-r from-emerald-500 to-teal-400 rounded-full shadow-[0_0_15px_rgba(16,185,129,0.5)]"></div>
-              <h4 className="font-black text-slate-900 uppercase tracking-[0.5em] text-sm italic">Setu AI Framework Blueprint</h4>
+              <h4 className="font-black text-slate-900 dark:text-white uppercase tracking-[0.5em] text-sm italic">Setu AI Framework Blueprint</h4>
             </div>
             <div className="px-6 py-2 bg-slate-900 text-emerald-400 rounded-full text-[10px] font-black tracking-widest border border-emerald-500/30 animate-pulse">
               ALGORITHM_ACTIVE: RANDOM_FOREST v4.2
@@ -542,11 +542,11 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
               { title: 'Governance', factors: ['Transparent-Ledger Audits', 'Ethical Chain Integrity', 'Cognitive Board Diversity', 'Strategic Risk Modeling'], icon: FaShieldAlt, color: 'purple' },
               { title: 'AI Logic', factors: ['Deep Cluster Scoring', 'Synthetic User Cloning', 'Entropy Preference Gates', 'Delta Delta Optimization'], icon: FaCogs, color: 'orange' }
             ].map((box, i) => (
-              <div key={i} className="group/box p-8 bg-slate-50/50 rounded-[40px] border border-white hover:bg-white hover:shadow-2xl hover:-translate-y-3 transition-all duration-700 relative overflow-hidden">
+              <div key={i} className="group/box p-8 bg-slate-50/50 dark:bg-slate-800/50 rounded-[40px] border border-white dark:border-slate-700 hover:bg-white dark:hover:bg-slate-800 hover:shadow-2xl hover:-translate-y-3 transition-all duration-700 relative overflow-hidden">
                 <div className={`absolute top-0 left-0 w-2 h-0 bg-${box.color}-500 group-hover/box:h-full transition-all duration-1000`}></div>
                 <div className="flex items-center gap-4 mb-10">
                   <box.icon className={`text-2xl group-hover/box:rotate-12 transition-transform text-${box.color}-500`} />
-                  <h5 className="font-black text-xs uppercase tracking-[0.3em] text-slate-900 leading-none">{box.title}</h5>
+                  <h5 className="font-black text-xs uppercase tracking-[0.3em] text-slate-900 dark:text-white leading-none">{box.title}</h5>
                 </div>
                 <ul className="space-y-6">
                   {box.factors.map(f => (
@@ -562,7 +562,7 @@ To maintain a balanced portfolio, we suggest investigating more Global Impact pr
       )}
 
       {/* Futuristic Footer */}
-      <div className="relative z-10 mt-16 pt-8 border-t border-slate-100 flex flex-col sm:flex-row items-center justify-between gap-6">
+      <div className="relative z-10 mt-16 pt-8 border-t border-slate-100 dark:border-slate-800 flex flex-col sm:flex-row items-center justify-between gap-6">
         <div className="flex items-center gap-3 text-[10px] font-black text-slate-400 tracking-[0.2em] uppercase">
           <FaShieldAlt className="text-emerald-500 animate-pulse" /> Sentinel ESG Certified Processing
           <div className="w-[1px] h-4 bg-slate-200 mx-2"></div>

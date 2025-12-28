@@ -410,7 +410,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                                 type="checkbox"
                                 checked={esg.environmental.solarPanels}
                                 onChange={(e) => handleChange('environmental', 'solarPanels', e.target.checked)}
-                                className="mr-2 accent-green-600"
+                                className="mr-2 accent-green-600 dark:accent-green-500"
                             />
                             <span className="text-sm text-gray-700 dark:text-gray-300 transition-colors">🔋 Solar Panels</span>
                         </label>
@@ -419,7 +419,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                                 type="checkbox"
                                 checked={esg.environmental.rainwaterHarvesting}
                                 onChange={(e) => handleChange('environmental', 'rainwaterHarvesting', e.target.checked)}
-                                className="mr-2 accent-green-600"
+                                className="mr-2 accent-green-600 dark:accent-green-500"
                             />
                             <span className="text-sm text-gray-700 dark:text-gray-300 transition-colors">💧 Rainwater Harvesting</span>
                         </label>
@@ -486,7 +486,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                                         type="checkbox"
                                         checked={esg.social.socialAmenities.includes(amenity)}
                                         onChange={(e) => handleArrayChange('social', 'socialAmenities', amenity, e.target.checked)}
-                                        className="mr-2 accent-blue-600"
+                                        className="mr-2 accent-blue-600 dark:accent-blue-500"
                                     />
                                     {amenity}
                                 </label>
@@ -500,7 +500,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                                 type="checkbox"
                                 checked={esg.social.affordableHousing}
                                 onChange={(e) => handleChange('social', 'affordableHousing', e.target.checked)}
-                                className="mr-2 accent-blue-600"
+                                className="mr-2 accent-blue-600 dark:accent-blue-500"
                             />
                             <span className="text-sm text-gray-700 dark:text-gray-300 transition-colors">🏠 Affordable Housing</span>
                         </label>
