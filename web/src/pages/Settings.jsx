@@ -1238,8 +1238,8 @@ export default function Settings() {
         {/* Appearance */}
         <SettingSection title={t('settings.section_appearance')} icon={FaPalette}>
           <div className="space-y-0">
-            <div className="py-3 border-b border-gray-200">
-              <p className="font-medium text-gray-800 mb-2">{t('settings.theme')}</p>
+            <div className="py-3 border-b border-gray-200 dark:border-gray-700">
+              <p className="font-medium text-gray-800 dark:text-gray-200 mb-2">{t('settings.theme')}</p>
               <div className="flex gap-4">
                 <button
                   onClick={() => handleThemeChange('light')}
@@ -1298,7 +1298,7 @@ export default function Settings() {
                 </>
               )}
             </button>
-            <p className="text-sm text-gray-500">Get a copy of your account data in JSON/text format</p>
+            <p className="text-sm text-gray-500 dark:text-gray-400">Get a copy of your account data in JSON/text format</p>
           </div>
         </SettingSection>
 
@@ -1315,7 +1315,7 @@ export default function Settings() {
                   <FaPhone className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
                   {t('settings.call_history')}
                 </button>
-                <p className="text-sm text-gray-500">View your audio and video call history with buyers and sellers</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">View your audio and video call history with buyers and sellers</p>
               </>
             )}
 
@@ -1329,7 +1329,7 @@ export default function Settings() {
                   <FaVideo className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-pulse`} />
                   {t('settings.admin_call_history')}
                 </button>
-                <p className="text-sm text-gray-500">View and manage all call history across the platform</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">View and manage all call history across the platform</p>
               </>
             )}
           </div>
@@ -1387,15 +1387,15 @@ export default function Settings() {
                 <FaCrown className={`w-4 h-4 mr-2 transition-transform duration-300 group-hover:animate-bounce text-yellow-200`} />
                 {t('settings.transfer_rights')}
               </button>
-              <div className="bg-blue-50 border border-blue-200 rounded-lg p-3">
+              <div className="bg-blue-50 dark:bg-blue-900/20 border border-blue-200 dark:border-blue-800 rounded-lg p-3">
                 <div className="flex items-start">
                   <div className="flex-shrink-0">
-                    <svg className="h-4 w-4 text-blue-400 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
+                    <svg className="h-4 w-4 text-blue-400 dark:text-blue-500 mt-0.5" fill="currentColor" viewBox="0 0 20 20">
                       <path fillRule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7-4a1 1 0 11-2 0 1 1 0 012 0zM9 9a1 1 0 000 2v3a1 1 0 001 1h1a1 1 0 100-2v-3a1 1 0 00-1-1H9z" clipRule="evenodd" />
                     </svg>
                   </div>
                   <div className="ml-2">
-                    <p className="text-sm text-blue-700">
+                    <p className="text-sm text-blue-700 dark:text-blue-300">
                       <strong>Note:</strong> {t('settings.transfer_admin_note')}
                     </p>
                   </div>
@@ -1410,19 +1410,19 @@ export default function Settings() {
           <div className="space-y-3">
             <Link
               to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/terms' : '/user/terms'}
-              className="block text-blue-600 hover:text-blue-800 hover:underline"
+              className="block text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
             >
               {t('settings.terms_conditions')}
             </Link>
             <Link
               to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/privacy' : '/user/privacy'}
-              className="block text-blue-600 hover:text-blue-800 hover:underline"
+              className="block text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
             >
               {t('settings.privacy_policy')}
             </Link>
             <Link
               to={currentUser.role === 'admin' || currentUser.role === 'rootadmin' ? '/admin/cookie-policy' : '/user/cookie-policy'}
-              className="block text-blue-600 hover:text-blue-800 hover:underline"
+              className="block text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
             >
               {t('settings.cookie_policy')}
             </Link>
@@ -1430,10 +1430,10 @@ export default function Settings() {
         </SettingSection>
 
         {/* Account Actions */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <div className="flex items-center mb-4">
-            <FaExclamationTriangle className="w-5 h-5 mr-2 text-red-600" />
-            <h2 className="text-xl font-bold text-gray-800">{t('settings.section_account')}</h2>
+            <FaExclamationTriangle className="w-5 h-5 mr-2 text-red-600 dark:text-red-500" />
+            <h2 className="text-xl font-bold text-gray-800 dark:text-white">{t('settings.section_account')}</h2>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
             <button
@@ -1452,7 +1452,7 @@ export default function Settings() {
               {t('settings.delete_account')}
             </button>
           </div>
-          <p className="text-sm text-red-500 mt-2">
+          <p className="text-sm text-red-500 dark:text-red-400 mt-2">
             {t('settings.delete_account_warning')}
           </p>
         </div>
@@ -1461,48 +1461,48 @@ export default function Settings() {
       {/* Admin Selection Modal */}
       {showAdminModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
-          <div className={`bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto ${animationClasses.scaleIn}`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto ${animationClasses.scaleIn}`}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800">Transfer Default Admin Rights</h3>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white">Transfer Default Admin Rights</h3>
                 <button
                   onClick={() => {
                     setSelectedAdmin("");
                     setShowAdminModal(false);
                   }}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <FaTimes className="w-5 h-5" />
                 </button>
               </div>
 
               <div className="mb-4">
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   As the default admin, you must select another approved admin to transfer your default admin rights before deleting your account.
                 </p>
 
                 {loadingAdmins ? (
                   <div className="flex justify-center py-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
                   </div>
                 ) : admins.length === 0 ? (
                   <div className="text-center py-4">
-                    <p className="text-gray-500">No other approved admins found.</p>
-                    <p className="text-sm text-gray-400 mt-2">You cannot delete your account until another admin is approved.</p>
+                    <p className="text-gray-500 dark:text-gray-400">No other approved admins found.</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">You cannot delete your account until another admin is approved.</p>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Select Admin to Transfer Rights To:
                     </label>
                     <select
                       value={selectedAdmin}
                       onChange={(e) => setSelectedAdmin(e.target.value)}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent dark:bg-gray-700 dark:text-white"
                     >
-                      <option value="">Choose an admin...</option>
+                      <option value="" className="dark:bg-gray-800">Choose an admin...</option>
                       {admins.map((admin) => (
-                        <option key={admin._id} value={admin._id}>
+                        <option key={admin._id} value={admin._id} className="dark:bg-gray-800">
                           {admin.username} ({admin.email})
                         </option>
                       ))}
@@ -1517,14 +1517,14 @@ export default function Settings() {
                     setSelectedAdmin("");
                     setShowAdminModal(false);
                   }}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors dark:bg-gray-600 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={handleTransferAndDelete}
                   disabled={!selectedAdmin || transferLoading}
-                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                  className="bg-red-500 text-white px-4 py-2 rounded-lg hover:bg-red-600 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center"
                 >
                   {transferLoading ? (
                     <>
@@ -1547,44 +1547,44 @@ export default function Settings() {
       {/* Delete Account Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
-          <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
             <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Account Deletion</h3>
-              <p className="mb-4 text-gray-600">Enter your password. After verification, we will email you an OTP to complete deletion.</p>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Confirm Account Deletion</h3>
+              <p className="mb-4 text-gray-600 dark:text-gray-400">Enter your password. After verification, we will email you an OTP to complete deletion.</p>
               <form onSubmit={async e => { e.preventDefault(); if (!deleteOtpSent && !deleteReasonOpen) { await handleConfirmDelete(); } else if (!deleteOtpSent && deleteReasonOpen) { await handleContinueAfterReason(); } else { await handleFinalDeleteWithOtp(); } }}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password:</label>
                 <input
                   ref={deletePasswordRef}
                   type="password"
-                  className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${deletePasswordVerified || deleteVerifying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 dark:bg-gray-700 dark:text-white ${deletePasswordVerified || deleteVerifying ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                   placeholder="Enter your password"
                   value={deletePassword}
                   onChange={e => setDeletePassword(e.target.value)}
                   disabled={deletePasswordVerified || deleteVerifying}
                 />
-                {deleteError && <div className="text-red-600 text-sm mb-2">{deleteError}</div>}
+                {deleteError && <div className="text-red-600 dark:text-red-400 text-sm mb-2">{deleteError}</div>}
 
                 {deleteReasonOpen && !deleteOtpSent && (
                   <div className="mt-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Reason for leaving</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason for leaving</label>
                     <select
-                      className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${deleteProcessing ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      className={`w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 dark:bg-gray-700 dark:text-white ${deleteProcessing ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                       value={deleteReason}
                       onChange={e => setDeleteReason(e.target.value)}
                       disabled={deleteProcessing}
                     >
-                      <option value="">Select a reason</option>
-                      <option value="Better platform">Found a better platform</option>
-                      <option value="Privacy or security concerns">Privacy or security concerns</option>
-                      <option value="Too many notifications/emails">Too many notifications/emails</option>
-                      <option value="Couldn't find suitable property">Couldn't find suitable property</option>
-                      <option value="Just testing / trial account">Just testing / trial account</option>
-                      <option value="other">Other (please specify)</option>
+                      <option value="" className="dark:bg-gray-800">Select a reason</option>
+                      <option value="Better platform" className="dark:bg-gray-800">Found a better platform</option>
+                      <option value="Privacy or security concerns" className="dark:bg-gray-800">Privacy or security concerns</option>
+                      <option value="Too many notifications/emails" className="dark:bg-gray-800">Too many notifications/emails</option>
+                      <option value="Couldn't find suitable property" className="dark:bg-gray-800">Couldn't find suitable property</option>
+                      <option value="Just testing / trial account" className="dark:bg-gray-800">Just testing / trial account</option>
+                      <option value="other" className="dark:bg-gray-800">Other (please specify)</option>
                     </select>
                     {deleteReason === 'other' && (
                       <input
                         type="text"
-                        className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${deleteProcessing ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        className={`w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 dark:bg-gray-700 dark:text-white ${deleteProcessing ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                         placeholder="Please describe your reason (optional)"
                         value={deleteOtherReason}
                         onChange={e => setDeleteOtherReason(e.target.value)}
@@ -1596,7 +1596,7 @@ export default function Settings() {
 
                 {deleteOtpSent && (
                   <div className="mt-4">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enter OTP</label>
                     <div className="flex flex-col sm:flex-row gap-3">
                       <input
                         ref={deleteOtpRef}
@@ -1604,14 +1604,14 @@ export default function Settings() {
                         maxLength="6"
                         value={deleteOtp}
                         onChange={e => setDeleteOtp(e.target.value.replace(/[^0-9]/g, ''))}
-                        className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${deleteResending || deleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                        className={`flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 dark:bg-gray-700 dark:text-white ${deleteResending || deleteDeleting ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                         placeholder="6-digit OTP"
                         disabled={deleteResending || deleteDeleting}
                       />
-                      <button type="button" disabled={!deleteCanResend || deleteResendTimer > 0 || deleteResending || deleteDeleting} onClick={async () => { if (deleteResendTimer > 0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if (ok) { setDeleteCanResend(false); setDeleteResendTimer(30); } }} className="px-4 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start">{deleteResending ? 'Sending...' : (deleteResendTimer > 0 ? `Resend in ${deleteResendTimer}s` : 'Resend OTP')}</button>
+                      <button type="button" disabled={!deleteCanResend || deleteResendTimer > 0 || deleteResending || deleteDeleting} onClick={async () => { if (deleteResendTimer > 0) return; setDeleteOtpError(""); const ok = await resendDeleteOtp(); if (ok) { setDeleteCanResend(false); setDeleteResendTimer(30); } }} className="px-4 py-2 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-lg text-sm disabled:opacity-50 sm:self-auto self-start hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{deleteResending ? 'Sending...' : (deleteResendTimer > 0 ? `Resend in ${deleteResendTimer}s` : 'Resend OTP')}</button>
                     </div>
-                    {deleteOtpError && <div className="text-red-600 text-sm mt-1">{deleteOtpError}</div>}
-                    <div className="text-green-600 text-sm mt-2 flex items-center">
+                    {deleteOtpError && <div className="text-red-600 dark:text-red-400 text-sm mt-1">{deleteOtpError}</div>}
+                    <div className="text-green-600 dark:text-green-500 text-sm mt-2 flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
@@ -1639,7 +1639,7 @@ export default function Settings() {
                       setDeleteResending(false);
                       setDeletePasswordAttempts(0);
                     }}
-                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors dark:bg-gray-600 dark:hover:bg-gray-700"
                   >Cancel</button>
                   <button
                     type="submit"
@@ -1656,31 +1656,31 @@ export default function Settings() {
       {/* Transfer and Delete Modal */}
       {showTransferPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
-          <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
             <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Account Deletion</h3>
-              <p className="mb-4 text-gray-600">Please enter your password to confirm account deletion after transferring default admin rights. This action cannot be undone.</p>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Confirm Account Deletion</h3>
+              <p className="mb-4 text-gray-600 dark:text-gray-400">Please enter your password to confirm account deletion after transferring default admin rights. This action cannot be undone.</p>
               <form onSubmit={async e => { e.preventDefault(); if (!transferOtpSent) { await handleConfirmTransferAndDelete(); } else { await handleFinalTransferDeleteWithOtp(); } }}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password:</label>
                 <input
                   ref={transferDeletePasswordRef}
                   type="password"
-                  className={`w-full p-3 border border-gray-300 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeletePasswordVerified || transferLoading ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg mb-3 focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 dark:bg-gray-700 dark:text-white ${transferDeletePasswordVerified || transferLoading ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                   placeholder="Enter your password"
                   value={transferDeletePassword}
                   onChange={e => setTransferDeletePassword(e.target.value)}
                   disabled={transferDeletePasswordVerified || transferLoading}
                 />
-                {transferDeleteError && <div className="text-red-600 text-sm mb-2">{transferDeleteError}</div>}
+                {transferDeleteError && <div className="text-red-600 dark:text-red-400 text-sm mb-2">{transferDeleteError}</div>}
                 {transferOtpSent && (
                   <div className="mt-2">
-                    <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enter OTP</label>
                     <div className="flex gap-2">
-                      <input ref={transferDeleteOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e => setTransferOtp(e.target.value.replace(/[^0-9]/g, ''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 ${transferDeleteResending || transferDeleteDeleting ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferDeleteResending || transferDeleteDeleting} />
-                      <button type="button" disabled={!transferCanResend || transferResendTimer > 0 || transferDeleteResending || transferDeleteDeleting} onClick={async () => { if (transferResendTimer > 0) return; const ok = await resendTransferOtp(); if (ok) { setTransferCanResend(false); setTransferResendTimer(30); } }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferDeleteResending ? 'Sending...' : (transferResendTimer > 0 ? `Resend in ${transferResendTimer}s` : 'Resend OTP')}</button>
+                      <input ref={transferDeleteOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e => setTransferOtp(e.target.value.replace(/[^0-9]/g, ''))} className={`flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:focus:ring-red-600 dark:bg-gray-700 dark:text-white ${transferDeleteResending || transferDeleteDeleting ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferDeleteResending || transferDeleteDeleting} />
+                      <button type="button" disabled={!transferCanResend || transferResendTimer > 0 || transferDeleteResending || transferDeleteDeleting} onClick={async () => { if (transferResendTimer > 0) return; const ok = await resendTransferOtp(); if (ok) { setTransferCanResend(false); setTransferResendTimer(30); } }} className="px-3 py-2 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-lg text-sm disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{transferDeleteResending ? 'Sending...' : (transferResendTimer > 0 ? `Resend in ${transferResendTimer}s` : 'Resend OTP')}</button>
                     </div>
-                    {transferOtpError && <div className="text-red-600 text-sm mt-1">{transferOtpError}</div>}
-                    <div className="text-green-600 text-sm mt-2 flex items-center">
+                    {transferOtpError && <div className="text-red-600 dark:text-red-400 text-sm mt-1">{transferOtpError}</div>}
+                    <div className="text-green-600 dark:text-green-500 text-sm mt-2 flex items-center">
                       <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                         <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                       </svg>
@@ -1706,7 +1706,7 @@ export default function Settings() {
                       setTransferResendTimer(0);
                       setTransferDeletePasswordAttempts(0);
                     }}
-                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors dark:bg-gray-600 dark:hover:bg-gray-700"
                   >Cancel</button>
                   <button
                     type="submit"
@@ -1730,44 +1730,44 @@ export default function Settings() {
       {/* Transfer Rights Modal */}
       {showTransferModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
-          <div className={`bg-white rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto ${animationClasses.scaleIn}`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full max-h-[80vh] overflow-y-auto ${animationClasses.scaleIn}`}>
             <div className="p-6">
               <div className="flex items-center justify-between mb-4">
-                <h3 className="text-xl font-bold text-gray-800">Transfer Root Admin Rights</h3>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white">Transfer Root Admin Rights</h3>
                 <button
                   onClick={() => setShowTransferModal(false)}
-                  className="text-gray-400 hover:text-gray-600"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300"
                 >
                   <FaTimes className="w-5 h-5" />
                 </button>
               </div>
               <div className="mb-4">
-                <p className="text-gray-600 mb-4">
+                <p className="text-gray-600 dark:text-gray-400 mb-4">
                   Select an admin to transfer your root admin rights. You will remain an admin after transfer.
                 </p>
                 {loadingAdmins ? (
                   <div className="flex justify-center py-4">
-                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
+                    <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
                   </div>
                 ) : transferAdmins.length === 0 ? (
                   <div className="text-center py-4">
-                    <p className="text-gray-500">No other admins found.</p>
-                    <p className="text-sm text-gray-400 mt-2">You cannot transfer rights until another admin exists.</p>
+                    <p className="text-gray-500 dark:text-gray-400">No other admins found.</p>
+                    <p className="text-sm text-gray-400 dark:text-gray-500 mt-2">You cannot transfer rights until another admin exists.</p>
                   </div>
                 ) : (
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                       Select Admin to Transfer Rights To:
                     </label>
                     <select
                       value={selectedTransferAdmin}
                       onChange={e => setSelectedTransferAdmin(e.target.value)}
-                      className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent ${transferPasswordVerified || transferSubmitting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                      className={`w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-600 focus:border-transparent dark:bg-gray-700 dark:text-white ${transferPasswordVerified || transferSubmitting ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                       disabled={transferPasswordVerified || transferSubmitting}
                     >
-                      <option value="">Choose an admin...</option>
+                      <option value="" className="dark:bg-gray-800">Choose an admin...</option>
                       {transferAdmins.map(admin => (
-                        <option key={admin._id} value={admin._id}>
+                        <option key={admin._id} value={admin._id} className="dark:bg-gray-800">
                           {admin.username} ({admin.email})
                         </option>
                       ))}
@@ -1776,26 +1776,26 @@ export default function Settings() {
                 )}
               </div>
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Confirm Password:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Confirm Password:</label>
                 <form onSubmit={e => { e.preventDefault(); transferOtpSent ? handleFinalTransferWithOtp() : handleTransferSubmit(); }}>
                   <input
                     type="password"
-                    className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${transferPasswordVerified || transferSubmitting ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    className={`w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-600 dark:bg-gray-700 dark:text-white ${transferPasswordVerified || transferSubmitting ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                     placeholder="Enter your password"
                     value={transferPassword}
                     onChange={e => setTransferPassword(e.target.value)}
                     disabled={transferPasswordVerified || transferSubmitting}
                   />
-                  {!transferOtpSent && transferError && <div className="text-red-600 text-sm mt-2">{transferError}</div>}
+                  {!transferOtpSent && transferError && <div className="text-red-600 dark:text-red-400 text-sm mt-2">{transferError}</div>}
                   {transferOtpSent && (
                     <div className="mt-4">
-                      <label className="block text-sm font-medium text-gray-700 mb-2">Enter OTP</label>
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Enter OTP</label>
                       <div className="flex gap-2">
-                        <input ref={transferRightsOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e => setTransferOtp(e.target.value.replace(/[^0-9]/g, ''))} className={`flex-1 p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 ${transferResending || transferTransferring ? 'bg-gray-100 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferResending || transferTransferring} />
-                        <button type="button" disabled={!transferCanResend || transferResendTimer > 0 || transferResending || transferTransferring} onClick={async () => { if (transferResendTimer > 0) return; const ok = await resendTransferOtp(); if (ok) { setTransferCanResend(false); setTransferResendTimer(30); } }} className="px-3 py-2 bg-gray-100 rounded-lg text-sm disabled:opacity-50">{transferResending ? 'Sending...' : (transferResendTimer > 0 ? `Resend in ${transferResendTimer}s` : 'Resend OTP')}</button>
+                        <input ref={transferRightsOtpRef} type="text" maxLength="6" value={transferOtp} onChange={e => setTransferOtp(e.target.value.replace(/[^0-9]/g, ''))} className={`flex-1 p-3 border border-gray-300 dark:border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:focus:ring-yellow-600 dark:bg-gray-700 dark:text-white ${transferResending || transferTransferring ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`} placeholder="6-digit OTP" disabled={transferResending || transferTransferring} />
+                        <button type="button" disabled={!transferCanResend || transferResendTimer > 0 || transferResending || transferTransferring} onClick={async () => { if (transferResendTimer > 0) return; const ok = await resendTransferOtp(); if (ok) { setTransferCanResend(false); setTransferResendTimer(30); } }} className="px-3 py-2 bg-gray-100 dark:bg-gray-700 dark:text-white rounded-lg text-sm disabled:opacity-50 hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">{transferResending ? 'Sending...' : (transferResendTimer > 0 ? `Resend in ${transferResendTimer}s` : 'Resend OTP')}</button>
                       </div>
-                      {transferError && <div className="text-red-600 text-sm mt-2">{transferError}</div>}
-                      <div className="text-green-600 text-sm mt-2 flex items-center">
+                      {transferError && <div className="text-red-600 dark:text-red-400 text-sm mt-2">{transferError}</div>}
+                      <div className="text-green-600 dark:text-green-500 text-sm mt-2 flex items-center">
                         <svg className="w-4 h-4 mr-2" fill="currentColor" viewBox="0 0 20 20">
                           <path fillRule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clipRule="evenodd" />
                         </svg>
@@ -1822,12 +1822,12 @@ export default function Settings() {
                         setTransferResendTimer(0);
                         setTransferPasswordAttempts(0);
                       }}
-                      className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                      className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors dark:bg-gray-600 dark:hover:bg-gray-700"
                     >Cancel</button>
                     <button
                       type="submit"
                       disabled={!selectedTransferAdmin || !transferPassword || transferSubmitting || transferResending || transferTransferring || (transferOtpSent && transferOtp.length !== 6)}
-                      className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:bg-gray-400 disabled:cursor-not-allowed flex items-center"
+                      className="bg-yellow-500 text-white px-4 py-2 rounded-lg hover:bg-yellow-600 transition-colors disabled:bg-gray-400 dark:disabled:bg-gray-600 disabled:cursor-not-allowed flex items-center"
                     >
                       {transferTransferring ? (
                         <>
@@ -1857,16 +1857,16 @@ export default function Settings() {
       {/* Export Data Password Modal */}
       {showExportPasswordModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-[fadeIn_0.3s_ease-out]">
-          <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
             <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Confirm Password</h3>
-              <p className="mb-4 text-gray-600">For security, please confirm your password to download your data.</p>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Confirm Password</h3>
+              <p className="mb-4 text-gray-600 dark:text-gray-400">For security, please confirm your password to download your data.</p>
               <form onSubmit={(e) => { e.preventDefault(); handleVerifyExportPassword(); }}>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Password:</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Password:</label>
                 <input
                   ref={exportPasswordRef}
                   type="password"
-                  className={`w-full p-3 border border-gray-300 rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-green-500 ${exportPasswordVerifying ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full p-3 border border-gray-300 dark:border-gray-700 rounded-lg mb-2 focus:outline-none focus:ring-2 focus:ring-green-500 dark:focus:ring-green-600 dark:bg-gray-700 dark:text-white ${exportPasswordVerifying ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                   placeholder="Enter your password"
                   value={exportPassword}
                   onChange={e => setExportPassword(e.target.value)}
@@ -1877,13 +1877,13 @@ export default function Settings() {
                     type="button"
                     onClick={() => setShowExportSignoutModal(true)}
                     disabled={exportPasswordVerifying}
-                    className={`text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200 ${exportPasswordVerifying ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    className={`text-sm text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-200 ${exportPasswordVerifying ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                       }`}
                   >
                     Forgot Password?
                   </button>
                 </div>
-                {exportPasswordError && <div className="text-red-600 text-sm mb-2">{exportPasswordError}</div>}
+                {exportPasswordError && <div className="text-red-600 dark:text-red-400 text-sm mb-2">{exportPasswordError}</div>}
                 <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                   <button
                     type="button"
@@ -1893,7 +1893,7 @@ export default function Settings() {
                       setExportPasswordError("");
                       setExportPasswordVerifying(false);
                     }}
-                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                    className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors dark:bg-gray-600 dark:hover:bg-gray-700"
                   >
                     Cancel
                   </button>
@@ -1924,15 +1924,15 @@ export default function Settings() {
       {/* Export Password Forgot Password Signout Confirmation Modal */}
       {showExportSignoutModal && (
         <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[60] p-4 animate-[fadeIn_0.3s_ease-out]">
-          <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn}`}>
             <div className="p-6">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Sign Out Required</h3>
-              <p className="mb-4 text-gray-600">To reset your password, you need to sign out first. You will be redirected to the forgot password page.</p>
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Sign Out Required</h3>
+              <p className="mb-4 text-gray-600 dark:text-gray-400">To reset your password, you need to sign out first. You will be redirected to the forgot password page.</p>
               <div className="flex flex-col sm:flex-row justify-end gap-3 mt-6">
                 <button
                   type="button"
                   onClick={() => setShowExportSignoutModal(false)}
-                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
+                  className="bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors dark:bg-gray-600 dark:hover:bg-gray-700"
                 >
                   Cancel
                 </button>
@@ -1964,7 +1964,7 @@ export default function Settings() {
       {
         showVisibilityInfoModal && (
           <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-[70] p-4 animate-[fadeIn_0.3s_ease-out]">
-            <div className={`bg-white rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn} overflow-hidden`}>
+            <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-md w-full ${animationClasses.scaleIn} overflow-hidden`}>
               {/* Header */}
               <div className="bg-gradient-to-r from-blue-500 to-purple-600 p-4 flex justify-between items-center text-white">
                 <h3 className="text-lg font-bold flex items-center gap-2">
@@ -1982,42 +1982,42 @@ export default function Settings() {
               <div className="p-6 space-y-4">
                 {/* Public */}
                 <div className="flex gap-3">
-                  <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-green-100 flex items-center justify-center text-green-600">
+                  <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-green-100 dark:bg-green-900/30 flex items-center justify-center text-green-600 dark:text-green-400">
                     <FaGlobe />
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-800">Public</h4>
-                    <p className="text-sm text-gray-600">Visible to everyone. Your name, avatar, and contact details (in accepted appointments) are shown.</p>
+                    <h4 className="font-bold text-gray-800 dark:text-white">Public</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Visible to everyone. Your name, avatar, and contact details (in accepted appointments) are shown.</p>
                   </div>
                 </div>
 
                 {/* Friends Only */}
                 <div className="flex gap-3">
-                  <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 flex items-center justify-center text-blue-600">
+                  <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-400">
                     <FaUsers />
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-800">Friends Only</h4>
-                    <p className="text-sm text-gray-600">Visible to friends and appointment partners. Anonymized in public forums/reviews. Full details shown in accepted appointments.</p>
+                    <h4 className="font-bold text-gray-800 dark:text-white">Friends Only</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Visible to friends and appointment partners. Anonymized in public forums/reviews. Full details shown in accepted appointments.</p>
                   </div>
                 </div>
 
                 {/* Private */}
                 <div className="flex gap-3">
-                  <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-600">
+                  <div className="mt-1 flex-shrink-0 w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center text-gray-600 dark:text-gray-400">
                     <FaLock />
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-800">Private</h4>
-                    <p className="text-sm text-gray-600">Your specific details are hidden everywhere. Displayed as "UrbanSetu Member" with a generic avatar.</p>
+                    <h4 className="font-bold text-gray-800 dark:text-white">Private</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Your specific details are hidden everywhere. Displayed as "UrbanSetu Member" with a generic avatar.</p>
                   </div>
                 </div>
               </div>
 
-              <div className="p-4 bg-gray-50 flex justify-end">
+              <div className="p-4 bg-gray-50 dark:bg-gray-700/50 flex justify-end transition-colors">
                 <button
                   onClick={() => setShowVisibilityInfoModal(false)}
-                  className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-medium transition-colors"
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-white rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-medium transition-colors"
                 >
                   Got it
                 </button>
