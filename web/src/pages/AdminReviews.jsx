@@ -667,16 +667,16 @@ export default function AdminReviews() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-4 sm:py-10 px-1 sm:px-2 md:px-8 animate-fadeIn">
-      <div className="max-w-full sm:max-w-3xl md:max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl p-2 sm:p-4 md:p-8 animate-slideUp">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 py-4 sm:py-10 px-1 sm:px-2 md:px-8 animate-fadeIn transition-colors duration-300">
+      <div className="max-w-full sm:max-w-3xl md:max-w-6xl mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-2 sm:p-4 md:p-8 animate-slideUp transition-colors duration-300">
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 sm:mb-8 gap-4">
-          <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-700 drop-shadow animate-fade-in">Review Management</h1>
+          <h1 className="text-2xl sm:text-4xl font-extrabold text-blue-700 dark:text-white drop-shadow animate-fade-in">Review Management</h1>
           <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2">
             <button
               onClick={() => setShowAnalytics(!showAnalytics)}
               className={`flex items-center justify-center gap-2 px-3 py-2 rounded-lg transition text-sm sm:text-base ${showAnalytics
                 ? 'bg-gradient-to-r from-green-500 to-emerald-500 text-white'
-                : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                 }`}
               title="Toggle Analytics"
             >
@@ -708,68 +708,68 @@ export default function AdminReviews() {
 
         {/* Analytics Dashboard */}
         {showAnalytics && (
-          <div className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 rounded-xl p-6 border border-blue-200">
-            <h2 className="text-2xl font-bold text-blue-800 mb-6 flex items-center gap-2">
+          <div className="mb-8 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-700 rounded-xl p-6 border border-blue-200 dark:border-gray-600 transition-colors">
+            <h2 className="text-2xl font-bold text-blue-800 dark:text-blue-300 mb-6 flex items-center gap-2">
               <FaChartBar className="text-blue-600" />
               Review Analytics & Insights
             </h2>
 
             {/* Key Metrics */}
             <div className="grid grid-cols-2 md:grid-cols-4 lg:grid-cols-6 gap-4 mb-6">
-              <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm transition-colors">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Total Reviews</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Total Reviews</p>
                     <p className="text-2xl font-bold text-blue-600">{analytics.totalReviews}</p>
                   </div>
                   <FaComments className="text-2xl text-blue-500" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm transition-colors">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Pending</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Pending</p>
                     <p className="text-2xl font-bold text-yellow-600">{analytics.pendingReviews}</p>
                   </div>
                   <FaExclamationTriangle className="text-2xl text-yellow-500" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm transition-colors">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Approved</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Approved</p>
                     <p className="text-2xl font-bold text-green-600">{analytics.approvedReviews}</p>
                   </div>
                   <FaCheck className="text-2xl text-green-500" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm transition-colors">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Avg Rating</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Avg Rating</p>
                     <p className="text-2xl font-bold text-purple-600">{analytics.averageRating.toFixed(1)}</p>
                   </div>
                   <FaStar className="text-2xl text-purple-500" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm transition-colors">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Response Rate</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Response Rate</p>
                     <p className="text-2xl font-bold text-indigo-600">{analytics.responseRate.toFixed(1)}%</p>
                   </div>
                   <FaReply className="text-2xl text-indigo-500" />
                 </div>
               </div>
 
-              <div className="bg-white rounded-lg p-4 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-4 shadow-sm transition-colors">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-gray-600">Removed</p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">Removed</p>
                     <p className="text-2xl font-bold text-red-600">{analytics.removedReviews}</p>
                   </div>
                   <FaBan className="text-2xl text-red-500" />
@@ -779,8 +779,8 @@ export default function AdminReviews() {
 
             {/* Sentiment Analysis */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm transition-colors">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
                   <FaChartPie className="text-green-600" />
                   Sentiment Analysis
                 </h3>
@@ -812,8 +812,8 @@ export default function AdminReviews() {
                 )}
               </div>
 
-              <div className="bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm transition-colors">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4 flex items-center gap-2">
                   <FaChartBar className="text-blue-600" />
                   Rating Distribution
                 </h3>
@@ -843,7 +843,7 @@ export default function AdminReviews() {
 
             {/* Top Properties and Users */}
             <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-              <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm transition-colors">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <FaHome className="text-purple-600" />
                   Top Reviewed Properties
@@ -851,16 +851,16 @@ export default function AdminReviews() {
                 {analytics.topProperties.length > 0 ? (
                   <div className="space-y-3">
                     {analytics.topProperties.map((property, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                         <div className="flex-1">
-                          <p className="font-medium text-gray-800 truncate">{property.name}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-200 truncate">{property.name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1">
                               <FaStar className="text-yellow-400 text-sm" />
                               <span className="text-sm text-gray-600">{property.avgRating.toFixed(1)}</span>
                             </div>
                             <span className="text-sm text-gray-500">•</span>
-                            <span className="text-sm text-gray-500">{property.count} reviews</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{property.count} reviews</span>
                           </div>
                         </div>
                       </div>
@@ -871,7 +871,7 @@ export default function AdminReviews() {
                 )}
               </div>
 
-              <div className="bg-white rounded-lg p-6 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm transition-colors">
                 <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
                   <FaUsers className="text-indigo-600" />
                   Most Active Reviewers
@@ -879,16 +879,16 @@ export default function AdminReviews() {
                 {analytics.topUsers.length > 0 ? (
                   <div className="space-y-3">
                     {analytics.topUsers.map((user, idx) => (
-                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div key={idx} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg">
                         <div className="flex-1">
-                          <p className="font-medium text-gray-800 truncate">{user.name}</p>
+                          <p className="font-medium text-gray-800 dark:text-gray-200 truncate">{user.name}</p>
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1">
                               <FaStar className="text-yellow-400 text-sm" />
                               <span className="text-sm text-gray-600">{user.avgRating.toFixed(1)} avg</span>
                             </div>
-                            <span className="text-sm text-gray-500">•</span>
-                            <span className="text-sm text-gray-500">{user.count} reviews</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">•</span>
+                            <span className="text-sm text-gray-500 dark:text-gray-400">{user.count} reviews</span>
                           </div>
                         </div>
                       </div>
@@ -934,7 +934,7 @@ export default function AdminReviews() {
           <input
             type="text"
             placeholder="Search by user email, name, property name, city, state, stars, comment, admin note, or review date..."
-            className="border border-gray-300 rounded-lg px-3 py-2 w-full sm:w-1/2"
+            className="border border-gray-300 dark:border-gray-600 rounded-lg px-3 py-2 w-full sm:w-1/2 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
             value={search}
             onChange={e => {
               setSearch(e.target.value);
@@ -954,7 +954,7 @@ export default function AdminReviews() {
                   toast.info('Showing all reviews');
                 }
               }}
-              className="px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
             >
               <option value="">All Status</option>
               <option value="pending">Pending</option>
@@ -967,19 +967,19 @@ export default function AdminReviews() {
               <span className="text-sm text-gray-600">Sort:</span>
               <button
                 onClick={() => handleSort('date')}
-                className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 Date {getSortIcon('date')}
               </button>
               <button
                 onClick={() => handleSort('rating')}
-                className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 Rating {getSortIcon('rating')}
               </button>
               <button
                 onClick={() => handleSort('helpful')}
-                className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 rounded-lg hover:bg-gray-200"
+                className="flex items-center gap-1 px-3 py-1 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 Helpful {getSortIcon('helpful')}
               </button>
@@ -1000,10 +1000,10 @@ export default function AdminReviews() {
               <div
                 key={review._id}
                 className={
-                  `flex flex-col sm:table-row bg-white rounded-lg shadow-sm sm:shadow-none p-3 sm:p-0 border sm:border-0` +
-                  (idx !== filteredReviews.length - 1 ? ' sm:border-b sm:border-gray-200' : '')
+                  `flex flex-col sm:table-row bg-white dark:bg-gray-800 rounded-lg shadow-sm sm:shadow-none p-3 sm:p-0 border border-gray-200 dark:border-gray-700 sm:border-0 transition-colors` +
+                  (idx !== filteredReviews.length - 1 ? ' sm:border-b sm:border-gray-200 dark:sm:border-gray-700' : '')
                 }
-                style={{ marginBottom: '1.5rem', border: '1px solid #e5e7eb', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                style={{ marginBottom: '1.5rem', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
               >
                 <div className="flex flex-row items-center gap-3 sm:table-cell sm:align-top sm:w-1/4 mb-2 sm:mb-0">
                   <div className="flex items-center">
@@ -1015,21 +1015,21 @@ export default function AdminReviews() {
                     />
                     <div className="ml-4">
                       <div className="flex items-center gap-2">
-                        <div className="text-sm font-medium text-gray-900">
+                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
                           {review.userName}
                         </div>
                         {review.isVerified && (
                           <FaCheckCircle className="text-green-600 text-sm" title="Verified user" />
                         )}
                       </div>
-                      <div className="text-sm text-gray-500">
+                      <div className="text-sm text-gray-500 dark:text-gray-400">
                         {review.listingId?.name ? (
-                          <a href={`/admin/listing/${typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                          <a href={`/admin/listing/${typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
                             {review.listingId.name}
                           </a>
                         ) : 'Property not found'}
                       </div>
-                      <div className="text-xs text-gray-400">
+                      <div className="text-xs text-gray-400 dark:text-gray-500">
                         {review.listingId?.city}, {review.listingId?.state}
                       </div>
                     </div>
@@ -1038,21 +1038,21 @@ export default function AdminReviews() {
                 <div className="flex flex-col sm:table-cell sm:align-top sm:w-1/4 mb-2 sm:mb-0">
                   <div className="flex items-center mb-2">
                     {renderStars(review.rating)}
-                    <span className="ml-2 text-sm text-gray-600">
+                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
                       {review.rating} star{review.rating > 1 ? 's' : ''}
                     </span>
                     {review.helpfulCount > 0 && (
-                      <div className="flex items-center ml-4 text-sm text-gray-500">
+                      <div className="flex items-center ml-4 text-sm text-gray-500 dark:text-gray-400">
                         <FaThumbsUp className="mr-1" />
                         {review.helpfulCount}
                       </div>
                     )}
                   </div>
-                  <p className="text-sm text-gray-900 line-clamp-2">
+                  <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2">
                     {review.comment}
                   </p>
                   {review.verifiedByBooking && (
-                    <span className="inline-block mt-1 text-xs text-green-600 bg-green-50 px-2 py-1 rounded">
+                    <span className="inline-block mt-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
                       Booked this property
                     </span>
                   )}
@@ -1061,11 +1061,11 @@ export default function AdminReviews() {
                   <div className="mb-2">
                     {getStatusBadge(review.status)}
                   </div>
-                  <div className="text-sm text-gray-500">
+                  <div className="text-sm text-gray-500 dark:text-gray-400">
                     {formatDate(review.createdAt)}
                   </div>
                   {review.adminNote && (
-                    <div className="text-xs text-gray-400 mt-1">
+                    <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
                       Note: {review.adminNote}
                     </div>
                   )}
@@ -1075,8 +1075,8 @@ export default function AdminReviews() {
                     </div>
                   )}
                   {review.ownerResponse && (
-                    <div className="mt-2 p-2 bg-blue-50 rounded-md border border-blue-200">
-                      <p className="text-sm text-blue-800 flex items-center gap-2">
+                    <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
+                      <p className="text-sm text-blue-800 dark:text-blue-300 flex items-center gap-2">
                         <FaReply className="inline-block text-blue-500" />
                         <strong>Owner Response:</strong> {review.ownerResponse}
                       </p>
@@ -1146,11 +1146,11 @@ export default function AdminReviews() {
                   </div>
                   {currentUser && review.listingId && currentUser._id === review.listingId.userRef && (
                     <div className="mt-2">
-                      <label className="block text-sm font-medium text-blue-700 mb-1 flex items-center gap-1">
+                      <label className="block text-sm font-medium text-blue-700 dark:text-blue-300 mb-1 flex items-center gap-1">
                         <FaReply /> Respond as Owner
                       </label>
                       <textarea
-                        className="w-full border border-blue-300 rounded-md p-2 text-sm mb-2"
+                        className="w-full border border-blue-300 dark:border-blue-700 rounded-md p-2 text-sm mb-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
                         rows="2"
                         placeholder="Write a response to this review..."
                         value={responseEdit[review._id] !== undefined ? responseEdit[review._id] : (review.ownerResponse || '')}
@@ -1188,7 +1188,7 @@ export default function AdminReviews() {
                   toast.info(`Navigated to page ${Math.max(1, currentPage - 1)}`);
                 }}
                 disabled={currentPage === 1}
-                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto transition-colors"
               >
                 Previous
               </button>
@@ -1198,7 +1198,7 @@ export default function AdminReviews() {
                   toast.info(`Navigated to page ${Math.min(totalPages, currentPage + 1)}`);
                 }}
                 disabled={currentPage === totalPages}
-                className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto transition-colors"
               >
                 Next
               </button>
@@ -1210,17 +1210,17 @@ export default function AdminReviews() {
       {/* Review Detail Modal */}
       {selectedReview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-2xl mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto p-0 sm:p-0 relative animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-2xl mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto p-0 sm:p-0 relative animate-fadeIn transition-colors">
             {/* Close button top right */}
             <button
               onClick={() => setSelectedReview(null)}
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors z-10 shadow"
+              className="absolute top-3 right-3 text-gray-400 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-2 transition-colors z-10 shadow"
               aria-label="Close"
             >
               <FaTimes className="w-5 h-5" />
             </button>
             {/* Header */}
-            <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-2xl px-6 py-5 border-b border-gray-200">
+            <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 dark:from-blue-900/40 dark:to-purple-900/40 rounded-t-2xl px-6 py-5 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <UserAvatar
                   user={{ username: selectedReview.userName, avatar: selectedReview.userAvatar }}
@@ -1230,13 +1230,13 @@ export default function AdminReviews() {
                   className="border-4 border-white shadow-lg"
                 />
                 <div>
-                  <h2 className="text-xl font-bold text-blue-800 flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-blue-800 dark:text-blue-200 flex items-center gap-2">
                     {selectedReview.userName}
                     {selectedReview.isVerified && (
                       <FaCheckCircle className="text-green-600 text-base" title="Verified user" />
                     )}
                   </h2>
-                  <p className="text-xs text-gray-500">{selectedReview.userId?.email}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{selectedReview.userId?.email}</p>
                 </div>
               </div>
               <div className="mt-2 flex flex-col items-center">
@@ -1250,7 +1250,7 @@ export default function AdminReviews() {
             {/* Body */}
             <div className="px-4 sm:px-8 py-4 space-y-4">
               {/* Property Info */}
-              <div className="bg-blue-50 rounded-lg p-3 flex flex-col gap-1 border border-blue-100">
+              <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3 flex flex-col gap-1 border border-blue-100 dark:border-blue-800 transition-colors">
                 <div className="font-semibold text-blue-700 flex items-center gap-2">
                   <FaHome className="text-blue-400" />
                   {selectedReview.listingId?.name || 'Property not found'}
@@ -1262,24 +1262,24 @@ export default function AdminReviews() {
               {/* Status & Date */}
               <div className="grid grid-cols-2 gap-4">
                 <div className="col-span-2 sm:col-span-1">
-                  <h4 className="font-medium mb-1 text-gray-700">Status</h4>
+                  <h4 className="font-medium mb-1 text-gray-700 dark:text-gray-300">Status</h4>
                   {getStatusBadge(selectedReview.status)}
                 </div>
                 <div className="col-span-2 sm:col-span-1">
-                  <h4 className="font-medium mb-1 text-gray-700">Date</h4>
-                  <p className="text-gray-700">{formatDate(selectedReview.createdAt)}</p>
+                  <h4 className="font-medium mb-1 text-gray-700 dark:text-gray-300">Date</h4>
+                  <p className="text-gray-700 dark:text-gray-300">{formatDate(selectedReview.createdAt)}</p>
                 </div>
               </div>
               {/* Comment */}
               <div>
-                <h4 className="font-medium mb-1 text-gray-700">Comment</h4>
-                <p className="text-gray-800 bg-gray-50 rounded-md p-3 border border-gray-100 shadow-inner">{selectedReview.comment}</p>
+                <h4 className="font-medium mb-1 text-gray-700 dark:text-gray-300">Comment</h4>
+                <p className="text-gray-800 dark:text-gray-100 bg-gray-50 dark:bg-gray-700/50 rounded-md p-3 border border-gray-100 dark:border-gray-700 shadow-inner">{selectedReview.comment}</p>
               </div>
               {/* Helpful Votes */}
               {selectedReview.helpfulCount > 0 && (
                 <div>
                   <h4 className="font-medium mb-1 text-gray-700">Helpful Votes</h4>
-                  <div className="flex items-center text-gray-700">
+                  <div className="flex items-center text-gray-700 dark:text-gray-300">
                     <FaThumbsUp className="mr-2 text-blue-500" />
                     {selectedReview.helpfulCount} people found this helpful
                   </div>
@@ -1287,11 +1287,11 @@ export default function AdminReviews() {
               )}
               {/* Verified/Booking */}
               {selectedReview.isVerified && (
-                <div className="bg-green-50 p-3 rounded-md flex items-center gap-2 border border-green-100">
+                <div className="bg-green-50 dark:bg-green-900/20 p-3 rounded-md flex items-center gap-2 border border-green-100 dark:border-green-800">
                   <FaCheckCircle className="text-green-600" />
-                  <span className="text-green-800 font-medium">Verified user</span>
+                  <span className="text-green-800 dark:text-green-300 font-medium">Verified user</span>
                   {selectedReview.verifiedByBooking && (
-                    <span className="ml-2 text-xs text-green-700">Booked this property</span>
+                    <span className="ml-2 text-xs text-green-700 dark:text-green-400">Booked this property</span>
                   )}
                 </div>
               )}
@@ -1299,7 +1299,7 @@ export default function AdminReviews() {
               {selectedReview.adminNote && (
                 <div>
                   <h4 className="font-medium mb-1 text-gray-700">Admin Note</h4>
-                  <p className="text-gray-700 bg-yellow-50 p-3 rounded-md border border-yellow-100 shadow-inner">{selectedReview.adminNote}</p>
+                  <p className="text-gray-700 dark:text-gray-200 bg-yellow-50 dark:bg-yellow-900/20 p-3 rounded-md border border-yellow-100 dark:border-yellow-800 shadow-inner">{selectedReview.adminNote}</p>
                 </div>
               )}
               {/* Removal Details: only show if status is removed or removed_by_user */}
@@ -1327,14 +1327,14 @@ export default function AdminReviews() {
       {/* Removal Modal */}
       {showRemovalModal && reviewToRemove && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
-          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-xs sm:max-w-md w-full mx-2 sm:mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-xs sm:max-w-md w-full mx-2 sm:mx-4 transition-colors">
             <h2 className="text-xl font-semibold mb-4">Remove Review</h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Are you sure you want to remove this review? This action cannot be undone.
             </p>
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Removal Reason *
                 </label>
                 <select
@@ -1345,7 +1345,7 @@ export default function AdminReviews() {
                       toast.info(`Selected removal reason: ${e.target.value}`);
                     }
                   }}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                 >
                   <option value="">Select a reason</option>
                   <option value="spam">Spam</option>
@@ -1362,7 +1362,7 @@ export default function AdminReviews() {
                   value={removalNote}
                   onChange={(e) => setRemovalNote(e.target.value)}
                   rows="3"
-                  className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                   placeholder="Provide additional details..."
                 />
               </div>
@@ -1394,13 +1394,13 @@ export default function AdminReviews() {
       {/* Delete Modal */}
       {showDeleteModal && reviewToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2">
-          <div className="bg-white rounded-lg p-4 sm:p-6 max-w-xs sm:max-w-md w-full mx-2 sm:mx-4">
+          <div className="bg-white dark:bg-gray-800 rounded-lg p-4 sm:p-6 max-w-xs sm:max-w-md w-full mx-2 sm:mx-4 transition-colors">
             <h2 className="text-xl font-semibold mb-4 text-red-600">Delete Review</h2>
-            <p className="text-gray-600 mb-4">
+            <p className="text-gray-600 dark:text-gray-300 mb-4">
               Are you sure you want to delete this review from the table? This will only remove it from your current view and won't affect the actual review data.
             </p>
-            <div className="bg-yellow-50 border border-yellow-200 rounded-md p-3 mb-4">
-              <p className="text-yellow-800 text-sm">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-md p-3 mb-4">
+              <p className="text-yellow-800 dark:text-yellow-200 text-sm">
                 <strong>Note:</strong> This action only removes the review from your current table view. The review data remains in the database.
               </p>
             </div>
@@ -1429,34 +1429,34 @@ export default function AdminReviews() {
       {/* Review Reports Modal */}
       {showReportsModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] overflow-hidden flex flex-col transition-colors">
             {/* Header */}
-            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 bg-gradient-to-r from-red-50 to-pink-50">
+            <div className="flex items-center justify-between p-4 sm:p-6 border-b border-gray-200 dark:border-gray-700 bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 transition-colors">
               <h2 className="text-xl sm:text-2xl font-bold text-red-700 flex items-center gap-2">
                 <FaFlag />
                 Review Reports
               </h2>
               <button
                 onClick={() => setShowReportsModal(false)}
-                className="text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors"
+                className="text-gray-400 dark:text-gray-200 hover:text-gray-700 dark:hover:text-white bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-2 transition-colors"
               >
                 <FaTimes className="w-5 h-5" />
               </button>
             </div>
 
             {/* Filters */}
-            <div className="p-2 sm:p-4 lg:p-6 border-b border-gray-200 bg-gray-50">
+            <div className="p-2 sm:p-4 lg:p-6 border-b border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 transition-colors">
               {/* Mobile: Collapsible filters, Desktop: Always visible */}
               <div className="space-y-3">
                 {/* Primary filters - always visible but compact on mobile */}
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-2 sm:gap-4">
                   <div>
-                    <label className="block text-xs sm:text-sm font-medium text-gray-700 mb-1">From Date</label>
+                    <label className="block text-xs sm:text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">From Date</label>
                     <input
                       type="date"
                       value={reportsFilters.dateFrom}
                       onChange={(e) => setReportsFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
-                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500"
+                      className="w-full p-1.5 sm:p-2 text-xs sm:text-sm border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-1 focus:ring-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                     />
                   </div>
                   <div>
@@ -1592,11 +1592,11 @@ export default function AdminReviews() {
                     Showing {filteredReports.length} of {reports.length} report{reports.length !== 1 ? 's' : ''}
                   </div>
                   {filteredReports.map((report, index) => (
-                    <div key={report.notificationId || index} className="bg-white border border-gray-200 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
+                    <div key={report.notificationId || index} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-sm hover:shadow-md transition-shadow">
                       <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-4">
                         <div className="flex-1">
                           <div className="flex items-center gap-2 mb-2">
-                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 text-red-800">
+                            <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-200">
                               <FaFlag className="mr-1" />
                               Review Report
                             </span>

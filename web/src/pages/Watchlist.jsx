@@ -808,17 +808,17 @@ export default function Watchlist() {
 
         {/* Removed/Unavailable Properties */}
         {watchlistItems.some(w => !w.listingId) && (
-          <div className="mb-6 p-4 rounded-lg border border-yellow-200 bg-yellow-50">
-            <h3 className="font-semibold text-yellow-800 mb-2">Removed or Unavailable</h3>
+          <div className="mb-6 p-4 rounded-lg border border-yellow-200 dark:border-yellow-900/30 bg-yellow-50 dark:bg-yellow-900/20">
+            <h3 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Removed or Unavailable</h3>
             <div className="space-y-2">
               {watchlistItems.filter(w => !w.listingId).map((w) => (
-                <div key={w._id} className="flex items-center justify-between p-3 bg-white rounded border">
+                <div key={w._id} className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded border border-gray-200 dark:border-gray-700">
                   <div>
-                    <p className="text-gray-800 font-medium">This property has been removed or is no longer available.</p>
-                    <p className="text-xs text-gray-500">You can remove it from your watchlist.</p>
+                    <p className="text-gray-800 dark:text-gray-200 font-medium">This property has been removed or is no longer available.</p>
+                    <p className="text-xs text-gray-500 dark:text-gray-400">You can remove it from your watchlist.</p>
                   </div>
                   {w.listingIdRaw && (
-                    <button onClick={() => handleRemove(w.listingIdRaw)} className="px-3 py-1 rounded bg-red-600 text-white text-sm flex items-center gap-2">
+                    <button onClick={() => handleRemove(w.listingIdRaw)} className="px-3 py-1 rounded bg-red-600 text-white text-sm flex items-center gap-2 hover:bg-red-700 transition-colors">
                       <FaTrash className="text-xs" /> Remove
                     </button>
                   )}
@@ -832,8 +832,8 @@ export default function Watchlist() {
         {items.length === 0 ? (
           <div className="text-center py-10 sm:py-16">
             <div className="text-6xl sm:text-8xl mb-4">👁️</div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2">Your watchlist is empty</h3>
-            <p className="text-gray-600 mb-6">Track properties to get price-drop and availability alerts.</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-white mb-2">Your watchlist is empty</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Track properties to get price-drop and availability alerts.</p>
             <Link
               to="/search"
               className="inline-flex items-center gap-2 bg-purple-600 text-white px-6 py-3 rounded-lg hover:bg-purple-700 transition-colors"
@@ -845,8 +845,8 @@ export default function Watchlist() {
         ) : filteredAndSortedItems.length === 0 ? (
           <div className="text-center py-10">
             <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No properties found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-100 mb-2">No properties found</h3>
+            <p className="text-gray-600 dark:text-gray-400">Try adjusting your search or filter criteria.</p>
           </div>
         ) : (
           <div className={viewMode === 'grid'
@@ -856,9 +856,9 @@ export default function Watchlist() {
             {filteredAndSortedItems.map((listing) => {
               const stats = getPerItemStats(listing);
               const hasChangeInfo = stats && stats.baseline != null && stats.current != null;
-              const statusColor = stats.status === 'dropped' ? 'text-green-600' : (stats.status === 'increased' ? 'text-red-600' : 'text-gray-600');
+              const statusColor = stats.status === 'dropped' ? 'text-green-600 dark:text-green-400' : (stats.status === 'increased' ? 'text-red-600 dark:text-red-400' : 'text-gray-600 dark:text-gray-400');
               return (
-                <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
+                <div key={listing._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-200 dark:border-gray-700 w-full overflow-hidden' : ''}`}>
                   {isPriceDropped(listing) && (
                     <div className="absolute top-2 left-2 z-10">
                       <span className="bg-green-500 text-white text-[10px] sm:text-xs font-semibold px-2 py-1 rounded-full shadow-md flex items-center gap-1">
@@ -880,7 +880,7 @@ export default function Watchlist() {
                         type="checkbox"
                         checked={selectedItems.includes(listing._id)}
                         onChange={() => handleSelectItem(listing._id)}
-                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500"
+                        className="w-4 h-4 text-purple-600 bg-gray-100 border-gray-300 rounded focus:ring-purple-500 dark:bg-gray-700 dark:border-gray-600"
                       />
                     </div>
                   )}
@@ -889,16 +889,16 @@ export default function Watchlist() {
                   <div className={viewMode === 'list' ? 'flex-1' : ''}>
                     <ListingItem listing={listing} onDelete={handleRemove} />
                     {hasChangeInfo && (
-                      <div className="mt-2 px-2 py-2 bg-gray-50 border rounded-md text-xs sm:text-sm flex flex-wrap items-center gap-3">
-                        <div className="flex items-center gap-1 text-gray-600">
+                      <div className="mt-2 px-2 py-2 bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-700 rounded-md text-xs sm:text-sm flex flex-wrap items-center gap-3 transition-colors">
+                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                           <FaCalendarAlt className="text-gray-500" />
                           <span>Added: {stats.addedAt ? new Date(stats.addedAt).toLocaleDateString() : '-'}</span>
                         </div>
-                        <div className="flex items-center gap-1 text-gray-600">
+                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                           <FaBookmark className="text-gray-500" />
                           <span>At add: ₹{Number(stats.baseline).toLocaleString('en-IN')}</span>
                         </div>
-                        <div className="flex items-center gap-1 text-gray-600">
+                        <div className="flex items-center gap-1 text-gray-600 dark:text-gray-400">
                           <FaEye className="text-gray-500" />
                           <span>Today: ₹{Number(stats.current).toLocaleString('en-IN')}</span>
                         </div>
@@ -931,12 +931,12 @@ export default function Watchlist() {
           title="Open Wishlist"
         >
           <span className="w-7 h-7 text-white text-2xl">❤️</span>
-          <div className="absolute bottom-full right-0 mb-3 bg-white text-gray-800 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 transform -translate-y-1 transition-all duration-200">
+          <div className="absolute bottom-full right-0 mb-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 dark:border-gray-700 transform -translate-y-1 transition-all duration-200">
             <div className="flex items-center gap-2">
               <span className="text-lg">❤️</span>
               <span className="font-medium">Wishlist</span>
             </div>
-            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
+            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white dark:border-t-gray-800"></div>
           </div>
         </button>
       </div>

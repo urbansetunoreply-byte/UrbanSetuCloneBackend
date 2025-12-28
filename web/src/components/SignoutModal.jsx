@@ -32,18 +32,18 @@ export default function SignoutModal() {
                     animation: slideUpFade 0.5s ease-out forwards;
                 }
             `}</style>
-            <div className="bg-white rounded-3xl shadow-2xl p-8 flex flex-col items-center gap-6 max-w-sm w-full mx-4 transform scale-100 animate-bounce-small">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-8 flex flex-col items-center gap-6 max-w-sm w-full mx-4 transform scale-100 animate-bounce-small transition-colors">
                 <div className="relative">
-                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-100 border-t-blue-600"></div>
+                    <div className="animate-spin rounded-full h-16 w-16 border-4 border-blue-100 dark:border-blue-900 border-t-blue-600 dark:border-t-blue-500"></div>
                     <div className="absolute inset-0 flex items-center justify-center">
-                        <LogOut className="text-blue-600 text-lg" />
+                        <LogOut className="text-blue-600 dark:text-blue-400 text-lg" />
                     </div>
                 </div>
                 <div className="text-center w-full">
-                    <h3 key={`title-${index}`} className="text-xl font-bold text-gray-900 animate-slide-up min-h-[28px]">
+                    <h3 key={`title-${index}`} className="text-xl font-bold text-gray-900 dark:text-white animate-slide-up min-h-[28px]">
                         {current.title}
                     </h3>
-                    <p key={`sub-${index}`} className="text-gray-500 text-sm mt-2 animate-slide-up min-h-[20px]">
+                    <p key={`sub-${index}`} className="text-gray-500 dark:text-gray-400 text-sm mt-2 animate-slide-up min-h-[20px]">
                         {current.subtitle}
                     </p>
                 </div>
