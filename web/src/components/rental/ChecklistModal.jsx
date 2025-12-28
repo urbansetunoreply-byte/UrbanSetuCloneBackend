@@ -243,7 +243,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-      <div className="bg-white rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col">
+      <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-6xl w-full max-h-[90vh] overflow-hidden flex flex-col transition-colors">
         {/* Header */}
         <div className="flex items-center justify-between p-4 border-b bg-gradient-to-r from-blue-600 to-purple-600 text-white">
           <div className="flex items-center gap-2">
@@ -267,32 +267,32 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
           {/* Status Info */}
           {checklist && (
-            <div className="bg-gray-50 rounded-lg p-4 flex items-center justify-between">
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 flex items-center justify-between">
               <div>
-                <div className="font-semibold">Status:
-                  <span className={`ml-2 px-2 py-1 rounded text-xs ${checklist.status === 'approved' || checklist.status === 'completed' ? 'bg-green-100 text-green-800' :
-                    checklist.status === 'pending_approval' ? 'bg-yellow-100 text-yellow-800' :
-                      'bg-gray-100 text-gray-800'
+                <div className="font-semibold dark:text-white">Status:
+                  <span className={`ml-2 px-2 py-1 rounded text-xs ${checklist.status === 'approved' || checklist.status === 'completed' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                    checklist.status === 'pending_approval' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                      'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200'
                     }`}>
                     {checklist.status}
                   </span>
                 </div>
                 {showApprovalStatus && (
-                  <div className="text-sm text-gray-600 mt-1">
-                    {checklist.tenantApproved && <span className="flex items-center gap-1"><FaCheckCircle className="text-green-600" /> Tenant Approved</span>}
-                    {checklist.landlordApproved && <span className="flex items-center gap-1 ml-3"><FaCheckCircle className="text-green-600" /> Landlord Approved</span>}
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                    {checklist.tenantApproved && <span className="flex items-center gap-1"><FaCheckCircle className="text-green-600 dark:text-green-400" /> Tenant Approved</span>}
+                    {checklist.landlordApproved && <span className="flex items-center gap-1 ml-3"><FaCheckCircle className="text-green-600 dark:text-green-400" /> Landlord Approved</span>}
                   </div>
                 )}
               </div>
               {checklist.checklistId && (
-                <div className="text-xs text-gray-500">ID: {checklist.checklistId}</div>
+                <div className="text-xs text-gray-500 dark:text-gray-400">ID: {checklist.checklistId}</div>
               )}
             </div>
           )}
 
           {/* Images and Videos */}
           <div>
-            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2">
+            <h3 className="text-lg font-semibold mb-3 flex items-center gap-2 dark:text-white">
               <FaCamera /> Property Condition Documentation
             </h3>
             <ConditionImageUpload
@@ -308,7 +308,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
           {/* Room-wise Checklist */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold flex items-center gap-2">
+              <h3 className="text-lg font-semibold flex items-center gap-2 dark:text-white">
                 <FaHome /> Room-wise Condition
               </h3>
               {canEdit && (
@@ -322,7 +322,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
             </div>
             <div className="space-y-4">
               {rooms.map((room, roomIndex) => (
-                <div key={roomIndex} className="border rounded-lg p-4 space-y-3">
+                <div key={roomIndex} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 space-y-3">
                   <div className="grid grid-cols-1 md:grid-cols-3 gap-3">
                     {canEdit ? (
                       <>
@@ -331,12 +331,12 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                           placeholder="Room Name"
                           value={room.roomName || ''}
                           onChange={(e) => updateRoom(roomIndex, { roomName: e.target.value })}
-                          className="border rounded p-2"
+                          className="border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                         <select
                           value={room.condition || 'good'}
                           onChange={(e) => updateRoom(roomIndex, { condition: e.target.value })}
-                          className="border rounded p-2"
+                          className="border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         >
                           {CONDITION_OPTIONS.map(opt => (
                             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -348,7 +348,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                             placeholder="Notes"
                             value={room.notes || ''}
                             onChange={(e) => updateRoom(roomIndex, { notes: e.target.value })}
-                            className="flex-1 border rounded p-2"
+                            className="flex-1 border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           />
                           <button
                             onClick={() => removeRoom(roomIndex)}
@@ -360,29 +360,29 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                       </>
                     ) : (
                       <>
-                        <div className="font-semibold">{room.roomName || 'Unnamed Room'}</div>
-                        <div className={`px-2 py-1 rounded text-sm ${room.condition === 'excellent' ? 'bg-green-100 text-green-800' :
-                          room.condition === 'good' ? 'bg-blue-100 text-blue-800' :
-                            room.condition === 'fair' ? 'bg-yellow-100 text-yellow-800' :
-                              room.condition === 'poor' ? 'bg-orange-100 text-orange-800' :
-                                'bg-red-100 text-red-800'
+                        <div className="font-semibold dark:text-white">{room.roomName || 'Unnamed Room'}</div>
+                        <div className={`px-2 py-1 rounded text-sm ${room.condition === 'excellent' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                          room.condition === 'good' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                            room.condition === 'fair' ? 'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300' :
+                              room.condition === 'poor' ? 'bg-orange-100 text-orange-800 dark:bg-orange-900/30 dark:text-orange-300' :
+                                'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                           }`}>
                           {CONDITION_OPTIONS.find(o => o.value === room.condition)?.label || room.condition}
                         </div>
-                        <div className="text-sm text-gray-600">{room.notes || 'No notes'}</div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">{room.notes || 'No notes'}</div>
                       </>
                     )}
                   </div>
 
                   {/* Damages (Move-Out only) */}
                   {checklistType === 'move_out' && (
-                    <div className="mt-3 pl-4 border-l-2 border-red-200">
+                    <div className="mt-3 pl-4 border-l-2 border-red-200 dark:border-red-800">
                       <div className="flex items-center justify-between mb-2">
-                        <h4 className="font-medium text-sm text-red-700">Damages</h4>
+                        <h4 className="font-medium text-sm text-red-700 dark:text-red-400">Damages</h4>
                         {canEdit && (
                           <button
                             onClick={() => addDamage(roomIndex)}
-                            className="text-xs px-2 py-1 bg-red-50 text-red-700 rounded hover:bg-red-100 flex items-center gap-1"
+                            className="text-xs px-2 py-1 bg-red-50 dark:bg-red-900/20 text-red-700 dark:text-red-400 rounded hover:bg-red-100 dark:hover:bg-red-900/30 flex items-center gap-1"
                           >
                             <FaPlus /> Add Damage
                           </button>
@@ -391,7 +391,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                       {room.damages && room.damages.length > 0 ? (
                         <div className="space-y-2">
                           {room.damages.map((damage, damageIndex) => (
-                            <div key={damageIndex} className="bg-red-50 rounded p-2 flex gap-2">
+                            <div key={damageIndex} className="bg-red-50 dark:bg-red-900/10 rounded p-2 flex gap-2">
                               {canEdit ? (
                                 <>
                                   <input
@@ -399,14 +399,14 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                                     placeholder="Damage description"
                                     value={damage.description || ''}
                                     onChange={(e) => updateDamage(roomIndex, damageIndex, { description: e.target.value })}
-                                    className="flex-1 border rounded p-1 text-sm"
+                                    className="flex-1 border rounded p-1 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                   />
                                   <input
                                     type="number"
                                     placeholder="Cost (₹)"
                                     value={damage.estimatedCost || ''}
                                     onChange={(e) => updateDamage(roomIndex, damageIndex, { estimatedCost: parseFloat(e.target.value) || 0 })}
-                                    className="w-24 border rounded p-1 text-sm"
+                                    className="w-24 border rounded p-1 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                                     min="0"
                                   />
                                   <button
@@ -418,9 +418,9 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                                 </>
                               ) : (
                                 <>
-                                  <div className="flex-1 text-sm">
+                                  <div className="flex-1 text-sm dark:text-gray-300">
                                     <div className="font-medium">{damage.description || 'No description'}</div>
-                                    <div className="text-xs text-gray-600">Est. Cost: ₹{damage.estimatedCost?.toLocaleString() || 0}</div>
+                                    <div className="text-xs text-gray-600 dark:text-gray-400">Est. Cost: ₹{damage.estimatedCost?.toLocaleString() || 0}</div>
                                   </div>
                                 </>
                               )}
@@ -428,7 +428,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                           ))}
                         </div>
                       ) : (
-                        <p className="text-xs text-gray-500">No damages recorded</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400">No damages recorded</p>
                       )}
                     </div>
                   )}
@@ -440,7 +440,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
           {/* Amenities Checklist */}
           <div>
             <div className="flex items-center justify-between mb-3">
-              <h3 className="text-lg font-semibold">Amenities Checklist</h3>
+              <h3 className="text-lg font-semibold dark:text-white">Amenities Checklist</h3>
               {canEdit && (
                 <button
                   onClick={addAmenity}
@@ -452,7 +452,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
             </div>
             <div className="space-y-2">
               {amenities.map((amenity, index) => (
-                <div key={index} className="border rounded p-3 grid grid-cols-1 md:grid-cols-4 gap-2">
+                <div key={index} className="border border-gray-200 dark:border-gray-700 rounded p-3 grid grid-cols-1 md:grid-cols-4 gap-2">
                   {canEdit ? (
                     <>
                       <input
@@ -460,18 +460,18 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                         placeholder="Amenity name"
                         value={amenity.name || ''}
                         onChange={(e) => updateAmenity(index, { name: e.target.value })}
-                        className="border rounded p-2"
+                        className="border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       />
                       <select
                         value={amenity.condition || 'good'}
                         onChange={(e) => updateAmenity(index, { condition: e.target.value })}
-                        className="border rounded p-2"
+                        className="border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       >
                         {CONDITION_OPTIONS.map(opt => (
                           <option key={opt.value} value={opt.value}>{opt.label}</option>
                         ))}
                       </select>
-                      <label className="flex items-center gap-2 border rounded p-2">
+                      <label className="flex items-center gap-2 border border-gray-200 dark:border-gray-600 rounded p-2 dark:text-gray-200">
                         <input
                           type="checkbox"
                           checked={amenity.working !== false}
@@ -485,7 +485,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                           placeholder="Notes"
                           value={amenity.notes || ''}
                           onChange={(e) => updateAmenity(index, { notes: e.target.value })}
-                          className="flex-1 border rounded p-2"
+                          className="flex-1 border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         />
                         <button
                           onClick={() => removeAmenity(index)}
@@ -497,36 +497,36 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                     </>
                   ) : (
                     <>
-                      <div className="font-medium">{amenity.name || 'Unnamed'}</div>
-                      <div className={`px-2 py-1 rounded text-sm ${amenity.condition === 'excellent' ? 'bg-green-100 text-green-800' :
-                        amenity.condition === 'good' ? 'bg-blue-100 text-blue-800' :
-                          'bg-yellow-100 text-yellow-800'
+                      <div className="font-medium dark:text-white">{amenity.name || 'Unnamed'}</div>
+                      <div className={`px-2 py-1 rounded text-sm ${amenity.condition === 'excellent' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                        amenity.condition === 'good' ? 'bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300' :
+                          'bg-yellow-100 text-yellow-800 dark:bg-yellow-900/30 dark:text-yellow-300'
                         }`}>
                         {CONDITION_OPTIONS.find(o => o.value === amenity.condition)?.label || amenity.condition}
                       </div>
-                      <div className={`px-2 py-1 rounded text-sm ${amenity.working ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'
+                      <div className={`px-2 py-1 rounded text-sm ${amenity.working ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300'
                         }`}>
                         {amenity.working ? 'Working' : 'Not Working'}
                       </div>
-                      <div className="text-sm text-gray-600">{amenity.notes || 'No notes'}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-400">{amenity.notes || 'No notes'}</div>
                     </>
                   )}
                 </div>
               ))}
               {amenities.length === 0 && (
-                <p className="text-sm text-gray-500 text-center py-4">No amenities added yet</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No amenities added yet</p>
               )}
             </div>
           </div>
 
           {/* Notes */}
           <div>
-            <label className="block text-sm font-medium mb-2">Notes</label>
+            <label className="block text-sm font-medium mb-2 dark:text-white">Notes</label>
             <textarea
               value={notes}
               onChange={(e) => setNotes(e.target.value)}
               rows={3}
-              className="w-full border rounded p-2"
+              className="w-full border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
               placeholder="Additional notes or comments..."
               readOnly={!canEdit}
             />
@@ -534,16 +534,16 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
 
           {/* Damage Assessment (Move-Out, Read-only for tenants) */}
           {checklistType === 'move_out' && checklist?.damageAssessment && (
-            <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-              <h3 className="font-semibold text-red-800 mb-2">Damage Assessment</h3>
-              <div className="space-y-1 text-sm">
+            <div className="bg-red-50 dark:bg-red-900/10 border border-red-200 dark:border-red-900/50 rounded-lg p-4">
+              <h3 className="font-semibold text-red-800 dark:text-red-300 mb-2">Damage Assessment</h3>
+              <div className="space-y-1 text-sm text-gray-800 dark:text-gray-200">
                 <div>Total Damage Cost: <span className="font-semibold">₹{checklist.damageAssessment.totalDamageCost?.toLocaleString() || 0}</span></div>
                 <div>Deducted from Deposit: <span className="font-semibold">₹{checklist.damageAssessment.deductedFromDeposit?.toLocaleString() || 0}</span></div>
                 {checklist.damageAssessment.assessmentNotes && (
-                  <div className="mt-2 text-gray-700">{checklist.damageAssessment.assessmentNotes}</div>
+                  <div className="mt-2 text-gray-700 dark:text-gray-300">{checklist.damageAssessment.assessmentNotes}</div>
                 )}
                 {checklist.damageAssessment.assessedAt && (
-                  <div className="text-xs text-gray-500 mt-2">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                     Assessed on: {new Date(checklist.damageAssessment.assessedAt).toLocaleString()}
                   </div>
                 )}
@@ -553,10 +553,10 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
         </div>
 
         {/* Footer */}
-        <div className="border-t p-4 flex items-center justify-between bg-gray-50">
+        <div className="border-t border-gray-200 dark:border-gray-700 p-4 flex items-center justify-between bg-gray-50 dark:bg-gray-700/50">
           <button
             onClick={onClose}
-            className="px-4 py-2 border rounded hover:bg-gray-100"
+            className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded hover:bg-gray-100 dark:hover:bg-gray-600 dark:text-white"
           >
             Close
           </button>

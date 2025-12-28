@@ -784,10 +784,10 @@ export default function OnDemandServices() {
 
       {/* My Requests */}
       {currentUser && (
-        <div className="mt-6 sm:mt-8 bg-white rounded-xl shadow p-4">
+        <div className="mt-6 sm:mt-8 bg-white dark:bg-gray-800 rounded-xl shadow p-4 transition-colors">
           <div className="flex items-center justify-between mb-2">
-            <h3 className="text-lg font-semibold">My Service Requests</h3>
-            <button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+            <h3 className="text-lg font-semibold dark:text-white">My Service Requests</h3>
+            <button onClick={fetchMyRequests} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-sm dark:text-white">Refresh</button>
           </div>
           <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
             <input className="border rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Search" value={serviceFilters.q} onChange={e => setServiceFilters(f => ({ ...f, q: e.target.value }))} />
@@ -918,7 +918,7 @@ export default function OnDemandServices() {
       {showChecklistModal && selectedContract && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50 backdrop-blur-sm">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-6xl w-full relative transition-colors">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-6xl w-full relative transition-colors max-h-[90vh] flex flex-col">
               <ChecklistModal
                 contract={selectedContract}
                 checklist={checklistType === 'move_in' ? checklists.moveIn : checklists.moveOut}
