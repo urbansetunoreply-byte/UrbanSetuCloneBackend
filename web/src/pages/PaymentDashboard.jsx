@@ -250,17 +250,17 @@ const PaymentDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-6 sm:py-10 px-2 md:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 py-6 sm:py-10 px-2 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
                 <FaMoneyBill className="text-green-600" />
                 Payment Dashboard
               </h1>
-              <p className="text-gray-600 mt-2">Manage payments, refunds, and financial analytics</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">Manage payments, refunds, and financial analytics</p>
             </div>
             <button
               onClick={fetchPaymentStats}
@@ -274,8 +274,8 @@ const PaymentDashboard = () => {
         </div>
 
         {/* Tabs */}
-        <div className="bg-white rounded-xl shadow-lg mb-6 sm:mb-8">
-          <div className="border-b border-gray-200">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg mb-6 sm:mb-8">
+          <div className="border-b border-gray-200 dark:border-gray-700">
             <nav className="flex overflow-x-auto no-scrollbar px-2 sm:px-6 gap-4 sm:gap-8">
               {tabs.map((tab) => {
                 const Icon = tab.icon;
@@ -284,8 +284,8 @@ const PaymentDashboard = () => {
                     key={tab.id}
                     onClick={() => setActiveTab(tab.id)}
                     className={`shrink-0 py-3 sm:py-4 px-1 border-b-2 font-medium text-xs sm:text-sm flex items-center gap-2 ${activeTab === tab.id
-                      ? 'border-blue-500 text-blue-600'
-                      : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300'
+                      ? 'border-blue-500 text-blue-600 dark:text-blue-400'
+                      : 'border-transparent text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:border-gray-300 dark:hover:border-gray-600'
                       }`}
                   >
                     <Icon />
@@ -298,7 +298,7 @@ const PaymentDashboard = () => {
         </div>
 
         {/* Tab Content */}
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6">
           {activeTab === 'overview' && (
             <div>
               {/* Stats Cards */}
@@ -385,10 +385,10 @@ const PaymentDashboard = () => {
                     {monthlyStats.map((month, index) => (
                       <div key={index} className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="w-20 text-sm text-gray-600">
+                          <div className="w-20 text-sm text-gray-600 dark:text-gray-400">
                             {new Date(month._id.year, month._id.month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                           </div>
-                          <div className="flex-1 bg-gray-200 rounded-full h-4 relative">
+                          <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-4 relative">
                             <div className="absolute inset-y-0 left-0 flex w-full gap-1 px-1">
                               <div
                                 className="h-4 rounded-l-full bg-blue-500 transition-all duration-500"
@@ -404,8 +404,8 @@ const PaymentDashboard = () => {
                           </div>
                         </div>
                         <div className="text-right">
-                          <div className="font-semibold text-gray-800">$ {Math.max(0, ((month.amountUsd || 0) - (month.refundsUsd || 0))).toLocaleString()} • ₹ {Math.max(0, ((month.amountInr || 0) - (month.refundsInr || 0))).toLocaleString('en-IN')}</div>
-                          <div className="text-sm text-gray-500">{month.count} payments</div>
+                          <div className="font-semibold text-gray-800 dark:text-gray-200">$ {Math.max(0, ((month.amountUsd || 0) - (month.refundsUsd || 0))).toLocaleString()} • ₹ {Math.max(0, ((month.amountInr || 0) - (month.refundsInr || 0))).toLocaleString('en-IN')}</div>
+                          <div className="text-sm text-gray-500 dark:text-gray-400">{month.count} payments</div>
                         </div>
                       </div>
                     ))}
@@ -415,11 +415,11 @@ const PaymentDashboard = () => {
 
               {/* Quick Actions */}
               <div className="mt-8">
-                <h3 className="text-xl font-semibold text-gray-800 mb-4">Quick Actions</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4">Quick Actions</h3>
                 <div className="grid grid-cols-2 md:grid-cols-3 gap-3 sm:gap-4">
                   <button
                     onClick={() => setActiveTab('history')}
-                    className="bg-blue-100 text-blue-800 p-3 sm:p-4 rounded-lg hover:bg-blue-200 transition-colors flex items-center gap-2 sm:gap-3"
+                    className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 p-3 sm:p-4 rounded-lg hover:bg-blue-200 dark:hover:bg-blue-900/50 transition-colors flex items-center gap-2 sm:gap-3"
                   >
                     <FaCreditCard className="text-lg sm:text-xl" />
                     <div className="text-left">
@@ -430,7 +430,7 @@ const PaymentDashboard = () => {
 
                   <button
                     onClick={() => setActiveTab('refunds')}
-                    className="bg-red-100 text-red-800 p-3 sm:p-4 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-2 sm:gap-3"
+                    className="bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300 p-3 sm:p-4 rounded-lg hover:bg-red-200 dark:hover:bg-red-900/50 transition-colors flex items-center gap-2 sm:gap-3"
                   >
                     <FaUndo className="text-lg sm:text-xl" />
                     <div className="text-left">
@@ -445,7 +445,7 @@ const PaymentDashboard = () => {
                       setExportPassword('');
                       setExportPasswordError('');
                     }}
-                    className="bg-green-100 text-green-800 p-3 sm:p-4 rounded-lg hover:bg-green-200 transition-colors flex items-center gap-2 sm:gap-3"
+                    className="bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 p-3 sm:p-4 rounded-lg hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center gap-2 sm:gap-3"
                     title="Export CSV of payments"
                   >
                     <FaDownload className="text-lg sm:text-xl" />
@@ -462,18 +462,19 @@ const PaymentDashboard = () => {
           {activeTab === 'history' && (
             <div className="space-y-6">
               <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
-                <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
                 <div className="flex gap-2">
                   <div className="flex-1">
-                    <label className="text-xs text-gray-500 block mb-1">From</label>
-                    <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">From</label>
+                    <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
                   </div>
                   <div className="flex-1">
-                    <label className="text-xs text-gray-500 block mb-1">To</label>
-                    <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">To</label>
+                    <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
                   </div>
                 </div>
-                <select id="admin-pay-status" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm w-full">
+
+                <select id="admin-pay-status" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full">
                   <option value="">All Status</option>
                   <option value="completed">Completed</option>
                   <option value="pending">Pending</option>
@@ -481,12 +482,12 @@ const PaymentDashboard = () => {
                   <option value="refunded">Refunded</option>
                   <option value="partially_refunded">Partially Refunded</option>
                 </select>
-                <select id="admin-pay-gateway" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm w-full">
+                <select id="admin-pay-gateway" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full">
                   <option value="">All Gateways</option>
                   <option value="paypal">PayPal</option>
                   <option value="razorpay">Razorpay</option>
                 </select>
-                <select id="admin-pay-paymentType" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border rounded-lg text-sm w-full">
+                <select id="admin-pay-paymentType" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full">
                   <option value="">All Types</option>
                   <option value="advance">Advance Payment</option>
                   <option value="monthly_rent">Monthly Rent</option>
@@ -495,7 +496,7 @@ const PaymentDashboard = () => {
                 </select>
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">USD Payments ($)</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">USD Payments ($)</h3>
                 {usdPayments.length === 0 ? (
                   <div className="text-center py-4 text-gray-500">
                     <FaMoneyBill className="text-4xl text-gray-300 mx-auto mb-2" />
@@ -504,20 +505,20 @@ const PaymentDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {usdPayments.map((p) => (
-                      <div key={p._id} className={`border rounded-lg p-4 cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-green-50' :
-                        p.status === 'failed' ? 'border-red-200 bg-red-50' :
-                          p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
-                            'border-yellow-200 bg-yellow-50'
+                      <div key={p._id} className={`border dark:border-gray-700 rounded-lg p-4 cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800' :
+                        p.status === 'failed' ? 'border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800' :
+                          p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800' :
+                            'border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800'
                         } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
                             <div className="font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
                               {p.appointmentId?.propertyName || 'Property Payment'}
                               {p.paymentType && (
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                                  p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                                    p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                                      'bg-gray-100 text-gray-700'
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' :
+                                  p.paymentType === 'advance' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' :
+                                    p.paymentType === 'security_deposit' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300' :
+                                      'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                                   }`}>
                                   {p.paymentType === 'monthly_rent' ? 'Rent' :
                                     p.paymentType === 'advance' ? 'Advance' :
@@ -544,9 +545,9 @@ const PaymentDashboard = () => {
                             </div>
                           </div>
                           <div className="flex flex-col sm:items-end gap-2">
-                            <div className="text-lg font-bold">$ {Number(p.amount).toFixed(2)}</div>
+                            <div className="text-lg font-bold dark:text-white">$ {Number(p.amount).toFixed(2)}</div>
                             {p.refundAmount > 0 && (
-                              <div className="text-sm text-red-600 font-semibold">
+                              <div className="text-sm text-red-600 dark:text-red-400 font-semibold">
                                 Refunded: $ {Number(p.refundAmount).toFixed(2)}
                               </div>
                             )}
@@ -554,9 +555,9 @@ const PaymentDashboard = () => {
                               {p.completedAt ? (
                                 <div className="text-right">
                                   <div className="font-medium">Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
-                                  <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
-                                  <div className="text-gray-300 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
-                                  <div className="text-gray-300">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
+                                  <div className="text-gray-400 dark:text-gray-500">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
+                                  <div className="text-gray-300 dark:text-gray-600 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                                  <div className="text-gray-300 dark:text-gray-600">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                                   {p.refundedAt && (
                                     <>
                                       <div className="text-red-400 mt-1">Refunded: {new Date(p.refundedAt).toLocaleDateString('en-GB')}</div>
@@ -574,12 +575,12 @@ const PaymentDashboard = () => {
                           </div>
                         </div>
                         <div className="mt-2">
-                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : p.status === 'refunded' || p.status === 'partially_refunded' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : p.status === 'failed' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300' : p.status === 'refunded' || p.status === 'partially_refunded' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'}`}>
                             {p.status}
                           </span>
                         </div>
-                        <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
-                        <div className="mt-1 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
+                        <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
+                        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">Gateway: {p.gateway?.toUpperCase()}</div>
                         <div className="mt-2 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                           {p.receiptUrl && (
                             <button
@@ -606,7 +607,7 @@ const PaymentDashboard = () => {
                 {/* USD Payments Pagination */}
                 {allUsdPayments.length > 10 && usdPaymentsTotalPages > 1 && (
                   <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-                    <div className="text-sm text-gray-700">
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
                       Page {usdPaymentsPage} of {usdPaymentsTotalPages}
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -616,7 +617,7 @@ const PaymentDashboard = () => {
                           toast.info(`Navigated to page ${Math.max(1, usdPaymentsPage - 1)}`);
                         }}
                         disabled={usdPaymentsPage === 1}
-                        className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                        className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                       >
                         Previous
                       </button>
@@ -626,7 +627,7 @@ const PaymentDashboard = () => {
                           toast.info(`Navigated to page ${Math.min(usdPaymentsTotalPages, usdPaymentsPage + 1)}`);
                         }}
                         disabled={usdPaymentsPage === usdPaymentsTotalPages}
-                        className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                        className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                       >
                         Next
                       </button>
@@ -635,7 +636,7 @@ const PaymentDashboard = () => {
                 )}
               </div>
               <div>
-                <h3 className="text-xl font-semibold text-gray-800 mb-3">INR Payments (₹)</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">INR Payments (₹)</h3>
                 {inrPayments.length === 0 ? (
                   <div className="text-center py-4 text-gray-500">
                     <FaMoneyBill className="text-4xl text-gray-300 mx-auto mb-2" />
@@ -644,20 +645,20 @@ const PaymentDashboard = () => {
                 ) : (
                   <div className="space-y-3">
                     {inrPayments.map((p) => (
-                      <div key={p._id} className={`border rounded-lg p-4 cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-green-50' :
-                        p.status === 'failed' ? 'border-red-200 bg-red-50' :
-                          p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50' :
-                            'border-yellow-200 bg-yellow-50'
+                      <div key={p._id} className={`border dark:border-gray-700 rounded-lg p-4 cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-green-50 dark:bg-green-900/20 dark:border-green-800' :
+                        p.status === 'failed' ? 'border-red-200 bg-red-50 dark:bg-red-900/20 dark:border-red-800' :
+                          p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-blue-50 dark:bg-blue-900/20 dark:border-blue-800' :
+                            'border-yellow-200 bg-yellow-50 dark:bg-yellow-900/20 dark:border-yellow-800'
                         } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
                             <div className="font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
                               {p.appointmentId?.propertyName || 'Property Payment'}
                               {p.paymentType && (
-                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                                  p.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                                    p.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                                      'bg-gray-100 text-gray-700'
+                                <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' :
+                                  p.paymentType === 'advance' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' :
+                                    p.paymentType === 'security_deposit' ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300' :
+                                      'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300'
                                   }`}>
                                   {p.paymentType === 'monthly_rent' ? 'Rent' :
                                     p.paymentType === 'advance' ? 'Advance' :
@@ -684,9 +685,9 @@ const PaymentDashboard = () => {
                             </div>
                           </div>
                           <div className="flex flex-col sm:items-end gap-2">
-                            <div className="text-lg font-bold">₹ {Number(p.amount).toFixed(2)}</div>
+                            <div className="text-lg font-bold dark:text-white">₹ {Number(p.amount).toFixed(2)}</div>
                             {p.refundAmount > 0 && (
-                              <div className="text-sm text-red-600 font-semibold">
+                              <div className="text-sm text-red-600 dark:text-red-400 font-semibold">
                                 Refunded: ₹ {Number(p.refundAmount).toFixed(2)}
                               </div>
                             )}
@@ -694,9 +695,9 @@ const PaymentDashboard = () => {
                               {p.completedAt ? (
                                 <div className="text-right">
                                   <div className="font-medium">Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
-                                  <div className="text-gray-400">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
-                                  <div className="text-gray-300 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
-                                  <div className="text-gray-300">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
+                                  <div className="text-gray-400 dark:text-gray-500">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
+                                  <div className="text-gray-300 dark:text-gray-600 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                                  <div className="text-gray-300 dark:text-gray-600">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                                   {p.refundedAt && (
                                     <>
                                       <div className="text-red-400 mt-1">Refunded: {new Date(p.refundedAt).toLocaleDateString('en-GB')}</div>
@@ -714,12 +715,12 @@ const PaymentDashboard = () => {
                           </div>
                         </div>
                         <div className="mt-2">
-                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 text-green-700' : p.status === 'failed' ? 'bg-red-100 text-red-700' : p.status === 'refunded' || p.status === 'partially_refunded' ? 'bg-blue-100 text-blue-700' : 'bg-yellow-100 text-yellow-700'}`}>
+                          <span className={`px-2 py-1 text-[10px] rounded-full font-semibold ${p.status === 'completed' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : p.status === 'failed' ? 'bg-red-100 dark:bg-red-900/40 text-red-700 dark:text-red-300' : p.status === 'refunded' || p.status === 'partially_refunded' ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300' : 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-300'}`}>
                             {p.status}
                           </span>
                         </div>
-                        <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
-                        <div className="mt-1 text-xs text-gray-600">Gateway: {p.gateway?.toUpperCase()}</div>
+                        <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
+                        <div className="mt-1 text-xs text-gray-600 dark:text-gray-400">Gateway: {p.gateway?.toUpperCase()}</div>
                         <div className="mt-2 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                           {p.receiptUrl && (
                             <button
@@ -746,7 +747,7 @@ const PaymentDashboard = () => {
                 {/* INR Payments Pagination */}
                 {allInrPayments.length > 10 && inrPaymentsTotalPages > 1 && (
                   <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-                    <div className="text-sm text-gray-700">
+                    <div className="text-sm text-gray-700 dark:text-gray-300">
                       Page {inrPaymentsPage} of {inrPaymentsTotalPages}
                     </div>
                     <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -756,7 +757,7 @@ const PaymentDashboard = () => {
                           toast.info(`Navigated to page ${Math.max(1, inrPaymentsPage - 1)}`);
                         }}
                         disabled={inrPaymentsPage === 1}
-                        className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                        className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                       >
                         Previous
                       </button>
@@ -766,7 +767,7 @@ const PaymentDashboard = () => {
                           toast.info(`Navigated to page ${Math.min(inrPaymentsTotalPages, inrPaymentsPage + 1)}`);
                         }}
                         disabled={inrPaymentsPage === inrPaymentsTotalPages}
-                        className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                        className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                       >
                         Next
                       </button>
@@ -784,312 +785,316 @@ const PaymentDashboard = () => {
       </div>
 
       {/* Payment Preview Modal */}
-      {showPreviewModal && selectedPayment && (
-        <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50" onClick={() => setShowPreviewModal(false)}>
-          <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full relative" onClick={(e) => e.stopPropagation()}>
-              <div className="sticky top-0 bg-white border-b border-gray-200 z-10 p-4 sm:p-6 pb-3 sm:pb-4 rounded-t-xl">
-                <div className="flex items-center justify-between">
-                  <h3 className="text-xl sm:text-2xl font-bold text-gray-800 flex items-center gap-2">
-                    <FaEye className="text-blue-600" />
-                    Payment Details
-                  </h3>
-                  <button
-                    onClick={() => setShowPreviewModal(false)}
-                    className="text-gray-400 hover:text-gray-600 transition-colors"
-                  >
-                    <FaTimes className="text-xl" />
-                  </button>
-                </div>
-              </div>
-
-              <div className="p-4 sm:p-6 space-y-6">
-                {/* Payment Overview */}
-                <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 sm:p-6 border border-blue-200">
-                  <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
-                    <div className="flex-1 min-w-0">
-                      <h4 className="text-lg sm:text-xl font-bold text-gray-800 break-words">{selectedPayment.appointmentId?.propertyName || 'Property Payment'}</h4>
-                      <p className="text-sm text-gray-600 mt-1">Buyer: {selectedPayment.userId?.username || 'N/A'}</p>
-                      <p className="text-sm text-gray-600 mt-1 break-all">Payment ID: <span className="font-mono text-xs">{selectedPayment.paymentId}</span></p>
-                    </div>
-                    <div className="text-left sm:text-right flex-shrink-0">
-                      <div className="text-2xl sm:text-3xl font-bold text-gray-800 break-words">
-                        {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.amount).toFixed(2)}
-                      </div>
-                      <div className="mt-2">{statusBadge(selectedPayment.status)}</div>
-                    </div>
+      {
+        showPreviewModal && selectedPayment && (
+          <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50" onClick={() => setShowPreviewModal(false)}>
+            <div className="flex min-h-full items-center justify-center p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full relative" onClick={(e) => e.stopPropagation()}>
+                <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10 p-4 sm:p-6 pb-3 sm:pb-4 rounded-t-xl">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                      <FaEye className="text-blue-600" />
+                      Payment Details
+                    </h3>
+                    <button
+                      onClick={() => setShowPreviewModal(false)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
                   </div>
                 </div>
 
-                {/* Payment Information Grid */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600 mb-1">Payment Type</div>
-                    <div className="font-semibold text-gray-800">
-                      {selectedPayment.paymentType ? (
-                        <span className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
-                          selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
-                            selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
-                              'bg-gray-100 text-gray-700'
-                          }`}>
-                          {selectedPayment.paymentType === 'monthly_rent' ? 'Monthly Rent' :
-                            selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
-                              selectedPayment.paymentType === 'security_deposit' ? 'Security Deposit' :
-                                selectedPayment.paymentType?.replace('_', ' ')}
-                        </span>
-                      ) : 'N/A'}
-                    </div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600 mb-1">Gateway</div>
-                    <div className="font-semibold text-gray-800">{selectedPayment.gateway?.toUpperCase() || 'N/A'}</div>
-                  </div>
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600 mb-1">Currency</div>
-                    <div className="font-semibold text-gray-800">{selectedPayment.currency || 'N/A'}</div>
-                  </div>
-                  {selectedPayment.paymentType === 'monthly_rent' && selectedPayment.rentMonth && selectedPayment.rentYear && (
-                    <div className="bg-indigo-50 rounded-lg p-4">
-                      <div className="text-sm text-indigo-600 mb-1">Rent Period</div>
-                      <div className="font-semibold text-indigo-800">
-                        {new Date(selectedPayment.rentYear, selectedPayment.rentMonth - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                <div className="p-4 sm:p-6 space-y-6">
+                  {/* Payment Overview */}
+                  <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 sm:p-6 border border-blue-200 dark:border-blue-900">
+                    <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
+                      <div className="flex-1 min-w-0">
+                        <h4 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white break-words">{selectedPayment.appointmentId?.propertyName || 'Property Payment'}</h4>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">Buyer: {selectedPayment.userId?.username || 'N/A'}</p>
+                        <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 break-all">Payment ID: <span className="font-mono text-xs">{selectedPayment.paymentId}</span></p>
                       </div>
-                    </div>
-                  )}
-                  {selectedPayment.escrowStatus && (
-                    <div className={`rounded-lg p-4 ${selectedPayment.escrowStatus === 'released' ? 'bg-green-50' :
-                      selectedPayment.escrowStatus === 'held' ? 'bg-orange-50' :
-                        'bg-gray-50'
-                      }`}>
-                      <div className={`text-sm mb-1 ${selectedPayment.escrowStatus === 'released' ? 'text-green-600' :
-                        selectedPayment.escrowStatus === 'held' ? 'text-orange-600' :
-                          'text-gray-600'
-                        }`}>Escrow Status</div>
-                      <div className={`font-semibold ${selectedPayment.escrowStatus === 'released' ? 'text-green-800' :
-                        selectedPayment.escrowStatus === 'held' ? 'text-orange-800' :
-                          'text-gray-800'
-                        }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
-                      {selectedPayment.escrowReleasedAt && (
-                        <div className="text-xs text-gray-500 mt-1">
-                          Released: {new Date(selectedPayment.escrowReleasedAt).toLocaleDateString('en-GB')}
+                      <div className="text-left sm:text-right flex-shrink-0">
+                        <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-gray-100 break-words">
+                          {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.amount).toFixed(2)}
                         </div>
-                      )}
-                    </div>
-                  )}
-                  {selectedPayment.completedAt && (
-                    <div className="bg-gray-50 rounded-lg p-4">
-                      <div className="text-sm text-gray-600 mb-1">Paid Date</div>
-                      <div className="font-semibold text-gray-800">
-                        {new Date(selectedPayment.completedAt).toLocaleDateString('en-GB', {
-                          year: 'numeric',
-                          month: 'long',
-                          day: 'numeric'
-                        })}
+                        <div className="mt-2">{statusBadge(selectedPayment.status)}</div>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1">
-                        {new Date(selectedPayment.completedAt).toLocaleTimeString('en-GB')}
-                      </div>
-                    </div>
-                  )}
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600 mb-1">Created Date</div>
-                    <div className="font-semibold text-gray-800">
-                      {new Date(selectedPayment.createdAt).toLocaleDateString('en-GB', {
-                        year: 'numeric',
-                        month: 'long',
-                        day: 'numeric'
-                      })}
-                    </div>
-                    <div className="text-xs text-gray-500 mt-1">
-                      {new Date(selectedPayment.createdAt).toLocaleTimeString('en-GB')}
                     </div>
                   </div>
-                  {selectedPayment.refundedAt && (
-                    <div className="bg-red-50 rounded-lg p-4">
-                      <div className="text-sm text-red-600 mb-1">Refunded Date</div>
-                      <div className="font-semibold text-red-800">
-                        {new Date(selectedPayment.refundedAt).toLocaleDateString('en-GB', {
+
+                  {/* Payment Information Grid */}
+                  <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Payment Type</div>
+                      <div className="font-semibold text-gray-800 dark:text-white">
+                        {selectedPayment.paymentType ? (
+                          <span className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
+                            selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
+                              selectedPayment.paymentType === 'security_deposit' ? 'bg-yellow-100 text-yellow-700' :
+                                'bg-gray-100 text-gray-700'
+                            }`}>
+                            {selectedPayment.paymentType === 'monthly_rent' ? 'Monthly Rent' :
+                              selectedPayment.paymentType === 'advance' ? 'Advance Payment' :
+                                selectedPayment.paymentType === 'security_deposit' ? 'Security Deposit' :
+                                  selectedPayment.paymentType?.replace('_', ' ')}
+                          </span>
+                        ) : 'N/A'}
+                      </div>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Gateway</div>
+                      <div className="font-semibold text-gray-800 dark:text-white">{selectedPayment.gateway?.toUpperCase() || 'N/A'}</div>
+                    </div>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Currency</div>
+                      <div className="font-semibold text-gray-800 dark:text-white">{selectedPayment.currency || 'N/A'}</div>
+                    </div>
+                    {selectedPayment.paymentType === 'monthly_rent' && selectedPayment.rentMonth && selectedPayment.rentYear && (
+                      <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-4">
+                        <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-1">Rent Period</div>
+                        <div className="font-semibold text-indigo-800 dark:text-indigo-200">
+                          {new Date(selectedPayment.rentYear, selectedPayment.rentMonth - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
+                        </div>
+                      </div>
+                    )}
+                    {selectedPayment.escrowStatus && (
+                      <div className={`rounded-lg p-4 ${selectedPayment.escrowStatus === 'released' ? 'bg-green-50 dark:bg-green-900/30' :
+                        selectedPayment.escrowStatus === 'held' ? 'bg-orange-50 dark:bg-orange-900/30' :
+                          'bg-gray-50 dark:bg-gray-700/50'
+                        }`}>
+                        <div className={`text-sm mb-1 ${selectedPayment.escrowStatus === 'released' ? 'text-green-600 dark:text-green-400' :
+                          selectedPayment.escrowStatus === 'held' ? 'text-orange-600 dark:text-orange-400' :
+                            'text-gray-600 dark:text-gray-400'
+                          }`}>Escrow Status</div>
+                        <div className={`font-semibold ${selectedPayment.escrowStatus === 'released' ? 'text-green-800 dark:text-green-200' :
+                          selectedPayment.escrowStatus === 'held' ? 'text-orange-800 dark:text-orange-200' :
+                            'text-gray-800 dark:text-gray-200'
+                          }`}>{selectedPayment.escrowStatus.charAt(0).toUpperCase() + selectedPayment.escrowStatus.slice(1)}</div>
+                        {selectedPayment.escrowReleasedAt && (
+                          <div className="text-xs text-gray-500 mt-1">
+                            Released: {new Date(selectedPayment.escrowReleasedAt).toLocaleDateString('en-GB')}
+                          </div>
+                        )}
+                      </div>
+                    )}
+                    {selectedPayment.completedAt && (
+                      <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                        <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Paid Date</div>
+                        <div className="font-semibold text-gray-800 dark:text-white">
+                          {new Date(selectedPayment.completedAt).toLocaleDateString('en-GB', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </div>
+                        <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                          {new Date(selectedPayment.completedAt).toLocaleTimeString('en-GB')}
+                        </div>
+                      </div>
+                    )}
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Created Date</div>
+                      <div className="font-semibold text-gray-800 dark:text-white">
+                        {new Date(selectedPayment.createdAt).toLocaleDateString('en-GB', {
                           year: 'numeric',
                           month: 'long',
                           day: 'numeric'
                         })}
                       </div>
-                      <div className="text-xs text-red-500 mt-1">
-                        {new Date(selectedPayment.refundedAt).toLocaleTimeString('en-GB')}
+                      <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
+                        {new Date(selectedPayment.createdAt).toLocaleTimeString('en-GB')}
                       </div>
                     </div>
-                  )}
-                  {selectedPayment.refundAmount > 0 && (
-                    <div className="bg-red-50 rounded-lg p-4">
-                      <div className="text-sm text-red-600 mb-1">Refund Amount</div>
-                      <div className="font-semibold text-red-800">
-                        {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.refundAmount).toFixed(2)}
+                    {selectedPayment.refundedAt && (
+                      <div className="bg-red-50 dark:bg-red-900/30 rounded-lg p-4">
+                        <div className="text-sm text-red-600 dark:text-red-400 mb-1">Refunded Date</div>
+                        <div className="font-semibold text-red-800 dark:text-red-200">
+                          {new Date(selectedPayment.refundedAt).toLocaleDateString('en-GB', {
+                            year: 'numeric',
+                            month: 'long',
+                            day: 'numeric'
+                          })}
+                        </div>
+                        <div className="text-xs text-red-500 dark:text-red-400/70 mt-1">
+                          {new Date(selectedPayment.refundedAt).toLocaleTimeString('en-GB')}
+                        </div>
                       </div>
-                    </div>
-                  )}
-                </div>
+                    )}
+                    {selectedPayment.refundAmount > 0 && (
+                      <div className="bg-red-50 dark:bg-red-900/30 rounded-lg p-4">
+                        <div className="text-sm text-red-600 dark:text-red-400 mb-1">Refund Amount</div>
+                        <div className="font-semibold text-red-800 dark:text-red-200">
+                          {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.refundAmount).toFixed(2)}
+                        </div>
+                      </div>
+                    )}
+                  </div>
 
-                {/* Actions */}
-                <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200">
-                  {selectedPayment.receiptUrl && (
+                  {/* Actions */}
+                  <div className="flex flex-wrap gap-3 pt-4 border-t border-gray-200 dark:border-gray-700">
+                    {selectedPayment.receiptUrl && (
+                      <button
+                        onClick={() => {
+                          downloadReceipt(selectedPayment.receiptUrl);
+                          setShowPreviewModal(false);
+                        }}
+                        className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                      >
+                        <FaDownload /> Download Receipt
+                      </button>
+                    )}
                     <button
                       onClick={() => {
-                        downloadReceipt(selectedPayment.receiptUrl);
+                        sharePayment(selectedPayment);
                         setShowPreviewModal(false);
                       }}
-                      className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors flex items-center gap-2"
+                      className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
                     >
-                      <FaDownload /> Download Receipt
+                      <FaShare /> Share Payment
                     </button>
-                  )}
-                  <button
-                    onClick={() => {
-                      sharePayment(selectedPayment);
-                      setShowPreviewModal(false);
-                    }}
-                    className="px-4 py-2 bg-purple-600 text-white rounded-lg hover:bg-purple-700 transition-colors flex items-center gap-2"
-                  >
-                    <FaShare /> Share Payment
-                  </button>
-                  <button
-                    onClick={() => {
-                      copyPaymentLink(
-                        window.location.origin + `/admin/payments?paymentId=${selectedPayment.paymentId}`,
-                        `Payment Details:\nProperty: ${selectedPayment.appointmentId?.propertyName || 'N/A'}\nBuyer: ${selectedPayment.userId?.username || 'N/A'}\nAmount: ${selectedPayment.currency === 'INR' ? '₹' : '$'}${Number(selectedPayment.amount).toFixed(2)}\nStatus: ${selectedPayment.status}\nPayment ID: ${selectedPayment.paymentId}`
-                      );
-                    }}
-                    className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
-                  >
-                    <FaCopy /> Copy Details
-                  </button>
+                    <button
+                      onClick={() => {
+                        copyPaymentLink(
+                          window.location.origin + `/admin/payments?paymentId=${selectedPayment.paymentId}`,
+                          `Payment Details:\nProperty: ${selectedPayment.appointmentId?.propertyName || 'N/A'}\nBuyer: ${selectedPayment.userId?.username || 'N/A'}\nAmount: ${selectedPayment.currency === 'INR' ? '₹' : '$'}${Number(selectedPayment.amount).toFixed(2)}\nStatus: ${selectedPayment.status}\nPayment ID: ${selectedPayment.paymentId}`
+                        );
+                      }}
+                      className="px-4 py-2 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+                    >
+                      <FaCopy /> Copy Details
+                    </button>
+                  </div>
                 </div>
               </div>
             </div>
           </div>
-        </div>
-      )}
+        )
+      }
 
       {/* Export Password Modal */}
-      {showExportPasswordModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form
-            className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4"
-            onSubmit={async (e) => {
-              e.preventDefault();
-              setExportPasswordLoading(true);
-              setExportPasswordError("");
-              try {
-                const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`,
-                  { password: exportPassword },
-                  {
-                    withCredentials: true,
-                    headers: { "Content-Type": "application/json" }
-                  }
-                );
-                if (data.success) {
-                  // Reset attempts on successful password
-                  localStorage.removeItem('adminPaymentExportPwAttempts');
-                  setShowExportPasswordModal(false);
-                  setExportPassword("");
-                  setExportPasswordError("");
+      {
+        showExportPasswordModal && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
+            <form
+              className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4"
+              onSubmit={async (e) => {
+                e.preventDefault();
+                setExportPasswordLoading(true);
+                setExportPasswordError("");
+                try {
+                  const { data } = await axios.post(`${API_BASE_URL}/api/auth/verify-password`,
+                    { password: exportPassword },
+                    {
+                      withCredentials: true,
+                      headers: { "Content-Type": "application/json" }
+                    }
+                  );
+                  if (data.success) {
+                    // Reset attempts on successful password
+                    localStorage.removeItem('adminPaymentExportPwAttempts');
+                    setShowExportPasswordModal(false);
+                    setExportPassword("");
+                    setExportPasswordError("");
 
-                  // Download export file
-                  try {
-                    const res = await fetch(`${API_BASE_URL}/api/payments/admin/export`, { credentials: 'include' });
-                    if (!res.ok) {
+                    // Download export file
+                    try {
+                      const res = await fetch(`${API_BASE_URL}/api/payments/admin/export`, { credentials: 'include' });
+                      if (!res.ok) {
+                        toast.error('Failed to export payments');
+                        return;
+                      }
+                      const blob = await res.blob();
+                      const url = window.URL.createObjectURL(blob);
+                      const a = document.createElement('a');
+                      a.href = url;
+                      a.download = 'payments_export.csv';
+                      document.body.appendChild(a);
+                      a.click();
+                      a.remove();
+                      window.URL.revokeObjectURL(url);
+                      toast.success('Payments exported successfully');
+                    } catch (exportError) {
                       toast.error('Failed to export payments');
-                      return;
                     }
-                    const blob = await res.blob();
-                    const url = window.URL.createObjectURL(blob);
-                    const a = document.createElement('a');
-                    a.href = url;
-                    a.download = 'payments_export.csv';
-                    document.body.appendChild(a);
-                    a.click();
-                    a.remove();
-                    window.URL.revokeObjectURL(url);
-                    toast.success('Payments exported successfully');
-                  } catch (exportError) {
-                    toast.error('Failed to export payments');
                   }
-                }
-              } catch (err) {
-                // Track wrong attempts locally (allow up to 3 attempts before logout)
-                const key = 'adminPaymentExportPwAttempts';
-                const prev = parseInt(localStorage.getItem(key) || '0');
-                const next = prev + 1;
-                localStorage.setItem(key, String(next));
+                } catch (err) {
+                  // Track wrong attempts locally (allow up to 3 attempts before logout)
+                  const key = 'adminPaymentExportPwAttempts';
+                  const prev = parseInt(localStorage.getItem(key) || '0');
+                  const next = prev + 1;
+                  localStorage.setItem(key, String(next));
 
-                if (next >= 3) {
-                  // Sign out and redirect on third wrong attempt
-                  localStorage.removeItem(key);
-                  setShowExportPasswordModal(false);
-                  setExportPassword("");
-                  setExportPasswordError("");
-                  toast.error("Too many incorrect attempts. You've been signed out for security.");
-                  dispatch(signoutUserStart());
-                  try {
-                    const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
-                    const signoutData = await signoutRes.json();
-                    if (signoutData.success === false) {
-                      dispatch(signoutUserFailure(signoutData.message));
-                    } else {
-                      dispatch(signoutUserSuccess(signoutData));
+                  if (next >= 3) {
+                    // Sign out and redirect on third wrong attempt
+                    localStorage.removeItem(key);
+                    setShowExportPasswordModal(false);
+                    setExportPassword("");
+                    setExportPasswordError("");
+                    toast.error("Too many incorrect attempts. You've been signed out for security.");
+                    dispatch(signoutUserStart());
+                    try {
+                      const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`, { credentials: 'include' });
+                      const signoutData = await signoutRes.json();
+                      if (signoutData.success === false) {
+                        dispatch(signoutUserFailure(signoutData.message));
+                      } else {
+                        dispatch(signoutUserSuccess(signoutData));
+                      }
+                    } catch (signoutErr) {
+                      dispatch(signoutUserFailure(signoutErr.message));
                     }
-                  } catch (signoutErr) {
-                    dispatch(signoutUserFailure(signoutErr.message));
+                    setTimeout(() => {
+                      navigate('/sign-in');
+                    }, 800);
+                    setExportPasswordLoading(false);
+                    return;
+                  } else {
+                    // Keep modal open and show remaining attempts
+                    const remaining = 3 - next;
+                    setExportPasswordError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
                   }
-                  setTimeout(() => {
-                    navigate('/sign-in');
-                  }, 800);
+                } finally {
                   setExportPasswordLoading(false);
-                  return;
-                } else {
-                  // Keep modal open and show remaining attempts
-                  const remaining = 3 - next;
-                  setExportPasswordError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
                 }
-              } finally {
-                setExportPasswordLoading(false);
-              }
-            }}
-          >
-            <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
-            <input
-              type="password"
-              className="border rounded p-2 w-full"
-              placeholder="Enter your password"
-              value={exportPassword}
-              onChange={e => setExportPassword(e.target.value)}
-              autoFocus
-              required
-            />
-            {exportPasswordError && <div className="text-red-600 text-sm">{exportPasswordError}</div>}
-            <div className="flex gap-2 justify-end">
-              <button
-                type="button"
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
-                onClick={() => {
-                  setShowExportPasswordModal(false);
-                  setExportPassword("");
-                  setExportPasswordError("");
-                }}
-              >
-                Cancel
-              </button>
-              <button
-                type="submit"
-                className="px-4 py-2 rounded bg-blue-700 text-white font-semibold"
-                disabled={exportPasswordLoading}
-              >
-                {exportPasswordLoading ? 'Verifying...' : 'Confirm'}
-              </button>
-            </div>
-          </form>
-        </div>
-      )}
-    </div>
+              }}
+            >
+              <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+              <input
+                type="password"
+                className="border rounded p-2 w-full"
+                placeholder="Enter your password"
+                value={exportPassword}
+                onChange={e => setExportPassword(e.target.value)}
+                autoFocus
+                required
+              />
+              {exportPasswordError && <div className="text-red-600 text-sm">{exportPasswordError}</div>}
+              <div className="flex gap-2 justify-end">
+                <button
+                  type="button"
+                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-600 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-500 transition-colors"
+                  onClick={() => {
+                    setShowExportPasswordModal(false);
+                    setExportPassword("");
+                    setExportPasswordError("");
+                  }}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="submit"
+                  className="px-4 py-2 rounded bg-blue-700 text-white font-semibold"
+                  disabled={exportPasswordLoading}
+                >
+                  {exportPasswordLoading ? 'Verifying...' : 'Confirm'}
+                </button>
+              </div>
+            </form>
+          </div>
+        )
+      }
+    </div >
   );
 };
 

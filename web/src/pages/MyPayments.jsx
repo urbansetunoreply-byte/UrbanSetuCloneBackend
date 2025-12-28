@@ -437,16 +437,16 @@ const MyPayments = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-6 sm:py-10 px-2 md:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 py-6 sm:py-10 px-2 md:px-8">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 mb-6 sm:mb-8">
           <div className="flex items-center justify-between gap-2 flex-wrap">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
                 <FaMoneyBill className="text-green-600" />
                 My Payments
               </h1>
-              <p className="text-gray-600 mt-2">View and manage your payments and receipts</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">View and manage your payments and receipts</p>
             </div>
             <button
               onClick={fetchPayments}
@@ -459,14 +459,14 @@ const MyPayments = () => {
           </div>
         </div>
 
-        <div className="bg-gradient-to-br from-white to-blue-50 rounded-xl shadow-lg p-4 sm:p-6 border border-blue-100">
+        <div className="bg-gradient-to-br from-white to-blue-50 dark:from-gray-800 dark:to-gray-900 rounded-xl shadow-lg p-4 sm:p-6 border border-blue-100 dark:border-gray-700">
           <div className="flex items-center gap-3 mb-4 flex-wrap">
-            <input value={filters.q} onChange={(e) => { setFilters(prev => ({ ...prev, q: e.target.value })); setCurrentPage(1); }} placeholder="Search payment ID or receipt" className="px-3 py-2 border rounded-lg text-sm" />
-            <label className="text-sm text-gray-600">From:</label>
-            <input type="date" value={filters.fromDate} max={new Date().toISOString().split('T')[0]} onChange={(e) => { setFilters(prev => ({ ...prev, fromDate: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm" />
-            <label className="text-sm text-gray-600">To:</label>
-            <input type="date" value={filters.toDate} max={new Date().toISOString().split('T')[0]} onChange={(e) => { setFilters(prev => ({ ...prev, toDate: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm" />
-            <select value={filters.status} onChange={(e) => { setFilters(prev => ({ ...prev, status: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
+            <input value={filters.q} onChange={(e) => { setFilters(prev => ({ ...prev, q: e.target.value })); setCurrentPage(1); }} placeholder="Search payment ID or receipt" className="px-3 py-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+            <label className="text-sm text-gray-600 dark:text-gray-400">From:</label>
+            <input type="date" value={filters.fromDate} max={new Date().toISOString().split('T')[0]} onChange={(e) => { setFilters(prev => ({ ...prev, fromDate: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+            <label className="text-sm text-gray-600 dark:text-gray-400">To:</label>
+            <input type="date" value={filters.toDate} max={new Date().toISOString().split('T')[0]} onChange={(e) => { setFilters(prev => ({ ...prev, toDate: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white" />
+            <select value={filters.status} onChange={(e) => { setFilters(prev => ({ ...prev, status: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
               <option value="">All Status</option>
               <option value="completed">Completed</option>
               <option value="pending">Pending</option>
@@ -474,17 +474,17 @@ const MyPayments = () => {
               <option value="refunded">Refunded</option>
               <option value="partially_refunded">Partially Refunded</option>
             </select>
-            <select value={filters.gateway} onChange={(e) => { setFilters(prev => ({ ...prev, gateway: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
+            <select value={filters.gateway} onChange={(e) => { setFilters(prev => ({ ...prev, gateway: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
               <option value="">All Gateways</option>
               <option value="paypal">PayPal</option>
               <option value="razorpay">Razorpay</option>
             </select>
-            <select value={filters.currency} onChange={(e) => { setFilters(prev => ({ ...prev, currency: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
+            <select value={filters.currency} onChange={(e) => { setFilters(prev => ({ ...prev, currency: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
               <option value="">All Currencies</option>
               <option value="USD">USD ($)</option>
               <option value="INR">INR (₹)</option>
             </select>
-            <select value={filters.paymentType} onChange={(e) => { setFilters(prev => ({ ...prev, paymentType: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border rounded-lg text-sm">
+            <select value={filters.paymentType} onChange={(e) => { setFilters(prev => ({ ...prev, paymentType: e.target.value })); setCurrentPage(1); }} className="px-3 py-2 border dark:border-gray-600 rounded-lg text-sm bg-white dark:bg-gray-700 text-gray-900 dark:text-white">
               <option value="">All Types</option>
               <option value="advance">Advance Payment</option>
               <option value="monthly_rent">Monthly Rent</option>
@@ -514,14 +514,14 @@ const MyPayments = () => {
           ) : (
             <div className="space-y-3">
               {Array.isArray(payments) && payments.map((p) => (
-                <div key={p._id} className={`rounded-lg p-4 border cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50' :
-                  p.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50' :
-                    p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50' :
-                      'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50'
+                <div key={p._id} className={`rounded-lg p-4 border dark:border-gray-700 cursor-pointer ${p.status === 'completed' ? 'border-green-200 bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20' :
+                  p.status === 'failed' ? 'border-red-200 bg-gradient-to-r from-red-50 to-rose-50 dark:from-red-900/20 dark:to-rose-900/20' :
+                    p.status === 'refunded' || p.status === 'partially_refunded' ? 'border-blue-200 bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/20 dark:to-cyan-900/20' :
+                      'border-yellow-200 bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20'
                   } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                   <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                     <div className="flex-1">
-                      <div className="font-semibold text-gray-800 flex items-center gap-2">
+                      <div className="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
                         {p.appointmentId?.propertyName || 'Property Payment'}
                         {p.paymentType && (
                           <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
@@ -536,10 +536,10 @@ const MyPayments = () => {
                           </span>
                         )}
                       </div>
-                      <div className="text-xs text-gray-500 flex flex-wrap items-center gap-2 mt-1">
-                        <span className="px-2 py-0.5 rounded-full bg-blue-100 text-blue-700">{p.gateway?.toUpperCase()}</span>
-                        <span className="px-2 py-0.5 rounded-full bg-purple-100 text-purple-700">{p.currency || 'USD'}</span>
-                        <span>{p.currency === 'INR' ? '₹' : '$'}{Number(p.amount).toFixed(2)}</span>
+                      <div className="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-2 mt-1">
+                        <span className="px-2 py-0.5 rounded-full bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300">{p.gateway?.toUpperCase()}</span>
+                        <span className="px-2 py-0.5 rounded-full bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300">{p.currency || 'USD'}</span>
+                        <span className="dark:text-white">{p.currency === 'INR' ? '₹' : '$'}{Number(p.amount).toFixed(2)}</span>
                         {p.paymentType === 'monthly_rent' && p.rentMonth && p.rentYear && (
                           <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
                             {new Date(p.rentYear, p.rentMonth - 1).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
@@ -597,7 +597,7 @@ const MyPayments = () => {
                       <div>{statusBadge(p.status)}</div>
                     </div>
                   </div>
-                  <div className="mt-2 text-xs text-gray-600">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
+                  <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">Payment ID: <span className="font-mono">{p.paymentId}</span></div>
                   <div className="mt-2 flex items-center gap-2 flex-wrap" onClick={(e) => e.stopPropagation()}>
                     {p.receiptUrl && (
                       <button onClick={() => downloadReceipt(p.receiptUrl)} className="px-3 py-1 bg-blue-100 text-blue-600 rounded-lg hover:bg-blue-200 text-xs flex items-center gap-1">
@@ -658,7 +658,7 @@ const MyPayments = () => {
                     toast.info(`Navigated to page ${Math.max(1, currentPage - 1)}`);
                   }}
                   disabled={currentPage === 1}
-                  className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                  className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                 >
                   Previous
                 </button>
@@ -668,7 +668,7 @@ const MyPayments = () => {
                     toast.info(`Navigated to page ${Math.min(totalPages, currentPage + 1)}`);
                   }}
                   disabled={currentPage === totalPages}
-                  className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                  className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                 >
                   Next
                 </button>
@@ -681,10 +681,10 @@ const MyPayments = () => {
       {/* Payment Preview Modal */}
       {showPreviewModal && selectedPayment && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4" onClick={() => setShowPreviewModal(false)}>
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
-            <div className="sticky top-0 bg-white border-b border-gray-200 z-10 p-6 pb-4 rounded-t-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] overflow-y-auto" onClick={(e) => e.stopPropagation()}>
+            <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 z-10 p-6 pb-4 rounded-t-xl">
               <div className="flex items-center justify-between">
-                <h3 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaEye className="text-blue-600" />
                   Payment Details
                 </h3>
@@ -699,14 +699,14 @@ const MyPayments = () => {
 
             <div className="p-6 space-y-6">
               {/* Payment Overview */}
-              <div className="bg-gradient-to-br from-blue-50 to-purple-50 rounded-lg p-4 sm:p-6 border border-blue-200">
+              <div className="bg-gradient-to-br from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20 rounded-lg p-4 sm:p-6 border border-blue-200 dark:border-gray-700">
                 <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4 mb-4">
                   <div className="flex-1 min-w-0">
-                    <h4 className="text-lg sm:text-xl font-bold text-gray-800 break-words">{selectedPayment.appointmentId?.propertyName || 'Property Payment'}</h4>
-                    <p className="text-sm text-gray-600 mt-1 break-all">Payment ID: <span className="font-mono text-xs">{selectedPayment.paymentId}</span></p>
+                    <h4 className="text-lg sm:text-xl font-bold text-gray-800 dark:text-white break-words">{selectedPayment.appointmentId?.propertyName || 'Property Payment'}</h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1 break-all">Payment ID: <span className="font-mono text-xs">{selectedPayment.paymentId}</span></p>
                   </div>
                   <div className="text-left sm:text-right flex-shrink-0">
-                    <div className="text-2xl sm:text-3xl font-bold text-gray-800 break-words">
+                    <div className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white break-words">
                       {selectedPayment.currency === 'INR' ? '₹' : '$'}{Number(selectedPayment.amount).toFixed(2)}
                     </div>
                     <div className="mt-2">{statusBadge(selectedPayment.status)}</div>
@@ -716,9 +716,9 @@ const MyPayments = () => {
 
               {/* Payment Information Grid */}
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-1">Payment Type</div>
-                  <div className="font-semibold text-gray-800">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Payment Type</div>
+                  <div className="font-semibold text-gray-800 dark:text-white">
                     {selectedPayment.paymentType ? (
                       <span className={`px-2 py-1 rounded-full text-xs font-semibold ${selectedPayment.paymentType === 'monthly_rent' ? 'bg-green-100 text-green-700' :
                         selectedPayment.paymentType === 'advance' ? 'bg-blue-100 text-blue-700' :
@@ -733,18 +733,18 @@ const MyPayments = () => {
                     ) : 'N/A'}
                   </div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-1">Gateway</div>
-                  <div className="font-semibold text-gray-800">{selectedPayment.gateway?.toUpperCase() || 'N/A'}</div>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Gateway</div>
+                  <div className="font-semibold text-gray-800 dark:text-white">{selectedPayment.gateway?.toUpperCase() || 'N/A'}</div>
                 </div>
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-1">Currency</div>
-                  <div className="font-semibold text-gray-800">{selectedPayment.currency || 'N/A'}</div>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Currency</div>
+                  <div className="font-semibold text-gray-800 dark:text-white">{selectedPayment.currency || 'N/A'}</div>
                 </div>
                 {selectedPayment.paymentType === 'monthly_rent' && selectedPayment.rentMonth && selectedPayment.rentYear && (
-                  <div className="bg-indigo-50 rounded-lg p-4">
-                    <div className="text-sm text-indigo-600 mb-1">Rent Period</div>
-                    <div className="font-semibold text-indigo-800">
+                  <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-4">
+                    <div className="text-sm text-indigo-600 dark:text-indigo-300 mb-1">Rent Period</div>
+                    <div className="font-semibold text-indigo-800 dark:text-indigo-200">
                       {new Date(selectedPayment.rentYear, selectedPayment.rentMonth - 1).toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
                     </div>
                   </div>
@@ -770,9 +770,9 @@ const MyPayments = () => {
                   </div>
                 )}
                 {selectedPayment.completedAt && (
-                  <div className="bg-gray-50 rounded-lg p-4">
-                    <div className="text-sm text-gray-600 mb-1">Paid Date</div>
-                    <div className="font-semibold text-gray-800">
+                  <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                    <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Paid Date</div>
+                    <div className="font-semibold text-gray-800 dark:text-white">
                       {new Date(selectedPayment.completedAt).toLocaleDateString('en-GB', {
                         year: 'numeric',
                         month: 'long',
@@ -784,9 +784,9 @@ const MyPayments = () => {
                     </div>
                   </div>
                 )}
-                <div className="bg-gray-50 rounded-lg p-4">
-                  <div className="text-sm text-gray-600 mb-1">Created Date</div>
-                  <div className="font-semibold text-gray-800">
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4">
+                  <div className="text-sm text-gray-600 dark:text-gray-400 mb-1">Created Date</div>
+                  <div className="font-semibold text-gray-800 dark:text-white">
                     {new Date(selectedPayment.createdAt).toLocaleDateString('en-GB', {
                       year: 'numeric',
                       month: 'long',

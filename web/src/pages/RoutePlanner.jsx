@@ -896,10 +896,10 @@ export default function RoutePlanner() {
   };
 
   return (
-    <div className={`flex flex-col lg:flex-row h-screen lg:h-[calc(100vh-64px)] bg-gray-50 overflow-hidden relative ${isFullscreen ? 'fixed inset-0 z-50 h-screen' : ''}`}>
+    <div className={`flex flex-col lg:flex-row h-screen lg:h-[calc(100vh-64px)] bg-gray-50 dark:bg-gray-900 overflow-hidden relative ${isFullscreen ? 'fixed inset-0 z-50 h-screen' : ''}`}>
 
       {/* LEFT SIDEBAR - CONTROLS & RESULTS */}
-      <div className="w-full lg:w-[420px] h-[50vh] lg:h-full bg-white shadow-2xl z-20 flex flex-col order-2 lg:order-1 border-r border-gray-200">
+      <div className="w-full lg:w-[420px] h-[50vh] lg:h-full bg-white dark:bg-gray-800 shadow-2xl z-20 flex flex-col order-2 lg:order-1 border-r border-gray-200 dark:border-gray-700">
 
         {/* Header Section */}
         <div className="p-4 bg-gradient-to-r from-blue-700 to-purple-700 text-white shadow-md flex-shrink-0">
@@ -940,7 +940,7 @@ export default function RoutePlanner() {
             className="space-y-4"
           >
             {/* Travel Mode Tabs */}
-            <div className="bg-gray-100 p-1.5 rounded-xl flex gap-1">
+            <div className="bg-gray-100 dark:bg-gray-700 p-1.5 rounded-xl flex gap-1">
               {travelModes.map((mode) => {
                 const Icon = mode.icon;
                 const isActive = travelMode === mode.id;
@@ -949,8 +949,8 @@ export default function RoutePlanner() {
                     key={mode.id}
                     onClick={() => setTravelMode(mode.id)}
                     className={`flex-1 py-2 rounded-lg text-xs sm:text-sm font-medium flex flex-col items-center gap-1 transition-all ${isActive
-                      ? 'bg-white text-blue-600 shadow-sm scale-100'
-                      : 'text-gray-500 hover:text-gray-700 hover:bg-gray-200'
+                      ? 'bg-white dark:bg-gray-600 text-blue-600 dark:text-blue-400 shadow-sm scale-100'
+                      : 'text-gray-500 dark:text-gray-300 hover:text-gray-700 dark:hover:text-gray-100 hover:bg-gray-200 dark:hover:bg-gray-600'
                       }`}
                   >
                     <Icon className={isActive ? 'text-lg' : 'text-base'} />
@@ -964,29 +964,29 @@ export default function RoutePlanner() {
             <div className="border border-gray-100 rounded-xl overflow-hidden">
               <button
                 onClick={() => setRouteOptimization(prev => !prev)}
-                className="w-full flex items-center justify-between p-3 bg-white hover:bg-gray-50 transition-colors"
+                className="w-full flex items-center justify-between p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
               >
-                <span className="text-sm font-semibold text-gray-700 flex items-center gap-2">
+                <span className="text-sm font-semibold text-gray-700 dark:text-gray-200 flex items-center gap-2">
                   <FaFilter className="text-blue-500" /> Route Preferences
                 </span>
                 <FaCog className="text-gray-400 text-xs" />
               </button>
-              <div className="p-3 bg-gray-50 grid grid-cols-2 gap-3">
-                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded border border-gray-100 hover:border-blue-200 transition-colors">
+              <div className="p-3 bg-gray-50 dark:bg-gray-900 grid grid-cols-2 gap-3">
+                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700 hover:border-blue-200 transition-colors">
                   <input type="checkbox" checked={routeOptimization} onChange={(e) => setRouteOptimization(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
-                  <span className="text-xs text-gray-700">Optimize Stops</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-300">Optimize Stops</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded border border-gray-100 hover:border-blue-200 transition-colors">
+                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700 hover:border-blue-200 transition-colors">
                   <input type="checkbox" checked={avoidTolls} onChange={(e) => setAvoidTolls(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
-                  <span className="text-xs text-gray-700">Avoid Tolls</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-300">Avoid Tolls</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded border border-gray-100 hover:border-blue-200 transition-colors">
+                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700 hover:border-blue-200 transition-colors">
                   <input type="checkbox" checked={avoidHighways} onChange={(e) => setAvoidHighways(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
-                  <span className="text-xs text-gray-700">Avoid Highways</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-300">Avoid Highways</span>
                 </label>
-                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white rounded border border-gray-100 hover:border-blue-200 transition-colors">
+                <label className="flex items-center gap-2 cursor-pointer p-2 bg-white dark:bg-gray-800 rounded border border-gray-100 dark:border-gray-700 hover:border-blue-200 transition-colors">
                   <input type="checkbox" checked={showAlternatives} onChange={(e) => setShowAlternatives(e.target.checked)} className="rounded text-blue-600 focus:ring-blue-500" />
-                  <span className="text-xs text-gray-700">Alternatives</span>
+                  <span className="text-xs text-gray-700 dark:text-gray-300">Alternatives</span>
                 </label>
               </div>
             </div>
@@ -995,7 +995,7 @@ export default function RoutePlanner() {
           {/* 2. Stops Input */}
           <motion.div variants={itemVariants} className="space-y-3">
             <div className="flex items-center justify-between">
-              <h3 className="text-sm font-bold text-gray-800 uppercase tracking-wider flex items-center gap-2">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 uppercase tracking-wider flex items-center gap-2">
                 <FaMapMarkerAlt className="text-red-500" /> Stops ({stops.length})
               </h3>
               <button onClick={addStop} className="text-xs font-medium text-blue-600 hover:text-blue-800 flex items-center gap-1 bg-blue-50 px-2 py-1 rounded transition-colors">
@@ -1005,7 +1005,7 @@ export default function RoutePlanner() {
 
             <div className="space-y-3 relative">
               {/* Connecting Line Visual */}
-              <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-gray-200 z-0"></div>
+              <div className="absolute left-[15px] top-4 bottom-4 w-0.5 bg-gray-200 dark:bg-gray-600 z-0"></div>
 
               <AnimatePresence>
                 {stops.map((s, i) => (
@@ -1026,35 +1026,35 @@ export default function RoutePlanner() {
                       </div>
 
                       {/* Input Area */}
-                      <div className="flex-1 bg-white p-2 rounded-lg border border-gray-200 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all flex gap-2">
+                      <div className="flex-1 bg-white dark:bg-gray-700 p-2 rounded-lg border border-gray-200 dark:border-gray-600 shadow-sm focus-within:ring-2 focus-within:ring-blue-500/20 focus-within:border-blue-400 transition-all flex gap-2">
                         <div className="flex-1 relative">
                           <input
                             value={s.address}
                             onChange={e => onChangeAddress(i, e.target.value)}
                             placeholder={i === 0 ? "Start Location" : "Destination"}
-                            className="w-full text-sm outline-none bg-transparent placeholder-gray-400"
+                            className="w-full text-sm outline-none bg-transparent dark:text-white placeholder-gray-400 dark:placeholder-gray-500"
                           />
                           {/* Suggestions Dropdown */}
                           {predictions[i] && predictions[i].length > 0 && (
-                            <div className="absolute top-full left-0 right-0 mt-1 bg-white rounded-lg shadow-xl border border-gray-100 z-50 overflow-hidden">
+                            <div className="absolute top-full left-0 right-0 mt-1 bg-white dark:bg-gray-800 rounded-lg shadow-xl border border-gray-100 dark:border-gray-700 z-50 overflow-hidden">
                               {predictions[i].map((pred, idx) => (
                                 <div
                                   key={idx}
                                   onMouseDown={() => pickPrediction(i, pred)}
-                                  className="p-2 hover:bg-blue-50 cursor-pointer text-xs border-b border-gray-50 last:border-0"
+                                  className="p-2 hover:bg-blue-50 dark:hover:bg-gray-700 cursor-pointer text-xs border-b border-gray-50 dark:border-gray-700 last:border-0"
                                 >
-                                  <div className="font-medium text-gray-800">{pred.place_name}</div>
+                                  <div className="font-medium text-gray-800 dark:text-gray-200">{pred.place_name}</div>
                                 </div>
                               ))}
                             </div>
                           )}
                         </div>
 
-                        <div className="flex gap-1 border-l pl-2 border-gray-100">
+                        <div className="flex gap-1 border-l pl-2 border-gray-100 dark:border-gray-600">
                           <button
                             onClick={() => useCurrentLocation(i)}
                             disabled={loadingLocation === i}
-                            className={`p-1.5 rounded hover:bg-gray-100 text-gray-500 transition-colors ${loadingLocation === i ? 'animate-pulse' : ''}`}
+                            className={`p-1.5 rounded hover:bg-gray-100 dark:hover:bg-gray-600 text-gray-500 dark:text-gray-400 transition-colors ${loadingLocation === i ? 'animate-pulse' : ''}`}
                             title="Current Location"
                           >
                             <FaLocationArrow className="text-xs" />
@@ -1078,7 +1078,7 @@ export default function RoutePlanner() {
           </motion.div>
 
           {/* 3. Action Button */}
-          <motion.div variants={itemVariants} className="sticky bottom-0 bg-white/50 backdrop-blur-sm pt-2">
+          <motion.div variants={itemVariants} className="sticky bottom-0 bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm pt-2">
             <button
               onClick={optimize}
               disabled={optimizing || !map}
@@ -1108,49 +1108,49 @@ export default function RoutePlanner() {
               >
                 {/* Stats Cards */}
                 <div className="grid grid-cols-2 gap-3">
-                  <div className="bg-blue-50 p-3 rounded-lg border border-blue-100">
-                    <div className="text-blue-500 text-xs font-semibold uppercase">Total Distance</div>
-                    <div className="text-xl font-bold text-gray-800">{routeStats?.distance} <span className="text-sm font-normal text-gray-500">km</span></div>
+                  <div className="bg-blue-50 dark:bg-blue-900/30 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
+                    <div className="text-blue-500 dark:text-blue-300 text-xs font-semibold uppercase">Total Distance</div>
+                    <div className="text-xl font-bold text-gray-800 dark:text-white">{routeStats?.distance} <span className="text-sm font-normal text-gray-500 dark:text-gray-400">km</span></div>
                   </div>
-                  <div className="bg-purple-50 p-3 rounded-lg border border-purple-100">
-                    <div className="text-purple-500 text-xs font-semibold uppercase">Est. Duration</div>
-                    <div className="text-xl font-bold text-gray-800">{routeStats?.duration} <span className="text-sm font-normal text-gray-500">min</span></div>
+                  <div className="bg-purple-50 dark:bg-purple-900/30 p-3 rounded-lg border border-purple-100 dark:border-purple-800">
+                    <div className="text-purple-500 dark:text-purple-300 text-xs font-semibold uppercase">Est. Duration</div>
+                    <div className="text-xl font-bold text-gray-800 dark:text-white">{routeStats?.duration} <span className="text-sm font-normal text-gray-500 dark:text-gray-400">min</span></div>
                   </div>
                 </div>
 
                 {/* Quick Actions Bar */}
                 <div className="flex gap-2 justify-between">
-                  <button onClick={saveRoute} disabled={isRouteSaved} className={`flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition-colors ${isRouteSaved ? 'bg-green-100 text-green-700' : 'bg-gray-100 hover:bg-gray-200 text-gray-700'}`}>
+                  <button onClick={saveRoute} disabled={isRouteSaved} className={`flex-1 py-2 rounded-lg text-sm font-medium flex items-center justify-center gap-1 transition-colors ${isRouteSaved ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' : 'bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300'}`}>
                     <FaBookmark /> {isRouteSaved ? 'Saved' : 'Save'}
                   </button>
-                  <button onClick={shareRoute} className="flex-1 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
+                  <button onClick={shareRoute} className="flex-1 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
                     <FaShare /> Share
                   </button>
-                  <button onClick={exportRoute} className="flex-1 py-2 rounded-lg bg-gray-100 hover:bg-gray-200 text-gray-700 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
+                  <button onClick={exportRoute} className="flex-1 py-2 rounded-lg bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 text-sm font-medium flex items-center justify-center gap-1 transition-colors">
                     <FaDownload /> GPX
                   </button>
                 </div>
 
                 {/* Itinerary */}
-                <div className="bg-white rounded-xl border border-gray-100 shadow-sm overflow-hidden">
-                  <div className="bg-gray-50 px-4 py-2 border-b border-gray-100 font-semibold text-xs text-gray-500 uppercase tracking-wide">
+                <div className="bg-white dark:bg-gray-800 rounded-xl border border-gray-100 dark:border-gray-700 shadow-sm overflow-hidden">
+                  <div className="bg-gray-50 dark:bg-gray-900 px-4 py-2 border-b border-gray-100 dark:border-gray-700 font-semibold text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide">
                     Trip Timeline
                   </div>
                   <div>
                     {plan.map((p, idx) => (
-                      <div key={idx} className="flex group hover:bg-blue-50/50 transition-colors p-3 items-center gap-3 border-b border-gray-50 last:border-0 relative">
+                      <div key={idx} className="flex group hover:bg-blue-50/50 dark:hover:bg-gray-700/50 transition-colors p-3 items-center gap-3 border-b border-gray-50 dark:border-gray-700 last:border-0 relative">
                         {idx !== plan.length - 1 && (
-                          <div className="absolute left-[27px] top-8 bottom-[-8px] w-0.5 bg-gray-200 group-hover:bg-blue-100 transition-colors"></div>
+                          <div className="absolute left-[27px] top-8 bottom-[-8px] w-0.5 bg-gray-200 dark:bg-gray-600 group-hover:bg-blue-100 dark:group-hover:bg-gray-500 transition-colors"></div>
                         )}
-                        <div className="w-8 h-8 rounded-full border-2 border-white shadow-sm flex items-center justify-center text-xs font-bold z-10
-                                  bg-white text-gray-600 group-hover:scale-110 transition-transform
+                        <div className="w-8 h-8 rounded-full border-2 border-white dark:border-gray-600 shadow-sm flex items-center justify-center text-xs font-bold z-10
+                                  bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-200 group-hover:scale-110 transition-transform
                                ">
                           {idx + 1}
                         </div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-900 truncate">{p.addr}</div>
-                          <div className="text-xs text-gray-500 flex items-center gap-1">
-                            <FaClock className="text-gray-300" /> {p.eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
+                          <div className="text-sm font-medium text-gray-900 dark:text-white truncate">{p.addr}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400 flex items-center gap-1">
+                            <FaClock className="text-gray-300 dark:text-gray-500" /> {p.eta.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}
                           </div>
                         </div>
                       </div>
@@ -1186,24 +1186,23 @@ export default function RoutePlanner() {
 
             {/* Floating Map Controls */}
             <div className="absolute top-4 left-4 flex flex-col gap-2 z-10">
-              <div className="bg-white rounded-lg shadow-lg border border-gray-200 overflow-hidden flex flex-col">
+              <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 overflow-hidden flex flex-col">
                 {Object.entries(mapStyles).slice(0, 3).map(([key, value]) => (
                   <button
                     key={key}
                     onClick={() => changeMapStyle(key)}
-                    className={`p-2 px-3 text-xs font-medium text-left hover:bg-gray-50 transition-colors ${mapStyle === key ? 'bg-blue-50 text-blue-600 border-l-2 border-blue-600' : 'text-gray-600'}`}
+                    className={`p-2 px-3 text-xs font-medium text-left hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${mapStyle === key ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 border-l-2 border-blue-600' : 'text-gray-600 dark:text-gray-300'}`}
                     title={key}
                   >
                     {key.charAt(0).toUpperCase() + key.slice(1).replace(/([A-Z])/g, ' $1')}
                   </button>
                 ))}
-                <button onClick={toggleTraffic} className={`p-2 px-3 text-xs font-medium text-left border-t border-gray-100 hover:bg-gray-50 transition-colors ${showTraffic ? 'text-red-600 bg-red-50' : 'text-gray-600'}`}>
+                <button onClick={toggleTraffic} className={`p-2 px-3 text-xs font-medium text-left border-t border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors ${showTraffic ? 'text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30' : 'text-gray-600 dark:text-gray-300'}`}>
                   Traffic {showTraffic ? 'On' : 'Off'}
                 </button>
               </div>
             </div>
 
-            {/* Fullscreen Toggle (Desktop) */}
             <div className="absolute top-4 right-14 z-10 hidden lg:block">
               <button
                 onClick={() => {
@@ -1211,7 +1210,7 @@ export default function RoutePlanner() {
                   setIsFullscreen(newFullscreen);
                   if (newFullscreen) hideHeader(); else showHeader();
                 }}
-                className="p-3 bg-white hover:bg-gray-50 text-gray-700 rounded-lg shadow-lg transition-all"
+                className="p-3 bg-white dark:bg-gray-800 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg shadow-lg transition-all"
                 title={isFullscreen ? "Exit Fullscreen" : "Enter Fullscreen"}
               >
                 <FaMapPin />
@@ -1254,13 +1253,13 @@ export default function RoutePlanner() {
               initial={{ scale: 0.95, opacity: 0 }}
               animate={{ scale: 1, opacity: 1 }}
               exit={{ scale: 0.95, opacity: 0 }}
-              className="bg-white rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
+              className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[85vh] overflow-hidden flex flex-col"
             >
-              <div className="p-5 border-b border-gray-100 flex justify-between items-center bg-gray-50">
-                <h2 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+              <div className="p-5 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50 dark:bg-gray-900">
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaBookmark className="text-blue-600" /> Saved Routes & History
                 </h2>
-                <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-gray-200 rounded-full transition-colors text-gray-500">
+                <button onClick={() => setShowSettings(false)} className="p-2 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors text-gray-500 dark:text-gray-400">
                   ✕
                 </button>
               </div>
@@ -1269,41 +1268,41 @@ export default function RoutePlanner() {
                 {/* Saved Section */}
                 <div>
                   <div className="flex items-center justify-between mb-4">
-                    <h3 className="font-bold text-gray-700 flex items-center gap-2"><div className="w-2 h-6 bg-blue-500 rounded-full"></div> Saved Routes</h3>
+                    <h3 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2"><div className="w-2 h-6 bg-blue-500 rounded-full"></div> Saved Routes</h3>
                     {savedRoutes.length > 0 && <button onClick={deleteAllSavedRoutes} className="text-xs text-red-600 hover:underline">Clear All</button>}
                   </div>
                   {savedRoutes.length > 0 ? (
                     <div className="grid gap-3">
                       {savedRoutes.map((route) => (
-                        <div key={route._id || route.id} className="bg-white border rounded-xl p-4 hover:shadow-md transition-shadow flex justify-between items-center group">
+                        <div key={route._id || route.id} className="bg-white dark:bg-gray-700 border dark:border-gray-600 rounded-xl p-4 hover:shadow-md transition-shadow flex justify-between items-center group">
                           <div>
-                            <div className="font-semibold text-gray-800">{route.name}</div>
-                            <div className="text-xs text-gray-500 mt-1">{new Date(route.timestamp).toLocaleDateString()} • {route.travelMode}</div>
+                            <div className="font-semibold text-gray-800 dark:text-white">{route.name}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-300 mt-1">{new Date(route.timestamp).toLocaleDateString()} • {route.travelMode}</div>
                           </div>
                           <div className="flex gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => { loadRoute(route); setShowSettings(false); }} className="px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-sm font-medium hover:bg-blue-100">Load</button>
-                            <button onClick={() => deleteSavedRoute(route._id || route.id)} className="p-2 text-red-500 hover:bg-red-50 rounded-lg"><FaTrash /></button>
+                            <button onClick={() => { loadRoute(route); setShowSettings(false); }} className="px-3 py-1.5 bg-blue-50 dark:bg-blue-900/40 text-blue-600 dark:text-blue-400 rounded-lg text-sm font-medium hover:bg-blue-100 dark:hover:bg-blue-900/60">Load</button>
+                            <button onClick={() => deleteSavedRoute(route._id || route.id)} className="p-2 text-red-500 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg"><FaTrash /></button>
                           </div>
                         </div>
                       ))}
                     </div>
                   ) : (
-                    <div className="text-center py-8 bg-gray-50 rounded-xl border border-dashed border-gray-200 text-gray-400">No saved routes used yet.</div>
+                    <div className="text-center py-8 bg-gray-50 dark:bg-gray-900 rounded-xl border border-dashed border-gray-200 dark:border-gray-700 text-gray-400">No saved routes used yet.</div>
                   )}
                 </div>
 
                 {/* History Section */}
                 <div>
-                  <h3 className="font-bold text-gray-700 flex items-center gap-2 mb-4"><div className="w-2 h-6 bg-orange-500 rounded-full"></div> Recent History</h3>
+                  <h3 className="font-bold text-gray-700 dark:text-gray-300 flex items-center gap-2 mb-4"><div className="w-2 h-6 bg-orange-500 rounded-full"></div> Recent History</h3>
                   <div className="space-y-2">
                     {routeHistory.slice(0, 5).map((route) => (
-                      <div key={route.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-gray-100" onClick={() => { loadRoute(route); setShowSettings(false); }}>
-                        <div className="bg-orange-100 p-2 rounded-lg text-orange-600"><FaHistory /></div>
+                      <div key={route.id} className="flex items-center gap-3 p-3 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg transition-colors cursor-pointer border border-transparent hover:border-gray-100 dark:hover:border-gray-600" onClick={() => { loadRoute(route); setShowSettings(false); }}>
+                        <div className="bg-orange-100 dark:bg-orange-900/30 p-2 rounded-lg text-orange-600 dark:text-orange-400"><FaHistory /></div>
                         <div className="flex-1 min-w-0">
-                          <div className="text-sm font-medium text-gray-800 truncate">{route.stops.map(s => s.address.split(',')[0]).join(' → ')}</div>
-                          <div className="text-xs text-gray-500">{route.timestamp.toLocaleString()}</div>
+                          <div className="text-sm font-medium text-gray-800 dark:text-gray-200 truncate">{route.stops.map(s => s.address.split(',')[0]).join(' → ')}</div>
+                          <div className="text-xs text-gray-500 dark:text-gray-400">{route.timestamp.toLocaleString()}</div>
                         </div>
-                        <FaDirections className="text-gray-300" />
+                        <FaDirections className="text-gray-300 dark:text-gray-500" />
                       </div>
                     ))}
                     {routeHistory.length === 0 && <div className="text-sm text-gray-400 italic">No recent history available.</div>}

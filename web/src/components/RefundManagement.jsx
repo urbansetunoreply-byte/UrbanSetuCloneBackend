@@ -7,7 +7,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
   const [refundRequests, setRefundRequests] = useState([]);
   const [allRefundRequests, setAllRefundRequests] = useState([]);
   const [loading, setLoading] = useState(true);
-  
+
   // Pagination states for refund requests
   const [refundRequestsPage, setRefundRequestsPage] = useState(1);
   const [refundRequestsTotalPages, setRefundRequestsTotalPages] = useState(1);
@@ -52,7 +52,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
     } else {
       document.body.classList.remove('modal-open');
     }
-    
+
     return () => {
       document.body.classList.remove('modal-open');
     };
@@ -63,13 +63,13 @@ const RefundManagement = ({ onRefundProcessed }) => {
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     const timeout = setTimeout(() => {
       fetchPayments(false); // No loading indicator for search
     }, 300); // 300ms debounce
-    
+
     setSearchTimeout(timeout);
-    
+
     return () => {
       if (timeout) {
         clearTimeout(timeout);
@@ -87,13 +87,13 @@ const RefundManagement = ({ onRefundProcessed }) => {
     if (searchTimeout) {
       clearTimeout(searchTimeout);
     }
-    
+
     const timeout = setTimeout(() => {
       fetchRefundRequests(false); // No loading indicator for search
     }, 300); // 300ms debounce
-    
+
     setSearchTimeout(timeout);
-    
+
     return () => {
       if (timeout) {
         clearTimeout(timeout);
@@ -111,7 +111,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
     const itemsPerPage = 10;
     const totalPages = Math.ceil(allRefundRequests.length / itemsPerPage);
     setRefundRequestsTotalPages(totalPages);
-    
+
     const startIndex = (refundRequestsPage - 1) * itemsPerPage;
     const endIndex = startIndex + itemsPerPage;
     const currentPageRefundRequests = allRefundRequests.slice(startIndex, endIndex);
@@ -130,12 +130,12 @@ const RefundManagement = ({ onRefundProcessed }) => {
         setLoading(true);
       }
       const queryParams = new URLSearchParams();
-      
+
       // Only add status filter if it's selected
       if (filters.status) {
         queryParams.set('status', filters.status);
       }
-      
+
       // Add other filters
       if (filters.search) {
         queryParams.set('q', filters.search);
@@ -271,7 +271,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
       } else if (action === 'rejected') {
         setProcessingReject(true);
       }
-      
+
       const response = await fetch(`${import.meta.env.VITE_API_BASE_URL}/api/payments/refund-request/${selectedRefundRequest._id}`, {
         method: 'PUT',
         headers: {
@@ -399,33 +399,31 @@ const RefundManagement = ({ onRefundProcessed }) => {
   }
 
   return (
-    <div className="bg-white rounded-lg shadow-lg p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
           <FaUndo className="text-red-600" />
           Refund Management
         </h2>
       </div>
 
       {/* Tabs */}
-      <div className="flex space-x-1 mb-6 bg-gray-100 p-1 rounded-lg">
+      <div className="flex space-x-1 mb-6 bg-gray-100 dark:bg-gray-700 p-1 rounded-lg">
         <button
           onClick={() => setActiveTab('payments')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'payments'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'payments'
+            ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+            }`}
         >
           Direct Refunds
         </button>
         <button
           onClick={() => setActiveTab('requests')}
-          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${
-            activeTab === 'requests'
-              ? 'bg-white text-gray-900 shadow-sm'
-              : 'text-gray-600 hover:text-gray-900'
-          }`}
+          className={`flex-1 py-2 px-4 rounded-md text-sm font-medium transition-colors ${activeTab === 'requests'
+            ? 'bg-white dark:bg-gray-600 text-gray-900 dark:text-white shadow-sm'
+            : 'text-gray-600 dark:text-gray-300 hover:text-gray-900 dark:hover:text-white'
+            }`}
         >
           Refund Requests
         </button>
@@ -443,14 +441,14 @@ const RefundManagement = ({ onRefundProcessed }) => {
                   placeholder="Search by property name or payment ID..."
                   value={filters.search}
                   onChange={(e) => setFilters(prev => ({ ...prev, search: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
             </div>
             <select
               value={filters.status}
               onChange={(e) => setFilters(prev => ({ ...prev, status: e.target.value }))}
-              className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+              className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
             >
               <option value="">All Status</option>
               <option value="completed">Completed Payments</option>
@@ -459,245 +457,244 @@ const RefundManagement = ({ onRefundProcessed }) => {
             </select>
           </div>
 
-      {/* Payments Table */}
-      <div className="overflow-x-auto">
-        <table className="w-full">
-          <thead>
-            <tr className="border-b border-gray-200">
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Property</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Payment ID</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Amount</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Date</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Refund Status</th>
-              <th className="text-left py-3 px-4 font-semibold text-gray-700">Actions</th>
-            </tr>
-          </thead>
-          <tbody>
-            {payments.map((payment) => (
-              <tr key={payment._id} className="border-b border-gray-100 hover:bg-gray-50">
-                <td className="py-3 px-4">
-                  <div>
-                    <div className="font-medium text-gray-800">
-                      {payment.appointmentId?.propertyName || 'N/A'}
-                    </div>
-                    <div className="text-sm text-gray-600">
-                      {payment.listingId?.name || 'N/A'}
-                    </div>
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <span className="font-mono text-sm text-gray-600">
-                    {payment.paymentId}
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  <div className="font-semibold text-gray-800">
-                    ${payment.amount.toLocaleString()}
-                  </div>
-                  {payment.refundAmount > 0 && (
-                    <div className="text-sm text-red-600">
-                      Refunded: ${payment.refundAmount.toLocaleString()}
-                    </div>
-                  )}
-                </td>
-                <td className="py-3 px-4">
-                  <div className="text-sm text-gray-600">
-                    {new Date(payment.createdAt).toLocaleDateString('en-GB')}
-                  </div>
-                </td>
-                <td className="py-3 px-4">
-                  <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRefundStatusColor(payment)}`}>
-                    {getRefundStatus(payment)}
-                  </span>
-                </td>
-                <td className="py-3 px-4">
-                  {canRefund(payment) ? (
-                    <button
-                      onClick={() => handleRefundClick(payment)}
-                      className="px-3 py-1 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-1"
-                    >
-                      <FaUndo className="text-xs" />
-                      Refund
-                    </button>
-                  ) : (
-                    <span className="text-gray-400 text-sm">N/A</span>
-                  )}
-                </td>
-              </tr>
-            ))}
-          </tbody>
-        </table>
-      </div>
+          {/* Payments Table */}
+          <div className="overflow-x-auto">
+            <table className="w-full">
+              <thead>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Property</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Payment ID</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Amount</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Date</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Refund Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
+                </tr>
+              </thead>
+              <tbody>
+                {payments.map((payment) => (
+                  <tr key={payment._id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
+                    <td className="py-3 px-4">
+                      <div>
+                        <div className="font-medium text-gray-800 dark:text-white">
+                          {payment.appointmentId?.propertyName || 'N/A'}
+                        </div>
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
+                          {payment.listingId?.name || 'N/A'}
+                        </div>
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className="font-mono text-sm text-gray-600 dark:text-gray-400">
+                        {payment.paymentId}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="font-semibold text-gray-800 dark:text-white">
+                        ${payment.amount.toLocaleString()}
+                      </div>
+                      {payment.refundAmount > 0 && (
+                        <div className="text-sm text-red-600 dark:text-red-400">
+                          Refunded: ${payment.refundAmount.toLocaleString()}
+                        </div>
+                      )}
+                    </td>
+                    <td className="py-3 px-4">
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
+                        {new Date(payment.createdAt).toLocaleDateString('en-GB')}
+                      </div>
+                    </td>
+                    <td className="py-3 px-4">
+                      <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRefundStatusColor(payment)}`}>
+                        {getRefundStatus(payment)}
+                      </span>
+                    </td>
+                    <td className="py-3 px-4">
+                      {canRefund(payment) ? (
+                        <button
+                          onClick={() => handleRefundClick(payment)}
+                          className="px-3 py-1 bg-red-100 text-red-600 rounded-lg hover:bg-red-200 transition-colors flex items-center gap-1"
+                        >
+                          <FaUndo className="text-xs" />
+                          Refund
+                        </button>
+                      ) : (
+                        <span className="text-gray-400 text-sm">N/A</span>
+                      )}
+                    </td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
 
-      {payments.length === 0 && (
-        <div className="text-center py-8">
-          <FaExclamationTriangle className="text-6xl text-gray-300 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-gray-600 mb-2">No Payments Found</h3>
-          <p className="text-gray-500">No completed payments available for refund.</p>
-        </div>
-      )}
-
-      {/* Refund Modal */}
-      {showRefundModal && selectedPayment && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-            <div className="p-6 border-b border-gray-200">
-              <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
-                  <FaUndo className="text-red-600" />
-                  Process Refund
-                </h3>
-                <button
-                  onClick={() => setShowRefundModal(false)}
-                  className="text-gray-400 hover:text-gray-600 transition-colors"
-                >
-                  <FaTimes className="text-xl" />
-                </button>
-              </div>
+          {payments.length === 0 && (
+            <div className="text-center py-8">
+              <FaExclamationTriangle className="text-6xl text-gray-300 mx-auto mb-4" />
+              <h3 className="text-xl font-semibold text-gray-600 mb-2">No Payments Found</h3>
+              <p className="text-gray-500">No completed payments available for refund.</p>
             </div>
+          )}
 
-            <form onSubmit={handleRefundSubmit} className="p-6">
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Payment Details
-                </label>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Property:</span>
-                    <span className="font-medium">{selectedPayment.appointmentId?.propertyName}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Amount:</span>
-                    <span className="font-medium">${selectedPayment.amount.toLocaleString()}</span>
-                  </div>
-                  <div className="flex justify-between items-center">
-                    <span className="text-gray-600">Payment ID:</span>
-                    <span className="font-mono text-sm">{selectedPayment.paymentId}</span>
+          {/* Refund Modal */}
+          {showRefundModal && selectedPayment && (
+            <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
+                <div className="p-6 border-b border-gray-200 dark:border-gray-700">
+                  <div className="flex items-center justify-between">
+                    <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
+                      <FaUndo className="text-red-600" />
+                      Process Refund
+                    </h3>
+                    <button
+                      onClick={() => setShowRefundModal(false)}
+                      className="text-gray-400 hover:text-gray-600 transition-colors"
+                    >
+                      <FaTimes className="text-xl" />
+                    </button>
                   </div>
                 </div>
-              </div>
 
-              <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Refund Type
-                </label>
-                <div className="flex gap-4">
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="type"
-                      value="full"
-                      checked={refundForm.type === 'full'}
-                      onChange={(e) => {
-                        setRefundForm(prev => ({
-                          ...prev,
-                          type: e.target.value,
-                          refundAmount: e.target.value === 'full' ? selectedPayment.amount : prev.refundAmount
-                        }));
-                      }}
-                      className="mr-2"
-                    />
-                    Full Refund (${selectedPayment.amount.toLocaleString()})
-                  </label>
-                  <label className="flex items-center">
-                    <input
-                      type="radio"
-                      name="type"
-                      value="partial"
-                      checked={refundForm.type === 'partial'}
-                      onChange={(e) => setRefundForm(prev => ({ ...prev, type: e.target.value }))}
-                      className="mr-2"
-                    />
-                    Partial Refund
-                  </label>
-                </div>
-              </div>
+                <form onSubmit={handleRefundSubmit} className="p-6">
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Payment Details
+                    </label>
+                    <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600 dark:text-gray-400">Property:</span>
+                        <span className="font-medium dark:text-white">{selectedPayment.appointmentId?.propertyName}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600 dark:text-gray-400">Amount:</span>
+                        <span className="font-medium dark:text-white">${selectedPayment.amount.toLocaleString()}</span>
+                      </div>
+                      <div className="flex justify-between items-center">
+                        <span className="text-gray-600 dark:text-gray-400">Payment ID:</span>
+                        <span className="font-mono text-sm dark:text-gray-300">{selectedPayment.paymentId}</span>
+                      </div>
+                    </div>
+                  </div>
 
-              {refundForm.type === 'partial' && (
-                <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Refund Amount
-                  </label>
-                  <div className="relative">
-                    <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
-                    <input
-                      type="number"
-                      value={refundForm.refundAmount}
-                      onChange={(e) => setRefundForm(prev => ({ ...prev, refundAmount: e.target.value }))}
-                      max={selectedPayment.amount}
-                      min="1"
-                      className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  <div className="mb-4">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Refund Type
+                    </label>
+                    <div className="flex gap-4">
+                      <label className="flex items-center cursor-pointer dark:text-gray-300">
+                        <input
+                          type="radio"
+                          name="type"
+                          value="full"
+                          checked={refundForm.type === 'full'}
+                          onChange={(e) => {
+                            setRefundForm(prev => ({
+                              ...prev,
+                              type: e.target.value,
+                              refundAmount: e.target.value === 'full' ? selectedPayment.amount : prev.refundAmount
+                            }));
+                          }}
+                          className="mr-2"
+                        />
+                        Full Refund (${selectedPayment.amount.toLocaleString()})
+                      </label>
+                      <label className="flex items-center cursor-pointer dark:text-gray-300">
+                        <input
+                          type="radio"
+                          name="type"
+                          value="partial"
+                          checked={refundForm.type === 'partial'}
+                          onChange={(e) => setRefundForm(prev => ({ ...prev, type: e.target.value }))}
+                          className="mr-2"
+                        />
+                        Partial Refund
+                      </label>
+                    </div>
+                  </div>
+
+                  {refundForm.type === 'partial' && (
+                    <div className="mb-4">
+                      <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                        Refund Amount
+                      </label>
+                      <div className="relative">
+                        <FaDollarSign className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+                        <input
+                          type="number"
+                          value={refundForm.refundAmount}
+                          onChange={(e) => setRefundForm(prev => ({ ...prev, refundAmount: e.target.value }))}
+                          max={selectedPayment.amount}
+                          min="1"
+                          className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                          required
+                        />
+                      </div>
+                    </div>
+                  )}
+
+                  <div className="mb-6">
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
+                      Refund Reason
+                    </label>
+                    <textarea
+                      value={refundForm.reason}
+                      onChange={(e) => setRefundForm(prev => ({ ...prev, reason: e.target.value }))}
+                      placeholder="Enter reason for refund..."
+                      className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                      rows="3"
                       required
                     />
                   </div>
-                </div>
-              )}
 
-              <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
-                  Refund Reason
-                </label>
-                <textarea
-                  value={refundForm.reason}
-                  onChange={(e) => setRefundForm(prev => ({ ...prev, reason: e.target.value }))}
-                  placeholder="Enter reason for refund..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
-                  rows="3"
-                  required
-                />
+                  <div className="flex gap-3">
+                    <button
+                      type="button"
+                      onClick={() => setShowRefundModal(false)}
+                      className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                    >
+                      Cancel
+                    </button>
+                    <button
+                      type="submit"
+                      disabled={processingRefund}
+                      className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                    >
+                      {processingRefund ? (
+                        <>
+                          <FaSpinner className="animate-spin" />
+                          Processing...
+                        </>
+                      ) : (
+                        <>
+                          <FaUndo />
+                          Process Refund
+                        </>
+                      )}
+                    </button>
+                  </div>
+                </form>
               </div>
-
-              <div className="flex gap-3">
-                <button
-                  type="button"
-                  onClick={() => setShowRefundModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
-                >
-                  Cancel
-                </button>
-                <button
-                  type="submit"
-                  disabled={processingRefund}
-                  className="flex-1 px-4 py-2 bg-red-600 text-white rounded-lg hover:bg-red-700 transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
-                >
-                  {processingRefund ? (
-                    <>
-                      <FaSpinner className="animate-spin" />
-                      Processing...
-                    </>
-                  ) : (
-                    <>
-                      <FaUndo />
-                      Process Refund
-                    </>
-                  )}
-                </button>
-              </div>
-            </form>
-          </div>
-        </div>
-      )}
+            </div>
+          )}
         </>
       )}
 
       {activeTab === 'requests' && (
         <>
           {/* Refund Requests Filters */}
-          <div className="bg-gray-50 rounded-lg p-4 mb-6">
+          <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-6">
             <div className="flex items-center gap-2 mb-4">
-              <FaFilter className="text-gray-600" />
-              <h3 className="text-lg font-semibold text-gray-800">Filter Refund Requests</h3>
+              <FaFilter className="text-gray-600 dark:text-gray-300" />
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white">Filter Refund Requests</h3>
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
               {/* Search */}
               <div className="relative">
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
-                  type="text"
                   placeholder="Search by property, user, reason, or email..."
                   value={refundRequestFilters.search}
                   onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, search: e.target.value }))}
-                  className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -705,7 +702,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
               <select
                 value={refundRequestFilters.status}
                 onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, status: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Status</option>
                 <option value="pending">Pending</option>
@@ -718,7 +715,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
               <select
                 value={refundRequestFilters.type}
                 onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, type: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Types</option>
                 <option value="full">Full Refund</option>
@@ -729,7 +726,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
               <select
                 value={refundRequestFilters.currency}
                 onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, currency: e.target.value }))}
-                className="px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                className="px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
               >
                 <option value="">All Currencies</option>
                 <option value="USD">USD ($)</option>
@@ -744,19 +741,19 @@ const RefundManagement = ({ onRefundProcessed }) => {
                   value={refundRequestFilters.dateFrom}
                   onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, dateFrom: e.target.value }))}
                   max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
               {/* Date To */}
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">To Date</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">To Date</label>
                 <input
                   type="date"
                   value={refundRequestFilters.dateTo}
                   onChange={(e) => setRefundRequestFilters(prev => ({ ...prev, dateTo: e.target.value }))}
                   max={new Date().toISOString().split('T')[0]}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
               </div>
 
@@ -771,7 +768,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
                     dateFrom: '',
                     dateTo: ''
                   })}
-                  className="w-full px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors flex items-center justify-center gap-2"
+                  className="w-full px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors flex items-center justify-center gap-2"
                 >
                   <FaTimes className="text-sm" />
                   Clear Filters
@@ -784,49 +781,49 @@ const RefundManagement = ({ onRefundProcessed }) => {
           <div className="overflow-x-auto">
             <table className="w-full">
               <thead>
-                <tr className="border-b border-gray-200">
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Property</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">User</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Amount</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Reason</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Status</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Date & Time</th>
-                  <th className="text-left py-3 px-4 font-semibold text-gray-700">Actions</th>
+                <tr className="border-b border-gray-200 dark:border-gray-700">
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Property</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">User</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Amount</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Reason</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Status</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Date & Time</th>
+                  <th className="text-left py-3 px-4 font-semibold text-gray-700 dark:text-gray-300">Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {refundRequests && refundRequests.map((request) => (
-                  <tr key={request._id} className="border-b border-gray-100 hover:bg-gray-50">
+                  <tr key={request._id} className="border-b border-gray-100 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700/50">
                     <td className="py-3 px-4">
                       <div>
-                        <div className="font-medium text-gray-800">
+                        <div className="font-medium text-gray-800 dark:text-white">
                           {request.appointmentId?.propertyName || 'N/A'}
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
                           Payment ID: {request.paymentId?.paymentId || request.paymentId}
                         </div>
                       </div>
                     </td>
                     <td className="py-3 px-4">
                       <div>
-                        <div className="font-medium text-gray-800">
+                        <div className="font-medium text-gray-800 dark:text-white">
                           {request.userId?.name || 'N/A'}
                         </div>
-                        <div className="text-sm text-gray-600">
+                        <div className="text-sm text-gray-600 dark:text-gray-400">
                           {request.userId?.email || 'N/A'}
                         </div>
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="font-semibold text-gray-800">
+                      <div className="font-semibold text-gray-800 dark:text-white">
                         {request.paymentId?.currency === 'INR' ? '₹' : '$'}{request.requestedAmount.toLocaleString()}
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
                         {request.type === 'full' ? 'Full Refund' : 'Partial Refund'}
                       </div>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="text-sm text-gray-600 max-w-xs truncate">
+                      <div className="text-sm text-gray-600 dark:text-gray-400 max-w-xs truncate">
                         {request.reason}
                       </div>
                     </td>
@@ -836,10 +833,10 @@ const RefundManagement = ({ onRefundProcessed }) => {
                       </span>
                     </td>
                     <td className="py-3 px-4">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-400">
                         {new Date(request.createdAt).toLocaleDateString('en-GB')}
                       </div>
-                      <div className="text-xs text-gray-500">
+                      <div className="text-xs text-gray-500 dark:text-gray-500">
                         {new Date(request.createdAt).toLocaleTimeString('en-GB')}
                       </div>
                     </td>
@@ -910,7 +907,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
           {/* Refund Requests Pagination */}
           {allRefundRequests.length > 10 && refundRequestsTotalPages > 1 && (
             <div className="flex flex-col sm:flex-row items-center justify-between mt-6 gap-2">
-              <div className="text-sm text-gray-700">
+              <div className="text-sm text-gray-700 dark:text-gray-300">
                 Page {refundRequestsPage} of {refundRequestsTotalPages}
               </div>
               <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
@@ -920,7 +917,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
                     toast.info(`Navigated to page ${Math.max(1, refundRequestsPage - 1)}`);
                   }}
                   disabled={refundRequestsPage === 1}
-                  className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                  className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                 >
                   Previous
                 </button>
@@ -930,7 +927,7 @@ const RefundManagement = ({ onRefundProcessed }) => {
                     toast.info(`Navigated to page ${Math.min(refundRequestsTotalPages, refundRequestsPage + 1)}`);
                   }}
                   disabled={refundRequestsPage === refundRequestsTotalPages}
-                  className="px-3 py-2 text-sm bg-gray-100 text-gray-700 rounded-md hover:bg-gray-200 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
+                  className="px-3 py-2 text-sm bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-md hover:bg-gray-200 dark:hover:bg-gray-600 disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto"
                 >
                   Next
                 </button>
@@ -943,10 +940,10 @@ const RefundManagement = ({ onRefundProcessed }) => {
       {/* Refund Request Modal */}
       {showRefundRequestModal && selectedRefundRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-gray-200 flex-shrink-0">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaCheckCircle className="text-blue-600" />
                   Review Refund Request
                 </h3>
@@ -1016,34 +1013,34 @@ const RefundManagement = ({ onRefundProcessed }) => {
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-3">Payment Details</h4>
+                  <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Payment Details</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Payment ID:</span>
-                      <span className="font-mono text-sm">{selectedRefundRequest.paymentId?.paymentId || selectedRefundRequest.paymentId}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Payment ID:</span>
+                      <span className="font-mono text-sm dark:text-gray-300">{selectedRefundRequest.paymentId?.paymentId || selectedRefundRequest.paymentId}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Original Amount:</span>
-                      <span className="font-medium">
+                      <span className="text-gray-600 dark:text-gray-400">Original Amount:</span>
+                      <span className="font-medium dark:text-white">
                         {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedRefundRequest.paymentId?.amount?.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Gateway:</span>
-                      <span className="font-medium capitalize">{selectedRefundRequest.paymentId?.gateway}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Gateway:</span>
+                      <span className="font-medium capitalize dark:text-white">{selectedRefundRequest.paymentId?.gateway}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Appointment Status:</span>
-                      <span className="font-medium capitalize">{selectedRefundRequest.appointmentId?.status?.replace(/([A-Z])/g, ' $1').trim()}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Appointment Status:</span>
+                      <span className="font-medium capitalize dark:text-white">{selectedRefundRequest.appointmentId?.status?.replace(/([A-Z])/g, ' $1').trim()}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="mb-6">
-                <h4 className="font-semibold text-gray-800 mb-2">Refund Reason</h4>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-gray-700">{selectedRefundRequest.reason}</p>
+                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Refund Reason</h4>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <p className="text-gray-700 dark:text-gray-300">{selectedRefundRequest.reason}</p>
                 </div>
               </div>
 
@@ -1085,20 +1082,20 @@ const RefundManagement = ({ onRefundProcessed }) => {
               )}
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Admin Notes
                 </label>
                 <textarea
                   value={adminNotes}
                   onChange={(e) => setAdminNotes(e.target.value)}
                   placeholder="Add notes about this refund request..."
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                   rows="3"
                 />
               </div>
 
               <div className="mb-6">
-                <label className="block text-sm font-medium text-gray-700 mb-2">
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Refund Amount (Admin Override)
                 </label>
                 <div className="relative">
@@ -1114,11 +1111,11 @@ const RefundManagement = ({ onRefundProcessed }) => {
                     min="0"
                     max={selectedRefundRequest.paymentId?.amount || selectedRefundRequest.requestedAmount}
                     step="0.01"
-                    className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
                     placeholder="Enter refund amount"
                   />
                 </div>
-                <div className="mt-1 text-sm text-gray-600">
+                <div className="mt-1 text-sm text-gray-600 dark:text-gray-400">
                   <div>Requested: {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedRefundRequest.requestedAmount.toLocaleString()}</div>
                   <div>Maximum: {selectedRefundRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{(selectedRefundRequest.paymentId?.amount || selectedRefundRequest.requestedAmount).toLocaleString()}</div>
                 </div>
@@ -1167,10 +1164,10 @@ const RefundManagement = ({ onRefundProcessed }) => {
       {/* Info Modal */}
       {showInfoModal && selectedInfoRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
-            <div className="p-6 border-b border-gray-200 flex-shrink-0">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700 flex-shrink-0">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaInfo className="text-blue-600" />
                   Refund Request Details
                 </h3>
@@ -1344,11 +1341,11 @@ const RefundManagement = ({ onRefundProcessed }) => {
               )}
             </div>
 
-            <div className="p-6 border-t border-gray-200 flex-shrink-0">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700 flex-shrink-0">
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowInfoModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Close
                 </button>
@@ -1361,10 +1358,10 @@ const RefundManagement = ({ onRefundProcessed }) => {
       {/* Reopen Case Confirmation Modal */}
       {showReopenConfirmModal && selectedInfoRequest && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-          <div className="bg-white rounded-xl shadow-2xl max-w-md w-full">
-            <div className="p-6 border-b border-gray-200">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full">
+            <div className="p-6 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center justify-between">
-                <h3 className="text-xl font-bold text-gray-800 flex items-center gap-2">
+                <h3 className="text-xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                   <FaUndo className="text-green-600" />
                   Reopen Case
                 </h3>
@@ -1379,18 +1376,18 @@ const RefundManagement = ({ onRefundProcessed }) => {
 
             <div className="p-6">
               <div className="mb-4">
-                <p className="text-gray-700 mb-4">
+                <p className="text-gray-700 dark:text-gray-300 mb-4">
                   Are you sure you want to reopen this case? Please provide a reason for reopening.
                 </p>
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     Reason for Reopening
                   </label>
                   <textarea
                     value={reopenReason}
                     onChange={(e) => setReopenReason(e.target.value)}
                     placeholder="Enter reason for reopening this case..."
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500"
                     rows="3"
                     required
                   />
@@ -1398,11 +1395,11 @@ const RefundManagement = ({ onRefundProcessed }) => {
               </div>
             </div>
 
-            <div className="p-6 border-t border-gray-200">
+            <div className="p-6 border-t border-gray-200 dark:border-gray-700">
               <div className="flex gap-3">
                 <button
                   onClick={() => setShowReopenConfirmModal(false)}
-                  className="flex-1 px-4 py-2 border border-gray-300 text-gray-700 rounded-lg hover:bg-gray-50 transition-colors"
+                  className="flex-1 px-4 py-2 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors"
                 >
                   Cancel
                 </button>
