@@ -213,9 +213,14 @@ export default function AdminDeletedListings() {
                                                         )}
                                                     </div>
                                                     <div>
-                                                        <div className="font-semibold text-gray-900 truncate max-w-[200px]" title={item.listingData.name}>
+                                                        <Link
+                                                            to={`/listing/${item.originalListingId}`}
+                                                            target="_blank"
+                                                            className="font-semibold text-gray-900 truncate max-w-[200px] hover:text-blue-600 hover:underline block"
+                                                            title={item.listingData.name}
+                                                        >
                                                             {item.listingData.name}
-                                                        </div>
+                                                        </Link>
                                                         <div className="text-xs text-gray-500 truncate max-w-[200px]">
                                                             {item.listingData.address}
                                                         </div>

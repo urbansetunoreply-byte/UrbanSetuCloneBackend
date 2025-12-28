@@ -756,26 +756,51 @@ export const updateListing = async (req, res, next) => {
 
 export const getListing = async (req, res, next) => {
   try {
-    const listing = await Listing.findById(req.params.id)
+    let listing = await Listing.findById(req.params.id);
+    let listingObj = null;
+    let isDeleted = false;
+
     if (!listing) {
-      return next(errorHandler(404, "Listing not found"))
+      // Check if it exists in deleted listings
+      const deletedRecord = await DeletedListing.findOne({ originalListingId: req.params.id });
+
+      if (deletedRecord) {
+        console.log(`ℹ️ Found deleted listing for ID: ${req.params.id}`);
+        // Use the stored listing data
+        listingObj = { ...deletedRecord.listingData };
+        // Ensure critical fields are present
+        listingObj._id = deletedRecord.originalListingId;
+        isDeleted = true;
+
+        // Add deletion info
+        listingObj.isDeleted = true;
+        listingObj.deletedAt = deletedRecord.deletedAt;
+        listingObj.deletionType = deletedRecord.deletionType;
+        listingObj.deletionReason = deletedRecord.deletionReason;
+      } else {
+        return next(errorHandler(404, "Listing not found"));
+      }
+    } else {
+      listingObj = listing.toObject();
     }
 
     // Debug ESG data being returned
-    console.log('📤 GetListing - ESG data returned:', JSON.stringify(listing.esg, null, 2));
+    console.log('📤 GetListing - ESG data returned:', JSON.stringify(listingObj.esg, null, 2));
 
-    // Check for active Rent-Lock
-    const activeContract = await RentLockContract.findOne({
-      listingId: listing._id,
-      status: 'active'
-    });
+    // Check for active Rent-Lock (only if not deleted, or maybe even if deleted?)
+    // For now, let's skip rent lock check for deleted items as they shouldn't have active locks relevant to display
+    if (!isDeleted) {
+      const activeContract = await RentLockContract.findOne({
+        listingId: listingObj._id,
+        status: 'active'
+      });
 
-    const listingObj = listing.toObject();
-    if (activeContract) {
-      listingObj.isRentLocked = true;
-      listingObj.rentLockEndDate = activeContract.endDate;
-    } else {
-      listingObj.isRentLocked = false;
+      if (activeContract) {
+        listingObj.isRentLocked = true;
+        listingObj.rentLockEndDate = activeContract.endDate;
+      } else {
+        listingObj.isRentLocked = false;
+      }
     }
 
     res.status(200).json(listingObj)

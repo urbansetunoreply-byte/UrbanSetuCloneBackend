@@ -1405,8 +1405,32 @@ export default function Listing() {
     <>
       <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
         <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-3 sm:p-6 relative overflow-x-hidden">
+          {listing.isDeleted && (
+            <div className="bg-red-50 border-l-4 border-red-500 p-4 mb-6 rounded-r-lg">
+              <div className="flex items-center">
+                <div className="flex-shrink-0">
+                  <FaTrash className="h-5 w-5 text-red-500" />
+                </div>
+                <div className="ml-3">
+                  <h3 className="text-lg font-medium text-red-800">
+                    Property Not Available
+                  </h3>
+                  <div className="mt-1 text-sm text-red-700">
+                    <p>
+                      This property has been deleted and is no longer active on the platform.
+                      {listing.deletionReason && (
+                        <span className="block mt-1 font-semibold">Reason: {listing.deletionReason}</span>
+                      )}
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </div>
+          )}
+
           {/* Header with Back Button and Actions */}
-          <div className="mb-6">
+          <div className={`mb-6 ${listing.isDeleted ? 'opacity-50 pointer-events-none' : ''}`}>
+            {/* ... keeping the next line for context matching ... */}
             {/* Mobile layout: keep existing styling */}
             <div className="flex items-center justify-between flex-wrap gap-2 sm:hidden">
               <div className="flex items-center gap-2 flex-wrap">
@@ -1517,7 +1541,7 @@ export default function Listing() {
                     </div>
                   )}
                 </div>
-                {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
+                {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) && !listing.isDeleted ? (
                   (listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract') ? (
                     <button
                       disabled
@@ -1547,7 +1571,7 @@ export default function Listing() {
                 ) : (
                   <div className="hidden lg:block" />
                 )}
-                {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) ? (
+                {currentUser && (listing.sellerId === currentUser._id || listing.userRef === currentUser._id) && !listing.isDeleted ? (
                   <button
                     onClick={(!listing.isRentLocked && listing.availabilityStatus !== 'sold' && listing.availabilityStatus !== 'under_contract') ? handleOwnerDeleteClick : undefined}
                     disabled={listing.isRentLocked || listing.availabilityStatus === 'sold' || listing.availabilityStatus === 'under_contract'}
