@@ -994,181 +994,166 @@ export default function AdminReviews() {
         )}
 
         <div className="overflow-x-auto">
-          {/* Responsive review cards for mobile, table for desktop */}
-          <div className="flex flex-col gap-4 sm:table w-full">
+          <div className="space-y-4">
             {filteredReviews.map((review, idx) => (
               <div
                 key={review._id}
-                className={
-                  `flex flex-col sm:table-row bg-white dark:bg-gray-800 rounded-lg shadow-sm sm:shadow-none p-3 sm:p-0 border border-gray-200 dark:border-gray-700 sm:border-0 transition-colors` +
-                  (idx !== filteredReviews.length - 1 ? ' sm:border-b sm:border-gray-200 dark:sm:border-gray-700' : '')
-                }
-                style={{ marginBottom: '1.5rem', borderRadius: '0.75rem', boxShadow: '0 1px 3px rgba(0,0,0,0.04)' }}
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden hover:shadow-md transition-shadow"
               >
-                <div className="flex flex-row items-center gap-3 sm:table-cell sm:align-top sm:w-1/4 mb-2 sm:mb-0">
-                  <div className="flex items-center">
-                    <UserAvatar
-                      user={{ username: review.userName, avatar: review.userAvatar }}
-                      size="w-10 h-10"
-                      textSize="text-sm"
-                      showBorder={false}
-                    />
-                    <div className="ml-4">
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm font-medium text-gray-900 dark:text-gray-100">
-                          {review.userName}
+                <div className="grid grid-cols-1 md:grid-cols-12 gap-4 p-4 md:p-6">
+                  {/* Column 1: User & Property Info (4 cols) */}
+                  <div className="md:col-span-4 flex flex-row md:flex-col gap-4">
+                    <div className="flex items-start gap-4">
+                      <UserAvatar
+                        user={{ username: review.userName, avatar: review.userAvatar }}
+                        size="w-12 h-12"
+                        textSize="text-base"
+                        showBorder={false}
+                      />
+                      <div className="flex-1 min-w-0">
+                        <div className="flex items-center gap-2 mb-1">
+                          <h4 className="text-base font-semibold text-gray-900 dark:text-gray-100 truncate">
+                            {review.userName}
+                          </h4>
+                          {review.isVerified && (
+                            <FaCheckCircle className="text-blue-500 text-sm flex-shrink-0" title="Verified user" />
+                          )}
                         </div>
-                        {review.isVerified && (
-                          <FaCheckCircle className="text-green-600 text-sm" title="Verified user" />
+
+                        {review.listingId ? (
+                          <div className="text-sm">
+                            <a
+                              href={`/admin/listing/${typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`}
+                              className="font-medium text-gray-700 dark:text-gray-300 hover:text-blue-600 dark:hover:text-blue-400 transition-colors block truncate"
+                              target="_blank"
+                              rel="noopener noreferrer"
+                            >
+                              {review.listingId.name}
+                            </a>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 mt-0.5 truncate">
+                              {review.listingId.city}, {review.listingId.state}
+                            </p>
+                          </div>
+                        ) : (
+                          <span className="text-sm text-gray-400 italic">Property not found</span>
                         )}
-                      </div>
-                      <div className="text-sm text-gray-500 dark:text-gray-400">
-                        {review.listingId?.name ? (
-                          <a href={`/admin/listing/${typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
-                            {review.listingId.name}
-                          </a>
-                        ) : 'Property not found'}
-                      </div>
-                      <div className="text-xs text-gray-400 dark:text-gray-500">
-                        {review.listingId?.city}, {review.listingId?.state}
                       </div>
                     </div>
                   </div>
-                </div>
-                <div className="flex flex-col sm:table-cell sm:align-top sm:w-1/4 mb-2 sm:mb-0">
-                  <div className="flex items-center mb-2">
-                    {renderStars(review.rating)}
-                    <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
-                      {review.rating} star{review.rating > 1 ? 's' : ''}
-                    </span>
+
+                  {/* Column 2: Rating & Content (4 cols) */}
+                  <div className="md:col-span-4 flex flex-col gap-2">
+                    <div className="flex items-center gap-2">
+                      <div className="flex text-yellow-400 text-sm">
+                        {renderStars(review.rating)}
+                      </div>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-300">
+                        ({review.rating})
+                      </span>
+                      {review.verifiedByBooking && (
+                        <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300">
+                          Booked
+                        </span>
+                      )}
+                    </div>
+
+                    <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3 leading-relaxed">
+                      "{review.comment}"
+                    </p>
+
                     {review.helpfulCount > 0 && (
-                      <div className="flex items-center ml-4 text-sm text-gray-500 dark:text-gray-400">
-                        <FaThumbsUp className="mr-1" />
-                        {review.helpfulCount}
+                      <div className="flex items-center gap-1.5 text-xs text-gray-500 dark:text-gray-400 mt-auto">
+                        <FaThumbsUp size={12} />
+                        <span>{review.helpfulCount} found this helpful</span>
                       </div>
                     )}
                   </div>
-                  <p className="text-sm text-gray-900 dark:text-gray-100 line-clamp-2">
-                    {review.comment}
-                  </p>
-                  {review.verifiedByBooking && (
-                    <span className="inline-block mt-1 text-xs text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded">
-                      Booked this property
-                    </span>
-                  )}
-                </div>
-                <div className="flex flex-col gap-1 sm:table-cell sm:align-top sm:w-1/4 mb-2 sm:mb-0">
-                  <div className="mb-2">
-                    {getStatusBadge(review.status)}
+
+                  {/* Column 3: Status & Metadata (2 cols) */}
+                  <div className="md:col-span-2 flex flex-row md:flex-col items-center md:items-start justify-between md:justify-start gap-3">
+                    <div className="transform scale-90 origin-left">
+                      {getStatusBadge(review.status)}
+                    </div>
+
+                    <div className="flex flex-col gap-1 text-xs text-gray-500 dark:text-gray-400">
+                      <span className="flex items-center gap-1.5">
+                        <FaCalendarAlt size={12} />
+                        {new Date(review.createdAt).toLocaleDateString()}
+                      </span>
+                    </div>
+
+                    {/* Compact Admin Note Badge */}
+                    {review.adminNote && (
+                      <div
+                        className="group relative cursor-help inline-flex items-center gap-1 px-2 py-1 rounded-md bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 text-xs font-medium"
+                      >
+                        Note
+                        <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 w-48 p-2 bg-gray-900 text-white text-xs rounded shadow-lg opacity-0 group-hover:opacity-100 transition-opacity pointer-events-none z-10">
+                          {review.adminNote}
+                          <div className="absolute top-full left-1/2 -translate-x-1/2 -mt-1 border-4 border-transparent border-t-gray-900"></div>
+                        </div>
+                      </div>
+                    )}
                   </div>
-                  <div className="text-sm text-gray-500 dark:text-gray-400">
-                    {formatDate(review.createdAt)}
-                  </div>
-                  {review.adminNote && (
-                    <div className="text-xs text-gray-400 dark:text-gray-500 mt-1">
-                      Note: {review.adminNote}
-                    </div>
-                  )}
-                  {review.removalReason && (
-                    <div className="text-xs text-red-600 mt-1">
-                      Removed: {review.removalReason}
-                    </div>
-                  )}
-                  {review.ownerResponse && (
-                    <div className="mt-2 p-2 bg-blue-50 dark:bg-blue-900/20 rounded-md border border-blue-200 dark:border-blue-800">
-                      <p className="text-sm text-blue-800 dark:text-blue-300 flex items-center gap-2">
-                        <FaReply className="inline-block text-blue-500" />
-                        <strong>Owner Response:</strong> {review.ownerResponse}
-                      </p>
-                    </div>
-                  )}
-                </div>
-                <div className="flex flex-col gap-2 sm:table-cell sm:align-top sm:w-1/4 mb-2 sm:mb-0">
-                  <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:gap-2">
-                    {review.status === 'pending' && (
-                      <>
+
+                  {/* Column 4: Actions (2 cols) */}
+                  <div className="md:col-span-2 flex flex-col justify-start gap-2 border-t md:border-t-0 border-gray-100 dark:border-gray-700 pt-3 md:pt-0">
+                    {review.status === 'pending' ? (
+                      <div className="flex flex-col gap-2 w-full">
                         <button
                           onClick={() => handleStatusChange(review._id, 'approved')}
-                          className="bg-gradient-to-r from-blue-500 to-purple-500 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-purple-600 transition-all transform hover:scale-105 shadow font-semibold flex items-center gap-2"
-                          title="Approve review"
+                          className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-green-500 hover:bg-green-600 text-white text-sm rounded-lg transition-colors shadow-sm font-medium"
+                          title="Approve"
                         >
-                          <FaCheck /> Approve
+                          <FaCheck size={14} /> Approve
                         </button>
                         <button
                           onClick={() => handleStatusChange(review._id, 'rejected')}
-                          className="bg-gradient-to-r from-red-500 to-red-600 text-white px-4 py-2 rounded-lg hover:from-red-600 hover:to-red-700 transition-all transform hover:scale-105 shadow font-semibold flex items-center gap-2"
-                          title="Reject review"
+                          className="flex items-center justify-center gap-2 w-full px-3 py-2 bg-red-100 hover:bg-red-200 text-red-600 dark:bg-red-900/20 dark:hover:bg-red-900/40 dark:text-red-400 text-sm rounded-lg transition-colors font-medium"
+                          title="Reject"
                         >
-                          <FaTimes /> Reject
+                          <FaTimes size={14} /> Reject
                         </button>
-                      </>
+                      </div>
+                    ) : (
+                      <div className="flex flex-col gap-2 w-full">
+                        {/* Review Status Actions */}
+                        {review.status !== 'removed' && (
+                          <button
+                            onClick={() => handleOpenRemoveModal(review)}
+                            className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-medium text-orange-600 bg-orange-50 hover:bg-orange-100 dark:text-orange-400 dark:bg-orange-900/20 dark:hover:bg-orange-900/40 rounded-lg transition-colors"
+                          >
+                            <FaFlag size={14} /> Remove
+                          </button>
+                        )}
+                        {review.status === 'removed' && (
+                          <button
+                            onClick={() => handleStatusChange(review._id, 'approved')}
+                            className="flex items-center justify-center gap-2 w-full px-3 py-2 text-sm font-medium text-green-600 bg-green-50 hover:bg-green-100 dark:text-green-400 dark:bg-green-900/20 dark:hover:bg-green-900/40 rounded-lg transition-colors"
+                          >
+                            <FaUndo size={14} /> Restore
+                          </button>
+                        )}
+                      </div>
                     )}
-                    {review.status === 'approved' && (
+
+                    <div className="flex gap-2 w-full mt-1">
                       <button
-                        onClick={e => {
-                          e.stopPropagation();
-                          setReviewToRemove(review);
-                          setShowRemovalModal(true);
-                        }}
-                        className="bg-gradient-to-r from-yellow-500 to-yellow-600 text-white px-4 py-2 rounded-lg hover:from-yellow-600 hover:to-yellow-700 transition-all transform hover:scale-105 shadow font-semibold flex items-center gap-2"
-                        title="Remove review"
+                        onClick={() => handleViewReview(review)}
+                        className="flex-1 flex items-center justify-center px-3 py-2 text-sm font-medium text-gray-600 bg-gray-100 hover:bg-gray-200 dark:text-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 rounded-lg transition-colors"
+                        title="View Details"
                       >
-                        <FaBan /> Remove
+                        <FaEye size={14} />
                       </button>
-                    )}
-                    {(review.status === 'removed' || review.status === 'removed_by_user') && (
                       <button
-                        onClick={() => handleRestoreReview(review._id)}
-                        className="bg-gradient-to-r from-green-500 to-green-600 text-white px-4 py-2 rounded-lg hover:from-green-600 hover:to-green-700 transition-all transform hover:scale-105 shadow font-semibold flex items-center gap-2"
-                        title="Restore review"
+                        onClick={() => handleDeleteReview(review._id)}
+                        className="flex-1 flex items-center justify-center px-3 py-2 text-sm font-medium text-red-600 bg-red-50 hover:bg-red-100 dark:text-red-400 dark:bg-red-900/20 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+                        title="Delete Permanently"
                       >
-                        <FaCheck /> Restore
+                        <FaTrash size={14} />
                       </button>
-                    )}
-                    <button
-                      onClick={() => setSelectedReview(review)}
-                      className="bg-gradient-to-r from-blue-400 to-blue-600 text-white px-4 py-2 rounded-lg hover:from-blue-600 hover:to-blue-700 transition-all transform hover:scale-105 shadow font-semibold flex items-center gap-2"
-                      title="View details"
-                    >
-                      <FaEye /> View
-                    </button>
-                    <button
-                      onClick={(e) => {
-                        e.stopPropagation();
-                        setReviewToDelete(review);
-                        setShowDeleteModal(true);
-                      }}
-                      className="bg-gradient-to-r from-gray-500 to-gray-600 text-white px-4 py-2 rounded-lg hover:from-gray-600 hover:to-gray-700 transition-all transform hover:scale-105 shadow font-semibold flex items-center gap-2"
-                      title="Delete from table"
-                    >
-                      <FaTrash /> Delete
-                    </button>
-                  </div>
-                  {currentUser && review.listingId && currentUser._id === review.listingId.userRef && (
-                    <div className="mt-2">
-                      <label className="block text-sm font-medium text-blue-700 dark:text-blue-300 mb-1 flex items-center gap-1">
-                        <FaReply /> Respond as Owner
-                      </label>
-                      <textarea
-                        className="w-full border border-blue-300 dark:border-blue-700 rounded-md p-2 text-sm mb-2 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                        rows="2"
-                        placeholder="Write a response to this review..."
-                        value={responseEdit[review._id] !== undefined ? responseEdit[review._id] : (review.ownerResponse || '')}
-                        onChange={e => handleOwnerResponseChange(review._id, e.target.value)}
-                        disabled={responseLoading[review._id]}
-                      />
-                      <button
-                        className="bg-blue-600 text-white px-3 py-1 rounded hover:bg-blue-700 text-sm"
-                        onClick={() => handleOwnerResponseSubmit(review._id, review.listingId.userRef)}
-                        disabled={responseLoading[review._id] || !responseEdit[review._id] || responseEdit[review._id].trim() === (review.ownerResponse || '').trim()}
-                      >
-                        {responseLoading[review._id] ? 'Saving...' : (review.ownerResponse ? 'Update Response' : 'Add Response')}
-                      </button>
-                      {responseError[review._id] && (
-                        <div className="text-red-600 text-xs mt-1">{responseError[review._id]}</div>
-                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             ))}

@@ -742,73 +742,74 @@ export default function UserReviews() {
             : "space-y-4 overflow-x-hidden"
           }>
             {filteredAndSortedReviews.map((review) => (
-              <div key={review._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 w-full overflow-hidden' : ''}`}>
-                <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                  <div className={`border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow ${viewMode === 'grid' ? 'p-3 h-full flex flex-col bg-white dark:bg-gray-800' : 'p-3 sm:p-6 overflow-x-auto bg-white dark:bg-gray-800'} mb-4`}>
-                    <div className="flex flex-col gap-2 sm:gap-4 lg:flex-row lg:items-start lg:justify-between">
-                      {/* Review Content */}
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-3">
-                          {getStatusBadge(review.status)}
-                          <span className="text-sm text-gray-500 dark:text-gray-400">
-                            {formatDate(review.createdAt)}
-                          </span>
-                        </div>
+              <div key={review._id} className={`group relative bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 overflow-hidden transition-all duration-300 hover:shadow-xl hover:-translate-y-1 ${viewMode === 'list' ? 'flex flex-col sm:flex-row' : 'flex flex-col'}`}>
 
-                        <div className={`flex items-center gap-2 mb-3 ${viewMode === 'grid' ? 'justify-center' : ''}`}>
-                          <div className="flex items-center gap-1">
-                            {renderStars(review.rating)}
-                          </div>
-                          <span className={`text-gray-600 dark:text-gray-400 font-medium ${viewMode === 'grid' ? 'text-sm' : 'text-sm'}`}>
-                            {review.rating} star{review.rating > 1 ? 's' : ''}
-                          </span>
-                        </div>
+                {/* Card Header: Property Info & Status */}
+                <div className={`relative p-5 ${viewMode === 'list' ? 'sm:w-1/3 border-b sm:border-b-0 sm:border-r border-gray-100 dark:border-gray-700 bg-gray-50 dark:bg-gray-750' : 'bg-gray-50 dark:bg-gray-750 border-b border-gray-100 dark:border-gray-700'}`}>
+                  <div className="absolute top-4 right-4 z-10">
+                    {getStatusBadge(review.status)}
+                  </div>
 
-                        <p className={`text-gray-700 dark:text-gray-300 mb-3 ${viewMode === 'grid' ? 'text-sm line-clamp-2' : 'line-clamp-3'}`}>{review.comment}</p>
-
-                        {/* Property Info */}
-                        {review.listingId && (
-                          <div className={`bg-gray-50 dark:bg-gray-700/50 rounded-lg ${viewMode === 'grid' ? 'p-2' : 'p-3'}`}>
-                            <h4 className={`font-semibold text-gray-800 dark:text-gray-200 ${viewMode === 'grid' ? 'text-sm' : ''}`}>
-                              <a href={`/user/listing/${review.listingId && typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
-                                {review.listingId?.name}
-                              </a>
-                            </h4>
-                            <p className={`text-gray-600 dark:text-gray-400 ${viewMode === 'grid' ? 'text-xs' : 'text-sm'}`}>
-                              {review.listingId?.city}, {review.listingId?.state}
-                            </p>
-                          </div>
-                        )}
-
-                        {/* Admin Note */}
-                        {review.adminNote && (
-                          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/30">
-                            <p className="text-sm text-blue-800 dark:text-blue-300">
-                              <strong>Admin Note:</strong> {review.adminNote}
-                            </p>
-                          </div>
-                        )}
-                      </div>
-
-                      {/* Action Buttons */}
-                      <div className={`flex gap-2 lg:flex-shrink-0 w-full sm:w-auto ${viewMode === 'grid' ? 'flex-col justify-center mt-3' : 'flex-col mt-4'}`}>
-                        <button
-                          onClick={() => handleEditReview(review)}
-                          className={`flex items-center justify-center gap-2 bg-gradient-to-r from-blue-500 to-purple-500 text-white rounded-lg hover:from-blue-600 hover:to-purple-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm w-full' : 'px-4 py-2'}`}
-                        >
-                          <FaEdit />
-                          Edit
-                        </button>
-
-                        <button
-                          onClick={() => handleDeleteReview(review)}
-                          className={`flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-pink-500 text-white rounded-lg hover:from-red-600 hover:to-pink-600 transition shadow ${viewMode === 'grid' ? 'px-3 py-2 text-sm w-full' : 'px-4 py-2'}`}
-                        >
-                          <FaTrash />
-                          Delete
-                        </button>
-                      </div>
+                  {review.listingId && (
+                    <div className="pr-20"> {/* Padding for badge */}
+                      <h4 className="font-bold text-gray-900 dark:text-gray-100 text-lg leading-tight mb-1">
+                        <a href={`/user/listing/${typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="hover:text-blue-600 dark:hover:text-blue-400 transition-colors" target="_blank" rel="noopener noreferrer">
+                          {review.listingId?.name}
+                        </a>
+                      </h4>
+                      <p className="flex items-center text-sm text-gray-500 dark:text-gray-400">
+                        <span className="mr-1">📍</span> {review.listingId?.city}, {review.listingId?.state}
+                      </p>
                     </div>
+                  )}
+
+                  <div className="mt-4 flex items-center text-xs font-medium text-gray-400 dark:text-gray-500">
+                    <FaClock className="mr-1.5" />
+                    {formatDate(review.createdAt)}
+                  </div>
+                </div>
+
+                {/* Card Body: Rating & Comment */}
+                <div className={`p-5 flex flex-col ${viewMode === 'list' ? 'sm:w-2/3' : 'flex-1'}`}>
+                  <div className="flex items-center gap-2 mb-4">
+                    <div className="flex text-yellow-400 text-sm">
+                      {renderStars(review.rating)}
+                    </div>
+                    <span className="text-sm font-semibold text-gray-700 dark:text-gray-300">
+                      {review.rating}.0
+                    </span>
+                  </div>
+
+                  <div className="flex-1">
+                    <p className={`text-gray-600 dark:text-gray-300 text-sm leading-relaxed mb-4 ${viewMode === 'grid' ? 'line-clamp-4' : ''}`}>
+                      {review.comment}
+                    </p>
+
+                    {/* Admin Note */}
+                    {review.adminNote && (
+                      <div className="mt-2 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/30 text-xs">
+                        <span className="font-semibold text-blue-700 dark:text-blue-300 block mb-1">Admin Note:</span>
+                        <p className="text-blue-800 dark:text-blue-200">{review.adminNote}</p>
+                      </div>
+                    )}
+                  </div>
+
+                  {/* Card Footer: Actions */}
+                  <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700 flex items-center justify-end gap-3">
+                    <button
+                      onClick={() => handleEditReview(review)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-gray-600 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 hover:bg-blue-50 dark:hover:bg-blue-900/30 hover:text-blue-600 dark:hover:text-blue-400 rounded-lg transition-colors"
+                    >
+                      <FaEdit size={14} />
+                      Edit
+                    </button>
+                    <button
+                      onClick={() => handleDeleteReview(review)}
+                      className="flex items-center gap-1.5 px-3 py-1.5 text-sm font-medium text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/20 hover:bg-red-100 dark:hover:bg-red-900/40 rounded-lg transition-colors"
+                    >
+                      <FaTrash size={14} />
+                      Delete
+                    </button>
                   </div>
                 </div>
               </div>
