@@ -4,18 +4,18 @@ import { API_BASE_URL } from '../config/api';
 import { usePageTitle } from '../hooks/usePageTitle';
 
 const AdminCallHistorySkeleton = () => (
-  <div className="bg-white rounded-xl shadow-sm overflow-hidden animate-pulse">
-    <div className="p-6 border-b border-gray-100 space-y-4">
+  <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm overflow-hidden animate-pulse">
+    <div className="p-6 border-b border-gray-100 dark:border-gray-700 space-y-4">
       <div className="flex gap-4">
-        <div className="h-10 bg-gray-200 rounded-lg w-1/4"></div>
-        <div className="h-10 bg-gray-200 rounded-lg w-1/4"></div>
-        <div className="h-10 bg-gray-200 rounded-lg w-1/4"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg w-1/4"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg w-1/4"></div>
+        <div className="h-10 bg-gray-200 dark:bg-gray-700 rounded-lg w-1/4"></div>
       </div>
     </div>
-    <div className="divide-y divide-gray-100">
+    <div className="divide-y divide-gray-100 dark:divide-gray-700">
       {[1, 2, 3, 4, 5].map((i) => (
         <div key={i} className="p-4 flex gap-4">
-          <div className="h-8 bg-gray-200 rounded w-full"></div>
+          <div className="h-8 bg-gray-200 dark:bg-gray-700 rounded w-full"></div>
         </div>
       ))}
     </div>
@@ -146,45 +146,45 @@ const AdminCallHistory = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50/50 p-6 md:p-8">
+    <div className="min-h-screen bg-gray-50/50 dark:bg-gray-900 p-6 md:p-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto space-y-6">
         <div>
-          <h1 className="text-3xl font-bold text-gray-900 tracking-tight">Admin Call History</h1>
-          <p className="text-gray-500 mt-1">Monitor system-wide call logs and statistics</p>
+          <h1 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">Admin Call History</h1>
+          <p className="text-gray-500 dark:text-gray-400 mt-1">Monitor system-wide call logs and statistics</p>
         </div>
 
         {/* Statistics */}
         <div className="grid grid-cols-1 md:grid-cols-4 gap-4">
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm font-medium">Total Calls</p>
-            <p className="text-3xl font-bold text-gray-900 mt-1">{stats.total}</p>
+          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-200">
+            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Calls</p>
+            <p className="text-3xl font-bold text-gray-900 dark:text-white mt-1">{stats.total}</p>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm font-medium">Audio Calls</p>
-            <p className="text-3xl font-bold text-emerald-600 mt-1">{stats.audio}</p>
+          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-200">
+            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Audio Calls</p>
+            <p className="text-3xl font-bold text-emerald-600 dark:text-emerald-400 mt-1">{stats.audio}</p>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm font-medium">Video Calls</p>
-            <p className="text-3xl font-bold text-blue-600 mt-1">{stats.video}</p>
+          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-200">
+            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Video Calls</p>
+            <p className="text-3xl font-bold text-blue-600 dark:text-blue-400 mt-1">{stats.video}</p>
           </div>
-          <div className="bg-white p-5 rounded-xl shadow-sm border border-gray-100">
-            <p className="text-gray-500 text-sm font-medium">Missed Calls</p>
-            <p className="text-3xl font-bold text-red-600 mt-1">{stats.missed}</p>
+          <div className="bg-white dark:bg-gray-800 p-5 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors duration-200">
+            <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Missed Calls</p>
+            <p className="text-3xl font-bold text-red-600 dark:text-red-400 mt-1">{stats.missed}</p>
           </div>
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 p-5 space-y-4">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 p-5 space-y-4 transition-colors duration-200">
           <div className="grid grid-cols-1 md:grid-cols-12 gap-4">
             {/* Search */}
             <div className="md:col-span-4 relative">
-              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+              <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search user, email or property..."
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm"
+                className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all text-sm dark:text-white dark:placeholder-gray-400"
               />
             </div>
 
@@ -193,7 +193,7 @@ const AdminCallHistory = () => {
               <select
                 value={callType}
                 onChange={(e) => setCallType(e.target.value)}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm cursor-pointer"
+                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm cursor-pointer dark:text-white"
               >
                 <option value="all">All Types</option>
                 <option value="audio">Audio</option>
@@ -206,7 +206,7 @@ const AdminCallHistory = () => {
               <select
                 value={status}
                 onChange={(e) => setStatus(e.target.value)}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm cursor-pointer"
+                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm cursor-pointer dark:text-white"
               >
                 <option value="all">All Status</option>
                 <option value="ended">Ended</option>
@@ -221,80 +221,80 @@ const AdminCallHistory = () => {
                 type="date"
                 value={dateRange.start}
                 onChange={(e) => setDateRange({ ...dateRange, start: e.target.value })}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm dark:text-white dark:placeholder-gray-400"
               />
               <span className="self-center text-gray-400">-</span>
               <input
                 type="date"
                 value={dateRange.end}
                 onChange={(e) => setDateRange({ ...dateRange, end: e.target.value })}
-                className="w-full px-3 py-2.5 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm"
+                className="w-full px-3 py-2.5 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 text-sm dark:text-white dark:placeholder-gray-400"
               />
             </div>
           </div>
         </div>
 
         {/* Table */}
-        <div className="bg-white rounded-xl shadow-sm border border-gray-200 overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-200 dark:border-gray-700 overflow-hidden transition-colors duration-200">
           {loading ? (
             <AdminCallHistorySkeleton />
           ) : visibleCalls.length === 0 ? (
             <div className="text-center py-16">
-              <div className="w-16 h-16 bg-gray-50 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FaSearch className="text-gray-300 text-xl" />
+              <div className="w-16 h-16 bg-gray-50 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FaSearch className="text-gray-300 dark:text-gray-500 text-xl" />
               </div>
-              <h3 className="text-lg font-medium text-gray-900">No calls found</h3>
-              <p className="text-gray-500">Try adjusting your search or filters</p>
+              <h3 className="text-lg font-medium text-gray-900 dark:text-white">No calls found</h3>
+              <p className="text-gray-500 dark:text-gray-400">Try adjusting your search or filters</p>
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50/50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50/50 dark:bg-gray-700/50">
                   <tr>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Type</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Caller</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Receiver</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Property</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Date & Time</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Duration</th>
-                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">Status</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Type</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Caller</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Receiver</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Property</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date & Time</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Duration</th>
+                    <th scope="col" className="px-6 py-3 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {visibleCalls.map((call, index) => (
                     <tr
                       key={call._id}
-                      className="hover:bg-gray-50/50 transition-colors"
+                      className="hover:bg-gray-50/50 dark:hover:bg-gray-700/50 transition-colors"
                       style={{ animation: `fadeIn 0.2s ease-out ${index * 0.03}s backwards` }}
                     >
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
-                          <div className={`p-2 rounded-lg ${call.callType === 'video' ? 'bg-blue-50 text-blue-600' : 'bg-green-50 text-green-600'}`}>
+                          <div className={`p-2 rounded-lg ${call.callType === 'video' ? 'bg-blue-50 text-blue-600 dark:bg-blue-900/30 dark:text-blue-400' : 'bg-green-50 text-green-600 dark:bg-green-900/30 dark:text-green-400'}`}>
                             {call.callType === 'video' ? <FaVideo /> : <FaPhone />}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{call.callerId?.username || 'Unknown'}</div>
-                        <div className="text-xs text-gray-500">{call.callerId?.email}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{call.callerId?.username || 'Unknown'}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{call.callerId?.email}</div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="text-sm font-medium text-gray-900">{call.receiverId?.username || 'Unknown'}</div>
-                        <div className="text-xs text-gray-500">{call.receiverId?.email}</div>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{call.receiverId?.username || 'Unknown'}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{call.receiverId?.email}</div>
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {call.appointmentId?.propertyName || 'N/A'}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                         {new Date(call.startTime).toLocaleString()}
                       </td>
-                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">
+                      <td className="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900 dark:text-white">
                         {formatDuration(call.duration)}
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${call.status === 'ended' ? 'bg-green-100 text-green-800' :
-                            call.status === 'missed' ? 'bg-red-100 text-red-800' :
-                              'bg-gray-100 text-gray-800'
+                        <span className={`px-2.5 py-1 rounded-full text-xs font-medium ${call.status === 'ended' ? 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300' :
+                          call.status === 'missed' ? 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300' :
+                            'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300'
                           }`}>
                           {call.status}
                         </span>
@@ -310,21 +310,21 @@ const AdminCallHistory = () => {
         {/* Pagination */}
         {totalPages > 1 && (
           <div className="flex items-center justify-between pt-4">
-            <p className="text-sm text-gray-500">
+            <p className="text-sm text-gray-500 dark:text-gray-400">
               Page <span className="font-semibold">{currentPage}</span> of <span className="font-semibold">{totalPages}</span>
             </p>
             <div className="flex gap-2">
               <button
                 onClick={() => setCurrentPage(prev => Math.max(1, prev - 1))}
                 disabled={currentPage === 1}
-                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 <FaArrowLeft size={12} /> Previous
               </button>
               <button
                 onClick={() => setCurrentPage(prev => Math.min(totalPages, prev + 1))}
                 disabled={currentPage === totalPages}
-                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-lg hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                className="flex items-center gap-1 px-4 py-2 text-sm font-medium text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
               >
                 Next <FaArrowRight size={12} />
               </button>

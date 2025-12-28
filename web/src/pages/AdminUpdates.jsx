@@ -257,14 +257,14 @@ export default function AdminUpdates() {
     }
 
     return (
-        <div className="max-w-7xl mx-auto p-4 md:p-8">
+        <div className="max-w-7xl mx-auto p-4 md:p-8 transition-colors duration-300">
             <div className="flex flex-col md:flex-row justify-between items-center mb-8 gap-4">
                 <div>
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-800">Platform Updates</h1>
+                        <h1 className="text-3xl font-bold text-gray-800 dark:text-white">Platform Updates</h1>
                         <div className="flex items-center gap-3 mt-1">
-                            <p className="text-gray-500">Manage change logs, announcements, and features</p>
-                            <a href="/updates" target="_blank" className="text-blue-600 hover:text-blue-800 text-sm font-medium flex items-center gap-1">
+                            <p className="text-gray-500 dark:text-gray-400">Manage change logs, announcements, and features</p>
+                            <a href="/updates" target="_blank" className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm font-medium flex items-center gap-1">
                                 View Live Page <Search size={14} />
                             </a>
                         </div>
@@ -278,22 +278,22 @@ export default function AdminUpdates() {
             </div>
 
             {/* Filters */}
-            <div className="bg-white p-4 rounded-xl shadow-sm border border-gray-100 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center">
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 mb-6 flex flex-col md:flex-row gap-4 justify-between items-center transition-colors">
                 <div className="relative w-full md:w-96">
                     <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" size={18} />
                     <input
                         type="text"
                         placeholder="Search updates..."
-                        className="w-full pl-10 pr-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                        className="w-full pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400"
                         value={searchTerm}
                         onChange={(e) => setSearchTerm(e.target.value)}
                     />
                 </div>
 
                 <div className="flex items-center gap-2 w-full md:w-auto">
-                    <Filter size={18} className="text-gray-500" />
+                    <Filter size={18} className="text-gray-500 dark:text-gray-400" />
                     <select
-                        className="px-4 py-2 border border-gray-200 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white"
+                        className="px-4 py-2 border border-gray-200 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                         value={filterCategory}
                         onChange={(e) => setFilterCategory(e.target.value)}
                     >
@@ -307,20 +307,20 @@ export default function AdminUpdates() {
             </div>
 
             {/* Table List */}
-            <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
                 {loading ? (
                     <div className="p-10 text-center">
                         <div className="animate-spin rounded-full h-10 w-10 border-b-2 border-blue-600 mx-auto"></div>
-                        <p className="text-gray-500 mt-4">Loading updates...</p>
+                        <p className="text-gray-500 dark:text-gray-400 mt-4">Loading updates...</p>
                     </div>
                 ) : filteredUpdates.length === 0 ? (
-                    <div className="p-10 text-center text-gray-500">
+                    <div className="p-10 text-center text-gray-500 dark:text-gray-400">
                         <p>No updates found matching your criteria.</p>
                     </div>
                 ) : (
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-gray-600 border-b border-gray-100">
+                            <thead className="bg-gray-50 dark:bg-gray-700/50 text-gray-600 dark:text-gray-300 border-b border-gray-100 dark:border-gray-700">
                                 <tr>
                                     <th className="px-6 py-4 font-semibold text-sm">Update Details</th>
                                     <th className="px-6 py-4 font-semibold text-sm">Category</th>
@@ -330,12 +330,12 @@ export default function AdminUpdates() {
                                     <th className="px-6 py-4 font-semibold text-sm text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-100">
+                            <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                 {filteredUpdates.map(update => (
-                                    <tr key={update._id} className="hover:bg-gray-50 transition-colors">
+                                    <tr key={update._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/30 transition-colors">
                                         <td className="px-6 py-4">
-                                            <div className="font-medium text-gray-900">{update.title}</div>
-                                            <div className="text-sm text-gray-500 line-clamp-1">{update.description}</div>
+                                            <div className="font-medium text-gray-900 dark:text-white">{update.title}</div>
+                                            <div className="text-sm text-gray-500 dark:text-gray-400 line-clamp-1">{update.description}</div>
                                         </td>
                                         <td className="px-6 py-4">
                                             <span className={`px-2 py-1 rounded-full text-xs font-medium capitalize
@@ -346,19 +346,19 @@ export default function AdminUpdates() {
                                                 {update.category.replace('_', ' ')}
                                             </span>
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                                             {update.version || 'N/A'}
                                         </td>
-                                        <td className="px-6 py-4 text-sm text-gray-600">
+                                        <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                                             {new Date(update.releaseDate).toLocaleDateString()}
                                         </td>
                                         <td className="px-6 py-4">
                                             {update.isActive ? (
-                                                <span className="flex items-center gap-1 text-green-600 text-xs font-medium bg-green-50 px-2 py-1 rounded-full w-fit">
+                                                <span className="flex items-center gap-1 text-green-600 dark:text-green-400 text-xs font-medium bg-green-50 dark:bg-green-900/20 px-2 py-1 rounded-full w-fit">
                                                     <CheckCircle size={12} /> Active
                                                 </span>
                                             ) : (
-                                                <span className="flex items-center gap-1 text-gray-500 text-xs font-medium bg-gray-100 px-2 py-1 rounded-full w-fit">
+                                                <span className="flex items-center gap-1 text-gray-500 dark:text-gray-400 text-xs font-medium bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full w-fit">
                                                     <XCircle size={12} /> Inactive
                                                 </span>
                                             )}
@@ -367,14 +367,14 @@ export default function AdminUpdates() {
                                             <div className="flex justify-end gap-2">
                                                 <button
                                                     onClick={() => handleOpenEdit(update)}
-                                                    className="p-1.5 text-blue-600 hover:bg-blue-50 rounded-lg transition-colors"
+                                                    className="p-1.5 text-blue-600 hover:bg-blue-50 dark:text-blue-400 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                                                     title="Edit"
                                                 >
                                                     <Edit size={18} />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDelete(update._id)}
-                                                    className="p-1.5 text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                                                    className="p-1.5 text-red-600 hover:bg-red-50 dark:text-red-400 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                                     title="Delete"
                                                 >
                                                     <Trash2 size={18} />
@@ -392,14 +392,14 @@ export default function AdminUpdates() {
             {/* Modal */}
             {showModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto">
-                        <div className="p-6 border-b border-gray-100 flex justify-between items-center sticky top-0 bg-white rounded-t-2xl z-10">
-                            <h2 className="text-xl font-bold text-gray-800">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-2xl max-h-[90vh] overflow-y-auto transition-colors">
+                        <div className="p-6 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center sticky top-0 bg-white dark:bg-gray-800 rounded-t-2xl z-10 transition-colors">
+                            <h2 className="text-xl font-bold text-gray-800 dark:text-white">
                                 {editingUpdate ? 'Edit Update' : 'Create New Update'}
                             </h2>
                             <button
                                 onClick={() => setShowModal(false)}
-                                className="text-gray-400 hover:text-gray-600 transition-colors"
+                                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-200 transition-colors"
                             >
                                 <XCircle size={24} />
                             </button>
@@ -408,10 +408,10 @@ export default function AdminUpdates() {
                         <form onSubmit={handleSubmit} className="p-6 space-y-4">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400"
                                         placeholder="e.g. Dark Mode Support"
                                         value={formData.title}
                                         onChange={(e) => setFormData({ ...formData, title: e.target.value })}
@@ -419,10 +419,10 @@ export default function AdminUpdates() {
                                     />
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Version</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Version</label>
                                     <input
                                         type="text"
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400"
                                         placeholder="e.g. v1.2.0"
                                         value={formData.version}
                                         onChange={(e) => setFormData({ ...formData, version: e.target.value })}
@@ -431,9 +431,9 @@ export default function AdminUpdates() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                                 <select
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                                     value={formData.category}
                                     onChange={(e) => setFormData({ ...formData, category: e.target.value })}
                                 >
@@ -445,9 +445,9 @@ export default function AdminUpdates() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Description</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Description</label>
                                 <textarea
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none h-32 resize-none"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent outline-none h-32 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white dark:placeholder-gray-400"
                                     placeholder="Describe the update details..."
                                     value={formData.description}
                                     onChange={(e) => setFormData({ ...formData, description: e.target.value })}
@@ -456,12 +456,12 @@ export default function AdminUpdates() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Tags (Comma separated)</label>
-                                <div className="flex items-center border border-gray-300 rounded-lg px-3 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tags (Comma separated)</label>
+                                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg px-3 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700">
                                     <Tag size={18} className="text-gray-400 mr-2" />
                                     <input
                                         type="text"
-                                        className="w-full py-2 outline-none"
+                                        className="w-full py-2 outline-none bg-transparent dark:text-white dark:placeholder-gray-400"
                                         placeholder="e.g. ui, performance, security"
                                         value={formData.tags}
                                         onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
@@ -470,12 +470,12 @@ export default function AdminUpdates() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Target Link (Optional)</label>
-                                <div className="flex items-center border border-gray-300 rounded-lg px-3 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500">
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Target Link (Optional)</label>
+                                <div className="flex items-center border border-gray-300 dark:border-gray-600 rounded-lg px-3 overflow-hidden focus-within:ring-2 focus-within:ring-blue-500 bg-white dark:bg-gray-700">
                                     <Search size={18} className="text-gray-400 mr-2" />
                                     <input
                                         type="url"
-                                        className="w-full py-2 outline-none"
+                                        className="w-full py-2 outline-none bg-transparent dark:text-white dark:placeholder-gray-400"
                                         placeholder="e.g. https://urbansetu.com/new-feature"
                                         value={formData.actionUrl}
                                         onChange={(e) => setFormData({ ...formData, actionUrl: e.target.value })}
@@ -484,16 +484,16 @@ export default function AdminUpdates() {
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Media</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Media</label>
                                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                                     {/* Image Upload */}
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <label className="text-xs font-semibold text-gray-500 uppercase">Images</label>
-                                                {uploadingImage && <Loader size={14} className="animate-spin text-blue-600" />}
+                                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Images</label>
+                                                {uploadingImage && <Loader size={14} className="animate-spin text-blue-600 dark:text-blue-400" />}
                                             </div>
-                                            <label className="cursor-pointer text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium">
+                                            <label className="cursor-pointer text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
                                                 <Upload size={14} /> Add Image
                                                 <input
                                                     type="file"
@@ -509,7 +509,7 @@ export default function AdminUpdates() {
                                             {formData.imageUrls.map((url, index) => (
                                                 <div
                                                     key={index}
-                                                    className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 h-24 flex items-center justify-center group cursor-pointer"
+                                                    className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 h-24 flex items-center justify-center group cursor-pointer"
                                                     onClick={() => {
                                                         setSelectedImageIndex(index);
                                                         setShowImagePreview(true);
@@ -534,7 +534,7 @@ export default function AdminUpdates() {
                                                 </div>
                                             ))}
                                             {formData.imageUrls.length === 0 && (
-                                                <div className="col-span-2 py-4 text-center text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-lg">
+                                                <div className="col-span-2 py-4 text-center text-gray-400 dark:text-gray-500 text-sm border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg">
                                                     No images added
                                                 </div>
                                             )}
@@ -545,10 +545,10 @@ export default function AdminUpdates() {
                                     <div className="space-y-3">
                                         <div className="flex items-center justify-between">
                                             <div className="flex items-center gap-2">
-                                                <label className="text-xs font-semibold text-gray-500 uppercase">Videos</label>
-                                                {uploadingVideo && <Loader size={14} className="animate-spin text-blue-600" />}
+                                                <label className="text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase">Videos</label>
+                                                {uploadingVideo && <Loader size={14} className="animate-spin text-blue-600 dark:text-blue-400" />}
                                             </div>
-                                            <label className="cursor-pointer text-xs flex items-center gap-1 text-blue-600 hover:text-blue-800 font-medium">
+                                            <label className="cursor-pointer text-xs flex items-center gap-1 text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 font-medium">
                                                 <Upload size={14} /> Add Video
                                                 <input
                                                     type="file"
@@ -559,12 +559,11 @@ export default function AdminUpdates() {
                                             </label>
                                         </div>
 
-                                        {/* Video List */}
                                         <div className="space-y-2">
                                             {formData.videoUrls.map((url, index) => (
                                                 <div
                                                     key={index}
-                                                    className="relative rounded-lg overflow-hidden border border-gray-200 bg-gray-50 group cursor-pointer h-32"
+                                                    className="relative rounded-lg overflow-hidden border border-gray-200 dark:border-gray-600 bg-gray-50 dark:bg-gray-700 group cursor-pointer h-32"
                                                     onClick={() => {
                                                         setSelectedVideoIndex(index);
                                                         setShowVideoPreview(true);
@@ -595,7 +594,7 @@ export default function AdminUpdates() {
                                                 </div>
                                             ))}
                                             {formData.videoUrls.length === 0 && (
-                                                <div className="py-4 text-center text-gray-400 text-sm border-2 border-dashed border-gray-200 rounded-lg">
+                                                <div className="py-4 text-center text-gray-400 dark:text-gray-500 text-sm border-2 border-dashed border-gray-200 dark:border-gray-600 rounded-lg">
                                                     No videos added
                                                 </div>
                                             )}
@@ -608,20 +607,20 @@ export default function AdminUpdates() {
                                 <input
                                     type="checkbox"
                                     id="isActive"
-                                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                                    className="w-4 h-4 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600 dark:bg-gray-700 disabled:opacity-50"
                                     checked={formData.isActive}
                                     onChange={(e) => setFormData({ ...formData, isActive: e.target.checked })}
                                 />
-                                <label htmlFor="isActive" className="text-gray-700 font-medium cursor-pointer">
+                                <label htmlFor="isActive" className="text-gray-700 dark:text-gray-300 font-medium cursor-pointer">
                                     Immediately publish this update
                                 </label>
                             </div>
 
-                            <div className="flex gap-4 pt-4 border-t border-gray-100 mt-4">
+                            <div className="flex gap-4 pt-4 border-t border-gray-100 dark:border-gray-700 mt-4">
                                 <button
                                     type="button"
                                     onClick={() => setShowModal(false)}
-                                    className="flex-1 py-3 border border-gray-300 text-gray-700 rounded-xl hover:bg-gray-50 font-medium transition-colors"
+                                    className="flex-1 py-3 border border-gray-300 dark:border-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-700 font-medium transition-colors"
                                     disabled={submitting}
                                 >
                                     Cancel
@@ -658,19 +657,19 @@ export default function AdminUpdates() {
 
             {showDeleteModal && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 p-4 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-100 opacity-100">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl w-full max-w-md overflow-hidden transform transition-all scale-100 opacity-100">
                         <div className="p-6 text-center">
-                            <div className="w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <Trash2 className="text-red-600" size={32} />
+                            <div className="w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <Trash2 className="text-red-600 dark:text-red-400" size={32} />
                             </div>
-                            <h3 className="text-xl font-bold text-gray-900 mb-2">Delete Update?</h3>
-                            <p className="text-gray-500 mb-6">
+                            <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2">Delete Update?</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mb-6">
                                 Are you sure you want to delete this update? This action cannot be undone.
                             </p>
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => setShowDeleteModal(false)}
-                                    className="flex-1 py-2.5 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors"
+                                    className="flex-1 py-2.5 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl font-medium transition-colors"
                                 >
                                     Cancel
                                 </button>

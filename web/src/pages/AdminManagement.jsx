@@ -964,10 +964,10 @@ export default function AdminManagement() {
   // Guard: If users/admins are not arrays, show session expired/unauthorized message
   if (!Array.isArray(users) || (tab === 'admins' && !Array.isArray(admins) && currentUser.isDefaultAdmin)) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100">
-        <div className="bg-white rounded-xl shadow-lg p-8 text-center">
-          <h2 className="text-2xl font-bold text-red-600 mb-4">Session expired or unauthorized</h2>
-          <p className="text-gray-700 mb-4">Please sign in again to access admin management.</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
+          <h2 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Session expired or unauthorized</h2>
+          <p className="text-gray-700 dark:text-gray-300 mb-4">Please sign in again to access admin management.</p>
           <a href="/sign-in" className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-2 rounded-lg font-medium transition-colors">Go to Sign In</a>
         </div>
       </div>
@@ -1038,19 +1038,19 @@ export default function AdminManagement() {
   if (showPasswordModal) {
     return (
       <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-        <form className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4" onSubmit={handleManagementPasswordSubmit}>
-          <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
+        <form className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4" onSubmit={handleManagementPasswordSubmit}>
+          <h3 className="text-lg font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2"><FaLock /> Confirm Password</h3>
           <input
             ref={passwordInputRef}
             type="password"
-            className="border rounded p-2 w-full"
+            className="border rounded p-2 w-full dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
             placeholder="Enter your password"
             value={managementPassword}
             onChange={e => setManagementPassword(e.target.value)}
           />
-          {managementPasswordError && <div className="text-red-600 text-sm">{managementPasswordError}</div>}
+          {managementPasswordError && <div className="text-red-600 dark:text-red-400 text-sm">{managementPasswordError}</div>}
           <div className="flex gap-2 justify-end">
-            <button type="button" className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold" onClick={() => navigate(-1)}>Cancel</button>
+            <button type="button" className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold" onClick={() => navigate(-1)}>Cancel</button>
             <button type="submit" className="px-4 py-2 rounded bg-blue-700 text-white font-semibold" disabled={managementPasswordLoading}>{managementPasswordLoading ? 'Verifying...' : 'Confirm'}</button>
           </div>
         </form>
@@ -1063,10 +1063,10 @@ export default function AdminManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8 animate-fadeIn">
-      <div className="max-w-6xl mx-auto bg-white rounded-2xl shadow-2xl p-8 animate-slideUp">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 py-10 px-2 md:px-8 animate-fadeIn transition-colors duration-300">
+      <div className="max-w-6xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 animate-slideUp">
         <div className="flex items-center justify-between mb-8">
-          <h1 className="text-4xl font-extrabold text-blue-700 drop-shadow animate-fade-in">Accounts Management</h1>
+          <h1 className="text-4xl font-extrabold text-blue-700 dark:text-blue-400 drop-shadow animate-fade-in">Accounts Management</h1>
           <button
             onClick={() => fetchData()}
             className="px-3 py-2 rounded-lg bg-blue-600 hover:bg-blue-700 text-white text-sm font-semibold shadow inline-flex items-center gap-2"
@@ -1080,7 +1080,7 @@ export default function AdminManagement() {
         </div>
         <div className="flex flex-wrap gap-2 sm:gap-4 mb-8 animate-fadeIn">
           <button
-            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "users" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-blue-50"}`}
+            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "users" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-blue-50 dark:hover:bg-gray-700"}`}
             onClick={() => {
               setTab("users");
               setShowRestriction(false);
@@ -1092,7 +1092,7 @@ export default function AdminManagement() {
             Users ({users.length})
           </button>
           <button
-            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "admins" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-purple-50"}`}
+            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "admins" ? "bg-gradient-to-r from-blue-500 to-purple-500 text-white scale-105" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-purple-50 dark:hover:bg-gray-700"}`}
             onClick={() => {
               if (!currentUser.isDefaultAdmin) {
                 setShowRestriction(true);
@@ -1111,7 +1111,7 @@ export default function AdminManagement() {
             Admins ({admins.length})
           </button>
           <button
-            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "softbanned" ? "bg-gradient-to-r from-red-500 to-red-600 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-rose-50"}`}
+            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "softbanned" ? "bg-gradient-to-r from-red-500 to-red-600 text-white scale-105" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-rose-50 dark:hover:bg-gray-700"}`}
             onClick={() => {
               setTab("softbanned");
               setSearchTerm("");
@@ -1124,7 +1124,7 @@ export default function AdminManagement() {
             <span className="sm:hidden">Softbanned ({softbannedAccounts.length})</span>
           </button>
           <button
-            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "purged" ? "bg-gradient-to-r from-red-500 to-orange-500 text-white scale-105" : "bg-gray-100 text-gray-700 hover:bg-red-50"}`}
+            className={`px-3 sm:px-6 py-2 sm:py-3 rounded-xl font-bold text-sm sm:text-lg shadow transition-all duration-200 ${tab === "purged" ? "bg-gradient-to-r from-red-500 to-orange-500 text-white scale-105" : "bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-red-50 dark:hover:bg-gray-700"}`}
             onClick={() => {
               setTab("purged");
               setSearchTerm("");
@@ -1153,7 +1153,7 @@ export default function AdminManagement() {
                   placeholder={`Search ${tab === "users" ? "users" : "admins"} by name, email...`}
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 transition-all duration-200 shadow-sm"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-800 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:placeholder-gray-400 focus:ring-2 focus:ring-blue-500 focus:border-blue-500 dark:text-gray-200 transition-all duration-200 shadow-sm"
                 />
                 {searchTerm && (
                   <button
@@ -1173,7 +1173,7 @@ export default function AdminManagement() {
                 <select
                   value={statusFilter}
                   onChange={(e) => setStatusFilter(e.target.value)}
-                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
+                  className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-green-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
                 >
                   <option value="all">All Status</option>
                   <option value="active">Active</option>
@@ -1219,7 +1219,7 @@ export default function AdminManagement() {
                     setStatusFilter("all");
                     setAdminApprovalFilter("all");
                   }}
-                  className="w-full px-4 py-3 bg-gray-100 hover:bg-gray-200 text-gray-700 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2"
+                  className="w-full px-4 py-3 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-medium transition-colors duration-200 flex items-center justify-center gap-2"
                 >
                   <FaTimes className="text-sm" />
                   Clear All Filters
@@ -1268,14 +1268,14 @@ export default function AdminManagement() {
 
           {/* Results Summary */}
           {tab !== 'softbanned' && tab !== 'purged' && (searchTerm || statusFilter !== "all" || adminApprovalFilter !== "all") && (
-            <div className="mt-3 p-3 bg-blue-50 rounded-lg border border-blue-200">
-              <div className="text-sm text-blue-800">
+            <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-200 dark:border-blue-800">
+              <div className="text-sm text-blue-800 dark:text-blue-300">
                 <span className="font-semibold">Active Filters:</span>
-                {searchTerm && <span className="ml-2 px-2 py-1 bg-blue-200 rounded text-xs">Search: "{searchTerm}"</span>}
-                {statusFilter !== "all" && <span className="ml-2 px-2 py-1 bg-green-200 rounded text-xs">Status: {statusFilter}</span>}
-                {tab === "admins" && adminApprovalFilter !== "all" && <span className="ml-2 px-2 py-1 bg-purple-200 rounded text-xs">Approval: {adminApprovalFilter}</span>}
+                {searchTerm && <span className="ml-2 px-2 py-1 bg-blue-200 dark:bg-blue-800 rounded text-xs">Search: "{searchTerm}"</span>}
+                {statusFilter !== "all" && <span className="ml-2 px-2 py-1 bg-green-200 dark:bg-green-800/50 rounded text-xs">Status: {statusFilter}</span>}
+                {tab === "admins" && adminApprovalFilter !== "all" && <span className="ml-2 px-2 py-1 bg-purple-200 dark:bg-purple-800/50 rounded text-xs">Approval: {adminApprovalFilter}</span>}
               </div>
-              <div className="mt-2 text-sm text-blue-700">
+              <div className="mt-2 text-sm text-blue-700 dark:text-blue-300">
                 Found {tab === "users" ? filteredUsers.length : filteredAdmins.length} {tab === "users" ? "user" : "admin"}{tab === "users" ? (filteredUsers.length !== 1 ? "s" : "") : (filteredAdmins.length !== 1 ? "s" : "")} matching your filters
               </div>
             </div>
@@ -1295,13 +1295,13 @@ export default function AdminManagement() {
           <>
             {(tab === "users") && (
               <div>
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2 animate-fadeIn">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2 animate-fadeIn">
                   <FaUser className="text-blue-500" /> Users ({users.length})
                 </h2>
                 {filteredUsers.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 animate-fadeIn">
-                    <FaUserLock className="text-6xl text-gray-300 mb-4" />
-                    <p className="text-gray-500 text-lg font-medium">
+                    <FaUserLock className="text-6xl text-gray-300 dark:text-gray-600 mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
                       {(searchTerm || statusFilter !== "all") ? `No users found matching your filters` : "No users found."}
                     </p>
                     {(searchTerm || statusFilter !== "all") && (
@@ -1321,29 +1321,29 @@ export default function AdminManagement() {
                     {filteredUsers.map((user) => (
                       <div
                         key={user._id}
-                        className="bg-blue-50/50 border border-blue-100/50 rounded-2xl shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-all duration-200 animate-slideUp cursor-pointer"
+                        className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-all duration-200 animate-slideUp cursor-pointer hover:border-blue-200 dark:hover:border-blue-800"
                         onClick={() => handleAccountClick(user, 'user')}
                         title="Click to view full details"
                       >
                         <div className="flex items-start gap-4">
-                          <div className="w-16 h-16 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-blue-600">
+                          <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-blue-600 dark:text-blue-400">
                             <FaUser />
                           </div>
                           <div className="flex-1 min-w-0 flex flex-col gap-1">
                             <div className="flex items-center gap-2 w-full min-w-0">
-                              <span className="text-lg font-bold text-gray-800 truncate flex-1" title={user.username}>{highlightMatch(user.username)}</span>
-                              <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase flex-shrink-0 ${user.status === "active" ? "bg-green-100 text-green-700" : "bg-red-100 text-red-700"}`}>{user.status}</span>
+                              <span className="text-lg font-bold text-gray-800 dark:text-white truncate flex-1" title={user.username}>{highlightMatch(user.username)}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase flex-shrink-0 ${user.status === "active" ? "bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300" : "bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300"}`}>{user.status}</span>
                             </div>
 
-                            <div className="flex items-center gap-2 text-gray-500 text-sm w-full min-w-0">
-                              <FaEnvelope className="text-gray-400 flex-shrink-0" />
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm w-full min-w-0">
+                              <FaEnvelope className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                               <span className="truncate" title={user.email}>{highlightMatch(user.email)}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500 text-sm">
-                              <FaPhone className="text-gray-400" /> {user.mobileNumber ? highlightMatch(user.mobileNumber) : <span className="italic text-gray-300">No mobile</span>}
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+                              <FaPhone className="text-gray-400 dark:text-gray-500" /> {user.mobileNumber ? highlightMatch(user.mobileNumber) : <span className="italic text-gray-300 dark:text-gray-600">No mobile</span>}
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500 text-sm">
-                              <FaCalendarAlt className="text-gray-400" /> {new Date(user.createdAt).toLocaleDateString('en-GB')}
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+                              <FaCalendarAlt className="text-gray-400 dark:text-gray-500" /> {new Date(user.createdAt).toLocaleDateString('en-GB')}
                             </div>
 
                             {(() => {
@@ -1418,13 +1418,13 @@ export default function AdminManagement() {
             )}
             {tab === "admins" && currentUser.isDefaultAdmin && !showRestriction && (
               <div className="mt-10">
-                <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center gap-2 animate-fadeIn">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-gray-100 mb-6 flex items-center gap-2 animate-fadeIn">
                   <FaUserShield className="text-purple-500" /> Admins ({admins.length})
                 </h2>
                 {filteredAdmins.length === 0 ? (
                   <div className="flex flex-col items-center justify-center py-16 animate-fadeIn">
-                    <FaUserLock className="text-6xl text-gray-300 mb-4" />
-                    <p className="text-gray-500 text-lg font-medium">
+                    <FaUserLock className="text-6xl text-gray-300 dark:text-gray-600 mb-4" />
+                    <p className="text-gray-500 dark:text-gray-400 text-lg font-medium">
                       {(searchTerm || statusFilter !== "all" || adminApprovalFilter !== "all") ? `No admins found matching your filters` : "No admins found."}
                     </p>
                     {(searchTerm || statusFilter !== "all" || adminApprovalFilter !== "all") && (
@@ -1445,29 +1445,29 @@ export default function AdminManagement() {
                     {filteredAdmins.map((admin) => (
                       <div
                         key={admin._id}
-                        className="bg-purple-50/50 border border-purple-100/50 rounded-2xl shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-all duration-200 animate-slideUp cursor-pointer"
+                        className="bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 rounded-2xl shadow-sm p-5 flex flex-col gap-4 hover:shadow-md transition-all duration-200 animate-slideUp cursor-pointer hover:border-purple-200 dark:hover:border-purple-800"
                         onClick={() => handleAccountClick(admin, 'admin')}
                         title="Click to view full details"
                       >
                         <div className="flex items-start gap-4">
-                          <div className="w-16 h-16 rounded-full bg-purple-100 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-purple-600">
+                          <div className="w-16 h-16 rounded-full bg-purple-100 dark:bg-purple-900/30 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-purple-600 dark:text-purple-400">
                             <FaUserShield />
                           </div>
                           <div className="flex-1 min-w-0 flex flex-col gap-1">
                             <div className="flex items-center gap-2 w-full min-w-0">
-                              <span className="text-lg font-bold text-gray-800 truncate flex-1" title={admin.username}>{highlightMatch(admin.username)}</span>
-                              <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase flex-shrink-0 ${admin.adminApprovalStatus === 'rejected' ? 'bg-gray-300 text-gray-700' : admin.status === 'active' ? 'bg-green-100 text-green-700' : 'bg-red-100 text-red-700'}`}>{admin.adminApprovalStatus === 'rejected' ? 'rejected' : admin.status}</span>
+                              <span className="text-lg font-bold text-gray-800 dark:text-white truncate flex-1" title={admin.username}>{highlightMatch(admin.username)}</span>
+                              <span className={`text-xs px-2 py-0.5 rounded-md font-bold uppercase flex-shrink-0 ${admin.adminApprovalStatus === 'rejected' ? 'bg-gray-300 text-gray-700 dark:bg-gray-700 dark:text-gray-300' : admin.status === 'active' ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300' : 'bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300'}`}>{admin.adminApprovalStatus === 'rejected' ? 'rejected' : admin.status}</span>
                             </div>
 
-                            <div className="flex items-center gap-2 text-gray-500 text-sm w-full min-w-0">
-                              <FaEnvelope className="text-gray-400 flex-shrink-0" />
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm w-full min-w-0">
+                              <FaEnvelope className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                               <span className="truncate" title={admin.email}>{highlightMatch(admin.email)}</span>
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500 text-sm">
-                              <FaPhone className="text-gray-400" /> {admin.mobileNumber ? highlightMatch(admin.mobileNumber) : <span className="italic text-gray-300">No mobile</span>}
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+                              <FaPhone className="text-gray-400 dark:text-gray-500" /> {admin.mobileNumber ? highlightMatch(admin.mobileNumber) : <span className="italic text-gray-300 dark:text-gray-600">No mobile</span>}
                             </div>
-                            <div className="flex items-center gap-2 text-gray-500 text-sm">
-                              <FaCalendarAlt className="text-gray-400" /> {new Date(admin.createdAt).toLocaleDateString('en-GB')}
+                            <div className="flex items-center gap-2 text-gray-500 dark:text-gray-400 text-sm">
+                              <FaCalendarAlt className="text-gray-400 dark:text-gray-500" /> {new Date(admin.createdAt).toLocaleDateString('en-GB')}
                             </div>
 
                             {(() => {
@@ -1542,16 +1542,16 @@ export default function AdminManagement() {
             )}
             {tab === 'softbanned' && (
               <div className="mt-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Softbanned Accounts ({softbannedAccounts.length})</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Softbanned Accounts ({softbannedAccounts.length})</h2>
                 {softbannedLoading ? (
-                  <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div><span className="ml-3 text-gray-600">Loading...</span></div>
+                  <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div><span className="ml-3 text-gray-600 dark:text-gray-400">Loading...</span></div>
                 ) : softbannedAccounts.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500 border rounded-xl">No softbanned accounts found</div>
+                  <div className="p-6 text-center text-gray-500 dark:text-gray-400 border dark:border-gray-700 rounded-xl">No softbanned accounts found</div>
                 ) : (
-                  <div className="overflow-x-auto rounded-xl border border-gray-200">
+                  <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
                     <table className="min-w-full text-sm">
-                      <thead className="bg-gray-50">
-                        <tr className="text-left text-gray-700">
+                      <thead className="bg-gray-50 dark:bg-gray-800">
+                        <tr className="text-left text-gray-700 dark:text-gray-300">
                           <th className="px-4 py-2 whitespace-nowrap">Name</th>
                           <th className="px-4 py-2 whitespace-nowrap">Email</th>
                           <th className="px-4 py-2 whitespace-nowrap">Role</th>
@@ -1562,16 +1562,16 @@ export default function AdminManagement() {
                           <th className="px-4 py-2 whitespace-nowrap">Actions</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                         {softbannedAccounts.map(acc => (
-                          <tr key={acc._id} className="hover:bg-gray-50">
-                            <td className="px-4 py-2 font-medium text-gray-800 whitespace-nowrap">{acc.name}</td>
-                            <td className="px-4 py-2 text-gray-700 whitespace-nowrap">{acc.email}</td>
-                            <td className="px-4 py-2 whitespace-nowrap"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
-                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString('en-GB') : '-'}</td>
-                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{typeof acc.deletedBy === 'string' ? acc.deletedBy : (acc.deletedBy?._id || acc.deletedBy)}</td>
-                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.reason || '-'}</td>
-                            <td className="px-4 py-2 text-gray-600">
+                          <tr key={acc._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
+                            <td className="px-4 py-2 font-medium text-gray-800 dark:text-white whitespace-nowrap">{acc.name}</td>
+                            <td className="px-4 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{acc.email}</td>
+                            <td className="px-4 py-2 whitespace-nowrap"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>{acc.role}</span></td>
+                            <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString('en-GB') : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{typeof acc.deletedBy === 'string' ? acc.deletedBy : (acc.deletedBy?._id || acc.deletedBy)}</td>
+                            <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{acc.reason || '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
                               {acc.policy ? (
                                 <div className="text-xs">
                                   <div><strong>Category:</strong> {acc.policy.category || '-'}</div>
@@ -1585,15 +1585,15 @@ export default function AdminManagement() {
                             <td className="px-4 py-2 whitespace-nowrap">
                               {currentUser.isDefaultAdmin ? (
                                 <div className="flex gap-2">
-                                  <button onClick={() => handleRestore(acc._id)} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
-                                  <button onClick={() => handlePurge(acc._id)} className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs">Purge</button>
+                                  <button onClick={() => handleRestore(acc._id)} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700">Restore</button>
+                                  <button onClick={() => handlePurge(acc._id)} className="px-3 py-1 bg-red-600 text-white rounded-lg text-xs hover:bg-red-700">Purge</button>
                                 </div>
                               ) : (
                                 <div className="flex gap-2">
                                   {acc.role === 'user' ? (
-                                    <button onClick={() => handleRestore(acc._id)} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs">Restore</button>
+                                    <button onClick={() => handleRestore(acc._id)} className="px-3 py-1 bg-green-600 text-white rounded-lg text-xs hover:bg-green-700">Restore</button>
                                   ) : (
-                                    <span className="text-xs text-gray-500">View only</span>
+                                    <span className="text-xs text-gray-500 dark:text-gray-400">View only</span>
                                   )}
                                 </div>
                               )}
@@ -1608,16 +1608,16 @@ export default function AdminManagement() {
             )}
             {tab === 'purged' && (
               <div className="mt-6">
-                <h2 className="text-2xl font-bold text-gray-800 mb-4">Purged Accounts (Permanently Removed) ({purgedAccounts.length})</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Purged Accounts (Permanently Removed) ({purgedAccounts.length})</h2>
                 {purgedLoading ? (
-                  <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div><span className="ml-3 text-gray-600">Loading...</span></div>
+                  <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div><span className="ml-3 text-gray-600 dark:text-gray-400">Loading...</span></div>
                 ) : purgedAccounts.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500 border rounded-xl">No purged accounts found</div>
+                  <div className="p-6 text-center text-gray-500 dark:text-gray-400 border dark:border-gray-700 rounded-xl">No purged accounts found</div>
                 ) : (
-                  <div className="overflow-x-auto rounded-xl border border-gray-200">
+                  <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
                     <table className="min-w-full text-sm">
-                      <thead className="bg-red-50">
-                        <tr className="text-left text-gray-700">
+                      <thead className="bg-red-50 dark:bg-red-900/20">
+                        <tr className="text-left text-gray-700 dark:text-gray-300">
                           <th className="px-4 py-2 whitespace-nowrap">Name</th>
                           <th className="px-4 py-2 whitespace-nowrap">Email</th>
                           <th className="px-4 py-2 whitespace-nowrap">Role</th>
@@ -1628,17 +1628,17 @@ export default function AdminManagement() {
                           <th className="px-4 py-2 whitespace-nowrap">Policy</th>
                         </tr>
                       </thead>
-                      <tbody className="divide-y divide-gray-200">
+                      <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                         {purgedAccounts.map(acc => (
-                          <tr key={acc._id} className="hover:bg-red-50">
-                            <td className="px-4 py-2 font-medium text-gray-800 whitespace-nowrap">{acc.name}</td>
-                            <td className="px-4 py-2 text-gray-700 whitespace-nowrap">{acc.email}</td>
-                            <td className="px-4 py-2 whitespace-nowrap"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700' : 'bg-blue-100 text-blue-700'}`}>{acc.role}</span></td>
-                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString('en-GB') : '-'}</td>
-                            <td className="px-4 py-2 text-red-600 font-semibold whitespace-nowrap">{acc.purgedAt ? new Date(acc.purgedAt).toLocaleString('en-GB') : '-'}</td>
-                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.purgedBy ? (typeof acc.purgedBy === 'string' ? acc.purgedBy : acc.purgedBy._id) : '-'}</td>
-                            <td className="px-4 py-2 text-gray-600 whitespace-nowrap">{acc.reason || '-'}</td>
-                            <td className="px-4 py-2 text-gray-600">
+                          <tr key={acc._id} className="hover:bg-red-50 dark:hover:bg-red-900/10 transition-colors">
+                            <td className="px-4 py-2 font-medium text-gray-800 dark:text-white whitespace-nowrap">{acc.name}</td>
+                            <td className="px-4 py-2 text-gray-700 dark:text-gray-300 whitespace-nowrap">{acc.email}</td>
+                            <td className="px-4 py-2 whitespace-nowrap"><span className={`px-2 py-1 rounded-full text-xs font-semibold ${acc.role === 'admin' ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300' : 'bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300'}`}>{acc.role}</span></td>
+                            <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{acc.deletedAt ? new Date(acc.deletedAt).toLocaleString('en-GB') : '-'}</td>
+                            <td className="px-4 py-2 text-red-600 dark:text-red-400 font-semibold whitespace-nowrap">{acc.purgedAt ? new Date(acc.purgedAt).toLocaleString('en-GB') : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{acc.purgedBy ? (typeof acc.purgedBy === 'string' ? acc.purgedBy : acc.purgedBy._id) : '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 dark:text-gray-400 whitespace-nowrap">{acc.reason || '-'}</td>
+                            <td className="px-4 py-2 text-gray-600 dark:text-gray-400">
                               {acc.policy ? (
                                 <div className="text-xs">
                                   <div><strong>Category:</strong> {acc.policy.category || '-'}</div>
@@ -1663,10 +1663,10 @@ export default function AdminManagement() {
       {/* Account Details Modal */}
       {showAccountModal && (
         <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto p-0 sm:p-0 relative animate-fadeIn">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto p-0 sm:p-0 relative animate-fadeIn">
             {/* Close button top right */}
             <button
-              className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 bg-gray-100 hover:bg-gray-200 rounded-full p-2 transition-colors z-10 shadow"
+              className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-2 transition-colors z-10 shadow"
               onClick={() => setShowAccountModal(false)}
               title="Close"
               aria-label="Close"
@@ -1674,7 +1674,7 @@ export default function AdminManagement() {
               <FaTimes className="w-4 h-4" />
             </button>
             {/* Header */}
-            <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 rounded-t-2xl px-6 py-5 border-b border-gray-200">
+            <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-800 rounded-t-2xl px-6 py-5 border-b border-gray-200 dark:border-gray-700">
               <div className="flex items-center gap-3">
                 <img
                   src={selectedAccount?.avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}
@@ -1683,10 +1683,10 @@ export default function AdminManagement() {
                   onError={e => { e.target.onerror = null; e.target.src = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'; }}
                 />
                 <div>
-                  <h2 className="text-xl font-bold text-blue-800 flex items-center gap-2">
+                  <h2 className="text-xl font-bold text-blue-800 dark:text-blue-300 flex items-center gap-2">
                     {selectedAccount?.username}
                   </h2>
-                  <p className="text-xs text-gray-500">{selectedAccount?.email}</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">{selectedAccount?.email}</p>
                 </div>
               </div>
               <div className="mt-2 flex flex-col items-center">
@@ -1705,19 +1705,19 @@ export default function AdminManagement() {
               ) : selectedAccount ? (
                 <>
                   <div className="grid grid-cols-1 gap-2">
-                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                       <FaPhone className="text-blue-400" />
                       <span><strong>Mobile:</strong> {selectedAccount.mobileNumber || 'Not provided'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                       <FaUser className="text-purple-400" />
                       <span><strong>Gender:</strong> {selectedAccount.gender ? selectedAccount.gender.charAt(0).toUpperCase() + selectedAccount.gender.slice(1) : 'Not provided'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                       <FaHome className="text-green-400" />
                       <span><strong>Address:</strong> {selectedAccount.address || 'Not provided'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                       <FaCalendarAlt className="text-purple-400" />
                       <span><strong>Member Since:</strong> {selectedAccount.createdAt ? new Date(selectedAccount.createdAt).toLocaleDateString('en-GB', {
                         day: '2-digit',
@@ -1725,7 +1725,7 @@ export default function AdminManagement() {
                         year: 'numeric'
                       }) : ''}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                       <FaCalendarAlt className="text-blue-400" />
                       <span><strong>Last Updated Profile:</strong> {selectedAccount.updatedAt ? new Date(selectedAccount.updatedAt).toLocaleDateString('en-GB', {
                         day: '2-digit',
@@ -1736,37 +1736,37 @@ export default function AdminManagement() {
                         minute: '2-digit'
                       }) : 'Never'}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                       <FaList className="text-green-400" />
                       <span><strong>Listings:</strong> {accountStats.listings}</span>
                     </div>
-                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                       <FaCalendar className="text-pink-400" />
                       <span><strong>Appointments:</strong> {accountStats.appointments}</span>
                     </div>
                     {/* Extended Stats */}
                     {selectedAccount.lastLogin && (
                       <div className="flex flex-col gap-1">
-                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                           <FaUserLock className="text-orange-400" />
                           <span><strong>Last Login:</strong> {new Date(selectedAccount.lastLogin).toLocaleString('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: false }).replace(',', '')}</span>
                         </div>
                         {selectedAccount.lastLoginLocation && (
-                          <div className="flex items-center gap-2 text-gray-700 text-sm ml-6">
-                            <span className="text-xs text-gray-500">📍 {selectedAccount.lastLoginLocation}</span>
+                          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm ml-6">
+                            <span className="text-xs text-gray-500 dark:text-gray-400">📍 {selectedAccount.lastLoginLocation}</span>
                           </div>
                         )}
                       </div>
                     )}
-                    <div className="grid grid-cols-2 gap-2 mt-2 bg-gray-50 p-3 rounded-lg">
-                      <div className="text-gray-600 text-sm"><span className="font-semibold text-gray-700">Wishlist:</span> {selectedAccount.wishlistCount || 0}</div>
-                      <div className="text-gray-600 text-sm"><span className="font-semibold text-gray-700">Watchlist:</span> {selectedAccount.watchlistCount || 0}</div>
-                      <div className="text-gray-600 text-sm"><span className="font-semibold text-gray-700">Reviews:</span> {selectedAccount.reviewsCount || 0}</div>
-                      <div className="text-gray-600 text-sm"><span className="font-semibold text-gray-700">Payments:</span> {selectedAccount.paymentsCount || 0}</div>
+                    <div className="grid grid-cols-2 gap-2 mt-2 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                      <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Wishlist:</span> {selectedAccount.wishlistCount || 0}</div>
+                      <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Watchlist:</span> {selectedAccount.watchlistCount || 0}</div>
+                      <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Reviews:</span> {selectedAccount.reviewsCount || 0}</div>
+                      <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Payments:</span> {selectedAccount.paymentsCount || 0}</div>
                     </div>
                   </div>
                   <div className="grid grid-cols-1 gap-2 mt-2">
-                    <div className="flex items-center gap-2 text-gray-700 text-sm">
+                    <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                       <span><strong>Status:</strong> {selectedAccount.status || 'active'}</span>
                     </div>
                     {/* Lockout remaining time (password lockout) */}
@@ -1777,7 +1777,7 @@ export default function AdminManagement() {
                       const remainingMs = new Date(entry.unlockAt).getTime() - Date.now();
                       const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
                       return (
-                        <div className="flex items-center gap-2 text-orange-700 text-sm">
+                        <div className="flex items-center gap-2 text-orange-700 dark:text-orange-400 text-sm">
                           <span><strong>Time left to unlock:</strong> about {remainingMin} minute{remainingMin > 1 ? 's' : ''}</span>
                         </div>
                       );
@@ -1785,11 +1785,11 @@ export default function AdminManagement() {
                     {/* Suspension details */}
                     {selectedAccount.status === 'suspended' && (
                       <div className="space-y-1">
-                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                           <span><strong>Suspended on:</strong> {selectedAccount.suspendedAt ? new Date(selectedAccount.suspendedAt).toLocaleString('en-GB', { hour: '2-digit', minute: '2-digit', day: '2-digit', month: '2-digit', year: 'numeric' }) : 'N/A'}</span>
                         </div>
                         {selectedAccount.suspendedBy && (
-                          <div className="flex items-center gap-2 text-gray-700 text-sm">
+                          <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                             <span><strong>Suspended by:</strong> {selectedAccount.suspendedBy?.username || selectedAccount.suspendedBy?.email || selectedAccount.suspendedBy}</span>
                           </div>
                         )}
@@ -1797,27 +1797,27 @@ export default function AdminManagement() {
                     )}
                     {selectedAccount.type === 'admin' && (
                       <>
-                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                           <span><strong>Admin Status:</strong> {selectedAccount.adminApprovalStatus}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                           <span><strong>Admin Approval Date:</strong> {selectedAccount.adminApprovalDate ? new Date(selectedAccount.adminApprovalDate).toLocaleDateString('en-GB', {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric'
                           }) : 'N/A'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                           <span><strong>Approved By:</strong> {selectedAccount.approvedBy ? selectedAccount.approvedBy.username || selectedAccount.approvedBy.email || selectedAccount.approvedBy : 'N/A'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                           <span><strong>Admin Request Date:</strong> {selectedAccount.adminRequestDate ? new Date(selectedAccount.adminRequestDate).toLocaleDateString('en-GB', {
                             day: '2-digit',
                             month: '2-digit',
                             year: 'numeric'
                           }) : 'N/A'}</span>
                         </div>
-                        <div className="flex items-center gap-2 text-gray-700 text-sm">
+                        <div className="flex items-center gap-2 text-gray-700 dark:text-gray-300 text-sm">
                           <span><strong>Is Default Admin:</strong> {selectedAccount.isDefaultAdmin ? 'Yes' : 'No'}</span>
                         </div>
                       </>
@@ -1837,14 +1837,14 @@ export default function AdminManagement() {
       {
         showConfirmModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-fadeIn">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-fadeIn">
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-800 mb-4">{confirmModalData.title}</h3>
-                <p className="text-gray-600 mb-6">{confirmModalData.message}</p>
+                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">{confirmModalData.title}</h3>
+                <p className="text-gray-600 dark:text-gray-300 mb-6">{confirmModalData.message}</p>
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={handleConfirmModalClose}
-                    className="px-4 py-2 rounded-lg bg-gray-200 text-gray-800 hover:bg-gray-300 font-semibold transition-colors"
+                    className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition-colors"
                   >
                     {confirmModalData.cancelText}
                   </button>
@@ -1877,15 +1877,15 @@ export default function AdminManagement() {
       {
         showDeleteReasonModal && (
           <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Softban</h3>
-              <p className="text-gray-600 mb-3">Please select a reason and configure policy to proceed.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Reason for Softban</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-3">Please select a reason and configure policy to proceed.</p>
 
               {/* Reason Selection */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Reason</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Reason</label>
                 <select
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white"
                   value={deleteReason}
                   onChange={e => setDeleteReason(e.target.value)}
                 >
@@ -1913,10 +1913,10 @@ export default function AdminManagement() {
 
               {deleteReason === 'other' && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Additional Details</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Additional Details</label>
                   <input
                     type="text"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-red-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     placeholder="Optional details"
                     value={deleteOtherReason}
                     onChange={e => setDeleteOtherReason(e.target.value)}
@@ -1926,9 +1926,9 @@ export default function AdminManagement() {
 
               {/* Policy Configuration */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Ban Type</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Ban Type</label>
                 <select
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                   value={deletePolicy.banType}
                   onChange={e => setDeletePolicy(prev => ({ ...prev, banType: e.target.value }))}
                 >
@@ -1939,24 +1939,24 @@ export default function AdminManagement() {
 
               {deletePolicy.banType === 'allow' && (
                 <div className="mb-4">
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Cooling-off Period (days)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Cooling-off Period (days)</label>
                   <input
                     type="number"
                     min="0"
                     max="365"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white"
                     placeholder="0 for immediate re-signup"
                     value={deletePolicy.allowResignupAfterDays}
                     onChange={e => setDeletePolicy(prev => ({ ...prev, allowResignupAfterDays: parseInt(e.target.value) || 0 }))}
                   />
-                  <p className="text-xs text-gray-500 mt-1">Set to 0 for immediate re-signup, or specify days to wait</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Set to 0 for immediate re-signup, or specify days to wait</p>
                 </div>
               )}
 
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Policy Notes (Optional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Policy Notes (Optional)</label>
                 <textarea
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                   rows="2"
                   placeholder="Additional policy notes..."
                   value={deletePolicy.notes}
@@ -1966,7 +1966,7 @@ export default function AdminManagement() {
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
-                  className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                  className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 dark:hover:bg-gray-400 transition-colors"
                   onClick={() => {
                     setShowDeleteReasonModal(false);
                     setSelectedAccount(null);
@@ -2003,15 +2003,15 @@ export default function AdminManagement() {
       {
         showSuspensionReasonModal && (
           <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Suspension</h3>
-              <p className="text-gray-600 mb-3">Please provide a reason for suspending this account. This will be included in the notification email.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Reason for Suspension</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-3">Please provide a reason for suspending this account. This will be included in the notification email.</p>
 
               {/* Reason Input */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Suspension Reason</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Suspension Reason</label>
                 <select
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-3"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 mb-3 dark:bg-gray-700 dark:text-white"
                   value={suspensionReason}
                   onChange={e => setSuspensionReason(e.target.value)}
                 >
@@ -2041,7 +2041,7 @@ export default function AdminManagement() {
                 {suspensionReason === 'other' && (
                   <input
                     type="text"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-yellow-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     placeholder="Please specify the reason..."
                     value={suspensionOtherReason}
                     onChange={e => setSuspensionOtherReason(e.target.value)}
@@ -2051,7 +2051,7 @@ export default function AdminManagement() {
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
-                  className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                  className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 dark:hover:bg-gray-400 transition-colors"
                   onClick={() => {
                     setShowSuspensionReasonModal(false);
                     setSuspensionAccount(null);
@@ -2085,15 +2085,15 @@ export default function AdminManagement() {
       {
         showDemoteReasonModal && (
           <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
-              <h3 className="text-xl font-bold text-gray-800 mb-4">Reason for Demotion</h3>
-              <p className="text-gray-600 mb-3">Please provide a reason for demoting this admin to user. This will be included in the notification email.</p>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Reason for Demotion</h3>
+              <p className="text-gray-600 dark:text-gray-300 mb-3">Please provide a reason for demoting this admin to user. This will be included in the notification email.</p>
 
               {/* Reason Input */}
               <div className="mb-4">
-                <label className="block text-sm font-medium text-gray-700 mb-2">Demotion Reason</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Demotion Reason</label>
                 <select
-                  className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3"
+                  className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 mb-3 dark:bg-gray-700 dark:text-white"
                   value={demoteReason}
                   onChange={e => setDemoteReason(e.target.value)}
                 >
@@ -2111,7 +2111,7 @@ export default function AdminManagement() {
                 {demoteReason === 'other' && (
                   <input
                     type="text"
-                    className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full p-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     placeholder="Please specify the reason..."
                     value={demoteOtherReason}
                     onChange={e => setDemoteOtherReason(e.target.value)}
@@ -2121,7 +2121,7 @@ export default function AdminManagement() {
 
               <div className="flex justify-end gap-3 mt-6">
                 <button
-                  className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600"
+                  className="px-4 py-2 rounded-lg bg-gray-500 text-white hover:bg-gray-600 dark:hover:bg-gray-400 transition-colors"
                   onClick={() => {
                     setShowDemoteReasonModal(false);
                     setDemoteAccount(null);

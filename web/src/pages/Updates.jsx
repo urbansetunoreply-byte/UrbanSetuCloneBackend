@@ -66,33 +66,33 @@ const Updates = () => {
 
     const getCategoryIcon = (type) => {
         switch (type) {
-            case 'feature': return <Rocket className="w-5 h-5 text-blue-600" />;
-            case 'improvement': return <Zap className="w-5 h-5 text-amber-600" />;
-            case 'fix': return <Bug className="w-5 h-5 text-red-600" />;
-            case 'announcement': return <Megaphone className="w-5 h-5 text-purple-600" />;
-            default: return <Rocket className="w-5 h-5 text-gray-600" />;
+            case 'feature': return <Rocket className="w-5 h-5 text-blue-600 dark:text-blue-400" />;
+            case 'improvement': return <Zap className="w-5 h-5 text-amber-600 dark:text-amber-400" />;
+            case 'fix': return <Bug className="w-5 h-5 text-red-600 dark:text-red-400" />;
+            case 'announcement': return <Megaphone className="w-5 h-5 text-purple-600 dark:text-purple-400" />;
+            default: return <Rocket className="w-5 h-5 text-gray-600 dark:text-gray-400" />;
         }
     };
 
     const getCategoryColor = (type) => {
         switch (type) {
-            case 'feature': return 'bg-blue-100 text-blue-800 border-blue-200';
-            case 'improvement': return 'bg-amber-100 text-amber-800 border-amber-200';
-            case 'fix': return 'bg-red-100 text-red-800 border-red-200';
-            case 'announcement': return 'bg-purple-100 text-purple-800 border-purple-200';
-            default: return 'bg-gray-100 text-gray-800 border-gray-200';
+            case 'feature': return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
+            case 'improvement': return 'bg-amber-100 text-amber-800 border-amber-200 dark:bg-amber-900/30 dark:text-amber-300 dark:border-amber-800';
+            case 'fix': return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
+            case 'announcement': return 'bg-purple-100 text-purple-800 border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800';
+            default: return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
         }
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-24 pb-12">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-24 pb-12 transition-colors duration-300">
             {/* Header Section */}
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12">
                 <div className="text-center max-w-3xl mx-auto">
                     <motion.div
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
-                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 text-blue-700 font-medium text-sm mb-6 border border-blue-100"
+                        className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-400 font-medium text-sm mb-6 border border-blue-100 dark:border-blue-800"
                     >
                         <Rocket className="w-4 h-4" />
                         <span>Product Changelog</span>
@@ -101,15 +101,15 @@ const Updates = () => {
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.1 }}
-                        className="text-4xl md:text-5xl font-bold text-gray-900 mb-6 tracking-tight"
+                        className="text-4xl md:text-5xl font-bold text-gray-900 dark:text-white mb-6 tracking-tight"
                     >
-                        What's New in <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600">UrbanSetu</span>
+                        What's New in <span className="text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 dark:from-blue-400 dark:to-purple-400">UrbanSetu</span>
                     </motion.h1>
                     <motion.p
                         initial={{ opacity: 0, y: 20 }}
                         animate={{ opacity: 1, y: 0 }}
                         transition={{ delay: 0.2 }}
-                        className="text-xl text-gray-600 leading-relaxed"
+                        className="text-xl text-gray-600 dark:text-gray-400 leading-relaxed"
                     >
                         Stay up to date with the latest features, improvements, and bug fixes. We're constantly working to make your experience better.
                     </motion.p>
@@ -126,12 +126,12 @@ const Updates = () => {
                             className={`
                 px-6 py-3 rounded-xl font-medium text-sm transition-all duration-200 flex items-center gap-2 border
                 ${filter === cat.id
-                                    ? 'bg-white text-blue-600 border-blue-100 shadow-lg shadow-blue-50 ring-2 ring-blue-500/10 scale-105'
-                                    : 'bg-white text-gray-600 border-transparent hover:bg-gray-50 hover:border-gray-200'
+                                    ? 'bg-white dark:bg-gray-800 text-blue-600 dark:text-blue-400 border-blue-100 dark:border-blue-900 shadow-lg shadow-blue-50 dark:shadow-none ring-2 ring-blue-500/10 dark:ring-blue-500/20 scale-105'
+                                    : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border-transparent hover:bg-gray-50 dark:hover:bg-gray-700 hover:border-gray-200 dark:hover:border-gray-600'
                                 }
               `}
                         >
-                            {cat.icon && <cat.icon className={`w-4 h-4 ${filter === cat.id ? 'text-blue-500' : 'text-gray-400'}`} />}
+                            {cat.icon && <cat.icon className={`w-4 h-4 ${filter === cat.id ? 'text-blue-500 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`} />}
                             {cat.label}
                         </button>
                     ))}
@@ -140,7 +140,7 @@ const Updates = () => {
 
             {/* Content Feed */}
             <div className="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8">
-                <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 before:to-transparent">
+                <div className="space-y-12 relative before:absolute before:inset-0 before:ml-5 before:-translate-x-px md:before:mx-auto md:before:translate-x-0 before:h-full before:w-0.5 before:bg-gradient-to-b before:from-transparent before:via-gray-200 dark:before:via-gray-700 before:to-transparent">
 
 
                     {loading && page === 1 ? (
@@ -156,39 +156,39 @@ const Updates = () => {
                                 className="relative flex items-center md:items-center gap-4 md:gap-0 md:justify-normal md:odd:flex-row-reverse group is-active"
                             >
                                 {/* Timeline Icon */}
-                                <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white bg-gray-50 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 transition-colors duration-300 group-hover:bg-blue-50 group-hover:border-blue-100">
+                                <div className="flex items-center justify-center w-10 h-10 rounded-full border-4 border-white dark:border-gray-900 bg-gray-50 dark:bg-gray-800 shadow shrink-0 md:order-1 md:group-odd:-translate-x-1/2 md:group-even:translate-x-1/2 z-10 transition-colors duration-300 group-hover:bg-blue-50 dark:group-hover:bg-blue-900/20 group-hover:border-blue-100 dark:group-hover:border-blue-800">
                                     {getCategoryIcon(update.category)}
                                 </div>
 
                                 {/* Content Card */}
-                                <div className="flex-1 md:flex-none md:w-[calc(50%-2.5rem)] bg-white p-6 rounded-3xl shadow-sm border border-gray-100 hover:shadow-xl hover:border-blue-100 transition-all duration-300 group-hover:-translate-y-1">
+                                <div className="flex-1 md:flex-none md:w-[calc(50%-2.5rem)] bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-xl hover:border-blue-100 dark:hover:border-blue-900/50 transition-all duration-300 group-hover:-translate-y-1">
 
                                     <div className="flex flex-wrap items-center justify-between mb-4 gap-2">
                                         <span className={`inline-flex items-center px-3 py-1 rounded-full text-xs font-semibold border ${getCategoryColor(update.category)}`}>
                                             {update.category.charAt(0).toUpperCase() + update.category.slice(1)}
                                         </span>
-                                        <time className="text-sm font-medium text-gray-500 flex items-center gap-1.5">
+                                        <time className="text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-1.5">
                                             <Calendar className="w-3.5 h-3.5" />
                                             {new Date(update.releaseDate).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' })}
                                         </time>
                                     </div>
 
-                                    <h3 className="text-2xl font-bold text-gray-900 mb-2 leading-tight group-hover:text-blue-600 transition-colors break-words">
+                                    <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-2 leading-tight group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors break-words">
                                         {update.title}
                                     </h3>
 
                                     <div className="flex flex-wrap items-center gap-3 mb-4 text-sm">
-                                        <span className="font-mono text-gray-500 bg-gray-50 px-2 py-1 rounded-md border border-gray-200 text-xs">
+                                        <span className="font-mono text-gray-500 dark:text-gray-400 bg-gray-50 dark:bg-gray-700/50 px-2 py-1 rounded-md border border-gray-200 dark:border-gray-600 text-xs">
                                             v{update.version}
                                         </span>
                                         {update.tags?.map((tag, i) => (
-                                            <span key={i} className="text-gray-500 flex items-center gap-1 bg-gray-50/50 px-2 py-0.5 rounded-full border border-gray-100/50">
+                                            <span key={i} className="text-gray-500 dark:text-gray-400 flex items-center gap-1 bg-gray-50/50 dark:bg-gray-700/30 px-2 py-0.5 rounded-full border border-gray-100/50 dark:border-gray-600/50">
                                                 <Tag className="w-3 h-3" /> {tag}
                                             </span>
                                         ))}
                                     </div>
 
-                                    <div className="prose prose-blue prose-sm text-gray-600 mb-4 whitespace-pre-wrap break-words">
+                                    <div className="prose prose-blue dark:prose-invert prose-sm text-gray-600 dark:text-gray-300 mb-4 whitespace-pre-wrap break-words">
                                         {update.description}
                                     </div>
 
@@ -196,7 +196,7 @@ const Updates = () => {
                                     <div className="space-y-4 mt-4">
                                         {/* Images */}
                                         {(update.imageUrls?.length > 0 ? update.imageUrls : (update.imageUrl ? [update.imageUrl] : [])).map((url, i) => (
-                                            <div key={`img-${i}`} className="rounded-xl overflow-hidden border border-gray-100 shadow-sm group/image relative">
+                                            <div key={`img-${i}`} className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm group/image relative">
                                                 <img
                                                     src={url}
                                                     alt={`${update.title} ${i + 1}`}
@@ -207,7 +207,7 @@ const Updates = () => {
 
                                         {/* Videos */}
                                         {(update.videoUrls?.length > 0 ? update.videoUrls : (update.videoUrl ? [update.videoUrl] : [])).map((url, i) => (
-                                            <div key={`vid-${i}`} className="rounded-xl overflow-hidden border border-gray-100 shadow-sm bg-black">
+                                            <div key={`vid-${i}`} className="rounded-xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-sm bg-black">
                                                 <video
                                                     src={url}
                                                     className="w-full h-auto"
@@ -220,12 +220,12 @@ const Updates = () => {
 
                                     {/* Action Link */}
                                     {update.actionUrl && (
-                                        <div className="mt-5 pt-4 border-t border-gray-100">
+                                        <div className="mt-5 pt-4 border-t border-gray-100 dark:border-gray-700">
                                             <a
                                                 href={update.actionUrl}
                                                 target="_blank"
                                                 rel="noopener noreferrer"
-                                                className="inline-flex items-center gap-2 text-blue-600 hover:text-blue-700 font-semibold group/link transition-colors"
+                                                className="inline-flex items-center gap-2 text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-semibold group/link transition-colors"
                                             >
                                                 Explore it here
                                                 <ArrowRight className="w-4 h-4 transform group-hover/link:translate-x-1 transition-transform" />
@@ -235,14 +235,14 @@ const Updates = () => {
                                 </div>
                             </motion.div>
                         ))
-                    ) : (
-                        <div className="text-center py-20 bg-white rounded-3xl border border-gray-100 shadow-sm mx-auto max-w-lg">
-                            <Search className="w-16 h-16 text-gray-200 mx-auto mb-4" />
-                            <h3 className="text-lg font-semibold text-gray-900">No updates found</h3>
-                            <p className="text-gray-500 mt-2">Try adjusting your filters or check back later.</p>
+                    ) : ( // Empty State
+                        <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-3xl border border-gray-100 dark:border-gray-700 shadow-sm mx-auto max-w-lg">
+                            <Search className="w-16 h-16 text-gray-200 dark:text-gray-600 mx-auto mb-4" />
+                            <h3 className="text-lg font-semibold text-gray-900 dark:text-white">No updates found</h3>
+                            <p className="text-gray-500 dark:text-gray-400 mt-2">Try adjusting your filters or check back later.</p>
                             <button
                                 onClick={() => setFilter('all')}
-                                className="mt-6 px-6 py-2 bg-blue-600 text-white rounded-full font-medium hover:bg-blue-700 transition-colors"
+                                className="mt-6 px-6 py-2 bg-blue-600 dark:bg-blue-500 text-white rounded-full font-medium hover:bg-blue-700 dark:hover:bg-blue-600 transition-colors"
                             >
                                 View All Updates
                             </button>
@@ -255,7 +255,7 @@ const Updates = () => {
                     <div className="text-center mt-16">
                         <button
                             onClick={() => setPage(prev => prev + 1)}
-                            className="group inline-flex items-center gap-2 px-8 py-4 bg-white border border-gray-200 text-gray-600 rounded-full font-semibold hover:bg-blue-50 hover:text-blue-600 hover:border-blue-200 transition-all shadow-sm hover:shadow-md"
+                            className="group inline-flex items-center gap-2 px-8 py-4 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 text-gray-600 dark:text-gray-300 rounded-full font-semibold hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 hover:border-blue-200 dark:hover:border-blue-800 transition-all shadow-sm hover:shadow-md"
                         >
                             Load Previous Updates
                             <ArrowRight className="w-4 h-4 group-hover:translate-x-1 transition-transform" />

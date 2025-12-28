@@ -300,7 +300,7 @@ export default function AdminDeploymentManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-300">
       {/* Background Animations */}
       <style>
         {`
@@ -324,22 +324,22 @@ export default function AdminDeploymentManagement() {
       {/* Delete Confirmation Modal */}
       {showDeleteModal && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/50 backdrop-blur-sm animate-fade-in">
-          <div className="bg-white rounded-2xl shadow-xl max-w-md w-full p-6 transform transition-all scale-100">
-            <div className="flex items-center gap-4 mb-4 text-red-600">
-              <div className="p-3 bg-red-100 rounded-full">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl max-w-md w-full p-6 transform transition-all scale-100">
+            <div className="flex items-center gap-4 mb-4 text-red-600 dark:text-red-400">
+              <div className="p-3 bg-red-100 dark:bg-red-900/20 rounded-full">
                 <FaTrash className="text-xl" />
               </div>
-              <h3 className="text-xl font-bold text-gray-900">Confirm Deletion</h3>
+              <h3 className="text-xl font-bold text-gray-900 dark:text-white">Confirm Deletion</h3>
             </div>
 
-            <p className="text-gray-600 mb-6">
+            <p className="text-gray-600 dark:text-gray-300 mb-6">
               Are you sure you want to delete this deployment file? This action cannot be undone.
             </p>
 
             <div className="flex justify-end gap-3">
               <button
                 onClick={() => setShowDeleteModal(false)}
-                className="px-4 py-2 text-gray-700 bg-gray-100 rounded-lg hover:bg-gray-200 font-medium transition-colors"
+                className="px-4 py-2 text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-medium transition-colors"
               >
                 Cancel
               </button>
@@ -364,21 +364,21 @@ export default function AdminDeploymentManagement() {
       <div className="max-w-7xl mx-auto space-y-8 relative z-10">
 
         {/* Header Section */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 animate-fade-in relative overflow-hidden">
-          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 animate-fade-in relative overflow-hidden transition-colors">
+          <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-900/10 dark:to-indigo-900/10 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
 
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-6 relative z-10">
             <div>
-              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 flex items-center gap-3">
-                <FaCloudUploadAlt className="text-blue-500" />
+              <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-indigo-600 dark:from-blue-400 dark:to-indigo-400 flex items-center gap-3">
+                <FaCloudUploadAlt className="text-blue-500 dark:text-blue-400" />
                 Deployment Management
               </h1>
-              <p className="text-gray-600 mt-2 text-lg">
+              <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">
                 Manage mobile app deployments, versions, and over-the-air updates via AWS S3.
               </p>
             </div>
             <div className="flex gap-3">
-              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 text-blue-700 border border-blue-100 shadow-sm">
+              <span className="inline-flex items-center px-4 py-2 rounded-full text-sm font-medium bg-blue-50 dark:bg-blue-900/20 text-blue-700 dark:text-blue-300 border border-blue-100 dark:border-blue-800 shadow-sm">
                 <FaInfoCircle className="mr-2" /> Max File Size: 200MB
               </span>
             </div>
@@ -389,22 +389,22 @@ export default function AdminDeploymentManagement() {
 
           {/* Left Column: Upload Form */}
           <div className="lg:col-span-1 animate-fade-in-delay">
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sticky top-8">
-              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-                <div className="p-2 bg-blue-100 rounded-lg text-blue-600">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 sticky top-8 transition-colors">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="p-2 bg-blue-100 dark:bg-blue-900/20 rounded-lg text-blue-600 dark:text-blue-400">
                   <FaUpload />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Upload New Build</h2>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white">Upload New Build</h2>
               </div>
 
               <form onSubmit={handleFileUpload} className="space-y-5">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Platform</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Platform</label>
                   <div className="relative">
                     <select
                       value={uploadData.platform}
                       onChange={(e) => setUploadData({ ...uploadData, platform: e.target.value })}
-                      className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none appearance-none font-medium text-gray-700"
+                      className="w-full pl-4 pr-10 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none appearance-none font-medium text-gray-700 dark:text-white"
                     >
                       <option value="android">Android (APK)</option>
                       <option value="ios">iOS (IPA)</option>
@@ -418,49 +418,49 @@ export default function AdminDeploymentManagement() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Version</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Version</label>
                   <input
                     type="text"
                     value={uploadData.version}
                     onChange={(e) => setUploadData({ ...uploadData, version: e.target.value })}
                     placeholder="e.g., 1.0.0"
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none font-medium"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none font-medium text-gray-900 dark:text-white dark:placeholder-gray-400"
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Description / Changelog</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Description / Changelog</label>
                   <textarea
                     value={uploadData.description}
                     onChange={(e) => setUploadData({ ...uploadData, description: e.target.value })}
                     placeholder="Describe what's new in this version..."
                     rows={3}
-                    className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none resize-none"
+                    className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all outline-none resize-none text-gray-900 dark:text-white dark:placeholder-gray-400"
                   />
                 </div>
 
-                <div className="flex items-center p-3 bg-gray-50 rounded-xl border border-gray-200 cursor-pointer hover:bg-gray-100 transition-colors">
+                <div className="flex items-center p-3 bg-gray-50 dark:bg-gray-700 rounded-xl border border-gray-200 dark:border-gray-600 cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600/80 transition-colors">
                   <input
                     id="isActiveCheckbox"
                     type="checkbox"
                     checked={uploadData.isActive}
                     onChange={(e) => setUploadData({ ...uploadData, isActive: e.target.checked })}
-                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300"
+                    className="w-5 h-5 text-blue-600 rounded focus:ring-blue-500 border-gray-300 dark:border-gray-600"
                   />
-                  <label htmlFor="isActiveCheckbox" className="ml-3 text-sm font-medium text-gray-700 cursor-pointer flex-1">
+                  <label htmlFor="isActiveCheckbox" className="ml-3 text-sm font-medium text-gray-700 dark:text-gray-200 cursor-pointer flex-1">
                     Set as Active Deployment
                   </label>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">Build File</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Build File</label>
                   <div className="relative group">
                     <input
                       id="fileInput"
                       type="file"
                       accept=".apk,.ipa,.exe,.msi,.dmg,.pkg"
-                      className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 file:text-blue-700 hover:file:bg-blue-100 transition-all cursor-pointer"
+                      className="w-full px-4 py-3 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-xl file:mr-4 file:py-2 file:px-4 file:rounded-full file:border-0 file:text-sm file:font-semibold file:bg-blue-50 dark:file:bg-blue-900/30 file:text-blue-700 dark:file:text-blue-400 hover:file:bg-blue-100 dark:hover:file:bg-blue-900/40 transition-all cursor-pointer text-gray-700 dark:text-gray-300"
                       required
                     />
                   </div>
@@ -524,37 +524,37 @@ export default function AdminDeploymentManagement() {
           <div className="lg:col-span-2 space-y-8 animate-fade-in-delay-2">
 
             {/* Active Deployments Cards */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6">
-              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100">
-                <div className="p-2 bg-green-100 rounded-lg text-green-600">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 transition-colors">
+              <div className="flex items-center gap-3 mb-6 pb-4 border-b border-gray-100 dark:border-gray-700">
+                <div className="p-2 bg-green-100 dark:bg-green-900/20 rounded-lg text-green-600 dark:text-green-400">
                   <FaCheck />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Currently Active Deployments</h2>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-white">Currently Active Deployments</h2>
               </div>
 
               {activeFiles.length === 0 ? (
-                <div className="text-center py-12 bg-gray-50 rounded-xl border border-dashed border-gray-200">
-                  <FaCloudUploadAlt className="mx-auto text-4xl text-gray-300 mb-3" />
-                  <p className="text-gray-500 font-medium">No active deployments found.</p>
-                  <p className="text-sm text-gray-400">Upload a file and check "Set as Active" to see it here.</p>
+                <div className="text-center py-12 bg-gray-50 dark:bg-gray-700 rounded-xl border border-dashed border-gray-200 dark:border-gray-600">
+                  <FaCloudUploadAlt className="mx-auto text-4xl text-gray-300 dark:text-gray-500 mb-3" />
+                  <p className="text-gray-500 dark:text-gray-400 font-medium">No active deployments found.</p>
+                  <p className="text-sm text-gray-400 dark:text-gray-500">Upload a file and check "Set as Active" to see it here.</p>
                 </div>
               ) : (
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   {activeFiles.map((file) => (
-                    <div key={file.id} className="relative group bg-gradient-to-br from-green-50 to-emerald-50 border border-green-200 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
+                    <div key={file.id} className="relative group bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 border border-green-200 dark:border-green-800 rounded-2xl p-5 hover:shadow-md transition-all duration-300">
                       <div className="flex justify-between items-start mb-3">
                         <div className="flex items-center gap-3">
-                          <div className="p-2 bg-white rounded-lg shadow-sm">
+                          <div className="p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm">
                             {getPlatformIcon(file.platform)}
                           </div>
                           <div>
-                            <h3 className="font-bold text-gray-900">{getPlatformName(file.platform)}</h3>
-                            <span className="text-xs bg-green-200 text-green-800 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Production</span>
+                            <h3 className="font-bold text-gray-900 dark:text-white">{getPlatformName(file.platform)}</h3>
+                            <span className="text-xs bg-green-200 dark:bg-green-900/40 text-green-800 dark:text-green-300 px-2 py-0.5 rounded-full font-bold uppercase tracking-wider">Production</span>
                           </div>
                         </div>
                         <button
                           onClick={() => handleDownloadFile(file.id)}
-                          className="text-green-600 hover:text-green-800 p-2 bg-white rounded-lg shadow-sm hover:shadow transition-all"
+                          className="text-green-600 dark:text-green-400 hover:text-green-800 dark:hover:text-green-300 p-2 bg-white dark:bg-gray-800 rounded-lg shadow-sm hover:shadow transition-all"
                           title="Download"
                         >
                           <FaDownload />
@@ -563,21 +563,21 @@ export default function AdminDeploymentManagement() {
 
                       <div className="space-y-1 mb-4">
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Version:</span>
-                          <span className="font-mono font-medium text-gray-800">{file.version}</span>
+                          <span className="text-gray-500 dark:text-gray-400">Version:</span>
+                          <span className="font-mono font-medium text-gray-800 dark:text-gray-200">{file.version}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Size:</span>
-                          <span className="font-mono font-medium text-gray-800">{formatFileSize(file.size)}</span>
+                          <span className="text-gray-500 dark:text-gray-400">Size:</span>
+                          <span className="font-mono font-medium text-gray-800 dark:text-gray-200">{formatFileSize(file.size)}</span>
                         </div>
                         <div className="flex justify-between text-sm">
-                          <span className="text-gray-500">Released:</span>
-                          <span className="font-medium text-gray-800">{formatDate(file.createdAt)}</span>
+                          <span className="text-gray-500 dark:text-gray-400">Released:</span>
+                          <span className="font-medium text-gray-800 dark:text-gray-200">{formatDate(file.createdAt)}</span>
                         </div>
                       </div>
 
                       {file.description && (
-                        <div className="bg-white/60 p-3 rounded-lg text-xs text-gray-600 italic border border-green-100">
+                        <div className="bg-white/60 dark:bg-black/20 p-3 rounded-lg text-xs text-gray-600 dark:text-gray-300 italic border border-green-100 dark:border-green-800/30">
                           {file.description}
                         </div>
                       )}
@@ -588,72 +588,72 @@ export default function AdminDeploymentManagement() {
             </div>
 
             {/* All Deployments List */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden">
-              <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors">
+              <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/30 flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <FaHistory className="text-blue-500" />
-                  <h2 className="text-lg font-bold text-gray-800">Deployment History</h2>
+                  <FaHistory className="text-blue-500 dark:text-blue-400" />
+                  <h2 className="text-lg font-bold text-gray-800 dark:text-white">Deployment History</h2>
                 </div>
-                <span className="bg-blue-100 text-blue-800 text-xs font-bold px-3 py-1 rounded-full">
+                <span className="bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 text-xs font-bold px-3 py-1 rounded-full">
                   {files.length} Total
                 </span>
               </div>
 
               {files.length === 0 ? (
-                <div className="p-12 text-center text-gray-500">
+                <div className="p-12 text-center text-gray-500 dark:text-gray-400">
                   No deployments history available.
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-200">
-                    <thead className="bg-gray-50">
+                  <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                    <thead className="bg-gray-50 dark:bg-gray-700/50">
                       <tr>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Platform & Version</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Details</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Status</th>
-                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Date</th>
-                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Platform & Version</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Details</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Status</th>
+                        <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Date</th>
+                        <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Actions</th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-200">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                       {files.map((file) => (
-                        <tr key={file.id} className="hover:bg-blue-50/30 transition-colors duration-150">
+                        <tr key={file.id} className="hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors duration-150">
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center gap-3">
-                              <div className="p-2 bg-gray-100 rounded-lg">
+                              <div className="p-2 bg-gray-100 dark:bg-gray-700 rounded-lg">
                                 {getPlatformIcon(file.platform)}
                               </div>
                               <div>
-                                <div className="font-bold text-gray-900">{getPlatformName(file.platform)}</div>
-                                <div className="text-xs text-gray-500 font-mono">v{file.version}</div>
+                                <div className="font-bold text-gray-900 dark:text-white">{getPlatformName(file.platform)}</div>
+                                <div className="text-xs text-gray-500 dark:text-gray-400 font-mono">v{file.version}</div>
                               </div>
                             </div>
                           </td>
                           <td className="px-6 py-4">
-                            <div className="text-sm text-gray-900 font-medium">{formatFileSize(file.size)}</div>
-                            <div className="text-xs text-gray-500 truncate max-w-[150px]" title={file.description}>
+                            <div className="text-sm text-gray-900 dark:text-gray-200 font-medium">{formatFileSize(file.size)}</div>
+                            <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[150px]" title={file.description}>
                               {file.description || 'No description'}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {file.isActive ? (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 text-green-800 border border-green-200 shadow-sm">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-bold bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 border border-green-200 dark:border-green-800/50 shadow-sm">
                                 <FaCheck className="mr-1.5" /> Active
                               </span>
                             ) : (
-                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-600 border border-gray-200">
+                              <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 border border-gray-200 dark:border-gray-600">
                                 Inactive
                               </span>
                             )}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-500 dark:text-gray-400">
                             {formatDate(file.createdAt)}
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-right text-sm font-medium">
                             <div className="flex items-center justify-end gap-2">
                               <button
                                 onClick={() => handleDownloadFile(file.id)}
-                                className="p-2 text-blue-600 hover:text-blue-900 hover:bg-blue-50 rounded-lg transition-colors"
+                                className="p-2 text-blue-600 hover:text-blue-900 dark:text-blue-400 dark:hover:text-blue-300 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-lg transition-colors"
                                 title="Download"
                               >
                                 <FaDownload />
@@ -661,7 +661,7 @@ export default function AdminDeploymentManagement() {
                               {!file.isActive && (
                                 <button
                                   onClick={() => handleSetActive(file.id)}
-                                  className="p-2 text-green-600 hover:text-green-900 hover:bg-green-50 rounded-lg transition-colors"
+                                  className="p-2 text-green-600 hover:text-green-900 dark:text-green-400 dark:hover:text-green-300 hover:bg-green-50 dark:hover:bg-green-900/20 rounded-lg transition-colors"
                                   title="Promote to Active"
                                 >
                                   <FaCheck />
@@ -669,7 +669,7 @@ export default function AdminDeploymentManagement() {
                               )}
                               <button
                                 onClick={() => confirmDeleteFile(file.id)}
-                                className="p-2 text-red-600 hover:text-red-900 hover:bg-red-50 rounded-lg transition-colors"
+                                className="p-2 text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-lg transition-colors"
                                 title="Delete"
                               >
                                 <FaTrash />
