@@ -13,6 +13,7 @@ import { useSignout } from '../hooks/useSignout';
 import SearchSuggestions from './SearchSuggestions';
 import { LogIn } from "lucide-react";
 import { UserPlus, LogOut } from "lucide-react";
+import ThemeToggle from "./ThemeToggle.jsx";
 
 export default function Header() {
   const { currentUser } = useSelector((state) => state.user);
@@ -636,6 +637,10 @@ function UserNavLinks({ mobile = false, onNavigate, signout }) {
           </Link>
         </>
       )}
+
+      <li className={`${mobile ? 'mt-2 mb-2 px-1' : 'flex items-center'}`}>
+        <ThemeToggle mobile={mobile} />
+      </li>
 
       {currentUser ? (
         <>

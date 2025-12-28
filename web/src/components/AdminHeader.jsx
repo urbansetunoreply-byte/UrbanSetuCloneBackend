@@ -11,6 +11,7 @@ import { toast } from 'react-toastify';
 import { LogOut } from "lucide-react";
 import { useSignout } from '../hooks/useSignout';
 import SearchSuggestions from './SearchSuggestions';
+import ThemeToggle from "./ThemeToggle.jsx";
 
 export default function AdminHeader() {
   const { currentUser } = useSelector((state) => state.user);
@@ -506,6 +507,10 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
           <span>Explore</span>
         </li>
       </Link>
+
+      <li className={`${mobile ? 'mt-2 mb-2 px-1' : 'flex items-center'}`}>
+        <ThemeToggle mobile={mobile} />
+      </li>
 
       <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'flex items-center'}`}>
         <NotificationBell mobile={mobile} />

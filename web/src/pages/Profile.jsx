@@ -1247,15 +1247,15 @@ export default function Profile() {
       {/* Signout Loading Modal */}
       {isSigningOut && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]">
-          <div className="bg-white rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 max-w-sm">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl p-8 flex flex-col items-center gap-4 max-w-sm">
             <div className="animate-spin rounded-full h-12 w-12 border-b-4 border-blue-600"></div>
-            <p className="text-lg font-semibold text-gray-800">Signing out...</p>
+            <p className="text-lg font-semibold text-gray-800 dark:text-gray-200">Signing out...</p>
           </div>
         </div>
       )}
       <div className="max-w-6xl mx-auto">
         {/* Header Section */}
-        <div className={`bg-white rounded-xl shadow-lg p-8 mb-6 ${isVisible ? animationClasses.fadeInUp : 'opacity-0 translate-y-8'}`}>
+        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-6 ${isVisible ? animationClasses.fadeInUp : 'opacity-0 translate-y-8'}`}>
           <div className="flex flex-col md:flex-row items-center justify-between">
             <div className="flex flex-col sm:flex-row items-center sm:space-x-6 w-full text-center sm:text-left mb-4 md:mb-0">
               <div className={`relative flex-shrink-0 mx-auto sm:mx-0 group ${isVisible ? animationClasses.scaleIn + ' animation-delay-150' : 'opacity-0 scale-95'}`}>
@@ -1375,13 +1375,13 @@ export default function Profile() {
                   {/* Referral Info */}
                   {/* Referral Info - Hide for Admins */}
                   {!isAdmin && (
-                    <div className="bg-indigo-50 rounded-lg p-3 border border-indigo-200 hover:border-indigo-300 transition-all duration-300 hover:shadow-md sm:col-span-2">
+                    <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-lg p-3 border border-indigo-200 dark:border-indigo-800 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300 hover:shadow-md sm:col-span-2">
                       <div className="flex items-center justify-between gap-4">
                         <div className="flex items-center">
                           <FaStar className="w-4 h-4 mr-3 text-indigo-500 flex-shrink-0" />
                           <div className="min-w-0 flex-1">
                             <p className="text-xs text-indigo-500 font-bold mb-1 uppercase tracking-wider">Referral Program</p>
-                            <p className="text-gray-700 text-sm">Earn 100 coins per successful referral. New users get 50 coins!</p>
+                            <p className="text-gray-700 dark:text-gray-300 text-sm">Earn 100 coins per successful referral. New users get 50 coins!</p>
                           </div>
                         </div>
                         <button
@@ -1397,8 +1397,8 @@ export default function Profile() {
 
                 {/* Profile Completion Status */}
                 {currentUser.role === 'user' && (!currentUser.gender || !currentUser.address || !currentUser.mobileNumber) && (
-                  <div className="bg-amber-50 border border-amber-200 rounded-lg p-3 mb-3">
-                    <p className="text-sm text-amber-700 font-medium text-center sm:text-left">
+                  <div className="bg-amber-50 dark:bg-amber-900/30 border border-amber-200 dark:border-amber-800 rounded-lg p-3 mb-3">
+                    <p className="text-sm text-amber-700 dark:text-amber-400 font-medium text-center sm:text-left">
                       ⚠️ Complete your profile & earn 20 SetuCoins to unlock rewards!
                     </p>
                   </div>
@@ -2015,7 +2015,7 @@ export default function Profile() {
         )}
         {/* Show success message outside the edit form so it's visible after closing */}
         {!isEditing && updateSuccess && (
-          <div className="text-green-600 text-sm mb-6">Profile updated successfully!</div>
+          <div className="text-green-600 dark:text-green-400 text-sm mb-6">Profile updated successfully!</div>
         )}
 
         {/* SetuCoins Section */}
@@ -2043,7 +2043,7 @@ export default function Profile() {
 
               {/* Expandable History */}
               <div id="recent-transactions" className={`transition-all duration-500 ease-in-out overflow-hidden ${showCoinHistory ? 'max-h-[1000px] opacity-100 mt-6' : 'max-h-0 opacity-0'}`}>
-                <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-2">
+                <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-2">
                   <CoinHistory initialOpen={true} />
                 </div>
               </div>

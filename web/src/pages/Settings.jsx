@@ -1243,24 +1243,24 @@ export default function Settings() {
               <div className="flex gap-4">
                 <button
                   onClick={() => handleThemeChange('light')}
-                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'light' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'light' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 dark:text-gray-300'}`}
                 >
                   <FaSun className="w-5 h-5 mx-auto mb-1 text-yellow-500" />
                   <span className="text-sm font-medium">{t('settings.theme_light')}</span>
                 </button>
                 <button
                   onClick={() => handleThemeChange('dark')}
-                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'dark' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'dark' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 dark:text-gray-300'}`}
                 >
-                  <FaMoon className="w-5 h-5 mx-auto mb-1 text-gray-700" />
+                  <FaMoon className="w-5 h-5 mx-auto mb-1 text-blue-500" />
                   <span className="text-sm font-medium">{t('settings.theme_dark')}</span>
                 </button>
                 <button
                   onClick={() => handleThemeChange('system')}
-                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'system' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'system' ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 dark:text-blue-400' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600 dark:text-gray-300'}`}
                 >
                   <FaDesktop className="w-5 h-5 mx-auto mb-1 text-gray-500" />
-                  <span className="text-sm font-medium">{t('settings.theme_system') || 'System'}</span>
+                  <span className="text-sm font-medium">{t('settings.theme_system') === 'settings.theme_system' ? 'System' : t('settings.theme_system')}</span>
                 </button>
               </div>
             </div>
