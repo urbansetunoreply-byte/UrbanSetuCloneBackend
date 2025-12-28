@@ -11,10 +11,10 @@ import UserPropertyVerificationSkeleton from '../components/skeletons/UserProper
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 const STATUS_COLORS = {
-  pending: 'bg-yellow-100 text-yellow-700 border-yellow-200',
-  in_progress: 'bg-blue-100 text-blue-700 border-blue-200',
-  verified: 'bg-green-100 text-green-700 border-green-200',
-  rejected: 'bg-red-100 text-red-700 border-red-200'
+  pending: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-700',
+  in_progress: 'bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 border-blue-200 dark:border-blue-700',
+  verified: 'bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-700',
+  rejected: 'bg-red-100 dark:bg-red-900/30 text-red-700 dark:text-red-300 border-red-200 dark:border-red-700'
 };
 
 const STATUS_LABELS = {
@@ -214,45 +214,45 @@ export default function PropertyVerification() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <FaShieldAlt className="text-blue-600" />
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+                <FaShieldAlt className="text-blue-600 dark:text-blue-400" />
                 Property Verification
               </h1>
-              <p className="text-gray-600 mt-2">Get your property verified and earn a trusted badge</p>
+              <p className="text-gray-600 dark:text-gray-400 mt-2">Get your property verified and earn a trusted badge</p>
             </div>
           </div>
 
           {/* Tabs */}
-          <div className="flex border-b border-gray-200 mb-6">
+          <div className="flex border-b border-gray-200 dark:border-gray-700 mb-6">
             <button
               onClick={() => setActiveTab('rent')}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'rent'
-                ? 'border-b-2 border-blue-600 text-blue-600'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-b-2 border-blue-600 dark:border-blue-400 text-blue-600 dark:text-blue-400'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
             >
-              <FaHome className={activeTab === 'rent' ? 'text-blue-600' : 'text-gray-400'} />
+              <FaHome className={activeTab === 'rent' ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'} />
               Rent Properties
-              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-gray-100 text-gray-600'}`}>
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'rent' ? 'bg-blue-100 dark:bg-blue-900 text-blue-800 dark:text-blue-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                 {myListings.filter(l => l.type === 'rent').length}
               </span>
             </button>
             <button
               onClick={() => setActiveTab('sale')}
               className={`flex-1 py-3 text-sm font-medium text-center transition-colors duration-200 flex items-center justify-center gap-2 ${activeTab === 'sale'
-                ? 'border-b-2 border-green-600 text-green-600'
-                : 'text-gray-500 hover:text-gray-700 hover:bg-gray-50'
+                ? 'border-b-2 border-green-600 dark:border-green-400 text-green-600 dark:text-green-400'
+                : 'text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700/50'
                 }`}
             >
-              <FaCheckCircle className={activeTab === 'sale' ? 'text-green-600' : 'text-gray-400'} />
+              <FaCheckCircle className={activeTab === 'sale' ? 'text-green-600 dark:text-green-400' : 'text-gray-400 dark:text-gray-500'} />
               Sale Properties
-              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'sale' ? 'bg-green-100 text-green-800' : 'bg-gray-100 text-gray-600'}`}>
+              <span className={`ml-2 px-2 py-0.5 rounded-full text-xs ${activeTab === 'sale' ? 'bg-green-100 dark:bg-green-900 text-green-800 dark:text-green-200' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
                 {myListings.filter(l => l.type === 'sale').length}
               </span>
             </button>
@@ -267,14 +267,14 @@ export default function PropertyVerification() {
                 placeholder="Search by property name, address, or city..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent"
               />
             </div>
 
             <select
               value={statusFilter}
               onChange={(e) => setStatusFilter(e.target.value)}
-              className="px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white"
+              className="px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 bg-white dark:bg-gray-700 dark:text-white"
             >
               <option value="all">All Status</option>
               <option value="unverified">Unverified/Not Requested</option>
@@ -288,10 +288,10 @@ export default function PropertyVerification() {
 
         {/* Listings */}
         {filteredListings.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-            <FaHome className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Properties Found</h3>
-            <p className="text-gray-500 mb-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+            <FaHome className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No Properties Found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">
               {searchQuery ? 'No properties match your search' : 'You don\'t have any properties listed yet'}
             </p>
             <button
@@ -311,14 +311,14 @@ export default function PropertyVerification() {
               return (
                 <div
                   key={listing._id}
-                  className="bg-white rounded-xl shadow-lg p-6 border-2 hover:shadow-xl transition-all"
+                  className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-2 hover:shadow-xl transition-all dark:border-gray-700"
                 >
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <h3 className="text-xl font-bold text-gray-800">{listing.name}</h3>
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white">{listing.name}</h3>
                         {isVerified && (
-                          <span className="px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                          <span className="px-3 py-1 bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 rounded-full text-xs font-semibold flex items-center gap-1">
                             <FaCheckCircle /> Verified
                           </span>
                         )}
@@ -328,12 +328,12 @@ export default function PropertyVerification() {
                           </span>
                         )}
                       </div>
-                      <p className="text-sm text-gray-600 mb-3">{listing.address}</p>
-                      <div className="flex items-center gap-4 text-sm text-gray-600">
+                      <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">{listing.address}</p>
+                      <div className="flex items-center gap-4 text-sm text-gray-600 dark:text-gray-400">
                         <span>Bedrooms: {listing.bedrooms}</span>
                         <span>Bathrooms: {listing.bathrooms}</span>
                         {listing.monthlyRent && (
-                          <span className="font-semibold text-blue-600">₹{listing.monthlyRent.toLocaleString()}/month</span>
+                          <span className="font-semibold text-blue-600 dark:text-blue-400">₹{listing.monthlyRent.toLocaleString()}/month</span>
                         )}
                       </div>
                     </div>
@@ -356,7 +356,7 @@ export default function PropertyVerification() {
                       )}
                       <button
                         onClick={() => navigate(`/user/listing/${listing._id}`)}
-                        className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200"
+                        className="px-4 py-2 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600"
                       >
                         View Listing
                       </button>
@@ -383,7 +383,7 @@ export default function PropertyVerification() {
           >
             <div className="flex min-h-full items-center justify-center p-4">
               <div
-                className="bg-white rounded-xl shadow-2xl max-w-3xl w-full relative"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-3xl w-full relative"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6">
@@ -419,7 +419,7 @@ export default function PropertyVerification() {
           >
             <div className="flex min-h-full items-center justify-center p-4">
               <div
-                className="bg-white rounded-xl shadow-2xl max-w-4xl w-full relative"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full relative"
                 onClick={(e) => e.stopPropagation()}
               >
                 <div className="p-6">

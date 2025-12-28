@@ -357,7 +357,7 @@ const AdminBlogDetail = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 font-sans text-slate-800 pb-20">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-slate-800 dark:text-gray-100 pb-20">
 
       {/* Hero Header - Matching PublicBlogDetail but with Admin twist */}
       <div className="bg-gradient-to-r from-slate-900 via-blue-900 to-indigo-900 text-white relative overflow-hidden">
@@ -437,7 +437,7 @@ const AdminBlogDetail = () => {
         <div className="lg:col-span-8 space-y-8">
 
           {/* Main Card */}
-          <div className="bg-white rounded-3xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-up">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-up">
 
             {/* Media Gallery */}
             <div className="relative group bg-gray-900 border-b border-gray-100">
@@ -496,8 +496,8 @@ const AdminBlogDetail = () => {
                     </SwiperSlide>
                   )) : (
                     <SwiperSlide>
-                      <div className="w-full h-full bg-gray-50 flex items-center justify-center text-gray-400 flex-col gap-4">
-                        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center">
+                      <div className="w-full h-full bg-gray-50 dark:bg-gray-800 flex items-center justify-center text-gray-400 dark:text-gray-500 flex-col gap-4">
+                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center">
                           <Tag className="w-8 h-8 opacity-20" />
                         </div>
                         <p className="font-medium">No media uploaded</p>
@@ -509,7 +509,7 @@ const AdminBlogDetail = () => {
             </div>
 
             {/* Quick Actions Bar */}
-            <div className="flex items-center justify-between p-4 bg-gray-50/50 border-b border-gray-100 sticky top-0 z-10 backdrop-blur-sm">
+            <div className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-700/50 border-b border-gray-100 dark:border-gray-700 sticky top-0 z-10 backdrop-blur-sm">
               <div className="flex items-center gap-2">
                 <button
                   onClick={handleEdit}
@@ -520,7 +520,7 @@ const AdminBlogDetail = () => {
                 <button
                   onClick={handleTogglePublish}
                   className={`flex items-center gap-2 px-4 py-2 rounded-lg transition-colors shadow-sm font-medium text-sm border ${blog.published
-                    ? 'bg-white text-yellow-600 border-yellow-200 hover:bg-yellow-50'
+                    ? 'bg-white dark:bg-gray-700 text-yellow-600 dark:text-yellow-400 border-yellow-200 dark:border-yellow-600 hover:bg-yellow-50 dark:hover:bg-yellow-900/30'
                     : 'bg-green-600 text-white border-transparent hover:bg-green-700'
                     }`}
                 >
@@ -530,13 +530,13 @@ const AdminBlogDetail = () => {
               <div className="flex items-center gap-2">
                 <button
                   onClick={() => setShowDeleteConfirm(true)}
-                  className="p-2 text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete Blog"
+                  className="p-2 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Delete Blog"
                 >
                   <Trash className="w-5 h-5" />
                 </button>
                 <button
                   onClick={handleShare}
-                  className="p-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors" title="Share"
+                  className="p-2 text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg transition-colors" title="Share"
                 >
                   <Share2 className="w-5 h-5" />
                 </button>
@@ -549,14 +549,14 @@ const AdminBlogDetail = () => {
               {/* Tags */}
               <div className="flex flex-wrap gap-2 mb-8">
                 {blog.tags && blog.tags.map((tag, i) => (
-                  <span key={i} className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 text-gray-600 rounded-md text-sm font-medium">
+                  <span key={i} className="flex items-center gap-1.5 px-3 py-1 bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 rounded-md text-sm font-medium">
                     <Tag className="w-3.5 h-3.5" /> {tag}
                   </span>
                 ))}
               </div>
 
               {/* HTML Content */}
-              <div className="prose prose-lg max-w-none prose-headings:font-bold prose-headings:text-gray-900 prose-p:text-gray-600 prose-p:leading-relaxed prose-a:text-blue-600 prose-img:rounded-2xl prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:not-italic">
+              <div className="prose prose-lg max-w-none dark:prose-invert prose-headings:font-bold prose-headings:text-gray-900 dark:prose-headings:text-white prose-p:text-gray-600 dark:prose-p:text-gray-300 prose-p:leading-relaxed prose-a:text-blue-600 dark:prose-a:text-blue-400 prose-img:rounded-2xl prose-blockquote:border-l-4 prose-blockquote:border-blue-500 prose-blockquote:bg-blue-50 dark:prose-blockquote:bg-blue-900/20 prose-blockquote:py-2 prose-blockquote:px-4 prose-blockquote:not-italic">
                 <div dangerouslySetInnerHTML={{ __html: blog.content }} />
               </div>
 
@@ -564,16 +564,16 @@ const AdminBlogDetail = () => {
           </div>
 
           {/* Comments Section */}
-          <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-8 animate-fade-in-up" id="comments">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 p-8 animate-fade-in-up" id="comments">
             <div className="flex items-center justify-between mb-8">
-              <h3 className="text-2xl font-bold text-gray-900 flex items-center gap-2">
+              <h3 className="text-2xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <MessageSquare className="w-6 h-6 text-blue-500" />
                 Discussion
-                <span className="text-gray-400 text-lg font-normal">({comments.length})</span>
+                <span className="text-gray-400 dark:text-gray-500 text-lg font-normal">({comments.length})</span>
               </h3>
               <button
                 onClick={() => setShowComments(!showComments)}
-                className="text-blue-600 font-medium hover:underline text-sm"
+                className="text-blue-600 dark:text-blue-400 font-medium hover:underline text-sm"
               >
                 {showComments ? 'Hide Comments' : 'Show Comments'}
               </button>
@@ -587,7 +587,7 @@ const AdminBlogDetail = () => {
                     value={comment}
                     onChange={handleCommentChange}
                     placeholder="Post an official response or comment..."
-                    className="w-full pl-5 pr-16 py-4 bg-gray-50 border border-gray-200 rounded-2xl focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 outline-none transition-all resize-none min-h-[80px]"
+                    className="w-full pl-5 pr-16 py-4 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-2xl focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-400 dark:focus:border-blue-500 outline-none transition-all resize-none min-h-[80px]"
                   />
                   <button
                     type="submit"
@@ -608,19 +608,19 @@ const AdminBlogDetail = () => {
                     comments.map((comment, index) => {
                       const isAdmin = comment.user?.username === 'UrbanSetuBlogManagement' || comment.user?.role === 'admin';
                       return (
-                        <div key={index} className={`flex gap-4 ${isAdmin ? 'bg-blue-50/50 p-6 rounded-2xl border border-blue-100' : 'p-4 rounded-2xl hover:bg-gray-50 border border-transparent'}`}>
+                        <div key={index} className={`flex gap-4 ${isAdmin ? 'bg-blue-50/50 dark:bg-blue-900/20 p-6 rounded-2xl border border-blue-100 dark:border-blue-800' : 'p-4 rounded-2xl hover:bg-gray-50 dark:hover:bg-gray-700/50 border border-transparent'}`}>
                           <div className={`w-10 h-10 rounded-full flex-shrink-0 flex items-center justify-center font-bold text-white shadow-sm ${isAdmin ? 'bg-blue-600' : 'bg-gray-400'}`}>
                             {comment.user?.username?.[0]?.toUpperCase() || 'A'}
                           </div>
                           <div className="flex-grow">
                             <div className="flex items-center gap-2 mb-1">
-                              <span className={`font-bold text-sm ${isAdmin ? 'text-blue-700' : 'text-gray-900'}`}>
+                              <span className={`font-bold text-sm ${isAdmin ? 'text-blue-700 dark:text-blue-300' : 'text-gray-900 dark:text-white'}`}>
                                 {isAdmin ? 'UrbanSetu Team' : comment.user?.username || 'Anonymous'}
                               </span>
-                              {isAdmin && <span className="text-[10px] bg-blue-200 text-blue-800 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
+                              {isAdmin && <span className="text-[10px] bg-blue-200 dark:bg-blue-900 text-blue-800 dark:text-blue-200 px-1.5 py-0.5 rounded-md font-bold uppercase tracking-wide">Admin</span>}
                               <span className="text-xs text-gray-400">• {new Date(comment.createdAt).toLocaleDateString()}</span>
                             </div>
-                            <p className="text-gray-700 leading-relaxed text-sm">{comment.content}</p>
+                            <p className="text-gray-700 dark:text-gray-300 leading-relaxed text-sm">{comment.content}</p>
                           </div>
                         </div>
                       )
@@ -638,22 +638,22 @@ const AdminBlogDetail = () => {
 
           {/* Property Card */}
           {blog.propertyId && (
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 animate-fade-in-up overflow-hidden relative">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 animate-fade-in-up overflow-hidden relative">
               <div className="absolute top-0 right-0 p-4 opacity-10">
                 <Home className="w-24 h-24 text-blue-600" />
               </div>
-              <h3 className="font-bold text-gray-900 text-lg mb-4 flex items-center gap-2 relative z-10">
+              <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-4 flex items-center gap-2 relative z-10">
                 <Home className="w-5 h-5 text-blue-500" /> Linked Property
               </h3>
 
-              <div className="relative z-10 bg-gray-50 rounded-xl p-4 border border-gray-100 text-center mb-4">
-                <h4 className="font-bold text-gray-800 text-lg mb-1">{blog.propertyId.name}</h4>
-                <p className="text-gray-500 text-sm">{blog.propertyId.city}, {blog.propertyId.state}</p>
+              <div className="relative z-10 bg-gray-50 dark:bg-gray-700/50 rounded-xl p-4 border border-gray-100 dark:border-gray-600 text-center mb-4">
+                <h4 className="font-bold text-gray-800 dark:text-white text-lg mb-1">{blog.propertyId.name}</h4>
+                <p className="text-gray-500 dark:text-gray-400 text-sm">{blog.propertyId.city}, {blog.propertyId.state}</p>
               </div>
 
               <Link
                 to={`/admin/listing/${blog.propertyId._id}`}
-                className="flex items-center justify-center gap-2 w-full py-3 bg-white border-2 border-blue-600 text-blue-600 rounded-xl font-bold hover:bg-blue-50 transition-colors"
+                className="flex items-center justify-center gap-2 w-full py-3 bg-white dark:bg-gray-700 border-2 border-blue-600 dark:border-blue-500 text-blue-600 dark:text-blue-400 rounded-xl font-bold hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-colors"
               >
                 View Details <ArrowLeft className="w-4 h-4 rotate-180" />
               </Link>
@@ -661,53 +661,53 @@ const AdminBlogDetail = () => {
           )}
 
           {/* Admin Stats Card */}
-          <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
-            <h3 className="font-bold text-gray-900 text-lg mb-6">Performance</h3>
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
+            <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-6">Performance</h3>
 
             <div className="grid grid-cols-2 gap-4">
-              <div className="bg-blue-50 p-4 rounded-xl text-center">
-                <div className="text-2xl font-bold text-blue-600 mb-1">{blog.views || 0}</div>
-                <div className="text-xs text-blue-400 uppercase font-semibold">Total Views</div>
+              <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-xl text-center">
+                <div className="text-2xl font-bold text-blue-600 dark:text-blue-400 mb-1">{blog.views || 0}</div>
+                <div className="text-xs text-blue-400 dark:text-blue-300 uppercase font-semibold">Total Views</div>
               </div>
-              <div className="bg-purple-50 p-4 rounded-xl text-center">
-                <div className="text-2xl font-bold text-purple-600 mb-1">{blog.likes || 0}</div>
-                <div className="text-xs text-purple-400 uppercase font-semibold">Likes</div>
+              <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-xl text-center">
+                <div className="text-2xl font-bold text-purple-600 dark:text-purple-400 mb-1">{blog.likes || 0}</div>
+                <div className="text-xs text-purple-400 dark:text-purple-300 uppercase font-semibold">Likes</div>
               </div>
-              <div className="bg-orange-50 p-4 rounded-xl text-center">
-                <div className="text-2xl font-bold text-orange-600 mb-1">{comments.length}</div>
-                <div className="text-xs text-orange-400 uppercase font-semibold">Comments</div>
+              <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-xl text-center">
+                <div className="text-2xl font-bold text-orange-600 dark:text-orange-400 mb-1">{comments.length}</div>
+                <div className="text-xs text-orange-400 dark:text-orange-300 uppercase font-semibold">Comments</div>
               </div>
-              <div className="bg-green-50 p-4 rounded-xl text-center">
-                <div className="text-2xl font-bold text-green-600 mb-1">{relatedBlogs.length}</div>
-                <div className="text-xs text-green-400 uppercase font-semibold">Related</div>
+              <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-xl text-center">
+                <div className="text-2xl font-bold text-green-600 dark:text-green-400 mb-1">{relatedBlogs.length}</div>
+                <div className="text-xs text-green-400 dark:text-green-300 uppercase font-semibold">Related</div>
               </div>
             </div>
           </div>
 
           {/* Related Blogs */}
           {relatedBlogs.length > 0 && (
-            <div className="bg-white rounded-3xl shadow-lg border border-gray-100 p-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
-              <h3 className="font-bold text-gray-900 text-lg mb-6 flex items-center gap-2">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 animate-fade-in-up" style={{ animationDelay: '0.2s' }}>
+              <h3 className="font-bold text-gray-900 dark:text-white text-lg mb-6 flex items-center gap-2">
                 <Clock className="w-5 h-5 text-gray-400" /> Recent Related
               </h3>
               <div className="space-y-6">
                 {relatedBlogs.map((related, i) => (
                   <div key={related._id} className="group cursor-pointer flex gap-4 items-start" onClick={() => navigate(`/admin/blog/${related.slug || related._id}`)}>
-                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 relative">
+                    <div className="w-20 h-20 rounded-lg overflow-hidden flex-shrink-0 bg-gray-100 dark:bg-gray-700 relative">
                       {related.thumbnail ? (
                         <img src={related.thumbnail} className="w-full h-full object-cover" alt="" />
                       ) : (
-                        <div className="w-full h-full flex items-center justify-center text-gray-300"><Tag className="w-6 h-6" /></div>
+                        <div className="w-full h-full flex items-center justify-center text-gray-300 dark:text-gray-500"><Tag className="w-6 h-6" /></div>
                       )}
                     </div>
                     <div>
-                      <h4 className="font-semibold text-gray-800 text-sm leading-snug group-hover:text-blue-600 transition-colors line-clamp-2 mb-1">
+                      <h4 className="font-semibold text-gray-800 dark:text-white text-sm leading-snug group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors line-clamp-2 mb-1">
                         {related.title}
                       </h4>
-                      <p className="text-xs text-gray-500 mb-2">
+                      <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">
                         {new Date(related.publishedAt || related.createdAt).toLocaleDateString()}
                       </p>
-                      <span className="text-[10px] bg-gray-100 text-gray-500 px-2 py-0.5 rounded-full">{related.category}</span>
+                      <span className="text-[10px] bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 px-2 py-0.5 rounded-full">{related.category}</span>
                     </div>
                   </div>
                 ))}
@@ -720,24 +720,24 @@ const AdminBlogDetail = () => {
       {/* Confirm Modal for Delete */}
       {showDeleteConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl transform scale-100 transition-all">
-            <div className="mx-auto w-16 h-16 bg-red-100 rounded-full flex items-center justify-center mb-6">
-              <AlertTriangle className="w-8 h-8 text-red-600" />
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl transform scale-100 transition-all">
+            <div className="mx-auto w-16 h-16 bg-red-100 dark:bg-red-900/30 rounded-full flex items-center justify-center mb-6">
+              <AlertTriangle className="w-8 h-8 text-red-600 dark:text-red-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Delete Blog Post?</h3>
-            <p className="text-gray-500 text-center mb-8 text-sm leading-relaxed">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Delete Blog Post?</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-center mb-8 text-sm leading-relaxed">
               Are you sure you want to delete <strong>"{blog.title}"</strong>? This action is permanent and cannot be undone.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowDeleteConfirm(false)}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 Cancel
               </button>
               <button
                 onClick={handleDelete}
-                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200"
+                className="flex-1 px-4 py-3 bg-red-600 text-white rounded-xl font-bold hover:bg-red-700 transition-colors shadow-lg shadow-red-200 dark:shadow-none"
               >
                 Yes, Delete
               </button>
@@ -749,18 +749,18 @@ const AdminBlogDetail = () => {
       {/* Confirm Modal for Unpublish */}
       {showUnpublishConfirm && (
         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4 animate-fade-in">
-          <div className="bg-white rounded-2xl p-8 max-w-sm w-full shadow-2xl transform scale-100 transition-all">
-            <div className="mx-auto w-16 h-16 bg-yellow-100 rounded-full flex items-center justify-center mb-6">
-              <Eye className="w-8 h-8 text-yellow-600" />
+          <div className="bg-white dark:bg-gray-800 rounded-2xl p-8 max-w-sm w-full shadow-2xl transform scale-100 transition-all">
+            <div className="mx-auto w-16 h-16 bg-yellow-100 dark:bg-yellow-900/30 rounded-full flex items-center justify-center mb-6">
+              <Eye className="w-8 h-8 text-yellow-600 dark:text-yellow-400" />
             </div>
-            <h3 className="text-xl font-bold text-gray-900 text-center mb-2">Unpublish Blog?</h3>
-            <p className="text-gray-500 text-center mb-8 text-sm leading-relaxed">
+            <h3 className="text-xl font-bold text-gray-900 dark:text-white text-center mb-2">Unpublish Blog?</h3>
+            <p className="text-gray-500 dark:text-gray-400 text-center mb-8 text-sm leading-relaxed">
               This will hide <strong>"{blog.title}"</strong> from the public. You can publish it again later.
             </p>
             <div className="flex gap-3">
               <button
                 onClick={() => setShowUnpublishConfirm(false)}
-                className="flex-1 px-4 py-3 bg-gray-100 text-gray-700 rounded-xl font-bold hover:bg-gray-200 transition-colors"
+                className="flex-1 px-4 py-3 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 rounded-xl font-bold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 Cancel
               </button>
@@ -768,7 +768,7 @@ const AdminBlogDetail = () => {
                 onClick={() => {
                   updatePublishStatus(false);
                 }}
-                className="flex-1 px-4 py-3 bg-yellow-600 text-white rounded-xl font-bold hover:bg-yellow-700 transition-colors shadow-lg shadow-yellow-200"
+                className="flex-1 px-4 py-3 bg-yellow-600 text-white rounded-xl font-bold hover:bg-yellow-700 transition-colors shadow-lg shadow-yellow-200 dark:shadow-none"
               >
                 Unpublish
               </button>

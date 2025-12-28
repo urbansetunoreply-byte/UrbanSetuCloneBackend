@@ -1183,142 +1183,142 @@ const RefundManagement = ({ onRefundProcessed }) => {
             <div className="p-6 overflow-y-auto flex-1">
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6 mb-6">
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-3">Request Details</h4>
+                  <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Request Details</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Property:</span>
-                      <span className="font-medium">{selectedInfoRequest.appointmentId?.propertyName}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Property:</span>
+                      <span className="font-medium dark:text-white">{selectedInfoRequest.appointmentId?.propertyName}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">User:</span>
-                      <span className="font-medium">{selectedInfoRequest.userId?.name || 'N/A'}</span>
+                      <span className="text-gray-600 dark:text-gray-400">User:</span>
+                      <span className="font-medium dark:text-white">{selectedInfoRequest.userId?.name || 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Requested Amount:</span>
-                      <span className="font-medium">
+                      <span className="text-gray-600 dark:text-gray-400">Requested Amount:</span>
+                      <span className="font-medium dark:text-white">
                         {selectedInfoRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedInfoRequest.requestedAmount.toLocaleString()}
                       </span>
                     </div>
                     {selectedInfoRequest.adminRefundAmount && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Admin Override Amount:</span>
-                        <span className="font-medium text-blue-600">
+                        <span className="text-gray-600 dark:text-gray-400">Admin Override Amount:</span>
+                        <span className="font-medium text-blue-600 dark:text-blue-400">
                           {selectedInfoRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedInfoRequest.adminRefundAmount.toLocaleString()}
                         </span>
                       </div>
                     )}
                     {selectedInfoRequest.paymentId?.refundAmount > 0 && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Actual Refunded Amount:</span>
-                        <span className="font-medium text-green-600">
+                        <span className="text-gray-600 dark:text-gray-400">Actual Refunded Amount:</span>
+                        <span className="font-medium text-green-600 dark:text-green-400">
                           {selectedInfoRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedInfoRequest.paymentId.refundAmount.toLocaleString()}
                         </span>
                       </div>
                     )}
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Type:</span>
-                      <span className="font-medium capitalize">{selectedInfoRequest.type} Refund</span>
+                      <span className="text-gray-600 dark:text-gray-400">Type:</span>
+                      <span className="font-medium capitalize dark:text-white">{selectedInfoRequest.type} Refund</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Status:</span>
+                      <span className="text-gray-600 dark:text-gray-400">Status:</span>
                       <span className={`px-2 py-1 rounded-full text-xs font-medium ${getRefundRequestStatusColor(selectedInfoRequest.status)}`}>
                         {getRefundRequestStatusText(selectedInfoRequest.status)}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Requested Date:</span>
-                      <span className="font-medium">{new Date(selectedInfoRequest.createdAt).toLocaleDateString('en-GB')}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Requested Date:</span>
+                      <span className="font-medium dark:text-white">{new Date(selectedInfoRequest.createdAt).toLocaleDateString('en-GB')}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Requested Time:</span>
-                      <span className="font-medium">{new Date(selectedInfoRequest.createdAt).toLocaleTimeString('en-GB')}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Requested Time:</span>
+                      <span className="font-medium dark:text-white">{new Date(selectedInfoRequest.createdAt).toLocaleTimeString('en-GB')}</span>
                     </div>
                     {selectedInfoRequest.processedAt && (
                       <>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Processed Date:</span>
-                          <span className="font-medium">{new Date(selectedInfoRequest.processedAt).toLocaleDateString('en-GB')}</span>
+                          <span className="text-gray-600 dark:text-gray-400">Processed Date:</span>
+                          <span className="font-medium dark:text-white">{new Date(selectedInfoRequest.processedAt).toLocaleDateString('en-GB')}</span>
                         </div>
                         <div className="flex justify-between">
-                          <span className="text-gray-600">Processed Time:</span>
-                          <span className="font-medium">{new Date(selectedInfoRequest.processedAt).toLocaleTimeString('en-GB')}</span>
+                          <span className="text-gray-600 dark:text-gray-400">Processed Time:</span>
+                          <span className="font-medium dark:text-white">{new Date(selectedInfoRequest.processedAt).toLocaleTimeString('en-GB')}</span>
                         </div>
                       </>
                     )}
                     {selectedInfoRequest.processedBy && (
                       <div className="flex justify-between">
-                        <span className="text-gray-600">Processed By:</span>
-                        <span className="font-medium">{selectedInfoRequest.processedBy.name || 'N/A'}</span>
+                        <span className="text-gray-600 dark:text-gray-400">Processed By:</span>
+                        <span className="font-medium dark:text-white">{selectedInfoRequest.processedBy.name || 'N/A'}</span>
                       </div>
                     )}
                   </div>
                 </div>
 
                 <div>
-                  <h4 className="font-semibold text-gray-800 mb-3">Payment Details</h4>
+                  <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Payment Details</h4>
                   <div className="space-y-2">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Payment ID:</span>
-                      <span className="font-mono text-sm">{selectedInfoRequest.paymentId?.paymentId || selectedInfoRequest.paymentId}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Payment ID:</span>
+                      <span className="font-mono text-sm dark:text-gray-300">{selectedInfoRequest.paymentId?.paymentId || selectedInfoRequest.paymentId}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Original Amount:</span>
-                      <span className="font-medium">
+                      <span className="text-gray-600 dark:text-gray-400">Original Amount:</span>
+                      <span className="font-medium dark:text-white">
                         {selectedInfoRequest.paymentId?.currency === 'INR' ? '₹' : '$'}{selectedInfoRequest.paymentId?.amount?.toLocaleString()}
                       </span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Gateway:</span>
-                      <span className="font-medium capitalize">{selectedInfoRequest.paymentId?.gateway}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Gateway:</span>
+                      <span className="font-medium capitalize dark:text-white">{selectedInfoRequest.paymentId?.gateway}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Appointment Status:</span>
-                      <span className="font-medium capitalize">{selectedInfoRequest.appointmentId?.status?.replace(/([A-Z])/g, ' $1').trim()}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Appointment Status:</span>
+                      <span className="font-medium capitalize dark:text-white">{selectedInfoRequest.appointmentId?.status?.replace(/([A-Z])/g, ' $1').trim()}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Payment Created:</span>
-                      <span className="font-medium">{selectedInfoRequest.paymentId?.createdAt ? new Date(selectedInfoRequest.paymentId.createdAt).toLocaleDateString('en-GB') : 'N/A'}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Payment Created:</span>
+                      <span className="font-medium dark:text-white">{selectedInfoRequest.paymentId?.createdAt ? new Date(selectedInfoRequest.paymentId.createdAt).toLocaleDateString('en-GB') : 'N/A'}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Payment Completed:</span>
-                      <span className="font-medium">{selectedInfoRequest.paymentId?.completedAt ? new Date(selectedInfoRequest.paymentId.completedAt).toLocaleDateString('en-GB') : 'N/A'}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Payment Completed:</span>
+                      <span className="font-medium dark:text-white">{selectedInfoRequest.paymentId?.completedAt ? new Date(selectedInfoRequest.paymentId.completedAt).toLocaleDateString('en-GB') : 'N/A'}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="mb-6">
-                <h4 className="font-semibold text-gray-800 mb-2">Refund Reason</h4>
-                <div className="bg-gray-50 rounded-lg p-3">
-                  <p className="text-gray-700">{selectedInfoRequest.reason}</p>
+                <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Refund Reason</h4>
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3">
+                  <p className="text-gray-700 dark:text-gray-300">{selectedInfoRequest.reason}</p>
                 </div>
               </div>
 
               {selectedInfoRequest.adminNotes && (
                 <div className="mb-6">
-                  <h4 className="font-semibold text-gray-800 mb-2">Admin Notes</h4>
-                  <div className="bg-blue-50 rounded-lg p-3">
-                    <p className="text-gray-700">{selectedInfoRequest.adminNotes}</p>
+                  <h4 className="font-semibold text-gray-800 dark:text-white mb-2">Admin Notes</h4>
+                  <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-3">
+                    <p className="text-gray-700 dark:text-gray-300">{selectedInfoRequest.adminNotes}</p>
                   </div>
                 </div>
               )}
 
               {selectedInfoRequest.isAppealed && (
                 <div className="mb-6">
-                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                    <FaUndo className="text-purple-600" />
+                  <h4 className="font-semibold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                    <FaUndo className="text-purple-600 dark:text-purple-400" />
                     Appeal Information
                   </h4>
-                  <div className="bg-purple-50 rounded-lg p-3 border border-purple-200">
+                  <div className="bg-purple-50 dark:bg-purple-900/20 rounded-lg p-3 border border-purple-200 dark:border-purple-800">
                     <div className="mb-2">
-                      <span className="text-sm font-medium text-gray-600">Appeal Reason:</span>
-                      <p className="text-gray-700">{selectedInfoRequest.appealReason}</p>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Appeal Reason:</span>
+                      <p className="text-gray-700 dark:text-gray-300">{selectedInfoRequest.appealReason}</p>
                     </div>
                     <div className="mb-2">
-                      <span className="text-sm font-medium text-gray-600">Appeal Details:</span>
-                      <p className="text-gray-700">{selectedInfoRequest.appealText}</p>
+                      <span className="text-sm font-medium text-gray-600 dark:text-gray-400">Appeal Details:</span>
+                      <p className="text-gray-700 dark:text-gray-300">{selectedInfoRequest.appealText}</p>
                     </div>
-                    <div className="text-xs text-gray-500">
+                    <div className="text-xs text-gray-500 dark:text-gray-500">
                       Submitted: {new Date(selectedInfoRequest.appealSubmittedAt).toLocaleString('en-GB')}
                     </div>
                   </div>
@@ -1327,13 +1327,13 @@ const RefundManagement = ({ onRefundProcessed }) => {
 
               {selectedInfoRequest.caseReopened && (
                 <div className="mb-6">
-                  <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                    <FaRedo className="text-green-600" />
+                  <h4 className="font-semibold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                    <FaRedo className="text-green-600 dark:text-green-400" />
                     Case Reopened
                   </h4>
-                  <div className="bg-green-50 rounded-lg p-3 border border-green-200">
-                    <p className="text-gray-700">This case has been reopened for review.</p>
-                    <div className="text-xs text-gray-500 mt-1">
+                  <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-3 border border-green-200 dark:border-green-800">
+                    <p className="text-gray-700 dark:text-gray-300">This case has been reopened for review.</p>
+                    <div className="text-xs text-gray-500 dark:text-gray-500 mt-1">
                       Reopened: {new Date(selectedInfoRequest.caseReopenedAt).toLocaleString('en-GB')}
                     </div>
                   </div>

@@ -275,7 +275,7 @@ const AdminBlogs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col font-sans text-slate-800 dark:text-gray-100">
 
       {/* Hero Section */}
       <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 pb-20 pt-10 px-4 shadow-xl relative overflow-hidden">
@@ -311,7 +311,7 @@ const AdminBlogs = () => {
       <div className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-10 relative z-10 pb-20">
 
         {/* Filters Card */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8 animate-fade-in-up">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 mb-8 animate-fade-in-up">
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
 
             {/* Search */}
@@ -324,7 +324,7 @@ const AdminBlogs = () => {
                 placeholder="Search blogs..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 dark:text-white placeholder-gray-400 focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-400 dark:focus:border-blue-500 transition-all"
               />
             </div>
 
@@ -336,7 +336,7 @@ const AdminBlogs = () => {
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 text-gray-700 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all appearance-none cursor-pointer"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-400 dark:focus:border-blue-500 transition-all appearance-none cursor-pointer"
               >
                 <option value="all">All Types</option>
                 <option value="global">Global Blogs</option>
@@ -352,7 +352,7 @@ const AdminBlogs = () => {
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 text-gray-700 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all appearance-none cursor-pointer"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-400 dark:focus:border-blue-500 transition-all appearance-none cursor-pointer"
               >
                 <option value="all">All Categories</option>
                 {categories.map(category => (
@@ -369,7 +369,7 @@ const AdminBlogs = () => {
               <select
                 value={filterStatus}
                 onChange={(e) => setFilterStatus(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 text-gray-700 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-100 focus:border-blue-400 transition-all appearance-none cursor-pointer"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 text-gray-700 dark:text-gray-200 focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-100 dark:focus:ring-blue-900 focus:border-blue-400 dark:focus:border-blue-500 transition-all appearance-none cursor-pointer"
               >
                 <option value="all">All Status</option>
                 <option value="published">Published</option>
@@ -382,12 +382,12 @@ const AdminBlogs = () => {
         {/* Blogs List */}
         <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-up" style={{ animationDelay: '0.1s' }}>
 
-          <div className="px-6 py-4 border-b border-gray-100 flex justify-between items-center bg-gray-50/50">
-            <h2 className="font-bold text-gray-800 flex items-center gap-2">
+          <div className="px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center bg-gray-50/50 dark:bg-gray-700/50">
+            <h2 className="font-bold text-gray-800 dark:text-white flex items-center gap-2">
               <FileText className="w-5 h-5 text-blue-500" /> All Blogs
-              <span className="text-xs font-normal text-gray-500 bg-gray-100 px-2 py-1 rounded-full border border-gray-200">{pagination.total}</span>
+              <span className="text-xs font-normal text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-full border border-gray-200 dark:border-gray-600">{pagination.total}</span>
             </h2>
-            <button onClick={() => fetchBlogs(true)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-all" title="Refresh">
+            <button onClick={() => fetchBlogs(true)} className="p-2 text-gray-400 hover:text-blue-600 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all" title="Refresh">
               <RefreshCw className="w-4 h-4" />
             </button>
           </div>
@@ -395,20 +395,19 @@ const AdminBlogs = () => {
           {loading ? (
             <AdminBlogsSkeleton />
           ) : blogs.length === 0 ? (
-            <div className="p-16 text-center text-gray-500">
-              <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                <FileText className="w-10 h-10 text-gray-400" />
+            <div className="p-16 text-center text-gray-500 dark:text-gray-400">
+              <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                <FileText className="w-10 h-10 text-gray-400 dark:text-gray-500" />
               </div>
-              <h3 className="text-lg font-bold text-gray-700 mb-1">No blogs found</h3>
+              <h3 className="text-lg font-bold text-gray-700 dark:text-gray-200 mb-1">No blogs found</h3>
               <p className="text-sm">Get started by creating a new blog post.</p>
               <button onClick={handleCreate} className="mt-4 text-blue-600 font-semibold hover:underline">Create Blog</button>
             </div>
           ) : (
             <>
-              {/* Desktop Table View */}
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gray-50/80 text-gray-500 text-xs uppercase font-semibold tracking-wider">
+                  <thead className="bg-gray-50/80 dark:bg-gray-700/80 text-gray-500 dark:text-gray-400 text-xs uppercase font-semibold tracking-wider">
                     <tr>
                       <th className="px-6 py-4 text-left">Article</th>
                       <th className="px-6 py-4 text-left">Type</th>
@@ -419,12 +418,12 @@ const AdminBlogs = () => {
                       <th className="px-6 py-4 text-right">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="divide-y divide-gray-100">
+                  <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                     {blogs.map((blog) => (
-                      <tr key={blog._id} className="group hover:bg-blue-50/30 transition-colors">
+                      <tr key={blog._id} className="group hover:bg-blue-50/30 dark:hover:bg-blue-900/10 transition-colors">
                         <td className="px-6 py-4">
                           <div className="flex items-center gap-4">
-                            <div className="w-12 h-12 rounded-lg bg-gray-200 overflow-hidden flex-shrink-0 border border-gray-200">
+                            <div className="w-12 h-12 rounded-lg bg-gray-200 dark:bg-gray-700 overflow-hidden flex-shrink-0 border border-gray-200 dark:border-gray-600">
                               {blog.thumbnail ? (
                                 <img src={blog.thumbnail} alt="" className="w-full h-full object-cover" />
                               ) : (
@@ -434,30 +433,30 @@ const AdminBlogs = () => {
                               )}
                             </div>
                             <div>
-                              <div className="font-bold text-gray-800 line-clamp-1 group-hover:text-blue-700 transition-colors">{blog.title}</div>
-                              <div className="text-xs text-gray-500 mt-0.5">{new Date(blog.createdAt).toLocaleDateString()}</div>
+                              <div className="font-bold text-gray-800 dark:text-white line-clamp-1 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">{blog.title}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400 mt-0.5">{new Date(blog.createdAt).toLocaleDateString()}</div>
                             </div>
                           </div>
                         </td>
                         <td className="px-6 py-4">
                           <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold border ${!blog.propertyId
-                            ? 'bg-purple-50 text-purple-700 border-purple-100'
-                            : 'bg-indigo-50 text-indigo-700 border-indigo-100'
+                            ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 border-purple-100 dark:border-purple-800'
+                            : 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 border-indigo-100 dark:border-indigo-800'
                             }`}>
                             {!blog.propertyId ? <Globe className="w-3 h-3" /> : <Home className="w-3 h-3" />}
                             {!blog.propertyId ? 'Global' : 'Property'}
                           </span>
                         </td>
                         <td className="px-6 py-4">
-                          <span className="text-sm text-gray-600 bg-gray-100 px-2 py-1 rounded-md font-medium border border-gray-200">
+                          <span className="text-sm text-gray-600 dark:text-gray-300 bg-gray-100 dark:bg-gray-700 px-2 py-1 rounded-md font-medium border border-gray-200 dark:border-gray-600">
                             {blog.category}
                           </span>
                         </td>
                         <td className="px-6 py-4">
                           {blog.propertyId ? (
                             <div className="text-sm">
-                              <div className="font-medium text-gray-800">{blog.propertyId.name}</div>
-                              <div className="text-xs text-gray-500">{blog.propertyId.city}</div>
+                              <div className="font-medium text-gray-800 dark:text-gray-200">{blog.propertyId.name}</div>
+                              <div className="text-xs text-gray-500 dark:text-gray-400">{blog.propertyId.city}</div>
                             </div>
                           ) : (
                             <span className="text-gray-400 text-sm">-</span>
@@ -467,8 +466,8 @@ const AdminBlogs = () => {
                           <button
                             onClick={() => togglePublish(blog)}
                             className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold cursor-pointer transition-all hover:scale-105 border ${blog.published
-                              ? 'bg-green-50 text-green-700 border-green-200'
-                              : 'bg-yellow-50 text-yellow-700 border-yellow-200'
+                              ? 'bg-green-50 dark:bg-green-900/30 text-green-700 dark:text-green-300 border-green-200 dark:border-green-800'
+                              : 'bg-yellow-50 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 border-yellow-200 dark:border-yellow-800'
                               }`}
                           >
                             {blog.published ? <Eye className="w-3 h-3" /> : <EyeOff className="w-3 h-3" />}
@@ -476,17 +475,17 @@ const AdminBlogs = () => {
                           </button>
                         </td>
                         <td className="px-6 py-4 text-center">
-                          <span className="text-sm font-bold text-gray-600">{blog.views || 0}</span>
+                          <span className="text-sm font-bold text-gray-600 dark:text-gray-300">{blog.views || 0}</span>
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex items-center justify-end gap-2 opacity-0 group-hover:opacity-100 transition-opacity">
-                            <button onClick={() => handleViewDetails(blog)} className="p-2 text-gray-500 hover:text-blue-600 hover:bg-blue-50 rounded-lg transition-colors" title="View Public Page">
+                            <button onClick={() => handleViewDetails(blog)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-colors" title="View Public Page">
                               <ExternalLink className="w-4 h-4" />
                             </button>
-                            <button onClick={() => handleEdit(blog)} className="p-2 text-gray-500 hover:text-green-600 hover:bg-green-50 rounded-lg transition-colors" title="Edit">
+                            <button onClick={() => handleEdit(blog)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-green-600 dark:hover:text-green-400 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-colors" title="Edit">
                               <Edit className="w-4 h-4" />
                             </button>
-                            <button onClick={() => handleDelete(blog._id)} className="p-2 text-gray-500 hover:text-red-600 hover:bg-red-50 rounded-lg transition-colors" title="Delete">
+                            <button onClick={() => handleDelete(blog._id)} className="p-2 text-gray-500 dark:text-gray-400 hover:text-red-600 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-colors" title="Delete">
                               <Trash className="w-4 h-4" />
                             </button>
                           </div>
@@ -500,10 +499,10 @@ const AdminBlogs = () => {
               {/* Mobile Card View */}
               <div className="lg:hidden p-4 space-y-4">
                 {blogs.map((blog) => (
-                  <div key={blog._id} className="bg-white rounded-xl border border-gray-200 p-4 shadow-sm hover:shadow-md transition-shadow">
+                  <div key={blog._id} className="bg-white dark:bg-gray-800 rounded-xl border border-gray-200 dark:border-gray-700 p-4 shadow-sm hover:shadow-md transition-shadow">
                     <div className="flex items-start justify-between mb-4">
                       <div className="flex items-center gap-3">
-                        <div className="w-12 h-12 rounded-lg bg-gray-100 overflow-hidden border border-gray-100">
+                        <div className="w-12 h-12 rounded-lg bg-gray-100 dark:bg-gray-700 overflow-hidden border border-gray-100 dark:border-gray-600">
                           {blog.thumbnail ? (
                             <img src={blog.thumbnail} alt="" className="w-full h-full object-cover" />
                           ) : (
@@ -513,8 +512,8 @@ const AdminBlogs = () => {
                           )}
                         </div>
                         <div>
-                          <h3 className="font-bold text-gray-800 line-clamp-1">{blog.title}</h3>
-                          <div className="flex items-center gap-2 text-xs text-gray-500 mt-1">
+                          <h3 className="font-bold text-gray-800 dark:text-white line-clamp-1">{blog.title}</h3>
+                          <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 mt-1">
                             <span>{new Date(blog.createdAt).toLocaleDateString()}</span>
                             <span>•</span>
                             <span>{blog.views || 0} views</span>
@@ -524,7 +523,7 @@ const AdminBlogs = () => {
                       <div className="relative">
                         <button
                           onClick={() => togglePublish(blog)}
-                          className={`p-1.5 rounded-full ${blog.published ? 'text-green-600 bg-green-50' : 'text-yellow-600 bg-yellow-50'}`}
+                          className={`p-1.5 rounded-full ${blog.published ? 'text-green-600 dark:text-green-400 bg-green-50 dark:bg-green-900/30' : 'text-yellow-600 dark:text-yellow-400 bg-yellow-50 dark:bg-yellow-900/30'}`}
                         >
                           {blog.published ? <Eye className="w-4 h-4" /> : <EyeOff className="w-4 h-4" />}
                         </button>
@@ -532,24 +531,24 @@ const AdminBlogs = () => {
                     </div>
 
                     <div className="flex flex-wrap gap-2 mb-4">
-                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${!blog.propertyId ? 'bg-purple-50 text-purple-700' : 'bg-indigo-50 text-indigo-700'
+                      <span className={`inline-flex items-center gap-1 px-2 py-1 rounded-md text-xs font-medium ${!blog.propertyId ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300' : 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300'
                         }`}>
                         {!blog.propertyId ? <Globe className="w-3 h-3" /> : <Home className="w-3 h-3" />}
                         {!blog.propertyId ? 'Global' : 'Property'}
                       </span>
-                      <span className="inline-flex px-2 py-1 rounded-md text-xs font-medium bg-gray-100 text-gray-600">
+                      <span className="inline-flex px-2 py-1 rounded-md text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                         {blog.category}
                       </span>
                     </div>
 
-                    <div className="flex items-center gap-2 border-t border-gray-100 pt-3 mt-3">
-                      <button onClick={() => handleViewDetails(blog)} className="flex-1 py-2 flex items-center justify-center gap-2 text-sm font-medium text-gray-600 hover:bg-gray-50 rounded-lg">
+                    <div className="flex items-center gap-2 border-t border-gray-100 dark:border-gray-700 pt-3 mt-3">
+                      <button onClick={() => handleViewDetails(blog)} className="flex-1 py-2 flex items-center justify-center gap-2 text-sm font-medium text-gray-600 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 rounded-lg">
                         <ExternalLink className="w-4 h-4" /> View
                       </button>
-                      <button onClick={() => handleEdit(blog)} className="flex-1 py-2 flex items-center justify-center gap-2 text-sm font-medium text-blue-600 hover:bg-blue-50 rounded-lg">
+                      <button onClick={() => handleEdit(blog)} className="flex-1 py-2 flex items-center justify-center gap-2 text-sm font-medium text-blue-600 dark:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg">
                         <Edit className="w-4 h-4" /> Edit
                       </button>
-                      <button onClick={() => handleDelete(blog._id)} className="flex-1 py-2 flex items-center justify-center gap-2 text-sm font-medium text-red-600 hover:bg-red-50 rounded-lg">
+                      <button onClick={() => handleDelete(blog._id)} className="flex-1 py-2 flex items-center justify-center gap-2 text-sm font-medium text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg">
                         <Trash className="w-4 h-4" /> Delete
                       </button>
                     </div>
@@ -559,25 +558,25 @@ const AdminBlogs = () => {
 
               {/* Pagination */}
               {pagination.pages > 1 && (
-                <div className="px-6 py-4 border-t border-gray-100 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50">
-                  <span className="text-sm text-gray-500">
+                <div className="px-6 py-4 border-t border-gray-100 dark:border-gray-700 flex flex-col sm:flex-row items-center justify-between gap-4 bg-gray-50 dark:bg-gray-700/50">
+                  <span className="text-sm text-gray-500 dark:text-gray-400">
                     Showing page {pagination.current} of {pagination.pages}
                   </span>
                   <div className="flex items-center gap-2">
                     <button
                       onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
                       disabled={pagination.current === 1}
-                      className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronLeft className="w-5 h-5" />
                     </button>
-                    <div className="px-4 py-2 bg-white border border-gray-200 rounded-lg text-sm font-bold text-gray-800 shadow-sm">
+                    <div className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-600 rounded-lg text-sm font-bold text-gray-800 dark:text-white shadow-sm">
                       {pagination.current}
                     </div>
                     <button
                       onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
                       disabled={pagination.current === pagination.pages}
-                      className="p-2 rounded-lg border border-gray-200 bg-white text-gray-600 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
+                      className="p-2 rounded-lg border border-gray-200 dark:border-gray-600 bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-colors"
                     >
                       <ChevronRight className="w-5 h-5" />
                     </button>

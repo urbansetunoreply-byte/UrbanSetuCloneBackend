@@ -42,7 +42,7 @@ const AdminFAQs = () => {
       const response = await fetch(`${API_BASE_URL}/api/auth/verify`, {
         credentials: 'include'
       });
-      
+
       if (response.ok) {
         const data = await response.json();
         console.log('✅ Authentication successful:', data.username, data.role);
@@ -70,7 +70,7 @@ const AdminFAQs = () => {
       fetchProperties();
       fetchCategories();
     };
-    
+
     initializeData();
   }, []);
 
@@ -140,14 +140,14 @@ const AdminFAQs = () => {
         console.log('FAQ count:', data.data.length);
         console.log('Active FAQs:', data.data.filter(faq => faq.isActive === true).length);
         console.log('Inactive FAQs:', data.data.filter(faq => faq.isActive === false).length);
-        
+
         // Check if we're getting filtered results (indicates auth issue)
         if (data.data.length > 0 && data.data.every(faq => faq.isActive === true)) {
           console.warn('⚠️ All FAQs are active - this might indicate authentication issue');
           console.warn('⚠️ Backend might be filtering out inactive FAQs due to auth failure');
           console.warn('⚠️ This is a known issue - backend changes need to be deployed');
         }
-        
+
         setFaqs(data.data);
         setPagination(data.pagination);
       }
@@ -233,24 +233,24 @@ const AdminFAQs = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      const url = editingFAQ 
+      const url = editingFAQ
         ? `${API_BASE_URL}/api/faqs/${editingFAQ._id}`
         : `${API_BASE_URL}/api/faqs`;
-      
+
       const method = editingFAQ ? 'PUT' : 'POST';
-      
+
       console.log('Submitting FAQ with data:', formData);
       console.log('isActive value:', formData.isActive);
-      
+
       const requestBody = {
         ...formData,
         propertyId: formData.propertyId || null
       };
-      
+
       console.log('Request body being sent:', requestBody);
       console.log('API URL:', url);
       console.log('Method:', method);
-      
+
       const response = await fetch(url, {
         method,
         headers: {
@@ -259,10 +259,10 @@ const AdminFAQs = () => {
         credentials: 'include',
         body: JSON.stringify(requestBody)
       });
-      
+
       console.log('Response status:', response.status);
       console.log('Response ok:', response.ok);
-      
+
       if (response.ok) {
         const data = await response.json();
         alert(editingFAQ ? 'FAQ updated successfully!' : 'FAQ created successfully!');
@@ -301,7 +301,7 @@ const AdminFAQs = () => {
   const toggleActive = async (faq) => {
     try {
       console.log('Toggling FAQ active status:', faq._id, 'from', faq.isActive, 'to', !faq.isActive);
-      
+
       const response = await fetch(`${API_BASE_URL}/api/faqs/${faq._id}`, {
         method: 'PUT',
         headers: {
@@ -312,7 +312,7 @@ const AdminFAQs = () => {
           isActive: !faq.isActive
         })
       });
-      
+
       console.log('Toggle response status:', response.status);
       console.log('Toggle response ok:', response.ok);
 
@@ -331,16 +331,16 @@ const AdminFAQs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 p-2 sm:p-4 lg:p-6">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-orange-50 dark:from-gray-900 dark:to-gray-800 p-2 sm:p-4 lg:p-6">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 transform hover:scale-[1.02] transition-all duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6 transform hover:scale-[1.02] transition-all duration-300">
           <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
             <div className="flex-1">
-              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 mb-2 animate-fadeIn">
+              <h1 className="text-2xl sm:text-3xl font-bold text-gray-900 dark:text-white mb-2 animate-fadeIn">
                 ❓ FAQ Management
               </h1>
-              <p className="text-gray-600 text-sm sm:text-base">
+              <p className="text-gray-600 dark:text-gray-400 text-sm sm:text-base">
                 Manage property-specific and global FAQs
               </p>
               {authWarning && (
@@ -360,7 +360,7 @@ const AdminFAQs = () => {
               onClick={handleCreate}
               className="w-full sm:w-auto bg-gradient-to-r from-orange-600 to-orange-700 text-white px-4 py-3 rounded-xl hover:from-orange-700 hover:to-orange-800 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-medium"
             >
-              <FaPlus className="text-lg" /> 
+              <FaPlus className="text-lg" />
               <span className="hidden sm:inline">Add FAQ</span>
               <span className="sm:hidden">Add</span>
             </button>
@@ -368,10 +368,10 @@ const AdminFAQs = () => {
         </div>
 
         {/* Filters */}
-        <div className="bg-white rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 sm:p-6 mb-4 sm:mb-6">
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
             <div className="sm:col-span-2 lg:col-span-1">
-              <label className="block text-sm font-medium text-gray-700 mb-2">🔍 Search</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🔍 Search</label>
               <div className="relative">
                 <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
                 <input
@@ -379,16 +379,16 @@ const AdminFAQs = () => {
                   placeholder="Search FAQs..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="w-full pl-10 pr-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300"
+                  className="w-full pl-10 pr-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-500"
                 />
               </div>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">📝 Type</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">📝 Type</label>
               <select
                 value={filterType}
                 onChange={(e) => setFilterType(e.target.value)}
-                className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300"
+                className="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-500"
               >
                 <option value="all">All FAQs</option>
                 <option value="global">Global FAQs</option>
@@ -396,11 +396,11 @@ const AdminFAQs = () => {
               </select>
             </div>
             <div>
-              <label className="block text-sm font-medium text-gray-700 mb-2">🏷️ Category</label>
+              <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🏷️ Category</label>
               <select
                 value={filterCategory}
                 onChange={(e) => setFilterCategory(e.target.value)}
-                className="w-full px-3 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300"
+                className="w-full px-3 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-500"
               >
                 <option value="all">All Categories</option>
                 {categories.map(category => (
@@ -413,7 +413,7 @@ const AdminFAQs = () => {
                 onClick={fetchFAQs}
                 className="w-full bg-gradient-to-r from-gray-600 to-gray-700 text-white px-4 py-3 rounded-xl hover:from-gray-700 hover:to-gray-800 flex items-center justify-center gap-2 shadow-lg hover:shadow-xl transform hover:scale-105 transition-all duration-300 font-medium"
               >
-                <FaFilter className="text-lg" /> 
+                <FaFilter className="text-lg" />
                 <span className="hidden sm:inline">Apply Filters</span>
                 <span className="sm:hidden">Apply</span>
               </button>
@@ -422,42 +422,41 @@ const AdminFAQs = () => {
         </div>
 
         {/* FAQs List */}
-        <div className="bg-white rounded-xl shadow-lg overflow-hidden">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg overflow-hidden">
           {loading ? (
             <div className="p-8 text-center">
               <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-orange-600 mx-auto"></div>
-              <p className="mt-4 text-gray-600">Loading FAQs...</p>
+              <p className="mt-4 text-gray-600 dark:text-gray-400">Loading FAQs...</p>
             </div>
           ) : (
             <>
               {/* Desktop Table View */}
               <div className="hidden lg:block overflow-x-auto">
                 <table className="w-full">
-                  <thead className="bg-gradient-to-r from-gray-50 to-orange-50">
+                  <thead className="bg-gradient-to-r from-gray-50 to-orange-50 dark:from-gray-700 dark:to-gray-800">
                     <tr>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Question</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Type</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Category</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Property</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Ratings</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Question</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Type</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Category</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Property</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Ratings</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Status</th>
+                      <th className="px-6 py-4 text-left text-xs font-medium text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                     </tr>
                   </thead>
-                  <tbody className="bg-white divide-y divide-gray-200">
+                  <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                     {faqs.map((faq) => (
-                      <tr key={faq._id} className={`hover:bg-gray-50 transition-colors duration-200 ${!faq.isActive ? 'bg-red-50' : ''}`}>
+                      <tr key={faq._id} className={`hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors duration-200 ${!faq.isActive ? 'bg-red-50 dark:bg-red-900/10' : ''}`}>
                         <td className="px-6 py-4">
-                          <div className="text-sm font-medium text-gray-900 max-w-xs truncate">
+                          <div className="text-sm font-medium text-gray-900 dark:text-white max-w-xs truncate">
                             {faq.question}
                           </div>
                         </td>
                         <td className="px-6 py-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 ${
-                            faq.isGlobal 
-                              ? 'bg-green-100 text-green-800 hover:bg-green-200' 
-                              : 'bg-blue-100 text-blue-800 hover:bg-blue-200'
-                          }`}>
+                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium transition-all duration-200 hover:scale-105 ${faq.isGlobal
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300 hover:bg-green-200'
+                              : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300 hover:bg-blue-200'
+                            }`}>
                             {faq.isGlobal ? (
                               <>
                                 <FaGlobe className="mr-1" /> Global
@@ -469,24 +468,24 @@ const AdminFAQs = () => {
                             )}
                           </span>
                         </td>
-                        <td className="px-6 py-4 text-sm text-gray-900">{faq.category}</td>
-                        <td className="px-6 py-4 text-sm text-gray-900">
+                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">{faq.category}</td>
+                        <td className="px-6 py-4 text-sm text-gray-900 dark:text-gray-300">
                           {faq.propertyId ? (
                             <div>
                               <div className="font-medium">{faq.propertyId.name}</div>
-                              <div className="text-gray-500">{faq.propertyId.city}, {faq.propertyId.state}</div>
+                              <div className="text-gray-500 dark:text-gray-400">{faq.propertyId.city}, {faq.propertyId.state}</div>
                             </div>
                           ) : (
-                            <span className="text-gray-400">-</span>
+                            <span className="text-gray-400 dark:text-gray-500">-</span>
                           )}
                         </td>
                         <td className="px-6 py-4">
                           <div className="flex items-center space-x-3">
-                            <div className="flex items-center space-x-1 text-green-600">
+                            <div className="flex items-center space-x-1 text-green-600 dark:text-green-400">
                               <FaThumbsUp className="text-xs" />
                               <span className="text-sm font-medium">{faq.helpful || 0}</span>
                             </div>
-                            <div className="flex items-center space-x-1 text-red-600">
+                            <div className="flex items-center space-x-1 text-red-600 dark:text-red-400">
                               <FaThumbsDown className="text-xs" />
                               <span className="text-sm font-medium">{faq.notHelpful || 0}</span>
                             </div>
@@ -495,11 +494,10 @@ const AdminFAQs = () => {
                         <td className="px-6 py-4">
                           <button
                             onClick={() => toggleActive(faq)}
-                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${
-                              faq.isActive 
-                                ? 'bg-green-100 text-green-800' 
-                                : 'bg-red-100 text-red-800'
-                            }`}
+                            className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${faq.isActive
+                                ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                                : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                              }`}
                           >
                             {faq.isActive ? <FaEye className="mr-1" /> : <FaEyeSlash className="mr-1" />}
                             {faq.isActive ? 'Active' : 'Inactive'}
@@ -510,7 +508,7 @@ const AdminFAQs = () => {
                             {faq.propertyId && faq.propertyId._id && (
                               <button
                                 onClick={() => handleViewProperty(faq)}
-                                className="text-green-600 hover:text-green-900"
+                                className="text-green-600 dark:text-green-400 hover:text-green-900 dark:hover:text-green-300"
                                 title="View Property"
                               >
                                 <FaExternalLinkAlt />
@@ -518,14 +516,14 @@ const AdminFAQs = () => {
                             )}
                             <button
                               onClick={() => handleEdit(faq)}
-                              className="text-blue-600 hover:text-blue-900"
+                              className="text-blue-600 dark:text-blue-400 hover:text-blue-900 dark:hover:text-blue-300"
                               title="Edit FAQ"
                             >
                               <FaEdit />
                             </button>
                             <button
                               onClick={() => handleDelete(faq._id)}
-                              className="text-red-600 hover:text-red-900"
+                              className="text-red-600 dark:text-red-400 hover:text-red-900 dark:hover:text-red-300"
                               title="Delete FAQ"
                             >
                               <FaTrash />
@@ -541,13 +539,13 @@ const AdminFAQs = () => {
               {/* Mobile Card View */}
               <div className="lg:hidden p-4 space-y-4">
                 {faqs.map((faq) => (
-                  <div key={faq._id} className={`rounded-xl shadow-lg p-4 border hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] ${!faq.isActive ? 'bg-gradient-to-r from-red-50 to-red-100 border-red-200' : 'bg-gradient-to-r from-white to-orange-50 border-orange-100'}`}>
+                  <div key={faq._id} className={`rounded-xl shadow-lg p-4 border hover:shadow-xl transition-all duration-300 transform hover:scale-[1.02] ${!faq.isActive ? 'bg-gradient-to-r from-red-50 to-red-100 dark:from-red-900/10 dark:to-red-900/20 border-red-200 dark:border-red-800' : 'bg-gradient-to-r from-white to-orange-50 dark:from-gray-800 dark:to-gray-700 border-orange-100 dark:border-gray-600'}`}>
                     <div className="flex items-start justify-between mb-3">
                       <div className="flex-1 min-w-0">
-                        <h3 className="text-sm font-semibold text-gray-900 mb-2 line-clamp-2">
+                        <h3 className="text-sm font-semibold text-gray-900 dark:text-white mb-2 line-clamp-2">
                           {faq.question}
                         </h3>
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           {new Date(faq.createdAt).toLocaleDateString()}
                         </p>
                       </div>
@@ -555,7 +553,7 @@ const AdminFAQs = () => {
                         {faq.propertyId && faq.propertyId._id && (
                           <button
                             onClick={() => handleViewProperty(faq)}
-                            className="p-2 text-green-600 hover:text-green-800 hover:bg-green-50 rounded-lg transition-all duration-200"
+                            className="p-2 text-green-600 dark:text-green-400 hover:text-green-800 hover:bg-green-50 dark:hover:bg-green-900/30 rounded-lg transition-all duration-200"
                             title="View Property"
                           >
                             <FaExternalLinkAlt className="text-sm" />
@@ -563,29 +561,28 @@ const AdminFAQs = () => {
                         )}
                         <button
                           onClick={() => handleEdit(faq)}
-                          className="p-2 text-blue-600 hover:text-blue-800 hover:bg-blue-50 rounded-lg transition-all duration-200"
+                          className="p-2 text-blue-600 dark:text-blue-400 hover:text-blue-800 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-lg transition-all duration-200"
                           title="Edit FAQ"
                         >
                           <FaEdit className="text-sm" />
                         </button>
                         <button
                           onClick={() => handleDelete(faq._id)}
-                          className="p-2 text-red-600 hover:text-red-800 hover:bg-red-50 rounded-lg transition-all duration-200"
+                          className="p-2 text-red-600 dark:text-red-400 hover:text-red-800 hover:bg-red-50 dark:hover:bg-red-900/30 rounded-lg transition-all duration-200"
                           title="Delete FAQ"
                         >
                           <FaTrash className="text-sm" />
                         </button>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3 mb-3">
                       <div>
-                        <span className="text-xs text-gray-500 block">Type</span>
-                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${
-                          faq.isGlobal 
-                            ? 'bg-green-100 text-green-800' 
-                            : 'bg-blue-100 text-blue-800'
-                        }`}>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 block">Type</span>
+                        <span className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium ${faq.isGlobal
+                            ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                            : 'bg-blue-100 dark:bg-blue-900/30 text-blue-800 dark:text-blue-300'
+                          }`}>
                           {faq.isGlobal ? (
                             <>
                               <FaGlobe className="mr-1" /> Global
@@ -598,54 +595,53 @@ const AdminFAQs = () => {
                         </span>
                       </div>
                       <div>
-                        <span className="text-xs text-gray-500 block">Status</span>
+                        <span className="text-xs text-gray-500 dark:text-gray-400 block">Status</span>
                         <button
                           onClick={() => toggleActive(faq)}
-                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${
-                            faq.isActive 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-red-100 text-red-800'
-                          }`}
+                          className={`inline-flex items-center px-2 py-1 rounded-full text-xs font-medium transition-all duration-200 ${faq.isActive
+                              ? 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300'
+                              : 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300'
+                            }`}
                         >
                           {faq.isActive ? <FaEye className="mr-1" /> : <FaEyeSlash className="mr-1" />}
                           {faq.isActive ? 'Active' : 'Inactive'}
                         </button>
                       </div>
                     </div>
-                    
+
                     {/* Ratings Section */}
                     <div className="mb-3">
-                      <span className="text-xs text-gray-500 block mb-2">User Ratings</span>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 block mb-2">User Ratings</span>
                       <div className="flex items-center space-x-4">
-                        <div className="flex items-center space-x-1 text-green-600">
+                        <div className="flex items-center space-x-1 text-green-600 dark:text-green-400">
                           <FaThumbsUp className="text-sm" />
                           <span className="text-sm font-medium">{faq.helpful || 0}</span>
-                          <span className="text-xs text-gray-500">Helpful</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Helpful</span>
                         </div>
-                        <div className="flex items-center space-x-1 text-red-600">
+                        <div className="flex items-center space-x-1 text-red-600 dark:text-red-400">
                           <FaThumbsDown className="text-sm" />
                           <span className="text-sm font-medium">{faq.notHelpful || 0}</span>
-                          <span className="text-xs text-gray-500">Not Helpful</span>
+                          <span className="text-xs text-gray-500 dark:text-gray-400">Not Helpful</span>
                         </div>
                       </div>
                     </div>
-                    
+
                     <div className="grid grid-cols-2 gap-3 text-sm">
                       <div>
-                        <span className="text-gray-500">Category:</span>
-                        <span className="ml-1 font-medium">{faq.category}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Category:</span>
+                        <span className="ml-1 font-medium text-gray-900 dark:text-white">{faq.category}</span>
                       </div>
                       <div>
-                        <span className="text-gray-500">Priority:</span>
-                        <span className="ml-1 font-medium">{faq.priority}</span>
+                        <span className="text-gray-500 dark:text-gray-400">Priority:</span>
+                        <span className="ml-1 font-medium text-gray-900 dark:text-white">{faq.priority}</span>
                       </div>
                     </div>
-                    
+
                     {faq.propertyId && (
-                      <div className="mt-3 pt-3 border-t border-orange-200">
-                        <span className="text-xs text-gray-500">Property:</span>
-                        <div className="text-sm font-medium text-gray-900">{faq.propertyId.name}</div>
-                        <div className="text-xs text-gray-500">{faq.propertyId.city}, {faq.propertyId.state}</div>
+                      <div className="mt-3 pt-3 border-t border-orange-200 dark:border-gray-600">
+                        <span className="text-xs text-gray-500 dark:text-gray-400">Property:</span>
+                        <div className="text-sm font-medium text-gray-900 dark:text-white">{faq.propertyId.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{faq.propertyId.city}, {faq.propertyId.state}</div>
                       </div>
                     )}
                   </div>
@@ -654,16 +650,16 @@ const AdminFAQs = () => {
 
               {/* Enhanced Pagination */}
               {pagination.pages > 1 && (
-                <div className="px-4 sm:px-6 py-4 border-t border-gray-200 bg-gradient-to-r from-gray-50 to-orange-50">
+                <div className="px-4 sm:px-6 py-4 border-t border-gray-200 dark:border-gray-700 bg-gradient-to-r from-gray-50 to-orange-50 dark:from-gray-700 dark:to-gray-800">
                   <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
-                    <div className="text-sm text-gray-700 text-center sm:text-left">
+                    <div className="text-sm text-gray-700 dark:text-gray-300 text-center sm:text-left">
                       Showing {((pagination.current - 1) * 10) + 1} to {Math.min(pagination.current * 10, pagination.total)} of {pagination.total} results
                     </div>
                     <div className="flex items-center space-x-2">
                       <button
                         onClick={() => setPagination(prev => ({ ...prev, current: prev.current - 1 }))}
                         disabled={pagination.current === 1}
-                        className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
+                        className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
                       >
                         ← Previous
                       </button>
@@ -673,7 +669,7 @@ const AdminFAQs = () => {
                       <button
                         onClick={() => setPagination(prev => ({ ...prev, current: prev.current + 1 }))}
                         disabled={pagination.current === pagination.pages}
-                        className="px-4 py-2 bg-white border border-gray-300 rounded-lg text-sm font-medium text-gray-700 hover:bg-gray-50 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
+                        className="px-4 py-2 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:cursor-not-allowed transition-all duration-200 hover:scale-105"
                       >
                         Next →
                       </button>
@@ -688,10 +684,10 @@ const AdminFAQs = () => {
         {/* Enhanced Modal */}
         {showModal && (
           <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto transform animate-slideDown">
-              <div className="sticky top-0 bg-white border-b border-gray-200 p-4 sm:p-6 rounded-t-xl">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl w-full max-w-2xl max-h-[95vh] overflow-y-auto transform animate-slideDown">
+              <div className="sticky top-0 bg-white dark:bg-gray-800 border-b border-gray-200 dark:border-gray-700 p-4 sm:p-6 rounded-t-xl">
                 <div className="flex items-center justify-between">
-                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900">
+                  <h2 className="text-xl sm:text-2xl font-bold text-gray-900 dark:text-white">
                     {editingFAQ ? '✏️ Edit FAQ' : '❓ Create FAQ'}
                   </h2>
                   <button
@@ -702,27 +698,27 @@ const AdminFAQs = () => {
                   </button>
                 </div>
               </div>
-              
+
               <form onSubmit={handleSubmit} className="p-4 sm:p-6 space-y-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">❓ Question *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">❓ Question *</label>
                   <input
                     type="text"
                     value={formData.question}
                     onChange={(e) => setFormData(prev => ({ ...prev, question: e.target.value }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-500"
                     placeholder="Enter your question..."
                     required
                   />
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">💬 Answer *</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">💬 Answer *</label>
                   <textarea
                     value={formData.answer}
                     onChange={(e) => setFormData(prev => ({ ...prev, answer: e.target.value }))}
                     rows={4}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-500"
                     placeholder="Enter the answer..."
                     required
                   />
@@ -730,11 +726,11 @@ const AdminFAQs = () => {
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">🏷️ Category</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🏷️ Category</label>
                     <select
                       value={formData.category}
                       onChange={(e) => setFormData(prev => ({ ...prev, category: e.target.value }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-500"
                     >
                       {categories.map(category => (
                         <option key={category} value={category}>{category}</option>
@@ -742,45 +738,45 @@ const AdminFAQs = () => {
                     </select>
                   </div>
                   <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">⭐ Priority</label>
+                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">⭐ Priority</label>
                     <input
                       type="number"
                       value={formData.priority}
                       onChange={(e) => setFormData(prev => ({ ...prev, priority: parseInt(e.target.value) }))}
-                      className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300"
+                      className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-500"
                       placeholder="0"
                     />
                   </div>
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">🏠 Property (Optional)</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">🏠 Property (Optional)</label>
                   <input
                     type="text"
                     value={propertySearch}
                     onChange={(e) => setPropertySearch(e.target.value)}
                     placeholder="Search properties by name, city, or state..."
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300 mb-2"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-500 mb-2"
                   />
                   <select
                     value={formData.propertyId}
-                    onChange={(e) => setFormData(prev => ({ 
-                      ...prev, 
+                    onChange={(e) => setFormData(prev => ({
+                      ...prev,
                       propertyId: e.target.value,
                       isGlobal: e.target.value === ''
                     }))}
-                    className="w-full px-4 py-3 border border-gray-300 rounded-xl focus:ring-2 focus:ring-orange-500 focus:border-transparent transition-all duration-300 hover:border-orange-300"
+                    className="w-full px-4 py-3 border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-xl focus:ring-2 focus:ring-orange-500 dark:focus:ring-orange-400 focus:border-transparent transition-all duration-300 hover:border-orange-300 dark:hover:border-orange-500"
                   >
                     <option value="">Select Property (Leave empty for global FAQ)</option>
                     {properties
                       .filter((property) => {
                         const searchTerm = propertySearch.trim().toLowerCase();
                         if (!searchTerm) return true;
-                        
+
                         const name = (property.name || "").toLowerCase();
                         const city = (property.city || "").toLowerCase();
                         const state = (property.state || "").toLowerCase();
-                        
+
                         return (
                           name.includes(searchTerm) ||
                           city.includes(searchTerm) ||
@@ -796,13 +792,13 @@ const AdminFAQs = () => {
                 </div>
 
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                  <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 rounded-xl border border-green-200">
+                  <div className="flex items-center space-x-4 p-4 bg-gradient-to-r from-green-50 to-blue-50 dark:from-green-900/10 dark:to-blue-900/10 rounded-xl border border-green-200 dark:border-green-800">
                     <label className="flex items-center cursor-pointer">
                       <input
                         type="checkbox"
                         checked={formData.isGlobal}
-                        onChange={(e) => setFormData(prev => ({ 
-                          ...prev, 
+                        onChange={(e) => setFormData(prev => ({
+                          ...prev,
                           isGlobal: e.target.checked,
                           propertyId: e.target.checked ? '' : prev.propertyId
                         }))}
