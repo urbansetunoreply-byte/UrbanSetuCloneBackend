@@ -348,24 +348,7 @@ const SessionAuditLogs = () => {
     return new Date(dateString).toLocaleString('en-IN', { year: 'numeric', month: 'long', day: 'numeric', hour: '2-digit', minute: '2-digit', second: '2-digit' });
   };
 
-  const getActionBadgeColor = (action) => {
-    switch (action) {
-      case 'login':
-        return 'bg-green-100 text-green-800';
-      case 'logout':
-        return 'bg-blue-100 text-blue-800';
-      case 'suspicious_login':
-        return 'bg-red-100 text-red-800';
-      case 'forced_logout':
-        return 'bg-orange-100 text-orange-800';
-      case 'session_expired':
-        return 'bg-gray-100 text-gray-800';
-      case 'session_cleaned':
-        return 'bg-purple-100 text-purple-800';
-      default:
-        return 'bg-gray-100 text-gray-800';
-    }
-  };
+
 
   const resetFilters = () => {
     setFilters({ action: '', isSuspicious: '', userId: '' });
@@ -435,7 +418,7 @@ const SessionAuditLogs = () => {
 
       <div className="max-w-7xl mx-auto space-y-6 relative z-10 animate-fade-in">
         {/* Header Section */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8 mb-8 animate-fade-in relative overflow-hidden group hover:shadow-2xl transition-shadow duration-300">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 sm:p-8 mb-8 animate-fade-in relative overflow-hidden group hover:shadow-2xl transition-shadow duration-300">
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-purple-50 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none group-hover:scale-110 transition-transform duration-500"></div>
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
@@ -709,14 +692,14 @@ const SessionAuditLogs = () => {
 
                   {/* Role Filter */}
                   <div>
-                    <label htmlFor="role-filter" className="block text-sm font-bold text-gray-700 mb-2">
+                    <label htmlFor="role-filter" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
                       Role
                     </label>
                     <select
                       id="role-filter"
                       value={filterRole}
                       onChange={(e) => setFilterRole(e.target.value)}
-                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                     >
                       <option value="all">All Roles</option>
                       <option value="user">Users</option>
@@ -727,14 +710,14 @@ const SessionAuditLogs = () => {
 
                   {/* Suspicious Activity Filter */}
                   <div>
-                    <label htmlFor="suspicious-filter" className="block text-sm font-bold text-gray-700 mb-2">
+                    <label htmlFor="suspicious-filter" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
                       Suspicious Activity
                     </label>
                     <select
                       id="suspicious-filter"
                       value={filters.isSuspicious}
                       onChange={(e) => setFilters({ ...filters, isSuspicious: e.target.value })}
-                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                     >
                       <option value="">All</option>
                       <option value="true">Suspicious Only</option>
@@ -744,14 +727,14 @@ const SessionAuditLogs = () => {
 
                   {/* Date Range Filter */}
                   <div>
-                    <label htmlFor="date-filter" className="block text-sm font-bold text-gray-700 mb-2">
+                    <label htmlFor="date-filter" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
                       Date Range
                     </label>
                     <select
                       id="date-filter"
                       value={filterDateRange}
                       onChange={(e) => setFilterDateRange(e.target.value)}
-                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                     >
                       <option value="all">All Time</option>
                       <option value="1h">Last Hour</option>
@@ -763,7 +746,7 @@ const SessionAuditLogs = () => {
 
                   {/* User ID Filter */}
                   <div>
-                    <label htmlFor="user-filter" className="block text-sm font-bold text-gray-700 mb-2">
+                    <label htmlFor="user-filter" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
                       User ID
                     </label>
                     <input
@@ -771,7 +754,7 @@ const SessionAuditLogs = () => {
                       id="user-filter"
                       value={filters.userId}
                       onChange={(e) => setFilters({ ...filters, userId: e.target.value })}
-                      className="block w-full pl-3 pr-3 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
+                      className="block w-full pl-3 pr-3 py-2.5 text-sm border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                       placeholder="Enter user ID"
                     />
                   </div>
@@ -1074,103 +1057,104 @@ const SessionAuditLogs = () => {
                 </button>
               </div>
 
-              <div className="mt-8 space-y-6 animate-fade-in">
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-100 dark:border-purple-800">
-                    <p className="text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Today</p>
-                    <p className="text-4xl font-extrabold text-purple-900 dark:text-purple-100 mt-2">{visitorStats.todayCount}</p>
+              {showVisitorStatsToggle && (
+                <div className="mt-8 space-y-6 animate-fade-in">
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-100 dark:border-purple-800">
+                      <p className="text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Today</p>
+                      <p className="text-4xl font-extrabold text-purple-900 dark:text-purple-100 mt-2">{visitorStats.todayCount}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
+                      <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-widest">Visitors</p>
+                      <p className="text-4xl font-extrabold text-blue-900 dark:text-blue-100 mt-2">{visitorStats.totalVisitors}</p>
+                    </div>
+                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-100 dark:border-green-800">
+                      <p className="text-sm font-semibold text-green-700 dark:text-green-300 uppercase tracking-widest">Unique Devices</p>
+                      <p className="text-4xl font-extrabold text-green-900 dark:text-green-100 mt-2">{visitorStats.deviceStats?.length || 0}</p>
+                    </div>
                   </div>
-                  <div className="bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
-                    <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-widest">Visitors</p>
-                    <p className="text-4xl font-extrabold text-blue-900 dark:text-blue-100 mt-2">{visitorStats.totalVisitors}</p>
-                  </div>
-                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-100 dark:border-green-800">
-                    <p className="text-sm font-semibold text-green-700 dark:text-green-300 uppercase tracking-widest">Unique Devices</p>
-                    <p className="text-4xl font-extrabold text-green-900 dark:text-green-100 mt-2">{visitorStats.deviceStats?.length || 0}</p>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                  <div className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 shadow-sm">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">7-Day Visitors</p>
-                    <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{(visitorInsights.last7Total || 0).toLocaleString('en-IN')}</p>
-                    <div className="h-1 w-full bg-indigo-100 dark:bg-indigo-900 rounded-full mt-3 overflow-hidden">
-                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: '70%' }}></div>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    <div className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 shadow-sm">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">7-Day Visitors</p>
+                      <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{(visitorInsights.last7Total || 0).toLocaleString('en-IN')}</p>
+                      <div className="h-1 w-full bg-indigo-100 dark:bg-indigo-900 rounded-full mt-3 overflow-hidden">
+                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: '70%' }}></div>
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 shadow-sm">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Avg Daily Traffic</p>
+                      <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{Math.round(visitorInsights.avgDaily || 0).toLocaleString('en-IN')}</p>
+                      <div className="h-1 w-full bg-teal-100 dark:bg-teal-900 rounded-full mt-3 overflow-hidden">
+                        <div className="h-full bg-teal-500 rounded-full" style={{ width: '50%' }}></div>
+                      </div>
+                    </div>
+                    <div className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 shadow-sm">
+                      <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Traffic Trend</p>
+                      <div className="flex items-center gap-2 mt-1">
+                        {visitorInsights.trendPercentage !== null ? (
+                          <span className={`text-2xl font-bold ${visitorInsights.trendPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                            {visitorInsights.trendPercentage >= 0 ? '▲' : '▼'} {Math.abs(visitorInsights.trendPercentage).toFixed(1)}%
+                          </span>
+                        ) : (
+                          <span className="text-2xl font-bold text-gray-400">N/A</span>
+                        )}
+                      </div>
+                      <p className="text-xs text-gray-400 mt-2">vs previous 7 days</p>
                     </div>
                   </div>
-                  <div className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 shadow-sm">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Avg Daily Traffic</p>
-                    <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{Math.round(visitorInsights.avgDaily || 0).toLocaleString('en-IN')}</p>
-                    <div className="h-1 w-full bg-teal-100 dark:bg-teal-900 rounded-full mt-3 overflow-hidden">
-                      <div className="h-full bg-teal-500 rounded-full" style={{ width: '50%' }}></div>
-                    </div>
-                  </div>
-                  <div className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 shadow-sm">
-                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Traffic Trend</p>
-                    <div className="flex items-center gap-2 mt-1">
-                      {visitorInsights.trendPercentage !== null ? (
-                        <span className={`text-2xl font-bold ${visitorInsights.trendPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                          {visitorInsights.trendPercentage >= 0 ? '▲' : '▼'} {Math.abs(visitorInsights.trendPercentage).toFixed(1)}%
-                        </span>
-                      ) : (
-                        <span className="text-2xl font-bold text-gray-400">N/A</span>
-                      )}
-                    </div>
-                    <p className="text-xs text-gray-400 mt-2">vs previous 7 days</p>
-                  </div>
-                </div>
 
-                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                  <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 p-6">
-                    <h4 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                      <FaDesktop className="text-gray-400 dark:text-gray-500" /> Top Devices
-                    </h4>
-                    <div className="space-y-4">
-                      {visitorInsights.topDevices.length === 0 ? (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>
-                      ) : visitorInsights.topDevices.map((device) => {
-                        const topValue = visitorInsights.topDevices[0]?.count || 1;
-                        const percentage = topValue ? Math.round((device.count / topValue) * 100) : 0;
-                        return (
-                          <div key={device.device} className="group">
-                            <div className="flex items-center justify-between text-sm mb-1.5">
-                              <span className="text-gray-700 dark:text-gray-300 font-medium">{device.device}</span>
-                              <span className="text-gray-900 dark:text-white font-bold bg-gray-100 dark:bg-gray-600 px-2 py-0.5 rounded-md">{device.count}</span>
+                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                    <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 p-6">
+                      <h4 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                        <FaDesktop className="text-gray-400 dark:text-gray-500" /> Top Devices
+                      </h4>
+                      <div className="space-y-4">
+                        {visitorInsights.topDevices.length === 0 ? (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>
+                        ) : visitorInsights.topDevices.map((device) => {
+                          const topValue = visitorInsights.topDevices[0]?.count || 1;
+                          const percentage = topValue ? Math.round((device.count / topValue) * 100) : 0;
+                          return (
+                            <div key={device.device} className="group">
+                              <div className="flex items-center justify-between text-sm mb-1.5">
+                                <span className="text-gray-700 dark:text-gray-300 font-medium">{device.device}</span>
+                                <span className="text-gray-900 dark:text-white font-bold bg-gray-100 dark:bg-gray-600 px-2 py-0.5 rounded-md">{device.count}</span>
+                              </div>
+                              <div className="w-full bg-gray-100 dark:bg-gray-600 rounded-full h-2.5 overflow-hidden">
+                                <div className="bg-purple-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-purple-600" style={{ width: `${percentage}%` }}></div>
+                              </div>
                             </div>
-                            <div className="w-full bg-gray-100 dark:bg-gray-600 rounded-full h-2.5 overflow-hidden">
-                              <div className="bg-purple-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-purple-600" style={{ width: `${percentage}%` }}></div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                  <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 p-6">
-                    <h4 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
-                      <FaMapMarkerAlt className="text-gray-400 dark:text-gray-500" /> Top Locations
-                    </h4>
-                    <div className="space-y-4">
-                      {visitorInsights.topLocations.length === 0 ? (
-                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>
-                      ) : visitorInsights.topLocations.map((location) => {
-                        const topValue = visitorInsights.topLocations[0]?.count || 1;
-                        const percentage = topValue ? Math.round((location.count / topValue) * 100) : 0;
-                        return (
-                          <div key={location.location} className="group">
-                            <div className="flex items-center justify-between text-sm mb-1.5">
-                              <span className="text-gray-700 dark:text-gray-300 font-medium">{location.location}</span>
-                              <span className="text-gray-900 dark:text-white font-bold bg-gray-100 dark:bg-gray-600 px-2 py-0.5 rounded-md">{location.count}</span>
+                    <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 p-6">
+                      <h4 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                        <FaMapMarkerAlt className="text-gray-400 dark:text-gray-500" /> Top Locations
+                      </h4>
+                      <div className="space-y-4">
+                        {visitorInsights.topLocations.length === 0 ? (
+                          <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>
+                        ) : visitorInsights.topLocations.map((location) => {
+                          const topValue = visitorInsights.topLocations[0]?.count || 1;
+                          const percentage = topValue ? Math.round((location.count / topValue) * 100) : 0;
+                          return (
+                            <div key={location.location} className="group">
+                              <div className="flex items-center justify-between text-sm mb-1.5">
+                                <span className="text-gray-700 dark:text-gray-300 font-medium">{location.location}</span>
+                                <span className="text-gray-900 dark:text-white font-bold bg-gray-100 dark:bg-gray-600 px-2 py-0.5 rounded-md">{location.count}</span>
+                              </div>
+                              <div className="w-full bg-gray-100 dark:bg-gray-600 rounded-full h-2.5 overflow-hidden">
+                                <div className="bg-pink-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-pink-600" style={{ width: `${percentage}%` }}></div>
+                              </div>
                             </div>
-                            <div className="w-full bg-gray-100 dark:bg-gray-600 rounded-full h-2.5 overflow-hidden">
-                              <div className="bg-pink-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-pink-600" style={{ width: `${percentage}%` }}></div>
-                            </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
                   </div>
                 </div>
-              </div>
               )}
 
               {getVisitorActiveFiltersCount() > 0 && (
@@ -1215,11 +1199,11 @@ const SessionAuditLogs = () => {
                     { key: 'functional', label: 'Functional' }
                   ].map((c) => (
                     <div key={c.key}>
-                      <label className="block text-sm font-bold text-gray-700 mb-2">{c.label}</label>
+                      <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">{c.label}</label>
                       <select
                         value={visitorFilters[c.key]}
                         onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, [c.key]: e.target.value })); }}
-                        className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-lg bg-gray-50 transition-all"
+                        className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                       >
                         <option value="any">Any</option>
                         <option value="true">Allowed</option>
@@ -1230,11 +1214,11 @@ const SessionAuditLogs = () => {
 
                   {/* Device */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Device</label>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Device</label>
                     <select
                       value={visitorFilters.device}
                       onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, device: e.target.value })); }}
-                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-lg bg-gray-50 transition-all"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                     >
                       <option value="all">All Devices</option>
                       {(visitorStats.deviceStats || []).map(d => (
@@ -1245,11 +1229,11 @@ const SessionAuditLogs = () => {
 
                   {/* Location */}
                   <div>
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Location</label>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Location</label>
                     <select
                       value={visitorFilters.location}
                       onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, location: e.target.value })); }}
-                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-lg bg-gray-50 transition-all"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                     >
                       <option value="all">All Locations</option>
                       {(visitorStats.locationStats || []).map(l => (
@@ -1260,14 +1244,14 @@ const SessionAuditLogs = () => {
 
                   {/* Search */}
                   <div className="col-span-1 lg:col-span-2">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Search</label>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Search</label>
                     <div className="relative">
                       <FaSearch className="absolute left-3 top-3 text-gray-400" />
                       <input
                         type="text"
                         value={visitorFilters.search}
                         onChange={(e) => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, search: e.target.value })); }}
-                        className="block w-full pl-10 pr-3 py-2.5 border-gray-200 rounded-lg bg-gray-50 text-sm focus:outline-none focus:bg-white focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all shadow-sm"
+                        className="block w-full pl-10 pr-3 py-2.5 border-gray-200 dark:border-gray-600 rounded-lg bg-gray-50 dark:bg-gray-700 text-sm text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-purple-500/20 focus:border-purple-500 transition-all shadow-sm"
                         placeholder="Search IP, device, location..."
                       />
                     </div>
