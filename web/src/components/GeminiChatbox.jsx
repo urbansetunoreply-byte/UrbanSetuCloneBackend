@@ -240,7 +240,38 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
     const [isRecording, setIsRecording] = useState(false);
     const [mediaRecorder, setMediaRecorder] = useState(null);
     const [audioChunks, setAudioChunks] = useState([]);
-    const [isDarkMode, setIsDarkMode] = useState(() => getUserSetting('gemini_dark_mode', 'false') === 'true');
+    const [isDarkMode, setIsDarkMode] = useState(document.documentElement.classList.contains('dark'));
+
+    // Sync isDarkMode with global theme
+    useEffect(() => {
+        const updateTheme = () => {
+            setIsDarkMode(document.documentElement.classList.contains('dark'));
+        };
+
+        // Listen for custom theme-change event and storage events
+        window.addEventListener('theme-change', updateTheme);
+        window.addEventListener('storage', updateTheme); // In case changed in another tab
+
+        // Also observe 'class' attribute changes on html element for direct DOM updates
+        const observer = new MutationObserver((mutations) => {
+            mutations.forEach((mutation) => {
+                if (mutation.type === 'attributes' && mutation.attributeName === 'class') {
+                    updateTheme();
+                }
+            });
+        });
+
+        observer.observe(document.documentElement, { attributes: true });
+
+        // Initial check
+        updateTheme();
+
+        return () => {
+            window.removeEventListener('theme-change', updateTheme);
+            window.removeEventListener('storage', updateTheme);
+            observer.disconnect();
+        };
+    }, []);
     const [showVoiceInput, setShowVoiceInput] = useState(false);
     const [showFileUpload, setShowFileUpload] = useState(false);
     const [uploadedFiles, setUploadedFiles] = useState([]);
@@ -1224,8 +1255,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
             setEnableRightClickMenu(getUserSetting('gemini_right_click', 'true') !== 'false');
             setEnableContextMenu(getUserSetting('gemini_context_menu', 'true') !== 'false');
 
-            // Dark mode
-            setIsDarkMode(getUserSetting('gemini_dark_mode', 'false') === 'true');
+
         }
     }, [currentUser]);
 
@@ -3390,11 +3420,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
         setUploadedFiles(prev => prev.filter((_, i) => i !== index));
     };
 
-    const toggleDarkMode = () => {
-        const newDarkMode = !isDarkMode;
-        setIsDarkMode(newDarkMode);
-        setUserSetting('gemini_dark_mode', newDarkMode.toString());
-    };
+
 
     // Helper functions for new settings
     const updateFontSize = (size) => {
@@ -6470,19 +6496,7 @@ const GeminiChatbox = ({ forceModalOpen = false, onModalClose = null }) => {
                                                     Display Settings
                                                 </h4>
                                                 <div className="space-y-4">
-                                                    {/* Dark Mode Toggle */}
-                                                    <div className="flex items-center justify-between">
-                                                        <span className={`text-sm ${isDarkMode ? 'text-gray-300' : 'text-gray-700'}`}>
-                                                            Dark Mode
-                                                        </span>
-                                                        <button
-                                                            onClick={toggleDarkMode}
-                                                            className={getToggleSwitchClasses(isDarkMode)}
-                                                        >
-                                                            <div className={`w-5 h-5 bg-white rounded-full transition-transform ${isDarkMode ? 'translate-x-6' : 'translate-x-0.5'
-                                                                }`} />
-                                                        </button>
-                                                    </div>
+
 
                                                     {/* Font Size */}
                                                     <div className="flex items-center justify-between">
