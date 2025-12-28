@@ -262,10 +262,10 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
     };
 
     const getScoreColor = (score) => {
-        if (score >= 80) return 'text-green-600 bg-green-50';
-        if (score >= 60) return 'text-yellow-600 bg-yellow-50';
-        if (score >= 40) return 'text-orange-600 bg-orange-50';
-        return 'text-red-600 bg-red-50';
+        if (score >= 80) return 'text-green-600 bg-green-50 dark:text-green-400 dark:bg-green-900/30';
+        if (score >= 60) return 'text-yellow-600 bg-yellow-50 dark:text-yellow-400 dark:bg-yellow-900/30';
+        if (score >= 40) return 'text-orange-600 bg-orange-50 dark:text-orange-400 dark:bg-orange-900/30';
+        return 'text-red-600 bg-red-50 dark:text-red-400 dark:bg-red-900/30';
     };
 
     const socialAmenitiesOptions = [
@@ -309,7 +309,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                             <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors">Based on current inputs</p>
                         </div>
                         <div className="text-right">
-                            <div className={`text-2xl font-bold px-3 py-2 rounded-lg transition-colors ${getScoreColor(calculatedScore).replace('bg-', 'dark:bg-').replace('text-', 'dark:text-')}`}>
+                            <div className={`text-2xl font-bold px-3 py-2 rounded-lg transition-colors ${getScoreColor(calculatedScore)}`}>
                                 {calculatedScore}/100
                             </div>
                             <div className="text-sm font-medium text-gray-600 dark:text-gray-400 mt-1 transition-colors">
@@ -459,7 +459,7 @@ const ESGManagement = ({ esgData, onESGChange, isEditing = false }) => {
                             max="100"
                             value={esg.social.communityImpact}
                             onChange={(e) => handleChange('social', 'communityImpact', parseInt(e.target.value) || 0)}
-                            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                            className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                         />
                     </div>
 
