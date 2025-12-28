@@ -4,7 +4,7 @@ import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
 import { Navigation } from "swiper/modules";
-import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaHeart, FaExpand, FaRocket, FaCheckCircle, FaEye } from "react-icons/fa";
+import { FaBath, FaBed, FaChair, FaMapMarkerAlt, FaParking, FaShare, FaEdit, FaTrash, FaArrowLeft, FaHeart, FaExpand, FaRocket, FaCheckCircle, FaEye, FaLock } from "react-icons/fa";
 import { maskAddress, shouldShowLocationLink, getLocationLinkText } from "../utils/addressMasking";
 import { toast } from 'react-toastify';
 import { useWishlist } from '../WishlistContext';
@@ -37,6 +37,11 @@ export default function AdminListing() {
 
   const formatINR = (amount) => {
     return `₹${Number(amount).toLocaleString("en-IN")}`;
+  };
+
+  const getDiscountPercentage = () => {
+    if (!listing || !listing.offer || !listing.regularPrice || !listing.discountPrice) return 0;
+    return Math.round(((listing.regularPrice - listing.discountPrice) / listing.regularPrice) * 100);
   };
 
   const refreshWatchlistCount = async () => {
@@ -174,13 +179,16 @@ export default function AdminListing() {
     return () => clearInterval(interval);
   }, [params.listingId]);
 
+  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
+  const { currentUser } = useSelector((state) => state.user);
+
   if (loading) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
+      <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-slate-900 dark:to-slate-800 min-h-screen py-10 px-2 md:px-8 transition-colors duration-300">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
           <div className="flex items-center justify-center">
-            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600"></div>
-            <p className="ml-3 text-lg font-semibold text-blue-600">Loading property details...</p>
+            <div className="animate-spin rounded-full h-8 w-8 border-b-2 border-blue-600 dark:border-blue-400"></div>
+            <p className="ml-3 text-lg font-semibold text-blue-600 dark:text-blue-400">Loading property details...</p>
           </div>
         </div>
       </div>
@@ -189,11 +197,11 @@ export default function AdminListing() {
 
   if (!listing) {
     return (
-      <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
-        <div className="max-w-4xl mx-auto bg-white rounded-xl shadow-lg p-6 relative">
+      <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-slate-900 dark:to-slate-800 min-h-screen py-10 px-2 md:px-8 transition-colors duration-300">
+        <div className="max-w-4xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 relative">
           <div className="text-center">
-            <h3 className="text-2xl font-bold text-red-600 mb-4">Property Not Found</h3>
-            <p className="text-gray-600 mb-6">The property you're looking for doesn't exist or has been removed.</p>
+            <h3 className="text-2xl font-bold text-red-600 dark:text-red-400 mb-4">Property Not Found</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">The property you're looking for doesn't exist or has been removed.</p>
             <Link
               to="/admin"
               className="bg-blue-500 text-white px-6 py-2 rounded-lg hover:bg-blue-600 transition-colors"
@@ -206,12 +214,9 @@ export default function AdminListing() {
     );
   }
 
-  const { addToWishlist, removeFromWishlist, isInWishlist } = useWishlist();
-  const { currentUser } = useSelector((state) => state.user);
-
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-4 sm:py-10 px-1 sm:px-2 md:px-8">
-      <div className="max-w-4xl w-full mx-auto bg-white rounded-xl shadow-lg p-2 sm:p-4 lg:p-6 relative overflow-x-hidden">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950 min-h-screen py-4 sm:py-10 px-1 sm:px-2 md:px-8 transition-colors duration-300">
+      <div className="max-w-4xl w-full mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-2 sm:p-4 lg:p-6 relative overflow-x-hidden border border-gray-100 dark:border-gray-700">
         {/* Header with Back Button and Admin Actions */}
         <div className="mb-6 w-full">
           {/* Mobile Layout - Stack buttons vertically for better mobile experience */}
@@ -291,7 +296,7 @@ export default function AdminListing() {
           </div>
         </div>
 
-        <h3 className="text-3xl font-extrabold text-blue-700 mb-6 text-center drop-shadow">
+        <h3 className="text-3xl font-extrabold text-blue-700 dark:text-blue-400 mb-6 text-center drop-shadow">
           Property Details (Admin View)
         </h3>
 
@@ -321,8 +326,8 @@ export default function AdminListing() {
                     />
                     {/* Expand Button Overlay */}
                     <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-20 transition-all duration-200 flex items-center justify-center">
-                      <div className="bg-white bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
-                        <FaExpand className="text-gray-700" />
+                      <div className="bg-white bg-opacity-90 dark:bg-gray-800 dark:bg-opacity-90 rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                        <FaExpand className="text-gray-700 dark:text-gray-200" />
                       </div>
                     </div>
                     {/* Click to expand text */}
@@ -331,7 +336,7 @@ export default function AdminListing() {
                     </div>
                     {/* Invisible clickable overlay */}
                     <button
-                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer"
+                      className="absolute inset-0 w-full h-full opacity-0 cursor-pointer z-10"
                       onClick={(e) => {
                         e.preventDefault();
                         e.stopPropagation();
@@ -349,8 +354,8 @@ export default function AdminListing() {
               ))
             ) : (
               <SwiperSlide>
-                <div className="w-full h-64 md:h-96 bg-gray-200 flex items-center justify-center">
-                  <div className="text-center text-gray-500">
+                <div className="w-full h-64 md:h-96 bg-gray-200 dark:bg-gray-700 flex items-center justify-center">
+                  <div className="text-center text-gray-500 dark:text-gray-400">
                     <div className="text-6xl mb-4">🏠</div>
                     <p className="text-lg">No images available</p>
                   </div>
@@ -360,10 +365,10 @@ export default function AdminListing() {
           </Swiper>
         </div>
 
-        {/* Share Button */}
+        {/* Share Button (additional mobile convenience) */}
         <div className="flex justify-end items-center space-x-4 mb-4 pr-2">
           <FaShare
-            className="cursor-pointer text-gray-500 hover:text-gray-700 text-xl"
+            className="cursor-pointer text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 text-xl"
             onClick={() => {
               navigator.clipboard.writeText(window.location.href);
               setCopied(true);
@@ -374,17 +379,17 @@ export default function AdminListing() {
         {copied && <p className="text-green-500 text-sm text-center mb-4">Link copied!</p>}
 
         {/* Details Card */}
-        <div className="p-3 sm:p-6 bg-gray-50 shadow-md rounded-lg mb-6">
+        <div className="p-3 sm:p-6 bg-gray-50 dark:bg-gray-700/50 shadow-md rounded-lg mb-6 border border-gray-100 dark:border-gray-700">
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-4 gap-2">
-            <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 break-words flex items-center gap-2">
+            <h2 className="text-lg sm:text-2xl md:text-3xl font-bold text-gray-800 dark:text-gray-100 break-words flex items-center gap-2">
               {listing.name}
               {listing.isVerified && (
-                <span className="ml-3 px-3 py-1 bg-green-100 text-green-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                <span className="ml-3 px-3 py-1 bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-400 rounded-full text-xs font-semibold flex items-center gap-1">
                   <FaCheckCircle /> Verified
                 </span>
               )}
               {!listing.isVerified && (
-                <span className="ml-3 px-3 py-1 bg-yellow-100 text-yellow-700 rounded-full text-xs font-semibold flex items-center gap-1">
+                <span className="ml-3 px-3 py-1 bg-yellow-100 dark:bg-yellow-900/40 text-yellow-700 dark:text-yellow-400 rounded-full text-xs font-semibold flex items-center gap-1">
                   ⚠️ Not Verified
                 </span>
               )}
@@ -401,12 +406,10 @@ export default function AdminListing() {
                     toast.success('Property removed from your wishlist.');
                   } else {
                     await addToWishlist(listing);
-                    //toast.success('Property added to your wishlist.');
                   }
-                  // Refresh watchlist count after wishlist change
                   await refreshWatchlistCount();
                 }}
-                className={`ml-2 p-2 rounded-full transition z-20 ${isInWishlist(listing._id) ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500 hover:text-red-600'} focus:outline-none`}
+                className={`ml-2 p-2 rounded-full transition z-20 ${isInWishlist(listing._id) ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-red-500 hover:text-red-600'} focus:outline-none shadow-sm`}
                 title={isInWishlist(listing._id) ? 'Remove from wishlist' : 'Add to wishlist'}
                 style={{ lineHeight: 0 }}
               >
@@ -416,19 +419,19 @@ export default function AdminListing() {
             <div className="mb-4">
               {listing.offer && getDiscountPercentage() > 0 ? (
                 <div className="flex flex-col sm:flex-row sm:items-center gap-2 sm:gap-3">
-                  <p className="text-lg sm:text-2xl md:text-3xl text-blue-600 font-semibold">
+                  <p className="text-lg sm:text-2xl md:text-3xl text-blue-600 dark:text-blue-400 font-semibold">
                     {formatINR(listing.discountPrice)}
                     {listing.type === "rent" && " / month"}
                   </p>
                   <p className="text-base sm:text-xl text-gray-500 line-through">
                     {formatINR(listing.regularPrice)}
                   </p>
-                  <span className="text-xs sm:text-sm text-green-600 font-semibold">
+                  <span className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-semibold">
                     Save {formatINR(listing.regularPrice - listing.discountPrice)}
                   </span>
                 </div>
               ) : (
-                <p className="text-lg sm:text-2xl md:text-3xl text-blue-600 font-semibold">
+                <p className="text-lg sm:text-2xl md:text-3xl text-blue-600 dark:text-blue-400 font-semibold">
                   {formatINR(listing.regularPrice)}
                   {listing.type === "rent" && " / month"}
                 </p>
@@ -436,10 +439,9 @@ export default function AdminListing() {
             </div>
           </div>
 
-          <p className="flex items-center text-gray-600 mb-4">
+          <p className="flex items-center text-gray-600 dark:text-gray-400 mb-4">
             <FaMapMarkerAlt className="mr-2 text-red-500" />
             {maskAddress(
-              // Create address object if structured fields exist, otherwise use legacy address
               listing.propertyNumber || listing.city ? {
                 propertyNumber: listing.propertyNumber,
                 landmark: listing.landmark,
@@ -457,7 +459,8 @@ export default function AdminListing() {
               <a
                 href={listing.locationLink}
                 rel="noopener noreferrer"
-                className="inline-block bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition"
+                target="_blank"
+                className="inline-block bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 transition shadow-md"
               >
                 {getLocationLinkText(true)}
               </a>
@@ -465,32 +468,32 @@ export default function AdminListing() {
           )}
 
           <div className="flex space-x-4 mb-4">
-            <span className={`px-3 py-1 text-white rounded-md ${listing.type === "rent" ? "bg-blue-500" : "bg-green-500"}`}>
+            <span className={`px-3 py-1 text-white rounded-md shadow-sm ${listing.type === "rent" ? "bg-blue-500" : "bg-green-500"}`}>
               {listing.type === "rent" ? "For Rent" : "For Sale"}
             </span>
             {listing.offer && (
-              <span className="px-3 py-1 bg-yellow-400 text-white rounded-md">
+              <span className="px-3 py-1 bg-yellow-400 text-white rounded-md shadow-sm">
                 {formatINR(listing.discountPrice)} OFF
               </span>
             )}
           </div>
 
-          <p className="text-gray-700 mb-4 leading-relaxed">
-            <span className="font-semibold">Description:</span> {listing.description}
+          <p className="text-gray-700 dark:text-gray-300 mb-4 leading-relaxed">
+            <span className="font-bold text-gray-900 dark:text-gray-100">Description:</span> {listing.description}
           </p>
 
           <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-3 sm:gap-4">
-            <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
-              <FaBed className="mr-2 text-blue-500" /> {listing.bedrooms} {listing.bedrooms > 1 ? "beds" : "bed"}
+            <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+              <FaBed className="mr-2 text-blue-500" /> <span className="text-gray-700 dark:text-gray-300">{listing.bedrooms} {listing.bedrooms > 1 ? "beds" : "bed"}</span>
             </div>
-            <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
-              <FaBath className="mr-2 text-blue-500" /> {listing.bathrooms} {listing.bathrooms > 1 ? "baths" : "bath"}
+            <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+              <FaBath className="mr-2 text-blue-500" /> <span className="text-gray-700 dark:text-gray-300">{listing.bathrooms} {listing.bathrooms > 1 ? "baths" : "bath"}</span>
             </div>
-            <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
-              <FaParking className="mr-2 text-blue-500" /> {listing.parking ? "Parking" : "No Parking"}
+            <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+              <FaParking className="mr-2 text-blue-500" /> <span className="text-gray-700 dark:text-gray-300">{listing.parking ? "Parking" : "No Parking"}</span>
             </div>
-            <div className="flex items-center p-3 bg-white rounded-lg shadow-sm">
-              <FaChair className="mr-2 text-blue-500" /> {listing.furnished ? "Furnished" : "Unfurnished"}
+            <div className="flex items-center p-3 bg-white dark:bg-gray-800 rounded-lg shadow-sm border border-gray-100 dark:border-gray-700">
+              <FaChair className="mr-2 text-blue-500" /> <span className="text-gray-700 dark:text-gray-300">{listing.furnished ? "Furnished" : "Unfurnished"}</span>
             </div>
           </div>
         </div>
@@ -508,63 +511,67 @@ export default function AdminListing() {
 
         {/* Smart Price Insights Section */}
         {showSmartPriceInsights && (
-          <SmartPriceInsights listing={listing} currentUser={currentUser} />
+          <div className="mb-6 p-4 bg-gray-50 dark:bg-gray-800/50 rounded-xl border border-gray-100 dark:border-gray-700">
+            <SmartPriceInsights listing={listing} currentUser={currentUser} />
+          </div>
         )}
 
         {/* Admin Information */}
-        <div className="p-6 bg-blue-50 shadow-md rounded-lg mb-6">
-          <h4 className="text-xl font-bold text-blue-800 mb-4">Admin Information</h4>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+        <div className="p-6 bg-blue-50 dark:bg-blue-900/20 shadow-md rounded-lg mb-6 border border-blue-100 dark:border-blue-900/30">
+          <h4 className="text-xl font-bold text-blue-800 dark:text-blue-300 mb-4">Admin Information</h4>
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
             <div>
-              <p className="text-sm text-gray-600">Property ID</p>
-              <p className="font-semibold text-gray-800">{listing._id}</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Property ID</p>
+              <p className="font-mono text-xs break-all text-gray-800 dark:text-gray-200 bg-white/50 dark:bg-gray-800/50 p-1 rounded select-all">{listing._id}</p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Created Date</p>
-              <p className="font-semibold text-gray-800">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Created Date</p>
+              <p className="font-semibold text-gray-800 dark:text-gray-200">
                 {new Date(listing.createdAt).toLocaleDateString()}
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Last Updated</p>
-              <p className="font-semibold text-gray-800">
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Last Updated</p>
+              <p className="font-semibold text-gray-800 dark:text-gray-200">
                 {new Date(listing.updatedAt).toLocaleDateString()}
               </p>
             </div>
             <div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">Created By</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Owner ID / userRef</p>
                 {listing.userRef && (
                   <button
                     onClick={handleDeassignOwner}
-                    className="text-xs text-red-600 hover:text-red-800 underline"
-                    title="Deassign owner"
+                    className="text-xs text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 underline font-medium"
+                    title="Deassign owner from this property"
                   >
                     Deassign
                   </button>
                 )}
               </div>
-              <p className="font-semibold text-gray-800">{listing.userRef || 'Unknown'}</p>
+              <p className="font-mono text-xs break-all text-gray-800 dark:text-gray-200 bg-white/50 dark:bg-gray-800/50 p-1 rounded select-all">
+                {typeof listing.userRef === 'object' ? listing.userRef._id : listing.userRef || 'Unknown'}
+              </p>
             </div>
             <div>
-              <div className="flex items-center justify-between">
-                <p className="text-sm text-gray-600">Watchlist Count</p>
+              <div className="flex items-center justify-between mb-1">
+                <p className="text-sm text-gray-500 dark:text-gray-400">Watchlist Count</p>
                 <button
                   onClick={refreshWatchlistCount}
-                  className="text-xs text-blue-600 hover:text-blue-800 underline"
+                  className="text-xs text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 underline font-medium"
                   title="Refresh watchlist count"
                 >
                   Refresh
                 </button>
               </div>
-              <p className="font-semibold text-purple-800 flex items-center gap-1">
+              <p className="font-semibold text-purple-800 dark:text-purple-400 flex items-center gap-1 bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded w-fit">
                 <FaEye className="text-sm" />
                 {watchlistCount} user{watchlistCount !== 1 ? 's' : ''} watching
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Verification Status</p>
-              <p className={`font-semibold flex items-center gap-1 ${listing.isVerified ? 'text-green-700' : 'text-yellow-700'}`}>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Verification Status</p>
+              <p className={`font-semibold flex items-center gap-1 ${listing.isVerified ? 'text-green-700 dark:text-green-400' : 'text-yellow-700 dark:text-yellow-400'}`}>
                 {listing.isVerified ? (
                   <>
                     <FaCheckCircle className="text-sm" /> Verified
@@ -577,9 +584,19 @@ export default function AdminListing() {
               </p>
             </div>
             <div>
-              <p className="text-sm text-gray-600">Visibility</p>
-              <p className={`font-semibold ${listing.visibility === 'public' ? 'text-blue-700' : 'text-gray-700'}`}>
-                {listing.visibility === 'public' ? '🌐 Public' : '🔒 Private'}
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-1">Visibility Status</p>
+              <p className={`font-semibold flex items-center gap-2 ${listing.visibility === 'public' ? 'text-blue-700 dark:text-blue-400' : 'text-orange-700 dark:text-orange-400'}`}>
+                {listing.visibility === 'public' ? (
+                  <>
+                    <span className="flex h-2 w-2 rounded-full bg-blue-500 animate-pulse"></span>
+                    🌐 Public
+                  </>
+                ) : (
+                  <>
+                    <FaLock className="text-xs" />
+                    🔒 Private (Admin Only)
+                  </>
+                )}
               </p>
             </div>
           </div>
@@ -604,36 +621,36 @@ export default function AdminListing() {
 
       {/* Deassign Owner Reason Modal */}
       {showDeassignModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handleDeassignReasonSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-red-700 flex items-center gap-2">
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fade-in p-4">
+          <form onSubmit={handleDeassignReasonSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md flex flex-col gap-4 transform transition-all border border-gray-100 dark:border-gray-700">
+            <h3 className="text-xl font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
               <FaTrash /> Deassign Owner
             </h3>
-            <p className="text-sm text-gray-600">
-              Please provide a reason for deassigning the owner of this property.
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Please provide a reason for deassigning the owner of this property. This action will be logged.
             </p>
             <textarea
-              className="border rounded p-3 w-full"
+              className="border border-gray-300 dark:border-gray-600 rounded-xl p-3 w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-red-500 outline-none transition-all"
               placeholder="Enter reason for deassigning owner..."
               value={deassignReason}
               onChange={e => setDeassignReason(e.target.value)}
               rows={4}
               autoFocus
             />
-            {deassignError && <div className="text-red-600 text-sm">{deassignError}</div>}
-            <div className="flex gap-2 justify-end">
+            {deassignError && <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-2 rounded border border-red-100 dark:border-red-900/30">{deassignError}</div>}
+            <div className="flex gap-3 justify-end mt-2">
               <button
                 type="button"
                 onClick={() => setShowDeassignModal(false)}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
+                className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
                 Cancel
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-pink-600 text-white font-semibold hover:from-red-700 hover:to-pink-700 shadow-md hover:shadow-lg transition-all"
               >
-                Next
+                Next Step
               </button>
             </div>
           </form>
@@ -642,37 +659,42 @@ export default function AdminListing() {
 
       {/* Deassign Owner Password Modal */}
       {showPasswordModal && (
-        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handleDeassignPasswordSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-red-700 flex items-center gap-2">
-              <FaTrash /> Confirm Password
+        <div className="fixed inset-0 flex items-center justify-center bg-black/60 backdrop-blur-sm z-50 animate-fade-in p-4">
+          <form onSubmit={handleDeassignPasswordSubmit} className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl p-6 w-full max-w-md flex flex-col gap-4 transform transition-all border border-gray-100 dark:border-gray-700">
+            <h3 className="text-xl font-bold text-red-700 dark:text-red-400 flex items-center gap-2">
+              <FaLock /> Confirm Identity
             </h3>
-            <p className="text-sm text-gray-600">
-              Please enter your password to confirm the deassignment of the owner.
+            <p className="text-sm text-gray-600 dark:text-gray-400">
+              Please enter your admin password to confirm the deassignment. This action is sensitive.
             </p>
             <input
               type="password"
-              className="border rounded p-3 w-full"
-              placeholder="Enter your password"
+              className="border border-gray-300 dark:border-gray-600 rounded-xl p-3 w-full bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 focus:ring-2 focus:ring-indigo-500 outline-none transition-all"
+              placeholder="Enter your admin password"
               value={deassignPassword}
               onChange={e => setDeassignPassword(e.target.value)}
               autoFocus
             />
-            {deassignError && <div className="text-red-600 text-sm">{deassignError}</div>}
-            <div className="flex gap-2 justify-end">
+            {deassignError && <div className="text-red-600 dark:text-red-400 text-sm bg-red-50 dark:bg-red-900/20 p-2 rounded border border-red-100 dark:border-red-900/30">{deassignError}</div>}
+            <div className="flex gap-3 justify-end mt-2">
               <button
                 type="button"
                 onClick={() => setShowPasswordModal(false)}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
+                className="px-5 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
               >
-                Cancel
+                Go Back
               </button>
               <button
                 type="submit"
-                className="px-4 py-2 rounded bg-red-600 text-white font-semibold"
+                className="px-5 py-2.5 rounded-xl bg-gradient-to-r from-red-600 to-pink-600 text-white font-semibold hover:from-red-700 hover:to-pink-700 shadow-md hover:shadow-lg transition-all disabled:opacity-50"
                 disabled={deassignLoading}
               >
-                {deassignLoading ? 'Deassigning...' : 'Confirm & Deassign'}
+                {deassignLoading ? (
+                  <div className="flex items-center gap-2">
+                    <span className="animate-spin h-4 w-4 border-2 border-white/30 border-t-white rounded-full"></span>
+                    Processing...
+                  </div>
+                ) : 'Confirm & Deassign'}
               </button>
             </div>
           </form>
@@ -680,4 +702,4 @@ export default function AdminListing() {
       )}
     </div>
   );
-} 
+}

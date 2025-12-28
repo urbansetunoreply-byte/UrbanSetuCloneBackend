@@ -830,10 +830,10 @@ export default function AdminDashboard() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen pb-12 transition-colors duration-500">
+    <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-slate-900 dark:via-indigo-950/20 dark:to-purple-950/20 min-h-screen pb-12 transition-colors duration-500">
       {/* Enhanced Header Section */}
       <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="relative overflow-hidden bg-white/80 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 mb-10 mt-8 transform transition-all hover:scale-[1.01] duration-500">
+        <div className="relative overflow-hidden bg-white/80 dark:bg-gray-800/80 backdrop-blur-md rounded-3xl shadow-2xl border border-white/20 dark:border-gray-700 mb-10 mt-8 transform transition-all hover:scale-[1.01] duration-500">
           <div className="absolute inset-0 bg-gradient-to-r from-blue-600/10 via-purple-600/10 to-pink-600/10 opacity-50"></div>
           <div className="relative flex flex-col lg:flex-row lg:items-center lg:justify-between p-6 lg:p-10 gap-6">
             <div className="flex-1">
@@ -845,10 +845,10 @@ export default function AdminDashboard() {
                   <h1 className="text-3xl lg:text-4xl font-bold bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                     Admin Dashboard
                   </h1>
-                  <p className="text-gray-600 mt-1">Welcome back, {currentUser?.username || 'Admin'}!</p>
+                  <p className="text-gray-600 dark:text-gray-400 mt-1">Welcome back, {currentUser?.username || 'Admin'}!</p>
                 </div>
               </div>
-              <p className="text-lg text-gray-700 max-w-2xl">
+              <p className="text-lg text-gray-700 dark:text-gray-300 max-w-2xl">
                 Monitor platform performance, manage properties, and oversee user activities from your comprehensive dashboard.
               </p>
             </div>
@@ -868,7 +868,7 @@ export default function AdminDashboard() {
               </Link>
               <button
                 onClick={() => window.location.reload()}
-                className="bg-white border-2 border-gray-200 text-gray-700 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:border-blue-300 hover:text-blue-600 transition-all duration-300 flex items-center gap-2 sm:gap-3 shadow-md hover:shadow-lg w-full sm:w-auto justify-center"
+                className="bg-white dark:bg-gray-700 border-2 border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2.5 sm:px-6 sm:py-3 rounded-xl hover:border-blue-300 dark:hover:border-blue-500 hover:text-blue-600 dark:hover:text-blue-400 transition-all duration-300 flex items-center gap-2 sm:gap-3 shadow-md hover:shadow-lg w-full sm:w-auto justify-center"
               >
                 <FaSync className="text-lg sm:text-xl" />
                 <span className="text-sm sm:text-base">Refresh</span>
@@ -890,7 +890,7 @@ export default function AdminDashboard() {
               Admin Analytics
             </h1>
           </div>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto leading-relaxed">
+          <p className="text-lg text-gray-600 dark:text-gray-400 max-w-3xl mx-auto leading-relaxed">
             Comprehensive insights and management tools for platform oversight, security monitoring, and business intelligence
           </p>
           <div className="flex items-center justify-center gap-2 mt-4">
@@ -907,7 +907,7 @@ export default function AdminDashboard() {
               <div className="p-2 bg-gradient-to-r from-red-500 to-orange-500 rounded-lg">
                 <FaExclamationTriangle className="text-white text-xl" />
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Critical Operations</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Critical Operations</h2>
             </div>
             <span className="text-xs sm:text-sm text-gray-500">(Requires Immediate Attention)</span>
           </div>
@@ -915,10 +915,10 @@ export default function AdminDashboard() {
           {/* Security & Fraud Monitoring */}
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Active OTP Lockouts Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-red-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-red-300 dark:hover:border-red-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Active OTP Lockouts</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Active OTP Lockouts</p>
                   <p className="text-3xl font-bold text-red-600 group-hover:scale-105 transition-transform duration-200">{securityStats.activeOtpLockouts}</p>
                 </div>
                 <div className="bg-gradient-to-r from-red-100 to-red-200 p-3 rounded-xl group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300">
@@ -931,10 +931,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Password Lockouts Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-orange-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-orange-300 dark:hover:border-orange-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Password Lockouts</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Password Lockouts</p>
                   <p className="text-3xl font-bold text-orange-600 group-hover:scale-105 transition-transform duration-200">{securityStats.passwordLockouts}</p>
                 </div>
                 <div className="bg-gradient-to-r from-orange-100 to-orange-200 p-3 rounded-xl group-hover:from-orange-200 group-hover:to-orange-300 transition-all duration-300">
@@ -947,10 +947,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Failed Attempts Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-purple-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Failed Attempts</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Failed Attempts</p>
                   <p className="text-3xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-200">{securityStats.totalFailedAttempts}</p>
                 </div>
                 <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-xl group-hover:from-purple-200 group-hover:to-purple-300 transition-all duration-300">
@@ -963,10 +963,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Total OTP Requests Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-blue-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Total OTP Requests</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total OTP Requests</p>
                   <p className="text-3xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-200">{securityStats.totalOtpRequests}</p>
                 </div>
                 <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-3 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
@@ -980,13 +980,13 @@ export default function AdminDashboard() {
           </div>
 
           {/* Visitor Tracking Statistics */}
-          <div className="bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6 border border-white/50 hover:shadow-2xl transition-all duration-300">
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl p-6 mb-6 border border-white/50 dark:border-gray-700 hover:shadow-2xl transition-all duration-300">
             <div className="flex items-center justify-between mb-4">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-purple-500 to-indigo-500 rounded-lg">
                   <FaEye className="text-white text-xl" />
                 </div>
-                <h3 className="text-xl font-semibold text-gray-800">Public Visitor Tracking</h3>
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white">Public Visitor Tracking</h3>
               </div>
               <Link
                 to="/admin/session-audit-logs"
@@ -998,10 +998,10 @@ export default function AdminDashboard() {
 
             <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               {/* Today's Visitors */}
-              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg p-4 border border-purple-200">
+              <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/10 dark:to-indigo-900/10 rounded-lg p-4 border border-purple-200 dark:border-purple-800/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-purple-600 font-medium">Today's Visitors</p>
+                    <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">Today's Visitors</p>
                     <p className="text-3xl font-bold text-purple-700 mt-1">{visitorStats.todayCount}</p>
                   </div>
                   <div className="bg-purple-100 p-3 rounded-full">
@@ -1011,10 +1011,10 @@ export default function AdminDashboard() {
               </div>
 
               {/* Total Visitors */}
-              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 rounded-lg p-4 border border-blue-200">
+              <div className="bg-gradient-to-r from-blue-50 to-cyan-50 dark:from-blue-900/10 dark:to-cyan-900/10 rounded-lg p-4 border border-blue-200 dark:border-blue-800/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-blue-600 font-medium">Total Visitors (All-Time)</p>
+                    <p className="text-sm text-blue-600 dark:text-blue-400 font-medium">Total Visitors (All-Time)</p>
                     <p className="text-3xl font-bold text-blue-700 mt-1">{visitorStats.totalVisitors}</p>
                   </div>
                   <div className="bg-blue-100 p-3 rounded-full">
@@ -1024,10 +1024,10 @@ export default function AdminDashboard() {
               </div>
 
               {/* Last 7 Days Average */}
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-lg p-4 border border-green-200">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 rounded-lg p-4 border border-green-200 dark:border-green-800/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-green-600 font-medium">7-Day Average</p>
+                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">7-Day Average</p>
                     <p className="text-3xl font-bold text-green-700 mt-1">
                       {visitorStats.dailyStats?.length > 0
                         ? Math.round(visitorStats.dailyStats.slice(-7).reduce((sum, d) => sum + d.count, 0) / Math.min(7, visitorStats.dailyStats.slice(-7).length))
@@ -1045,7 +1045,7 @@ export default function AdminDashboard() {
             {/* Daily Visitor Trend (Last 7 Days) */}
             {visitorStats.dailyStats?.length > 0 && (
               <div className="mt-6">
-                <h4 className="text-sm font-medium text-gray-700 mb-3">Last 7 Days Trend</h4>
+                <h4 className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-3">Last 7 Days Trend</h4>
                 <div className="flex items-end gap-2 h-24">
                   {visitorStats.dailyStats.slice(-7).map((stat, index) => {
                     const maxCount = Math.max(...visitorStats.dailyStats.slice(-7).map(s => s.count));
@@ -1054,7 +1054,7 @@ export default function AdminDashboard() {
 
                     return (
                       <div key={index} className="flex-1 flex flex-col items-center">
-                        <div className="text-xs text-gray-600 font-medium mb-1">{stat.count}</div>
+                        <div className="text-xs text-gray-600 dark:text-gray-400 font-medium mb-1">{stat.count}</div>
                         <div
                           className="w-full bg-gradient-to-t from-purple-500 to-purple-400 rounded-t-lg transition-all duration-300 hover:from-purple-600 hover:to-purple-500"
                           style={{ height: `${Math.max(10, height)}%` }}
@@ -1074,10 +1074,10 @@ export default function AdminDashboard() {
           {/* Pending Reviews & Appointments - High Priority Actions */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
             {/* Pending Reviews Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-yellow-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-yellow-300 dark:hover:border-yellow-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Pending Reviews</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Pending Reviews</p>
                   <p className="text-3xl font-bold text-yellow-600 group-hover:scale-105 transition-transform duration-200">{analytics.pendingReviews}</p>
                 </div>
                 <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 p-3 rounded-xl group-hover:from-yellow-200 group-hover:to-yellow-300 transition-all duration-300">
@@ -1102,10 +1102,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Appointments Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-purple-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-purple-300 dark:hover:border-purple-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Appointments</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Appointments</p>
                   <p className="text-3xl font-bold text-purple-600 group-hover:scale-105 transition-transform duration-200">{bookingStats.total}</p>
                 </div>
                 <div className="bg-gradient-to-r from-purple-100 to-purple-200 p-3 rounded-xl group-hover:from-purple-200 group-hover:to-purple-300 transition-all duration-300">
@@ -1149,10 +1149,10 @@ export default function AdminDashboard() {
 
           <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 lg:gap-6 mb-6">
             {/* Users Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-blue-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Total Users</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Users</p>
                   <p className="text-3xl font-bold text-blue-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalUsers}</p>
                 </div>
                 <div className="bg-gradient-to-r from-blue-100 to-blue-200 p-3 rounded-xl group-hover:from-blue-200 group-hover:to-blue-300 transition-all duration-300">
@@ -1176,10 +1176,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Properties Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-green-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-green-300 dark:hover:border-green-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Total Properties</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Total Properties</p>
                   <p className="text-3xl font-bold text-green-600 group-hover:scale-105 transition-transform duration-200">{analytics.totalListings}</p>
                 </div>
                 <div className="bg-gradient-to-r from-green-100 to-green-200 p-3 rounded-xl group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300">
@@ -1208,10 +1208,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Engagement Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-rose-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-rose-300 dark:hover:border-rose-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Avg Views/Listing</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Avg Views/Listing</p>
                   <p className="text-3xl font-bold text-rose-600 group-hover:scale-105 transition-transform duration-200">{analytics.engagement.avgViewsPerListing}</p>
                 </div>
                 <div className="bg-gradient-to-r from-rose-100 to-rose-200 p-3 rounded-xl group-hover:from-rose-200 group-hover:to-rose-300 transition-all duration-300">
@@ -1224,10 +1224,10 @@ export default function AdminDashboard() {
             </div>
 
             {/* Rent Lock Card */}
-            <div className="group bg-white/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 hover:border-indigo-300 hover:-translate-y-1">
+            <div className="group bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-2xl shadow-xl hover:shadow-2xl transition-all duration-300 p-6 border border-white/50 dark:border-gray-700 hover:border-indigo-300 dark:hover:border-indigo-500/50 hover:-translate-y-1">
               <div className="flex items-center justify-between mb-4">
                 <div className="flex-1">
-                  <p className="text-sm font-medium text-gray-600 mb-1">Rent-Locked Deals</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400 mb-1">Rent-Locked Deals</p>
                   <p className="text-3xl font-bold text-indigo-600 group-hover:scale-105 transition-transform duration-200">{rentLockedTotal}</p>
                 </div>
                 <div className="bg-gradient-to-r from-indigo-100 to-indigo-200 p-3 rounded-xl group-hover:from-indigo-200 group-hover:to-indigo-300 transition-all duration-300">
@@ -1265,12 +1265,12 @@ export default function AdminDashboard() {
           </div>
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
               <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-green-600 mr-2" /> Price Statistics</h3>
               <div className="grid grid-cols-3 gap-4 text-center">
                 <div>
                   <p className="text-sm text-gray-500">Min</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-800 break-all">₹{analytics.priceStats.min.toLocaleString('en-IN')}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 break-all">₹{analytics.priceStats.min.toLocaleString('en-IN')}</p>
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Avg</p>
@@ -1278,17 +1278,17 @@ export default function AdminDashboard() {
                 </div>
                 <div>
                   <p className="text-sm text-gray-500">Max</p>
-                  <p className="text-xl sm:text-2xl font-bold text-gray-800 break-all">₹{analytics.priceStats.max.toLocaleString('en-IN')}</p>
+                  <p className="text-xl sm:text-2xl font-bold text-gray-800 dark:text-gray-200 break-all">₹{analytics.priceStats.max.toLocaleString('en-IN')}</p>
                 </div>
               </div>
               <p className="mt-4 text-sm text-gray-600"><span className="font-semibold text-green-700">{analytics.priceStats.discountedCount}</span> listings currently on discount</p>
             </div>
 
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-purple-600 mr-2" /> Bedrooms Distribution</h3>
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-purple-600 mr-2" /> Bedrooms Distribution</h3>
               <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {Object.entries(analytics.bedroomsDistribution).sort((a, b) => Number(a[0]) - Number(b[0])).map(([beds, count]) => (
-                  <div key={beds} className="border border-gray-200 rounded-lg p-4 text-center">
+                  <div key={beds} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 text-center">
                     <p className="text-sm text-gray-500">{beds} bed{Number(beds) === 1 ? '' : 's'}</p>
                     <p className="text-xl font-bold text-purple-700">{count}</p>
                     {/* Simple bar viz */}
@@ -1303,8 +1303,8 @@ export default function AdminDashboard() {
 
           {/* Fraud Activity Timeline - Grouped with Security */}
           {fraudTimeline.length > 0 && (
-            <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 mb-6 border border-white/50 hover:-translate-y-1">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaExclamationTriangle className="text-red-600 mr-2" /> Fraud Activity Timeline</h3>
+            <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 mb-6 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaExclamationTriangle className="text-red-600 mr-2" /> Fraud Activity Timeline</h3>
               <div className="mt-3 flex items-end gap-1 h-20">
                 {fraudTimeline.map((pt, i, arr) => {
                   const max = Math.max(...arr.map(x => x.count || 1));
@@ -1312,7 +1312,7 @@ export default function AdminDashboard() {
                   return (
                     <div key={pt.month} className="flex flex-col items-center" title={`${pt.month}: ${pt.count}`}>
                       <div className="w-3 bg-red-500 rounded-t" style={{ height: `${h}px` }} />
-                      <div className="mt-1 text-[10px] text-gray-500 rotate-0">{pt.month.split('-')[1]}</div>
+                      <div className="mt-1 text-[10px] text-gray-500 dark:text-gray-400 rotate-0">{pt.month.split('-')[1]}</div>
                     </div>
                   );
                 })}
@@ -1328,8 +1328,8 @@ export default function AdminDashboard() {
 
         {/* Market Insights - Extended */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-blue-600 mr-2" /> Market Price Trends</h3>
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-blue-600 mr-2" /> Market Price Trends</h3>
             {analytics.marketInsights.monthlyAvgPrices.length === 0 ? (
               <p className="text-sm text-gray-500">Not enough data yet.</p>
             ) : (
@@ -1337,7 +1337,7 @@ export default function AdminDashboard() {
                 {analytics.marketInsights.monthlyAvgPrices.map(mp => (
                   <div key={mp.month} className="flex items-center justify-between text-sm">
                     <span className="text-gray-600">{mp.month}</span>
-                    <span className="font-semibold text-gray-800">₹{mp.avg.toLocaleString('en-IN')}</span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-200">₹{mp.avg.toLocaleString('en-IN')}</span>
                   </div>
                 ))}
                 {/* Inline spark-bar */}
@@ -1356,14 +1356,14 @@ export default function AdminDashboard() {
               </div>
             )}
           </div>
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Demand by City</h3>
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Demand by City</h3>
             {analytics.marketInsights.demandByCity.length === 0 ? (
               <p className="text-sm text-gray-500">Not enough data yet.</p>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
                 {analytics.marketInsights.demandByCity.map((d, idx) => (
-                  <div key={idx} className="border border-gray-200 rounded-lg p-3 flex items-center justify-between">
+                  <div key={idx} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 flex items-center justify-between">
                     <span className="text-sm text-gray-600">{d.city}</span>
                     <span className="text-base font-bold text-indigo-700">{d.count}</span>
                   </div>
@@ -1411,47 +1411,47 @@ export default function AdminDashboard() {
             <div className="p-2 bg-gradient-to-r from-purple-500 to-pink-500 rounded-lg">
               <FaStar className="text-white text-xl" />
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Analytical Insights</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Analytical Insights</h2>
           </div>
           <span className="text-xs sm:text-sm text-gray-500">(Strategic Decision Support)</span>
         </div>
 
         {/* Performance & Sentiment Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-rose-600 mr-2" /> Top Owners by Rating</h3>
             {analytics.performance.topOwnersByRating.length === 0 ? (
               <p className="text-sm text-gray-500">Not enough data yet.</p>
             ) : (
               <div className="space-y-2">
                 {analytics.performance.topOwnersByRating.map((o, idx) => (
-                  <div key={idx} className="flex items-center justify-between text-sm border-b last:border-b-0 border-gray-100 py-2">
-                    <span className="text-gray-600">{o.ownerName}</span>
-                    <span className="font-semibold text-gray-800">{o.avgRating} ⭐ ({o.listings} listings)</span>
+                  <div key={idx} className="flex items-center justify-between text-sm border-b last:border-b-0 border-gray-100 dark:border-gray-700 py-2">
+                    <span className="text-gray-600 dark:text-gray-400">{o.ownerName}</span>
+                    <span className="font-semibold text-gray-800 dark:text-gray-200">{o.avgRating} ⭐ ({o.listings} listings)</span>
                   </div>
                 ))}
               </div>
             )}
           </div>
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaStar className="text-yellow-500 mr-2" /> Review Sentiment</h3>
             <div className="grid grid-cols-3 gap-4 text-center">
               <div>
-                <p className="text-sm text-gray-500">Positive</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Positive</p>
                 <p className="text-2xl font-bold text-green-600">{analytics.sentiment.positive}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Neutral</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Neutral</p>
                 <p className="text-2xl font-bold text-gray-600">{analytics.sentiment.neutral}</p>
               </div>
               <div>
-                <p className="text-sm text-gray-500">Negative</p>
+                <p className="text-sm text-gray-500 dark:text-gray-400">Negative</p>
                 <p className="text-2xl font-bold text-red-600">{analytics.sentiment.negative}</p>
               </div>
             </div>
             {analytics.sentiment.topWords.length > 0 && (
               <div className="mt-4">
-                <h4 className="text-sm font-semibold text-gray-700 mb-2">Common Words</h4>
+                <h4 className="text-sm font-semibold text-gray-700 dark:text-gray-300 mb-2">Common Words</h4>
                 <div className="flex flex-wrap gap-2">
                   {analytics.sentiment.topWords.map((w, idx) => (
                     <span key={idx} className="text-xs bg-gray-100 text-gray-700 px-2 py-1 rounded-full">{w.word} ({w.count})</span>
@@ -1465,36 +1465,36 @@ export default function AdminDashboard() {
 
       {/* Conversion Funnel & Property Performance */}
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Conversion Funnel</h3>
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-indigo-600 mr-2" /> Conversion Funnel</h3>
           <div className="space-y-3">
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Visitors</span>
-              <span className="font-semibold text-gray-800">{analytics.conversionFunnel.visitors.toLocaleString()}</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Visitors</span>
+              <span className="font-semibold text-gray-800 dark:text-gray-200">{analytics.conversionFunnel.visitors.toLocaleString()}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Registered Users</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Registered Users</span>
               <span className="font-semibold text-blue-600">{analytics.conversionFunnel.registeredUsers.toLocaleString()}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Active Users</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Active Users</span>
               <span className="font-semibold text-green-600">{analytics.conversionFunnel.activeUsers.toLocaleString()}</span>
             </div>
             <div className="flex items-center justify-between">
-              <span className="text-sm text-gray-600">Converted Users</span>
+              <span className="text-sm text-gray-600 dark:text-gray-400">Converted Users</span>
               <span className="font-semibold text-purple-600">{analytics.conversionFunnel.convertedUsers.toLocaleString()}</span>
             </div>
-            <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 rounded-lg">
+            <div className="mt-4 p-3 bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-lg">
               <div className="flex items-center justify-between">
-                <span className="text-sm font-medium text-gray-700">Conversion Rate</span>
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Conversion Rate</span>
                 <span className="text-lg font-bold text-purple-600">{analytics.conversionFunnel.conversionRate}%</span>
               </div>
             </div>
           </div>
         </div>
 
-        <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-          <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaEye className="text-cyan-600 mr-2" /> Top Viewed Properties</h3>
+        <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+          <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaEye className="text-cyan-600 mr-2" /> Top Viewed Properties</h3>
           {analytics.propertyPerformance.topViewedProperties.length === 0 ? (
             <p className="text-sm text-gray-500">No view data available yet.</p>
           ) : (
@@ -1511,8 +1511,8 @@ export default function AdminDashboard() {
 
         {/* Geographic Analytics & Property Types */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaChartLine className="text-emerald-600 mr-2" /> State Distribution</h3>
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaChartLine className="text-emerald-600 mr-2" /> State Distribution</h3>
             {Object.keys(analytics.geographic.stateDistribution).length === 0 ? (
               <p className="text-sm text-gray-500">No geographic data available.</p>
             ) : (
@@ -1538,14 +1538,14 @@ export default function AdminDashboard() {
             )}
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaHome className="text-orange-600 mr-2" /> Property Types</h3>
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaHome className="text-orange-600 mr-2" /> Property Types</h3>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(analytics.propertyTypes)
                 .filter(([type, count]) => count > 0)
                 .sort((a, b) => b[1] - a[1])
                 .map(([type, count]) => (
-                  <div key={type} className="border border-gray-200 rounded-lg p-3 text-center">
+                  <div key={type} className="border border-gray-200 dark:border-gray-700 rounded-lg p-3 text-center">
                     <p className="text-sm text-gray-500 capitalize">{type}</p>
                     <p className="text-xl font-bold text-orange-600">{count}</p>
                     <div className="h-2 bg-gray-100 rounded mt-2">
@@ -1562,8 +1562,8 @@ export default function AdminDashboard() {
 
         {/* Advanced Sentiment & Regional Price Analysis */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-6">
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaStar className="text-pink-600 mr-2" /> Emotion Analysis</h3>
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaStar className="text-pink-600 mr-2" /> Emotion Analysis</h3>
             <div className="grid grid-cols-2 gap-3">
               {Object.entries(analytics.advancedSentiment.emotionBreakdown)
                 .filter(([emotion, count]) => count > 0)
@@ -1575,7 +1575,7 @@ export default function AdminDashboard() {
                   </div>
                 ))}
             </div>
-            <div className="mt-4 p-3 bg-gradient-to-r from-pink-50 to-purple-50 rounded-lg">
+            <div className="mt-4 p-3 bg-gradient-to-r from-pink-50 to-purple-50 dark:from-pink-900/20 dark:to-purple-900/20 rounded-lg">
               <div className="flex items-center justify-between">
                 <span className="text-sm font-medium text-gray-700">Review Quality Score</span>
                 <span className="text-lg font-bold text-pink-600">{analytics.advancedSentiment.reviewQuality}%</span>
@@ -1583,8 +1583,8 @@ export default function AdminDashboard() {
             </div>
           </div>
 
-          <div className="bg-white/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 hover:-translate-y-1">
-            <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center"><FaRupeeSign className="text-teal-600 mr-2" /> Regional Price Analysis</h3>
+          <div className="bg-white/90 dark:bg-gray-800/90 backdrop-blur-sm rounded-xl shadow-xl p-6 hover:shadow-2xl transition-all duration-300 border border-white/50 dark:border-gray-700 hover:-translate-y-1">
+            <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center"><FaRupeeSign className="text-teal-600 mr-2" /> Regional Price Analysis</h3>
             {analytics.geographic.regionalPriceVariation.length === 0 ? (
               <p className="text-sm text-gray-500">No regional price data available.</p>
             ) : (
@@ -1611,13 +1611,13 @@ export default function AdminDashboard() {
             <div className="p-2 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg">
               <FaChartLine className="text-white text-xl" />
             </div>
-            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Quick Actions</h2>
+            <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Quick Actions</h2>
           </div>
           <span className="text-sm text-gray-500 hidden sm:block">(Direct Access to Management Pages)</span>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-4 lg:gap-6">
           <button
-            className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 w-full text-left border border-gray-100 hover:border-blue-200"
+            className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 hover:scale-105 w-full text-left border border-gray-100 dark:border-gray-700 hover:border-blue-200 dark:hover:border-blue-500/50"
             onClick={() => navigate('/admin/management')}
           >
             <div className="flex flex-col items-center text-center space-y-4">
@@ -1625,19 +1625,19 @@ export default function AdminDashboard() {
                 <FaUsers className="text-2xl text-blue-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-1">Manage Users</h3>
-                <p className="text-sm text-gray-600">View and manage user accounts</p>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Manage Users</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">View and manage user accounts</p>
               </div>
             </div>
           </button>
-          <Link to="/admin/reviews" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-yellow-200">
+          <Link to="/admin/reviews" className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 dark:border-gray-700 hover:border-yellow-200 dark:hover:border-yellow-500/50">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="bg-gradient-to-r from-yellow-100 to-yellow-200 p-4 rounded-xl group-hover:from-yellow-200 group-hover:to-yellow-300 transition-all duration-300">
                 <FaStar className="text-2xl text-yellow-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-1">Review Management</h3>
-                <p className="text-sm text-gray-600 mb-2">Approve and manage reviews</p>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Review Management</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Approve and manage reviews</p>
                 {analytics.pendingReviews > 0 && (
                   <span className="inline-block bg-orange-500 text-white text-xs px-2 py-1 rounded-full">
                     {analytics.pendingReviews} pending
@@ -1646,36 +1646,36 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
-          <Link to="/admin/explore" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-green-200">
+          <Link to="/admin/explore" className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 dark:border-gray-700 hover:border-green-200 dark:hover:border-green-500/50">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="bg-gradient-to-r from-green-100 to-green-200 p-4 rounded-xl group-hover:from-green-200 group-hover:to-green-300 transition-all duration-300">
                 <FaHome className="text-2xl text-green-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-1">All Properties</h3>
-                <p className="text-sm text-gray-600">Browse and manage listings</p>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">All Properties</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Browse and manage listings</p>
               </div>
             </div>
           </Link>
-          <Link to="/admin/payments" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-emerald-200">
+          <Link to="/admin/payments" className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 dark:border-gray-700 hover:border-emerald-200 dark:hover:border-emerald-500/50">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="bg-gradient-to-r from-emerald-100 to-emerald-200 p-4 rounded-xl group-hover:from-emerald-200 group-hover:to-emerald-300 transition-all duration-300">
                 <FaRupeeSign className="text-2xl text-emerald-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-1">Payment Dashboard</h3>
-                <p className="text-sm text-gray-600">Manage payments and refunds</p>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Payment Dashboard</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400">Manage payments and refunds</p>
               </div>
             </div>
           </Link>
-          <Link to="/admin/fraudmanagement" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-red-200">
+          <Link to="/admin/fraudmanagement" className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 dark:border-gray-700 hover:border-red-200 dark:hover:border-red-500/50">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="bg-gradient-to-r from-red-100 to-red-200 p-4 rounded-xl group-hover:from-red-200 group-hover:to-red-300 transition-all duration-300">
                 <FaExclamationTriangle className="text-2xl text-red-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-1">Fraud Watch</h3>
-                <p className="text-sm text-gray-600 mb-2">Monitor and manage fraud detections</p>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Fraud Watch</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Monitor and manage fraud detections</p>
                 <div className="text-xs text-gray-500">
                   <span className="font-semibold text-red-600">{fraudStats.suspiciousListings}</span> suspicious •
                   <span className="font-semibold text-red-600 ml-1">{fraudStats.suspectedFakeReviews}</span> fake reviews
@@ -1683,25 +1683,25 @@ export default function AdminDashboard() {
               </div>
             </div>
           </Link>
-          <Link to="/admin/security-moderation" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-indigo-200">
+          <Link to="/admin/security-moderation" className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 dark:border-gray-700 hover:border-indigo-200 dark:hover:border-indigo-500/50">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="bg-gradient-to-r from-indigo-100 to-indigo-200 p-4 rounded-xl group-hover:from-indigo-200 group-hover:to-indigo-300 transition-all duration-300">
                 <FaShieldAlt className="text-2xl text-indigo-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-1">Security Moderation</h3>
-                <p className="text-sm text-gray-600 mb-2">OTP/password lockouts and unlocks</p>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">Security Moderation</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">OTP/password lockouts and unlocks</p>
               </div>
             </div>
           </Link>
-          <Link to="/admin/setu-coins" className="group bg-white rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 hover:border-amber-200">
+          <Link to="/admin/setu-coins" className="group bg-white dark:bg-gray-800 rounded-2xl shadow-lg p-6 hover:shadow-2xl transition-all duration-300 transform hover:scale-105 hover:-translate-y-1 border border-gray-100 dark:border-gray-700 hover:border-amber-200 dark:hover:border-amber-500/50">
             <div className="flex flex-col items-center text-center space-y-4">
               <div className="bg-gradient-to-r from-amber-100 to-amber-200 p-4 rounded-xl group-hover:from-amber-200 group-hover:to-amber-300 transition-all duration-300">
                 <FaCoins className="text-2xl text-amber-600" />
               </div>
               <div>
-                <h3 className="font-semibold text-gray-800 mb-1">SetuCoins Economy</h3>
-                <p className="text-sm text-gray-600 mb-2">Monitor minting and redemption</p>
+                <h3 className="font-semibold text-gray-800 dark:text-gray-200 mb-1">SetuCoins Economy</h3>
+                <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Monitor minting and redemption</p>
               </div>
             </div>
           </Link>
@@ -1714,7 +1714,7 @@ export default function AdminDashboard() {
               <div className="p-2 bg-gradient-to-r from-gray-500 to-slate-500 rounded-lg">
                 <FaChartLine className="text-white text-xl" />
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Detailed Analytics</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Detailed Analytics</h2>
             </div>
             <span className="text-xs sm:text-sm text-gray-500">(Deep Analysis & Historical Data)</span>
           </div>
@@ -1728,7 +1728,7 @@ export default function AdminDashboard() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {analytics.topProperties.map((property) => (
-                  <div key={property._id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={property._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-gray-800 truncate">{property.name}</h4>
                       <span className="text-sm text-yellow-600 font-semibold">
@@ -1754,10 +1754,10 @@ export default function AdminDashboard() {
 
             {/* Watchlist Overview Cards */}
             <div className="grid grid-cols-1 md:grid-cols-3 gap-4 mb-6">
-              <div className="bg-gradient-to-r from-indigo-50 to-blue-50 p-4 rounded-lg border border-indigo-200">
+              <div className="bg-gradient-to-r from-indigo-50 to-blue-50 dark:from-indigo-900/10 dark:to-blue-900/10 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-indigo-600 font-medium">Total Watchlists</p>
+                    <p className="text-sm text-indigo-600 dark:text-indigo-400 font-medium">Total Watchlists</p>
                     <p className="text-2xl font-bold text-indigo-700">{analytics.watchlist.totalWatchlists}</p>
                   </div>
                   <div className="bg-indigo-100 p-3 rounded-full">
@@ -1766,10 +1766,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-purple-50 to-pink-50 p-4 rounded-lg border border-purple-200">
+              <div className="bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/10 dark:to-pink-900/10 p-4 rounded-lg border border-purple-200 dark:border-purple-800/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-purple-600 font-medium">Watched Properties</p>
+                    <p className="text-sm text-purple-600 dark:text-purple-400 font-medium">Watched Properties</p>
                     <p className="text-2xl font-bold text-purple-700">{analytics.watchlist.totalWatchedProperties}</p>
                   </div>
                   <div className="bg-purple-100 p-3 rounded-full">
@@ -1778,10 +1778,10 @@ export default function AdminDashboard() {
                 </div>
               </div>
 
-              <div className="bg-gradient-to-r from-green-50 to-emerald-50 p-4 rounded-lg border border-green-200">
+              <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/10 dark:to-emerald-900/10 p-4 rounded-lg border border-green-200 dark:border-green-800/30">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-sm text-green-600 font-medium">Avg. Properties/Watchlist</p>
+                    <p className="text-sm text-green-600 dark:text-green-400 font-medium">Avg. Properties/Watchlist</p>
                     <p className="text-2xl font-bold text-green-700">
                       {analytics.watchlist.totalWatchlists > 0
                         ? Math.round(analytics.watchlist.totalWatchedProperties / analytics.watchlist.totalWatchlists * 10) / 10
@@ -1799,17 +1799,17 @@ export default function AdminDashboard() {
             {/* Top Watched Properties */}
             {analytics.watchlist.topWatchedProperties.length > 0 && (
               <div>
-                <h4 className="text-lg font-semibold text-gray-700 mb-4">Most Watched Properties</h4>
+                <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Most Watched Properties</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {analytics.watchlist.topWatchedProperties.map((property, index) => (
-                    <div key={property._id} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div key={property._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow dark:bg-gray-800/50">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
                             <span className="text-xs bg-indigo-100 text-indigo-700 px-2 py-1 rounded-full font-medium">
                               #{index + 1}
                             </span>
-                            <h5 className="font-semibold text-gray-800 truncate">{property.name}</h5>
+                            <h5 className="font-semibold text-gray-800 dark:text-gray-200 truncate">{property.name}</h5>
                           </div>
                           <p className="text-sm text-gray-600 mb-1">{property.city}, {property.state}</p>
                           <p className="text-xs text-gray-500">
@@ -1846,8 +1846,8 @@ export default function AdminDashboard() {
             )}
 
             {/* Watchlist Insights */}
-            <div className="mt-6 p-4 bg-gray-50 rounded-lg">
-              <h4 className="text-lg font-semibold text-gray-700 mb-3">Insights</h4>
+            <div className="mt-6 p-4 bg-gray-50 dark:bg-gray-900/50 rounded-lg">
+              <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">Insights</h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
                 <div className="flex items-center gap-2">
                   <div className="w-2 h-2 bg-indigo-500 rounded-full"></div>
@@ -1896,7 +1896,7 @@ export default function AdminDashboard() {
               </h3>
               <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
                 {analytics.recentListings.map((l) => (
-                  <div key={l._id} className="border border-gray-200 rounded-lg p-4">
+                  <div key={l._id} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4">
                     <div className="flex items-center justify-between mb-2">
                       <h4 className="font-semibold text-gray-800 truncate">{l.name}</h4>
                       <span className="text-xs text-gray-500">{l.createdAt ? new Date(l.createdAt).toLocaleDateString() : ''}</span>
@@ -1917,7 +1917,7 @@ export default function AdminDashboard() {
               <div className="p-2 bg-gradient-to-r from-green-500 to-blue-500 rounded-lg">
                 <FaHome className="text-white text-xl" />
               </div>
-              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800">Property Listings</h2>
+              <h2 className="text-2xl lg:text-3xl font-bold text-gray-800 dark:text-white">Property Listings</h2>
             </div>
             <span className="text-xs sm:text-sm text-gray-500">(Recent Activity & Management)</span>
           </div>
@@ -1983,10 +1983,10 @@ export default function AdminDashboard() {
       {/* Reason Modal */}
       {showReasonModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handleReasonSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
+          <form onSubmit={handleReasonSubmit} className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 border border-white/20 dark:border-gray-700 transform animate-scale-in">
             <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaTrash /> Reason for Deletion</h3>
             <textarea
-              className="border rounded p-2 w-full"
+              className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-xl p-4 w-full text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               placeholder="Enter reason for deleting this property"
               value={deleteReason}
               onChange={e => setDeleteReason(e.target.value)}
@@ -1995,8 +1995,8 @@ export default function AdminDashboard() {
             />
             {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setShowReasonModal(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold">Cancel</button>
-              <button type="submit" className="px-4 py-2 rounded bg-red-600 text-white font-semibold">Next</button>
+              <button type="button" onClick={() => setShowReasonModal(false)} className="px-6 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+              <button type="submit" className="px-6 py-2.5 rounded-xl bg-red-600 text-white font-semibold hover:bg-red-700 shadow-lg hover:shadow-red-500/30 transition-all">Next</button>
             </div>
           </form>
         </div>
@@ -2004,11 +2004,11 @@ export default function AdminDashboard() {
       {/* Password Modal */}
       {showPasswordModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <form onSubmit={handlePasswordSubmit} className="bg-white rounded-lg shadow-lg p-6 w-full max-w-xs flex flex-col gap-4">
+          <form onSubmit={handlePasswordSubmit} className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl p-6 sm:p-8 w-full max-w-md flex flex-col gap-6 border border-white/20 dark:border-gray-700 transform animate-scale-in">
             <h3 className="text-lg font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
             <input
               type="password"
-              className="border rounded p-2 w-full"
+              className="border border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-900 rounded-xl p-4 w-full text-gray-800 dark:text-gray-200 focus:ring-2 focus:ring-blue-500 outline-none transition-all"
               placeholder="Enter your password"
               value={deletePassword}
               onChange={e => setDeletePassword(e.target.value)}
@@ -2016,8 +2016,8 @@ export default function AdminDashboard() {
             />
             {deleteError && <div className="text-red-600 text-sm">{deleteError}</div>}
             <div className="flex gap-2 justify-end">
-              <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold">Cancel</button>
-              <button type="submit" className="px-4 py-2 rounded bg-blue-700 text-white font-semibold" disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Confirm & Delete'}</button>
+              <button type="button" onClick={() => setShowPasswordModal(false)} className="px-6 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors">Cancel</button>
+              <button type="submit" className="px-6 py-2.5 rounded-xl bg-blue-700 text-white font-semibold hover:bg-blue-800 shadow-lg hover:shadow-blue-500/30 transition-all" disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Confirm & Delete'}</button>
             </div>
           </form>
         </div>

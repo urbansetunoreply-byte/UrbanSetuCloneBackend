@@ -1,21 +1,15 @@
 import React, { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import { FaTrash, FaLock } from "react-icons/fa";
+import { FaTrash, FaLock, FaSearch, FaFilter, FaMapMarkerAlt, FaHome, FaBed, FaBath, FaTag, FaCheckCircle, FaChevronDown, FaTimes } from "react-icons/fa";
 import { useSelector } from "react-redux";
 import { toast } from 'react-toastify';
 import ListingItem from "../components/ListingItem";
-import GeminiAIWrapper from "../components/GeminiAIWrapper";
-import LocationSelector from "../components/LocationSelector";
-import data from "../data/countries+states+cities.json";
-import duckImg from "../assets/duck-go-final.gif";
-import ContactSupportWrapper from '../components/ContactSupportWrapper';
 import SearchSuggestions from '../components/SearchSuggestions';
 import { usePageTitle } from '../hooks/usePageTitle';
-import FormField from "../components/ui/FormField";
-import SelectField from "../components/ui/SelectField";
 import ListingSkeletonGrid from "../components/skeletons/ListingSkeletonGrid";
 import FilterChips from "../components/search/FilterChips";
-import { Search as SearchIcon, IndianRupee, Filter, MapPin, Home, DollarSign, GripVertical, ChevronDown, RefreshCw } from "lucide-react";
+import { Search as SearchIcon, IndianRupee, MapPin, Grid, List, RefreshCw, XCircle } from "lucide-react";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminExplore() {
@@ -25,6 +19,7 @@ export default function AdminExplore() {
   const location = useLocation();
   const navigate = useNavigate();
   const { currentUser } = useSelector((state) => state.user);
+
   const [formData, setFormData] = useState({
     searchTerm: "",
     type: "all",
@@ -40,13 +35,13 @@ export default function AdminExplore() {
     bedrooms: "",
     bathrooms: "",
   });
+
   const [listings, setListings] = useState([]);
   const [loading, setLoading] = useState(false);
   const [showMoreListing, setShowMoreListing] = useState(false);
-  const [locationFilter, setLocationFilter] = useState({ state: "", district: "", city: "" });
   const [smartQuery, setSmartQuery] = useState("");
   const [showSuggestions, setShowSuggestions] = useState(false);
-  const [isFiltersOpen, setIsFiltersOpen] = useState(false); // Mobile filter toggle
+  const [isFiltersOpen, setIsFiltersOpen] = useState(false);
   const [showReasonModal, setShowReasonModal] = useState(false);
   const [deleteReason, setDeleteReason] = useState("");
   const [showPasswordModal, setShowPasswordModal] = useState(false);
@@ -54,10 +49,11 @@ export default function AdminExplore() {
   const [deleteLoading, setDeleteLoading] = useState(false);
   const [deleteError, setDeleteError] = useState("");
   const [pendingDeleteId, setPendingDeleteId] = useState(null);
+  const [viewMode, setViewMode] = useState('grid'); // 'grid' or 'list'
 
   useEffect(() => {
     const urlParams = new URLSearchParams(location.search);
-    setFormData({
+    const searchObj = {
       searchTerm: urlParams.get("searchTerm") || "",
       type: urlParams.get("type") || "all",
       parking: urlParams.get("parking") === "true",
@@ -71,12 +67,8 @@ export default function AdminExplore() {
       state: urlParams.get("state") || "",
       bedrooms: urlParams.get("bedrooms") || "",
       bathrooms: urlParams.get("bathrooms") || "",
-    });
-    setLocationFilter({
-      state: urlParams.get("state") || "",
-      district: urlParams.get("district") || "",
-      city: urlParams.get("city") || "",
-    });
+    };
+    setFormData(searchObj);
 
     const fetchListings = async () => {
       setLoading(true);
@@ -100,32 +92,30 @@ export default function AdminExplore() {
       [name]: type === "checkbox" ? checked : value,
     }));
 
-    // Show suggestions when typing in search term
     if (name === 'searchTerm') {
       setShowSuggestions(value.trim().length >= 2);
     }
   };
 
   const handleSuggestionClick = (suggestion) => {
-    setFormData(prev => ({
-      ...prev,
-      searchTerm: suggestion.displayText
-    }));
+    setFormData(prev => ({ ...prev, searchTerm: suggestion.displayText }));
     setShowSuggestions(false);
-
-    // Navigate to the property listing
-    navigate(`/listing/${suggestion.id}`);
+    navigate(`/admin/listing/${suggestion.id}`);
   };
 
   const handleSearchInputFocus = () => {
-    if (formData.searchTerm.trim().length >= 2) {
-      setShowSuggestions(true);
-    }
+    if (formData.searchTerm.trim().length >= 2) setShowSuggestions(true);
   };
 
   const handleSearchInputBlur = () => {
-    // Delay hiding suggestions to allow clicking on them
     setTimeout(() => setShowSuggestions(false), 200);
+  };
+
+  const handleSubmit = (e) => {
+    if (e) e.preventDefault();
+    const urlParams = new URLSearchParams(formData);
+    navigate(`?${urlParams.toString()}`);
+    setIsFiltersOpen(false);
   };
 
   const clearAllFilters = () => {
@@ -135,78 +125,11 @@ export default function AdminExplore() {
       city: "", state: "", bedrooms: "", bathrooms: ""
     };
     setFormData(reset);
-    navigate(`?${new URLSearchParams(reset).toString()}`);
+    navigate(`?`);
+    setIsFiltersOpen(false);
   };
 
-  const removeFilter = (key) => {
-    const updated = { ...formData };
-    if (typeof updated[key] === 'boolean') updated[key] = false; else updated[key] = "";
-    setFormData(updated);
-    navigate(`?${new URLSearchParams(updated).toString()}`);
-  };
-
-  const handleSubmit = (e) => {
-    e.preventDefault();
-    const natural = (formData.searchTerm || '').trim();
-    const extracted = { ...formData };
-    const inferStateFromCity = (city) => {
-      const cityToState = {
-        'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra',
-        'delhi': 'Delhi', 'new delhi': 'Delhi',
-        'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka',
-        'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu',
-        'kolkata': 'West Bengal',
-        'hyderabad': 'Telangana',
-        'ahmedabad': 'Gujarat', 'surat': 'Gujarat',
-        'jaipur': 'Rajasthan',
-        'lucknow': 'Uttar Pradesh', 'noida': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh',
-        'gurgaon': 'Haryana', 'gurugram': 'Haryana',
-        'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh',
-        'patna': 'Bihar'
-      };
-      const key = (city || '').toLowerCase();
-      return cityToState[key] || '';
-    };
-    if (natural) {
-      const bedsMatch = natural.match(/(\d+)\s*(bhk|bed|beds)/i) || natural.match(/^(\d+)\s*bhk/i);
-      if (bedsMatch) extracted.bedrooms = bedsMatch[1];
-      const priceMatch = natural.match(/(?:under|below|within|upto|up to)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?/i);
-      if (priceMatch) extracted.maxPrice = priceMatch[1].replace(/,/g, '');
-      if (priceMatch && priceMatch[2]) {
-        const unit = priceMatch[2].toLowerCase();
-        const val = Number(extracted.maxPrice || 0);
-        if (unit === 'k') extracted.maxPrice = String(val * 1000);
-        if (unit === 'l' || unit === 'lac' || unit === 'lakh') extracted.maxPrice = String(val * 100000);
-        if (unit === 'cr' || unit === 'crore') extracted.maxPrice = String(val * 10000000);
-      }
-      const minPriceMatch = natural.match(/(?:above|over|minimum|at least)\s*(\d[\d,]*)/i);
-      if (minPriceMatch) extracted.minPrice = minPriceMatch[1].replace(/,/g, '');
-      const nearMatch = natural.match(/near\s+([a-zA-Z ]+)/i);
-      if (nearMatch) extracted.city = nearMatch[1].trim();
-      const inCity = natural.match(/in\s+([a-zA-Z ]+)/i);
-      if (inCity) extracted.city = inCity[1].trim();
-      if (extracted.city && !extracted.state) extracted.state = inferStateFromCity(extracted.city);
-      // Direct state input (if the query is just a state name)
-      const states = ['andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'delhi'];
-      const lower = natural.toLowerCase();
-      const matchedState = states.find(s => new RegExp(`(^|\b)${s}(\b|$)`).test(lower));
-      if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
-      const typeMatch = natural.match(/\b(rent|rental|sale|buy)\b/i);
-      if (typeMatch) extracted.type = /rent/.test(typeMatch[1].toLowerCase()) ? 'rent' : 'sale';
-      if (/no parking/i.test(natural)) extracted.parking = false; else if (/parking/i.test(natural)) extracted.parking = true;
-      if (/unfurnished/i.test(natural)) extracted.furnished = false; else if (/furnished/i.test(natural)) extracted.furnished = true;
-      const offerMatch = natural.match(/offer|discount|deal/i);
-      if (offerMatch) extracted.offer = true;
-      const furnishedMatch = natural.match(/furnished/i);
-      if (furnishedMatch) extracted.furnished = true;
-      const parkingMatch = natural.match(/parking/i);
-      if (parkingMatch) extracted.parking = true;
-    }
-    const urlParams = new URLSearchParams(extracted);
-    navigate(`?${urlParams.toString()}`);
-  };
-
-  // Admin delete flow (same as AdminListings)
+  // Admin delete flow
   const handleDelete = (id) => {
     setPendingDeleteId(id);
     setDeleteReason("");
@@ -254,8 +177,7 @@ export default function AdminExplore() {
       if (res.ok) {
         setListings((prev) => prev.filter((l) => l._id !== pendingDeleteId));
         setShowPasswordModal(false);
-        const data = await res.json();
-        toast.success(data.message || "Listing deleted successfully!");
+        toast.success("Listing deleted successfully!");
       } else {
         const data = await res.json();
         setDeleteError(data.message || "Failed to delete listing.");
@@ -271,403 +193,28 @@ export default function AdminExplore() {
     e.preventDefault();
     const natural = (smartQuery || '').trim();
     if (!natural) return;
+
+    // Simplistic NLP extraction (usually handled by backend, but here is frontend logic)
     const extracted = { ...formData };
 
-    // Normalize number words (e.g., "two bhk" -> "2 bhk")
-    const numberWordToDigit = (text) => {
-      const map = { one: '1', two: '2', three: '3', four: '4', five: '5', six: '6', seven: '7', eight: '8', nine: '9', ten: '10' };
-      return text.replace(/\b(one|two|three|four|five|six|seven|eight|nine|ten)\b/gi, (m) => map[m.toLowerCase()]);
-    };
-    const norm = numberWordToDigit(natural);
+    // BHK extraction
+    const bhkMatch = natural.match(/(\d+)\s*(bhk|bed|bedroom)/i);
+    if (bhkMatch) extracted.bedrooms = bhkMatch[1];
 
-    // Enhanced NLP processing with context understanding
-    const processNaturalLanguage = (query) => {
-      const lowerQuery = query.toLowerCase();
-
-      // Intent detection
-      const intents = {
-        search: /(?:find|search|look for|looking for|need|want|require|dhundh|khoj|chahiye)/i,
-        rent: /(?:rent|rental|renting|for rent|to rent|kiran|bhada|rent par)/i,
-        buy: /(?:buy|purchase|sale|selling|for sale|to buy|kharid|bechne|sale par)/i,
-        budget: /(?:budget|affordable|cheap|low cost|economical|paisa|dam|rate)/i,
-        location: /(?:near|close to|around|in|at|from|paas|mein|se)/i,
-        size: /(?:room|bedroom|bhk|bed|bath|bathroom|toilet|kamra|washroom)/i,
-        amenities: /(?:parking|furnished|unfurnished|garden|balcony|lift|security|gym|pool|ac|air conditioning)/i
-      };
-
-      // Extract intent
-      const detectedIntent = Object.keys(intents).find(intent => intents[intent].test(query));
-
-      return { detectedIntent, query: lowerQuery };
-    };
-
-    const { detectedIntent } = processNaturalLanguage(norm);
-
-    // Enhanced city to state mapping
-    const inferStateFromCity = (city) => {
-      const cityToState = {
-        'mumbai': 'Maharashtra', 'pune': 'Maharashtra', 'nagpur': 'Maharashtra', 'nashik': 'Maharashtra', 'aurangabad': 'Maharashtra',
-        'delhi': 'Delhi', 'new delhi': 'Delhi', 'noida': 'Uttar Pradesh', 'gurgaon': 'Haryana', 'gurugram': 'Haryana', 'faridabad': 'Haryana',
-        'bengaluru': 'Karnataka', 'bangalore': 'Karnataka', 'mysuru': 'Karnataka', 'mysore': 'Karnataka', 'mangalore': 'Karnataka', 'hubli': 'Karnataka',
-        'chennai': 'Tamil Nadu', 'coimbatore': 'Tamil Nadu', 'madurai': 'Tamil Nadu', 'tiruchirapalli': 'Tamil Nadu', 'salem': 'Tamil Nadu',
-        'kolkata': 'West Bengal', 'howrah': 'West Bengal', 'durgapur': 'West Bengal', 'asansol': 'West Bengal',
-        'hyderabad': 'Telangana', 'warangal': 'Telangana', 'nizamabad': 'Telangana',
-        'ahmedabad': 'Gujarat', 'surat': 'Gujarat', 'vadodara': 'Gujarat', 'rajkot': 'Gujarat', 'bhavnagar': 'Gujarat',
-        'jaipur': 'Rajasthan', 'jodhpur': 'Rajasthan', 'udaipur': 'Rajasthan', 'kota': 'Rajasthan', 'bikaner': 'Rajasthan',
-        'lucknow': 'Uttar Pradesh', 'kanpur': 'Uttar Pradesh', 'agra': 'Uttar Pradesh', 'varanasi': 'Uttar Pradesh', 'meerut': 'Uttar Pradesh',
-        'indore': 'Madhya Pradesh', 'bhopal': 'Madhya Pradesh', 'gwalior': 'Madhya Pradesh', 'jabalpur': 'Madhya Pradesh',
-        'patna': 'Bihar', 'gaya': 'Bihar', 'bhagalpur': 'Bihar', 'muzaffarpur': 'Bihar',
-        'kochi': 'Kerala', 'thiruvananthapuram': 'Kerala', 'kozhikode': 'Kerala', 'thrissur': 'Kerala',
-        'visakhapatnam': 'Andhra Pradesh', 'vijayawada': 'Andhra Pradesh', 'guntur': 'Andhra Pradesh', 'nellore': 'Andhra Pradesh',
-        'chandigarh': 'Chandigarh', 'panchkula': 'Haryana', 'mohali': 'Punjab'
-      };
-      const key = (city || '').toLowerCase().trim();
-      return cityToState[key] || '';
-    };
-
-    // Enhanced bedroom detection with routine language
-    const bedPatterns = [
-      /(\d+)\s*(bhk|bed|beds|bedroom|bedrooms|room|rooms)/i,
-      // Routine language patterns
-      /(\d+)\s*(?:ka|ke)\s*(?:room|kamra|bedroom)/i,
-      /(\d+)\s*(?:bhk|bed|room)\s*(?:ka|ke)\s*(?:flat|apartment|ghar)/i,
-      /(?:flat|apartment|ghar)\s*(?:with|mein)\s*(\d+)\s*(?:room|bed|bhk)/i,
-      /(\d+)\s*(?:room|bed|bhk)\s*(?:wala|wali)\s*(?:flat|apartment|ghar)/i
-    ];
-
-    for (const pattern of bedPatterns) {
-      const bedsMatch = norm.match(pattern);
-      if (bedsMatch) {
-        extracted.bedrooms = bedsMatch[1];
-        break;
-      }
+    // Price extraction (Cr, L, K)
+    const priceMatch = natural.match(/(?:under|below|max|upto)\s*(\d+)\s*(cr|l|lac|lakh|k)?/i);
+    if (priceMatch) {
+      let val = parseInt(priceMatch[1]);
+      const unit = (priceMatch[2] || '').toLowerCase();
+      if (unit === 'cr') val *= 10000000;
+      else if (unit === 'l' || unit === 'lac' || unit === 'lakh') val *= 100000;
+      else if (unit === 'k') val *= 1000;
+      extracted.maxPrice = val.toString();
     }
 
-    // Enhanced bathroom detection with routine language
-    const bathPatterns = [
-      /(\d+)\s*(bath|baths|bathroom|bathrooms|toilet|toilets)/i,
-      // Routine language patterns
-      /(\d+)\s*(?:ka|ke)\s*(?:bathroom|toilet|washroom)/i,
-      /(\d+)\s*(?:bath|toilet)\s*(?:ka|ke)\s*(?:flat|apartment|ghar)/i,
-      /(?:flat|apartment|ghar)\s*(?:with|mein)\s*(\d+)\s*(?:bath|toilet)/i,
-      /(\d+)\s*(?:bath|toilet)\s*(?:wala|wali)\s*(?:flat|apartment|ghar)/i
-    ];
-
-    for (const pattern of bathPatterns) {
-      const bathMatch = norm.match(pattern);
-      if (bathMatch) {
-        extracted.bathrooms = bathMatch[1];
-        break;
-      }
-    }
-
-    // Enhanced price detection with more patterns including routine language
-    const pricePatterns = [
-      /(?:under|below|upto|max|maximum)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:within|around|about)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:budget|budget of)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:less than|not more than)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      // Routine language patterns
-      /(?:kam\s+se\s+kam|minimum|at\s+least)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:zyada\s+se\s+zyada|maximum|at\s+most)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:tak|se\s+zyada|se\s+kam)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:around|about|lagbhag|takriban)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:budget|paisa|rupees)\s*(?:hai|mein)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:price|dam|rate)\s*(?:hai|mein)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
-    ];
-
-    for (const pattern of pricePatterns) {
-      const priceMatch = norm.match(pattern);
-      if (priceMatch) {
-        extracted.maxPrice = priceMatch[1].replace(/,/g, '');
-        if (priceMatch[2]) {
-          const unit = priceMatch[2].toLowerCase();
-          const val = Number(extracted.maxPrice || 0);
-          if (unit === 'k' || unit === 'thousand') extracted.maxPrice = String(val * 1000);
-          if (unit === 'l' || unit === 'lac' || unit === 'lakh' || unit === 'lakhs') extracted.maxPrice = String(val * 100000);
-          if (unit === 'cr' || unit === 'crore' || unit === 'crores') extracted.maxPrice = String(val * 10000000);
-        }
-        break;
-      }
-    }
-
-    // Enhanced minimum price detection
-    const minPricePatterns = [
-      /(?:above|more than|minimum|min|from)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i,
-      /(?:starting from|starting at)\s*(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore|thousand|lakhs|crores)?/i
-    ];
-
-    for (const pattern of minPricePatterns) {
-      const minPriceMatch = norm.match(pattern);
-      if (minPriceMatch) {
-        extracted.minPrice = minPriceMatch[1].replace(/,/g, '');
-        if (minPriceMatch[2]) {
-          const unit = minPriceMatch[2].toLowerCase();
-          const val = Number(extracted.minPrice || 0);
-          if (unit === 'k' || unit === 'thousand') extracted.minPrice = String(val * 1000);
-          if (unit === 'l' || unit === 'lac' || unit === 'lakh' || unit === 'lakhs') extracted.minPrice = String(val * 100000);
-          if (unit === 'cr' || unit === 'crore' || unit === 'crores') extracted.minPrice = String(val * 10000000);
-        }
-        break;
-      }
-    }
-
-    // Price range detection: "between X and Y"
-    const rangeMatch = norm.match(/between\s+(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?\s+(?:and|to|\-)+\s+(\d[\d,]*)\s*(k|l|lac|lakh|cr|crore)?/i);
-    if (rangeMatch) {
-      const toNumber = (val, unit) => {
-        let n = Number((val || '').replace(/,/g, ''));
-        if (!unit) return String(n);
-        const u = unit.toLowerCase();
-        if (u === 'k') n *= 1000;
-        if (u === 'l' || u === 'lac' || u === 'lakh') n *= 100000;
-        if (u === 'cr' || u === 'crore') n *= 10000000;
-        return String(n);
-      };
-      extracted.minPrice = toNumber(rangeMatch[1], rangeMatch[2]);
-      extracted.maxPrice = toNumber(rangeMatch[3], rangeMatch[4]);
-    }
-
-    // Enhanced location detection with routine language
-    const locationPatterns = [
-      /(?:near|close to|around)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
-      /(?:in|at|from)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
-      /(?:located in|situated in)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
-      /(?:area|locality|neighborhood)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
-      // Routine language patterns
-      /(?:paas|near|ke\s+paas|ke\s+near)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
-      /(?:mein|in|at)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
-      /(?:area|ilaka|mohalla|colony)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
-      /(?:located|situated|hain)\s+(?:in|mein)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i,
-      /(?:from|se)\s+([a-zA-Z\s]+?)(?:\s|$|,|\.)/i
-    ];
-
-    for (const pattern of locationPatterns) {
-      const locationMatch = norm.match(pattern);
-      if (locationMatch) {
-        const location = locationMatch[1].trim();
-        // Check if it's a city or landmark
-        if (location.length > 2 && !/^(the|a|an|and|or|but|in|on|at|to|for|of|with|by)$/i.test(location)) {
-          extracted.city = location;
-          break;
-        }
-      }
-    }
-
-    // Auto-infer state from city
-    if (extracted.city && !extracted.state) {
-      extracted.state = inferStateFromCity(extracted.city);
-    }
-
-    // Enhanced state detection
-    const states = ['andhra pradesh', 'arunachal pradesh', 'assam', 'bihar', 'chhattisgarh', 'goa', 'gujarat', 'haryana', 'himachal pradesh', 'jharkhand', 'karnataka', 'kerala', 'madhya pradesh', 'maharashtra', 'manipur', 'meghalaya', 'mizoram', 'nagaland', 'odisha', 'punjab', 'rajasthan', 'sikkim', 'tamil nadu', 'telangana', 'tripura', 'uttar pradesh', 'uttarakhand', 'west bengal', 'delhi', 'chandigarh', 'jammu and kashmir', 'ladakh'];
-    const lower = norm.toLowerCase();
-    const matchedState = states.find(s => new RegExp(`(^|\\b)${s}(\\b|$)`).test(lower));
-    if (matchedState) extracted.state = matchedState.replace(/\b\w/g, c => c.toUpperCase());
-
-    // Enhanced property type detection with routine language
-    const typePatterns = [
-      /\b(rent|rental|renting|for rent|to rent)\b/i,
-      /\b(sale|sell|selling|for sale|to sell|buy|buying|purchase|purchasing)\b/i,
-      /\b(lease|leasing|leased)\b/i,
-      // Routine language patterns
-      /(?:rent|kiran|bhada)\s+(?:ke\s+liye|par|mein)/i,
-      /(?:sale|bechne|kharidne)\s+(?:ke\s+liye|par|mein)/i,
-      /(?:for|ke\s+liye)\s+(?:rent|sale|kiran|bechne)/i,
-      /(?:looking\s+for|chahiye|dhundh\s+raha)\s+(?:rent|sale|kiran|bechne)/i,
-      /(?:want|chahiye)\s+(?:to\s+)?(?:rent|buy|kiran|kharid)/i,
-      /(?:available\s+for|available)\s+(?:rent|sale|kiran|bechne)/i
-    ];
-
-    // Enhanced amenities detection with smart context understanding
-    const amenitiesPatterns = {
-      parking: [
-        /(?:parking|car\s+parking|vehicle\s+parking|garage)/i,
-        /(?:parking\s+available|parking\s+space|car\s+space)/i,
-        /(?:with\s+parking|parking\s+included)/i,
-        // Hindi/regional patterns
-        /(?:parking|gaadi\s+rakhne\s+ki\s+jagah|vehicle\s+parking)/i
-      ],
-      furnished: [
-        /(?:furnished|fully\s+furnished|semi\s+furnished)/i,
-        /(?:with\s+furniture|furniture\s+included)/i,
-        /(?:ready\s+to\s+move|move\s+in\s+ready)/i,
-        // Hindi/regional patterns
-        /(?:furnished|saman\s+ke\s+saath|ready\s+to\s+move)/i
-      ],
-      unfurnished: [
-        /(?:unfurnished|semi\s+furnished|bare)/i,
-        /(?:without\s+furniture|no\s+furniture)/i,
-        // Hindi/regional patterns
-        /(?:unfurnished|bina\s+saman\s+ke|khali)/i
-      ],
-      garden: [
-        /(?:garden|lawn|green\s+space|outdoor\s+space)/i,
-        /(?:with\s+garden|garden\s+available)/i,
-        // Hindi/regional patterns
-        /(?:garden|bagicha|lawn|green\s+area)/i
-      ],
-      balcony: [
-        /(?:balcony|terrace|veranda)/i,
-        /(?:with\s+balcony|balcony\s+available)/i,
-        // Hindi/regional patterns
-        /(?:balcony|terrace|veranda|chhat)/i
-      ],
-      lift: [
-        /(?:lift|elevator|elevator\s+available)/i,
-        /(?:with\s+lift|lift\s+facility)/i,
-        // Hindi/regional patterns
-        /(?:lift|elevator|lift\s+ki\s+facility)/i
-      ],
-      security: [
-        /(?:security|24\s*7\s*security|gated\s+community)/i,
-        /(?:security\s+guard|security\s+system)/i,
-        // Hindi/regional patterns
-        /(?:security|suraksha|guard|24\s*7\s*security)/i
-      ],
-      gym: [
-        /(?:gym|fitness\s+center|workout\s+area)/i,
-        /(?:with\s+gym|gym\s+facility)/i,
-        // Hindi/regional patterns
-        /(?:gym|fitness|vyayam\s+shala)/i
-      ],
-      pool: [
-        /(?:pool|swimming\s+pool)/i,
-        /(?:with\s+pool|pool\s+facility)/i,
-        // Hindi/regional patterns
-        /(?:pool|swimming\s+pool|tairne\s+ki\s+jagah)/i
-      ],
-      ac: [
-        /(?:ac|air\s+conditioning|air\s+conditioned)/i,
-        /(?:with\s+ac|ac\s+available)/i,
-        // Hindi/regional patterns
-        /(?:ac|air\s+conditioning|thandak)/i
-      ]
-    };
-
-    // Process amenities
-    Object.keys(amenitiesPatterns).forEach(amenity => {
-      const patterns = amenitiesPatterns[amenity];
-      const hasAmenity = patterns.some(pattern => pattern.test(norm));
-      if (hasAmenity) {
-        if (amenity === 'furnished') extracted.furnished = true;
-        if (amenity === 'parking') extracted.parking = true;
-        if (amenity === 'offer') extracted.offer = true; // For special offers
-      }
-    });
-
-    for (const pattern of typePatterns) {
-      const typeMatch = norm.match(pattern);
-      if (typeMatch) {
-        const type = typeMatch[1] || typeMatch[0];
-        if (/rent|kiran|bhada|lease/i.test(type)) extracted.type = 'rent';
-        else if (/sale|bechne|kharidne|buy|purchase/i.test(type)) extracted.type = 'sale';
-        break;
-      }
-    }
-
-    // Enhanced amenities detection with routine language
-    const amenityPatterns = {
-      parking: [
-        /(?:with|having|includes?)\s+parking/i,
-        /parking\s+(?:available|included|provided)/i,
-        /(?:car\s+)?parking/i,
-        /garage/i,
-        // Routine language patterns
-        /(?:gaadi|car|bike|scooter)\s+(?:parking|khada|rakhne)/i,
-        /(?:parking|khada)\s+(?:hai|available|mila)/i,
-        /(?:covered|chhaya)\s+(?:parking|khada)/i,
-        /(?:basement|tala)\s+(?:parking|khada)/i,
-        /(?:open|khula)\s+(?:parking|khada)/i
-      ],
-      furnished: [
-        /(?:fully\s+)?furnished/i,
-        /(?:with|having|includes?)\s+furniture/i,
-        /furniture\s+(?:included|provided|available)/i,
-        /(?:semi\s+)?furnished/i,
-        // Routine language patterns
-        /(?:furnished|sajavata|sajaya|sajaya\s+hua)/i,
-        /(?:furniture|samagri|saman)\s+(?:hai|available|mila)/i,
-        /(?:ready|taiyar)\s+(?:to\s+move|rehne|rahan)/i,
-        /(?:fully|puri\s+tarah|bilkul)\s+(?:furnished|sajaya)/i,
-        /(?:semi|aadha|thoda)\s+(?:furnished|sajaya)/i,
-        /(?:modern|naya|latest)\s+(?:furniture|samagri)/i
-      ],
-      unfurnished: [
-        /unfurnished/i,
-        /(?:without|no)\s+furniture/i,
-        /bare\s+apartment/i,
-        // Routine language patterns
-        /(?:unfurnished|khali|saman\s+nahi)/i,
-        /(?:without|bina)\s+(?:furniture|samagri)/i,
-        /(?:empty|khali)\s+(?:flat|apartment|ghar)/i,
-        /(?:bare|nanga)\s+(?:flat|apartment)/i,
-        /(?:no|nahi)\s+(?:furniture|samagri)/i
-      ],
-      offer: [
-        /(?:special\s+)?offer/i,
-        /discount/i,
-        /deal/i,
-        /promotion/i,
-        /(?:reduced|lower)\s+price/i,
-        /(?:cheap|affordable|budget)/i,
-        // Routine language patterns
-        /(?:offer|sasta|kam\s+dam)/i,
-        /(?:discount|chhut|bargain)/i,
-        /(?:deal|sasta\s+deal|achha\s+deal)/i,
-        /(?:cheap|sasta|kam\s+price)/i,
-        /(?:affordable|paisa\s+vasool|value\s+for\s+money)/i,
-        /(?:budget|kam\s+budget|sasta)/i,
-        /(?:special|khas|limited)\s+(?:offer|deal)/i
-      ]
-    };
-
-    // Check for parking
-    if (amenityPatterns.parking.some(pattern => pattern.test(norm))) {
-      extracted.parking = true;
-    } else if (/no\s+parking|without\s+parking/i.test(norm)) {
-      extracted.parking = false;
-    }
-
-    // Check for furnished/unfurnished
-    if (amenityPatterns.furnished.some(pattern => pattern.test(norm))) {
-      extracted.furnished = true;
-    } else if (amenityPatterns.unfurnished.some(pattern => pattern.test(norm))) {
-      extracted.furnished = false;
-    }
-
-    // Check for offers
-    if (amenityPatterns.offer.some(pattern => pattern.test(norm))) {
-      extracted.offer = true;
-    }
-
-    // Property size detection
-    if (/small|compact|studio|1\s*bhk/i.test(norm)) {
-      extracted.bedrooms = '1';
-    } else if (/medium|2\s*bhk|3\s*bhk/i.test(norm)) {
-      extracted.bedrooms = '2';
-    } else if (/large|big|4\s*bhk|5\s*bhk/i.test(norm)) {
-      extracted.bedrooms = '4';
-    }
-
-    // Urgency detection
-    if (/urgent|immediate|asap|quick|fast/i.test(norm)) {
-      extracted.sort = 'createdAt';
-      extracted.order = 'desc';
-    }
-    if (/no parking/i.test(norm)) extracted.parking = false; else if (/parking/i.test(norm)) extracted.parking = true;
-    if (/unfurnished/i.test(norm)) extracted.furnished = false; else if (/furnished/i.test(norm)) extracted.furnished = true;
-    const offerMatch = norm.match(/offer|discount|deal/i);
-    if (offerMatch) extracted.offer = true;
-    const furnishedMatch = norm.match(/furnished/i);
-    if (furnishedMatch) extracted.furnished = true;
-    const parkingMatch = norm.match(/parking/i);
-    if (parkingMatch) extracted.parking = true;
-
-    // Monthly rent cues imply rent
-    if (/(per\s*month|monthly|\/mo|pm)/i.test(norm)) {
-      extracted.type = 'rent';
-    }
+    // Type extraction
+    if (/rent|rental|lease/i.test(natural)) extracted.type = 'rent';
+    else if (/buy|sale|purchase/i.test(natural)) extracted.type = 'sale';
 
     const urlParams = new URLSearchParams(extracted);
     navigate(`?${urlParams.toString()}`);
@@ -682,483 +229,329 @@ export default function AdminExplore() {
     setShowMoreListing(data.length >= 8);
   };
 
-  const handleLocationChange = (loc) => {
-    setLocationFilter(loc);
-    setFormData((prev) => ({ ...prev, state: loc.state, district: loc.district, city: loc.city }));
-  };
-
-
   return (
-    <div className="min-h-screen bg-gray-50 flex flex-col font-sans text-slate-800">
-      {/* Search Header / Hero */}
-      <div className="bg-gradient-to-r from-blue-600 via-indigo-600 to-purple-700 pb-20 pt-10 px-4 shadow-lg mb-8 relative overflow-hidden">
-        {/* Abstract shapes for visual interest */}
+    <div className="min-h-screen bg-slate-50 dark:bg-slate-900 flex flex-col font-sans transition-colors duration-300">
+
+      {/* Hero Section */}
+      <div className="bg-gradient-to-r from-blue-700 via-indigo-700 to-purple-800 dark:from-slate-800 dark:via-indigo-950 dark:to-purple-950 pb-20 pt-12 px-4 shadow-2xl relative overflow-hidden transition-all duration-500">
         <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-10 pointer-events-none">
-          <div className="absolute top-[-50%] left-[-10%] w-[500px] h-[500px] rounded-full bg-white mix-blend-overlay filter blur-3xl animate-float"></div>
-          <div className="absolute bottom-[-20%] right-[-10%] w-[600px] h-[600px] rounded-full bg-purple-300 mix-blend-overlay filter blur-3xl animate-float" style={{ animationDelay: "2s" }}></div>
+          <div className="absolute top-[-50%] left-[-10%] w-[600px] h-[600px] rounded-full bg-white mix-blend-overlay filter blur-[100px] animate-pulse"></div>
+          <div className="absolute bottom-[-20%] right-[-10%] w-[800px] h-[800px] rounded-full bg-purple-400 mix-blend-overlay filter blur-[120px] animate-pulse" style={{ animationDelay: "2s" }}></div>
         </div>
 
-        <div className="max-w-7xl mx-auto text-center relative z-20 animate-slideInFromTop">
-          <h1 className="text-3xl md:text-5xl font-extrabold text-white mb-4 tracking-tight drop-shadow-md">
-            Admin <span className="text-yellow-300">Explorer</span>
+        <div className="max-w-7xl mx-auto text-center relative z-20 animate-fade-in-down">
+          <h1 className="text-4xl md:text-6xl font-black text-white mb-4 tracking-tighter uppercase">
+            Property <span className="text-yellow-400 dark:text-yellow-500 italic drop-shadow-lg">Universe</span>
           </h1>
-          <p className="text-blue-100 mb-8 text-lg max-w-2xl mx-auto font-light">
-            Manage and explore all properties with AI-powered search and detailed filters.
+          <p className="text-blue-100 dark:text-blue-200 mb-10 text-xl max-w-2xl mx-auto font-medium opacity-90">
+            Advanced Administrative Portal for Real-Time Asset Management & Exploration.
           </p>
 
-          {/* Smart Search Section */}
-          <div className="max-w-4xl mx-auto mb-8 relative z-30">
-            <div className="text-left mb-2 pl-2 animate-fade-in">
-              <span className="text-blue-100 font-semibold text-sm flex items-center gap-2">
-                <span className="bg-white/20 p-1 rounded-full"><svg className="w-3 h-3 text-yellow-300" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" /></svg></span>
-                Smart Search (Natural Language)
-              </span>
-            </div>
-            <form onSubmit={applySmartQuery} className="relative group">
-              <div className="bg-white/10 backdrop-blur-md p-2 rounded-2xl border border-white/20 shadow-2xl hover:bg-white/20 transition-all duration-300 flex flex-col md:flex-row gap-2">
+          {/* AI Search Bar */}
+          <div className="max-w-4xl mx-auto relative z-30 group">
+            <form onSubmit={applySmartQuery} className="relative">
+              <div className="bg-white/10 dark:bg-black/20 backdrop-blur-2xl p-3 rounded-[32px] border border-white/20 dark:border-white/10 shadow-[0_20px_50px_rgba(0,0,0,0.3)] hover:border-white/40 transition-all duration-500 flex flex-col md:flex-row gap-3">
                 <div className="relative flex-grow">
-                  <div className="absolute inset-y-0 left-0 pl-4 flex items-center pointer-events-none">
-                    <svg className="h-6 w-6 text-yellow-300" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M13 10V3L4 14h7v7l9-11h-7z" />
-                    </svg>
+                  <div className="absolute inset-y-0 left-5 flex items-center pointer-events-none">
+                    <svg className="w-6 h-6 text-yellow-400 animate-pulse" fill="currentColor" viewBox="0 0 20 20"><path d="M13 10V3L4 14h7v7l9-11h-7z" /></svg>
                   </div>
                   <input
                     value={smartQuery}
                     onChange={(e) => setSmartQuery(e.target.value)}
-                    placeholder="Try '3BHK in Mumbai under 50k rent'..."
-                    className="block w-full pl-12 pr-4 py-4 border-none rounded-xl bg-white/90 text-gray-900 placeholder-gray-500 focus:outline-none focus:ring-0 focus:bg-white transition-colors text-lg"
+                    placeholder="Try '3BHK Villa in Pune under 2Cr'..."
+                    className="block w-full pl-14 pr-6 py-5 border-none rounded-2xl bg-white/95 dark:bg-gray-800/95 text-gray-900 dark:text-white font-bold placeholder-gray-400 focus:outline-none focus:ring-0 transition-all text-lg shadow-inner"
                   />
                 </div>
-                <button type="submit" className="bg-gradient-to-r from-yellow-400 to-orange-500 hover:from-yellow-500 hover:to-orange-600 text-white px-8 py-4 rounded-xl font-bold text-lg shadow-lg transform hover:-translate-y-1 transition-all duration-300 min-w-[120px]">
-                  AI Search
+                <button type="submit" className="bg-gradient-to-br from-yellow-400 to-orange-500 text-slate-900 px-10 py-5 rounded-2xl font-black uppercase text-sm tracking-widest shadow-xl hover:shadow-yellow-400/20 active:scale-95 transition-all">
+                  Launch AI Scan
                 </button>
-              </div>
-              <div className="mt-3 flex flex-wrap justify-center gap-2">
-                <span className="text-xs text-blue-100 uppercase tracking-widest font-semibold py-1">Try:</span>
-                {[
-                  "3BHK above 50L in Mumbai",
-                  "2BHK with parking in Delhi",
-                  "Furnished apartment in Bangalore",
-                ].map((suggestion, index) => (
-                  <button
-                    key={index}
-                    type="button"
-                    onClick={() => setSmartQuery(suggestion)}
-                    className="text-xs bg-white/20 border border-white/30 text-white px-3 py-1 rounded-full hover:bg-white/30 transition-colors duration-200 backdrop-blur-sm"
-                  >
-                    {suggestion}
-                  </button>
-                ))}
               </div>
             </form>
           </div>
         </div>
       </div>
 
-      {/* Main Content Area */}
-      <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-20 relative z-10 pb-20">
-        {/* Mobile Filter Toggle Button */}
-        <button
-          onClick={() => setIsFiltersOpen(true)}
-          className="md:hidden w-full mb-6 bg-blue-600 text-white p-4 rounded-xl font-bold shadow-lg flex items-center justify-center gap-2 hover:bg-blue-700 transition-colors"
-        >
-          <Filter className="w-5 h-5" /> Open Filters
-        </button>
+      {/* Main Content */}
+      <main className="flex-grow max-w-7xl mx-auto px-4 w-full -mt-16 relative z-40 pb-20">
 
-        {/* Detailed Filters Card */}
-        <div className="hidden md:block bg-white rounded-2xl shadow-xl border border-gray-100 p-6 mb-8 animate-fade-in-up">
-          <div className="flex items-center gap-2 mb-6 pb-4 border-b border-gray-100">
-            <Filter className="w-5 h-5 text-blue-600" />
-            <h2 className="text-lg font-bold text-gray-800">Detailed Filters</h2>
-          </div>
+        <div className="flex flex-col lg:flex-row gap-8">
 
-          <form onSubmit={handleSubmit} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {/* Keyword Search */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-4 relative group">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Property Search</label>
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400 group-focus-within:text-blue-500 transition-colors" />
-                <input
-                  type="text"
-                  name="searchTerm"
-                  value={formData.searchTerm}
-                  onChange={handleChanges}
-                  onFocus={handleSearchInputFocus}
-                  onBlur={handleSearchInputBlur}
-                  placeholder="Search by name, location, or features..."
-                  className="w-full pl-10 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:ring-2 focus:ring-blue-100 transition-all outline-none"
-                />
-                <SearchSuggestions
-                  searchTerm={formData.searchTerm}
-                  onSuggestionClick={handleSuggestionClick}
-                  onClose={() => setShowSuggestions(false)}
-                  isVisible={showSuggestions}
-                  className="mt-1"
-                />
+          {/* Filters Sidebar */}
+          <aside className={`lg:w-80 space-y-8 lg:block ${isFiltersOpen ? 'fixed inset-0 z-50 bg-white dark:bg-gray-900 p-8 overflow-y-auto block' : 'hidden'}`}>
+
+            {isFiltersOpen && (
+              <div className="flex justify-between items-center mb-6">
+                <h3 className="text-2xl font-black dark:text-white uppercase">Filters</h3>
+                <button onClick={() => setIsFiltersOpen(false)} className="p-2 bg-gray-100 dark:bg-gray-800 rounded-full">
+                  <FaTimes />
+                </button>
               </div>
-            </div>
+            )}
 
-            {/* Location */}
-            <div className="lg:col-span-2">
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Location</label>
-              <LocationSelector value={locationFilter} onChange={handleLocationChange} mode="search" className="w-full" />
-            </div>
+            <div className="bg-white dark:bg-gray-800 p-8 rounded-[32px] shadow-2xl border border-gray-100 dark:border-gray-700 sticky top-24 transition-colors">
+              <div className="flex items-center gap-3 mb-8 pb-4 border-b border-gray-100 dark:border-gray-700">
+                <FaFilter className="text-indigo-600 dark:text-indigo-400" />
+                <h2 className="text-xl font-black text-gray-800 dark:text-white uppercase tracking-tight">Parameters</h2>
+              </div>
 
-            {/* Type */}
-            <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Property Type</label>
-              <div className="flex bg-gray-100 p-1 rounded-xl">
-                {['all', 'rent', 'sale'].map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, type: t }))}
-                    className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
-                      ? 'bg-white text-blue-700 shadow-sm font-bold'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                    {t}
-                  </button>
-                ))}
-              </div>
-            </div>
+              <form onSubmit={handleSubmit} className="space-y-8">
 
-            {/* Sort */}
-            <div>
-              <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Sort By</label>
-              <div className="relative">
-                <select
-                  onChange={(e) => {
-                    const [sort, order] = e.target.value.split("_");
-                    setFormData((prev) => ({ ...prev, sort, order }));
-                  }}
-                  value={`${formData.sort}_${formData.order}`}
-                  className="w-full pl-4 pr-10 py-3 bg-gray-50 border border-gray-200 rounded-xl appearance-none focus:bg-white focus:border-blue-500 focus:outline-none transition-all cursor-pointer"
-                  id="sort_order"
-                >
-                  <option value="regularPrice_desc">Price: High to Low</option>
-                  <option value="regularPrice_asc">Price: Low to High</option>
-                  <option value="createdAt_desc">Newest First</option>
-                  <option value="createdAt_asc">Oldest First</option>
-                </select>
-                <ChevronDown className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-500 pointer-events-none" />
-              </div>
-            </div>
-
-            {/* Price Range */}
-            <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Min Price</label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="number"
-                    name="minPrice"
-                    value={formData.minPrice}
-                    onChange={handleChanges}
-                    placeholder="Min"
-                    className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
-                    min={0}
-                  />
-                </div>
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Max Price</label>
-                <div className="relative">
-                  <IndianRupee className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-gray-400" />
-                  <input
-                    type="number"
-                    name="maxPrice"
-                    value={formData.maxPrice}
-                    onChange={handleChanges}
-                    placeholder="Max"
-                    className="w-full pl-9 pr-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
-                    min={0}
-                  />
-                </div>
-              </div>
-            </div>
-
-            {/* Beds / Baths */}
-            <div className="lg:col-span-2 grid grid-cols-2 gap-4">
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Bedrooms</label>
-                <input
-                  type="number"
-                  name="bedrooms"
-                  value={formData.bedrooms}
-                  onChange={handleChanges}
-                  placeholder="Beds"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
-                  min={0}
-                />
-              </div>
-              <div>
-                <label className="text-xs font-bold text-gray-500 uppercase tracking-wide mb-1 block">Bathrooms</label>
-                <input
-                  type="number"
-                  name="bathrooms"
-                  value={formData.bathrooms}
-                  onChange={handleChanges}
-                  placeholder="Baths"
-                  className="w-full px-4 py-3 bg-gray-50 border border-gray-200 rounded-xl focus:bg-white focus:border-blue-500 focus:outline-none transition-all"
-                  min={0}
-                />
-              </div>
-            </div>
-
-            {/* Amenities */}
-            <div className="col-span-1 md:col-span-2 lg:col-span-4 flex flex-wrap gap-4 pt-2">
-              {[
-                { name: 'parking', label: 'Parking Space' },
-                { name: 'furnished', label: 'Furnished' },
-                { name: 'offer', label: 'Special Offer' }
-              ].map((amenity) => (
-                <label key={amenity.name} className="flex items-center gap-3 cursor-pointer group p-2 rounded-lg hover:bg-gray-50 transition-colors">
-                  <div className={`w-6 h-6 rounded border-2 flex items-center justify-center transition-all duration-200 ${formData[amenity.name] ? 'bg-blue-600 border-blue-600' : 'border-gray-300 group-hover:border-blue-400'
-                    }`}>
-                    {formData[amenity.name] && <svg className="w-4 h-4 text-white font-bold" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="3"><polyline points="20 6 9 17 4 12"></polyline></svg>}
+                {/* Search Term */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Asset Keyword</label>
+                  <div className="relative group">
+                    <FaSearch className="absolute left-4 top-1/2 -translate-y-1/2 text-gray-400 group-focus-within:text-indigo-500 transition-colors" />
+                    <input
+                      name="searchTerm"
+                      value={formData.searchTerm}
+                      onChange={handleChanges}
+                      onFocus={handleSearchInputFocus}
+                      onBlur={handleSearchInputBlur}
+                      placeholder="Search..."
+                      className="w-full pl-12 pr-4 py-4 bg-gray-50/50 dark:bg-gray-900/50 border-2 border-transparent dark:border-gray-700 rounded-2xl focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 transition-all font-bold text-gray-800 dark:text-white"
+                    />
+                    <SearchSuggestions
+                      searchTerm={formData.searchTerm}
+                      onSuggestionClick={handleSuggestionClick}
+                      onClose={() => setShowSuggestions(false)}
+                      isVisible={showSuggestions}
+                    />
                   </div>
-                  <span className={`text-sm font-medium transition-colors ${formData[amenity.name] ? 'text-gray-900' : 'text-gray-600 group-hover:text-gray-900'}`}>{amenity.label}</span>
-                  <input
-                    type="checkbox"
-                    name={amenity.name}
-                    onChange={handleChanges}
-                    checked={formData[amenity.name]}
-                    className="hidden"
-                  />
-                </label>
-              ))}
-            </div>
-
-            <div className="col-span-1 md:col-span-2 lg:col-span-4 flex justify-end">
-              <button
-                type="submit"
-                className="bg-blue-600 hover:bg-blue-700 text-white px-8 py-3 rounded-xl font-bold text-lg shadow-md hover:shadow-lg transition-all duration-300 flex items-center gap-2"
-              >
-                <RefreshCw className="w-5 h-5" />
-                Update Results
-              </button>
-            </div>
-          </form>
-        </div>
-
-        {/* Active Filters Display */}
-        <div className="mb-8">
-          <FilterChips formData={formData} onClear={clearAllFilters} onRemove={removeFilter} />
-        </div>
-
-        {/* Listing Results */}
-        <div className="flex flex-col gap-6">
-          <div className="flex items-center justify-between">
-            <h2 className="text-2xl font-bold text-gray-800 flex items-center gap-2">
-              Search Results
-              <span className="text-sm font-normal text-gray-500 bg-gray-100 px-3 py-1 rounded-full border border-gray-200">
-                {listings.length} properties
-              </span>
-            </h2>
-          </div>
-
-
-          {!loading && listings.length === 0 && (
-            <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-12 text-center animate-fade-in-up">
-              <img src={duckImg} alt="No listings found" className="w-[280px] h-[280px] object-contain mx-auto opacity-90 hover:scale-105 transition-transform duration-500" />
-              <h3 className="text-2xl font-bold text-gray-700 mb-2">No properties matched your search</h3>
-              <p className="text-gray-500 mb-6 max-w-md mx-auto">
-                We couldn't find exactly what you're looking for. Try adjusting your filters or use our Smart Search.
-              </p>
-              <button
-                onClick={clearAllFilters}
-                className="inline-flex items-center gap-2 px-6 py-3 bg-blue-50 text-blue-600 rounded-full font-semibold hover:bg-blue-100 transition-colors"
-              >
-                <RefreshCw className="w-4 h-4" /> Clear all filters
-              </button>
-            </div>
-          )}
-
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-            {loading ? (
-              <ListingSkeletonGrid count={8} />
-            ) : (
-              listings.map((listing, index) => (
-                <div
-                  key={listing._id}
-                  className="animate-fade-in-up"
-                  style={{ animationDelay: `${index * 0.05}s` }}
-                >
-                  <ListingItem listing={listing} onDelete={handleDelete} />
                 </div>
-              ))
+
+                {/* Type Selection */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Transaction</label>
+                  <div className="grid grid-cols-2 gap-2">
+                    {['all', 'rent', 'sale'].map((t) => (
+                      <button
+                        key={t}
+                        type="button"
+                        onClick={() => setFormData(p => ({ ...p, type: t }))}
+                        className={`py-3 rounded-xl font-black uppercase text-[10px] tracking-widest border-2 transition-all ${formData.type === t
+                          ? 'bg-indigo-600 border-indigo-600 text-white shadow-lg shadow-indigo-600/20'
+                          : 'bg-white dark:bg-gray-900 border-gray-100 dark:border-gray-700 text-gray-500 dark:text-gray-400 hover:border-indigo-300'}`}
+                      >
+                        {t}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Amenities Toggles */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Requirements</label>
+                  <div className="grid grid-cols-1 gap-3">
+                    {['parking', 'furnished', 'offer'].map((item) => (
+                      <label key={item} className="flex items-center justify-between p-4 bg-gray-50/50 dark:bg-gray-900/50 rounded-2xl cursor-pointer hover:bg-white dark:hover:bg-gray-800 border-2 border-transparent hover:border-indigo-100 dark:hover:border-indigo-900/30 transition-all group">
+                        <span className="text-xs font-black text-gray-700 dark:text-gray-300 uppercase tracking-widest">{item}</span>
+                        <div className="relative inline-flex items-center cursor-pointer">
+                          <input
+                            type="checkbox"
+                            name={item}
+                            checked={formData[item]}
+                            onChange={handleChanges}
+                            className="sr-only peer"
+                          />
+                          <div className="w-11 h-6 bg-gray-200 dark:bg-gray-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-indigo-600"></div>
+                        </div>
+                      </label>
+                    ))}
+                  </div>
+                </div>
+
+                {/* Sorting */}
+                <div className="space-y-3">
+                  <label className="text-[10px] font-black text-gray-400 dark:text-gray-500 uppercase tracking-[0.2em] ml-1">Chronology</label>
+                  <select
+                    name="sort_order"
+                    onChange={(e) => {
+                      const [sort, order] = e.target.value.split('_');
+                      setFormData(p => ({ ...p, sort, order }));
+                    }}
+                    value={`${formData.sort}_${formData.order}`}
+                    className="w-full px-5 py-4 bg-gray-50/50 dark:bg-gray-900/50 border-2 border-transparent dark:border-gray-700 rounded-2xl focus:bg-white dark:focus:bg-gray-800 focus:border-indigo-500 transition-all font-black text-xs uppercase tracking-widest text-gray-800 dark:text-white appearance-none cursor-pointer"
+                  >
+                    <option value="createdAt_desc">Newest First</option>
+                    <option value="createdAt_asc">Oldest First</option>
+                    <option value="regularPrice_desc">Price: High to Low</option>
+                    <option value="regularPrice_asc">Price: Low to High</option>
+                  </select>
+                </div>
+
+                {/* Actions */}
+                <div className="flex flex-col gap-3 pt-6 border-t border-gray-100 dark:border-gray-700">
+                  <button type="submit" className="w-full py-4 bg-indigo-600 text-white rounded-2xl font-black uppercase text-xs tracking-[0.2em] shadow-xl shadow-indigo-600/30 hover:bg-indigo-700 active:scale-95 transition-all">
+                    Apply Matrix
+                  </button>
+                  <button type="button" onClick={clearAllFilters} className="w-full py-4 bg-gray-100 dark:bg-gray-700 text-gray-500 dark:text-gray-400 rounded-2xl font-black uppercase text-xs tracking-[0.2em] hover:bg-gray-200 dark:hover:bg-gray-600 active:scale-95 transition-all">
+                    Reset
+                  </button>
+                </div>
+              </form>
+            </div>
+          </aside>
+
+          {/* Listings Result Area */}
+          <div className="flex-1">
+
+            {/* Control Bar */}
+            <div className="bg-white/50 dark:bg-gray-800/50 backdrop-blur-md p-4 rounded-3xl mb-8 border border-gray-100 dark:border-gray-700 flex flex-wrap items-center justify-between gap-4 transition-colors">
+              <div className="flex items-center gap-4">
+                <div className="p-3 bg-indigo-100 dark:bg-indigo-900/40 rounded-xl">
+                  <Grid className="text-indigo-600 dark:text-indigo-400 w-5 h-5" />
+                </div>
+                <div>
+                  <h3 className="text-lg font-black text-gray-800 dark:text-white uppercase tracking-tight">Active Inventory</h3>
+                  <p className="text-[10px] font-bold text-gray-400 dark:text-gray-500 uppercase tracking-widest">{listings.length} Results Tracked</p>
+                </div>
+              </div>
+
+              <div className="flex items-center gap-2">
+                <button
+                  onClick={() => setIsFiltersOpen(true)}
+                  className="lg:hidden p-3 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400"
+                >
+                  <FaFilter />
+                </button>
+                <div className="flex bg-gray-100 dark:bg-gray-900 p-1 rounded-xl border border-gray-200 dark:border-gray-700">
+                  <button
+                    onClick={() => setViewMode('grid')}
+                    className={`p-2 rounded-lg transition-all ${viewMode === 'grid' ? 'bg-white dark:bg-gray-800 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}
+                  >
+                    <Grid size={18} />
+                  </button>
+                  <button
+                    onClick={() => setViewMode('list')}
+                    className={`p-2 rounded-lg transition-all ${viewMode === 'list' ? 'bg-white dark:bg-gray-800 shadow-md text-indigo-600 dark:text-indigo-400' : 'text-gray-400'}`}
+                  >
+                    <List size={18} />
+                  </button>
+                </div>
+                <button onClick={() => window.location.reload()} className="p-3 bg-white dark:bg-gray-900 border border-gray-100 dark:border-gray-700 rounded-xl text-gray-500 dark:text-gray-400 hover:text-indigo-500 transition-colors">
+                  <RefreshCw size={18} />
+                </button>
+              </div>
+            </div>
+
+            {/* Listings Grid */}
+            <div className={`grid gap-8 ${viewMode === 'grid' ? 'grid-cols-1 sm:grid-cols-2 xl:grid-cols-2' : 'grid-cols-1'}`}>
+              {loading ? (
+                Array(6).fill(0).map((_, i) => <ListingSkeletonGrid key={i} />)
+              ) : listings.length === 0 ? (
+                <div className="col-span-full py-32 text-center bg-white dark:bg-gray-800 rounded-3xl border-2 border-dashed border-gray-200 dark:border-gray-700">
+                  <div className="opacity-20 flex flex-col items-center">
+                    <XCircle size={80} className="mb-4" />
+                    <h4 className="text-2xl font-black uppercase">Anomaly Detected: No Results</h4>
+                    <p className="font-bold tracking-widest text-xs mt-2 uppercase">Adjust parameters to re-scan</p>
+                    <button onClick={clearAllFilters} className="mt-8 px-8 py-3 bg-indigo-600 text-white rounded-xl font-black text-xs uppercase tracking-widest shadow-lg">Wipe Filters</button>
+                  </div>
+                </div>
+              ) : (
+                listings.map((listing) => (
+                  <ListingItem
+                    key={listing._id}
+                    listing={listing}
+                    onDelete={() => handleDelete(listing._id)}
+                  />
+                ))
+              )}
+            </div>
+
+            {/* Show More */}
+            {showMoreListing && (
+              <div className="mt-16 flex justify-center">
+                <button
+                  onClick={showMoreListingClick}
+                  className="px-12 py-5 bg-white dark:bg-gray-800 border-2 border-indigo-600 dark:border-indigo-500 text-indigo-600 dark:text-indigo-400 rounded-3xl font-black uppercase text-xs tracking-[0.3em] hover:bg-indigo-600 hover:text-white dark:hover:bg-indigo-500 dark:hover:text-white transition-all shadow-xl shadow-indigo-600/10 active:scale-95"
+                >
+                  Retrieve More Assets
+                </button>
+              </div>
             )}
           </div>
-
-          {showMoreListing && (
-            <div className="flex justify-center mt-12">
-              <button
-                type="button"
-                onClick={showMoreListingClick}
-                className="group relative px-8 py-3 bg-white text-gray-800 font-bold rounded-full shadow-md hover:shadow-lg hover:text-blue-600 transition-all border border-gray-200 border-b-4 hover:border-b active:border-b-0 active:translate-y-1"
-              >
-                <span className="relative z-10 flex items-center gap-2">Show More Properties <ChevronDown className="w-4 h-4 group-hover:translate-y-1 transition-transform" /></span>
-              </button>
-            </div>
-          )}
         </div>
       </main>
 
-      {/* Mobile Filters Drawer */}
-      {isFiltersOpen && (
-        <div className="fixed inset-0 z-[100] bg-black/50 backdrop-blur-sm md:hidden" onClick={() => setIsFiltersOpen(false)}>
-          <div className="absolute right-0 top-0 h-full w-4/5 max-w-sm bg-white shadow-2xl p-6 flex flex-col gap-4 overflow-y-auto animate-slide-in-right" onClick={e => e.stopPropagation()}>
-            <div className="flex justify-between items-center mb-4 border-b pb-4">
-              <h2 className="text-xl font-bold text-gray-800">Filter Properties</h2>
-              <button onClick={() => setIsFiltersOpen(false)} className="text-gray-500 hover:text-gray-800">Close</button>
+      {/* Delete Reason Modal */}
+      {showReasonModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4 sm:p-8 animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-[40px] shadow-2xl w-full max-w-md border border-white/20 overflow-hidden transform animate-scale-in">
+            <div className="p-8 border-b border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-red-600 rounded-2xl shadow-lg shadow-red-600/30">
+                  <FaTrash className="text-white text-xl" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">Authorization Required</h3>
+                  <p className="text-[10px] font-black text-red-600 uppercase tracking-widest mt-1">Deletion Protocol Engaged</p>
+                </div>
+              </div>
             </div>
-
-            {/* Mobile Search Term */}
-            <div className="mb-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Search Keyword</label>
-              <div className="relative">
-                <SearchIcon className="absolute left-3 top-3 h-5 w-5 text-gray-400" />
-                <input
-                  type="text"
-                  name="searchTerm"
-                  value={formData.searchTerm}
-                  onChange={handleChanges}
-                  placeholder="Search..."
-                  className="w-full pl-10 pr-4 py-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none"
+            <form onSubmit={handleReasonSubmit} className="p-8 space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Reason for Eradicating Asset</label>
+                <textarea
+                  value={deleteReason}
+                  onChange={(e) => setDeleteReason(e.target.value)}
+                  className="w-full px-6 py-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded-2xl focus:border-red-500 focus:bg-white dark:focus:bg-gray-800 transition-all font-bold text-gray-800 dark:text-white min-h-[120px] resize-none"
+                  placeholder="Categorize the violation or reason..."
                 />
               </div>
-            </div>
-
-            {/* Mobile Location Selector */}
-            <div className="mb-2">
-              <LocationSelector value={locationFilter} onChange={handleLocationChange} />
-            </div>
-
-            {/* Mobile Type Filter */}
-            <div className="mb-2">
-              <label className="block text-sm font-semibold text-gray-700 mb-2">Property Type</label>
-              <div className="flex bg-gray-100 p-1 rounded-xl">
-                {['all', 'rent', 'sale'].map((t) => (
-                  <button
-                    key={t}
-                    type="button"
-                    onClick={() => setFormData(prev => ({ ...prev, type: t }))}
-                    className={`flex-1 capitalize py-2 rounded-lg text-sm font-medium transition-all ${formData.type === t
-                      ? 'bg-white text-blue-600 shadow-sm'
-                      : 'text-gray-500 hover:text-gray-700'
-                      }`}
-                  >
-                    {t}
-                  </button>
-                ))}
+              <div className="flex gap-3">
+                <button type="button" onClick={() => setShowReasonModal(false)} className="flex-1 py-4 font-black uppercase text-[10px] tracking-widest text-gray-400 hover:text-gray-600">Abort</button>
+                <button type="submit" className="flex-2 px-8 py-4 bg-gray-900 dark:bg-white text-white dark:text-gray-900 rounded-2xl font-black uppercase text-[10px] tracking-widest">Next Step</button>
               </div>
-            </div>
-
-            {/* Mobile Detailed Filters */}
-            <div className="p-3 bg-gray-50 rounded-xl mb-2">
-              <label className="block text-sm font-semibold mb-2">Price & Size</label>
-              <div className="grid grid-cols-2 gap-3">
-                <input type="number" name="minPrice" placeholder="Min ₹" value={formData.minPrice} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
-                <input type="number" name="maxPrice" placeholder="Max ₹" value={formData.maxPrice} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
-                <input type="number" name="bedrooms" placeholder="Beds" value={formData.bedrooms} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
-                <input type="number" name="bathrooms" placeholder="Baths" value={formData.bathrooms} onChange={handleChanges} className="p-2 border rounded-lg w-full" />
-              </div>
-            </div>
-
-            {/* Mobile Checkboxes */}
-            <div className="flex flex-col gap-3 mb-4">
-              {['parking', 'furnished', 'offer'].map(item => (
-                <label key={item} className="flex items-center gap-2">
-                  <input type="checkbox" name={item} checked={formData[item]} onChange={handleChanges} className="w-5 h-5 accent-blue-600" />
-                  <span className="capitalize text-gray-700 font-medium">{item}</span>
-                </label>
-              ))}
-            </div>
-
-            {/* Mobile Sort */}
-            <label className="block text-sm font-semibold text-gray-700 mb-2">Sort By</label>
-            <select
-              className="w-full p-3 border border-gray-200 rounded-xl bg-gray-50 focus:bg-white focus:ring-2 focus:ring-blue-500 outline-none transition-all mb-4"
-              onChange={(e) => {
-                const [sort, order] = e.target.value.split("_");
-                setFormData((prev) => ({ ...prev, sort, order }));
-              }}
-              value={`${formData.sort}_${formData.order}`}
-            >
-              <option value="regularPrice_desc">Price: High to Low</option>
-              <option value="regularPrice_asc">Price: Low to High</option>
-              <option value="createdAt_desc">Newest First</option>
-              <option value="createdAt_asc">Oldest First</option>
-            </select>
-
-            <button
-              onClick={(e) => {
-                handleSubmit(e);
-                setIsFiltersOpen(false);
-              }}
-              className="w-full bg-blue-600 text-white py-3 rounded-xl font-bold mt-2 shadow-md"
-            >
-              Apply Filters
-            </button>
+            </form>
           </div>
         </div>
       )}
 
-
-      <GeminiAIWrapper />
-      <ContactSupportWrapper />
-
-      {/* Reason Modal */}
-      {
-        showReasonModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 animate-fade-in">
-            <form onSubmit={handleReasonSubmit} className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm flex flex-col gap-4 transform transition-all scale-100">
-              <h3 className="text-xl font-bold text-blue-700 flex items-center gap-2"><FaTrash /> Reason for Deletion</h3>
-              <p className="text-sm text-gray-500">Please provide a reason for deleting this property. This action cannot be undone.</p>
-              <textarea
-                className="border border-gray-300 rounded-lg p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                placeholder="Enter reason..."
-                value={deleteReason}
-                onChange={e => setDeleteReason(e.target.value)}
-                rows={3}
-                autoFocus
-              />
-              {deleteError && <div className="text-red-500 text-sm bg-red-50 p-2 rounded">{deleteError}</div>}
-              <div className="flex gap-3 justify-end mt-2">
-                <button type="button" onClick={() => setShowReasonModal(false)} className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-lg bg-red-600 text-white font-semibold hover:bg-red-700 shadow-md transition-all">Next</button>
-              </div>
-            </form>
-          </div>
-        )
-      }
       {/* Password Modal */}
-      {
-        showPasswordModal && (
-          <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50 animate-fade-in">
-            <form onSubmit={handlePasswordSubmit} className="bg-white rounded-xl shadow-2xl p-6 w-full max-w-sm flex flex-col gap-4 transform transition-all scale-100">
-              <h3 className="text-xl font-bold text-blue-700 flex items-center gap-2"><FaLock /> Confirm Password</h3>
-              <p className="text-sm text-gray-500">For security, please confirm your password to permanently delete this listing.</p>
-              <input
-                type="password"
-                className="border border-gray-300 rounded-lg p-3 w-full focus:ring-2 focus:ring-blue-500 focus:border-blue-500 outline-none transition-all"
-                placeholder="Enter your password"
-                value={deletePassword}
-                onChange={e => setDeletePassword(e.target.value)}
-                autoFocus
-              />
-              {deleteError && <div className="text-red-500 text-sm bg-red-50 p-2 rounded">{deleteError}</div>}
-              <div className="flex gap-3 justify-end mt-2">
-                <button type="button" onClick={() => setShowPasswordModal(false)} className="px-4 py-2 rounded-lg bg-gray-100 text-gray-700 font-semibold hover:bg-gray-200 transition-colors">Cancel</button>
-                <button type="submit" className="px-4 py-2 rounded-lg bg-blue-600 text-white font-semibold hover:bg-blue-700 shadow-md transition-all" disabled={deleteLoading}>{deleteLoading ? 'Deleting...' : 'Confirm & Delete'}</button>
+      {showPasswordModal && (
+        <div className="fixed inset-0 bg-black/80 backdrop-blur-xl z-[100] flex items-center justify-center p-4 animate-fade-in">
+          <div className="bg-white dark:bg-gray-800 rounded-[40px] shadow-2xl w-full max-w-md border border-white/20 overflow-hidden transform animate-scale-in">
+            <div className="p-8 border-b border-gray-100 dark:border-gray-700">
+              <div className="flex items-center gap-4">
+                <div className="p-4 bg-amber-500 rounded-2xl shadow-lg shadow-amber-500/30">
+                  <FaLock className="text-white text-xl" />
+                </div>
+                <div>
+                  <h3 className="text-2xl font-black dark:text-white uppercase tracking-tighter">Final Verification</h3>
+                  <p className="text-[10px] font-black text-amber-600 uppercase tracking-widest mt-1">Confirm Identity to Proceed</p>
+                </div>
+              </div>
+            </div>
+            <form onSubmit={handlePasswordSubmit} className="p-8 space-y-6">
+              <div>
+                <label className="block text-[10px] font-black text-gray-400 uppercase tracking-widest mb-3 ml-1">Admin Passkey</label>
+                <input
+                  type="password"
+                  value={deletePassword}
+                  onChange={(e) => setDeletePassword(e.target.value)}
+                  className="w-full px-6 py-4 bg-gray-50 dark:bg-gray-900 border-2 border-gray-100 dark:border-gray-700 rounded-2xl focus:border-red-500 focus:bg-white dark:focus:bg-gray-800 transition-all font-bold text-gray-800 dark:text-white"
+                  placeholder="••••••••"
+                />
+              </div>
+              {deleteError && (
+                <div className="p-4 bg-red-50 dark:bg-red-900/20 border-l-4 border-red-500 text-red-600 dark:text-red-400 font-bold text-xs uppercase tracking-widest animate-shake">
+                  {deleteError}
+                </div>
+              )}
+              <div className="flex gap-3 pt-4">
+                <button type="button" onClick={() => setShowPasswordModal(false)} className="flex-1 py-4 font-black uppercase text-[10px] tracking-widest text-gray-400 hover:text-gray-600">Abort</button>
+                <button
+                  type="submit"
+                  disabled={deleteLoading}
+                  className="flex-2 px-8 py-4 bg-red-600 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest shadow-xl shadow-red-600/30 flex items-center justify-center gap-2"
+                >
+                  {deleteLoading ? <span className="animate-spin rounded-full h-4 w-4 border-2 border-white/30 border-t-white"></span> : 'Eradicate Asset'}
+                </button>
               </div>
             </form>
           </div>
-        )
-      }
-    </div >
+        </div>
+      )}
+    </div>
   );
 }

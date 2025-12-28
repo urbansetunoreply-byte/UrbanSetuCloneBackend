@@ -97,7 +97,7 @@ export default function AdminSecurityModeration() {
       await res.json();
       setEmailToUnlock('');
       fetchStats();
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const unlockByIp = async () => {
@@ -113,7 +113,7 @@ export default function AdminSecurityModeration() {
       setIpToUnlock('');
       fetchStats();
       fetchPasswordLockouts();
-    } catch (_) {}
+    } catch (_) { }
   };
 
   const unlockPasswordByEmailOrUser = async (payload) => {
@@ -127,7 +127,7 @@ export default function AdminSecurityModeration() {
       await res.json();
       fetchStats();
       fetchPasswordLockouts();
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const unlockPasswordByIp = async (ip) => {
@@ -141,7 +141,7 @@ export default function AdminSecurityModeration() {
       await res.json();
       fetchStats();
       fetchPasswordLockouts();
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const unlockPasswordByIdentifier = async (identifier) => {
@@ -155,7 +155,7 @@ export default function AdminSecurityModeration() {
       await res.json();
       fetchStats();
       fetchPasswordLockouts();
-    } catch (e) {}
+    } catch (e) { }
   };
 
   const handleUnlockPasswordEmail = async () => {
@@ -185,8 +185,8 @@ export default function AdminSecurityModeration() {
   const filtered = useMemo(() => {
     return (stats.recent || []).filter(r => {
       let ok = true;
-      if (ok && filters.email) ok = (r.email||'').toLowerCase().includes(filters.email.toLowerCase());
-      if (ok && filters.ip) ok = (r.ipAddress||'').toLowerCase().includes(filters.ip.toLowerCase());
+      if (ok && filters.email) ok = (r.email || '').toLowerCase().includes(filters.email.toLowerCase());
+      if (ok && filters.ip) ok = (r.ipAddress || '').toLowerCase().includes(filters.ip.toLowerCase());
       if (ok && filters.captchaOnly) ok = !!r.requiresCaptcha;
       if (ok && filters.lockedOnly) ok = r.lockoutUntil && new Date(r.lockoutUntil) > new Date();
       return ok;
@@ -209,7 +209,7 @@ export default function AdminSecurityModeration() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 p-4 sm:p-6 md:p-8">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50 to-indigo-100 dark:from-slate-900 dark:via-slate-800 dark:to-indigo-950 p-4 sm:p-6 md:p-8 transition-colors duration-300">
       <div className="max-w-7xl mx-auto">
         {/* Enhanced Header Section */}
         <div className="mb-8">
@@ -222,10 +222,10 @@ export default function AdminSecurityModeration() {
                 <div className="absolute -inset-1 bg-gradient-to-r from-indigo-500 via-purple-500 to-blue-500 rounded-2xl blur opacity-30"></div>
               </div>
               <div>
-                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-700 via-purple-700 to-blue-700 bg-clip-text text-transparent">
+                <h1 className="text-3xl md:text-4xl font-bold bg-gradient-to-r from-indigo-700 via-purple-700 to-blue-700 dark:from-indigo-400 dark:via-purple-400 dark:to-blue-400 bg-clip-text text-transparent">
                   Security Moderation
                 </h1>
-                <p className="text-gray-600 mt-2 text-lg">
+                <p className="text-gray-600 dark:text-gray-400 mt-2 text-lg">
                   🛡️ Monitor and manage OTP and password lockouts, requests and admin unlocks
                 </p>
               </div>
@@ -234,59 +234,59 @@ export default function AdminSecurityModeration() {
 
           {/* Security Stats Overview Cards */}
           <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
-            <div className="bg-white rounded-xl shadow-lg border border-red-200 p-6 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-red-200 dark:border-red-900/30 p-6 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Active OTP Lockouts</p>
-                  <p className="text-3xl font-bold text-red-600">{stats.activeLockouts}</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Active OTP Lockouts</p>
+                  <p className="text-3xl font-bold text-red-600 dark:text-red-400">{stats.activeLockouts}</p>
                 </div>
-                <div className="p-3 bg-red-100 rounded-full">
-                  <FaLock className="w-6 h-6 text-red-600" />
-                </div>
-              </div>
-            </div>
-            
-            <div className="bg-white rounded-xl shadow-lg border border-orange-200 p-6 hover:shadow-xl transition-all duration-300">
-              <div className="flex items-center justify-between">
-                <div>
-                  <p className="text-sm font-medium text-gray-600">Password Lockouts</p>
-                  <p className="text-3xl font-bold text-orange-600">{stats.passwordLockouts || 0}</p>
-                </div>
-                <div className="p-3 bg-orange-100 rounded-full">
-                  <FaKey className="w-6 h-6 text-orange-600" />
+                <div className="p-3 bg-red-100 dark:bg-red-900/40 rounded-full">
+                  <FaLock className="w-6 h-6 text-red-600 dark:text-red-400" />
                 </div>
               </div>
             </div>
 
-            <div className="bg-white rounded-xl shadow-lg border border-blue-200 p-6 hover:shadow-xl transition-all duration-300">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-orange-200 dark:border-orange-900/30 p-6 hover:shadow-xl transition-all duration-300">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm font-medium text-gray-600">Total Requests</p>
-                  <p className="text-3xl font-bold text-blue-600">{stats.recent?.length || 0}</p>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Password Lockouts</p>
+                  <p className="text-3xl font-bold text-orange-600 dark:text-orange-400">{stats.passwordLockouts || 0}</p>
                 </div>
-                <div className="p-3 bg-blue-100 rounded-full">
-                  <FaEye className="w-6 h-6 text-blue-600" />
+                <div className="p-3 bg-orange-100 dark:bg-orange-900/40 rounded-full">
+                  <FaKey className="w-6 h-6 text-orange-600 dark:text-orange-400" />
+                </div>
+              </div>
+            </div>
+
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-blue-200 dark:border-blue-900/30 p-6 hover:shadow-xl transition-all duration-300">
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-600 dark:text-gray-400">Total Requests</p>
+                  <p className="text-3xl font-bold text-blue-600 dark:text-blue-400">{stats.recent?.length || 0}</p>
+                </div>
+                <div className="p-3 bg-blue-100 dark:bg-blue-900/40 rounded-full">
+                  <FaEye className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        {error && <div className="mb-6 p-4 rounded-xl bg-red-50 border border-red-200 text-red-700 shadow-sm">{error}</div>}
+        {error && <div className="mb-6 p-4 rounded-xl bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-900/40 text-red-700 dark:text-red-400 shadow-sm">{error}</div>}
 
         {/* Two equal columns: Left = OTP Activity, Right = Password Lockouts */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* OTP Activity Table */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center mb-6 gap-2 flex-wrap">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-purple-500 to-blue-500 rounded-lg">
                   <FaEnvelope className="w-5 h-5 text-white" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Recent OTP Activity</h2>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Recent OTP Activity</h2>
               </div>
-              <button 
-                onClick={fetchOtpOnly} 
+              <button
+                onClick={fetchOtpOnly}
                 className="ml-auto px-4 py-2 bg-gradient-to-r from-purple-500 to-purple-600 hover:from-purple-600 hover:to-purple-700 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2 order-2"
               >
                 {otpRefreshing ? (
@@ -303,55 +303,55 @@ export default function AdminSecurityModeration() {
               </button>
             </div>
             {/* Enhanced Filter Section */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
               <div className="flex items-center gap-2 mb-3">
-                <FaFilter className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">Filters</span>
+                <FaFilter className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Filters</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3 mb-3">
                 <div className="relative">
                   <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input 
-                    value={filters.email} 
-                    onChange={e=>setFilters(f=>({...f,email:e.target.value}))} 
-                    placeholder="Filter by email" 
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" 
+                  <input
+                    value={filters.email}
+                    onChange={e => setFilters(f => ({ ...f, email: e.target.value }))}
+                    placeholder="Filter by email"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
                   />
                 </div>
                 <div className="relative">
                   <FaGlobe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input 
-                    value={filters.ip} 
-                    onChange={e=>setFilters(f=>({...f,ip:e.target.value}))} 
-                    placeholder="Filter by IP" 
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200" 
+                  <input
+                    value={filters.ip}
+                    onChange={e => setFilters(f => ({ ...f, ip: e.target.value }))}
+                    placeholder="Filter by IP"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-purple-500 focus:border-transparent transition-all duration-200 outline-none"
                   />
                 </div>
               </div>
               <div className="flex flex-wrap gap-4">
-                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={filters.captchaOnly} 
-                    onChange={e=>setFilters(f=>({...f,captchaOnly:e.target.checked}))} 
-                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" 
-                  /> 
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.captchaOnly}
+                    onChange={e => setFilters(f => ({ ...f, captchaOnly: e.target.checked }))}
+                    className="w-4 h-4 text-purple-600 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded focus:ring-purple-500 transition-colors"
+                  />
                   <FaExclamationTriangle className="w-3 h-3 text-orange-500" />
                   Captcha only
                 </label>
-                <label className="flex items-center gap-2 text-sm text-gray-700 cursor-pointer">
-                  <input 
-                    type="checkbox" 
-                    checked={filters.lockedOnly} 
-                    onChange={e=>setFilters(f=>({...f,lockedOnly:e.target.checked}))} 
-                    className="w-4 h-4 text-purple-600 border-gray-300 rounded focus:ring-purple-500" 
-                  /> 
+                <label className="flex items-center gap-2 text-sm text-gray-700 dark:text-gray-300 cursor-pointer">
+                  <input
+                    type="checkbox"
+                    checked={filters.lockedOnly}
+                    onChange={e => setFilters(f => ({ ...f, lockedOnly: e.target.checked }))}
+                    className="w-4 h-4 text-purple-600 border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded focus:ring-purple-500 transition-colors"
+                  />
                   <FaLock className="w-3 h-3 text-red-500" />
                   Locked only
                 </label>
               </div>
             </div>
-            <div className="overflow-auto rounded-lg border border-gray-200">
+            <div className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
               <table className="min-w-full text-sm table-fixed">
                 <colgroup>
                   <col className="w-[28%]" />
@@ -363,18 +363,18 @@ export default function AdminSecurityModeration() {
                   <col className="w-[12%]" />
                   <col className="w-[6%]" />
                 </colgroup>
-                <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                  <tr className="text-left text-gray-700">
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
+                  <tr className="text-left text-gray-700 dark:text-gray-200">
                     <th className="py-3 px-4 font-semibold">
                       <div className="flex items-center gap-2 whitespace-nowrap">
-                      <FaEnvelope className="w-3 h-3" />
-                      Email
+                        <FaEnvelope className="w-3 h-3" />
+                        Email
                       </div>
                     </th>
                     <th className="py-3 px-4 font-semibold">
                       <div className="flex items-center gap-2 whitespace-nowrap">
-                      <FaGlobe className="w-3 h-3" />
-                      IP
+                        <FaGlobe className="w-3 h-3" />
+                        IP
                       </div>
                     </th>
                     <th className="py-3 px-4 font-semibold whitespace-nowrap">Requests</th>
@@ -385,39 +385,39 @@ export default function AdminSecurityModeration() {
                     <th className="py-3 px-4 font-semibold whitespace-nowrap">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="divide-y divide-gray-200">
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
                   {filtered.map((r, idx) => (
-                    <tr key={idx} className="hover:bg-blue-50 transition-colors duration-200">
+                    <tr key={idx} className="hover:bg-blue-50 dark:hover:bg-blue-900/20 transition-colors duration-200">
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           <FaEnvelope className="w-3 h-3 text-gray-400" />
-                          <span className="font-medium text-gray-900">{r.email || '-'}</span>
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{r.email || '-'}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           <FaGlobe className="w-3 h-3 text-gray-400" />
-                          <span className="font-mono text-sm text-gray-600">{r.ipAddress || '-'}</span>
+                          <span className="font-mono text-sm text-gray-600 dark:text-gray-400">{r.ipAddress || '-'}</span>
                         </div>
                       </td>
                       <td className="py-3 px-4">
-                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300">
                           {r.otpRequestCount || 0}
                         </span>
                       </td>
                       <td className="py-3 px-4">
-                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${r.failedOtpAttempts > 0 ? 'bg-red-100 text-red-800' : 'bg-green-100 text-green-800'}`}>
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${r.failedOtpAttempts > 0 ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300' : 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'}`}>
                           {r.failedOtpAttempts || 0}
                         </span>
                       </td>
                       <td className="py-3 px-4">
                         {r.requiresCaptcha ? (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 text-orange-800">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300">
                             <FaExclamationTriangle className="w-3 h-3" />
                             Yes
                           </span>
                         ) : (
-                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 text-green-800">
+                          <span className="inline-flex items-center gap-1 px-2.5 py-0.5 rounded-full text-xs font-medium bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300">
                             <FaCheckCircle className="w-3 h-3" />
                             No
                           </span>
@@ -427,18 +427,18 @@ export default function AdminSecurityModeration() {
                         {r.lockoutUntil && new Date(r.lockoutUntil) > new Date() ? (
                           <div className="flex items-center gap-2">
                             <FaLock className="w-3 h-3 text-red-500" />
-                            <span className="text-xs text-red-600 font-medium">
+                            <span className="text-xs text-red-600 dark:text-red-400 font-medium whitespace-nowrap">
                               {new Date(r.lockoutUntil).toLocaleString()}
                             </span>
                           </div>
                         ) : (
-                          <span className="text-gray-400">-</span>
+                          <span className="text-gray-400 dark:text-gray-500">-</span>
                         )}
                       </td>
                       <td className="py-3 px-4">
                         <div className="flex items-center gap-2">
                           <FaClock className="w-3 h-3 text-gray-400" />
-                          <span className="text-xs text-gray-600">
+                          <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
                             {r.updatedAt ? new Date(r.updatedAt).toLocaleString() : '-'}
                           </span>
                         </div>
@@ -458,7 +458,7 @@ export default function AdminSecurityModeration() {
                                 });
                                 await res.json();
                               }
-                            } catch (_) {}
+                            } catch (_) { }
                             fetchStats();
                           }}
                           className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
@@ -472,10 +472,10 @@ export default function AdminSecurityModeration() {
                   ))}
                   {filtered.length === 0 && (
                     <tr>
-                      <td className="py-8 text-center text-gray-500" colSpan="8">
+                      <td className="py-8 text-center text-gray-500 dark:text-gray-400" colSpan="8">
                         <div className="flex flex-col items-center gap-2">
                           <FaCheckCircle className="w-8 h-8 text-green-500" />
-                          <span className="text-lg font-medium">No recent OTP activity</span>
+                          <span className="text-lg font-medium text-gray-700 dark:text-gray-200">No recent OTP activity</span>
                           <span className="text-sm">All clear. No OTP lockouts or requests to show</span>
                         </div>
                       </td>
@@ -486,16 +486,16 @@ export default function AdminSecurityModeration() {
             </div>
           </div>
           {/* Password Lockouts Table */}
-          <div className="bg-white rounded-xl shadow-lg border border-gray-100 p-6 hover:shadow-xl transition-all duration-300">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl transition-all duration-300">
             <div className="flex items-center justify-between mb-6 gap-2">
               <div className="flex items-center gap-3">
                 <div className="p-2 bg-gradient-to-r from-orange-500 to-red-500 rounded-lg">
                   <FaKey className="w-5 h-5 text-white" />
                 </div>
-                <h2 className="text-xl font-bold text-gray-800">Active Password Lockouts</h2>
+                <h2 className="text-xl font-bold text-gray-800 dark:text-gray-200">Active Password Lockouts</h2>
               </div>
-              <button 
-                onClick={fetchPasswordLockouts} 
+              <button
+                onClick={fetchPasswordLockouts}
                 className="px-4 py-2 bg-gradient-to-r from-blue-500 to-blue-600 hover:from-blue-600 hover:to-blue-700 text-white rounded-lg font-medium transition-all duration-200 shadow-md hover:shadow-lg transform hover:scale-105 flex items-center gap-2"
               >
                 {passwordRefreshing ? (
@@ -512,185 +512,184 @@ export default function AdminSecurityModeration() {
               </button>
             </div>
             {/* Enhanced Filter Section for Password Lockouts */}
-            <div className="bg-gray-50 rounded-lg p-4 mb-4">
+            <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 mb-4">
               <div className="flex items-center gap-2 mb-3">
-                <FaFilter className="w-4 h-4 text-gray-600" />
-                <span className="text-sm font-medium text-gray-700">Password Lockout Filters</span>
+                <FaFilter className="w-4 h-4 text-gray-600 dark:text-gray-400" />
+                <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Password Lockout Filters</span>
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-3">
                 <div className="relative">
                   <FaEnvelope className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input 
-                    value={pwdFilters.email} 
-                    onChange={e=>setPwdFilters(f=>({...f,email:e.target.value}))} 
-                    placeholder="Filter by email" 
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+                  <input
+                    value={pwdFilters.email}
+                    onChange={e => setPwdFilters(f => ({ ...f, email: e.target.value }))}
+                    placeholder="Filter by email"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
                   />
                 </div>
                 <div className="relative">
                   <FaUser className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input 
-                    value={pwdFilters.userId} 
-                    onChange={e=>setPwdFilters(f=>({...f,userId:e.target.value}))} 
-                    placeholder="Filter by User ID" 
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+                  <input
+                    value={pwdFilters.userId}
+                    onChange={e => setPwdFilters(f => ({ ...f, userId: e.target.value }))}
+                    placeholder="Filter by User ID"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
                   />
                 </div>
                 <div className="relative">
                   <FaGlobe className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input 
-                    value={pwdFilters.ip} 
-                    onChange={e=>setPwdFilters(f=>({...f,ip:e.target.value}))} 
-                    placeholder="Filter by IP" 
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+                  <input
+                    value={pwdFilters.ip}
+                    onChange={e => setPwdFilters(f => ({ ...f, ip: e.target.value }))}
+                    placeholder="Filter by IP"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
                   />
                 </div>
                 <div className="relative">
                   <FaKey className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-gray-400" />
-                  <input 
-                    value={pwdFilters.identifier} 
-                    onChange={e=>setPwdFilters(f=>({...f,identifier:e.target.value}))} 
-                    placeholder="Filter by Identifier" 
-                    className="w-full pl-10 pr-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200" 
+                  <input
+                    value={pwdFilters.identifier}
+                    onChange={e => setPwdFilters(f => ({ ...f, identifier: e.target.value }))}
+                    placeholder="Filter by Identifier"
+                    className="w-full pl-10 pr-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 outline-none"
                   />
                 </div>
               </div>
             </div>
-              <div className="overflow-auto rounded-lg border border-gray-200">
-                <table className="min-w-full text-sm table-fixed">
-                  <colgroup>
-                    <col className="w-[24%]" />
-                    <col className="w-[14%]" />
-                    <col className="w-[16%]" />
-                    <col className="w-[16%]" />
-                    <col className="w-[8%]" />
-                    <col className="w-[8%]" />
-                    <col className="w-[10%]" />
-                    <col className="w-[8%]" />
-                  </colgroup>
-                  <thead className="bg-gradient-to-r from-gray-50 to-gray-100">
-                    <tr className="text-left text-gray-700">
-                      <th className="py-3 px-4 font-semibold">
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                          <FaEnvelope className="w-3 h-3" />
-                          Email
+            <div className="overflow-auto rounded-lg border border-gray-200 dark:border-gray-700">
+              <table className="min-w-full text-sm table-fixed">
+                <colgroup>
+                  <col className="w-[24%]" />
+                  <col className="w-[14%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[16%]" />
+                  <col className="w-[8%]" />
+                  <col className="w-[8%]" />
+                  <col className="w-[10%]" />
+                  <col className="w-[8%]" />
+                </colgroup>
+                <thead className="bg-gradient-to-r from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-800">
+                  <tr className="text-left text-gray-700 dark:text-gray-200">
+                    <th className="py-3 px-4 font-semibold">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <FaEnvelope className="w-3 h-3" />
+                        Email
+                      </div>
+                    </th>
+                    <th className="py-3 px-4 font-semibold">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <FaUser className="w-3 h-3" />
+                        User ID
+                      </div>
+                    </th>
+                    <th className="py-3 px-4 font-semibold">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <FaGlobe className="w-3 h-3" />
+                        IP
+                      </div>
+                    </th>
+                    <th className="py-3 px-4 font-semibold">
+                      <div className="flex items-center gap-2 whitespace-nowrap">
+                        <FaKey className="w-3 h-3" />
+                        Identifier
+                      </div>
+                    </th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Attempts</th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Locked</th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Unlock At</th>
+                    <th className="py-3 px-4 font-semibold whitespace-nowrap">Actions</th>
+                  </tr>
+                </thead>
+                <tbody className="divide-y divide-gray-200 dark:divide-gray-700">
+                  {filteredPasswordLockouts.map((r) => (
+                    <tr key={r._id} className="hover:bg-orange-50 dark:hover:bg-orange-900/20 transition-colors duration-200">
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <FaEnvelope className="w-3 h-3 text-gray-400" />
+                          <span className="font-medium text-gray-900 dark:text-gray-100">{r.email || '-'}</span>
                         </div>
-                      </th>
-                      <th className="py-3 px-4 font-semibold">
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                          <FaUser className="w-3 h-3" />
-                          User ID
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <FaUser className="w-3 h-3 text-gray-400" />
+                          <span className="font-mono text-sm text-gray-600 dark:text-gray-400">{r.userId || '-'}</span>
                         </div>
-                      </th>
-                      <th className="py-3 px-4 font-semibold">
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                          <FaGlobe className="w-3 h-3" />
-                          IP
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <FaGlobe className="w-3 h-3 text-gray-400" />
+                          <span className="font-mono text-sm text-gray-600 dark:text-gray-400">{r.ipAddress || '-'}</span>
                         </div>
-                      </th>
-                      <th className="py-3 px-4 font-semibold">
-                        <div className="flex items-center gap-2 whitespace-nowrap">
-                          <FaKey className="w-3 h-3" />
-                          Identifier
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <FaKey className="w-3 h-3 text-gray-400" />
+                          <span className="font-mono text-sm text-gray-600 dark:text-gray-400">{r.identifier || '-'}</span>
                         </div>
-                      </th>
-                      <th className="py-3 px-4 font-semibold whitespace-nowrap">Attempts</th>
-                      <th className="py-3 px-4 font-semibold whitespace-nowrap">Locked</th>
-                      <th className="py-3 px-4 font-semibold whitespace-nowrap">Unlock At</th>
-                      <th className="py-3 px-4 font-semibold whitespace-nowrap">Actions</th>
-                    </tr>
-                  </thead>
-                  <tbody className="divide-y divide-gray-200">
-                    {filteredPasswordLockouts.map((r) => (
-                      <tr key={r._id} className="hover:bg-orange-50 transition-colors duration-200">
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <FaEnvelope className="w-3 h-3 text-gray-400" />
-                            <span className="font-medium text-gray-900">{r.email || '-'}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <FaUser className="w-3 h-3 text-gray-400" />
-                            <span className="font-mono text-sm text-gray-600">{r.userId || '-'}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <FaGlobe className="w-3 h-3 text-gray-400" />
-                            <span className="font-mono text-sm text-gray-600">{r.ipAddress || '-'}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <FaKey className="w-3 h-3 text-gray-400" />
-                            <span className="font-mono text-sm text-gray-600">{r.identifier || '-'}</span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${r.attempts > 3 ? 'bg-red-100 text-red-800' : r.attempts > 1 ? 'bg-orange-100 text-orange-800' : 'bg-green-100 text-green-800'}`}>
-                            {r.attempts || 0}
+                      </td>
+                      <td className="py-3 px-4">
+                        <span className={`inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium ${r.attempts > 3 ? 'bg-red-100 dark:bg-red-900/40 text-red-800 dark:text-red-300' : r.attempts > 1 ? 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300' : 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'}`}>
+                          {r.attempts || 0}
+                        </span>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <FaLock className="w-3 h-3 text-red-500" />
+                          <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                            {r.lockedAt ? new Date(r.lockedAt).toLocaleString() : '-'}
                           </span>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <FaLock className="w-3 h-3 text-red-500" />
-                            <span className="text-xs text-gray-600">
-                              {r.lockedAt ? new Date(r.lockedAt).toLocaleString() : '-'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <div className="flex items-center gap-2">
-                            <FaClock className="w-3 h-3 text-gray-400" />
-                            <span className="text-xs text-gray-600">
-                              {r.unlockAt ? new Date(r.unlockAt).toLocaleString() : '-'}
-                            </span>
-                          </div>
-                        </td>
-                        <td className="py-3 px-4">
-                          <button
-                            onClick={async () => {
-                              try {
-                                if (r.email) {
-                                  await unlockPasswordByEmailOrUser({ email: r.email });
-                                } else if (r.userId) {
-                                  await unlockPasswordByEmailOrUser({ userId: r.userId });
-                                } else if (r.ipAddress) {
-                                  await unlockPasswordByIp(r.ipAddress);
-                                } else if (r.identifier) {
-                                  await unlockPasswordByIdentifier(r.identifier);
-                                }
-                              } catch (_) {}
-                            }}
-                            className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
-                            title="Unlock password restriction"
-                          >
-                            <FaUnlockAlt className="w-3 h-3" />
-                            Unlock
-                          </button>
-                        </td>
-                      </tr>
-                    ))}
-                    {passwordLockouts.length === 0 && (
-                      <tr>
-                        <td className="py-8 text-center text-gray-500" colSpan="8">
-                          <div className="flex flex-col items-center gap-2">
-                            <FaCheckCircle className="w-8 h-8 text-green-500" />
-                            <span className="text-lg font-medium">No active password lockouts</span>
-                            <span className="text-sm">All users can access their accounts normally</span>
-                          </div>
-                        </td>
-                      </tr>
-                    )}
-                  </tbody>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <div className="flex items-center gap-2">
+                          <FaClock className="w-3 h-3 text-gray-400" />
+                          <span className="text-xs text-gray-600 dark:text-gray-400 whitespace-nowrap">
+                            {r.unlockAt ? new Date(r.unlockAt).toLocaleString() : '-'}
+                          </span>
+                        </div>
+                      </td>
+                      <td className="py-3 px-4">
+                        <button
+                          onClick={async () => {
+                            try {
+                              if (r.email) {
+                                await unlockPasswordByEmailOrUser({ email: r.email });
+                              } else if (r.userId) {
+                                await unlockPasswordByEmailOrUser({ userId: r.userId });
+                              } else if (r.ipAddress) {
+                                await unlockPasswordByIp(r.ipAddress);
+                              } else if (r.identifier) {
+                                await unlockPasswordByIdentifier(r.identifier);
+                              }
+                            } catch (_) { }
+                          }}
+                          className="inline-flex items-center gap-1 px-3 py-1.5 text-xs bg-gradient-to-r from-green-500 to-green-600 hover:from-green-600 hover:to-green-700 text-white rounded-lg font-medium transition-all duration-200 shadow-sm hover:shadow-md transform hover:scale-105"
+                          title="Unlock password restriction"
+                        >
+                          <FaUnlockAlt className="w-3 h-3" />
+                          Unlock
+                        </button>
+                      </td>
+                    </tr>
+                  ))}
+                  {passwordLockouts.length === 0 && (
+                    <tr>
+                      <td className="py-8 text-center text-gray-500 dark:text-gray-400" colSpan="8">
+                        <div className="flex flex-col items-center gap-2">
+                          <FaCheckCircle className="w-8 h-8 text-green-500" />
+                          <span className="text-lg font-medium text-gray-700 dark:text-gray-200">No active password lockouts</span>
+                          <span className="text-sm">All users can access their accounts normally</span>
+                        </div>
+                      </td>
+                    </tr>
+                  )}
+                </tbody>
               </table>
             </div>
-          
+
           </div>
         </div>
       </div>
     </div>
   );
 }
-

@@ -1063,8 +1063,8 @@ export default function AdminManagement() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 py-10 px-2 md:px-8 animate-fadeIn transition-colors duration-300">
-      <div className="max-w-6xl mx-auto bg-white dark:bg-gray-900 rounded-2xl shadow-2xl p-8 animate-slideUp">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-950 dark:to-gray-900 py-10 px-2 md:px-8 animate-fadeIn transition-colors duration-300">
+      <div className="max-w-6xl mx-auto bg-white/90 dark:bg-gray-900/90 backdrop-blur-md rounded-2xl shadow-2xl p-8 animate-slideUp border border-white/20 dark:border-gray-800">
         <div className="flex items-center justify-between mb-8">
           <h1 className="text-4xl font-extrabold text-blue-700 dark:text-blue-400 drop-shadow animate-fade-in">Accounts Management</h1>
           <button
@@ -1139,7 +1139,7 @@ export default function AdminManagement() {
         </div>
 
         {/* Enhanced Search and Filters */}
-        <div className="mb-6 animate-fadeIn">
+        <div className="mb-6 animate-fadeIn bg-gray-50/50 dark:bg-gray-800/50 p-6 rounded-2xl border border-gray-100 dark:border-gray-700">
           {tab !== 'softbanned' && tab !== 'purged' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {/* Main Search */}
@@ -1326,7 +1326,7 @@ export default function AdminManagement() {
                         title="Click to view full details"
                       >
                         <div className="flex items-start gap-4">
-                          <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-900/30 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-blue-600 dark:text-blue-400">
+                          <div className="w-16 h-16 rounded-full bg-blue-100 dark:bg-blue-500/20 flex-shrink-0 flex items-center justify-center text-2xl font-bold text-blue-600 dark:text-blue-400">
                             <FaUser />
                           </div>
                           <div className="flex-1 min-w-0 flex flex-col gap-1">
@@ -1353,7 +1353,7 @@ export default function AdminManagement() {
                               const remainingMs = new Date(entry.unlockAt).getTime() - Date.now();
                               const remainingMin = Math.max(1, Math.ceil(remainingMs / 60000));
                               return (
-                                <div className="mt-1 text-xs text-orange-700 bg-orange-50 border border-orange-200 rounded px-2 py-1 inline-block">
+                                <div className="mt-1 text-xs text-orange-700 dark:text-orange-400 bg-orange-50 dark:bg-orange-950/40 border border-orange-200 dark:border-orange-800/50 rounded px-2 py-1 inline-block">
                                   Locked: ~{remainingMin} min left
                                 </div>
                               );
@@ -1362,7 +1362,7 @@ export default function AdminManagement() {
                         </div>
                         <div className="flex flex-col gap-2 mt-4 sm:flex-row sm:gap-2">
                           <button
-                            className={`flex-1 px-2 py-1 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${user.status === "active" ? "bg-yellow-400 text-white hover:bg-yellow-500" : "bg-green-500 text-white hover:bg-green-600"}`}
+                            className={`flex-1 px-2 py-1 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${user.status === "active" ? "bg-yellow-400 dark:bg-yellow-500/80 text-white hover:bg-yellow-500" : "bg-green-500 dark:bg-green-600/80 text-white hover:bg-green-600"}`}
                             onClick={e => { e.stopPropagation(); handleSuspend(user._id, "user"); }}
                           >
                             {actionLoading.suspend[user._id] ? (
@@ -1486,7 +1486,7 @@ export default function AdminManagement() {
                         </div>
                         <div className="flex flex-col gap-2 mt-4 sm:flex-row sm:gap-2">
                           <button
-                            className={`flex-1 px-2 py-1 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${admin.status === "active" ? "bg-yellow-400 text-white hover:bg-yellow-500" : "bg-green-500 text-white hover:bg-green-600"}`}
+                            className={`flex-1 px-2 py-1 rounded-lg font-semibold text-sm transition-all duration-200 flex items-center justify-center gap-2 ${admin.status === "active" ? "bg-yellow-400 dark:bg-yellow-500/80 text-white hover:bg-yellow-500" : "bg-green-500 dark:bg-green-600/80 text-white hover:bg-green-600"}`}
                             onClick={e => { e.stopPropagation(); handleSuspend(admin._id, "admin"); }}
                           >
                             {actionLoading.suspend[admin._id] ? (
@@ -1546,7 +1546,7 @@ export default function AdminManagement() {
                 {softbannedLoading ? (
                   <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div><span className="ml-3 text-gray-600 dark:text-gray-400">Loading...</span></div>
                 ) : softbannedAccounts.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500 dark:text-gray-400 border dark:border-gray-700 rounded-xl">No softbanned accounts found</div>
+                  <div className="p-6 text-center text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-800/30">No softbanned accounts found</div>
                 ) : (
                   <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
                     <table className="min-w-full text-sm">
@@ -1612,7 +1612,7 @@ export default function AdminManagement() {
                 {purgedLoading ? (
                   <div className="flex items-center justify-center p-8"><div className="animate-spin rounded-full h-8 w-8 border-b-2 border-red-600"></div><span className="ml-3 text-gray-600 dark:text-gray-400">Loading...</span></div>
                 ) : purgedAccounts.length === 0 ? (
-                  <div className="p-6 text-center text-gray-500 dark:text-gray-400 border dark:border-gray-700 rounded-xl">No purged accounts found</div>
+                  <div className="p-6 text-center text-gray-500 dark:text-gray-400 border border-gray-100 dark:border-gray-700 rounded-xl bg-gray-50/50 dark:bg-gray-800/30">No purged accounts found</div>
                 ) : (
                   <div className="overflow-x-auto rounded-xl border border-gray-200 dark:border-gray-700">
                     <table className="min-w-full text-sm">
@@ -1662,8 +1662,8 @@ export default function AdminManagement() {
       </div>
       {/* Account Details Modal */}
       {showAccountModal && (
-        <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-xs sm:max-w-md mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto p-0 sm:p-0 relative animate-fadeIn">
+        <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-2 sm:p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-sm mx-2 sm:mx-4 max-h-[90vh] overflow-y-auto p-0 relative animate-scale-in border border-white/20 dark:border-gray-700">
             {/* Close button top right */}
             <button
               className="absolute top-3 right-3 text-gray-400 hover:text-gray-700 dark:hover:text-gray-300 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-full p-2 transition-colors z-10 shadow"
@@ -1674,24 +1674,27 @@ export default function AdminManagement() {
               <FaTimes className="w-4 h-4" />
             </button>
             {/* Header */}
-            <div className="flex flex-col items-center justify-center bg-gradient-to-r from-blue-100 to-purple-100 dark:from-gray-700 dark:to-gray-800 rounded-t-2xl px-6 py-5 border-b border-gray-200 dark:border-gray-700">
-              <div className="flex items-center gap-3">
-                <img
-                  src={selectedAccount?.avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}
-                  alt="avatar"
-                  className="w-16 h-16 rounded-full object-cover border-4 border-white shadow-lg"
-                  onError={e => { e.target.onerror = null; e.target.src = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'; }}
-                />
+            <div className="flex flex-col items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-gray-800 dark:to-gray-900 rounded-t-3xl px-6 py-8 border-b border-gray-100 dark:border-gray-700">
+              <div className="flex flex-col items-center gap-4 text-center">
+                <div className="relative">
+                  <img
+                    src={selectedAccount?.avatar || 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'}
+                    alt="avatar"
+                    className="w-24 h-24 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-xl"
+                    onError={e => { e.target.onerror = null; e.target.src = 'https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png'; }}
+                  />
+                  <div className={`absolute bottom-1 right-1 w-5 h-5 rounded-full border-2 border-white dark:border-gray-800 ${selectedAccount?.status === 'active' ? 'bg-green-500' : 'bg-red-500'}`}></div>
+                </div>
                 <div>
-                  <h2 className="text-xl font-bold text-blue-800 dark:text-blue-300 flex items-center gap-2">
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
                     {selectedAccount?.username}
                   </h2>
-                  <p className="text-xs text-gray-500 dark:text-gray-400">{selectedAccount?.email}</p>
+                  <p className="text-sm text-gray-500 dark:text-gray-400">{selectedAccount?.email}</p>
                 </div>
               </div>
-              <div className="mt-2 flex flex-col items-center">
-                <span className="inline-flex items-center gap-1 text-sm text-purple-700 font-semibold">
-                  {selectedAccount?.type === 'admin' ? <FaUserShield className="text-purple-500" /> : <FaUser className="text-blue-500" />}
+              <div className="mt-4 flex flex-col items-center">
+                <span className={`inline-flex items-center gap-2 px-4 py-1.5 rounded-full text-sm font-bold shadow-sm ${selectedAccount?.type === 'admin' ? 'bg-purple-100 dark:bg-purple-500/20 text-purple-700 dark:text-purple-400' : 'bg-blue-100 dark:bg-blue-500/20 text-blue-700 dark:text-blue-400'}`}>
+                  {selectedAccount?.type === 'admin' ? <FaUserShield /> : <FaUser />}
                   {selectedAccount?.type === 'admin' ? 'Admin' : 'User'}
                 </span>
               </div>
@@ -1758,7 +1761,7 @@ export default function AdminManagement() {
                         )}
                       </div>
                     )}
-                    <div className="grid grid-cols-2 gap-2 mt-2 bg-gray-50 dark:bg-gray-700/50 p-3 rounded-lg">
+                    <div className="grid grid-cols-2 gap-3 mt-4 bg-gray-50/50 dark:bg-gray-900/50 p-4 rounded-xl border border-gray-100 dark:border-gray-700">
                       <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Wishlist:</span> {selectedAccount.wishlistCount || 0}</div>
                       <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Watchlist:</span> {selectedAccount.watchlistCount || 0}</div>
                       <div className="text-gray-600 dark:text-gray-400 text-sm"><span className="font-semibold text-gray-700 dark:text-gray-300">Reviews:</span> {selectedAccount.reviewsCount || 0}</div>
@@ -1836,21 +1839,21 @@ export default function AdminManagement() {
       {/* Confirmation Modal */}
       {
         showConfirmModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-50 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl w-full max-w-md mx-4 animate-fadeIn">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-[60] p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl w-full max-w-md mx-4 animate-scale-in border border-white/20 dark:border-gray-700">
               <div className="p-6">
-                <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">{confirmModalData.title}</h3>
-                <p className="text-gray-600 dark:text-gray-300 mb-6">{confirmModalData.message}</p>
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">{confirmModalData.title}</h3>
+                <p className="text-gray-600 dark:text-gray-400 mb-8">{confirmModalData.message}</p>
                 <div className="flex gap-3 justify-end">
                   <button
                     onClick={handleConfirmModalClose}
-                    className="px-4 py-2 rounded-lg bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition-colors"
+                    className="px-6 py-2.5 rounded-xl bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold transition-all"
                   >
                     {confirmModalData.cancelText}
                   </button>
                   <button
                     onClick={handleConfirmModalConfirm}
-                    className={`px-4 py-2 rounded-lg text-white font-semibold transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${confirmModalData.confirmButtonClass}`}
+                    className={`px-6 py-2.5 rounded-xl text-white font-semibold transition-all shadow-lg hover:shadow-xl disabled:opacity-50 disabled:cursor-not-allowed flex items-center gap-2 ${confirmModalData.confirmButtonClass}`}
                     disabled={actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge || actionLoading.suspend[confirmModalData.userId] || actionLoading.softban}
                   >
                     {(actionLoading.promote[confirmModalData.userId] || actionLoading.demote[confirmModalData.userId] || actionLoading.restore || actionLoading.purge || actionLoading.suspend[confirmModalData.userId] || actionLoading.softban) ? (
@@ -1876,8 +1879,8 @@ export default function AdminManagement() {
       {/* Softban Reason Modal */}
       {
         showDeleteReasonModal && (
-          <div className="fixed inset-0 bg-black bg-opacity-60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
-            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-xl max-w-lg w-full p-6 max-h-[90vh] overflow-y-auto">
+          <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
+            <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-2xl max-w-lg w-full p-8 max-h-[90vh] overflow-y-auto border border-white/20 dark:border-gray-700 transform animate-scale-in">
               <h3 className="text-xl font-bold text-gray-800 dark:text-gray-100 mb-4">Reason for Softban</h3>
               <p className="text-gray-600 dark:text-gray-300 mb-3">Please select a reason and configure policy to proceed.</p>
 
