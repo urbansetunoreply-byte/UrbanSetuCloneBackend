@@ -2132,12 +2132,12 @@ export default function Listing() {
 
                 {/* 2. Viewer for Verified Listings */}
                 {listing.isVerified && listing.virtualTourImages && listing.virtualTourImages.length > 0 && (
-                  <div className="border rounded-lg p-3 bg-white shadow-sm">
-                    <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
-                      <FaCompass className="text-indigo-600" /> 360° Virtual Tour ({listing.virtualTourImages.length})
+                  <div className="border rounded-lg p-3 bg-white dark:bg-gray-800 dark:border-gray-700 shadow-sm">
+                    <h4 className="font-semibold text-gray-800 dark:text-white mb-3 flex items-center gap-2">
+                      <FaCompass className="text-indigo-600 dark:text-indigo-400" /> 360° Virtual Tour ({listing.virtualTourImages.length})
                     </h4>
                     {/* Main Active Viewer */}
-                    <div className="relative w-full h-[500px] rounded-xl overflow-hidden border border-gray-200 shadow-md group mb-4">
+                    <div className="relative w-full h-[500px] rounded-xl overflow-hidden border border-gray-200 dark:border-gray-700 shadow-md group mb-4">
                       {/* 360 Viewer with conditional blur if not logged in */}
                       <div className={`w-full h-full ${!currentUser ? "filter blur-sm pointer-events-none select-none opacity-50" : ""}`}>
                         <VirtualTourViewer
@@ -2555,32 +2555,32 @@ export default function Listing() {
               </h4>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 p-4 rounded-lg">
-                    <h5 className="font-semibold text-blue-800 mb-2 flex items-center gap-2">
-                      <FaEye className="text-blue-600" />
+                  <div className="bg-gradient-to-r from-blue-50 to-blue-100 dark:from-blue-900/30 dark:to-blue-800/30 p-4 rounded-lg border border-blue-100 dark:border-blue-800/50">
+                    <h5 className="font-semibold text-blue-800 dark:text-blue-100 mb-2 flex items-center gap-2">
+                      <FaEye className="text-blue-600 dark:text-blue-400" />
                       Property Performance
                     </h5>
                     <div className="space-y-2">
                       {/* Total Views - Only show for admins, rootadmins, and property owners */}
                       {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin' || (listing.userRef && currentUser._id === listing.userRef)) && (
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Total Views</span>
-                          <span className="font-semibold text-blue-600">
+                          <span className="text-sm text-gray-600 dark:text-gray-300">Total Views</span>
+                          <span className="font-semibold text-blue-600 dark:text-blue-300">
                             {listing.viewCount || 0}
                           </span>
                         </div>
                       )}
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Days Listed</span>
-                        <span className="font-semibold text-blue-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Days Listed</span>
+                        <span className="font-semibold text-blue-600 dark:text-blue-300">
                           {daysListed > 0 ? `${daysListed} days` : 'Today'}
                         </span>
                       </div>
                       {/* Interest Level - Only show for admins, rootadmins, and property owners */}
                       {currentUser && (currentUser.role === 'admin' || currentUser.role === 'rootadmin' || (listing.userRef && currentUser._id === listing.userRef)) && (
                         <div className="flex justify-between">
-                          <span className="text-sm text-gray-600">Interest Level</span>
-                          <span className="font-semibold text-green-600">
+                          <span className="text-sm text-gray-600 dark:text-gray-300">Interest Level</span>
+                          <span className="font-semibold text-green-600 dark:text-green-400">
                             {(() => {
                               const views = listing.viewCount || 0;
                               return views > 100 ? 'High' : views > 50 ? 'Medium' : 'Low';
@@ -2591,15 +2591,15 @@ export default function Listing() {
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-green-50 to-green-100 p-4 rounded-lg">
-                    <h5 className="font-semibold text-green-800 mb-2 flex items-center gap-2">
-                      <FaThumbsUp className="text-green-600" />
+                  <div className="bg-gradient-to-r from-green-50 to-green-100 dark:from-green-900/30 dark:to-green-800/30 p-4 rounded-lg border border-green-100 dark:border-green-800/50">
+                    <h5 className="font-semibold text-green-800 dark:text-green-100 mb-2 flex items-center gap-2">
+                      <FaThumbsUp className="text-green-600 dark:text-green-400" />
                       Market Position
                     </h5>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Price Competitiveness</span>
-                        <span className="font-semibold text-green-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Price Competitiveness</span>
+                        <span className="font-semibold text-green-600 dark:text-green-300">
                           {neighborhood && neighborhood.averagePriceNearby ?
                             (listing.regularPrice < neighborhood.averagePriceNearby ? 'Below Market' : 'Above Market') :
                             'Market Rate'
@@ -2607,12 +2607,12 @@ export default function Listing() {
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Property Type</span>
-                        <span className="font-semibold text-green-600">{listing.type === 'rent' ? 'Rental' : 'Sale'}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Property Type</span>
+                        <span className="font-semibold text-green-600 dark:text-green-300">{listing.type === 'rent' ? 'Rental' : 'Sale'}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Demand Score</span>
-                        <span className="font-semibold text-green-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Demand Score</span>
+                        <span className="font-semibold text-green-600 dark:text-green-300">
                           {listing.bedrooms >= 3 ? 'High' : listing.bedrooms === 2 ? 'Medium' : 'Standard'}
                         </span>
                       </div>
@@ -2621,48 +2621,48 @@ export default function Listing() {
                 </div>
 
                 <div className="space-y-4">
-                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 p-4 rounded-lg">
-                    <h5 className="font-semibold text-purple-800 mb-2 flex items-center gap-2">
-                      <FaComments className="text-purple-600" />
+                  <div className="bg-gradient-to-r from-purple-50 to-purple-100 dark:from-purple-900/30 dark:to-purple-800/30 p-4 rounded-lg border border-purple-100 dark:border-purple-800/50">
+                    <h5 className="font-semibold text-purple-800 dark:text-purple-100 mb-2 flex items-center gap-2">
+                      <FaComments className="text-purple-600 dark:text-purple-400" />
                       Community Feedback
                     </h5>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Average Rating</span>
-                        <span className="font-semibold text-purple-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Average Rating</span>
+                        <span className="font-semibold text-purple-600 dark:text-purple-300">
                           {listing.averageRating > 0 ? `${listing.averageRating.toFixed(1)} ⭐` : 'No ratings yet'}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Total Reviews</span>
-                        <span className="font-semibold text-purple-600">{listing.reviewCount || 0}</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Total Reviews</span>
+                        <span className="font-semibold text-purple-600 dark:text-purple-300">{listing.reviewCount || 0}</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Owner Response Rate</span>
-                        <span className="font-semibold text-purple-600">85%</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Owner Response Rate</span>
+                        <span className="font-semibold text-purple-600 dark:text-purple-300">85%</span>
                       </div>
                     </div>
                   </div>
 
-                  <div className="bg-gradient-to-r from-orange-50 to-orange-100 p-4 rounded-lg">
-                    <h5 className="font-semibold text-orange-800 mb-2 flex items-center gap-2">
-                      <FaCalculator className="text-orange-600" />
+                  <div className="bg-gradient-to-r from-orange-50 to-orange-100 dark:from-orange-900/30 dark:to-orange-800/30 p-4 rounded-lg border border-orange-100 dark:border-orange-800/50">
+                    <h5 className="font-semibold text-orange-800 dark:text-orange-100 mb-2 flex items-center gap-2">
+                      <FaCalculator className="text-orange-600 dark:text-orange-400" />
                       Investment Analysis
                     </h5>
                     <div className="space-y-2">
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">ROI Potential</span>
-                        <span className="font-semibold text-orange-600">
+                        <span className="text-sm text-gray-600 dark:text-gray-300">ROI Potential</span>
+                        <span className="font-semibold text-orange-600 dark:text-orange-300">
                           {listing.type === 'rent' ? '5-8%' : '8-12%'}
                         </span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Appreciation Rate</span>
-                        <span className="font-semibold text-orange-600">6-10% annually</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Appreciation Rate</span>
+                        <span className="font-semibold text-orange-600 dark:text-orange-300">6-10% annually</span>
                       </div>
                       <div className="flex justify-between">
-                        <span className="text-sm text-gray-600">Risk Level</span>
-                        <span className="font-semibold text-orange-600">Low-Medium</span>
+                        <span className="text-sm text-gray-600 dark:text-gray-300">Risk Level</span>
+                        <span className="font-semibold text-orange-600 dark:text-orange-300">Low-Medium</span>
                       </div>
                     </div>
                   </div>
@@ -3085,35 +3085,35 @@ export default function Listing() {
 
           {/* Neighborhood Insights */}
           {neighborhood && (
-            <div className="mt-8 p-4 bg-white dark:bg-gray-800 rounded-lg shadow">
+            <div className="mt-8 p-4 bg-white dark:bg-gray-800 rounded-lg shadow border border-gray-100 dark:border-gray-700">
               <h4 className="text-xl font-bold text-gray-800 dark:text-white mb-3">Neighborhood Insights</h4>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-sm">
                 <div>
-                  <p className="text-gray-600">City</p>
-                  <p className="font-semibold text-gray-800">{neighborhood.city}</p>
+                  <p className="text-gray-600 dark:text-gray-400">City</p>
+                  <p className="font-semibold text-gray-800 dark:text-white">{neighborhood.city}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Average Price Nearby</p>
-                  <p className="font-semibold text-gray-800">₹{(neighborhood.averagePriceNearby || 0).toLocaleString('en-IN')}</p>
+                  <p className="text-gray-600 dark:text-gray-400">Average Price Nearby</p>
+                  <p className="font-semibold text-gray-800 dark:text-white">₹{(neighborhood.averagePriceNearby || 0).toLocaleString('en-IN')}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">School Score</p>
-                  <p className="font-semibold text-gray-800">{neighborhood.schoolScore}</p>
+                  <p className="text-gray-600 dark:text-gray-400">School Score</p>
+                  <p className="font-semibold text-gray-800 dark:text-white">{neighborhood.schoolScore}</p>
                 </div>
                 <div>
-                  <p className="text-gray-600">Safety Score</p>
-                  <p className="font-semibold text-gray-800">{neighborhood.safetyScore}</p>
+                  <p className="text-gray-600 dark:text-gray-400">Safety Score</p>
+                  <p className="font-semibold text-gray-800 dark:text-white">{neighborhood.safetyScore}</p>
                 </div>
               </div>
               <div className="mt-3">
-                <p className="text-gray-600">Commute Times</p>
-                <p className="font-semibold text-gray-800">Metro: {neighborhood.commuteTimes?.metro}, Bus: {neighborhood.commuteTimes?.bus}, Car: {neighborhood.commuteTimes?.car}</p>
+                <p className="text-gray-600 dark:text-gray-400">Commute Times</p>
+                <p className="font-semibold text-gray-800 dark:text-white">Metro: {neighborhood.commuteTimes?.metro}, Bus: {neighborhood.commuteTimes?.bus}, Car: {neighborhood.commuteTimes?.car}</p>
               </div>
               <div className="mt-3">
-                <p className="text-gray-600">Nearby Amenities</p>
+                <p className="text-gray-600 dark:text-gray-400">Nearby Amenities</p>
                 <div className="flex flex-wrap gap-2 mt-1">
                   {(neighborhood.nearbyAmenities || []).map((a, i) => (
-                    <span key={i} className="px-2 py-1 bg-gray-100 rounded text-gray-700">{a}</span>
+                    <span key={i} className="px-2 py-1 bg-gray-100 dark:bg-gray-700 rounded text-gray-700 dark:text-gray-300 border border-gray-200 dark:border-gray-600">{a}</span>
                   ))}
                 </div>
               </div>
@@ -3635,19 +3635,19 @@ export default function Listing() {
       {/* Report Property Modal */}
       {showReportModal && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-40 z-50">
-          <div className="bg-white rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col gap-4">
-            <h3 className="text-lg font-bold text-red-700 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-lg shadow-lg p-6 w-full max-w-md flex flex-col gap-4 border border-transparent dark:border-gray-700">
+            <h3 className="text-lg font-bold text-red-700 dark:text-red-500 flex items-center gap-2">
               <FaFlag /> Report Property
             </h3>
-            <p className="text-sm text-gray-600">Help us maintain quality by reporting any issues with this property.</p>
+            <p className="text-sm text-gray-600 dark:text-gray-300">Help us maintain quality by reporting any issues with this property.</p>
 
             <div className="space-y-4">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-2">Report Category *</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Report Category *</label>
                 <select
                   value={reportCategory}
                   onChange={(e) => setReportCategory(e.target.value)}
-                  className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                  className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                 >
                   <option value="">Select a category</option>
                   <option value="fake">Fake / misleading listing</option>
@@ -3660,13 +3660,13 @@ export default function Listing() {
 
               {(reportCategory === 'other' || reportCategory) && (
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                     {reportCategory === 'other' ? 'Additional Details *' : 'Additional Details (Optional)'}
                   </label>
                   <textarea
                     value={reportDetails}
                     onChange={(e) => setReportDetails(e.target.value)}
-                    className="w-full p-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900"
+                    className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:outline-none focus:ring-2 focus:ring-red-500 text-gray-900 dark:text-white bg-white dark:bg-gray-700"
                     rows={4}
                     placeholder={reportCategory === 'other' ? 'Please provide details about the issue...' : 'Provide additional context (optional)...'}
                   />
@@ -3681,7 +3681,7 @@ export default function Listing() {
                   setReportCategory('');
                   setReportDetails('');
                 }}
-                className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold"
+                className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600"
               >
                 Cancel
               </button>
@@ -4595,16 +4595,16 @@ export default function Listing() {
       {
         showAIRecommendations && currentUser && (
           <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50 p-4">
-            <div className="bg-white rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden">
+            <div className="bg-white dark:bg-gray-900 rounded-xl shadow-2xl w-full max-w-6xl max-h-[90vh] overflow-hidden border border-transparent dark:border-gray-800">
               {/* Modal Header */}
-              <div className="flex items-center justify-between p-6 border-b border-gray-200 bg-gradient-to-r from-blue-50 to-purple-50">
+              <div className="flex items-center justify-between p-6 border-b border-gray-200 dark:border-gray-800 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-900/20 dark:to-purple-900/20">
                 <div className="flex items-center gap-3">
-                  <FaRobot className="text-2xl text-blue-600" />
-                  <h2 className="text-2xl font-bold text-gray-800">Advanced AI Property Recommendations</h2>
+                  <FaRobot className="text-2xl text-blue-600 dark:text-blue-400" />
+                  <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Advanced AI Property Recommendations</h2>
                 </div>
                 <button
                   onClick={() => setShowAIRecommendations(false)}
-                  className="text-gray-500 hover:text-gray-700 transition-colors p-2 hover:bg-gray-100 rounded-lg"
+                  className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg"
                   title="Close"
                 >
                   <FaTimes className="text-xl" />
@@ -4612,7 +4612,7 @@ export default function Listing() {
               </div>
 
               {/* Modal Content */}
-              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)]">
+              <div className="p-6 overflow-y-auto max-h-[calc(90vh-120px)] bg-gray-50 dark:bg-gray-950">
                 <AdvancedAIRecommendations
                   userId={currentUser._id}
                   limit={8}
