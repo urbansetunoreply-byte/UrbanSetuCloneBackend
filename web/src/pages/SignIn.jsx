@@ -812,7 +812,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 <FaEdit className="text-sm" />
                                             </button>
                                         ) : null}
-                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${emailStep ? 'bg-gray-100 text-gray-600 pr-20' : ''}`}
+                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${emailStep ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 pr-20' : ''}`}
                                         required
                                     />
 
@@ -855,7 +855,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     {showPassword ? <FaEyeSlash /> : <FaEye />}
                                                 </button>
                                             }
-                                            inputClassName="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20"
+                                            inputClassName="transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 dark:bg-gray-800 dark:text-white"
                                             required
                                         />
 
@@ -940,7 +940,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 <FaEdit className="text-sm" />
                                             </button>
                                         ) : null}
-                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${otpSent ? 'bg-gray-100 text-gray-600 pr-20' : ''}`}
+                                        inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${otpSent ? 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 pr-20' : ''}`}
                                         required
                                     />
                                 </div>

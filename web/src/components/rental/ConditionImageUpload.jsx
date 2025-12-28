@@ -238,7 +238,9 @@ export default function ConditionImageUpload({
                       className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {ROOM_OPTIONS.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        <option key={opt.value} value={opt.value} className="bg-white text-gray-900 dark:bg-gray-700 dark:text-white">
+                          {opt.label}
+                        </option>
                       ))}
                     </select>
                     <input
@@ -246,7 +248,7 @@ export default function ConditionImageUpload({
                       placeholder="Description (optional)"
                       value={img.description || ''}
                       onChange={(e) => updateImage(index, { description: e.target.value })}
-                      className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                     />
                   </>
                 ) : (
@@ -323,7 +325,9 @@ export default function ConditionImageUpload({
                       className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                     >
                       {ROOM_OPTIONS.map(opt => (
-                        <option key={opt.value} value={opt.value}>{opt.label}</option>
+                        <option key={opt.value} value={opt.value} className="bg-white text-gray-900 dark:bg-gray-700 dark:text-white">
+                          {opt.label}
+                        </option>
                       ))}
                     </select>
                     <input
@@ -331,7 +335,7 @@ export default function ConditionImageUpload({
                       placeholder="Description (optional)"
                       value={vid.description || ''}
                       onChange={(e) => updateVideo(index, { description: e.target.value })}
-                      className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                      className="w-full text-xs border rounded p-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                     />
                   </>
                 ) : (

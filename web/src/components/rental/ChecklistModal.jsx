@@ -339,7 +339,9 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                           className="border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                         >
                           {CONDITION_OPTIONS.map(opt => (
-                            <option key={opt.value} value={opt.value}>{opt.label}</option>
+                            <option key={opt.value} value={opt.value} className="bg-white text-gray-900 dark:bg-gray-700 dark:text-white">
+                              {opt.label}
+                            </option>
                           ))}
                         </select>
                         <div className="flex gap-2">
@@ -348,7 +350,7 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                             placeholder="Notes"
                             value={room.notes || ''}
                             onChange={(e) => updateRoom(roomIndex, { notes: e.target.value })}
-                            className="flex-1 border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
+                            className="flex-1 border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
                           />
                           <button
                             onClick={() => removeRoom(roomIndex)}
@@ -468,7 +470,9 @@ export default function ChecklistModal({ contract, checklist, checklistType, onC
                         className="border rounded p-2 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                       >
                         {CONDITION_OPTIONS.map(opt => (
-                          <option key={opt.value} value={opt.value}>{opt.label}</option>
+                          <option key={opt.value} value={opt.value} className="bg-white text-gray-900 dark:bg-gray-700 dark:text-white">
+                            {opt.label}
+                          </option>
                         ))}
                       </select>
                       <label className="flex items-center gap-2 border border-gray-200 dark:border-gray-600 rounded p-2 dark:text-gray-200">
