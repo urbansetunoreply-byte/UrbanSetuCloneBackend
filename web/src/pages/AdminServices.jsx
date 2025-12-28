@@ -125,45 +125,45 @@ export default function AdminServices() {
   return (
     <div className="max-w-6xl mx-auto px-4 py-8">
       <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-        <h1 className="text-2xl font-bold flex items-center gap-2"><FaTools className="text-purple-700" /> Service Requests</h1>
+        <h1 className="text-2xl font-bold flex items-center gap-2 dark:text-white"><FaTools className="text-purple-700 dark:text-purple-400" /> Service Requests</h1>
         <div className="flex items-center gap-3">
-          <button onClick={fetchServiceRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+          <button onClick={fetchServiceRequests} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-sm dark:text-white">Refresh</button>
         </div>
       </div>
 
       {/* Summary cards */}
       <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-        <div className="bg-white rounded shadow p-3 text-center">
-          <p className="text-xs text-gray-500">Total</p>
-          <p className="text-xl font-bold">{items.length}</p>
+        <div className="bg-white dark:bg-gray-800 rounded shadow p-3 text-center transition-colors">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Total</p>
+          <p className="text-xl font-bold dark:text-white">{items.length}</p>
         </div>
-        <div className="bg-white rounded shadow p-3 text-center">
-          <p className="text-xs text-gray-500">Unread</p>
-          <p className="text-xl font-bold text-red-600">{items.filter(i => !i.isRead).length}</p>
+        <div className="bg-white dark:bg-gray-800 rounded shadow p-3 text-center transition-colors">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Unread</p>
+          <p className="text-xl font-bold text-red-600 dark:text-red-400">{items.filter(i => !i.isRead).length}</p>
         </div>
-        <div className="bg-white rounded shadow p-3 text-center">
-          <p className="text-xs text-gray-500">Read</p>
-          <p className="text-xl font-bold text-green-600">{items.filter(i => i.isRead).length}</p>
+        <div className="bg-white dark:bg-gray-800 rounded shadow p-3 text-center transition-colors">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Read</p>
+          <p className="text-xl font-bold text-green-600 dark:text-green-400">{items.filter(i => i.isRead).length}</p>
         </div>
-        <div className="bg-white rounded shadow p-3 text-center">
-          <p className="text-xs text-gray-500">Today</p>
-          <p className="text-xl font-bold">{items.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).length}</p>
+        <div className="bg-white dark:bg-gray-800 rounded shadow p-3 text-center transition-colors">
+          <p className="text-xs text-gray-500 dark:text-gray-400">Today</p>
+          <p className="text-xl font-bold dark:text-white">{items.filter(i => new Date(i.createdAt).toDateString() === new Date().toDateString()).length}</p>
         </div>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-        <input className="border rounded p-2 text-sm" placeholder="Search" value={serviceFilters.q} onChange={e => setServiceFilters(f => ({ ...f, q: e.target.value }))} />
-        <select className="border rounded p-2 text-sm" value={serviceFilters.status} onChange={e => setServiceFilters(f => ({ ...f, status: e.target.value }))}>
+        <input className="border rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Search" value={serviceFilters.q} onChange={e => setServiceFilters(f => ({ ...f, q: e.target.value }))} />
+        <select className="border rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={serviceFilters.status} onChange={e => setServiceFilters(f => ({ ...f, status: e.target.value }))}>
           {['all', 'pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
         </select>
-        <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={() => setServiceFilters({ q: '', status: 'all' })}>Clear</button>
+        <button className="px-3 py-2 bg-gray-100 dark:bg-gray-700 dark:text-white rounded text-sm" onClick={() => setServiceFilters({ q: '', status: 'all' })}>Clear</button>
       </div>
       {loadingServices ? (
-        <div className="text-gray-600">Loading...</div>
+        <div className="text-gray-600 dark:text-gray-400">Loading...</div>
       ) : (
-        <div className="bg-white rounded-xl shadow overflow-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-auto transition-colors">
           <table className="min-w-[700px] w-full text-sm">
-            <thead className="bg-gray-50 text-gray-600">
+            <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
               <tr>
                 <th className="text-left px-4 py-3">Requested</th>
                 <th className="text-left px-4 py-3">Requester</th>
@@ -175,16 +175,16 @@ export default function AdminServices() {
               {filtered.map(n => {
                 const email = n.requesterEmail;
                 return (
-                  <tr key={n._id} className="border-t">
-                    <td className="px-4 py-3 whitespace-nowrap">{new Date(n.createdAt).toLocaleString()}</td>
-                    <td className="px-4 py-3">{n.requesterName} ({n.requesterEmail})</td>
+                  <tr key={n._id} className="border-t dark:border-gray-700">
+                    <td className="px-4 py-3 whitespace-nowrap dark:text-gray-300">{new Date(n.createdAt).toLocaleString()}</td>
+                    <td className="px-4 py-3 dark:text-gray-300">{n.requesterName} ({n.requesterEmail})</td>
                     <td className="px-4 py-3">
-                      <div className="text-xs text-gray-700">Services: {n.services?.join(', ')}</div>
-                      <div className="text-xs text-gray-700">Preferred Date: {n.preferredDate}</div>
-                      <div className="text-xs text-gray-700">Address: {n.address}</div>
-                      {n.notes && (<div className="text-xs text-gray-700">Notes: {n.notes}</div>)}
+                      <div className="text-xs text-gray-700 dark:text-gray-400">Services: {n.services?.join(', ')}</div>
+                      <div className="text-xs text-gray-700 dark:text-gray-400">Preferred Date: {n.preferredDate}</div>
+                      <div className="text-xs text-gray-700 dark:text-gray-400">Address: {n.address}</div>
+                      {n.notes && (<div className="text-xs text-gray-700 dark:text-gray-400">Notes: {n.notes}</div>)}
                       {n.coinsToRedeem > 0 && (
-                        <div className="text-xs font-bold text-amber-600 flex items-center flex-wrap gap-2 mt-1">
+                        <div className="text-xs font-bold text-amber-600 dark:text-amber-500 flex items-center flex-wrap gap-2 mt-1">
                           <div className="flex items-center gap-1">
                             <FaCheckCircle className="text-amber-500" /> {n.coinsToRedeem} Coins
                           </div>
@@ -197,7 +197,7 @@ export default function AdminServices() {
                         {email && (
                           <a href={`mailto:${email}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope /> Email</a>
                         )}
-                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1">
+                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/services/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setItems(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                           {['pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         <button onClick={() => {
@@ -228,26 +228,26 @@ export default function AdminServices() {
       )}
 
       {/* Movers Requests Section */}
-      <div className="mt-10 border-t border-gray-200 pt-8">
+      <div className="mt-10 border-t border-gray-200 dark:border-gray-700 pt-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <h2 className="text-xl font-bold flex items-center gap-2"><FaTruckMoving className="text-blue-600" /> Movers Requests</h2>
-          <button onClick={fetchMoverRequests} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+          <h2 className="text-xl font-bold flex items-center gap-2 dark:text-white"><FaTruckMoving className="text-blue-600" /> Movers Requests</h2>
+          <button onClick={fetchMoverRequests} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-sm dark:text-white">Refresh</button>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-2 mb-3">
-          <input className="border rounded p-2 text-sm" placeholder="Search" value={moversFilters.q} onChange={e => setMoversFilters(f => ({ ...f, q: e.target.value }))} />
-          <select className="border rounded p-2 text-sm" value={moversFilters.status} onChange={e => setMoversFilters(f => ({ ...f, status: e.target.value }))}>
+          <input className="border rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" placeholder="Search" value={moversFilters.q} onChange={e => setMoversFilters(f => ({ ...f, q: e.target.value }))} />
+          <select className="border rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white" value={moversFilters.status} onChange={e => setMoversFilters(f => ({ ...f, status: e.target.value }))}>
             {['all', 'pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
           </select>
-          <button className="px-3 py-2 bg-gray-100 rounded text-sm" onClick={() => setMoversFilters({ q: '', status: 'all' })}>Clear</button>
+          <button className="px-3 py-2 bg-gray-100 dark:bg-gray-700 dark:text-white rounded text-sm" onClick={() => setMoversFilters({ q: '', status: 'all' })}>Clear</button>
         </div>
         {loadingMovers ? (
-          <div className="text-gray-600">Loading...</div>
+          <div className="text-gray-600 dark:text-gray-400">Loading...</div>
         ) : movers.length === 0 ? (
-          <div className="text-gray-600">No movers requests found.</div>
+          <div className="text-gray-600 dark:text-gray-400">No movers requests found.</div>
         ) : (
-          <div className="bg-white rounded-xl shadow overflow-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-auto transition-colors">
             <table className="min-w-[700px] w-full text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                 <tr>
                   <th className="text-left px-4 py-3">Requested</th>
                   <th className="text-left px-4 py-3">Requester</th>
@@ -266,17 +266,17 @@ export default function AdminServices() {
                   const matchStatus = moversFilters.status === 'all' ? true : n.status === moversFilters.status;
                   return matchQ && matchStatus;
                 }).map(n => (
-                  <tr key={n._id} className="border-t">
-                    <td className="px-4 py-3 whitespace-nowrap">{new Date(n.createdAt).toLocaleString()}</td>
-                    <td className="px-4 py-3">{n.requesterName} ({n.requesterEmail})</td>
+                  <tr key={n._id} className="border-t dark:border-gray-700">
+                    <td className="px-4 py-3 whitespace-nowrap dark:text-gray-300">{new Date(n.createdAt).toLocaleString()}</td>
+                    <td className="px-4 py-3 dark:text-gray-300">{n.requesterName} ({n.requesterEmail})</td>
                     <td className="px-4 py-3">
-                      <div className="text-xs text-gray-700">From: {n.fromAddress}</div>
-                      <div className="text-xs text-gray-700">To: {n.toAddress}</div>
-                      <div className="text-xs text-gray-700">Date: {n.moveDate}</div>
-                      <div className="text-xs text-gray-700">Size: {n.size}</div>
-                      {n.notes && (<div className="text-xs text-gray-700">Notes: {n.notes}</div>)}
+                      <div className="text-xs text-gray-700 dark:text-gray-400">From: {n.fromAddress}</div>
+                      <div className="text-xs text-gray-700 dark:text-gray-400">To: {n.toAddress}</div>
+                      <div className="text-xs text-gray-700 dark:text-gray-400">Date: {n.moveDate}</div>
+                      <div className="text-xs text-gray-700 dark:text-gray-400">Size: {n.size}</div>
+                      {n.notes && (<div className="text-xs text-gray-700 dark:text-gray-400">Notes: {n.notes}</div>)}
                       {n.coinsToRedeem > 0 && (
-                        <div className="text-xs font-bold text-amber-600 flex items-center flex-wrap gap-2 mt-1">
+                        <div className="text-xs font-bold text-amber-600 dark:text-amber-500 flex items-center flex-wrap gap-2 mt-1">
                           <div className="flex items-center gap-1">
                             <FaCheckCircle className="text-amber-500" /> {n.coinsToRedeem} Coins
                           </div>
@@ -289,7 +289,7 @@ export default function AdminServices() {
                         {n.requesterEmail && (
                           <a href={`mailto:${n.requesterEmail}`} className="px-2 py-1 rounded bg-blue-600 text-white text-xs inline-flex items-center gap-1"><FaEnvelope /> Email</a>
                         )}
-                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1">
+                        <select value={n.status} onChange={async (e) => { const newStatus = e.target.value; try { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: newStatus } : it)); await fetch(`${API_BASE_URL}/api/requests/movers/${n._id}`, { method: 'PATCH', credentials: 'include', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ status: newStatus }) }); } catch (_) { setMovers(prev => prev.map(it => it._id === n._id ? { ...it, status: n.status } : it)); } }} className="text-xs border rounded px-2 py-1 dark:bg-gray-700 dark:border-gray-600 dark:text-white">
                           {['pending', 'in_progress', 'completed', 'cancelled'].map(s => <option key={s} value={s}>{s}</option>)}
                         </select>
                         <button onClick={() => {
@@ -320,27 +320,27 @@ export default function AdminServices() {
       </div>
 
       {/* Move-In/Move-Out Checklists Section */}
-      <div className="mt-10 border-t border-gray-200 pt-8">
+      <div className="mt-10 border-t border-gray-200 dark:border-gray-700 pt-8">
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
-          <h2 className="text-xl font-bold flex items-center gap-2">
+          <h2 className="text-xl font-bold flex items-center gap-2 dark:text-white">
             <FaHome className="text-green-600" /> Move-In/Move-Out Checklists
           </h2>
-          <button onClick={fetchChecklists} className="px-3 py-1.5 bg-gray-100 rounded hover:bg-gray-200 text-sm">Refresh</button>
+          <button onClick={fetchChecklists} className="px-3 py-1.5 bg-gray-100 dark:bg-gray-700 rounded hover:bg-gray-200 dark:hover:bg-gray-600 text-sm dark:text-white">Refresh</button>
         </div>
-        <p className="text-sm text-gray-600 mb-4">
+        <p className="text-sm text-gray-600 dark:text-gray-400 mb-4">
           Manage and view all Move-In/Move-Out checklists for rental contracts. View, edit, and delete checklists.
         </p>
 
         {/* Filters */}
         <div className="grid grid-cols-1 sm:grid-cols-4 gap-2 mb-4">
           <input
-            className="border rounded p-2 text-sm"
+            className="border rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             placeholder="Search by property, tenant, landlord, contract ID"
             value={checklistFilters.q}
             onChange={(e) => setChecklistFilters(f => ({ ...f, q: e.target.value }))}
           />
           <select
-            className="border rounded p-2 text-sm"
+            className="border rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             value={checklistFilters.type}
             onChange={(e) => setChecklistFilters(f => ({ ...f, type: e.target.value }))}
           >
@@ -349,7 +349,7 @@ export default function AdminServices() {
             <option value="move_out">Move-Out</option>
           </select>
           <select
-            className="border rounded p-2 text-sm"
+            className="border rounded p-2 text-sm dark:bg-gray-700 dark:border-gray-600 dark:text-white"
             value={checklistFilters.status}
             onChange={(e) => setChecklistFilters(f => ({ ...f, status: e.target.value }))}
           >
@@ -360,7 +360,7 @@ export default function AdminServices() {
             <option value="completed">Completed</option>
           </select>
           <button
-            className="px-3 py-2 bg-gray-100 rounded text-sm"
+            className="px-3 py-2 bg-gray-100 dark:bg-gray-700 dark:text-white rounded text-sm"
             onClick={() => setChecklistFilters({ q: '', type: 'all', status: 'all' })}
           >
             Clear
@@ -369,35 +369,35 @@ export default function AdminServices() {
 
         {/* Summary cards */}
         <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
-          <div className="bg-white rounded shadow p-3 text-center">
-            <p className="text-xs text-gray-500">Total</p>
-            <p className="text-xl font-bold">{checklists.length}</p>
+          <div className="bg-white dark:bg-gray-800 rounded shadow p-3 text-center transition-colors">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Total</p>
+            <p className="text-xl font-bold dark:text-white">{checklists.length}</p>
           </div>
-          <div className="bg-white rounded shadow p-3 text-center">
-            <p className="text-xs text-gray-500">Move-In</p>
-            <p className="text-xl font-bold text-blue-600">{checklists.filter(c => c.type === 'move_in').length}</p>
+          <div className="bg-white dark:bg-gray-800 rounded shadow p-3 text-center transition-colors">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Move-In</p>
+            <p className="text-xl font-bold text-blue-600 dark:text-blue-400">{checklists.filter(c => c.type === 'move_in').length}</p>
           </div>
-          <div className="bg-white rounded shadow p-3 text-center">
-            <p className="text-xs text-gray-500">Move-Out</p>
-            <p className="text-xl font-bold text-orange-600">{checklists.filter(c => c.type === 'move_out').length}</p>
+          <div className="bg-white dark:bg-gray-800 rounded shadow p-3 text-center transition-colors">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Move-Out</p>
+            <p className="text-xl font-bold text-orange-600 dark:text-orange-400">{checklists.filter(c => c.type === 'move_out').length}</p>
           </div>
-          <div className="bg-white rounded shadow p-3 text-center">
-            <p className="text-xs text-gray-500">Pending</p>
-            <p className="text-xl font-bold text-yellow-600">{checklists.filter(c => c.status === 'pending_approval').length}</p>
+          <div className="bg-white dark:bg-gray-800 rounded shadow p-3 text-center transition-colors">
+            <p className="text-xs text-gray-500 dark:text-gray-400">Pending</p>
+            <p className="text-xl font-bold text-yellow-600 dark:text-yellow-400">{checklists.filter(c => c.status === 'pending_approval').length}</p>
           </div>
         </div>
 
         {loadingChecklists ? (
-          <div className="text-gray-600">Loading checklists...</div>
+          <div className="text-gray-600 dark:text-gray-400">Loading checklists...</div>
         ) : checklists.length === 0 ? (
-          <div className="bg-white rounded-xl shadow p-6 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow p-6 text-center transition-colors">
             <FaHome className="mx-auto text-4xl text-gray-400 mb-2" />
-            <p className="text-gray-600">No checklists found.</p>
+            <p className="text-gray-600 dark:text-gray-400">No checklists found.</p>
           </div>
         ) : (
-          <div className="bg-white rounded-xl shadow overflow-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow overflow-auto transition-colors">
             <table className="min-w-[1000px] w-full text-sm">
-              <thead className="bg-gray-50 text-gray-600">
+              <thead className="bg-gray-50 dark:bg-gray-700 text-gray-600 dark:text-gray-300">
                 <tr>
                   <th className="text-left px-4 py-3">Checklist ID</th>
                   <th className="text-left px-4 py-3">Type</th>
@@ -431,45 +431,45 @@ export default function AdminServices() {
                     return matchQ && matchType && matchStatus;
                   })
                   .map(checklist => (
-                    <tr key={checklist._id} className="border-t hover:bg-gray-50">
+                    <tr key={checklist._id} className="border-t dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-700 transition-colors">
                       <td className="px-4 py-3">
-                        <span className="font-mono text-xs">{checklist.checklistId}</span>
+                        <span className="font-mono text-xs dark:text-gray-300">{checklist.checklistId}</span>
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-flex items-center gap-1 px-2 py-1 rounded text-xs ${checklist.type === 'move_in'
-                          ? 'bg-blue-100 text-blue-800'
-                          : 'bg-orange-100 text-orange-800'
+                          ? 'bg-blue-100 dark:bg-blue-900/40 text-blue-800 dark:text-blue-300'
+                          : 'bg-orange-100 dark:bg-orange-900/40 text-orange-800 dark:text-orange-300'
                           }`}>
                           {checklist.type === 'move_in' ? <FaSignInAlt /> : <FaSignOutAlt />}
                           {checklist.type === 'move_in' ? 'Move-In' : 'Move-Out'}
                         </span>
                       </td>
                       <td className="px-4 py-3">
-                        <div className="font-medium">{checklist.listingId?.name || 'N/A'}</div>
-                        <div className="text-xs text-gray-500">{checklist.listingId?.address || ''}</div>
+                        <div className="font-medium dark:text-white">{checklist.listingId?.name || 'N/A'}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{checklist.listingId?.address || ''}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div>{checklist.tenantId?.username || 'N/A'}</div>
-                        <div className="text-xs text-gray-500">{checklist.tenantId?.email || ''}</div>
+                        <div className="dark:text-white">{checklist.tenantId?.username || 'N/A'}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{checklist.tenantId?.email || ''}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <div>{checklist.landlordId?.username || 'N/A'}</div>
-                        <div className="text-xs text-gray-500">{checklist.landlordId?.email || ''}</div>
+                        <div className="dark:text-white">{checklist.landlordId?.username || 'N/A'}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400">{checklist.landlordId?.email || ''}</div>
                       </td>
                       <td className="px-4 py-3">
-                        <span className="font-mono text-xs">{checklist.contractId?.contractId || 'N/A'}</span>
+                        <span className="font-mono text-xs dark:text-gray-300">{checklist.contractId?.contractId || 'N/A'}</span>
                       </td>
                       <td className="px-4 py-3">
                         <span className={`inline-block px-2 py-1 rounded text-xs ${checklist.status === 'approved' || checklist.status === 'completed'
-                          ? 'bg-green-100 text-green-800'
+                          ? 'bg-green-100 dark:bg-green-900/40 text-green-800 dark:text-green-300'
                           : checklist.status === 'pending_approval'
-                            ? 'bg-yellow-100 text-yellow-800'
-                            : 'bg-gray-100 text-gray-800'
+                            ? 'bg-yellow-100 dark:bg-yellow-900/40 text-yellow-800 dark:text-yellow-300'
+                            : 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-300'
                           }`}>
                           {checklist.status}
                         </span>
                       </td>
-                      <td className="px-4 py-3 whitespace-nowrap">
+                      <td className="px-4 py-3 whitespace-nowrap dark:text-gray-300">
                         {new Date(checklist.createdAt).toLocaleDateString()}
                       </td>
                       <td className="px-4 py-3">
@@ -559,31 +559,31 @@ export default function AdminServices() {
       {/* Confirmation Modal */}
       {confirmationModal.open && (
         <div className="fixed inset-0 z-[100] flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm" onClick={() => setConfirmationModal(prev => ({ ...prev, open: false }))}>
-          <div className="bg-white rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100" onClick={e => e.stopPropagation()}>
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-sm w-full overflow-hidden transform transition-all scale-100" onClick={e => e.stopPropagation()}>
             <div className="p-6 text-center">
-              <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${confirmationModal.isDestructive ? 'bg-red-100' : 'bg-blue-100'}`}>
+              <div className={`mx-auto w-16 h-16 rounded-full flex items-center justify-center mb-4 ${confirmationModal.isDestructive ? 'bg-red-100 dark:bg-red-900/30' : 'bg-blue-100 dark:bg-blue-900/30'}`}>
                 {confirmationModal.isDestructive ? (
-                  <FaTrash className="text-red-600 text-2xl" />
+                  <FaTrash className="text-red-600 dark:text-red-500 text-2xl" />
                 ) : (
-                  <FaCheckCircle className="text-blue-600 text-2xl" />
+                  <FaCheckCircle className="text-blue-600 dark:text-blue-500 text-2xl" />
                 )}
               </div>
-              <h3 className="text-xl font-bold mb-2 text-gray-900">{confirmationModal.title}</h3>
-              <p className="text-sm text-gray-500 mb-6 leading-relaxed">
+              <h3 className="text-xl font-bold mb-2 text-gray-900 dark:text-white">{confirmationModal.title}</h3>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mb-6 leading-relaxed">
                 {confirmationModal.message}
               </p>
               <div className="flex gap-3">
                 <button
                   onClick={() => setConfirmationModal(prev => ({ ...prev, open: false }))}
-                  className="flex-1 py-2.5 rounded-xl font-medium bg-gray-100 hover:bg-gray-200 text-gray-700 transition-colors"
+                  className="flex-1 py-2.5 rounded-xl font-medium bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 transition-colors"
                 >
                   Cancel
                 </button>
                 <button
                   onClick={confirmationModal.onConfirm}
                   className={`flex-1 py-2.5 rounded-xl font-bold text-white transition-colors shadow-lg ${confirmationModal.isDestructive
-                      ? 'bg-red-600 hover:bg-red-700 shadow-red-500/30'
-                      : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30'
+                    ? 'bg-red-600 hover:bg-red-700 shadow-red-500/30 dark:bg-red-600 dark:hover:bg-red-500'
+                    : 'bg-blue-600 hover:bg-blue-700 shadow-blue-500/30 dark:bg-blue-600 dark:hover:bg-blue-500'
                     }`}
                 >
                   Confirm
