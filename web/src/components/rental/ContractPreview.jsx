@@ -35,9 +35,9 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
   };
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
       <div className="flex items-center justify-between mb-6">
-        <h2 className="text-2xl font-bold text-blue-700 flex items-center gap-2">
+        <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 flex items-center gap-2">
           <FaFileContract /> Contract Details
         </h2>
         <button
@@ -50,14 +50,15 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
 
       <div className="space-y-6">
         {/* Contract ID */}
-        <div className="bg-blue-50 p-4 rounded-lg border border-blue-200">
-          <p className="text-sm text-gray-600">Contract ID</p>
-          <p className="font-mono font-semibold text-lg">{contract.contractId || contract._id}</p>
-          <p className="text-xs text-gray-500 mt-1">
-            Status: <span className={`font-semibold ${contract.status === 'active' ? 'text-green-600' :
-                contract.status === 'pending_signature' ? 'text-yellow-600' :
-                  contract.status === 'draft' ? 'text-gray-600' :
-                    'text-red-600'
+        {/* Contract ID */}
+        <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg border border-blue-200 dark:border-blue-800">
+          <p className="text-sm text-gray-600 dark:text-gray-400">Contract ID</p>
+          <p className="font-mono font-semibold text-lg text-gray-800 dark:text-white">{contract.contractId || contract._id}</p>
+          <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
+            Status: <span className={`font-semibold ${contract.status === 'active' ? 'text-green-600 dark:text-green-400' :
+              contract.status === 'pending_signature' ? 'text-yellow-600 dark:text-yellow-400' :
+                contract.status === 'draft' ? 'text-gray-600 dark:text-gray-400' :
+                  'text-red-600 dark:text-red-400'
               }`}>
               {contract.status?.replace('_', ' ').toUpperCase()}
             </span>
@@ -66,31 +67,31 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
 
         {/* Property Details */}
         {listing && (
-          <div className="bg-gray-50 p-4 rounded-lg">
-            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-              <FaHome className="text-blue-600" /> Property Details
+          <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-600">
+            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-gray-800 dark:text-white">
+              <FaHome className="text-blue-600 dark:text-blue-400" /> Property Details
             </h3>
             <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
               <div>
-                <p className="text-gray-600">Property Name</p>
-                <p className="font-semibold">{listing.name || 'N/A'}</p>
+                <p className="text-gray-600 dark:text-gray-400">Property Name</p>
+                <p className="font-semibold text-gray-800 dark:text-gray-200">{listing.name || 'N/A'}</p>
               </div>
               {listing.address && (
                 <div>
-                  <p className="text-gray-600">Address</p>
-                  <p className="font-semibold">{listing.address}</p>
+                  <p className="text-gray-600 dark:text-gray-400">Address</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">{listing.address}</p>
                 </div>
               )}
               {(listing.city || listing.state) && (
                 <div>
-                  <p className="text-gray-600">Location</p>
-                  <p className="font-semibold">{listing.city || ''}{listing.city && listing.state ? ', ' : ''}{listing.state || ''}</p>
+                  <p className="text-gray-600 dark:text-gray-400">Location</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">{listing.city || ''}{listing.city && listing.state ? ', ' : ''}{listing.state || ''}</p>
                 </div>
               )}
               {listing.bedrooms && (
                 <div>
-                  <p className="text-gray-600">Bedrooms</p>
-                  <p className="font-semibold">{listing.bedrooms} BHK</p>
+                  <p className="text-gray-600 dark:text-gray-400">Bedrooms</p>
+                  <p className="font-semibold text-gray-800 dark:text-gray-200">{listing.bedrooms} BHK</p>
                 </div>
               )}
             </div>
@@ -98,94 +99,94 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
         )}
 
         {/* Parties */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="font-semibold text-lg mb-3">Parties</h3>
+        <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-600">
+          <h3 className="font-semibold text-lg mb-3 text-gray-800 dark:text-white">Parties</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4 text-sm">
             <div>
-              <p className="text-gray-600 mb-1">Landlord</p>
-              <p className="font-semibold">{landlord?.username || landlord?.email || 'N/A'}</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-1">Landlord</p>
+              <p className="font-semibold text-gray-800 dark:text-gray-200">{landlord?.username || landlord?.email || 'N/A'}</p>
               {landlord?.email && (
-                <p className="text-xs text-gray-500">{landlord.email}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{landlord.email}</p>
               )}
             </div>
             <div>
-              <p className="text-gray-600 mb-1">Tenant</p>
-              <p className="font-semibold">{tenant?.username || tenant?.email || 'N/A'}</p>
+              <p className="text-gray-600 dark:text-gray-400 mb-1">Tenant</p>
+              <p className="font-semibold text-gray-800 dark:text-gray-200">{tenant?.username || tenant?.email || 'N/A'}</p>
               {tenant?.email && (
-                <p className="text-xs text-gray-500">{tenant.email}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">{tenant.email}</p>
               )}
             </div>
           </div>
         </div>
 
         {/* Financial Terms */}
-        <div className="bg-green-50 p-4 rounded-lg border border-green-200">
-          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-            <FaMoneyBillWave className="text-green-600" /> Financial Terms
+        <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg border border-green-200 dark:border-green-800">
+          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-gray-800 dark:text-white">
+            <FaMoneyBillWave className="text-green-600 dark:text-green-400" /> Financial Terms
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-gray-600">Monthly Rent (Locked)</p>
-              <p className="font-semibold text-lg">₹{contract.lockedRentAmount?.toLocaleString('en-IN') || contract.rentAmount?.toLocaleString('en-IN') || '0'}</p>
+              <p className="text-gray-600 dark:text-gray-400">Monthly Rent (Locked)</p>
+              <p className="font-semibold text-lg text-gray-800 dark:text-white">₹{contract.lockedRentAmount?.toLocaleString('en-IN') || contract.rentAmount?.toLocaleString('en-IN') || '0'}</p>
             </div>
             {contract.securityDeposit && (
               <div>
-                <p className="text-gray-600">Security Deposit</p>
-                <p className="font-semibold text-lg">₹{contract.securityDeposit.toLocaleString('en-IN')}</p>
-                <p className="text-xs text-gray-500">
+                <p className="text-gray-600 dark:text-gray-400">Security Deposit</p>
+                <p className="font-semibold text-lg text-gray-800 dark:text-white">₹{contract.securityDeposit.toLocaleString('en-IN')}</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400">
                   Status: {contract.securityDepositPaid ? (
-                    <span className="text-green-600 font-semibold">Paid</span>
+                    <span className="text-green-600 dark:text-green-400 font-semibold">Paid</span>
                   ) : (
-                    <span className="text-yellow-600 font-semibold">Pending</span>
+                    <span className="text-yellow-600 dark:text-yellow-400 font-semibold">Pending</span>
                   )}
                 </p>
               </div>
             )}
             {contract.maintenanceCharges && contract.maintenanceCharges > 0 && (
               <div>
-                <p className="text-gray-600">Maintenance Charges</p>
-                <p className="font-semibold">₹{contract.maintenanceCharges.toLocaleString('en-IN')}/month</p>
+                <p className="text-gray-600 dark:text-gray-400">Maintenance Charges</p>
+                <p className="font-semibold text-gray-800 dark:text-white">₹{contract.maintenanceCharges.toLocaleString('en-IN')}/month</p>
               </div>
             )}
             {contract.advanceRent && contract.advanceRent > 0 && (
               <div>
-                <p className="text-gray-600">Advance Rent</p>
-                <p className="font-semibold">{contract.advanceRent} month(s)</p>
+                <p className="text-gray-600 dark:text-gray-400">Advance Rent</p>
+                <p className="font-semibold text-gray-800 dark:text-white">{contract.advanceRent} month(s)</p>
               </div>
             )}
           </div>
         </div>
 
         {/* Rent-Lock Details */}
-        <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-            <FaLock className="text-purple-600" /> Rent-Lock Details
+        <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-gray-800 dark:text-white">
+            <FaLock className="text-purple-600 dark:text-purple-400" /> Rent-Lock Details
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-gray-600">Lock Duration</p>
-              <p className="font-semibold text-lg">{contract.lockDuration} months</p>
+              <p className="text-gray-600 dark:text-gray-400">Lock Duration</p>
+              <p className="font-semibold text-lg text-gray-800 dark:text-white">{contract.lockDuration} months</p>
             </div>
             <div>
-              <p className="text-gray-600">Payment Frequency</p>
-              <p className="font-semibold capitalize">{contract.paymentFrequency || 'monthly'}</p>
+              <p className="text-gray-600 dark:text-gray-400">Payment Frequency</p>
+              <p className="font-semibold capitalize text-gray-800 dark:text-white">{contract.paymentFrequency || 'monthly'}</p>
             </div>
             <div>
-              <p className="text-gray-600">Due Date</p>
-              <p className="font-semibold">Day {contract.dueDate || 1} of each month</p>
+              <p className="text-gray-600 dark:text-gray-400">Due Date</p>
+              <p className="font-semibold text-gray-800 dark:text-white">Day {contract.dueDate || 1} of each month</p>
             </div>
           </div>
         </div>
 
         {/* Dates */}
-        <div className="bg-indigo-50 p-4 rounded-lg border border-indigo-200">
-          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-            <FaCalendarAlt className="text-indigo-600" /> Important Dates
+        <div className="bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-lg border border-indigo-200 dark:border-indigo-800">
+          <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-gray-800 dark:text-white">
+            <FaCalendarAlt className="text-indigo-600 dark:text-indigo-400" /> Important Dates
           </h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-3 text-sm">
             <div>
-              <p className="text-gray-600">Start Date</p>
-              <p className="font-semibold">
+              <p className="text-gray-600 dark:text-gray-400">Start Date</p>
+              <p className="font-semibold text-gray-800 dark:text-white">
                 {contract.startDate ? new Date(contract.startDate).toLocaleDateString('en-GB', {
                   day: 'numeric',
                   month: 'long',
@@ -194,8 +195,8 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
               </p>
             </div>
             <div>
-              <p className="text-gray-600">End Date</p>
-              <p className="font-semibold">
+              <p className="text-gray-600 dark:text-gray-400">End Date</p>
+              <p className="font-semibold text-gray-800 dark:text-white">
                 {contract.endDate ? new Date(contract.endDate).toLocaleDateString('en-GB', {
                   day: 'numeric',
                   month: 'long',
@@ -205,8 +206,8 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
             </div>
             {contract.moveInDate && (
               <div>
-                <p className="text-gray-600">Move-In Date</p>
-                <p className="font-semibold">
+                <p className="text-gray-600 dark:text-gray-400">Move-In Date</p>
+                <p className="font-semibold text-gray-800 dark:text-white">
                   {new Date(contract.moveInDate).toLocaleDateString('en-GB', {
                     day: 'numeric',
                     month: 'long',
@@ -219,9 +220,9 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
         </div>
 
         {/* Payment Terms */}
-        <div className="bg-yellow-50 p-4 rounded-lg border border-yellow-200">
-          <h3 className="font-semibold text-lg mb-3">Payment Terms</h3>
-          <ul className="list-disc list-inside space-y-2 text-sm">
+        <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg border border-yellow-200 dark:border-yellow-800">
+          <h3 className="font-semibold text-lg mb-3 text-gray-800 dark:text-white">Payment Terms</h3>
+          <ul className="list-disc list-inside space-y-2 text-sm text-gray-700 dark:text-gray-300">
             <li>Rent must be paid on or before day {contract.dueDate || 1} of each month</li>
             {contract.lateFeePercentage && contract.lateFeePercentage > 0 && (
               <li>Late payment fee: {contract.lateFeePercentage}% of rent amount per day of delay</li>
@@ -236,53 +237,53 @@ export default function ContractPreview({ contract, listing, tenant, landlord, o
 
         {/* Custom Clauses (AI Drafted) */}
         {contract.customClauses && contract.customClauses.length > 0 && (
-          <div className="bg-purple-50 p-4 rounded-lg border border-purple-200">
-            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2">
-              <FaFileContract className="text-purple-600" /> Additional Terms & Conditions
+          <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg border border-purple-200 dark:border-purple-800">
+            <h3 className="font-semibold text-lg mb-3 flex items-center gap-2 text-gray-800 dark:text-white">
+              <FaFileContract className="text-purple-600 dark:text-purple-400" /> Additional Terms & Conditions
             </h3>
-            <ul className="list-decimal list-inside space-y-2 text-sm text-gray-800">
+            <ul className="list-decimal list-inside space-y-2 text-sm text-gray-800 dark:text-gray-300">
               {contract.customClauses.map((clause, index) => (
                 <li key={index} className="pl-2">{clause}</li>
               ))}
             </ul>
-            <p className="text-xs text-gray-500 mt-3 border-t border-purple-200 pt-2">
+            <p className="text-xs text-gray-500 dark:text-gray-400 mt-3 border-t border-purple-200 dark:border-purple-800 pt-2">
               Drafted by SetuAI Legal Assistant
             </p>
           </div>
         )}
 
         {/* Signatures Status */}
-        <div className="bg-gray-50 p-4 rounded-lg">
-          <h3 className="font-semibold text-lg mb-3">Signatures Status</h3>
+        <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg border dark:border-gray-600">
+          <h3 className="font-semibold text-lg mb-3 text-gray-800 dark:text-white">Signatures Status</h3>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-            <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+            <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600">
               <div>
-                <p className="font-semibold">Tenant</p>
+                <p className="font-semibold text-gray-800 dark:text-white">Tenant</p>
                 {contract.tenantSignature?.signed && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Signed: {new Date(contract.tenantSignature.signedAt).toLocaleDateString('en-GB')}
                   </p>
                 )}
               </div>
               {contract.tenantSignature?.signed ? (
-                <FaCheckCircle className="text-green-600 text-2xl" />
+                <FaCheckCircle className="text-green-600 dark:text-green-400 text-2xl" />
               ) : (
-                <span className="text-yellow-600 font-semibold">Pending</span>
+                <span className="text-yellow-600 dark:text-yellow-400 font-semibold">Pending</span>
               )}
             </div>
-            <div className="flex items-center justify-between p-3 bg-white rounded-lg border">
+            <div className="flex items-center justify-between p-3 bg-white dark:bg-gray-800 rounded-lg border dark:border-gray-600">
               <div>
-                <p className="font-semibold">Landlord</p>
+                <p className="font-semibold text-gray-800 dark:text-white">Landlord</p>
                 {contract.landlordSignature?.signed && (
-                  <p className="text-xs text-gray-500">
+                  <p className="text-xs text-gray-500 dark:text-gray-400">
                     Signed: {new Date(contract.landlordSignature.signedAt).toLocaleDateString('en-GB')}
                   </p>
                 )}
               </div>
               {contract.landlordSignature?.signed ? (
-                <FaCheckCircle className="text-green-600 text-2xl" />
+                <FaCheckCircle className="text-green-600 dark:text-green-400 text-2xl" />
               ) : (
-                <span className="text-yellow-600 font-semibold">Pending</span>
+                <span className="text-yellow-600 dark:text-yellow-400 font-semibold">Pending</span>
               )}
             </div>
           </div>

@@ -230,19 +230,19 @@ export default function AdminRentalContracts() {
   const getStatusColor = (status) => {
     switch (status) {
       case 'active':
-        return 'bg-green-100 text-green-700 border-green-200';
+        return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
       case 'pending_signature':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
+        return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
       case 'draft':
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
       case 'expired':
-        return 'bg-red-100 text-red-700 border-red-200';
+        return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
       case 'terminated':
-        return 'bg-orange-100 text-orange-700 border-orange-200';
+        return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800';
       case 'rejected':
-        return 'bg-red-200 text-red-800 border-red-300';
+        return 'bg-red-200 text-red-800 border-red-300 dark:bg-red-900/50 dark:text-red-200 dark:border-red-800';
       default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
+        return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
     }
   };
 
@@ -265,55 +265,55 @@ export default function AdminRentalContracts() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-7xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-6">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <FaFileContract className="text-blue-600" />
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+                <FaFileContract className="text-blue-600 dark:text-blue-400" />
                 Admin Rental Contracts
               </h1>
-              <p className="text-gray-600 mt-2">Manage all rental contracts across the platform</p>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">Manage all rental contracts across the platform</p>
             </div>
           </div>
 
           {/* Statistics */}
           <div className="grid grid-cols-1 md:grid-cols-4 gap-4 mb-6">
-            <div className="bg-blue-50 rounded-lg p-4 border border-blue-200">
+            <div className="bg-blue-50 dark:bg-blue-900/20 rounded-lg p-4 border border-blue-200 dark:border-blue-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Total Contracts</p>
-                  <p className="text-2xl font-bold text-blue-700">{stats.total}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Total Contracts</p>
+                  <p className="text-2xl font-bold text-blue-700 dark:text-blue-300">{stats.total}</p>
                 </div>
-                <FaFileContract className="text-3xl text-blue-500" />
+                <FaFileContract className="text-3xl text-blue-500 dark:text-blue-400" />
               </div>
             </div>
-            <div className="bg-green-50 rounded-lg p-4 border border-green-200">
+            <div className="bg-green-50 dark:bg-green-900/20 rounded-lg p-4 border border-green-200 dark:border-green-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Active</p>
-                  <p className="text-2xl font-bold text-green-700">{stats.active}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Active</p>
+                  <p className="text-2xl font-bold text-green-700 dark:text-green-300">{stats.active}</p>
                 </div>
-                <FaCheckCircle className="text-3xl text-green-500" />
+                <FaCheckCircle className="text-3xl text-green-500 dark:text-green-400" />
               </div>
             </div>
-            <div className="bg-yellow-50 rounded-lg p-4 border border-yellow-200">
+            <div className="bg-yellow-50 dark:bg-yellow-900/20 rounded-lg p-4 border border-yellow-200 dark:border-yellow-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Pending</p>
-                  <p className="text-2xl font-bold text-yellow-700">{stats.pending}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Pending</p>
+                  <p className="text-2xl font-bold text-yellow-700 dark:text-yellow-300">{stats.pending}</p>
                 </div>
-                <FaClock className="text-3xl text-yellow-500" />
+                <FaClock className="text-3xl text-yellow-500 dark:text-yellow-400" />
               </div>
             </div>
-            <div className="bg-red-50 rounded-lg p-4 border border-red-200">
+            <div className="bg-red-50 dark:bg-red-900/20 rounded-lg p-4 border border-red-200 dark:border-red-800">
               <div className="flex items-center justify-between">
                 <div>
-                  <p className="text-sm text-gray-600">Terminated/Rejected</p>
-                  <p className="text-2xl font-bold text-red-700">{stats.terminated}</p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">Terminated/Rejected</p>
+                  <p className="text-2xl font-bold text-red-700 dark:text-red-300">{stats.terminated}</p>
                 </div>
-                <FaTimesCircle className="text-3xl text-red-500" />
+                <FaTimesCircle className="text-3xl text-red-500 dark:text-red-400" />
               </div>
             </div>
           </div>
@@ -321,13 +321,13 @@ export default function AdminRentalContracts() {
           {/* Filters */}
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
-              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400" />
+              <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500" />
               <input
                 type="text"
                 placeholder="Search by contract ID, property, tenant, or landlord..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
               />
             </div>
             <div className="flex gap-2 flex-wrap">
@@ -337,7 +337,7 @@ export default function AdminRentalContracts() {
                   onClick={() => setStatusFilter(status)}
                   className={`px-4 py-2 rounded-lg font-medium transition ${statusFilter === status
                     ? 'bg-blue-600 text-white'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                     }`}
                 >
                   {status === 'all' ? 'All Contracts' : getStatusLabel(status)}
@@ -348,10 +348,10 @@ export default function AdminRentalContracts() {
         </div>
 
         {filteredContracts.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-            <FaFileContract className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Contracts Found</h3>
-            <p className="text-gray-500">No contracts match your search criteria.</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+            <FaFileContract className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No Contracts Found</h3>
+            <p className="text-gray-500 dark:text-gray-400">No contracts match your search criteria.</p>
           </div>
         ) : (
           <div className="space-y-4">
@@ -361,23 +361,23 @@ export default function AdminRentalContracts() {
               return (
                 <div
                   key={contract._id}
-                  className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}
+                  className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)} border-opacity-50 dark:border-opacity-30`}
                 >
                   <div className="flex flex-col md:flex-row md:items-start md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <FaFileContract className="text-2xl text-blue-600" />
+                        <FaFileContract className="text-2xl text-blue-600 dark:text-blue-400" />
                         <div>
-                          <h3 className="text-xl font-bold text-gray-800">
+                          <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                             {listingId ? (
-                              <Link to={`/listing/${listingId}`} className="text-blue-600 hover:text-blue-800 hover:underline">
+                              <Link to={`/listing/${listingId}`} className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline">
                                 {listingName}
                               </Link>
                             ) : (
                               listingName
                             )}
                           </h3>
-                          <p className="text-sm text-gray-600 font-mono">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
                             {contract.contractId}
                           </p>
                         </div>
@@ -385,60 +385,60 @@ export default function AdminRentalContracts() {
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
                         <div>
-                          <p className="text-gray-600 mb-1 flex items-center gap-1">
-                            <FaMoneyBillWave className="text-green-600" /> Monthly Rent
+                          <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+                            <FaMoneyBillWave className="text-green-600 dark:text-green-400" /> Monthly Rent
                           </p>
-                          <p className="font-semibold">
+                          <p className="font-semibold text-gray-800 dark:text-white">
                             ₹{contract.lockedRentAmount?.toLocaleString('en-IN') || '0'}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-600 mb-1 flex items-center gap-1">
-                            <FaLock className="text-purple-600" /> Duration
+                          <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+                            <FaLock className="text-purple-600 dark:text-purple-400" /> Duration
                           </p>
-                          <p className="font-semibold">{contract.lockDuration} months</p>
+                          <p className="font-semibold text-gray-800 dark:text-white">{contract.lockDuration} months</p>
                         </div>
                         <div>
-                          <p className="text-gray-600 mb-1 flex items-center gap-1">
-                            <FaCalendarAlt className="text-indigo-600" /> Start Date
+                          <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+                            <FaCalendarAlt className="text-indigo-600 dark:text-indigo-400" /> Start Date
                           </p>
-                          <p className="font-semibold">
+                          <p className="font-semibold text-gray-800 dark:text-white">
                             {contract.startDate ? new Date(contract.startDate).toLocaleDateString('en-GB') : 'N/A'}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-600 mb-1 flex items-center gap-1">
-                            <FaUser className="text-blue-600" /> Tenant
+                          <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+                            <FaUser className="text-blue-600 dark:text-blue-400" /> Tenant
                           </p>
-                          <p className="font-semibold">{contract.tenantId?.username || contract.tenantId?.email || 'N/A'}</p>
+                          <p className="font-semibold text-gray-800 dark:text-white">{contract.tenantId?.username || contract.tenantId?.email || 'N/A'}</p>
                         </div>
                       </div>
 
                       {/* Signature Status */}
                       <div className="mt-4 flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">Tenant:</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Tenant:</span>
                           {contract.tenantSignature?.signed ? (
-                            <FaCheckCircle className="text-green-600" title="Signed" />
+                            <FaCheckCircle className="text-green-600 dark:text-green-400" title="Signed" />
                           ) : (
-                            <FaTimesCircle className="text-yellow-600" title="Pending" />
+                            <FaTimesCircle className="text-yellow-600 dark:text-yellow-400" title="Pending" />
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">Landlord:</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Landlord:</span>
                           {contract.landlordSignature?.signed ? (
-                            <FaCheckCircle className="text-green-600" title="Signed" />
+                            <FaCheckCircle className="text-green-600 dark:text-green-400" title="Signed" />
                           ) : (
-                            <FaTimesCircle className="text-yellow-600" title="Pending" />
+                            <FaTimesCircle className="text-yellow-600 dark:text-yellow-400" title="Pending" />
                           )}
                         </div>
                       </div>
 
                       {/* Payment Status - Show monthly payment status for active contracts */}
                       {contract.status === 'active' && contract.wallet?.paymentSchedule && contract.wallet.paymentSchedule.length > 0 && (
-                        <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                          <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                            <FaMoneyBillWave className="text-green-600" /> Payment Status
+                        <div className="mt-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                          <h4 className="font-semibold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                            <FaMoneyBillWave className="text-green-600 dark:text-green-400" /> Payment Status
                           </h4>
                           <div className="flex flex-wrap gap-2">
                             {contract.wallet.paymentSchedule
@@ -451,12 +451,12 @@ export default function AdminRentalContracts() {
                                 <div
                                   key={idx}
                                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 ${payment.status === 'completed'
-                                    ? 'bg-green-100 text-green-700 border border-green-300'
+                                    ? 'bg-green-100 text-green-700 border border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800'
                                     : payment.status === 'overdue'
-                                      ? 'bg-red-100 text-red-700 border border-red-300'
+                                      ? 'bg-red-100 text-red-700 border border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'
                                       : payment.status === 'processing'
-                                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
-                                        : 'bg-gray-100 text-gray-600 border border-gray-300'
+                                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800'
+                                        : 'bg-gray-100 text-gray-600 border border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600'
                                     }`}
                                   title={`${payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : payment.status === 'processing' ? 'Processing' : 'Pending'} - Month ${payment.month}/${payment.year}`}
                                 >
@@ -476,16 +476,16 @@ export default function AdminRentalContracts() {
                                 </div>
                               ))}
                             {contract.wallet.paymentSchedule.length > 6 && (
-                              <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300">
+                              <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
                                 +{contract.wallet.paymentSchedule.length - 6} more
                               </div>
                             )}
                           </div>
                           {contract.wallet.totalPaid > 0 && (
-                            <div className="mt-2 text-xs text-gray-600">
-                              Total Paid: <span className="font-semibold text-green-600">₹{contract.wallet.totalPaid.toLocaleString('en-IN')}</span>
+                            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                              Total Paid: <span className="font-semibold text-green-600 dark:text-green-400">₹{contract.wallet.totalPaid.toLocaleString('en-IN')}</span>
                               {contract.wallet.totalDue > 0 && (
-                                <> | Pending: <span className="font-semibold text-yellow-600">₹{contract.wallet.totalDue.toLocaleString('en-IN')}</span></>
+                                <> | Pending: <span className="font-semibold text-yellow-600 dark:text-yellow-400">₹{contract.wallet.totalDue.toLocaleString('en-IN')}</span></>
                               )}
                             </div>
                           )}
@@ -557,15 +557,15 @@ export default function AdminRentalContracts() {
           setShowPreviewModal(false);
           setSelectedContract(null);
         }}>
-          <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full p-6 my-8 max-h-[90vh] overflow-y-auto">
             <div className="flex items-center justify-between mb-4">
-              <h2 className="text-2xl font-bold text-gray-800">Contract Details</h2>
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Contract Details</h2>
               <button
                 onClick={() => {
                   setShowPreviewModal(false);
                   setSelectedContract(null);
                 }}
-                className="text-gray-400 hover:text-gray-600 text-2xl"
+                className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
               >
                 ×
               </button>
@@ -587,9 +587,9 @@ export default function AdminRentalContracts() {
       {showStatusModal && selectedContract && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-md w-full p-6 relative">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">
                   {statusAction === 'terminate' ? 'Terminate Contract' :
                     statusAction === 'reject' ? 'Reject Contract' :
                       'Activate Contract'}
@@ -601,24 +601,24 @@ export default function AdminRentalContracts() {
                     setSelectedContract(null);
                     setStatusAction(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                 >
                   ×
                 </button>
               </div>
 
               <div className="mb-4">
-                <p className="text-gray-600 mb-2">
-                  Contract ID: <span className="font-mono font-semibold">{selectedContract.contractId}</span>
+                <p className="text-gray-600 dark:text-gray-400 mb-2">
+                  Contract ID: <span className="font-mono font-semibold dark:text-gray-200">{selectedContract.contractId}</span>
                 </p>
-                <p className="text-gray-600">
-                  Property: <span className="font-semibold">{selectedContract.listingId?.name || 'N/A'}</span>
+                <p className="text-gray-600 dark:text-gray-400">
+                  Property: <span className="font-semibold dark:text-gray-200">{selectedContract.listingId?.name || 'N/A'}</span>
                 </p>
               </div>
 
               {(statusAction === 'terminate' || statusAction === 'reject') && (
                 <div className="mb-4">
-                  <label className="block text-gray-700 font-semibold mb-2">
+                  <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-2">
                     Reason * <FaExclamationTriangle className="inline text-red-500" />
                   </label>
                   <textarea
@@ -626,15 +626,15 @@ export default function AdminRentalContracts() {
                     onChange={(e) => setStatusReason(e.target.value)}
                     placeholder={`Enter reason for ${statusAction === 'terminate' ? 'termination' : 'rejection'}...`}
                     rows={4}
-                    className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                    className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white dark:placeholder-gray-400"
                     required
                   />
                 </div>
               )}
 
               {statusAction === 'activate' && (
-                <div className="mb-4 bg-yellow-50 border border-yellow-200 rounded-lg p-4">
-                  <p className="text-yellow-800 flex items-center gap-2">
+                <div className="mb-4 bg-yellow-50 dark:bg-yellow-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4">
+                  <p className="text-yellow-800 dark:text-yellow-300 flex items-center gap-2">
                     <FaExclamationTriangle /> This will activate the contract. Make sure both parties have signed.
                   </p>
                 </div>
@@ -648,7 +648,7 @@ export default function AdminRentalContracts() {
                     setSelectedContract(null);
                     setStatusAction(null);
                   }}
-                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                  className="flex-1 px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
                 >
                   Cancel
                 </button>
