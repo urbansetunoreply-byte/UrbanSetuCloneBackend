@@ -5,9 +5,13 @@ import { toast } from "react-toastify"; // Using toast directly if ToastContaine
 import ContactSupportWrapper from "../components/ContactSupportWrapper";
 import AdminDeletedListingsSkeleton from "../components/skeletons/AdminDeletedListingsSkeleton";
 
+import { usePageTitle } from "../hooks/usePageTitle";
+
 const API_BASE_URL = import.meta.env.VITE_API_BASE_URL;
 
 export default function AdminDeletedListings() {
+    usePageTitle("Deleted Properties - Admin Management");
+
     const [listings, setListings] = useState([]);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
