@@ -461,20 +461,18 @@ const PaymentDashboard = () => {
 
           {activeTab === 'history' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4 items-end">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4 mb-4 items-end">
                 <div>
                   <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Search</label>
                   <input id="admin-pay-q" placeholder="Payment ID, receipt..." className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
                 </div>
-                <div className="flex gap-2">
-                  <div className="flex-1">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">From</label>
-                    <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
-                  </div>
-                  <div className="flex-1">
-                    <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">To</label>
-                    <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
-                  </div>
+                <div>
+                  <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">From</label>
+                  <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">To</label>
+                  <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
                 </div>
 
                 <div>
