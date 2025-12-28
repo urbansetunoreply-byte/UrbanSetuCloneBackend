@@ -40,7 +40,8 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
             case 1: return "bg-gradient-to-br from-yellow-50 via-amber-50 to-yellow-100 border-yellow-300 shadow-yellow-200/40 transform scale-[1.02]";
             case 2: return "bg-gradient-to-br from-slate-50 to-gray-100 border-slate-200";
             case 3: return "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200";
-            default: return "bg-white border-slate-100 hover:border-indigo-100 hover:bg-slate-50/50";
+            case 3: return "bg-gradient-to-br from-orange-50 to-amber-50 border-orange-200";
+            default: return "bg-white dark:bg-gray-800 border-slate-100 dark:border-gray-700 hover:border-indigo-100 dark:hover:border-gray-600 hover:bg-slate-50/50 dark:hover:bg-gray-700/50";
         }
     };
 
@@ -61,7 +62,7 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
         <div className="space-y-6">
             {/* Your Status Card (Optional) */}
             {showYourStatus && currentUser && (
-                <div className="bg-white rounded-[2rem] shadow-xl p-6 border-l-8 border-indigo-600 flex flex-col md:flex-row items-center justify-between gap-6 transform transition hover:scale-[1.01]">
+                <div className="bg-white dark:bg-gray-800 rounded-[2rem] shadow-xl p-6 border-l-8 border-indigo-600 flex flex-col md:flex-row items-center justify-between gap-6 transform transition hover:scale-[1.01]">
                     <div className="flex items-center gap-5">
                         <div className="relative">
                             <img
@@ -72,7 +73,7 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
                             {userRank?.rank === 1 && <FaCrown className="absolute -top-3 -right-2 text-yellow-500 text-xl animate-bounce" />}
                         </div>
                         <div>
-                            <h3 className="font-black text-slate-800 text-xl">Your Status</h3>
+                            <h3 className="font-black text-slate-800 dark:text-white text-xl">Your Status</h3>
                             {userRank ? (
                                 <div className="flex items-center gap-2 mt-1">
                                     <span className="bg-indigo-600 text-white px-3 py-1 rounded-full text-xs font-black shadow-lg shadow-indigo-200">
@@ -87,9 +88,9 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
                             )}
                         </div>
                     </div>
-                    <div className="text-center md:text-right bg-slate-50 px-6 py-4 rounded-3xl border border-slate-100 min-w-[180px]">
-                        <p className="text-slate-400 text-[10px] font-black uppercase tracking-widest mb-1">Total Earned</p>
-                        <p className="text-3xl font-black text-indigo-900 flex items-center justify-center md:justify-end gap-2">
+                    <div className="text-center md:text-right bg-slate-50 dark:bg-gray-700/50 px-6 py-4 rounded-3xl border border-slate-100 dark:border-gray-600 min-w-[180px]">
+                        <p className="text-slate-400 dark:text-gray-400 text-[10px] font-black uppercase tracking-widest mb-1">Total Earned</p>
+                        <p className="text-3xl font-black text-indigo-900 dark:text-indigo-200 flex items-center justify-center md:justify-end gap-2">
                             {currentUser.gamification?.totalCoinsEarned || 0}
                             <FaCoins className="text-yellow-500 text-lg" />
                         </p>
@@ -98,7 +99,7 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
             )}
 
             {/* Leaderboard Main Container */}
-            <div className="bg-white rounded-[2.5rem] shadow-sm border border-slate-100 overflow-hidden">
+            <div className="bg-white dark:bg-gray-800 rounded-[2.5rem] shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
                 {showHeader && (
                     <div className="p-8 bg-gradient-to-br from-indigo-900 via-indigo-800 to-indigo-950 text-white flex justify-between items-center relative overflow-hidden">
                         <div className="absolute top-0 right-0 w-32 h-32 bg-white/5 rounded-full -translate-y-1/2 translate-x-1/2 blur-2xl"></div>
@@ -117,9 +118,9 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
                 <div className="p-4 sm:p-8 space-y-4">
                     {leaderboard.length === 0 ? (
                         <div className="text-center py-20">
-                            <FaTrophy className="text-6xl text-slate-100 mx-auto mb-4" />
-                            <p className="text-slate-400 font-bold text-lg">No champions yet.</p>
-                            <p className="text-slate-300 text-sm">Be the first to climb the leaderboard!</p>
+                            <FaTrophy className="text-6xl text-slate-100 dark:text-gray-700 mx-auto mb-4" />
+                            <p className="text-slate-400 dark:text-gray-400 font-bold text-lg">No champions yet.</p>
+                            <p className="text-slate-300 dark:text-gray-500 text-sm">Be the first to climb the leaderboard!</p>
                         </div>
                     ) : (
                         leaderboard.map((user, idx) => (
@@ -144,8 +145,8 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
                                         )}
                                     </div>
                                     <div>
-                                        <p className={`font-black tracking-tight ${user.userId === currentUser?._id ? 'text-indigo-800' : 'text-slate-800'}`}>
-                                            {user.name} {user.userId === currentUser?._id && <span className="bg-indigo-100 text-indigo-700 text-[10px] px-2 py-0.5 rounded-full ml-1">YOU</span>}
+                                        <p className={`font-black tracking-tight ${user.userId === currentUser?._id ? 'text-indigo-800 dark:text-indigo-400' : 'text-slate-800 dark:text-white'}`}>
+                                            {user.name} {user.userId === currentUser?._id && <span className="bg-indigo-100 dark:bg-indigo-900/40 text-indigo-700 dark:text-indigo-300 text-[10px] px-2 py-0.5 rounded-full ml-1">YOU</span>}
                                         </p>
                                         <div className="flex items-center gap-2 mt-1">
                                             <span className="text-[10px] font-black text-indigo-600 flex items-center gap-1 bg-indigo-50 px-2 py-0.5 rounded-md uppercase tracking-tighter">
@@ -155,7 +156,7 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
                                     </div>
                                 </div>
                                 <div className="text-right">
-                                    <p className="font-black text-slate-800 text-xl flex items-center justify-end gap-1.5 tabular-nums">
+                                    <p className="font-black text-slate-800 dark:text-white text-xl flex items-center justify-end gap-1.5 tabular-nums">
                                         {user.totalCoins.toLocaleString()}
                                         <FaCoins className="text-yellow-500 text-sm" />
                                     </p>
@@ -167,9 +168,9 @@ const CommunityLeaderboard = ({ limit = 10, showHeader = true, showYourStatus = 
                 </div>
 
                 {leaderboard.length > 0 && (
-                    <div className="bg-slate-50 p-4 text-center border-t border-slate-100">
-                        <p className="text-[11px] text-slate-400 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
-                            <FaInfoCircle className="text-indigo-300" /> Leaderboard resets every month. Keep earning!
+                    <div className="bg-slate-50 dark:bg-gray-800/50 p-4 text-center border-t border-slate-100 dark:border-gray-700">
+                        <p className="text-[11px] text-slate-400 dark:text-gray-500 font-bold uppercase tracking-widest flex items-center justify-center gap-2">
+                            <FaInfoCircle className="text-indigo-300 dark:text-gray-600" /> Leaderboard resets every month. Keep earning!
                         </p>
                     </div>
                 )}

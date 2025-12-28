@@ -19,19 +19,19 @@ const SetuCoinCard = ({ balance = 0, streak = 0, expiryDate = null, loading = fa
 
     if (loading) {
         return (
-            <div className="w-full min-h-[180px] rounded-2xl bg-white/50 border border-gray-100 shadow-lg overflow-hidden relative">
-                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
+            <div className="w-full min-h-[180px] rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-gray-100 dark:border-gray-700 shadow-lg overflow-hidden relative">
+                <div className="absolute inset-0 bg-gradient-to-r from-transparent via-white/40 dark:via-gray-600/40 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
                 <div className="p-6 space-y-6">
                     <div className="flex justify-between items-start">
                         <div className="space-y-2">
-                            <div className="h-4 w-32 bg-gray-200 rounded-lg"></div>
-                            <div className="h-3 w-24 bg-gray-100 rounded-lg"></div>
+                            <div className="h-4 w-32 bg-gray-200 dark:bg-gray-700 rounded-lg"></div>
+                            <div className="h-3 w-24 bg-gray-100 dark:bg-gray-600 rounded-lg"></div>
                         </div>
-                        <div className="h-8 w-24 bg-gray-200 rounded-full"></div>
+                        <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded-full"></div>
                     </div>
                     <div className="space-y-3">
-                        <div className="h-10 w-40 bg-gray-200 rounded-xl"></div>
-                        <div className="h-6 w-28 bg-gray-100 rounded-lg"></div>
+                        <div className="h-10 w-40 bg-gray-200 dark:bg-gray-700 rounded-xl"></div>
+                        <div className="h-6 w-28 bg-gray-100 dark:bg-gray-600 rounded-lg"></div>
                     </div>
                 </div>
             </div>
@@ -103,7 +103,7 @@ const SetuCoinCard = ({ balance = 0, streak = 0, expiryDate = null, loading = fa
                 <div className="mt-6 flex gap-3">
                     <button
                         onClick={onViewHistory}
-                        className="flex-1 flex items-center justify-center gap-2 bg-white/90 text-gray-800 px-4 py-2.5 rounded-xl font-semibold shadow-lg hover:bg-white active:scale-95 transition-all group"
+                        className="flex-1 flex items-center justify-center gap-2 bg-white/90 dark:bg-gray-800/90 text-gray-800 dark:text-white px-4 py-2.5 rounded-xl font-semibold shadow-lg hover:bg-white dark:hover:bg-gray-800 active:scale-95 transition-all group"
                     >
                         <FaHistory className="text-blue-500 group-hover:rotate-12 transition-transform" />
                         <span>History</span>

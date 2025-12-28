@@ -7,7 +7,7 @@ export default function Leaderboard() {
     usePageTitle("Community Leaderboard - Top Earners");
 
     return (
-        <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 min-h-screen py-10 px-4 md:px-8">
+        <div className="bg-gradient-to-br from-indigo-50 via-purple-50 to-pink-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 min-h-screen py-10 px-4 md:px-8">
             <div className="max-w-4xl mx-auto">
 
                 {/* Header */}
@@ -15,7 +15,7 @@ export default function Leaderboard() {
                     <h1 className="text-4xl font-extrabold text-transparent bg-clip-text bg-gradient-to-r from-indigo-600 to-purple-600 mb-3 flex items-center justify-center gap-3">
                         <FaTrophy className="text-yellow-500" /> Community Leaderboard
                     </h1>
-                    <p className="text-gray-600 text-lg">
+                    <p className="text-gray-600 dark:text-gray-300 text-lg">
                         See who's leading the SetuCoins race! Earn coins to climb the ranks.
                     </p>
                 </div>

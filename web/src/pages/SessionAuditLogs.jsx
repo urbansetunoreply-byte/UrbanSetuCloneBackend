@@ -518,7 +518,7 @@ const SessionAuditLogs = () => {
                           setIsClearing(false);
                         }
                       }}
-                      className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-red-200 text-red-600 shadow-sm text-sm font-medium rounded-lg bg-white hover:bg-red-50 hover:border-red-300 transition-colors ${isClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
+                      className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-red-200 text-red-600 dark:border-red-800 dark:text-red-400 shadow-sm text-sm font-medium rounded-lg bg-white dark:bg-gray-700 hover:bg-red-50 hover:border-red-300 dark:hover:bg-red-900/20 dark:hover:border-red-700 transition-colors ${isClearing ? 'opacity-50 cursor-not-allowed' : ''}`}
                       title="Clear all audit logs"
                       disabled={isClearing}
                     >

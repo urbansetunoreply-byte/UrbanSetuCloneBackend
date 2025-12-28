@@ -151,20 +151,20 @@ export default function AdminCoinStats() {
             </div>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {[1, 2, 3, 4].map((i) => (
-                    <div key={i} className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 h-32 animate-pulse flex justify-between">
+                    <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 h-32 animate-pulse flex justify-between">
                         <div className="space-y-3 w-1/2">
-                            <div className="h-3 w-20 bg-gray-200 rounded"></div>
-                            <div className="h-8 w-24 bg-gray-200 rounded"></div>
+                            <div className="h-3 w-20 bg-gray-200 dark:bg-gray-700 rounded"></div>
+                            <div className="h-8 w-24 bg-gray-200 dark:bg-gray-700 rounded"></div>
                         </div>
-                        <div className="h-12 w-12 bg-gray-200 rounded-2xl"></div>
+                        <div className="h-12 w-12 bg-gray-200 dark:bg-gray-700 rounded-2xl"></div>
                     </div>
                 ))}
             </div>
-            <div className="h-96 bg-white rounded-3xl shadow-sm border border-gray-100 p-6 animate-pulse">
-                <div className="h-6 w-48 bg-gray-200 rounded mb-6"></div>
+            <div className="h-96 bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 animate-pulse">
+                <div className="h-6 w-48 bg-gray-200 dark:bg-gray-700 rounded mb-6"></div>
                 <div className="space-y-4">
                     {[1, 2, 3, 4, 5].map(i => (
-                        <div key={i} className="h-12 w-full bg-gray-100 rounded-xl"></div>
+                        <div key={i} className="h-12 w-full bg-gray-100 dark:bg-gray-700 rounded-xl"></div>
                     ))}
                 </div>
             </div>
@@ -175,8 +175,8 @@ export default function AdminCoinStats() {
     return (
         <div className="p-6 max-w-7xl mx-auto space-y-8 pb-20">
             <div className="flex flex-col md:flex-row md:items-center justify-between gap-4">
-                <h1 className="text-3xl font-extrabold text-gray-900 flex items-center gap-3">
-                    <FaCoins className="text-indigo-600" />
+                <h1 className="text-3xl font-extrabold text-gray-900 dark:text-white flex items-center gap-3">
+                    <FaCoins className="text-indigo-600 dark:text-indigo-400" />
                     <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                         SetuCoins Loyalty Management
                     </span>
@@ -192,30 +192,30 @@ export default function AdminCoinStats() {
                         value={searchQuery}
                         onChange={handleSearch}
                         placeholder="Search users by name or email..."
-                        className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 rounded-xl leading-5 bg-white placeholder-gray-500 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all shadow-sm"
+                        className="block w-full pl-10 pr-3 py-2.5 border border-gray-200 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-800 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-indigo-500 sm:text-sm transition-all shadow-sm"
                     />
 
                     {searching && (
-                        <div className="absolute z-10 mt-1 w-full bg-white shadow-2xl rounded-xl border border-gray-100 p-4 flex items-center justify-center">
-                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600"></div>
-                            <span className="ml-2 text-sm text-gray-500 font-medium">Searching users...</span>
+                        <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 p-4 flex items-center justify-center">
+                            <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-indigo-600 dark:border-indigo-400"></div>
+                            <span className="ml-2 text-sm text-gray-500 dark:text-gray-300 font-medium">Searching users...</span>
                         </div>
                     )}
 
                     {!searching && searchResults.length > 0 && (
-                        <div className="absolute z-10 mt-1 w-full bg-white shadow-2xl rounded-xl border border-gray-100 overflow-hidden max-h-64 overflow-y-auto">
+                        <div className="absolute z-10 mt-1 w-full bg-white dark:bg-gray-800 shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden max-h-64 overflow-y-auto">
                             {searchResults.map(user => (
                                 <button
                                     key={user._id}
                                     onClick={() => selectUser(user)}
                                     className="w-full px-4 py-3 text-left hover:bg-slate-50 flex items-center gap-3 transition-colors border-b last:border-none border-gray-50"
                                 >
-                                    <div className="w-8 h-8 rounded-full bg-indigo-100 flex items-center justify-center text-indigo-600 text-xs font-bold">
+                                    <div className="w-8 h-8 rounded-full bg-indigo-100 dark:bg-indigo-900/30 flex items-center justify-center text-indigo-600 dark:text-indigo-400 text-xs font-bold">
                                         {user.username?.[0]?.toUpperCase() || 'U'}
                                     </div>
                                     <div>
-                                        <p className="text-sm font-bold text-gray-800">{user.username}</p>
-                                        <p className="text-xs text-gray-500">{user.email}</p>
+                                        <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{user.username}</p>
+                                        <p className="text-xs text-gray-500 dark:text-gray-400">{user.email}</p>
                                     </div>
                                 </button>
                             ))}
@@ -226,13 +226,13 @@ export default function AdminCoinStats() {
 
             {/* Key Metrics Grid */}
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow group">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Circulating Supply</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1">{stats.circulatingSupply?.toLocaleString()}</h3>
+                            <p className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-wider">Circulating Supply</p>
+                            <h3 className="text-3xl font-black text-gray-800 dark:text-white mt-1">{stats.circulatingSupply?.toLocaleString()}</h3>
                         </div>
-                        <div className="p-4 bg-indigo-50 rounded-2xl text-indigo-600 group-hover:scale-110 transition-transform">
+                        <div className="p-4 bg-indigo-50 dark:bg-indigo-900/30 rounded-2xl text-indigo-600 dark:text-indigo-400 group-hover:scale-110 transition-transform">
                             <FaCoins size={24} />
                         </div>
                     </div>
@@ -241,13 +241,13 @@ export default function AdminCoinStats() {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow group">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Lifetime Earning</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1">{stats.totalMintedLifetime?.toLocaleString()}</h3>
+                            <p className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-wider">Lifetime Earning</p>
+                            <h3 className="text-3xl font-black text-gray-800 dark:text-white mt-1">{stats.totalMintedLifetime?.toLocaleString()}</h3>
                         </div>
-                        <div className="p-4 bg-green-50 rounded-2xl text-green-600 group-hover:scale-110 transition-transform">
+                        <div className="p-4 bg-green-50 dark:bg-green-900/30 rounded-2xl text-green-600 dark:text-green-400 group-hover:scale-110 transition-transform">
                             <FaArrowUp size={24} />
                         </div>
                     </div>
@@ -256,13 +256,13 @@ export default function AdminCoinStats() {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow group">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Redeemed Coins</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1">{stats.totalBurned?.toLocaleString()}</h3>
+                            <p className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-wider">Redeemed Coins</p>
+                            <h3 className="text-3xl font-black text-gray-800 dark:text-white mt-1">{stats.totalBurned?.toLocaleString()}</h3>
                         </div>
-                        <div className="p-4 bg-red-50 rounded-2xl text-red-600 group-hover:scale-110 transition-transform">
+                        <div className="p-4 bg-red-50 dark:bg-red-900/30 rounded-2xl text-red-600 dark:text-red-400 group-hover:scale-110 transition-transform">
                             <FaFire size={24} />
                         </div>
                     </div>
@@ -271,13 +271,13 @@ export default function AdminCoinStats() {
                     </div>
                 </div>
 
-                <div className="bg-white p-6 rounded-2xl shadow-sm border border-gray-100 hover:shadow-md transition-shadow group">
+                <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 hover:shadow-md transition-shadow group">
                     <div className="flex justify-between items-start">
                         <div>
-                            <p className="text-gray-400 text-xs font-bold uppercase tracking-wider">Coin Holders</p>
-                            <h3 className="text-3xl font-black text-gray-800 mt-1">{stats.holdersCount?.toLocaleString()}</h3>
+                            <p className="text-gray-400 dark:text-gray-500 text-xs font-bold uppercase tracking-wider">Coin Holders</p>
+                            <h3 className="text-3xl font-black text-gray-800 dark:text-white mt-1">{stats.holdersCount?.toLocaleString()}</h3>
                         </div>
-                        <div className="p-4 bg-blue-50 rounded-2xl text-blue-600 group-hover:scale-110 transition-transform">
+                        <div className="p-4 bg-blue-50 dark:bg-blue-900/30 rounded-2xl text-blue-600 dark:text-blue-400 group-hover:scale-110 transition-transform">
                             <FaUsers size={24} />
                         </div>
                     </div>
@@ -289,7 +289,7 @@ export default function AdminCoinStats() {
 
             {selectedUser ? (
                 <div className="space-y-6 animate-[fadeInUp_0.4s_ease-out]">
-                    <div className="bg-white rounded-3xl shadow-lg border border-indigo-100 overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-lg border border-indigo-100 dark:border-gray-700 overflow-hidden">
                         <div className="p-6 bg-gradient-to-r from-indigo-600 to-purple-600 text-white flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
                             <div className="flex items-center gap-4">
                                 <div className="w-16 h-16 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-2xl font-black border border-white/30">
@@ -319,7 +319,7 @@ export default function AdminCoinStats() {
                             <div className="flex gap-3">
                                 <button
                                     onClick={() => { setAdjustmentType('credit'); setShowAdjustmentModal(true); }}
-                                    className="bg-white text-indigo-600 px-6 py-2.5 rounded-xl font-bold shadow-lg hover:bg-gray-50 transition-all flex items-center gap-2"
+                                    className="bg-white dark:bg-gray-700 text-indigo-600 dark:text-indigo-400 px-6 py-2.5 rounded-xl font-bold shadow-lg hover:bg-gray-50 dark:hover:bg-gray-600 transition-all flex items-center gap-2"
                                 >
                                     <FaArrowUp /> Grant Coins
                                 </button>
@@ -339,15 +339,15 @@ export default function AdminCoinStats() {
                         </div>
 
                         <div className="p-0">
-                            <div className="bg-gray-50 px-6 py-4 border-b border-gray-100 flex justify-between items-center">
-                                <h3 className="font-bold text-gray-700 uppercase tracking-widest text-xs flex items-center gap-2">
+                            <div className="bg-gray-50 dark:bg-gray-800 px-6 py-4 border-b border-gray-100 dark:border-gray-700 flex justify-between items-center">
+                                <h3 className="font-bold text-gray-700 dark:text-gray-200 uppercase tracking-widest text-xs flex items-center gap-2">
                                     <FaHistory className="text-indigo-500" /> User Transaction History
                                 </h3>
                                 <span className="text-xs text-gray-400">Showing last 50 activities</span>
                             </div>
                             <div className="max-h-[500px] overflow-y-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-white text-gray-400 sticky top-0 z-10 border-b border-gray-100">
+                                    <thead className="bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 sticky top-0 z-10 border-b border-gray-100 dark:border-gray-700">
                                         <tr>
                                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Activity</th>
                                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider">Source</th>
@@ -356,22 +356,22 @@ export default function AdminCoinStats() {
                                             <th className="px-6 py-4 text-[10px] font-black uppercase tracking-wider text-right">Amount</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-gray-50 bg-white">
+                                    <tbody className="divide-y divide-gray-50 dark:divide-gray-700 bg-white dark:bg-gray-800">
                                         {historyLoading ? (
                                             <tr><td colSpan="4" className="text-center py-20 text-gray-400">Syncing history...</td></tr>
                                         ) : userHistory.length === 0 ? (
                                             <tr><td colSpan="4" className="text-center py-20 text-gray-400">No transactions for this user.</td></tr>
                                         ) : (
                                             userHistory.map(tx => (
-                                                <tr key={tx._id} className="hover:bg-slate-50 transition-colors">
+                                                <tr key={tx._id} className="hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
                                                             <div className={`w-8 h-8 rounded-lg flex items-center justify-center ${tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
                                                                 {tx.type === 'credit' ? <FaArrowUp size={10} /> : <FaArrowDown size={10} />}
                                                             </div>
                                                             <div>
-                                                                <p className="text-sm font-bold text-gray-800">{tx.description}</p>
-                                                                {tx.adminId && <p className="text-[10px] text-indigo-600 font-bold uppercase tracking-tighter italic">By Administrator</p>}
+                                                                <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{tx.description}</p>
+                                                                {tx.adminId && <p className="text-[10px] text-indigo-600 dark:text-indigo-400 font-bold uppercase tracking-tighter italic">By Administrator</p>}
                                                             </div>
                                                         </div>
                                                     </td>
@@ -400,15 +400,15 @@ export default function AdminCoinStats() {
                     </div>
                 </div>
             ) : (
-                <div className="bg-white rounded-3xl shadow-sm border border-gray-100 overflow-hidden">
-                    <div className="p-6 border-b border-gray-50 flex items-center justify-between">
-                        <h3 className="text-lg font-black text-gray-800 flex items-center gap-2">
+                <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden">
+                    <div className="p-6 border-b border-gray-50 dark:border-gray-700 flex items-center justify-between">
+                        <h3 className="text-lg font-black text-gray-800 dark:text-white flex items-center gap-2">
                             <FaHistory className="text-indigo-400" /> Recent System-wide Transactions
                         </h3>
                     </div>
                     <div className="overflow-x-auto">
                         <table className="w-full text-left">
-                            <thead className="bg-gray-50 text-gray-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                            <thead className="bg-gray-50 dark:bg-gray-700 text-gray-400 dark:text-gray-300 text-[10px] font-black uppercase tracking-[0.2em]">
                                 <tr>
                                     <th className="px-6 py-4">User</th>
                                     <th className="px-6 py-4">Activity</th>
@@ -416,23 +416,23 @@ export default function AdminCoinStats() {
                                     <th className="px-6 py-4 text-right">Balance Impact</th>
                                 </tr>
                             </thead>
-                            <tbody className="divide-y divide-gray-50">
+                            <tbody className="divide-y divide-gray-50 dark:divide-gray-700">
                                 {stats.recentTransactions?.map((tx) => (
-                                    <tr key={tx._id} className="hover:bg-slate-50 transition-colors">
+                                    <tr key={tx._id} className="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
                                         <td className="px-6 py-4">
                                             <div className="flex items-center gap-3">
-                                                <div className="w-8 h-8 rounded-lg bg-slate-100 flex items-center justify-center text-slate-400 font-bold text-xs">
+                                                <div className="w-8 h-8 rounded-lg bg-slate-100 dark:bg-gray-700 flex items-center justify-center text-slate-400 dark:text-gray-400 font-bold text-xs">
                                                     {tx.userId?.username?.[0]?.toUpperCase() || 'U'}
                                                 </div>
                                                 <div>
-                                                    <p className="text-sm font-bold text-gray-800">{tx.userId?.username || 'Unknown'}</p>
-                                                    <p className="text-[10px] text-gray-400">{tx.userId?.email}</p>
+                                                    <p className="text-sm font-bold text-gray-800 dark:text-gray-200">{tx.userId?.username || 'Unknown'}</p>
+                                                    <p className="text--[10px] text-gray-400 dark:text-gray-500">{tx.userId?.email}</p>
                                                 </div>
                                             </div>
                                         </td>
                                         <td className="px-6 py-4">
-                                            <p className="text-sm font-medium text-gray-700">{tx.description}</p>
-                                            <p className="text-[10px] text-gray-400 uppercase tracking-widest mt-0.5">{tx.source?.replace(/_/g, ' ')}</p>
+                                            <p className="text-sm font-medium text-gray-700 dark:text-gray-300">{tx.description}</p>
+                                            <p className="text-[10px] text-gray-400 dark:text-gray-500 uppercase tracking-widest mt-0.5">{tx.source?.replace(/_/g, ' ')}</p>
                                         </td>
                                         <td className="px-6 py-4 text-xs font-medium text-gray-500">
                                             {new Date(tx.createdAt).toLocaleDateString()}
@@ -452,7 +452,7 @@ export default function AdminCoinStats() {
             {showAdjustmentModal && (
                 <div className="fixed inset-0 z-[100] flex items-center justify-center p-4">
                     <div className="absolute inset-0 bg-black/60 backdrop-blur-sm" onClick={() => setShowAdjustmentModal(false)}></div>
-                    <div className="bg-white w-full max-w-md rounded-3xl shadow-2xl relative overflow-hidden animate-[scaleIn_0.3s_ease-out]">
+                    <div className="bg-white dark:bg-gray-800 w-full max-w-md rounded-3xl shadow-2xl relative overflow-hidden animate-[scaleIn_0.3s_ease-out]">
                         <div className={`p-6 ${adjustmentType === 'credit' ? 'bg-indigo-600' : 'bg-red-600'} text-white`}>
                             <h3 className="text-xl font-black flex items-center gap-2">
                                 {adjustmentType === 'credit' ? <FaArrowUp /> : <FaArrowDown />}
@@ -469,7 +469,7 @@ export default function AdminCoinStats() {
                                     value={adjustmentAmount}
                                     onChange={(e) => setAdjustmentAmount(e.target.value)}
                                     placeholder="Enter amount (e.g. 100)"
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold text-lg"
+                                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none font-bold text-lg bg-white dark:bg-gray-700 dark:text-white"
                                 />
                             </div>
 
@@ -479,7 +479,7 @@ export default function AdminCoinStats() {
                                     value={adjustmentReason}
                                     onChange={(e) => setAdjustmentReason(e.target.value)}
                                     placeholder="Explain why coins are being adjusted (visible to user)"
-                                    className="w-full px-4 py-3 border border-gray-200 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none min-h-[100px] text-sm"
+                                    className="w-full px-4 py-3 border border-gray-200 dark:border-gray-600 rounded-2xl focus:ring-2 focus:ring-indigo-500 focus:outline-none min-h-[100px] text-sm bg-white dark:bg-gray-700 dark:text-white"
                                 />
                             </div>
 
@@ -496,7 +496,7 @@ export default function AdminCoinStats() {
                             <div className="flex gap-4 pt-2">
                                 <button
                                     onClick={() => setShowAdjustmentModal(false)}
-                                    className="flex-1 py-3.5 border border-gray-200 rounded-2xl font-bold text-gray-500 hover:bg-gray-50 transition-all"
+                                    className="flex-1 py-3.5 border border-gray-200 dark:border-gray-600 rounded-2xl font-bold text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-700 transition-all"
                                 >
                                     Cancel
                                 </button>

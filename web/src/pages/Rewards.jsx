@@ -170,7 +170,7 @@ export default function Rewards() {
     }
 
     return (
-        <div className="min-h-screen bg-slate-50 py-8 px-4 md:px-8">
+        <div className="min-h-screen bg-slate-50 dark:bg-gray-900 py-8 px-4 md:px-8">
             <div className="max-w-6xl mx-auto">
 
                 {/* Hero section */}
@@ -229,7 +229,7 @@ export default function Rewards() {
                 </div>
 
                 {/* Tabs Navigation */}
-                <div className="flex overflow-x-auto no-scrollbar gap-2 mb-8 bg-white p-2 rounded-2xl shadow-sm border border-slate-200">
+                <div className="flex overflow-x-auto no-scrollbar gap-2 mb-8 bg-white dark:bg-gray-800 p-2 rounded-2xl shadow-sm border border-slate-200 dark:border-gray-700">
                     {tabs.map(tab => (
                         <button
                             key={tab.id}
@@ -238,8 +238,8 @@ export default function Rewards() {
                                 navigate(`/user/rewards?tab=${tab.id}`, { replace: true });
                             }}
                             className={`flex items-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 whitespace-nowrap ${activeTab === tab.id
-                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 scale-105'
-                                : 'text-slate-500 hover:bg-indigo-50 hover:text-indigo-600'
+                                ? 'bg-indigo-600 text-white shadow-lg shadow-indigo-200 dark:shadow-none scale-105'
+                                : 'text-slate-500 dark:text-gray-400 hover:bg-indigo-50 dark:hover:bg-gray-700 hover:text-indigo-600 dark:hover:text-indigo-400'
                                 }`}
                         >
                             {tab.icon}
@@ -253,21 +253,21 @@ export default function Rewards() {
                     {activeTab === 'overview' && (
                         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
                             <div className="space-y-6">
-                                <h2 className="text-2xl font-bold text-slate-800 flex items-center gap-2">
+                                <h2 className="text-2xl font-bold text-slate-800 dark:text-white flex items-center gap-2">
                                     <FaRocket className="text-indigo-600" /> Quick Actions
                                 </h2>
                                 <div className="grid grid-cols-2 gap-4">
-                                    <button onClick={() => setActiveTab('activities')} className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all text-center group">
-                                        <div className="w-12 h-12 bg-indigo-100 text-indigo-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                                    <button onClick={() => setActiveTab('activities')} className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all text-center group">
+                                        <div className="w-12 h-12 bg-indigo-100 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                                             <FaStar />
                                         </div>
-                                        <span className="font-bold text-slate-700">Earn Coins</span>
+                                        <span className="font-bold text-slate-700 dark:text-gray-200">Earn Coins</span>
                                     </button>
-                                    <button onClick={() => setActiveTab('rewards')} className="p-6 bg-white rounded-2xl border border-slate-100 shadow-sm hover:shadow-md transition-all text-center group">
-                                        <div className="w-12 h-12 bg-pink-100 text-pink-600 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
+                                    <button onClick={() => setActiveTab('rewards')} className="p-6 bg-white dark:bg-gray-800 rounded-2xl border border-slate-100 dark:border-gray-700 shadow-sm hover:shadow-md transition-all text-center group">
+                                        <div className="w-12 h-12 bg-pink-100 dark:bg-pink-900/30 text-pink-600 dark:text-pink-400 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:scale-110 transition-transform">
                                             <FaGift />
                                         </div>
-                                        <span className="font-bold text-slate-700">Redeem Now</span>
+                                        <span className="font-bold text-slate-700 dark:text-gray-200">Redeem Now</span>
                                     </button>
                                 </div>
 
@@ -282,10 +282,10 @@ export default function Rewards() {
                                 </div>
                             </div>
 
-                            <div className="bg-white rounded-3xl p-6 shadow-sm border border-slate-100">
-                                <h2 className="text-xl font-bold text-slate-800 mb-6 flex items-center justify-between">
+                            <div className="bg-white dark:bg-gray-800 rounded-3xl p-6 shadow-sm border border-slate-100 dark:border-gray-700">
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-white mb-6 flex items-center justify-between">
                                     Recent Activity
-                                    <button onClick={() => setActiveTab('history')} className="text-sm text-indigo-600 hover:underline">View All</button>
+                                    <button onClick={() => setActiveTab('history')} className="text-sm text-indigo-600 dark:text-indigo-400 hover:underline">View All</button>
                                 </h2>
                                 <div className="space-y-4">
                                     {historyLoading ? (
@@ -294,17 +294,17 @@ export default function Rewards() {
                                         <p className="text-center py-8 text-slate-400">No activity yet.</p>
                                     ) : (
                                         history.slice(0, 4).map(tx => (
-                                            <div key={tx._id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 transition-colors">
+                                            <div key={tx._id} className="flex items-center justify-between p-3 rounded-xl hover:bg-slate-50 dark:hover:bg-gray-700 transition-colors">
                                                 <div className="flex items-center gap-3">
-                                                    <div className={`p-2 rounded-lg ${tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'}`}>
+                                                    <div className={`p-2 rounded-lg ${tx.type === 'credit' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'}`}>
                                                         {tx.type === 'credit' ? <FaArrowUp /> : <FaArrowDown />}
                                                     </div>
                                                     <div>
-                                                        <p className="font-bold text-slate-700 text-sm">{tx.description}</p>
-                                                        <p className="text-[10px] text-slate-400 uppercase tracking-widest">{new Date(tx.createdAt).toLocaleDateString()}</p>
+                                                        <p className="font-bold text-slate-700 dark:text-gray-200 text-sm">{tx.description}</p>
+                                                        <p className="text-[10px] text-slate-400 dark:text-gray-500 uppercase tracking-widest">{new Date(tx.createdAt).toLocaleDateString()}</p>
                                                     </div>
                                                 </div>
-                                                <span className={`font-black ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                                                <span className={`font-black ${tx.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                                     {tx.type === 'credit' ? '+' : '-'}{tx.amount}
                                                 </span>
                                             </div>
@@ -319,19 +319,19 @@ export default function Rewards() {
                         <div className="space-y-6">
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                                 {earnActivities.map((act, i) => (
-                                    <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex items-start gap-4 hover:shadow-md transition-all group">
-                                        <div className="p-4 bg-slate-50 rounded-2xl group-hover:bg-slate-100 transition-colors shadow-inner">
+                                    <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-700 flex items-start gap-4 hover:shadow-md transition-all group">
+                                        <div className="p-4 bg-slate-50 dark:bg-gray-700 rounded-2xl group-hover:bg-slate-100 dark:group-hover:bg-gray-600 transition-colors shadow-inner">
                                             {act.icon}
                                         </div>
                                         <div className="flex-1">
                                             <div className="flex justify-between items-center mb-1">
-                                                <h3 className="font-bold text-slate-800">{act.title}</h3>
-                                                <span className="bg-green-100 text-green-700 px-2 py-0.5 rounded-lg text-xs font-black">+{act.coins}</span>
+                                                <h3 className="font-bold text-slate-800 dark:text-white">{act.title}</h3>
+                                                <span className="bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 px-2 py-0.5 rounded-lg text-xs font-black">+{act.coins}</span>
                                             </div>
-                                            <p className="text-sm text-slate-500 mb-4">{act.desc}</p>
+                                            <p className="text-sm text-slate-500 dark:text-gray-400 mb-4">{act.desc}</p>
                                             <button
                                                 onClick={() => act.isReferral ? setShowReferral(true) : navigate(act.link)}
-                                                className="text-xs font-bold text-indigo-600 flex items-center gap-1 hover:gap-2 transition-all"
+                                                className="text-xs font-bold text-indigo-600 dark:text-indigo-400 flex items-center gap-1 hover:gap-2 transition-all"
                                             >
                                                 {act.isReferral ? 'Invite Friends' : 'Go to activity'} <FaChevronRight className="text-[10px]" />
                                             </button>
@@ -378,13 +378,13 @@ export default function Rewards() {
                     {activeTab === 'rewards' && (
                         <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
                             {redeemOptions.map((opt, i) => (
-                                <div key={i} className="bg-white p-6 rounded-3xl shadow-sm border border-slate-100 flex flex-col items-center text-center hover:shadow-md transition-all group">
-                                    <div className="w-16 h-16 bg-slate-50 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-6 transition-transform shadow-inner">
+                                <div key={i} className="bg-white dark:bg-gray-800 p-6 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-700 flex flex-col items-center text-center hover:shadow-md transition-all group">
+                                    <div className="w-16 h-16 bg-slate-50 dark:bg-gray-700 rounded-2xl flex items-center justify-center mb-4 group-hover:rotate-6 transition-transform shadow-inner">
                                         {opt.icon}
                                     </div>
-                                    <h3 className="font-bold text-slate-800 mb-1">{opt.title}</h3>
-                                    <p className="text-xs font-black text-indigo-600 bg-indigo-50 px-3 py-1 rounded-full mb-3 uppercase tracking-tighter">{opt.rate}</p>
-                                    <p className="text-sm text-slate-500 mb-6">{opt.desc}</p>
+                                    <h3 className="font-bold text-slate-800 dark:text-white mb-1">{opt.title}</h3>
+                                    <p className="text-xs font-black text-indigo-600 dark:text-indigo-400 bg-indigo-50 dark:bg-indigo-900/30 px-3 py-1 rounded-full mb-3 uppercase tracking-tighter">{opt.rate}</p>
+                                    <p className="text-sm text-slate-500 dark:text-gray-400 mb-6">{opt.desc}</p>
                                     <div className="relative group/btn w-full">
                                         {!isProfileComplete && (
                                             <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 px-3 py-1.5 bg-gray-900 text-white text-xs font-semibold rounded-lg opacity-0 group-hover/btn:opacity-100 transition-opacity whitespace-nowrap pointer-events-none z-10 shadow-xl">
@@ -396,8 +396,8 @@ export default function Rewards() {
                                             onClick={() => isProfileComplete && navigate(opt.link)}
                                             disabled={!isProfileComplete}
                                             className={`w-full py-3 rounded-2xl font-bold flex items-center justify-center gap-2 shadow-lg transition-all ${isProfileComplete
-                                                ? 'bg-slate-900 text-white hover:bg-slate-800 shadow-slate-200'
-                                                : 'bg-slate-200 text-slate-400 cursor-not-allowed shadow-none'
+                                                ? 'bg-slate-900 dark:bg-slate-700 text-white hover:bg-slate-800 dark:hover:bg-slate-600 shadow-slate-200 dark:shadow-none'
+                                                : 'bg-slate-200 dark:bg-gray-700 text-slate-400 dark:text-gray-500 cursor-not-allowed shadow-none'
                                                 }`}
                                         >
                                             {isProfileComplete ? <FaGift className="text-pink-400" /> : <FaLock />} Use Coins
@@ -410,13 +410,13 @@ export default function Rewards() {
                     )}
 
                     {activeTab === 'history' && (
-                        <div className="bg-white rounded-3xl shadow-sm border border-slate-100 overflow-hidden">
-                            <div className="p-6 border-b border-slate-50">
-                                <h2 className="text-xl font-bold text-slate-800">Transaction Log</h2>
+                        <div className="bg-white dark:bg-gray-800 rounded-3xl shadow-sm border border-slate-100 dark:border-gray-700 overflow-hidden">
+                            <div className="p-6 border-b border-slate-50 dark:border-gray-700">
+                                <h2 className="text-xl font-bold text-slate-800 dark:text-white">Transaction Log</h2>
                             </div>
                             <div className="overflow-x-auto">
                                 <table className="w-full text-left">
-                                    <thead className="bg-slate-50 text-slate-400 text-[10px] font-black uppercase tracking-[0.2em]">
+                                    <thead className="bg-slate-50 dark:bg-gray-700 text-slate-400 dark:text-gray-300 text-[10px] font-black uppercase tracking-[0.2em]">
                                         <tr>
                                             <th className="px-6 py-4">Transaction Details</th>
                                             <th className="px-6 py-4">Status</th>
@@ -425,20 +425,20 @@ export default function Rewards() {
                                             <th className="px-6 py-4 text-right">Amount</th>
                                         </tr>
                                     </thead>
-                                    <tbody className="divide-y divide-slate-50">
+                                    <tbody className="divide-y divide-slate-50 dark:divide-gray-700">
                                         {historyLoading ? (
-                                            <tr><td colSpan="4" className="text-center py-20 text-slate-400">Loading History...</td></tr>
+                                            <tr><td colSpan="4" className="text-center py-20 text-slate-400 dark:text-gray-500">Loading History...</td></tr>
                                         ) : history.length === 0 ? (
-                                            <tr><td colSpan="4" className="text-center py-20 text-slate-400">No records found.</td></tr>
+                                            <tr><td colSpan="4" className="text-center py-20 text-slate-400 dark:text-gray-500">No records found.</td></tr>
                                         ) : (
                                             history.map(tx => (
-                                                <tr key={tx._id} className="hover:bg-slate-50 transition-colors">
+                                                <tr key={tx._id} className="hover:bg-slate-50 dark:hover:bg-gray-700/50 transition-colors">
                                                     <td className="px-6 py-4">
                                                         <div className="flex items-center gap-3">
-                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.source === 'referral' ? 'bg-purple-100 text-purple-600' :
-                                                                tx.source === 'profile_completion' ? 'bg-blue-100 text-blue-600' :
-                                                                    tx.source === 'admin_adjustment' ? 'bg-amber-100 text-amber-600' :
-                                                                        tx.type === 'credit' ? 'bg-green-100 text-green-600' : 'bg-red-100 text-red-600'
+                                                            <div className={`w-10 h-10 rounded-xl flex items-center justify-center ${tx.source === 'referral' ? 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400' :
+                                                                tx.source === 'profile_completion' ? 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400' :
+                                                                    tx.source === 'admin_adjustment' ? 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400' :
+                                                                        tx.type === 'credit' ? 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400' : 'bg-red-100 dark:bg-red-900/30 text-red-600 dark:text-red-400'
                                                                 }`}>
                                                                 {tx.source === 'referral' ? <FaUserFriends /> :
                                                                     tx.source === 'profile_completion' ? <FaCheck /> :
@@ -446,8 +446,8 @@ export default function Rewards() {
                                                                             tx.type === 'credit' ? <FaArrowUp /> : <FaArrowDown />}
                                                             </div>
                                                             <div>
-                                                                <p className="font-bold text-slate-800 text-sm">{tx.description}</p>
-                                                                <p className={`text-[10px] font-bold tracking-wide uppercase ${tx.source === 'referral' ? 'text-purple-600' : 'text-slate-400'
+                                                                <p className="font-bold text-slate-800 dark:text-gray-200 text-sm">{tx.description}</p>
+                                                                <p className={`text-[10px] font-bold tracking-wide uppercase ${tx.source === 'referral' ? 'text-purple-600 dark:text-purple-400' : 'text-slate-400 dark:text-gray-500'
                                                                     }`}>{tx.source.replace('_', ' ')}</p>
                                                             </div>
                                                         </div>
@@ -457,15 +457,15 @@ export default function Rewards() {
                                                             <FaCheckCircle className="text-[10px]" /> Completed
                                                         </span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-xs font-medium text-slate-500">
+                                                    <td className="px-6 py-4 text-xs font-medium text-slate-500 dark:text-gray-400">
                                                         {new Date(tx.createdAt).toLocaleDateString(undefined, { day: 'numeric', month: 'short', year: 'numeric' })}
                                                         <br />
                                                         <span className="text-[10px] opacity-60 font-normal">{new Date(tx.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</span>
                                                     </td>
-                                                    <td className="px-6 py-4 text-xs font-medium text-slate-400">
+                                                    <td className="px-6 py-4 text-xs font-medium text-slate-400 dark:text-gray-500">
                                                         {tx.expiryDate ? new Date(tx.expiryDate).toLocaleDateString() : '-'}
                                                     </td>
-                                                    <td className={`px-6 py-4 text-right font-black text-lg ${tx.type === 'credit' ? 'text-green-600' : 'text-red-600'}`}>
+                                                    <td className={`px-6 py-4 text-right font-black text-lg ${tx.type === 'credit' ? 'text-green-600 dark:text-green-400' : 'text-red-600 dark:text-red-400'}`}>
                                                         {tx.type === 'credit' ? '+' : '-'}{tx.amount}
                                                     </td>
                                                 </tr>
@@ -483,13 +483,13 @@ export default function Rewards() {
                 </div>
 
                 {/* Footer Links */}
-                <div className="mt-12 mb-8 text-center border-t border-slate-200 pt-8">
-                    <p className="text-slate-400 text-sm mb-2">UrbanSetu Loyalty Program</p>
+                <div className="mt-12 mb-8 text-center border-t border-slate-200 dark:border-gray-700 pt-8">
+                    <p className="text-slate-400 dark:text-gray-500 text-sm mb-2">UrbanSetu Loyalty Program</p>
                     <div className="flex justify-center gap-6">
-                        <Link to="/user/terms" className="text-indigo-600 hover:text-indigo-800 text-sm font-bold transition-colors">
+                        <Link to="/user/terms" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-bold transition-colors">
                             Terms & Conditions
                         </Link>
-                        <Link to="/user/privacy" className="text-indigo-600 hover:text-indigo-800 text-sm font-bold transition-colors">
+                        <Link to="/user/privacy" className="text-indigo-600 dark:text-indigo-400 hover:text-indigo-800 dark:hover:text-indigo-300 text-sm font-bold transition-colors">
                             Privacy Policy
                         </Link>
                     </div>
@@ -515,6 +515,6 @@ export default function Rewards() {
                 .no-scrollbar::-webkit-scrollbar { display: none; }
                 .no-scrollbar { -ms-overflow-style: none; scrollbar-width: none; }
             `}</style>
-        </div>
+        </div >
     );
 }
