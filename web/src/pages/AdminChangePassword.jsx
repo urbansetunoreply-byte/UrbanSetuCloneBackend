@@ -223,27 +223,27 @@ export default function AdminChangePassword() {
     >
 
       {/* Right Side - Change Password Form */}
-      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 min-h-screen">
+      <div className="w-full lg:w-1/2 flex items-center justify-center p-8 bg-gray-50 dark:bg-gray-900 min-h-screen transition-colors duration-200">
         <div className="w-full max-w-md animate-fade-in">
           <div className="text-center mb-8">
-            <h2 className="text-3xl font-bold text-gray-800 mb-2 flex items-center justify-center gap-2">
-              <Lock className="w-7 h-7 text-blue-600" />
+            <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2 flex items-center justify-center gap-2">
+              <Lock className="w-7 h-7 text-blue-600 dark:text-blue-500" />
               Change Password
             </h2>
-            <p className="text-gray-600">Keep your account secure by updating your password regularly.</p>
+            <p className="text-gray-600 dark:text-gray-400">Keep your account secure by updating your password regularly.</p>
           </div>
 
-          <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 relative overflow-hidden">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 relative overflow-hidden transition-colors duration-200">
             {/* Decorative background element for card */}
-            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+            <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/10 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none transition-colors duration-200"></div>
 
             <form onSubmit={handleSubmit} className="space-y-6 relative z-10">
               {/* Current Password Field */}
               <div>
-                <label htmlFor="previousPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="previousPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Current Password
                 </label>
-                <p className="text-xs text-gray-500 mb-2">(Enter your existing password)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">(Enter your existing password)</p>
                 <FormField
                   label={undefined}
                   id="previousPassword"
@@ -254,13 +254,13 @@ export default function AdminChangePassword() {
                   ref={currentPasswordRef}
                   disabled={loading}
                   placeholder="Enter your current password"
-                  startIcon={<Lock className="w-5 h-5" />}
+                  startIcon={<Lock className="w-5 h-5 dark:text-gray-400" />}
                   endAdornment={
                     <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowPrev(!showPrev)}>
-                      {showPrev ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                      {showPrev ? (<FaEyeSlash className="text-gray-600 dark:text-gray-400" />) : (<FaEye className="text-gray-600 dark:text-gray-400" />)}
                     </div>
                   }
-                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-blue-500`}
+                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${loading ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600'} hover:border-blue-500`}
                   required
                 />
                 <div className="mt-2 flex justify-end">
@@ -268,7 +268,7 @@ export default function AdminChangePassword() {
                     type="button"
                     onClick={handleForgotPasswordClick}
                     disabled={loading}
-                    className={`text-sm text-blue-600 hover:text-blue-800 font-medium hover:underline transition-colors duration-200 ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                    className={`text-sm text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-medium hover:underline transition-colors duration-200 ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                       }`}
                   >
                     Forgot Password?
@@ -278,10 +278,10 @@ export default function AdminChangePassword() {
 
               {/* New Password Field */}
               <div>
-                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="newPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   New Password
                 </label>
-                <p className="text-xs text-gray-500 mb-2">(Create a strong new password)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">(Create a strong new password)</p>
                 <FormField
                   label={undefined}
                   id="newPassword"
@@ -291,13 +291,13 @@ export default function AdminChangePassword() {
                   onChange={handleChange}
                   disabled={loading}
                   placeholder="Create a strong password"
-                  startIcon={<Lock className="w-5 h-5" />}
+                  startIcon={<Lock className="w-5 h-5 dark:text-gray-400" />}
                   endAdornment={
                     <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowNew(!showNew)}>
-                      {showNew ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                      {showNew ? (<FaEyeSlash className="text-gray-600 dark:text-gray-400" />) : (<FaEye className="text-gray-600 dark:text-gray-400" />)}
                     </div>
                   }
-                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-blue-500`}
+                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${loading ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600'} hover:border-blue-500`}
                   required
                 />
               </div>
@@ -306,14 +306,14 @@ export default function AdminChangePassword() {
               {formData.newPassword && (
                 <div className="space-y-3">
                   <div className="flex items-center justify-between">
-                    <span className="text-sm font-medium text-gray-700">Password Strength:</span>
+                    <span className="text-sm font-medium text-gray-700 dark:text-gray-300">Password Strength:</span>
                     <span className={`text-sm font-semibold ${getPasswordStrengthColor(passwordStrength.level)}`}>
                       {getPasswordStrengthText(passwordStrength.level)}
                     </span>
                   </div>
 
                   {/* Strength Bar */}
-                  <div className="w-full bg-gray-200 rounded-full h-2">
+                  <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                     <div
                       className={`h-2 rounded-full transition-all duration-300 ${passwordStrength.level === 'very-weak' ? 'bg-red-500 w-1/5' :
                         passwordStrength.level === 'weak' ? 'bg-red-400 w-2/5' :
@@ -327,8 +327,8 @@ export default function AdminChangePassword() {
                   {/* Feedback */}
                   {passwordStrength.feedback.length > 0 && (
                     <div className={`p-3 rounded-lg ${getPasswordStrengthBgColor(passwordStrength.level)}`}>
-                      <p className="text-sm font-medium text-gray-700 mb-1">To improve your password:</p>
-                      <ul className="text-xs space-y-1">
+                      <p className="text-sm font-medium mb-1">To improve your password:</p>
+                      <ul className="text-xs space-y-1 opacity-90">
                         {passwordStrength.feedback.map((item, index) => (
                           <li key={index} className="flex items-center">
                             <span className="mr-2">•</span>
@@ -340,7 +340,7 @@ export default function AdminChangePassword() {
                   )}
 
                   {/* Security Tips */}
-                  <div className="text-xs text-gray-500 space-y-1">
+                  <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                     <p>💡 <strong>Tip:</strong> Use a unique password for this account</p>
                     <p>🔒 <strong>Security:</strong> Consider using a password manager</p>
                   </div>
@@ -349,10 +349,10 @@ export default function AdminChangePassword() {
 
               {/* Confirm Password */}
               <div>
-                <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700 mb-2">
+                <label htmlFor="confirmNewPassword" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                   Confirm New Password
                 </label>
-                <p className="text-xs text-gray-500 mb-2">(Re-enter your new password)</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mb-2">(Re-enter your new password)</p>
                 <FormField
                   label={undefined}
                   id="confirmNewPassword"
@@ -362,13 +362,13 @@ export default function AdminChangePassword() {
                   onChange={handleChange}
                   disabled={loading}
                   placeholder="Confirm your new password"
-                  startIcon={<Lock className="w-5 h-5" />}
+                  startIcon={<Lock className="w-5 h-5 dark:text-gray-400" />}
                   endAdornment={
                     <div className="absolute inset-y-0 right-3 flex items-center cursor-pointer" onClick={() => setShowConfirm(!showConfirm)}>
-                      {showConfirm ? (<FaEyeSlash className="text-gray-600" />) : (<FaEye className="text-gray-600" />)}
+                      {showConfirm ? (<FaEyeSlash className="text-gray-600 dark:text-gray-400" />) : (<FaEye className="text-gray-600 dark:text-gray-400" />)}
                     </div>
                   }
-                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${loading ? 'bg-gray-100 cursor-not-allowed' : ''} hover:border-blue-500`}
+                  inputClassName={`transition-all duration-200 focus:ring-2 focus:ring-blue-500/20 ${loading ? 'bg-gray-100 dark:bg-gray-700 cursor-not-allowed' : 'bg-white dark:bg-gray-700 dark:text-white dark:border-gray-600'} hover:border-blue-500`}
                   required
                 />
               </div>
@@ -388,25 +388,25 @@ export default function AdminChangePassword() {
               </PrimaryButton>
 
               {error && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4">
-                  <p className="text-red-600 text-sm">{error}</p>
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4">
+                  <p className="text-red-600 dark:text-red-300 text-sm">{error}</p>
                 </div>
               )}
 
               {success && (
-                <div className="bg-blue-50 border border-blue-200 rounded-lg p-4">
-                  <p className="text-blue-600 text-sm">{success}</p>
+                <div className="bg-blue-50 dark:bg-blue-900/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4">
+                  <p className="text-blue-600 dark:text-blue-300 text-sm">{success}</p>
                 </div>
               )}
             </form>
 
             <div className="mt-6 text-center">
-              <p className="text-gray-600">
+              <p className="text-gray-600 dark:text-gray-400">
                 Changed your mind?{" "}
                 <button
                   onClick={() => navigate("/admin/profile")}
                   disabled={loading}
-                  className={`text-blue-600 hover:text-blue-800 font-semibold hover:underline transition-colors duration-200 ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
+                  className={`text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 font-semibold hover:underline transition-colors duration-200 ${loading ? 'opacity-50 cursor-not-allowed pointer-events-none' : ''
                     }`}
                 >
                   Back to Profile

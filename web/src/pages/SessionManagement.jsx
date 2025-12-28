@@ -280,13 +280,13 @@ const SessionManagement = () => {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'rootadmin':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
       case 'admin':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
       case 'user':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
     }
   };
 
@@ -295,7 +295,7 @@ const SessionManagement = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-200">
       {/* Background Animations */}
       <style>
         {`
@@ -325,7 +325,7 @@ const SessionManagement = () => {
 
       <div className="max-w-7xl mx-auto space-y-6 relative z-10">
         {/* Header Section */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 sm:p-8 animate-fade-in relative overflow-hidden group">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 sm:p-8 animate-fade-in relative overflow-hidden group transition-colors duration-200">
           <div className="absolute top-0 right-0 w-64 h-64 bg-gradient-to-br from-blue-50 to-purple-50 rounded-bl-full -mr-16 -mt-16 opacity-50 pointer-events-none transition-transform duration-500 group-hover:scale-110"></div>
 
           <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-6 relative z-10">
@@ -333,25 +333,25 @@ const SessionManagement = () => {
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
                 Session Management
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-gray-600 dark:text-gray-300 text-lg">
                 Monitor and manage user sessions across the platform
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex rounded-lg shadow-sm bg-gray-50 p-1 border border-gray-200">
+              <div className="flex rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700/50 p-1 border border-gray-200 dark:border-gray-600">
                 <button
                   onClick={activeRefresh}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm transition-all focus:outline-none"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-600 hover:shadow-sm transition-all focus:outline-none"
                   title="Refresh sessions"
                 >
                   <FaSync className={`mr-2 ${loading || isRefreshing ? 'animate-spin text-blue-600' : 'text-gray-500'}`} />
                   Refresh
                 </button>
-                <div className="w-px bg-gray-200 my-1 mx-1"></div>
+                <div className="w-px bg-gray-200 dark:bg-gray-600 my-1 mx-1"></div>
                 <button
                   onClick={toggleAutoRefresh}
-                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-all focus:outline-none ${autoRefresh ? 'bg-green-100 text-green-700 shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
+                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-all focus:outline-none ${autoRefresh ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 shadow-sm' : 'text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-600 hover:shadow-sm'}`}
                   title="Auto refresh every 30s"
                 >
                   <span className={`mr-2 h-2 w-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
@@ -375,24 +375,24 @@ const SessionManagement = () => {
         </div>
 
         {/* Search and Filters */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 animate-fade-in-delay relative overflow-visible z-20">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 animate-fade-in-delay relative overflow-visible z-20 transition-colors duration-200">
           <div className="flex flex-col md:flex-row gap-4 mb-6">
             <div className="flex-1 relative">
               <div className="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
-                {isSearching ? <div className="animate-spin h-5 w-5 border-2 border-blue-500 rounded-full border-t-transparent"></div> : <FaSearch className="text-gray-400" />}
+                {isSearching ? <div className="animate-spin h-5 w-5 border-2 border-blue-500 rounded-full border-t-transparent"></div> : <FaSearch className="text-gray-400 dark:text-gray-500" />}
               </div>
               <input
                 type="text"
                 placeholder="Search by username, email, device, IP..."
                 value={searchQuery}
                 onChange={(e) => setSearchQuery(e.target.value)}
-                className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-500 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
+                className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 placeholder-gray-500 dark:placeholder-gray-400 dark:text-white focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all"
               />
             </div>
 
             <button
               onClick={() => setShowFilters(!showFilters)}
-              className={`flex items-center justify-center px-4 py-3 border rounded-xl font-medium transition-all ${showFilters || hasActiveFilters ? 'bg-blue-50 text-blue-700 border-blue-200' : 'bg-white text-gray-700 border-gray-200 hover:bg-gray-50'}`}
+              className={`flex items-center justify-center px-4 py-3 border rounded-xl font-medium transition-all ${showFilters || hasActiveFilters ? 'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' : 'bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
             >
               <FaFilter className="mr-2" />
               Filters
@@ -406,7 +406,7 @@ const SessionManagement = () => {
             {hasActiveFilters && (
               <button
                 onClick={resetFilters}
-                className="px-4 py-3 text-red-600 hover:bg-red-50 rounded-xl transition-colors font-medium text-sm"
+                className="px-4 py-3 text-red-600 dark:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-xl transition-colors font-medium text-sm"
               >
                 Clear
               </button>
@@ -414,13 +414,13 @@ const SessionManagement = () => {
           </div>
 
           {/* Filter Panel */}
-          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 overflow-hidden ${showFilters ? 'max-h-96 opacity-100 pt-4 border-t border-gray-100' : 'max-h-0 opacity-0'}`}>
+          <div className={`grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 transition-all duration-300 overflow-hidden ${showFilters ? 'max-h-96 opacity-100 pt-4 border-t border-gray-100 dark:border-gray-700' : 'max-h-0 opacity-0'}`}>
             <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Role</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Role</label>
               <select
                 value={filterRole}
                 onChange={(e) => setFilterRole(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white outline-none transition-all"
               >
                 <option value="all">All Roles</option>
                 <option value="user">Users</option>
@@ -430,11 +430,11 @@ const SessionManagement = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Device Platform</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Device Platform</label>
               <select
                 value={filterDevice}
                 onChange={(e) => setFilterDevice(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white outline-none transition-all"
               >
                 <option value="all">All Devices</option>
                 <option value="mobile">Mobile</option>
@@ -444,22 +444,22 @@ const SessionManagement = () => {
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Location</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Location</label>
               <input
                 type="text"
                 value={filterLocation === 'all' ? '' : filterLocation}
                 onChange={(e) => setFilterLocation(e.target.value || 'all')}
                 placeholder="e.g. New York, India"
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white outline-none transition-all"
               />
             </div>
 
             <div>
-              <label className="block text-xs font-medium text-gray-500 uppercase tracking-wide mb-1">Time Range</label>
+              <label className="block text-xs font-medium text-gray-500 dark:text-gray-400 uppercase tracking-wide mb-1">Time Range</label>
               <select
                 value={filterDateRange}
                 onChange={(e) => setFilterDateRange(e.target.value)}
-                className="w-full px-3 py-2 bg-gray-50 border border-gray-200 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white outline-none transition-all"
+                className="w-full px-3 py-2 bg-gray-50 dark:bg-gray-700 border border-gray-200 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:bg-white dark:focus:bg-gray-600 text-gray-900 dark:text-white outline-none transition-all"
               >
                 <option value="all">All Time</option>
                 <option value="1h">Last Hour</option>
@@ -472,12 +472,12 @@ const SessionManagement = () => {
         </div>
 
         {/* Sessions Table */}
-        <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-delay-2">
-          <div className="px-6 py-5 border-b border-gray-100 bg-gray-50/50 flex items-center justify-between">
-            <h2 className="text-lg font-bold text-gray-800 flex items-center gap-2">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-delay-2 transition-colors duration-200">
+          <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 bg-gray-50/50 dark:bg-gray-700/50 flex items-center justify-between">
+            <h2 className="text-lg font-bold text-gray-800 dark:text-white flex items-center gap-2">
               <FaNetworkWired className="text-blue-500" /> Active Sessions List
             </h2>
-            <span className="text-xs font-medium text-gray-500 bg-white px-2 py-1 rounded border border-gray-200 shadow-sm">
+            <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-white dark:bg-gray-800 px-2 py-1 rounded border border-gray-200 dark:border-gray-600 shadow-sm">
               Page {currentPage} of {Math.ceil(totalSessions / 20) || 1}
             </span>
           </div>
@@ -495,17 +495,17 @@ const SessionManagement = () => {
             </div>
           ) : (
             <div className="overflow-x-auto">
-              <table className="min-w-full divide-y divide-gray-200">
-                <thead className="bg-gray-50">
+              <table className="min-w-full divide-y divide-gray-200 dark:divide-gray-700">
+                <thead className="bg-gray-50 dark:bg-gray-700">
                   <tr>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">User</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Device Info</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Location (IP)</th>
-                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 uppercase tracking-wider">Last Active</th>
-                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 uppercase tracking-wider">Actions</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">User</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Device Info</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Location (IP)</th>
+                    <th className="px-6 py-3 text-left text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Last Active</th>
+                    <th className="px-6 py-3 text-right text-xs font-bold text-gray-500 dark:text-gray-300 uppercase tracking-wider">Actions</th>
                   </tr>
                 </thead>
-                <tbody className="bg-white divide-y divide-gray-200">
+                <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-200 dark:divide-gray-700">
                   {sessions.filter(session => {
                     // Restriction 1: Admins (non-root) cannot see rootadmin sessions
                     if (currentUser.role !== 'rootadmin' && session.role === 'rootadmin') {
@@ -513,7 +513,7 @@ const SessionManagement = () => {
                     }
                     return true;
                   }).map((session) => (
-                    <tr key={session.sessionId} className="hover:bg-blue-50/30 transition-colors duration-150">
+                    <tr key={session.sessionId} className="hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-colors duration-150">
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex items-center">
                           <div className="flex-shrink-0 h-10 w-10">
@@ -524,10 +524,10 @@ const SessionManagement = () => {
                             </div>
                           </div>
                           <div className="ml-4">
-                            <div className="text-sm font-bold text-gray-900">
+                            <div className="text-sm font-bold text-gray-900 dark:text-white">
                               {session.username}
                             </div>
-                            <div className="text-xs text-gray-500">
+                            <div className="text-xs text-gray-500 dark:text-gray-400">
                               {session.email}
                             </div>
                             <span className={`inline-flex items-center px-2 py-0.5 rounded text-xs font-medium border mt-1 ${getRoleBadgeColor(session.role)}`}>
@@ -540,9 +540,9 @@ const SessionManagement = () => {
                         <div className="flex items-start gap-3">
                           <div className="mt-1">{getDeviceIcon(session.device)}</div>
                           <div>
-                            <div className="text-sm font-medium text-gray-900">{session.device}</div>
+                            <div className="text-sm font-medium text-gray-900 dark:text-white">{session.device}</div>
                             {session.isCurrent && (
-                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800">
+                              <span className="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-blue-100 text-blue-800 dark:bg-blue-900/40 dark:text-blue-300">
                                 This Device
                               </span>
                             )}
@@ -551,17 +551,17 @@ const SessionManagement = () => {
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
                         <div className="flex flex-col">
-                          <div className="flex items-center text-sm text-gray-900">
+                          <div className="flex items-center text-sm text-gray-900 dark:text-white">
                             <FaGlobe className="text-gray-400 mr-2" />
                             {session.location || 'Unknown'}
                           </div>
-                          <div className="text-xs text-gray-500 font-mono pl-6 mt-0.5">
+                          <div className="text-xs text-gray-500 dark:text-gray-400 font-mono pl-6 mt-0.5">
                             {session.ip}
                           </div>
                         </div>
                       </td>
                       <td className="px-6 py-4 whitespace-nowrap">
-                        <div className="flex items-center text-sm text-gray-500">
+                        <div className="flex items-center text-sm text-gray-500 dark:text-gray-400">
                           <FaClock className="mr-2 text-gray-400" />
                           {formatDate(session.lastActive)}
                         </div>
@@ -574,14 +574,14 @@ const SessionManagement = () => {
                               <button
                                 onClick={() => openForceLogoutModal(session)}
                                 disabled={revokingSession === session.sessionId}
-                                className="text-red-600 hover:text-red-900 disabled:opacity-50 hover:bg-red-50 p-2 rounded-lg transition-colors"
+                                className="text-red-600 hover:text-red-900 dark:text-red-400 dark:hover:text-red-300 disabled:opacity-50 hover:bg-red-50 dark:hover:bg-red-900/20 p-2 rounded-lg transition-colors"
                                 title="Force Logout"
                               >
                                 {revokingSession === session.sessionId ? <FaSync className="animate-spin" /> : <FaSignOutAlt />}
                               </button>
                               <button
                                 onClick={() => openLogoutAllModal(session)}
-                                className="text-orange-600 hover:text-orange-900 hover:bg-orange-50 p-2 rounded-lg transition-colors"
+                                className="text-orange-600 hover:text-orange-900 dark:text-orange-400 dark:hover:text-orange-300 hover:bg-orange-50 dark:hover:bg-orange-900/20 p-2 rounded-lg transition-colors"
                                 title="Logout All User Sessions"
                               >
                                 <FaUserSlash />
@@ -600,26 +600,26 @@ const SessionManagement = () => {
 
         {/* Pagination */}
         {totalSessions > 20 && (
-          <div className="bg-white px-4 py-3 flex items-center justify-between border-t border-gray-200 sm:px-6 mt-6 rounded-lg shadow-sm">
+          <div className="bg-white dark:bg-gray-800 px-4 py-3 flex items-center justify-between border-t border-gray-200 dark:border-gray-700 sm:px-6 mt-6 rounded-lg shadow-sm">
             <div className="flex-1 flex justify-between sm:hidden">
               <button
                 onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                 disabled={currentPage === 1}
-                className="relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
               >
                 Previous
               </button>
               <button
                 onClick={() => setCurrentPage(currentPage + 1)}
                 disabled={sessions.length < 20}
-                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 text-sm font-medium rounded-md text-gray-700 bg-white hover:bg-gray-50 disabled:opacity-50"
+                className="ml-3 relative inline-flex items-center px-4 py-2 border border-gray-300 dark:border-gray-600 text-sm font-medium rounded-md text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
               >
                 Next
               </button>
             </div>
             <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
               <div>
-                <p className="text-sm text-gray-700">
+                <p className="text-sm text-gray-700 dark:text-gray-300">
                   Showing page <span className="font-medium">{currentPage}</span> of{' '}
                   <span className="font-medium">{Math.ceil(totalSessions / 20)}</span>
                 </p>
@@ -628,14 +628,14 @@ const SessionManagement = () => {
                 <button
                   onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                   disabled={currentPage === 1}
-                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-l-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                   Previous
                 </button>
                 <button
                   onClick={() => setCurrentPage(currentPage + 1)}
                   disabled={sessions.length < 20}
-                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50"
+                  className="relative inline-flex items-center px-2 py-2 rounded-r-md border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-sm font-medium text-gray-500 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-600 disabled:opacity-50"
                 >
                   Next
                 </button>
@@ -648,44 +648,44 @@ const SessionManagement = () => {
       {/* Force Logout Modal */}
       {showForceLogoutModal && selectedSession && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative mx-auto bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in border border-gray-100">
-            <div className="bg-gradient-to-r from-red-50 to-orange-50 px-6 py-4 border-b border-red-100 flex items-center gap-3">
-              <div className="bg-white p-2 rounded-full shadow-sm text-red-500">
+          <div className="relative mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in border border-gray-100 dark:border-gray-700">
+            <div className="bg-gradient-to-r from-red-50 to-orange-50 dark:from-red-900/20 dark:to-orange-900/20 px-6 py-4 border-b border-red-100 dark:border-red-800 flex items-center gap-3">
+              <div className="bg-white dark:bg-gray-700 p-2 rounded-full shadow-sm text-red-500 dark:text-red-400">
                 <FaExclamationTriangle />
               </div>
-              <h3 className="text-lg font-bold text-red-900">Force Logout Session</h3>
+              <h3 className="text-lg font-bold text-red-900 dark:text-red-300">Force Logout Session</h3>
             </div>
 
             <div className="p-6">
-              <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6 border border-gray-100 dark:border-gray-600">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold text-sm shadow-sm">
                       {selectedSession.username.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900">{selectedSession.username}</p>
-                      <p className="text-xs text-gray-500">{selectedSession.email}</p>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{selectedSession.username}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{selectedSession.email}</p>
                     </div>
                   </div>
-                  <div className="h-px bg-gray-200 mx-1"></div>
+                  <div className="h-px bg-gray-200 dark:bg-gray-600 mx-1"></div>
                   <div className="grid grid-cols-2 gap-4 text-sm">
                     <div>
-                      <span className="text-xs text-gray-400 block mb-1 uppercase tracking-wider">Device</span>
-                      <span className="font-medium text-gray-700 flex items-center gap-1">
+                      <span className="text-xs text-gray-400 dark:text-gray-500 block mb-1 uppercase tracking-wider">Device</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-200 flex items-center gap-1">
                         {getDeviceIcon(selectedSession.device)} {selectedSession.device}
                       </span>
                     </div>
                     <div>
-                      <span className="text-xs text-gray-400 block mb-1 uppercase tracking-wider">IP Address</span>
-                      <span className="font-medium text-gray-700 font-mono">{selectedSession.ip}</span>
+                      <span className="text-xs text-gray-400 dark:text-gray-500 block mb-1 uppercase tracking-wider">IP Address</span>
+                      <span className="font-medium text-gray-700 dark:text-gray-200 font-mono">{selectedSession.ip}</span>
                     </div>
                   </div>
                 </div>
               </div>
 
               <div className="mb-6">
-                <label htmlFor="reason" className="block text-sm font-bold text-gray-700 mb-2">
+                <label htmlFor="reason" className="block text-sm font-bold text-gray-700 dark:text-gray-200 mb-2">
                   Logout Reason <span className="text-gray-400 font-normal text-xs">(optional)</span>
                 </label>
                 <input
@@ -693,7 +693,7 @@ const SessionManagement = () => {
                   id="reason"
                   value={forceLogoutReason}
                   onChange={(e) => setForceLogoutReason(e.target.value)}
-                  className="block w-full px-4 py-3 border border-gray-300 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 transition-all text-sm outline-none"
+                  className="block w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-xl shadow-sm focus:ring-2 focus:ring-red-500/20 focus:border-red-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-all text-sm outline-none"
                   placeholder="e.g. Suspicious activity detected"
                 />
               </div>
@@ -705,7 +705,7 @@ const SessionManagement = () => {
                     setSelectedSession(null);
                     setForceLogoutReason('');
                   }}
-                  className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
+                  className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
                 >
                   Cancel
                 </button>
@@ -724,40 +724,40 @@ const SessionManagement = () => {
       {/* Logout All Sessions Confirmation Modal */}
       {showLogoutAllModal && logoutAllTargetSession && (
         <div className="fixed inset-0 bg-gray-900/60 backdrop-blur-sm overflow-y-auto h-full w-full z-50 flex items-center justify-center p-4">
-          <div className="relative mx-auto bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in border border-gray-100">
-            <div className="bg-gradient-to-r from-orange-50 to-red-50 px-6 py-4 border-b border-orange-100 flex items-center gap-3">
-              <div className="bg-white p-2 rounded-full shadow-sm text-orange-500">
+          <div className="relative mx-auto bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden animate-fade-in border border-gray-100 dark:border-gray-700">
+            <div className="bg-gradient-to-r from-orange-50 to-red-50 dark:from-orange-900/20 dark:to-red-900/20 px-6 py-4 border-b border-orange-100 dark:border-orange-800 flex items-center gap-3">
+              <div className="bg-white dark:bg-gray-700 p-2 rounded-full shadow-sm text-orange-500 dark:text-orange-400">
                 <FaUserSlash />
               </div>
-              <h3 className="text-lg font-bold text-orange-900">Logout All Sessions</h3>
+              <h3 className="text-lg font-bold text-orange-900 dark:text-orange-300">Logout All Sessions</h3>
             </div>
 
             <div className="p-6">
-              <div className="bg-gray-50 rounded-xl p-4 mb-6 border border-gray-100">
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-xl p-4 mb-6 border border-gray-100 dark:border-gray-600">
                 <div className="space-y-3">
                   <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 rounded-full bg-blue-100 flex items-center justify-center text-blue-600 font-bold text-sm shadow-sm">
+                    <div className="w-10 h-10 rounded-full bg-blue-100 dark:bg-blue-900/30 flex items-center justify-center text-blue-600 dark:text-blue-300 font-bold text-sm shadow-sm">
                       {logoutAllTargetSession.username.charAt(0).toUpperCase()}
                     </div>
                     <div>
-                      <p className="text-sm font-bold text-gray-900">{logoutAllTargetSession.username}</p>
-                      <p className="text-xs text-gray-500">{logoutAllTargetSession.email}</p>
+                      <p className="text-sm font-bold text-gray-900 dark:text-white">{logoutAllTargetSession.username}</p>
+                      <p className="text-xs text-gray-500 dark:text-gray-400">{logoutAllTargetSession.email}</p>
                     </div>
                   </div>
-                  <div className="h-px bg-gray-200 mx-1"></div>
+                  <div className="h-px bg-gray-200 dark:bg-gray-600 mx-1"></div>
                   <div className="text-sm">
-                    <span className="text-xs text-gray-400 block mb-1 uppercase tracking-wider">Role</span>
-                    <span className="font-medium text-gray-700">{logoutAllTargetSession.role}</span>
+                    <span className="text-xs text-gray-400 dark:text-gray-500 block mb-1 uppercase tracking-wider">Role</span>
+                    <span className="font-medium text-gray-700 dark:text-gray-200">{logoutAllTargetSession.role}</span>
                   </div>
                 </div>
               </div>
 
-              <div className="bg-orange-50 border border-orange-200 rounded-xl p-4 mb-6">
+              <div className="bg-orange-50 dark:bg-orange-900/20 border border-orange-200 dark:border-orange-800 rounded-xl p-4 mb-6">
                 <div className="flex items-start gap-3">
                   <FaExclamationTriangle className="text-orange-500 mt-0.5 flex-shrink-0" />
                   <div>
-                    <p className="text-sm font-semibold text-orange-900 mb-1">Warning</p>
-                    <p className="text-xs text-orange-700">
+                    <p className="text-sm font-semibold text-orange-900 dark:text-orange-300 mb-1">Warning</p>
+                    <p className="text-xs text-orange-700 dark:text-orange-400">
                       This will forcefully log out all active sessions for this user across all devices. This action cannot be undone.
                     </p>
                   </div>
@@ -770,7 +770,7 @@ const SessionManagement = () => {
                     setShowLogoutAllModal(false);
                     setLogoutAllTargetSession(null);
                   }}
-                  className="px-5 py-2.5 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-xl hover:bg-gray-50 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
+                  className="px-5 py-2.5 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-xl hover:bg-gray-50 dark:hover:bg-gray-600 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-gray-200 transition-all"
                 >
                   Cancel
                 </button>

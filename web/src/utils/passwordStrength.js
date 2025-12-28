@@ -2,69 +2,69 @@
 
 export const calculatePasswordStrength = (password) => {
     if (!password) return { score: 0, level: 'very-weak', feedback: [] };
-    
+
     let score = 0;
     const feedback = [];
-    
+
     // Length check
     if (password.length >= 8) {
         score += 1;
     } else {
         feedback.push('At least 8 characters');
     }
-    
+
     if (password.length >= 12) {
         score += 1;
     }
-    
+
     if (password.length >= 16) {
         score += 1;
     }
-    
+
     // Character variety checks
     if (/[a-z]/.test(password)) {
         score += 1;
     } else {
         feedback.push('Lowercase letters');
     }
-    
+
     if (/[A-Z]/.test(password)) {
         score += 1;
     } else {
         feedback.push('Uppercase letters');
     }
-    
+
     if (/[0-9]/.test(password)) {
         score += 1;
     } else {
         feedback.push('Numbers');
     }
-    
+
     if (/[^A-Za-z0-9]/.test(password)) {
         score += 1;
     } else {
         feedback.push('Special characters');
     }
-    
+
     // Additional security checks
     if (!/(.)\1{2,}/.test(password)) { // No repeated characters
         score += 1;
     } else {
         feedback.push('Avoid repeated characters');
     }
-    
+
     if (!/123|abc|qwe|asd|zxc/i.test(password)) { // No common sequences
         score += 1;
     } else {
         feedback.push('Avoid common sequences');
     }
-    
+
     if (!/password|123456|qwerty|admin|login/i.test(password)) { // No common passwords
         score += 1;
     } else {
         feedback.push('Avoid common passwords');
     }
-    
+
     // Determine strength level
     let level;
     if (score <= 3) {
@@ -78,30 +78,30 @@ export const calculatePasswordStrength = (password) => {
     } else {
         level = 'very-strong';
     }
-    
+
     return { score, level, feedback };
 };
 
 export const getPasswordStrengthColor = (level) => {
     const colors = {
-        'very-weak': 'text-red-600',
-        'weak': 'text-red-500',
-        'medium': 'text-yellow-500',
-        'strong': 'text-green-500',
-        'very-strong': 'text-green-600'
+        'very-weak': 'text-red-600 dark:text-red-400',
+        'weak': 'text-red-500 dark:text-red-400',
+        'medium': 'text-yellow-500 dark:text-yellow-400',
+        'strong': 'text-green-500 dark:text-green-400',
+        'very-strong': 'text-green-600 dark:text-green-400'
     };
-    return colors[level] || 'text-gray-500';
+    return colors[level] || 'text-gray-500 dark:text-gray-400';
 };
 
 export const getPasswordStrengthBgColor = (level) => {
     const colors = {
-        'very-weak': 'bg-red-100',
-        'weak': 'bg-red-50',
-        'medium': 'bg-yellow-50',
-        'strong': 'bg-green-50',
-        'very-strong': 'bg-green-100'
+        'very-weak': 'bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300',
+        'weak': 'bg-red-50 text-red-800 dark:bg-red-900/20 dark:text-red-300',
+        'medium': 'bg-yellow-50 text-yellow-800 dark:bg-yellow-900/20 dark:text-yellow-300',
+        'strong': 'bg-green-50 text-green-800 dark:bg-green-900/20 dark:text-green-300',
+        'very-strong': 'bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300'
     };
-    return colors[level] || 'bg-gray-50';
+    return colors[level] || 'bg-gray-50 text-gray-800 dark:bg-gray-800 dark:text-gray-300';
 };
 
 export const getPasswordStrengthText = (level) => {
@@ -125,17 +125,17 @@ export const meetsMinimumRequirements = (password) => {
 export const generatePasswordSuggestions = (password) => {
     const suggestions = [];
     const { feedback } = calculatePasswordStrength(password);
-    
+
     if (feedback.length > 0) {
         suggestions.push(`Add: ${feedback.join(', ')}`);
     }
-    
+
     if (password.length < 12) {
         suggestions.push('Consider using a longer password (12+ characters)');
     }
-    
+
     suggestions.push('Use a unique password for this account');
     suggestions.push('Consider using a password manager');
-    
+
     return suggestions;
 };

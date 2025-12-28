@@ -391,13 +391,13 @@ const SessionAuditLogs = () => {
   const getRoleBadgeColor = (role) => {
     switch (role) {
       case 'rootadmin':
-        return 'bg-red-100 text-red-800';
+        return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
       case 'admin':
-        return 'bg-blue-100 text-blue-800';
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
       case 'user':
-        return 'bg-green-100 text-green-800';
+        return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
       default:
-        return 'bg-gray-100 text-gray-800';
+        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
     }
   };
 
@@ -406,7 +406,7 @@ const SessionAuditLogs = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden">
+    <div className="min-h-screen bg-gray-50 dark:bg-gray-900 py-8 px-4 sm:px-6 lg:px-8 relative overflow-hidden transition-colors duration-200">
       {/* Background Animations */}
       <style>
         {`
@@ -443,13 +443,13 @@ const SessionAuditLogs = () => {
               <h1 className="text-3xl font-bold text-transparent bg-clip-text bg-gradient-to-r from-blue-600 to-purple-600 mb-2">
                 Session Audit & Analytics
               </h1>
-              <p className="text-gray-600 text-lg">
+              <p className="text-gray-600 dark:text-gray-300 text-lg">
                 Comprehensive security logs and visitor traffic analysis
               </p>
             </div>
 
             <div className="flex flex-col sm:flex-row gap-3">
-              <div className="flex rounded-lg shadow-sm bg-gray-50 p-1 border border-gray-200">
+              <div className="flex rounded-lg shadow-sm bg-gray-50 dark:bg-gray-700/50 p-1 border border-gray-200 dark:border-gray-600">
                 <button
                   onClick={() => {
                     if (activeTab === 'audit') {
@@ -461,16 +461,16 @@ const SessionAuditLogs = () => {
                       fetchVisitors({ manual: true });
                     }
                   }}
-                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-gray-700 hover:bg-white hover:shadow-sm transition-all focus:outline-none"
+                  className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-600 hover:shadow-sm transition-all focus:outline-none"
                   title={activeTab === 'audit' ? 'Refresh logs' : 'Refresh visitors'}
                 >
-                  <FaSync className={`mr-2 ${loading || visitorsLoading ? 'animate-spin text-blue-600' : 'text-gray-500'}`} />
+                  <FaSync className={`mr-2 ${loading || visitorsLoading ? 'animate-spin text-blue-600' : 'text-gray-500 dark:text-gray-400'}`} />
                   Refresh
                 </button>
-                <div className="w-px bg-gray-200 my-1 mx-1"></div>
+                <div className="w-px bg-gray-200 dark:bg-gray-600 my-1 mx-1"></div>
                 <button
                   onClick={toggleAutoRefresh}
-                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-all focus:outline-none ${autoRefresh ? 'bg-green-100 text-green-700 shadow-sm' : 'text-gray-700 hover:bg-white hover:shadow-sm'}`}
+                  className={`flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 rounded-md text-sm font-medium transition-all focus:outline-none ${autoRefresh ? 'bg-green-100 text-green-700 dark:bg-green-900/30 dark:text-green-300 shadow-sm' : 'text-gray-700 dark:text-gray-200 hover:bg-white dark:hover:bg-gray-600 hover:shadow-sm'}`}
                   title="Auto refresh every 30s"
                 >
                   <span className={`mr-2 h-2 w-2 rounded-full ${autoRefresh ? 'bg-green-500 animate-pulse' : 'bg-gray-400'}`}></span>
@@ -501,7 +501,7 @@ const SessionAuditLogs = () => {
                       a.href = url; a.download = `session-logs-${new Date().toISOString().slice(0, 10)}.csv`; a.click();
                       URL.revokeObjectURL(url);
                     }}
-                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-gray-200 text-gray-700 shadow-sm text-sm font-medium rounded-lg bg-white hover:bg-gray-50 hover:text-blue-600 transition-colors"
+                    className="flex-1 sm:flex-none inline-flex items-center justify-center px-4 py-2 border border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 shadow-sm text-sm font-medium rounded-lg bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-blue-600 dark:hover:text-blue-400 transition-colors"
                     title="Export logs as CSV"
                   >
                     <FaFileExport className="mr-2" />
@@ -551,17 +551,17 @@ const SessionAuditLogs = () => {
 
         {/* Tab Switcher */}
         {/* Tab Switcher */}
-        <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-2 mb-8 inline-flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
+        <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-2 mb-8 inline-flex flex-col sm:flex-row gap-2 w-full sm:w-auto transition-colors duration-200">
           <button
             onClick={() => setActiveTab('audit')}
             className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'audit'
               ? 'bg-blue-600 text-white shadow-lg shadow-blue-500/30'
-              : 'bg-transparent text-gray-500 hover:bg-gray-50'
+              : 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
           >
             <FaHistory className={activeTab === 'audit' ? 'text-blue-100' : 'text-gray-400'} />
             <span>Audit Logs</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs ml-1 ${activeTab === 'audit' ? 'bg-white/20' : 'bg-gray-100 text-gray-600'}`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs ml-1 ${activeTab === 'audit' ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
               {totalLogs}
             </span>
           </button>
@@ -569,12 +569,12 @@ const SessionAuditLogs = () => {
             onClick={() => setActiveTab('visitors')}
             className={`px-6 py-2.5 rounded-xl text-sm font-bold transition-all duration-300 flex items-center justify-center gap-2 ${activeTab === 'visitors'
               ? 'bg-purple-600 text-white shadow-lg shadow-purple-500/30'
-              : 'bg-transparent text-gray-500 hover:bg-gray-50'
+              : 'bg-transparent text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700'
               }`}
           >
             <FaGlobe className={activeTab === 'visitors' ? 'text-purple-100' : 'text-gray-400'} />
             <span>Public Visitors</span>
-            <span className={`px-2 py-0.5 rounded-full text-xs ml-1 ${activeTab === 'visitors' ? 'bg-white/20' : 'bg-gray-100 text-gray-600'}`}>
+            <span className={`px-2 py-0.5 rounded-full text-xs ml-1 ${activeTab === 'visitors' ? 'bg-white/20' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300'}`}>
               {visitorStats.todayCount}
             </span>
           </button>
@@ -585,44 +585,44 @@ const SessionAuditLogs = () => {
           <>
             {/* Stats Toggle and Search/Filters */}
             <div className="mb-4">
-              <button onClick={() => setShowAuditStats(!showAuditStats)} className={`px-3 py-2 rounded-md text-sm ${showAuditStats ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'}`}>
+              <button onClick={() => setShowAuditStats(!showAuditStats)} className={`px-3 py-2 rounded-md text-sm ${showAuditStats ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                 Toggle Stats
               </button>
             </div>
             {showAuditStats && (
               <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8 animate-fade-in">
-                <div className="bg-gradient-to-r from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100 flex items-center gap-4">
-                  <div className="bg-white p-3 rounded-full shadow-sm text-green-500">
+                <div className="bg-gradient-to-r from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-100 dark:border-green-800 flex items-center gap-4">
+                  <div className="bg-white dark:bg-gray-700 p-3 rounded-full shadow-sm text-green-500 dark:text-green-400">
                     <FaCheckCircle className="text-2xl" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-green-800 uppercase tracking-wider">Successful Logins</p>
-                    <p className="text-3xl font-bold text-green-900">{logs.filter(l => l.action === 'login').length}</p>
+                    <p className="text-sm font-semibold text-green-800 dark:text-green-300 uppercase tracking-wider">Successful Logins</p>
+                    <p className="text-3xl font-bold text-green-900 dark:text-green-100">{logs.filter(l => l.action === 'login').length}</p>
                   </div>
                 </div>
-                <div className="bg-gradient-to-r from-red-50 to-pink-50 rounded-2xl p-6 border border-red-100 flex items-center gap-4">
-                  <div className="bg-white p-3 rounded-full shadow-sm text-red-500">
+                <div className="bg-gradient-to-r from-red-50 to-pink-50 dark:from-red-900/20 dark:to-pink-900/20 rounded-2xl p-6 border border-red-100 dark:border-red-800 flex items-center gap-4">
+                  <div className="bg-white dark:bg-gray-700 p-3 rounded-full shadow-sm text-red-500 dark:text-red-400">
                     <FaExclamationTriangle className="text-2xl" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-red-800 uppercase tracking-wider">Suspicious Events</p>
-                    <p className="text-3xl font-bold text-red-900">{logs.filter(l => l.isSuspicious).length}</p>
+                    <p className="text-sm font-semibold text-red-800 dark:text-red-300 uppercase tracking-wider">Suspicious Events</p>
+                    <p className="text-3xl font-bold text-red-900 dark:text-red-100">{logs.filter(l => l.isSuspicious).length}</p>
                   </div>
                 </div>
-                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-100 flex items-center gap-4">
-                  <div className="bg-white p-3 rounded-full shadow-sm text-purple-500">
+                <div className="bg-gradient-to-r from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-100 dark:border-purple-800 flex items-center gap-4">
+                  <div className="bg-white dark:bg-gray-700 p-3 rounded-full shadow-sm text-purple-500 dark:text-purple-400">
                     <FaShieldAlt className="text-2xl" />
                   </div>
                   <div>
-                    <p className="text-sm font-semibold text-purple-800 uppercase tracking-wider">Admin Actions</p>
-                    <p className="text-3xl font-bold text-purple-900">{logs.filter(l => l.role === 'admin' || l.role === 'rootadmin').length}</p>
+                    <p className="text-sm font-semibold text-purple-800 dark:text-purple-300 uppercase tracking-wider">Admin Actions</p>
+                    <p className="text-3xl font-bold text-purple-900 dark:text-purple-100">{logs.filter(l => l.role === 'admin' || l.role === 'rootadmin').length}</p>
                   </div>
                 </div>
               </div>
             )}
             {/* Search and Filters */}
             {/* Search and Filters */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8 animate-fade-in-delay">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8 animate-fade-in-delay transition-colors duration-200">
               {/* Search Bar */}
               <div className="mb-6">
                 <div className="relative group">
@@ -630,7 +630,7 @@ const SessionAuditLogs = () => {
                     {isSearching ? (
                       <FaSync className="animate-spin text-blue-500" />
                     ) : (
-                      <FaSearch className="text-gray-400 group-hover:text-blue-500 transition-colors" />
+                      <FaSearch className="text-gray-400 dark:text-gray-500 group-hover:text-blue-500 transition-colors" />
                     )}
                   </div>
                   <input
@@ -638,14 +638,14 @@ const SessionAuditLogs = () => {
                     placeholder="Search by username, email, device, IP, location, or details..."
                     value={searchQuery}
                     onChange={(e) => setSearchQuery(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 rounded-xl leading-5 bg-gray-50 placeholder-gray-400 focus:outline-none focus:bg-white focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-200 dark:border-gray-600 rounded-xl leading-5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 focus:outline-none focus:bg-white dark:focus:bg-gray-600 focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 transition-all shadow-sm"
                   />
                   {searchQuery && (
                     <button
                       onClick={() => setSearchQuery('')}
                       className="absolute inset-y-0 right-0 pr-3 flex items-center"
                     >
-                      <FaHistory className="text-gray-400 hover:text-gray-600 cursor-pointer" />
+                      <FaHistory className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 cursor-pointer" />
                     </button>
                   )}
                 </div>
@@ -656,8 +656,8 @@ const SessionAuditLogs = () => {
                 <button
                   onClick={() => setShowFilters(!showFilters)}
                   className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-lg focus:outline-none transition-all ${hasActiveFilters
-                    ? 'border-blue-200 text-blue-700 bg-blue-50 hover:bg-blue-100 shadow-sm'
-                    : 'border-gray-200 text-gray-700 bg-white hover:bg-gray-50 shadow-sm'
+                    ? 'border-blue-200 dark:border-blue-800 text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 shadow-sm'
+                    : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 shadow-sm'
                     }`}
                 >
                   <FaFilter className={`mr-2 ${hasActiveFilters ? 'text-blue-600' : 'text-gray-400'}`} />
@@ -672,12 +672,12 @@ const SessionAuditLogs = () => {
                   {hasActiveFilters && (
                     <button
                       onClick={resetFilters}
-                      className="text-sm text-red-600 hover:text-red-800 font-medium hover:underline transition-all"
+                      className="text-sm text-red-600 dark:text-red-400 hover:text-red-800 dark:hover:text-red-300 font-medium hover:underline transition-all"
                     >
                       Clear All Filters
                     </button>
                   )}
-                  <div className="text-sm text-gray-500 bg-gray-100 px-3 py-1 rounded-full">
+                  <div className="text-sm text-gray-500 dark:text-gray-400 bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
                     {logs.length} logs found
                   </div>
                 </div>
@@ -685,17 +685,17 @@ const SessionAuditLogs = () => {
 
               {/* Advanced Filters */}
               {showFilters && (
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-100">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4 pt-4 border-t border-gray-100 dark:border-gray-700">
                   {/* Action Filter */}
                   <div>
-                    <label htmlFor="action-filter" className="block text-sm font-bold text-gray-700 mb-2">
+                    <label htmlFor="action-filter" className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">
                       Action
                     </label>
                     <select
                       id="action-filter"
                       value={filters.action}
                       onChange={(e) => setFilters({ ...filters, action: e.target.value })}
-                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 transition-all"
+                      className="block w-full pl-3 pr-10 py-2.5 text-sm border-gray-200 dark:border-gray-600 focus:outline-none focus:ring-2 focus:ring-blue-500/20 focus:border-blue-500 rounded-lg bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-white transition-all"
                     >
                       <option value="">All Actions</option>
                       <option value="login">Login</option>
@@ -781,67 +781,67 @@ const SessionAuditLogs = () => {
 
             {/* Audit Logs Table */}
             {logs.length === 0 ? (
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-8 text-center animate-fade-in-delay-2">
-                <div className="bg-gray-100 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-4">
-                  <FaHistory className="text-3xl text-gray-400" />
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-8 text-center animate-fade-in-delay-2 transition-colors duration-200">
+                <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-4">
+                  <FaHistory className="text-3xl text-gray-400 dark:text-gray-500" />
                 </div>
-                <h3 className="text-lg font-bold text-gray-900">No audit logs found</h3>
-                <p className="mt-2 text-gray-500 max-w-sm mx-auto">
+                <h3 className="text-lg font-bold text-gray-900 dark:text-white">No audit logs found</h3>
+                <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                   We couldn't find any log data matching your current filters. Try adjusting your search criteria or date range.
                 </p>
               </div>
             ) : (
-              <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden mb-8 animate-fade-in-delay-2">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden mb-8 animate-fade-in-delay-2 transition-colors duration-200">
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-100">
-                    <thead className="bg-gray-50/50">
+                  <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
+                    <thead className="bg-gray-50/50 dark:bg-gray-700/50">
                       <tr>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Timestamp
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           User
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Action
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Browser & Device
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           IP & Location
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Details
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Status
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-100">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                       {logs.map((log) => (
-                        <tr key={log._id} className="hover:bg-blue-50/30 transition-colors duration-150">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <tr key={log._id} className="hover:bg-blue-50/30 dark:hover:bg-blue-900/20 transition-colors duration-150">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex items-center gap-2">
-                              <FaHistory className="text-gray-400" />
+                              <FaHistory className="text-gray-400 dark:text-gray-500" />
                               {formatDate(log.timestamp)}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex items-center">
                               <div className="flex-shrink-0 h-9 w-9">
-                                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 border border-blue-200 flex items-center justify-center text-blue-700 shadow-sm">
+                                <div className="h-9 w-9 rounded-full bg-gradient-to-br from-blue-100 to-indigo-100 dark:from-blue-900/40 dark:to-indigo-900/40 border border-blue-200 dark:border-blue-700 flex items-center justify-center text-blue-700 dark:text-blue-300 shadow-sm">
                                   <span className="text-sm font-bold">
                                     {log.userId?.username?.charAt(0).toUpperCase() || '?'}
                                   </span>
                                 </div>
                               </div>
                               <div className="ml-3">
-                                <div className="text-sm font-medium text-gray-900">
+                                <div className="text-sm font-medium text-gray-900 dark:text-white">
                                   {log.userId?.username || 'Unknown User'}
                                 </div>
-                                <div className="text-sm text-gray-500">
+                                <div className="text-sm text-gray-500 dark:text-gray-400">
                                   {log.userId?.email || 'N/A'}
                                 </div>
                                 <span className={`inline-flex items-center px-2 py-0.5 rounded-full text-[10px] font-bold mt-1 ${getRoleBadgeColor(log.role)}`}>
@@ -851,50 +851,50 @@ const SessionAuditLogs = () => {
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${log.action === 'login' ? 'bg-green-50 text-green-700 border-green-200' :
-                              log.action === 'logout' ? 'bg-gray-50 text-gray-700 border-gray-200' :
-                                log.action === 'suspicious_login' ? 'bg-red-50 text-red-700 border-red-200' :
-                                  'bg-blue-50 text-blue-700 border-blue-200'
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-medium border ${log.action === 'login' ? 'bg-green-50 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800' :
+                              log.action === 'logout' ? 'bg-gray-50 text-gray-700 border-gray-200 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600' :
+                                log.action === 'suspicious_login' ? 'bg-red-50 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800' :
+                                  'bg-blue-50 text-blue-700 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800'
                               }`}>
                               {log.action === 'login' && <FaCheckCircle />}
                               {log.action === 'suspicious_login' && <FaExclamationTriangle />}
                               {log.action.replace('_', ' ').toUpperCase()}
                             </span>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
+                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex items-start gap-2">
-                              <FaDesktop className="mt-1 text-gray-400" />
-                              <div className="font-medium break-words max-w-[150px]">
+                              <FaDesktop className="mt-1 text-gray-400 dark:text-gray-500" />
+                              <div className="font-medium break-words max-w-[150px] text-gray-700 dark:text-gray-300">
                                 {log.device || 'Unknown Device'}
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             <div className="space-y-1">
-                              <div className="flex items-center gap-2 font-mono text-xs bg-gray-50 px-2 py-1 rounded border border-gray-200 w-fit">
-                                <FaGlobe className="text-gray-400" />
+                              <div className="flex items-center gap-2 font-mono text-xs bg-gray-50 dark:bg-gray-700 px-2 py-1 rounded border border-gray-200 dark:border-gray-600 w-fit text-gray-700 dark:text-gray-300">
+                                <FaGlobe className="text-gray-400 dark:text-gray-500" />
                                 {log.ip}
                               </div>
-                              <div className="flex items-center gap-2 text-xs text-gray-500 pl-1">
-                                <FaMapMarkerAlt className="text-gray-400" />
+                              <div className="flex items-center gap-2 text-xs text-gray-500 dark:text-gray-400 pl-1">
+                                <FaMapMarkerAlt className="text-gray-400 dark:text-gray-500" />
                                 {log.location || 'Unknown'}
                               </div>
                             </div>
                           </td>
-                          <td className="px-6 py-4 text-sm text-gray-600">
+                          <td className="px-6 py-4 text-sm text-gray-600 dark:text-gray-300">
                             <div className="max-w-xs space-y-1">
-                              <div className="truncate text-gray-700 flex items-center gap-2">
-                                <FaFileAlt className="text-gray-400 flex-shrink-0" />
+                              <div className="truncate text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                                <FaFileAlt className="text-gray-400 dark:text-gray-500 flex-shrink-0" />
                                 {log.additionalInfo || 'N/A'}
                               </div>
                               {log.suspiciousReason && (
-                                <div className="text-red-600 text-xs mt-1 bg-red-50 p-1.5 rounded border border-red-100 flex items-start gap-1">
+                                <div className="text-red-600 dark:text-red-400 text-xs mt-1 bg-red-50 dark:bg-red-900/20 p-1.5 rounded border border-red-100 dark:border-red-800 flex items-start gap-1">
                                   <FaExclamationTriangle className="mt-0.5 flex-shrink-0" />
                                   <span>{log.suspiciousReason}</span>
                                 </div>
                               )}
                               {log.performedBy && (
-                                <div className="text-gray-500 text-xs mt-1 bg-gray-50 p-1 rounded inline-block">
+                                <div className="text-gray-500 dark:text-gray-400 text-xs mt-1 bg-gray-50 dark:bg-gray-700 p-1 rounded inline-block">
                                   By: {log.performedBy.username}
                                 </div>
                               )}
@@ -902,12 +902,12 @@ const SessionAuditLogs = () => {
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap">
                             {log.isSuspicious ? (
-                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200 shadow-sm animate-pulse">
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-red-100 text-red-700 border border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800 shadow-sm animate-pulse">
                                 <FaShieldAlt />
                                 Suspicious
                               </span>
                             ) : (
-                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200 shadow-sm">
+                              <span className="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-bold bg-green-100 text-green-700 border border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800 shadow-sm">
                                 <FaCheckCircle />
                                 Normal
                               </span>
@@ -923,28 +923,28 @@ const SessionAuditLogs = () => {
 
             {/* Pagination */}
             {totalLogs > 50 && (
-              <div className="bg-white px-6 py-4 flex items-center justify-between mt-4 rounded-xl shadow-md border border-gray-100 animate-fade-in-delay-3">
+              <div className="bg-white dark:bg-gray-800 px-6 py-4 flex items-center justify-between mt-4 rounded-xl shadow-md border border-gray-100 dark:border-gray-700 animate-fade-in-delay-3 transition-colors duration-200">
                 <div className="flex-1 flex justify-between sm:hidden">
                   <button
                     onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                     disabled={currentPage === 1}
-                    className="relative inline-flex items-center px-4 py-2 border border-blue-200 text-sm font-medium rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-50 transition-colors"
+                    className="relative inline-flex items-center px-4 py-2 border border-blue-200 dark:border-blue-800 text-sm font-medium rounded-lg text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 disabled:opacity-50 transition-colors"
                   >
                     Previous
                   </button>
                   <button
                     onClick={() => setCurrentPage(currentPage + 1)}
                     disabled={logs.length < 50}
-                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-blue-200 text-sm font-medium rounded-lg text-blue-700 bg-blue-50 hover:bg-blue-100 disabled:opacity-50 transition-colors"
+                    className="ml-3 relative inline-flex items-center px-4 py-2 border border-blue-200 dark:border-blue-800 text-sm font-medium rounded-lg text-blue-700 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 hover:bg-blue-100 dark:hover:bg-blue-900/30 disabled:opacity-50 transition-colors"
                   >
                     Next
                   </button>
                 </div>
                 <div className="hidden sm:flex-1 sm:flex sm:items-center sm:justify-between">
                   <div>
-                    <p className="text-sm text-gray-600 bg-gray-50 px-3 py-1 rounded-md border border-gray-200">
-                      Showing page <span className="font-bold text-gray-900">{currentPage}</span> of{' '}
-                      <span className="font-bold text-gray-900">{Math.ceil(totalLogs / 50)}</span>
+                    <p className="text-sm text-gray-600 dark:text-gray-300 bg-gray-50 dark:bg-gray-700 px-3 py-1 rounded-md border border-gray-200 dark:border-gray-600">
+                      Showing page <span className="font-bold text-gray-900 dark:text-white">{currentPage}</span> of{' '}
+                      <span className="font-bold text-gray-900 dark:text-white">{Math.ceil(totalLogs / 50)}</span>
                     </p>
                   </div>
                   <div>
@@ -952,7 +952,7 @@ const SessionAuditLogs = () => {
                       <button
                         onClick={() => setCurrentPage(Math.max(1, currentPage - 1))}
                         disabled={currentPage === 1}
-                        className="relative inline-flex items-center px-4 py-2 rounded-l-lg border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
+                        className="relative inline-flex items-center px-4 py-2 rounded-l-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-900 transition-colors"
                       >
                         <span className="sr-only">Previous</span>
                         Previous
@@ -960,7 +960,7 @@ const SessionAuditLogs = () => {
                       <button
                         onClick={() => setCurrentPage(currentPage + 1)}
                         disabled={logs.length < 50}
-                        className="relative inline-flex items-center px-4 py-2 rounded-r-lg border border-gray-300 bg-white text-sm font-medium text-gray-500 hover:bg-gray-50 disabled:opacity-50 disabled:bg-gray-100 transition-colors"
+                        className="relative inline-flex items-center px-4 py-2 rounded-r-lg border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-800 text-sm font-medium text-gray-500 dark:text-gray-400 hover:bg-gray-50 dark:hover:bg-gray-700 disabled:opacity-50 disabled:bg-gray-100 dark:disabled:bg-gray-900 transition-colors"
                       >
                         <span className="sr-only">Next</span>
                         Next
@@ -973,30 +973,30 @@ const SessionAuditLogs = () => {
 
             {/* Security Summary */}
             <div className="mt-8 grid grid-cols-1 md:grid-cols-3 gap-6 animate-fade-in-delay-3 h-full">
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300 h-full">
-                <div className="bg-green-100 p-4 rounded-full mb-3 text-green-600">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300 h-full">
+                <div className="bg-green-100 dark:bg-green-900/30 p-4 rounded-full mb-3 text-green-600 dark:text-green-400">
                   <FaCheckCircle className="text-3xl" />
                 </div>
-                <p className="text-gray-500 font-medium">Normal Activities</p>
-                <p className="text-3xl font-bold text-gray-800 mt-1">{logs.filter(log => !log.isSuspicious).length}</p>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">Normal Activities</p>
+                <p className="text-3xl font-bold text-gray-800 dark:text-white mt-1">{logs.filter(log => !log.isSuspicious).length}</p>
                 <div className="w-16 h-1 bg-green-500 rounded-full mt-3"></div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300 h-full">
-                <div className="bg-red-100 p-4 rounded-full mb-3 text-red-600 animate-pulse">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300 h-full">
+                <div className="bg-red-100 dark:bg-red-900/30 p-4 rounded-full mb-3 text-red-600 dark:text-red-400 animate-pulse">
                   <FaExclamationTriangle className="text-3xl" />
                 </div>
-                <p className="text-gray-500 font-medium">Suspicious Activities</p>
-                <p className="text-3xl font-bold text-gray-800 mt-1">{logs.filter(log => log.isSuspicious).length}</p>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">Suspicious Activities</p>
+                <p className="text-3xl font-bold text-gray-800 dark:text-white mt-1">{logs.filter(log => log.isSuspicious).length}</p>
                 <div className="w-16 h-1 bg-red-500 rounded-full mt-3"></div>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300 h-full">
-                <div className="bg-blue-100 p-4 rounded-full mb-3 text-blue-600">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 flex flex-col items-center justify-center text-center hover:scale-105 transition-transform duration-300 h-full">
+                <div className="bg-blue-100 dark:bg-blue-900/30 p-4 rounded-full mb-3 text-blue-600 dark:text-blue-400">
                   <FaShieldAlt className="text-3xl" />
                 </div>
-                <p className="text-gray-500 font-medium">Total Log Events</p>
-                <p className="text-3xl font-bold text-gray-800 mt-1">{totalLogs}</p>
+                <p className="text-gray-500 dark:text-gray-400 font-medium">Total Log Events</p>
+                <p className="text-3xl font-bold text-gray-800 dark:text-white mt-1">{totalLogs}</p>
                 <div className="w-16 h-1 bg-blue-500 rounded-full mt-3"></div>
               </div>
             </div>
@@ -1008,63 +1008,63 @@ const SessionAuditLogs = () => {
           <>
             {/* Visitor Statistics Cards + Quick Range */}
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8 animate-fade-in">
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 group hover:scale-[1.02] transition-transform duration-300">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 group hover:scale-[1.02] transition-transform duration-300">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-purple-100 text-purple-600 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
+                  <div className="p-3 bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 rounded-xl group-hover:bg-purple-600 group-hover:text-white transition-colors duration-300">
                     <FaGlobe className="text-2xl" />
                   </div>
-                  <span className="text-xs font-semibold text-purple-600 bg-purple-50 px-2 py-1 rounded-full">Today</span>
+                  <span className="text-xs font-semibold text-purple-600 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/20 px-2 py-1 rounded-full">Today</span>
                 </div>
-                <p className="text-gray-500 text-sm font-medium">Daily Visitors</p>
-                <h3 className="text-3xl font-bold text-gray-800 mt-1">{visitorStats.todayCount}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Daily Visitors</p>
+                <h3 className="text-3xl font-bold text-gray-800 dark:text-white mt-1">{visitorStats.todayCount}</h3>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 group hover:scale-[1.02] transition-transform duration-300">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 group hover:scale-[1.02] transition-transform duration-300">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-blue-100 text-blue-600 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
+                  <div className="p-3 bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 rounded-xl group-hover:bg-blue-600 group-hover:text-white transition-colors duration-300">
                     <FaChartLine className="text-2xl" />
                   </div>
-                  <span className="text-xs font-semibold text-blue-600 bg-blue-50 px-2 py-1 rounded-full">All Time</span>
+                  <span className="text-xs font-semibold text-blue-600 dark:text-blue-300 bg-blue-50 dark:bg-blue-900/20 px-2 py-1 rounded-full">All Time</span>
                 </div>
-                <p className="text-gray-500 text-sm font-medium">Total Visitors</p>
-                <h3 className="text-3xl font-bold text-gray-800 mt-1">{visitorStats.totalVisitors}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Total Visitors</p>
+                <h3 className="text-3xl font-bold text-gray-800 dark:text-white mt-1">{visitorStats.totalVisitors}</h3>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 group hover:scale-[1.02] transition-transform duration-300">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 group hover:scale-[1.02] transition-transform duration-300">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-green-100 text-green-600 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
+                  <div className="p-3 bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400 rounded-xl group-hover:bg-green-600 group-hover:text-white transition-colors duration-300">
                     <FaDesktop className="text-2xl" />
                   </div>
                 </div>
-                <p className="text-gray-500 text-sm font-medium">Device Types</p>
-                <h3 className="text-3xl font-bold text-gray-800 mt-1">{visitorStats.deviceStats.length}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Device Types</p>
+                <h3 className="text-3xl font-bold text-gray-800 dark:text-white mt-1">{visitorStats.deviceStats.length}</h3>
               </div>
 
-              <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 group hover:scale-[1.02] transition-transform duration-300">
+              <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 group hover:scale-[1.02] transition-transform duration-300">
                 <div className="flex items-center justify-between mb-4">
-                  <div className="p-3 bg-orange-100 text-orange-600 rounded-xl group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
+                  <div className="p-3 bg-orange-100 dark:bg-orange-900/30 text-orange-600 dark:text-orange-400 rounded-xl group-hover:bg-orange-600 group-hover:text-white transition-colors duration-300">
                     <FaMapMarkerAlt className="text-2xl" />
                   </div>
                 </div>
-                <p className="text-gray-500 text-sm font-medium">Locations</p>
-                <h3 className="text-3xl font-bold text-gray-800 mt-1">{visitorStats.locationStats.length}</h3>
+                <p className="text-gray-500 dark:text-gray-400 text-sm font-medium">Locations</p>
+                <h3 className="text-3xl font-bold text-gray-800 dark:text-white mt-1">{visitorStats.locationStats.length}</h3>
               </div>
             </div>
 
             {/* Visitor Filters (toggle like audit section) - placed below cards */}
-            <div className="bg-white rounded-2xl shadow-lg border border-gray-100 p-6 mb-8 animate-fade-in-delay">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg border border-gray-100 dark:border-gray-700 p-6 mb-8 animate-fade-in-delay transition-colors duration-200">
               <div className="flex items-center justify-between mb-0">
-                <button onClick={() => setShowVisitorStatsToggle(!showVisitorStatsToggle)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${showVisitorStatsToggle ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 text-gray-600 hover:bg-gray-200'}`}>
+                <button onClick={() => setShowVisitorStatsToggle(!showVisitorStatsToggle)} className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${showVisitorStatsToggle ? 'bg-purple-600 text-white shadow-md' : 'bg-gray-100 dark:bg-gray-700 text-gray-600 dark:text-gray-300 hover:bg-gray-200 dark:hover:bg-gray-600'}`}>
                   {showVisitorStatsToggle ? 'Hide Stats' : 'Show Advanced Stats'}
                 </button>
                 <button
                   onClick={() => setShowVisitorFilters(!showVisitorFilters)}
                   className={`inline-flex items-center px-4 py-2 border text-sm font-medium rounded-lg focus:outline-none transition-all ${getVisitorActiveFiltersCount() > 0
-                    ? 'border-purple-200 text-purple-700 bg-purple-50 hover:bg-purple-100 shadow-sm'
-                    : 'border-gray-200 text-gray-700 bg-white hover:bg-gray-50 shadow-sm'
+                    ? 'border-purple-200 dark:border-purple-800 text-purple-700 dark:text-purple-300 bg-purple-50 dark:bg-purple-900/20 hover:bg-purple-100 dark:hover:bg-purple-900/30 shadow-sm'
+                    : 'border-gray-200 dark:border-gray-600 text-gray-700 dark:text-gray-300 bg-white dark:bg-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600 shadow-sm'
                     }`}
                 >
-                  <FaFilter className={`mr-2 ${getVisitorActiveFiltersCount() > 0 ? 'text-purple-600' : 'text-gray-400'}`} />
+                  <FaFilter className={`mr-2 ${getVisitorActiveFiltersCount() > 0 ? 'text-purple-600 dark:text-purple-400' : 'text-gray-400 dark:text-gray-500'}`} />
                   {showVisitorFilters ? 'Hide Filters' : 'Show Filters'}
                   {getVisitorActiveFiltersCount() > 0 && (
                     <span className="ml-2 inline-flex items-center justify-center w-5 h-5 rounded-full text-xs font-bold bg-purple-600 text-white">
@@ -1074,111 +1074,110 @@ const SessionAuditLogs = () => {
                 </button>
               </div>
 
-              {showVisitorStatsToggle && (
-                <div className="mt-8 space-y-6 animate-fade-in">
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-gradient-to-br from-purple-50 to-indigo-50 rounded-2xl p-6 border border-purple-100">
-                      <p className="text-sm font-semibold text-purple-700 uppercase tracking-widest">Today</p>
-                      <p className="text-4xl font-extrabold text-purple-900 mt-2">{visitorStats.todayCount}</p>
-                    </div>
-                    <div className="bg-gradient-to-br from-blue-50 to-sky-50 rounded-2xl p-6 border border-blue-100">
-                      <p className="text-sm font-semibold text-blue-700 uppercase tracking-widest">Visitors</p>
-                      <p className="text-4xl font-extrabold text-blue-900 mt-2">{visitorStats.totalVisitors}</p>
-                    </div>
-                    <div className="bg-gradient-to-br from-green-50 to-emerald-50 rounded-2xl p-6 border border-green-100">
-                      <p className="text-sm font-semibold text-green-700 uppercase tracking-widest">Unique Devices</p>
-                      <p className="text-4xl font-extrabold text-green-900 mt-2">{visitorStats.deviceStats?.length || 0}</p>
+              <div className="mt-8 space-y-6 animate-fade-in">
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 rounded-2xl p-6 border border-purple-100 dark:border-purple-800">
+                    <p className="text-sm font-semibold text-purple-700 dark:text-purple-300 uppercase tracking-widest">Today</p>
+                    <p className="text-4xl font-extrabold text-purple-900 dark:text-purple-100 mt-2">{visitorStats.todayCount}</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-blue-50 to-sky-50 dark:from-blue-900/20 dark:to-sky-900/20 rounded-2xl p-6 border border-blue-100 dark:border-blue-800">
+                    <p className="text-sm font-semibold text-blue-700 dark:text-blue-300 uppercase tracking-widest">Visitors</p>
+                    <p className="text-4xl font-extrabold text-blue-900 dark:text-blue-100 mt-2">{visitorStats.totalVisitors}</p>
+                  </div>
+                  <div className="bg-gradient-to-br from-green-50 to-emerald-50 dark:from-green-900/20 dark:to-emerald-900/20 rounded-2xl p-6 border border-green-100 dark:border-green-800">
+                    <p className="text-sm font-semibold text-green-700 dark:text-green-300 uppercase tracking-widest">Unique Devices</p>
+                    <p className="text-4xl font-extrabold text-green-900 dark:text-green-100 mt-2">{visitorStats.deviceStats?.length || 0}</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                  <div className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 shadow-sm">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">7-Day Visitors</p>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{(visitorInsights.last7Total || 0).toLocaleString('en-IN')}</p>
+                    <div className="h-1 w-full bg-indigo-100 dark:bg-indigo-900 rounded-full mt-3 overflow-hidden">
+                      <div className="h-full bg-indigo-500 rounded-full" style={{ width: '70%' }}></div>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                      <p className="text-sm text-gray-500 font-medium">7-Day Visitors</p>
-                      <p className="text-2xl font-bold text-gray-800 mt-1">{(visitorInsights.last7Total || 0).toLocaleString('en-IN')}</p>
-                      <div className="h-1 w-full bg-indigo-100 rounded-full mt-3 overflow-hidden">
-                        <div className="h-full bg-indigo-500 rounded-full" style={{ width: '70%' }}></div>
-                      </div>
-                    </div>
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                      <p className="text-sm text-gray-500 font-medium">Avg Daily Traffic</p>
-                      <p className="text-2xl font-bold text-gray-800 mt-1">{Math.round(visitorInsights.avgDaily || 0).toLocaleString('en-IN')}</p>
-                      <div className="h-1 w-full bg-teal-100 rounded-full mt-3 overflow-hidden">
-                        <div className="h-full bg-teal-500 rounded-full" style={{ width: '50%' }}></div>
-                      </div>
-                    </div>
-                    <div className="bg-white rounded-2xl p-6 border border-gray-100 shadow-sm">
-                      <p className="text-sm text-gray-500 font-medium">Traffic Trend</p>
-                      <div className="flex items-center gap-2 mt-1">
-                        {visitorInsights.trendPercentage !== null ? (
-                          <span className={`text-2xl font-bold ${visitorInsights.trendPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
-                            {visitorInsights.trendPercentage >= 0 ? '▲' : '▼'} {Math.abs(visitorInsights.trendPercentage).toFixed(1)}%
-                          </span>
-                        ) : (
-                          <span className="text-2xl font-bold text-gray-400">N/A</span>
-                        )}
-                      </div>
-                      <p className="text-xs text-gray-400 mt-2">vs previous 7 days</p>
+                  <div className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 shadow-sm">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Avg Daily Traffic</p>
+                    <p className="text-2xl font-bold text-gray-800 dark:text-white mt-1">{Math.round(visitorInsights.avgDaily || 0).toLocaleString('en-IN')}</p>
+                    <div className="h-1 w-full bg-teal-100 dark:bg-teal-900 rounded-full mt-3 overflow-hidden">
+                      <div className="h-full bg-teal-500 rounded-full" style={{ width: '50%' }}></div>
                     </div>
                   </div>
-
-                  <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                      <h4 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <FaDesktop className="text-gray-400" /> Top Devices
-                      </h4>
-                      <div className="space-y-4">
-                        {visitorInsights.topDevices.length === 0 ? (
-                          <p className="text-sm text-gray-500 text-center py-4">No data available</p>
-                        ) : visitorInsights.topDevices.map((device) => {
-                          const topValue = visitorInsights.topDevices[0]?.count || 1;
-                          const percentage = topValue ? Math.round((device.count / topValue) * 100) : 0;
-                          return (
-                            <div key={device.device} className="group">
-                              <div className="flex items-center justify-between text-sm mb-1.5">
-                                <span className="text-gray-700 font-medium">{device.device}</span>
-                                <span className="text-gray-900 font-bold bg-gray-100 px-2 py-0.5 rounded-md">{device.count}</span>
-                              </div>
-                              <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                                <div className="bg-purple-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-purple-600" style={{ width: `${percentage}%` }}></div>
-                              </div>
-                            </div>
-                          );
-                        })}
-                      </div>
+                  <div className="bg-white dark:bg-gray-700 rounded-2xl p-6 border border-gray-100 dark:border-gray-600 shadow-sm">
+                    <p className="text-sm text-gray-500 dark:text-gray-400 font-medium">Traffic Trend</p>
+                    <div className="flex items-center gap-2 mt-1">
+                      {visitorInsights.trendPercentage !== null ? (
+                        <span className={`text-2xl font-bold ${visitorInsights.trendPercentage >= 0 ? 'text-green-500' : 'text-red-500'}`}>
+                          {visitorInsights.trendPercentage >= 0 ? '▲' : '▼'} {Math.abs(visitorInsights.trendPercentage).toFixed(1)}%
+                        </span>
+                      ) : (
+                        <span className="text-2xl font-bold text-gray-400">N/A</span>
+                      )}
                     </div>
-                    <div className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                      <h4 className="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
-                        <FaMapMarkerAlt className="text-gray-400" /> Top Locations
-                      </h4>
-                      <div className="space-y-4">
-                        {visitorInsights.topLocations.length === 0 ? (
-                          <p className="text-sm text-gray-500 text-center py-4">No data available</p>
-                        ) : visitorInsights.topLocations.map((location) => {
-                          const topValue = visitorInsights.topLocations[0]?.count || 1;
-                          const percentage = topValue ? Math.round((location.count / topValue) * 100) : 0;
-                          return (
-                            <div key={location.location} className="group">
-                              <div className="flex items-center justify-between text-sm mb-1.5">
-                                <span className="text-gray-700 font-medium">{location.location}</span>
-                                <span className="text-gray-900 font-bold bg-gray-100 px-2 py-0.5 rounded-md">{location.count}</span>
-                              </div>
-                              <div className="w-full bg-gray-100 rounded-full h-2.5 overflow-hidden">
-                                <div className="bg-pink-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-pink-600" style={{ width: `${percentage}%` }}></div>
-                              </div>
+                    <p className="text-xs text-gray-400 mt-2">vs previous 7 days</p>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                  <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 p-6">
+                    <h4 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                      <FaDesktop className="text-gray-400 dark:text-gray-500" /> Top Devices
+                    </h4>
+                    <div className="space-y-4">
+                      {visitorInsights.topDevices.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>
+                      ) : visitorInsights.topDevices.map((device) => {
+                        const topValue = visitorInsights.topDevices[0]?.count || 1;
+                        const percentage = topValue ? Math.round((device.count / topValue) * 100) : 0;
+                        return (
+                          <div key={device.device} className="group">
+                            <div className="flex items-center justify-between text-sm mb-1.5">
+                              <span className="text-gray-700 dark:text-gray-300 font-medium">{device.device}</span>
+                              <span className="text-gray-900 dark:text-white font-bold bg-gray-100 dark:bg-gray-600 px-2 py-0.5 rounded-md">{device.count}</span>
                             </div>
-                          );
-                        })}
-                      </div>
+                            <div className="w-full bg-gray-100 dark:bg-gray-600 rounded-full h-2.5 overflow-hidden">
+                              <div className="bg-purple-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-purple-600" style={{ width: `${percentage}%` }}></div>
+                            </div>
+                          </div>
+                        );
+                      })}
+                    </div>
+                  </div>
+                  <div className="bg-white dark:bg-gray-700 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-600 p-6">
+                    <h4 className="text-base font-bold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                      <FaMapMarkerAlt className="text-gray-400 dark:text-gray-500" /> Top Locations
+                    </h4>
+                    <div className="space-y-4">
+                      {visitorInsights.topLocations.length === 0 ? (
+                        <p className="text-sm text-gray-500 dark:text-gray-400 text-center py-4">No data available</p>
+                      ) : visitorInsights.topLocations.map((location) => {
+                        const topValue = visitorInsights.topLocations[0]?.count || 1;
+                        const percentage = topValue ? Math.round((location.count / topValue) * 100) : 0;
+                        return (
+                          <div key={location.location} className="group">
+                            <div className="flex items-center justify-between text-sm mb-1.5">
+                              <span className="text-gray-700 dark:text-gray-300 font-medium">{location.location}</span>
+                              <span className="text-gray-900 dark:text-white font-bold bg-gray-100 dark:bg-gray-600 px-2 py-0.5 rounded-md">{location.count}</span>
+                            </div>
+                            <div className="w-full bg-gray-100 dark:bg-gray-600 rounded-full h-2.5 overflow-hidden">
+                              <div className="bg-pink-500 h-2.5 rounded-full transition-all duration-500 group-hover:bg-pink-600" style={{ width: `${percentage}%` }}></div>
+                            </div>
+                          </div>
+                        );
+                      })}
                     </div>
                   </div>
                 </div>
+              </div>
               )}
 
               {getVisitorActiveFiltersCount() > 0 && (
                 <div className="flex justify-end mt-4 animate-fade-in">
                   <button
                     onClick={() => setVisitorFilters({ dateRange: 'today', device: 'all', location: 'all', search: '', analytics: 'any', marketing: 'any', functional: 'any' })}
-                    className="text-sm text-red-600 hover:text-red-700 font-medium flex items-center gap-1 hover:underline"
+                    className="text-sm text-red-600 dark:text-red-400 hover:text-red-700 dark:hover:text-red-300 font-medium flex items-center gap-1 hover:underline"
                   >
                     <FaSync className="text-xs" /> Clear All Filters
                   </button>
@@ -1186,10 +1185,10 @@ const SessionAuditLogs = () => {
               )}
 
               {showVisitorFilters && (
-                <div className="mt-6 pt-6 border-t border-gray-100 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 animate-fade-in">
+                <div className="mt-6 pt-6 border-t border-gray-100 dark:border-gray-700 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-6 gap-6 animate-fade-in">
                   {/* Quick Date Range */}
                   <div className="col-span-1 lg:col-span-2">
-                    <label className="block text-sm font-bold text-gray-700 mb-2">Date Range</label>
+                    <label className="block text-sm font-bold text-gray-700 dark:text-gray-300 mb-2">Date Range</label>
                     <div className="flex flex-wrap gap-2">
                       {[
                         { key: 'today', label: 'Today' },
@@ -1201,7 +1200,7 @@ const SessionAuditLogs = () => {
                         <button
                           key={opt.key}
                           onClick={() => { setVisitorsPage(1); setVisitorFilters(v => ({ ...v, dateRange: opt.key })); }}
-                          className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${visitorFilters.dateRange === opt.key ? 'bg-purple-600 text-white border-purple-600 shadow-md transform scale-105' : 'bg-white text-gray-600 border-gray-200 hover:bg-gray-50'}`}
+                          className={`px-3 py-1.5 rounded-lg text-xs font-medium border transition-all ${visitorFilters.dateRange === opt.key ? 'bg-purple-600 text-white border-purple-600 shadow-md transform scale-105' : 'bg-white dark:bg-gray-700 text-gray-600 dark:text-gray-300 border-gray-200 dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600'}`}
                         >
                           {opt.label}
                         </button>
@@ -1278,100 +1277,100 @@ const SessionAuditLogs = () => {
             </div>
 
             {/* Visitors Table */}
-            <div className="bg-white rounded-2xl shadow-xl border border-gray-100 overflow-hidden animate-fade-in-delay-2">
-              <div className="px-6 py-5 border-b border-gray-100 flex items-center gap-2">
-                <div className="bg-purple-100 p-2 rounded-lg text-purple-600">
+            <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-delay-2 transition-colors duration-200">
+              <div className="px-6 py-5 border-b border-gray-100 dark:border-gray-700 flex items-center gap-2">
+                <div className="bg-purple-100 dark:bg-purple-900/30 p-2 rounded-lg text-purple-600 dark:text-purple-400">
                   <FaGlobe />
                 </div>
-                <h2 className="text-lg font-bold text-gray-800">Visitor Activity Log</h2>
+                <h2 className="text-lg font-bold text-gray-800 dark:text-white">Visitor Activity Log</h2>
               </div>
 
               {visitorsLoading ? (
                 <div className="px-6 py-16 text-center">
                   <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-purple-600 mx-auto"></div>
-                  <p className="mt-4 text-gray-600 font-medium">Loading visitors data...</p>
+                  <p className="mt-4 text-gray-600 dark:text-gray-400 font-medium">Loading visitors data...</p>
                 </div>
               ) : visitors.length === 0 ? (
-                <div className="px-6 py-16 text-center bg-gray-50/50">
-                  <div className="bg-gray-100 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-4">
-                    <FaGlobe className="text-3xl text-gray-400" />
+                <div className="px-6 py-16 text-center bg-gray-50/50 dark:bg-gray-700/50">
+                  <div className="bg-gray-100 dark:bg-gray-700 p-4 rounded-full w-20 h-20 mx-auto flex items-center justify-center mb-4">
+                    <FaGlobe className="text-3xl text-gray-400 dark:text-gray-500" />
                   </div>
-                  <h3 className="text-lg font-bold text-gray-900">No visitors found</h3>
-                  <p className="mt-2 text-gray-500 max-w-sm mx-auto">
+                  <h3 className="text-lg font-bold text-gray-900 dark:text-white">No visitors found</h3>
+                  <p className="mt-2 text-gray-500 dark:text-gray-400 max-w-sm mx-auto">
                     We couldn't find any visitor data matching your current filters. Try adjusting your search criteria.
                   </p>
                 </div>
               ) : (
                 <div className="overflow-x-auto">
-                  <table className="min-w-full divide-y divide-gray-100">
-                    <thead className="bg-gray-50/50">
+                  <table className="min-w-full divide-y divide-gray-100 dark:divide-gray-700">
+                    <thead className="bg-gray-50/50 dark:bg-gray-700/50">
                       <tr>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Timestamp
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Browser
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Operating System
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Device Type
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           IP Address
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Location
                         </th>
-                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 uppercase tracking-wider">
+                        <th className="px-6 py-4 text-left text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">
                           Cookie Consent
                         </th>
                       </tr>
                     </thead>
-                    <tbody className="bg-white divide-y divide-gray-100">
+                    <tbody className="bg-white dark:bg-gray-800 divide-y divide-gray-100 dark:divide-gray-700">
                       {visitors.map((visitor) => (
-                        <tr key={visitor._id} className="hover:bg-purple-50/30 transition-colors duration-150">
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600">
+                        <tr key={visitor._id} className="hover:bg-purple-50/30 dark:hover:bg-purple-900/20 transition-colors duration-150">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-600 dark:text-gray-300">
                             <div className="flex items-center gap-2">
-                              <FaHistory className="text-gray-400" />
+                              <FaHistory className="text-gray-400 dark:text-gray-500" />
                               {new Date(visitor.timestamp).toLocaleString('en-IN', { year: 'numeric', month: 'short', day: 'numeric', hour: '2-digit', minute: '2-digit' })}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
                             <div className="flex items-center gap-2">
-                              <span className="font-bold text-gray-800">
+                              <span className="font-bold text-gray-800 dark:text-white">
                                 {visitor.browser || 'Unknown'}
                               </span>
                               {visitor.browserVersion && (
-                                <span className="text-xs bg-gray-100 px-1.5 py-0.5 rounded text-gray-500 font-mono">
+                                <span className="text-xs bg-gray-100 dark:bg-gray-700 px-1.5 py-0.5 rounded text-gray-500 dark:text-gray-400 font-mono">
                                   v{visitor.browserVersion}
                                 </span>
                               )}
                             </div>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                             <div className="flex items-center gap-2">
-                              {visitor.os?.includes('Windows') ? <span className="text-blue-500 font-bold">Win</span> :
-                                visitor.os?.includes('Mac') ? <span className="text-gray-800 font-bold">Mac</span> :
-                                  visitor.os?.includes('Android') ? <span className="text-green-500 font-bold">Android</span> :
-                                    visitor.os?.includes('iOS') ? <span className="text-gray-800 font-bold">iOS</span> : visitor.os || 'Unknown'}
+                              {visitor.os?.includes('Windows') ? <span className="text-blue-500 dark:text-blue-400 font-bold">Win</span> :
+                                visitor.os?.includes('Mac') ? <span className="text-gray-800 dark:text-gray-200 font-bold">Mac</span> :
+                                  visitor.os?.includes('Android') ? <span className="text-green-500 dark:text-green-400 font-bold">Android</span> :
+                                    visitor.os?.includes('iOS') ? <span className="text-gray-800 dark:text-gray-200 font-bold">iOS</span> : visitor.os || 'Unknown'}
                             </div>
                           </td>
                           <td className="px-6 py-4 whitespace-nowrap text-sm">
-                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${visitor.deviceType === 'Mobile' ? 'bg-blue-100 text-blue-700 border border-blue-200' :
-                              visitor.deviceType === 'Tablet' ? 'bg-purple-100 text-purple-700 border border-purple-200' :
-                                'bg-gray-100 text-gray-700 border border-gray-200'
+                            <span className={`inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-bold ${visitor.deviceType === 'Mobile' ? 'bg-blue-100 text-blue-700 border border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800' :
+                              visitor.deviceType === 'Tablet' ? 'bg-purple-100 text-purple-700 border border-purple-200 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800' :
+                                'bg-gray-100 text-gray-700 border border-gray-200 dark:bg-gray-700/50 dark:text-gray-300 dark:border-gray-600'
                               }`}>
                               {visitor.deviceType === 'Mobile' ? <FaGlobe className="text-xs" /> :
                                 visitor.deviceType === 'Tablet' ? <FaGlobe className="text-xs" /> : <FaDesktop className="text-xs" />}
                               {visitor.deviceType || 'Unknown'}
                             </span>
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600 bg-gray-50/50">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm font-mono text-gray-600 dark:text-gray-400 bg-gray-50/50 dark:bg-gray-700/50">
                             {visitor.ip}
                           </td>
-                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700">
+                          <td className="px-6 py-4 whitespace-nowrap text-sm text-gray-700 dark:text-gray-300">
                             <div className="flex items-center gap-1">
                               <FaMapMarkerAlt className="text-red-400" />
                               {visitor.location || 'Unknown'}
@@ -1380,24 +1379,24 @@ const SessionAuditLogs = () => {
                           <td className="px-6 py-4 whitespace-nowrap">
                             <div className="flex gap-1.5 flex-wrap">
                               {visitor.cookiePreferences?.analytics && (
-                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100">
+                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-blue-50 text-blue-700 border border-blue-100 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
                                   ANA
                                 </span>
                               )}
                               {visitor.cookiePreferences?.marketing && (
-                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-green-50 text-green-700 border border-green-100">
+                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-green-50 text-green-700 border border-green-100 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800">
                                   MKT
                                 </span>
                               )}
                               {visitor.cookiePreferences?.functional && (
-                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-100">
+                                <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-purple-50 text-purple-700 border border-purple-100 dark:bg-purple-900/30 dark:text-purple-300 dark:border-purple-800">
                                   FUN
                                 </span>
                               )}
                               {!visitor.cookiePreferences?.analytics &&
                                 !visitor.cookiePreferences?.marketing &&
                                 !visitor.cookiePreferences?.functional && (
-                                  <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200">
+                                  <span className="inline-flex items-center px-2 py-1 rounded text-[10px] font-bold bg-gray-100 text-gray-600 border border-gray-200 dark:bg-gray-700 dark:text-gray-400 dark:border-gray-600">
                                     Required
                                   </span>
                                 )}
@@ -1413,9 +1412,9 @@ const SessionAuditLogs = () => {
 
             {/* Pagination for Visitors */}
             {allVisitors.length > 10 && visitorsTotalPages > 1 && (
-              <div className="flex flex-col sm:flex-row items-center justify-between mt-8 gap-4 bg-white p-4 rounded-xl shadow-sm border border-gray-100 animate-fade-in-delay-3">
-                <div className="text-sm text-gray-600 bg-gray-50 px-3 py-1.5 rounded-lg border border-gray-200">
-                  Page <span className="font-bold text-gray-800">{visitorsPage}</span> of <span className="font-bold text-gray-800">{visitorsTotalPages}</span>
+              <div className="flex flex-col sm:flex-row items-center justify-between mt-8 gap-4 bg-white dark:bg-gray-800 p-4 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 animate-fade-in-delay-3 transition-colors duration-200">
+                <div className="text-sm text-gray-600 dark:text-gray-400 bg-gray-50 dark:bg-gray-700 px-3 py-1.5 rounded-lg border border-gray-200 dark:border-gray-600">
+                  Page <span className="font-bold text-gray-800 dark:text-white">{visitorsPage}</span> of <span className="font-bold text-gray-800 dark:text-white">{visitorsTotalPages}</span>
                 </div>
                 <div className="flex flex-col sm:flex-row gap-2 w-full sm:w-auto">
                   <button
@@ -1424,7 +1423,7 @@ const SessionAuditLogs = () => {
                       toast.info(`Navigated to page ${Math.max(1, visitorsPage - 1)}`);
                     }}
                     disabled={visitorsPage === 1}
-                    className="px-5 py-2.5 text-sm font-medium bg-white text-gray-700 border border-gray-300 rounded-lg hover:bg-gray-50 hover:text-purple-600 hover:border-purple-200 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto flex items-center justify-center gap-2"
+                    className="px-5 py-2.5 text-sm font-medium bg-white dark:bg-gray-700 text-gray-700 dark:text-gray-200 border border-gray-300 dark:border-gray-600 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-600 hover:text-purple-600 dark:hover:text-purple-400 hover:border-purple-200 dark:hover:border-purple-800 transition-all shadow-sm disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto flex items-center justify-center gap-2"
                   >
                     Previous
                   </button>
@@ -1434,7 +1433,7 @@ const SessionAuditLogs = () => {
                       toast.info(`Navigated to page ${Math.min(visitorsTotalPages, visitorsPage + 1)}`);
                     }}
                     disabled={visitorsPage === visitorsTotalPages}
-                    className="px-5 py-2.5 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md shadow-purple-200 transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto flex items-center justify-center gap-2"
+                    className="px-5 py-2.5 text-sm font-medium bg-purple-600 text-white rounded-lg hover:bg-purple-700 shadow-md shadow-purple-200 dark:shadow-none transition-all disabled:opacity-50 disabled:cursor-not-allowed w-full sm:w-auto flex items-center justify-center gap-2"
                   >
                     Next
                   </button>
