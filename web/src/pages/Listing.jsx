@@ -4435,151 +4435,151 @@ export default function Listing() {
                           </div>
                         </div>
                       </div>
+                      <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">Begin Comparison</h3>
+                      <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto text-sm sm:text-base leading-relaxed">
+                        Search for properties to add to your comparison list. Compare prices, amenities, and ratings side-by-side.
+                      </p>
                     </div>
-                      </div>
-                <h3 className="text-2xl font-bold text-gray-900 dark:text-white mb-3 tracking-tight">Begin Comparison</h3>
-                <p className="text-gray-500 dark:text-gray-400 mb-8 max-w-md mx-auto text-sm sm:text-base leading-relaxed">
-                  Search for properties to add to your comparison list. Compare prices, amenities, and ratings side-by-side.
-                </p>
                   )}
 
-                {/* Enhanced Similar Properties Section */}
-                {similarProperties.length > 0 && (
-                  <div className="mt-12 pt-8 border-t border-gray-100">
-                    <div className="flex items-center gap-3 mb-6">
-                      <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg">
-                        <FaChartLine />
+                  {/* Enhanced Similar Properties Section */}
+                  {similarProperties.length > 0 && (
+                    <div className="mt-12 pt-8 border-t border-gray-100">
+                      <div className="flex items-center gap-3 mb-6">
+                        <div className="p-2 bg-indigo-100 text-indigo-700 rounded-lg">
+                          <FaChartLine />
+                        </div>
+                        <h3 className="text-lg font-bold text-gray-800 dark:text-white">Recommendations for You</h3>
                       </div>
-                      <h3 className="text-lg font-bold text-gray-800 dark:text-white">Recommendations for You</h3>
-                    </div>
 
 
-                    <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                      {similarProperties.map((property) => {
-                        const isAlreadyAdded = comparisonProperties.some(p => p._id === property._id);
-                        const canAdd = !isAlreadyAdded && comparisonProperties.length < 4;
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                        {similarProperties.map((property) => {
+                          const isAlreadyAdded = comparisonProperties.some(p => p._id === property._id);
+                          const canAdd = !isAlreadyAdded && comparisonProperties.length < 4;
 
-                        return (
-                          <div key={property._id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:border-blue-300">
-                            <div className="flex gap-3">
-                              <img
-                                src={property.imageUrls?.[0] || '/placeholder-property.jpg'}
-                                alt={property.name}
-                                className="w-16 h-16 object-cover rounded-lg shadow-sm"
-                              />
-                              <div className="flex-1">
-                                <div className="flex items-center gap-2 mb-1">
-                                  <h4 className="font-bold text-gray-800 dark:text-white text-sm line-clamp-1">{property.name}</h4>
-                                  {property.isVerified && property.type === 'rent' && (
-                                    <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full text-[9px] font-semibold flex items-center gap-0.5 whitespace-nowrap">
-                                      <FaCheckCircle className="text-[9px]" /> Verified
-                                    </span>
-                                  )}
-                                </div>
-                                <p className="text-gray-600 text-xs mb-2">{property.city}, {property.state}</p>
-
-                                <div className="flex items-center gap-2 mb-2">
-                                  <span className={`px-2 py-1 text-xs rounded-full font-medium ${property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
-                                    }`}>
-                                    {property.type}
-                                  </span>
-                                  <span className="text-xs text-gray-500">{property.bhk} BHK</span>
-                                </div>
-
-                                <div className="flex items-center justify-between">
-                                  <div>
-                                    <p className="font-bold text-green-600 text-sm">
-                                      ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
-                                    </p>
-                                    {property.offer && (
-                                      <p className="text-xs text-gray-500 line-through">
-                                        ₹{property.regularPrice.toLocaleString('en-IN')}
-                                      </p>
+                          return (
+                            <div key={property._id} className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-xl p-4 hover:shadow-lg transition-all duration-300 hover:border-blue-300">
+                              <div className="flex gap-3">
+                                <img
+                                  src={property.imageUrls?.[0] || '/placeholder-property.jpg'}
+                                  alt={property.name}
+                                  className="w-16 h-16 object-cover rounded-lg shadow-sm"
+                                />
+                                <div className="flex-1">
+                                  <div className="flex items-center gap-2 mb-1">
+                                    <h4 className="font-bold text-gray-800 dark:text-white text-sm line-clamp-1">{property.name}</h4>
+                                    {property.isVerified && property.type === 'rent' && (
+                                      <span className="px-1.5 py-0.5 bg-green-100 text-green-700 rounded-full text-[9px] font-semibold flex items-center gap-0.5 whitespace-nowrap">
+                                        <FaCheckCircle className="text-[9px]" /> Verified
+                                      </span>
                                     )}
                                   </div>
+                                  <p className="text-gray-600 text-xs mb-2">{property.city}, {property.state}</p>
 
-                                  <div className="relative">
-                                    <button
-                                      onClick={() => {
-                                        if (!currentUser) {
-                                          showSignInPrompt('comparison');
-                                          return;
-                                        }
-                                        addPropertyFromSearch(property);
-                                      }}
-                                      disabled={!canAdd}
-                                      className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors ${isAlreadyAdded
-                                        ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                        : canAdd
-                                          ? 'bg-blue-600 text-white hover:bg-blue-700'
-                                          : 'bg-gray-300 text-gray-500 cursor-not-allowed'
-                                        }`}
-                                    >
-                                      {isAlreadyAdded ? 'Added' : canAdd ? 'Add' : 'Max'}
-                                    </button>
-                                    {showComparisonTooltip && (
-                                      <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
-                                        Please login to use comparison tool
-                                        <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
-                                      </div>
-                                    )}
+                                  <div className="flex items-center gap-2 mb-2">
+                                    <span className={`px-2 py-1 text-xs rounded-full font-medium ${property.type === 'rent' ? 'bg-blue-100 text-blue-800' : 'bg-green-100 text-green-800'
+                                      }`}>
+                                      {property.type}
+                                    </span>
+                                    <span className="text-xs text-gray-500">{property.bhk} BHK</span>
+                                  </div>
+
+                                  <div className="flex items-center justify-between">
+                                    <div>
+                                      <p className="font-bold text-green-600 text-sm">
+                                        ₹{(property.offer ? property.discountPrice : property.regularPrice).toLocaleString('en-IN')}
+                                      </p>
+                                      {property.offer && (
+                                        <p className="text-xs text-gray-500 line-through">
+                                          ₹{property.regularPrice.toLocaleString('en-IN')}
+                                        </p>
+                                      )}
+                                    </div>
+
+                                    <div className="relative">
+                                      <button
+                                        onClick={() => {
+                                          if (!currentUser) {
+                                            showSignInPrompt('comparison');
+                                            return;
+                                          }
+                                          addPropertyFromSearch(property);
+                                        }}
+                                        disabled={!canAdd}
+                                        className={`px-3 py-1 text-xs rounded-lg font-medium transition-colors ${isAlreadyAdded
+                                          ? 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                          : canAdd
+                                            ? 'bg-blue-600 text-white hover:bg-blue-700'
+                                            : 'bg-gray-300 text-gray-500 cursor-not-allowed'
+                                          }`}
+                                      >
+                                        {isAlreadyAdded ? 'Added' : canAdd ? 'Add' : 'Max'}
+                                      </button>
+                                      {showComparisonTooltip && (
+                                        <div className="absolute top-full left-0 mt-2 bg-red-600 text-white px-3 py-2 rounded-lg text-sm whitespace-nowrap z-50">
+                                          Please login to use comparison tool
+                                          <div className="absolute -top-1 left-4 w-2 h-2 bg-red-600 transform rotate-45"></div>
+                                        </div>
+                                      )}
+                                    </div>
                                   </div>
                                 </div>
                               </div>
                             </div>
-                          </div>
-                        );
-                      })}
+                          );
+                        })}
+                      </div>
                     </div>
-                  </div>
-                )}
+                  )}
 
-                {/* Enhanced Footer Actions */}
-                <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 sm:p-6 mt-8 border border-gray-200">
-                  <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
-                    <div className="flex items-center gap-3 sm:gap-4">
-                      <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
-                        <div className="text-sm font-medium text-gray-700">
-                          {comparisonProperties.length} of 4 properties selected
+                  {/* Enhanced Footer Actions */}
+                  <div className="bg-gradient-to-r from-gray-50 to-blue-50 rounded-xl p-4 sm:p-6 mt-8 border border-gray-200">
+                    <div className="flex flex-col sm:flex-row items-stretch sm:items-center justify-between gap-3 sm:gap-4">
+                      <div className="flex items-center gap-3 sm:gap-4">
+                        <div className="bg-white rounded-lg px-4 py-2 shadow-sm">
+                          <div className="text-sm font-medium text-gray-700">
+                            {comparisonProperties.length} of 4 properties selected
+                          </div>
+                          <div className="text-xs text-gray-500">
+                            {comparisonProperties.length >= 2 ? 'Ready to compare!' : 'Add more properties to compare'}
+                          </div>
                         </div>
-                        <div className="text-xs text-gray-500">
-                          {comparisonProperties.length >= 2 ? 'Ready to compare!' : 'Add more properties to compare'}
-                        </div>
+
+                        {comparisonProperties.length > 0 && (
+                          <div className="flex items-center gap-2">
+                            <div className="text-sm text-gray-600">Selected:</div>
+                            <div className="flex gap-1">
+                              {comparisonProperties.map((property, index) => (
+                                <div key={property._id} className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-xs font-bold text-purple-700">
+                                  {index + 1}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        )}
                       </div>
 
-                      {comparisonProperties.length > 0 && (
-                        <div className="flex items-center gap-2">
-                          <div className="text-sm text-gray-600">Selected:</div>
-                          <div className="flex gap-1">
-                            {comparisonProperties.map((property, index) => (
-                              <div key={property._id} className="w-6 h-6 bg-purple-100 rounded-full flex items-center justify-center text-xs font-bold text-purple-700">
-                                {index + 1}
-                              </div>
-                            ))}
-                          </div>
-                        </div>
-                      )}
-                    </div>
-
-                    <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
-                      <button
-                        onClick={() => setShowPropertySearch(false)}
-                        className="w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
-                      >
-                        Close
-                      </button>
-                      {comparisonProperties.length >= 2 && (
+                      <div className="flex flex-col sm:flex-row gap-2 sm:gap-3 w-full sm:w-auto">
                         <button
-                          onClick={() => {
-                            setShowPropertySearch(false);
-                            setTimeout(() => setShowComparisonModal(true), 0);
-                          }}
-                          className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex items-center justify-center gap-2"
+                          onClick={() => setShowPropertySearch(false)}
+                          className="w-full sm:w-auto px-6 py-2 bg-gray-500 text-white rounded-lg hover:bg-gray-600 transition-colors font-medium"
                         >
-                          <FaChartLine />
-                          Compare Now
+                          Close
                         </button>
-                      )}
+                        {comparisonProperties.length >= 2 && (
+                          <button
+                            onClick={() => {
+                              setShowPropertySearch(false);
+                              setTimeout(() => setShowComparisonModal(true), 0);
+                            }}
+                            className="w-full sm:w-auto px-6 py-2 bg-gradient-to-r from-purple-600 to-blue-600 text-white rounded-lg hover:from-purple-700 hover:to-blue-700 transition-all font-medium flex items-center justify-center gap-2"
+                          >
+                            <FaChartLine />
+                            Compare Now
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 </div>
@@ -4651,6 +4651,7 @@ export default function Listing() {
         title={selectedComparisonProperty ? `${selectedComparisonProperty.name} - ${selectedComparisonProperty.type} in ${selectedComparisonProperty.address}` : "Check out this property!"}
         description={selectedComparisonProperty ? `Amazing ${selectedComparisonProperty.type} property in ${selectedComparisonProperty.address}. ${selectedComparisonProperty.description || ''}` : "Amazing property listing"}
       />
+      <ContactSupportWrapper />
     </>
   );
 }

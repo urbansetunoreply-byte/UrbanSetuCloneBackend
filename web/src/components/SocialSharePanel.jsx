@@ -78,7 +78,7 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
       />
 
       {/* Panel */}
-      <div className={`relative bg-white rounded-[24px] md:rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transition-all duration-500 transform flex flex-col max-h-[90vh] ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
+      <div className={`relative bg-white dark:bg-gray-900 rounded-[24px] md:rounded-[32px] shadow-2xl w-full max-w-md overflow-hidden transition-all duration-500 transform flex flex-col max-h-[90vh] border border-gray-100 dark:border-gray-800 ${isOpen ? 'scale-100 translate-y-0' : 'scale-95 translate-y-8'}`}>
         {/* Header with Gradient */}
         <div className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 p-6 md:p-8 text-white relative shrink-0">
           <div className="absolute top-0 right-0 w-32 h-32 bg-white/10 rounded-full -mr-16 -mt-16 blur-2xl"></div>
@@ -100,21 +100,21 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
           </div>
         </div>
 
-        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar">
+        <div className="p-6 md:p-8 overflow-y-auto custom-scrollbar bg-white dark:bg-gray-900">
           {/* Link Copy Section */}
           <div className="mb-6 md:mb-8">
-            <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 md:mb-3 block">
+            <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 md:mb-3 block">
               {url.includes('ref=') ? 'Your Referral Link' : 'Direct Link'}
             </label>
-            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 bg-slate-50 border border-slate-100 rounded-2xl group transition-all hover:border-indigo-200 hover:bg-white hover:shadow-lg hover:shadow-indigo-500/5">
-              <div className="flex-1 px-3 py-2 overflow-hidden bg-white sm:bg-transparent rounded-xl sm:rounded-none border sm:border-none border-slate-100 mb-1 sm:mb-0">
-                <p className="text-xs md:text-sm font-bold text-slate-700 truncate">{url}</p>
+            <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 p-2 bg-slate-50 dark:bg-gray-800 border border-slate-100 dark:border-gray-700 rounded-2xl group transition-all hover:border-indigo-200 dark:hover:border-indigo-800 hover:bg-white dark:hover:bg-gray-800/80 hover:shadow-lg hover:shadow-indigo-500/5">
+              <div className="flex-1 px-3 py-2 overflow-hidden bg-white dark:bg-gray-900 sm:bg-transparent rounded-xl sm:rounded-none border sm:border-none border-slate-100 dark:border-gray-700 mb-1 sm:mb-0">
+                <p className="text-xs md:text-sm font-bold text-slate-700 dark:text-slate-300 truncate">{url}</p>
               </div>
               <button
                 onClick={copyToClipboard}
                 className={`flex items-center justify-center gap-2 px-6 py-3 rounded-xl font-bold transition-all duration-300 w-full sm:w-auto ${copied
-                  ? 'bg-green-500 text-white shadow-lg shadow-green-200'
-                  : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100'
+                  ? 'bg-green-500 text-white shadow-lg shadow-green-200 dark:shadow-green-900/30'
+                  : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-100 dark:shadow-indigo-900/30'
                   }`}
               >
                 {copied ? <FaCheck /> : <FaCopy />}
@@ -125,7 +125,7 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
 
           {/* Social Grid */}
           <div className="space-y-4">
-            <label className="text-[10px] md:text-xs font-black text-slate-400 uppercase tracking-[0.2em] mb-2 md:mb-3 block">Share with friends</label>
+            <label className="text-[10px] md:text-xs font-black text-slate-400 dark:text-slate-500 uppercase tracking-[0.2em] mb-2 md:mb-3 block">Share with friends</label>
             <div className="grid grid-cols-1 xs:grid-cols-2 gap-3">
               {shareOptions.map((opt) => (
                 <button
@@ -141,8 +141,8 @@ const SocialSharePanel = ({ isOpen, onClose, url, title = "Join UrbanSetu!", des
           </div>
 
           {url.includes('ref=') && (
-            <div className="mt-6 md:mt-8 text-center bg-indigo-50 p-4 rounded-2xl border border-indigo-100">
-              <p className="text-xs text-indigo-700 font-bold">Earn <span className="text-indigo-900 font-black">100 coins</span> per successful referral. New users get <span className="text-indigo-900 font-black">50 coins</span>! 🚀</p>
+            <div className="mt-6 md:mt-8 text-center bg-indigo-50 dark:bg-indigo-900/20 p-4 rounded-2xl border border-indigo-100 dark:border-indigo-800">
+              <p className="text-xs text-indigo-700 dark:text-indigo-300 font-bold">Earn <span className="text-indigo-900 dark:text-indigo-200 font-black">100 coins</span> per successful referral. New users get <span className="text-indigo-900 dark:text-indigo-200 font-black">50 coins</span>! 🚀</p>
             </div>
           )}
         </div>
