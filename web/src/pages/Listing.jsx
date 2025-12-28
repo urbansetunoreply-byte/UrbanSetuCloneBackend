@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { useParams, useNavigate, Link, useLocation } from "react-router-dom";
-import { useSelector } from "react-redux";
+import { useSelector, useDispatch } from "react-redux";
+import { signoutUserStart, signoutUserSuccess, signoutUserFailure } from "../redux/user/userSlice";
 import { Swiper, SwiperSlide } from "swiper/react";
 import "swiper/css";
 import "swiper/css/navigation";
@@ -52,6 +53,7 @@ const LOCK_REASON_MESSAGES = {
 
 export default function Listing() {
   const params = useParams();
+  const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
   const { currentUser } = useSelector((state) => state.user);
@@ -566,19 +568,54 @@ export default function Listing() {
     setDeleteError("");
     try {
       // Verify password
-      const verifyRes = await fetch(`/api/user/verify-password/${currentUser._id}`, {
+      const verifyRes = await fetch(`${API_BASE_URL}/api/user/verify-password/${currentUser._id}`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
         credentials: 'include',
         body: JSON.stringify({ password: deletePassword }),
       });
+
       if (!verifyRes.ok) {
-        setDeleteError("Incorrect password. Property not deleted.");
+        // Track wrong attempts locally (allow up to 3 attempts before logout)
+        const key = 'deleteListingPwAttempts';
+        const prev = parseInt(localStorage.getItem(key) || '0');
+        const next = prev + 1;
+        localStorage.setItem(key, String(next));
+
+        if (next >= 3) {
+          // Sign out and redirect on third wrong attempt
+          toast.error("Too many incorrect attempts. You've been signed out for security.");
+          dispatch(signoutUserStart());
+          try {
+            const signoutRes = await fetch(`${API_BASE_URL}/api/auth/signout`);
+            const signoutData = await signoutRes.json();
+            if (signoutData.success === false) {
+              dispatch(signoutUserFailure(signoutData.message));
+            } else {
+              dispatch(signoutUserSuccess(signoutData));
+            }
+          } catch (err) {
+            dispatch(signoutUserFailure(err.message));
+          }
+          localStorage.removeItem(key); // Clear attempts on logout
+          setShowPasswordModal(false);
+          setTimeout(() => {
+            navigate('/sign-in');
+          }, 800);
+          return;
+        }
+
+        const remaining = 3 - next;
+        setDeleteError(`Incorrect password. ${remaining} attempt${remaining === 1 ? '' : 's'} left before logout.`);
         setDeleteLoading(false);
         return;
       }
+
+      // Success - Clear attempts
+      localStorage.removeItem('deleteListingPwAttempts');
+
       // Proceed to delete
-      const res = await fetch(`/api/listing/delete/${listing._id}`, {
+      const res = await fetch(`${API_BASE_URL}/api/listing/delete/${listing._id}`, {
         method: 'DELETE',
         credentials: 'include',
         headers: { 'Content-Type': 'application/json' },
@@ -587,7 +624,11 @@ export default function Listing() {
       if (res.ok) {
         toast.success('Property deleted successfully!');
         setShowPasswordModal(false);
-        navigate('/admin/listings');
+        if (isAdmin) {
+          navigate('/admin/listings');
+        } else {
+          navigate('/user/my-listings');
+        }
       } else {
         const data = await res.json();
         setDeleteError(data.message || 'Failed to delete property.');
