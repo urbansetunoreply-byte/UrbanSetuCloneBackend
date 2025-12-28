@@ -1,13 +1,13 @@
 import React, { useState, useEffect } from 'react';
-import { 
-  FaCalculator, 
-  FaChartLine, 
-  FaHome, 
-  FaDollarSign, 
-  FaChartBar, 
-  FaShieldAlt, 
-  FaPercent, 
-  FaCalendar, 
+import {
+  FaCalculator,
+  FaChartLine,
+  FaHome,
+  FaDollarSign,
+  FaChartBar,
+  FaShieldAlt,
+  FaPercent,
+  FaCalendar,
   FaMoneyBillWave,
   FaPiggyBank,
   FaChartPie,
@@ -168,12 +168,12 @@ const InvestmentTools = () => {
       result,
       timestamp: new Date().toISOString()
     };
-    
+
     // Save to localStorage immediately
     const updated = [...savedCalculations, newCalculation];
     setSavedCalculations(updated);
     localStorage.setItem('investmentCalculations', JSON.stringify(updated));
-    
+
     // Try to save to backend
     try {
       const calculationData = {
@@ -186,7 +186,7 @@ const InvestmentTools = () => {
           district: data.location?.split(',')[2]?.trim() || ''
         }
       };
-      
+
       await investmentAnalysisService.saveCalculation(calculationData);
     } catch (error) {
       console.error('Failed to save to backend:', error);
@@ -219,8 +219,8 @@ const InvestmentTools = () => {
     // Monthly mortgage payment calculation
     const monthlyRate = ir / 100 / 12;
     const numPayments = lt * 12;
-    const monthlyPayment = la * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
-                          (Math.pow(1 + monthlyRate, numPayments) - 1);
+    const monthlyPayment = la * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+      (Math.pow(1 + monthlyRate, numPayments) - 1);
 
     // Annual calculations
     const annualRent = mr * 12;
@@ -273,8 +273,8 @@ const InvestmentTools = () => {
     // Monthly mortgage payment
     const monthlyRate = ir / 100 / 12;
     const numPayments = lt * 12;
-    const monthlyPayment = la * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) / 
-                          (Math.pow(1 + monthlyRate, numPayments) - 1);
+    const monthlyPayment = la * (monthlyRate * Math.pow(1 + monthlyRate, numPayments)) /
+      (Math.pow(1 + monthlyRate, numPayments) - 1);
 
     // Total monthly payment including taxes, insurance, PMI
     const totalMonthlyPayment = monthlyPayment + (pt / 12) + (ins / 12) + pmiAmount;
@@ -431,17 +431,17 @@ const InvestmentTools = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800 transition-colors">
       <div className="max-w-7xl mx-auto px-4 py-8">
         {/* Header */}
         <div className="text-center mb-8">
           <div className="flex items-center justify-center gap-3 mb-4">
-            <div className="p-3 bg-green-100 rounded-full">
-              <FaCalculator className="text-3xl text-green-600" />
+            <div className="p-3 bg-green-100 dark:bg-green-900/30 rounded-full">
+              <FaCalculator className="text-3xl text-green-600 dark:text-green-400" />
             </div>
-            <h1 className="text-4xl font-bold text-gray-900">Investment Tools</h1>
+            <h1 className="text-4xl font-bold text-gray-900 dark:text-white">Investment Tools</h1>
           </div>
-          <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <p className="text-lg text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
             Comprehensive real estate investment calculators and analysis tools to help you make informed investment decisions.
           </p>
         </div>
@@ -457,7 +457,7 @@ const InvestmentTools = () => {
           </button>
           <button
             onClick={() => setSavedCalculations([])}
-            className="px-6 py-3 bg-gray-600 text-white rounded-lg hover:bg-gray-700 transition-colors flex items-center gap-2"
+            className="px-6 py-3 bg-gray-600 dark:bg-gray-700 text-white rounded-lg hover:bg-gray-700 dark:hover:bg-gray-600 transition-colors flex items-center gap-2"
           >
             <FaHistory className="text-sm" />
             Clear History
@@ -476,11 +476,10 @@ const InvestmentTools = () => {
             <button
               key={tab.id}
               onClick={() => setActiveTab(tab.id)}
-              className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${
-                activeTab === tab.id
-                  ? 'bg-green-600 text-white'
-                  : 'bg-white text-gray-700 hover:bg-gray-100'
-              }`}
+              className={`px-4 py-2 rounded-lg flex items-center gap-2 transition-colors ${activeTab === tab.id
+                ? 'bg-green-600 text-white'
+                : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                }`}
             >
               <tab.icon className="text-sm" />
               {tab.label}
@@ -490,91 +489,91 @@ const InvestmentTools = () => {
 
         {/* ROI Calculator */}
         {activeTab === 'roi' && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <FaChartLine className="text-green-600" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8 transition-colors">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+              <FaChartLine className="text-green-600 dark:text-green-400" />
               ROI Calculator
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Property Value ($)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Value ($)</label>
                 <input
                   type="number"
                   value={roiData.propertyValue}
-                  onChange={(e) => setRoiData({...roiData, propertyValue: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onChange={(e) => setRoiData({ ...roiData, propertyValue: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-white"
                   placeholder="500000"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Down Payment ($)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Down Payment ($)</label>
                 <input
                   type="number"
                   value={roiData.downPayment}
-                  onChange={(e) => setRoiData({...roiData, downPayment: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onChange={(e) => setRoiData({ ...roiData, downPayment: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-white"
                   placeholder="100000"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Rent ($)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monthly Rent ($)</label>
                 <input
                   type="number"
                   value={roiData.monthlyRent}
-                  onChange={(e) => setRoiData({...roiData, monthlyRent: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onChange={(e) => setRoiData({ ...roiData, monthlyRent: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-white"
                   placeholder="3000"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Monthly Expenses ($)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Monthly Expenses ($)</label>
                 <input
                   type="number"
                   value={roiData.monthlyExpenses}
-                  onChange={(e) => setRoiData({...roiData, monthlyExpenses: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onChange={(e) => setRoiData({ ...roiData, monthlyExpenses: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-white"
                   placeholder="500"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Loan Amount ($)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Amount ($)</label>
                 <input
                   type="number"
                   value={roiData.loanAmount}
-                  onChange={(e) => setRoiData({...roiData, loanAmount: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onChange={(e) => setRoiData({ ...roiData, loanAmount: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-white"
                   placeholder="400000"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Interest Rate (%)</label>
                 <input
                   type="number"
                   step="0.01"
                   value={roiData.interestRate}
-                  onChange={(e) => setRoiData({...roiData, interestRate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onChange={(e) => setRoiData({ ...roiData, interestRate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-white"
                   placeholder="4.5"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Loan Term (Years)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Term (Years)</label>
                 <input
                   type="number"
                   value={roiData.loanTerm}
-                  onChange={(e) => setRoiData({...roiData, loanTerm: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onChange={(e) => setRoiData({ ...roiData, loanTerm: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-white"
                   placeholder="30"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Appreciation Rate (%)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Appreciation Rate (%)</label>
                 <input
                   type="number"
                   step="0.01"
                   value={roiData.appreciationRate}
-                  onChange={(e) => setRoiData({...roiData, appreciationRate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent"
+                  onChange={(e) => setRoiData({ ...roiData, appreciationRate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 rounded-lg focus:ring-2 focus:ring-green-500 focus:border-transparent text-gray-900 dark:text-white"
                   placeholder="3.0"
                 />
               </div>
@@ -590,29 +589,29 @@ const InvestmentTools = () => {
             {/* ROI Results */}
             {results.roi && (
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-green-800 mb-2">Cash-on-Cash ROI</h3>
-                  <p className="text-2xl font-bold text-green-600">{results.roi.cashOnCashROI}%</p>
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-800 dark:text-green-300 mb-2">Cash-on-Cash ROI</h3>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{results.roi.cashOnCashROI}%</p>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-800 mb-2">Total ROI</h3>
-                  <p className="text-2xl font-bold text-blue-600">{results.roi.totalROI}%</p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Total ROI</h3>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{results.roi.totalROI}%</p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-purple-800 mb-2">Cap Rate</h3>
-                  <p className="text-2xl font-bold text-purple-600">{results.roi.capRate}%</p>
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-purple-800 dark:text-purple-300 mb-2">Cap Rate</h3>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">{results.roi.capRate}%</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2">Monthly Payment</h3>
-                  <p className="text-xl font-bold text-gray-600">${results.roi.monthlyPayment}</p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Monthly Payment</h3>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-200">${results.roi.monthlyPayment}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2">Net Annual Income</h3>
-                  <p className="text-xl font-bold text-gray-600">${results.roi.netAnnualIncome}</p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Net Annual Income</h3>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-200">${results.roi.netAnnualIncome}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2">Annual Appreciation</h3>
-                  <p className="text-xl font-bold text-gray-600">${results.roi.annualAppreciation}</p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Annual Appreciation</h3>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-200">${results.roi.annualAppreciation}</p>
                 </div>
               </div>
             )}
@@ -621,80 +620,80 @@ const InvestmentTools = () => {
 
         {/* Mortgage Calculator */}
         {activeTab === 'mortgage' && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <FaHome className="text-blue-600" />
               Mortgage Calculator
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Loan Amount ($)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Amount ($)</label>
                 <input
                   type="number"
                   value={mortgageData.loanAmount}
-                  onChange={(e) => setMortgageData({...mortgageData, loanAmount: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setMortgageData({ ...mortgageData, loanAmount: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="400000"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Interest Rate (%)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Interest Rate (%)</label>
                 <input
                   type="number"
                   step="0.01"
                   value={mortgageData.interestRate}
-                  onChange={(e) => setMortgageData({...mortgageData, interestRate: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setMortgageData({ ...mortgageData, interestRate: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="4.5"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Loan Term (Years)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Loan Term (Years)</label>
                 <input
                   type="number"
                   value={mortgageData.loanTerm}
-                  onChange={(e) => setMortgageData({...mortgageData, loanTerm: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setMortgageData({ ...mortgageData, loanTerm: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="30"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Down Payment ($)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Down Payment ($)</label>
                 <input
                   type="number"
                   value={mortgageData.downPayment}
-                  onChange={(e) => setMortgageData({...mortgageData, downPayment: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setMortgageData({ ...mortgageData, downPayment: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="100000"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Property Tax (Annual $)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Tax (Annual $)</label>
                 <input
                   type="number"
                   value={mortgageData.propertyTax}
-                  onChange={(e) => setMortgageData({...mortgageData, propertyTax: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setMortgageData({ ...mortgageData, propertyTax: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="6000"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Insurance (Annual $)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Insurance (Annual $)</label>
                 <input
                   type="number"
                   value={mortgageData.insurance}
-                  onChange={(e) => setMortgageData({...mortgageData, insurance: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setMortgageData({ ...mortgageData, insurance: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="1200"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">PMI (Monthly $)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">PMI (Monthly $)</label>
                 <input
                   type="number"
                   value={mortgageData.pmi}
-                  onChange={(e) => setMortgageData({...mortgageData, pmi: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  onChange={(e) => setMortgageData({ ...mortgageData, pmi: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="200"
                 />
               </div>
@@ -710,29 +709,29 @@ const InvestmentTools = () => {
             {/* Mortgage Results */}
             {results.mortgage && (
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-800 mb-2">Monthly Payment</h3>
-                  <p className="text-2xl font-bold text-blue-600">${results.mortgage.monthlyPayment}</p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Monthly Payment</h3>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">${results.mortgage.monthlyPayment}</p>
                 </div>
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-green-800 mb-2">Total Monthly Payment</h3>
-                  <p className="text-2xl font-bold text-green-600">${results.mortgage.totalMonthlyPayment}</p>
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-800 dark:text-green-300 mb-2">Total Monthly Payment</h3>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">${results.mortgage.totalMonthlyPayment}</p>
                 </div>
-                <div className="bg-red-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-red-800 mb-2">Total Interest</h3>
-                  <p className="text-2xl font-bold text-red-600">${results.mortgage.totalInterest}</p>
+                <div className="bg-red-50 dark:bg-red-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-red-800 dark:text-red-300 mb-2">Total Interest</h3>
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">${results.mortgage.totalInterest}</p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-purple-800 mb-2">Total Cost</h3>
-                  <p className="text-2xl font-bold text-purple-600">${results.mortgage.totalCost}</p>
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-purple-800 dark:text-purple-300 mb-2">Total Cost</h3>
+                  <p className="text-2xl font-bold text-purple-600 dark:text-purple-400">${results.mortgage.totalCost}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2">Property Value</h3>
-                  <p className="text-xl font-bold text-gray-600">${results.mortgage.propertyValue}</p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Property Value</h3>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-200">${results.mortgage.propertyValue}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2">Down Payment</h3>
-                  <p className="text-xl font-bold text-gray-600">${results.mortgage.downPayment}</p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Down Payment</h3>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-200">${results.mortgage.downPayment}</p>
                 </div>
               </div>
             )}
@@ -741,57 +740,57 @@ const InvestmentTools = () => {
 
         {/* Portfolio Tracking */}
         {activeTab === 'portfolio' && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <FaChartPie className="text-purple-600" />
               Investment Portfolio
             </h2>
-            
+
             {/* Add New Property */}
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Add New Property</h3>
+            <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-4">Add New Property</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
                 <input
                   type="text"
                   placeholder="Property Name"
                   value={newProperty.name}
-                  onChange={(e) => setNewProperty({...newProperty, name: e.target.value})}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  onChange={(e) => setNewProperty({ ...newProperty, name: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
                 />
                 <input
                   type="number"
                   placeholder="Property Value ($)"
                   value={newProperty.value}
-                  onChange={(e) => setNewProperty({...newProperty, value: e.target.value})}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  onChange={(e) => setNewProperty({ ...newProperty, value: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
                 />
                 <input
                   type="number"
                   placeholder="Monthly Rent ($)"
                   value={newProperty.monthlyRent}
-                  onChange={(e) => setNewProperty({...newProperty, monthlyRent: e.target.value})}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  onChange={(e) => setNewProperty({ ...newProperty, monthlyRent: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
                 />
                 <input
                   type="number"
                   placeholder="Monthly Expenses ($)"
                   value={newProperty.monthlyExpenses}
-                  onChange={(e) => setNewProperty({...newProperty, monthlyExpenses: e.target.value})}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  onChange={(e) => setNewProperty({ ...newProperty, monthlyExpenses: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
                 />
                 <input
                   type="date"
                   placeholder="Purchase Date"
                   value={newProperty.purchaseDate}
-                  onChange={(e) => setNewProperty({...newProperty, purchaseDate: e.target.value})}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  onChange={(e) => setNewProperty({ ...newProperty, purchaseDate: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
                 />
                 <input
                   type="text"
                   placeholder="Location"
                   value={newProperty.location}
-                  onChange={(e) => setNewProperty({...newProperty, location: e.target.value})}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-purple-500"
+                  onChange={(e) => setNewProperty({ ...newProperty, location: e.target.value })}
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-purple-500 dark:bg-gray-800 dark:text-white"
                 />
               </div>
               <button
@@ -805,25 +804,25 @@ const InvestmentTools = () => {
             {/* Portfolio List */}
             <div className="space-y-4">
               {portfolio.length === 0 ? (
-                <div className="text-center py-8 text-gray-500">
-                  <FaChartPie className="text-4xl mx-auto mb-4 text-gray-300" />
+                <div className="text-center py-8 text-gray-500 dark:text-gray-400">
+                  <FaChartPie className="text-4xl mx-auto mb-4 text-gray-300 dark:text-gray-600" />
                   <p>No properties in your portfolio yet. Add your first property above!</p>
                 </div>
               ) : (
                 portfolio.map(property => (
-                  <div key={property.id} className="bg-gray-50 p-4 rounded-lg flex justify-between items-center">
+                  <div key={property.id} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg flex justify-between items-center">
                     <div className="flex-1">
-                      <h4 className="font-semibold text-gray-800">{property.name}</h4>
-                      <p className="text-sm text-gray-600">{property.location}</p>
-                      <div className="flex gap-4 mt-2 text-sm">
+                      <h4 className="font-semibold text-gray-800 dark:text-white">{property.name}</h4>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">{property.location}</p>
+                      <div className="flex gap-4 mt-2 text-sm text-gray-600 dark:text-gray-300">
                         <span>Value: ${parseFloat(property.value).toLocaleString()}</span>
                         <span>Rent: ${property.monthlyRent}/month</span>
-                        <span className="text-green-600 font-semibold">ROI: {property.roi}%</span>
+                        <span className="text-green-600 dark:text-green-400 font-semibold">ROI: {property.roi}%</span>
                       </div>
                     </div>
                     <button
                       onClick={() => removeFromPortfolio(property.id)}
-                      className="text-red-600 hover:text-red-800 p-2"
+                      className="text-red-600 hover:text-red-800 dark:text-red-400 dark:hover:text-red-300 p-2"
                     >
                       <FaTimes className="text-lg" />
                     </button>
@@ -834,22 +833,22 @@ const InvestmentTools = () => {
 
             {/* Portfolio Summary */}
             {portfolio.length > 0 && (
-              <div className="mt-6 bg-purple-50 p-4 rounded-lg">
-                <h3 className="font-semibold text-purple-800 mb-2">Portfolio Summary</h3>
+              <div className="mt-6 bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                <h3 className="font-semibold text-purple-800 dark:text-purple-300 mb-2">Portfolio Summary</h3>
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                   <div>
-                    <p className="text-sm text-purple-600">Total Properties</p>
-                    <p className="text-xl font-bold text-purple-800">{portfolio.length}</p>
+                    <p className="text-sm text-purple-600 dark:text-purple-400">Total Properties</p>
+                    <p className="text-xl font-bold text-purple-800 dark:text-purple-300">{portfolio.length}</p>
                   </div>
                   <div>
-                    <p className="text-sm text-purple-600">Total Value</p>
-                    <p className="text-xl font-bold text-purple-800">
+                    <p className="text-sm text-purple-600 dark:text-purple-400">Total Value</p>
+                    <p className="text-xl font-bold text-purple-800 dark:text-purple-300">
                       ${portfolio.reduce((sum, prop) => sum + parseFloat(prop.value), 0).toLocaleString()}
                     </p>
                   </div>
                   <div>
-                    <p className="text-sm text-purple-600">Average ROI</p>
-                    <p className="text-xl font-bold text-purple-800">
+                    <p className="text-sm text-purple-600 dark:text-purple-400">Average ROI</p>
+                    <p className="text-xl font-bold text-purple-800 dark:text-purple-300">
                       {(portfolio.reduce((sum, prop) => sum + parseFloat(prop.roi), 0) / portfolio.length).toFixed(2)}%
                     </p>
                   </div>
@@ -861,28 +860,28 @@ const InvestmentTools = () => {
 
         {/* Market Analysis */}
         {activeTab === 'market' && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <FaChartBar className="text-orange-600" />
               Market Analysis
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
                 <input
                   type="text"
                   value={marketData.location}
-                  onChange={(e) => setMarketData({...marketData, location: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  onChange={(e) => setMarketData({ ...marketData, location: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="New York, NY"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Type</label>
                 <select
                   value={marketData.propertyType}
-                  onChange={(e) => setMarketData({...marketData, propertyType: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  onChange={(e) => setMarketData({ ...marketData, propertyType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">Select Type</option>
                   <option value="single_family">Single Family</option>
@@ -893,11 +892,11 @@ const InvestmentTools = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Time Frame (Months)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Time Frame (Months)</label>
                 <select
                   value={marketData.timeFrame}
-                  onChange={(e) => setMarketData({...marketData, timeFrame: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  onChange={(e) => setMarketData({ ...marketData, timeFrame: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="6">6 Months</option>
                   <option value="12">12 Months</option>
@@ -906,11 +905,11 @@ const InvestmentTools = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Analysis Type</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Analysis Type</label>
                 <select
                   value={marketData.analysisType}
-                  onChange={(e) => setMarketData({...marketData, analysisType: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent"
+                  onChange={(e) => setMarketData({ ...marketData, analysisType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-orange-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="price_trend">Price Trend</option>
                   <option value="rental_yield">Rental Yield</option>
@@ -931,37 +930,37 @@ const InvestmentTools = () => {
             {/* Market Analysis Results */}
             {results.market && (
               <div className="mt-6 grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-                <div className="bg-green-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-green-800 mb-2">Price Trend</h3>
-                  <p className="text-2xl font-bold text-green-600">{results.market.priceTrend}</p>
+                <div className="bg-green-50 dark:bg-green-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-green-800 dark:text-green-300 mb-2">Price Trend</h3>
+                  <p className="text-2xl font-bold text-green-600 dark:text-green-400">{results.market.priceTrend}</p>
                 </div>
-                <div className="bg-blue-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-blue-800 mb-2">Market Score</h3>
-                  <p className="text-2xl font-bold text-blue-600">{results.market.marketScore}</p>
+                <div className="bg-blue-50 dark:bg-blue-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-blue-800 dark:text-blue-300 mb-2">Market Score</h3>
+                  <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{results.market.marketScore}</p>
                 </div>
-                <div className="bg-purple-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-purple-800 mb-2">Demand Level</h3>
-                  <p className="text-xl font-bold text-purple-600">{results.market.demandLevel}</p>
+                <div className="bg-purple-50 dark:bg-purple-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-purple-800 dark:text-purple-300 mb-2">Demand Level</h3>
+                  <p className="text-xl font-bold text-purple-600 dark:text-purple-400">{results.market.demandLevel}</p>
                 </div>
-                <div className="bg-orange-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-orange-800 mb-2">Recommendation</h3>
-                  <p className="text-xl font-bold text-orange-600">{results.market.recommendation}</p>
+                <div className="bg-orange-50 dark:bg-orange-900/20 p-4 rounded-lg">
+                  <h3 className="font-semibold text-orange-800 dark:text-orange-300 mb-2">Recommendation</h3>
+                  <p className="text-xl font-bold text-orange-600 dark:text-orange-400">{results.market.recommendation}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2">Days on Market</h3>
-                  <p className="text-xl font-bold text-gray-600">{results.market.averageDaysOnMarket}</p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Days on Market</h3>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-200">{results.market.averageDaysOnMarket}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2">Price per Sq Ft</h3>
-                  <p className="text-xl font-bold text-gray-600">{results.market.pricePerSqFt}</p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Price per Sq Ft</h3>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-200">{results.market.pricePerSqFt}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2">Supply Level</h3>
-                  <p className="text-xl font-bold text-gray-600">{results.market.supplyLevel}</p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Supply Level</h3>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-200">{results.market.supplyLevel}</p>
                 </div>
-                <div className="bg-gray-50 p-4 rounded-lg">
-                  <h3 className="font-semibold text-gray-800 mb-2">Risk Level</h3>
-                  <p className="text-xl font-bold text-gray-600">{results.market.riskLevel}</p>
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
+                  <h3 className="font-semibold text-gray-800 dark:text-gray-300 mb-2">Risk Level</h3>
+                  <p className="text-xl font-bold text-gray-600 dark:text-gray-200">{results.market.riskLevel}</p>
                 </div>
               </div>
             )}
@@ -970,38 +969,38 @@ const InvestmentTools = () => {
 
         {/* Risk Assessment */}
         {activeTab === 'risk' && (
-          <div className="bg-white rounded-xl shadow-lg p-6 mb-8">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-8">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
               <FaShieldAlt className="text-red-600" />
               Risk Assessment
             </h2>
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Property Value ($)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Value ($)</label>
                 <input
                   type="number"
                   value={riskData.propertyValue}
-                  onChange={(e) => setRiskData({...riskData, propertyValue: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  onChange={(e) => setRiskData({ ...riskData, propertyValue: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="500000"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Location</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Location</label>
                 <input
                   type="text"
                   value={riskData.location}
-                  onChange={(e) => setRiskData({...riskData, location: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  onChange={(e) => setRiskData({ ...riskData, location: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                   placeholder="Downtown, City Center"
                 />
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Property Type</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Property Type</label>
                 <select
                   value={riskData.propertyType}
-                  onChange={(e) => setRiskData({...riskData, propertyType: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  onChange={(e) => setRiskData({ ...riskData, propertyType: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="">Select Type</option>
                   <option value="residential">Residential</option>
@@ -1011,11 +1010,11 @@ const InvestmentTools = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Market Volatility</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Market Volatility</label>
                 <select
                   value={riskData.marketVolatility}
-                  onChange={(e) => setRiskData({...riskData, marketVolatility: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  onChange={(e) => setRiskData({ ...riskData, marketVolatility: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="low">Low</option>
                   <option value="medium">Medium</option>
@@ -1023,11 +1022,11 @@ const InvestmentTools = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Tenant Stability</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Tenant Stability</label>
                 <select
                   value={riskData.tenantStability}
-                  onChange={(e) => setRiskData({...riskData, tenantStability: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  onChange={(e) => setRiskData({ ...riskData, tenantStability: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="high">High</option>
                   <option value="medium">Medium</option>
@@ -1035,11 +1034,11 @@ const InvestmentTools = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Maintenance History</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Maintenance History</label>
                 <select
                   value={riskData.maintenanceHistory}
-                  onChange={(e) => setRiskData({...riskData, maintenanceHistory: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  onChange={(e) => setRiskData({ ...riskData, maintenanceHistory: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="excellent">Excellent</option>
                   <option value="good">Good</option>
@@ -1048,11 +1047,11 @@ const InvestmentTools = () => {
                 </select>
               </div>
               <div>
-                <label className="block text-sm font-medium text-gray-700 mb-1">Neighborhood Growth</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Neighborhood Growth</label>
                 <select
                   value={riskData.neighborhoodGrowth}
-                  onChange={(e) => setRiskData({...riskData, neighborhoodGrowth: e.target.value})}
-                  className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent"
+                  onChange={(e) => setRiskData({ ...riskData, neighborhoodGrowth: e.target.value })}
+                  className="w-full px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-red-500 focus:border-transparent dark:bg-gray-700 dark:text-white"
                 >
                   <option value="growing">Growing</option>
                   <option value="stable">Stable</option>
@@ -1072,47 +1071,46 @@ const InvestmentTools = () => {
             {/* Risk Assessment Results */}
             {riskAssessmentData && (
               <div className="mt-6">
-                <div className="bg-gray-50 p-6 rounded-lg mb-4">
+                <div className="bg-gray-50 dark:bg-gray-700/50 p-6 rounded-lg mb-4">
                   <div className="text-center">
-                    <h3 className="text-2xl font-bold text-gray-800 mb-2">Risk Assessment Result</h3>
+                    <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-2">Risk Assessment Result</h3>
                     <p className={`text-3xl font-bold mb-2 ${riskAssessmentData.riskColor}`}>
                       {riskAssessmentData.riskLevel}
                     </p>
-                    <p className="text-lg text-gray-600 mb-4">{riskAssessmentData.recommendation}</p>
-                    <div className="bg-white p-4 rounded-lg">
-                      <p className="text-sm text-gray-600 mb-2">Risk Score: {riskAssessmentData.riskScore}/20</p>
-                      <div className="w-full bg-gray-200 rounded-full h-2">
-                        <div 
-                          className={`h-2 rounded-full ${
-                            riskAssessmentData.riskScore <= 5 ? 'bg-green-500' : 
-                            riskAssessmentData.riskScore <= 10 ? 'bg-yellow-500' : 
-                            riskAssessmentData.riskScore <= 15 ? 'bg-orange-500' : 'bg-red-500'
-                          }`}
+                    <p className="text-lg text-gray-600 dark:text-gray-300 mb-4">{riskAssessmentData.recommendation}</p>
+                    <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                      <p className="text-sm text-gray-600 dark:text-gray-400 mb-2">Risk Score: {riskAssessmentData.riskScore}/20</p>
+                      <div className="w-full bg-gray-200 dark:bg-gray-700 rounded-full h-2">
+                        <div
+                          className={`h-2 rounded-full ${riskAssessmentData.riskScore <= 5 ? 'bg-green-500' :
+                            riskAssessmentData.riskScore <= 10 ? 'bg-yellow-500' :
+                              riskAssessmentData.riskScore <= 15 ? 'bg-orange-500' : 'bg-red-500'
+                            }`}
                           style={{ width: `${(riskAssessmentData.riskScore / 20) * 100}%` }}
                         ></div>
                       </div>
                     </div>
                   </div>
                 </div>
-                
+
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div className="bg-white p-4 rounded-lg">
-                    <h4 className="font-semibold text-gray-800 mb-3">Risk Factors</h4>
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Risk Factors</h4>
                     <div className="space-y-2">
                       {riskAssessmentData.riskFactors.map((factor, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
+                        <div key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                           <FaInfoCircle className="text-blue-500" />
                           {factor}
                         </div>
                       ))}
                     </div>
                   </div>
-                  
-                  <div className="bg-white p-4 rounded-lg">
-                    <h4 className="font-semibold text-gray-800 mb-3">Mitigation Strategies</h4>
+
+                  <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+                    <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Mitigation Strategies</h4>
                     <div className="space-y-2">
                       {riskAssessmentData.mitigationStrategies.map((strategy, index) => (
-                        <div key={index} className="flex items-center gap-2 text-sm text-gray-600">
+                        <div key={index} className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-300">
                           <FaShieldAlt className="text-green-500" />
                           {strategy}
                         </div>
@@ -1120,10 +1118,10 @@ const InvestmentTools = () => {
                     </div>
                   </div>
                 </div>
-                
-                <div className="bg-yellow-50 p-4 rounded-lg mt-4">
-                  <h4 className="font-semibold text-yellow-800 mb-2">Last Updated</h4>
-                  <p className="text-sm text-yellow-700">
+
+                <div className="bg-yellow-50 dark:bg-yellow-900/20 p-4 rounded-lg mt-4">
+                  <h4 className="font-semibold text-yellow-800 dark:text-yellow-300 mb-2">Last Updated</h4>
+                  <p className="text-sm text-yellow-700 dark:text-yellow-400">
                     {new Date(riskAssessmentData.lastUpdated).toLocaleString()}
                   </p>
                 </div>
@@ -1134,18 +1132,18 @@ const InvestmentTools = () => {
 
         {/* Saved Calculations History */}
         {savedCalculations.length > 0 && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-gray-900 mb-6 flex items-center gap-2">
-              <FaHistory className="text-gray-600" />
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-gray-900 dark:text-white mb-6 flex items-center gap-2">
+              <FaHistory className="text-gray-600 dark:text-gray-300" />
               Calculation History
             </h2>
             <div className="space-y-4">
               {savedCalculations.slice(-10).reverse().map(calc => (
-                <div key={calc.id} className="bg-gray-50 p-4 rounded-lg">
+                <div key={calc.id} className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg">
                   <div className="flex justify-between items-start">
                     <div>
-                      <h3 className="font-semibold text-gray-800">{calc.type}</h3>
-                      <p className="text-sm text-gray-600">
+                      <h3 className="font-semibold text-gray-800 dark:text-white">{calc.type}</h3>
+                      <p className="text-sm text-gray-600 dark:text-gray-300">
                         {new Date(calc.timestamp).toLocaleString()}
                       </p>
                     </div>
@@ -1165,7 +1163,7 @@ const InvestmentTools = () => {
                           setActiveTab('risk');
                         }
                       }}
-                      className="text-blue-600 hover:text-blue-800 text-sm"
+                      className="text-blue-600 hover:text-blue-800 dark:text-blue-400 dark:hover:text-blue-300 text-sm"
                     >
                       Load
                     </button>

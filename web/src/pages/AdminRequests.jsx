@@ -181,13 +181,13 @@ const AdminRequests = () => {
   const getStatusBadge = (status) => {
     switch (status) {
       case 'pending':
-        return 'bg-yellow-100 text-yellow-800 border-yellow-200';
+        return 'bg-yellow-100 text-yellow-800 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
       case 'approved':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
       case 'rejected':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
     }
   };
 
@@ -226,7 +226,7 @@ const AdminRequests = () => {
       );
     } else if (request.adminApprovalStatus === 'approved') {
       return (
-        <div className="flex items-center text-green-600 font-medium">
+        <div className="flex items-center text-green-600 dark:text-green-400 font-medium">
           <span className="mr-2">✓</span>
           <span>Approved</span>
         </div>
@@ -238,9 +238,9 @@ const AdminRequests = () => {
   // Show loading while currentUser is not loaded
   if (!currentUser) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
         <div className="flex justify-center items-center h-64">
-          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600"></div>
+          <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-blue-600 dark:border-blue-400"></div>
         </div>
       </div>
     );
@@ -255,14 +255,14 @@ const AdminRequests = () => {
   // Show access denied for non-default admins
   if (!(currentUser.isDefaultAdmin || currentUser.role === 'rootadmin')) {
     return (
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 transition-colors duration-300">
             <div className="text-center py-12">
               <div className="text-red-500 text-6xl mb-4">🚫</div>
-              <h3 className="text-xl font-semibold text-gray-900 mb-2">Access Denied</h3>
-              <p className="text-gray-600">Only the default admin or root admin can approve new admin requests.</p>
-              <p className="text-sm text-gray-500 mt-2">Current user: {currentUser.email}</p>
+              <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">Access Denied</h3>
+              <p className="text-gray-600 dark:text-gray-300">Only the default admin or root admin can approve new admin requests.</p>
+              <p className="text-sm text-gray-500 dark:text-gray-400 mt-2">Current user: {currentUser.email}</p>
               <div className="flex justify-center mt-6">
                 <button
                   onClick={() => navigate('/admin')}
@@ -280,23 +280,23 @@ const AdminRequests = () => {
 
   return (
     <>
-      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50">
+      <div className="min-h-screen bg-gradient-to-br from-blue-50 via-white to-purple-50 dark:from-gray-900 dark:via-gray-800 dark:to-gray-900 transition-colors duration-300">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-          <div className="bg-white rounded-2xl shadow-xl p-8">
+          <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl p-8 transition-colors duration-300">
             <div className="flex items-center justify-between mb-8">
               <div>
-                <h1 className="text-3xl font-bold text-gray-900">Admin Requests</h1>
-                <p className="text-gray-600 mt-2">Manage pending admin approval requests (Root Admin Only)</p>
-                <p className="text-sm text-green-600 mt-1">Welcome, {currentUser.email} (Root Admin)</p>
+                <h1 className="text-3xl font-bold text-gray-900 dark:text-white">Admin Requests</h1>
+                <p className="text-gray-600 dark:text-gray-300 mt-2">Manage pending admin approval requests (Root Admin Only)</p>
+                <p className="text-sm text-green-600 dark:text-green-400 mt-1">Welcome, {currentUser.email} (Root Admin)</p>
               </div>
               <div className="flex gap-2">
-                <div className="bg-blue-100 text-blue-800 px-3 py-2 rounded-full text-sm font-medium">
+                <div className="bg-blue-100 text-blue-800 dark:bg-blue-900/30 dark:text-blue-300 px-3 py-2 rounded-full text-sm font-medium">
                   {allRequests.filter(r => r.adminApprovalStatus === 'pending').length} Pending
                 </div>
-                <div className="bg-green-100 text-green-800 px-3 py-2 rounded-full text-sm font-medium">
+                <div className="bg-green-100 text-green-800 dark:bg-green-900/30 dark:text-green-300 px-3 py-2 rounded-full text-sm font-medium">
                   {allRequests.filter(r => r.adminApprovalStatus === 'approved').length} Approved
                 </div>
-                <div className="bg-red-100 text-red-800 px-3 py-2 rounded-full text-sm font-medium">
+                <div className="bg-red-100 text-red-800 dark:bg-red-900/30 dark:text-red-300 px-3 py-2 rounded-full text-sm font-medium">
                   {allRequests.filter(r => r.adminApprovalStatus === 'rejected').length} Rejected
                 </div>
               </div>
@@ -315,7 +315,7 @@ const AdminRequests = () => {
                   onClick={() => setFilter(key)}
                   className={`px-4 py-2 rounded-lg font-medium transition-all duration-200 ${filter === key
                     ? 'bg-blue-500 text-white shadow-lg'
-                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                    : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                     }`}
                 >
                   {label} ({count})
@@ -324,18 +324,18 @@ const AdminRequests = () => {
             </div>
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg mb-6">
+              <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 text-red-700 dark:text-red-300 px-4 py-3 rounded-lg mb-6">
                 {error}
               </div>
             )}
 
             {filteredRequests.length === 0 ? (
               <div className="text-center py-12">
-                <div className="text-gray-400 text-6xl mb-4">📋</div>
-                <h3 className="text-xl font-semibold text-gray-900 mb-2">
+                <div className="text-gray-400 dark:text-gray-500 text-6xl mb-4">📋</div>
+                <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
                   {filter === 'all' ? 'No Admin Requests' : `No ${filter.charAt(0).toUpperCase() + filter.slice(1)} Requests`}
                 </h3>
-                <p className="text-gray-600">
+                <p className="text-gray-600 dark:text-gray-400">
                   {filter === 'all'
                     ? 'No admin requests have been submitted yet.'
                     : `No admin requests with ${filter} status found.`
@@ -345,17 +345,17 @@ const AdminRequests = () => {
             ) : (
               <div className="grid grid-cols-1 lg:grid-cols-2 xl:grid-cols-3 gap-6">
                 {filteredRequests.map((request) => (
-                  <div key={request._id} className="bg-gradient-to-br from-gray-50 to-gray-100 rounded-xl p-6 border border-gray-200 hover:shadow-lg transition-all duration-200">
+                  <div key={request._id} className="bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-700 dark:to-gray-600 rounded-xl p-6 border border-gray-200 dark:border-gray-500 hover:shadow-lg transition-all duration-200">
                     <div className="flex flex-col h-full">
                       {/* User Info */}
                       <div className="flex-1">
                         <div className="flex items-center justify-between mb-3">
-                          <h3 className="text-lg font-semibold text-gray-900 truncate">{request.username}</h3>
+                          <h3 className="text-lg font-semibold text-gray-900 dark:text-white truncate">{request.username}</h3>
                           <span className={`px-2 py-1 rounded-full text-xs font-medium border ${getStatusBadge(request.adminApprovalStatus)}`}>
                             {request.adminApprovalStatus}
                           </span>
                         </div>
-                        <div className="text-sm text-gray-600 space-y-1">
+                        <div className="text-sm text-gray-600 dark:text-gray-300 space-y-1">
                           <p className="truncate"><strong>Email:</strong> {request.email}</p>
                           <p><strong>Mobile:</strong> {request.mobileNumber || 'Not provided'}</p>
                           <p><strong>Role:</strong> {request.role}</p>
@@ -367,7 +367,7 @@ const AdminRequests = () => {
                       </div>
 
                       {/* Actions */}
-                      <div className="mt-4 pt-4 border-t border-gray-200">
+                      <div className="mt-4 pt-4 border-t border-gray-200 dark:border-gray-500">
                         {getActionButtons(request)}
                       </div>
                     </div>

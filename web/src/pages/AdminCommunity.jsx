@@ -967,9 +967,9 @@ export default function AdminCommunity() {
     const renderMentionsPanel = (customClass = "") => {
         if (!showMentionSuggestions.show || propertySuggestions.length === 0) return null;
         return (
-            <div className={`absolute z-50 w-72 bg-white shadow-2xl rounded-xl border border-gray-100 overflow-hidden animate-fade-in-up ${customClass}`}>
-                <div className="bg-blue-50 px-4 py-2 border-b border-blue-100 flex items-center justify-between">
-                    <span className="text-[10px] font-bold text-blue-600 uppercase tracking-widest">Mention Property</span>
+            <div className={`absolute z-50 w-72 bg-white dark:bg-gray-800 shadow-2xl rounded-xl border border-gray-100 dark:border-gray-700 overflow-hidden animate-fade-in-up transition-colors duration-300 ${customClass}`}>
+                <div className="bg-blue-50 dark:bg-blue-900/30 px-4 py-2 border-b border-blue-100 dark:border-blue-800 flex items-center justify-between">
+                    <span className="text-[10px] font-bold text-blue-600 dark:text-blue-300 uppercase tracking-widest">Mention Property</span>
                     {mentionSearchLoading && <div className="w-3 h-3 border-2 border-blue-600 border-t-transparent rounded-full animate-spin"></div>}
                 </div>
                 <div className="max-h-48 overflow-y-auto">
@@ -977,14 +977,14 @@ export default function AdminCommunity() {
                         <div
                             key={prop._id}
                             onClick={() => handleMentionSelect(prop)}
-                            className={`px-4 py-3 cursor-pointer transition-all flex items-center gap-3 border-b border-gray-50 last:border-0 ${idx === selectedMentionIndex ? 'bg-blue-600 text-white' : 'hover:bg-blue-50'}`}
+                            className={`px-4 py-3 cursor-pointer transition-all flex items-center gap-3 border-b border-gray-50 dark:border-gray-700/50 last:border-0 ${idx === selectedMentionIndex ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 dark:hover:bg-gray-700'}`}
                         >
-                            <img src={prop.coverImage || prop.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3'} className="w-8 h-8 rounded-lg object-cover shadow-sm bg-gray-200" alt="" />
+                            <img src={prop.coverImage || prop.images?.[0] || 'https://images.unsplash.com/photo-1560518883-ce09059eeffa?ixlib=rb-4.0.3'} className="w-8 h-8 rounded-lg object-cover shadow-sm bg-gray-200 dark:bg-gray-700" alt="" />
                             <div className="flex-1 min-w-0">
-                                <p className={`text-sm font-bold truncate ${idx === selectedMentionIndex ? 'text-white' : 'text-gray-800'}`}>{prop.name}</p>
+                                <p className={`text-sm font-bold truncate ${idx === selectedMentionIndex ? 'text-white' : 'text-gray-800 dark:text-gray-200'}`}>{prop.name}</p>
                                 <div className="flex items-center gap-1.5 mt-0.5">
                                     <FaMapMarkerAlt size={10} className={idx === selectedMentionIndex ? 'text-blue-200' : 'text-blue-500'} />
-                                    <p className={`text-[10px] truncate ${idx === selectedMentionIndex ? 'text-blue-100' : 'text-gray-500'}`}>{prop.location?.city || 'India'}</p>
+                                    <p className={`text-[10px] truncate ${idx === selectedMentionIndex ? 'text-blue-100' : 'text-gray-500 dark:text-gray-400'}`}>{prop.location?.city || 'India'}</p>
                                 </div>
                             </div>
                         </div>
@@ -1009,7 +1009,7 @@ export default function AdminCommunity() {
                 <Link
                     key={match.index}
                     to={`/admin/listing/${match[2]}`}
-                    className="text-blue-600 hover:underline font-medium bg-blue-50 px-1 rounded mx-0.5"
+                    className="text-blue-600 dark:text-blue-400 hover:underline font-medium bg-blue-50 dark:bg-blue-900/40 px-1 rounded mx-0.5 transition-colors"
                     onClick={(e) => e.stopPropagation()}
                 >
                     @{match[1]}
@@ -1028,13 +1028,13 @@ export default function AdminCommunity() {
     }
 
     return (
-        <div className="min-h-screen bg-gray-50 pt-20 pb-12 font-sans">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 pt-20 pb-12 font-sans transition-colors duration-300">
             <style>{styles}</style>
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
                 {/* Header */}
                 <div className="text-center mb-10">
-                    <h1 className="text-4xl font-bold text-gray-900 mb-4">Admin Community Dashboard</h1>
-                    <p className="text-lg text-gray-600 max-w-2xl mx-auto">
+                    <h1 className="text-4xl font-bold text-gray-900 dark:text-white mb-4">Admin Community Dashboard</h1>
+                    <p className="text-lg text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
                         Manage community discussions, pin important announcements, and moderate content to keep the neighborhood safe.
                     </p>
                     <div className="w-24 h-1 bg-blue-600 mx-auto mt-6 rounded-full opacity-20"></div>
@@ -1050,7 +1050,7 @@ export default function AdminCommunity() {
                                 onClick={() => setActiveTab(cat.id)}
                                 className={`flex items-center gap-2 px-4 py-2 rounded-full whitespace-nowrap transition-all ${activeTab === cat.id
                                     ? 'bg-blue-600 text-white shadow-lg'
-                                    : 'bg-white text-gray-700 hover:bg-gray-100 border border-gray-200'
+                                    : 'bg-white dark:bg-gray-800 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 border border-gray-200 dark:border-gray-700'
                                     }`}
                             >
                                 <cat.icon className="text-sm" />
@@ -1062,22 +1062,22 @@ export default function AdminCommunity() {
                     {/* Actions */}
                     <div className="flex flex-col sm:flex-row items-center gap-3 w-full xl:w-auto">
                         <div className="relative w-full sm:w-64">
-                            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400" />
+                            <FaSearch className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 dark:text-gray-500" />
                             <input
                                 type="text"
                                 placeholder="Search discussions..."
-                                className="pl-10 pr-4 py-2 border border-gray-200 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-full"
+                                className="pl-10 pr-4 py-2 border border-gray-200 dark:border-gray-700 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 w-full bg-white dark:bg-gray-800 text-gray-900 dark:text-white placeholder-gray-400 dark:placeholder-gray-500 transition-colors"
                                 value={searchTerm}
                                 onChange={(e) => setSearchTerm(e.target.value)}
                                 onFocus={() => searchTerm.length > 2 && setShowSuggestions(true)}
                                 onBlur={() => setTimeout(() => setShowSuggestions(false), 200)}
                             />
                             {showSuggestions && suggestions.length > 0 && (
-                                <div className="absolute top-full left-0 w-full bg-white shadow-lg rounded-lg mt-1 z-50 border border-gray-100 overflow-hidden">
+                                <div className="absolute top-full left-0 w-full bg-white dark:bg-gray-800 shadow-lg rounded-lg mt-1 z-50 border border-gray-100 dark:border-gray-700 overflow-hidden">
                                     {suggestions.map((s, i) => (
                                         <div
                                             key={i}
-                                            className="px-4 py-2 hover:bg-gray-50 cursor-pointer text-sm text-gray-700 truncate"
+                                            className="px-4 py-2 hover:bg-gray-50 dark:hover:bg-gray-700 cursor-pointer text-sm text-gray-700 dark:text-gray-300 truncate transition-colors"
                                             onClick={() => handleSearchSelect(s.title)}
                                         >
                                             {s.title}
@@ -1114,13 +1114,13 @@ export default function AdminCommunity() {
                     {/* Main Content */}
                     <div className="lg:col-span-2 space-y-6">
                         {posts.length === 0 ? (
-                            <div className="text-center py-20 bg-white rounded-xl shadow-sm border border-gray-100">
-                                <FaUsers className="text-6xl text-gray-200 mx-auto mb-4" />
-                                <h3 className="text-xl font-semibold text-gray-800 mb-2">No posts found</h3>
-                                <p className="text-gray-500 mb-6">Be the first to start a conversation in this category!</p>
+                            <div className="text-center py-20 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 transition-colors">
+                                <FaUsers className="text-6xl text-gray-200 dark:text-gray-700 mx-auto mb-4" />
+                                <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">No posts found</h3>
+                                <p className="text-gray-500 dark:text-gray-400 mb-6">Be the first to start a conversation in this category!</p>
                                 <button
                                     onClick={() => setShowCreateModal(true)}
-                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
+                                    className="px-6 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition-colors"
                                 >
                                     Start Discussion
                                 </button>
@@ -1129,7 +1129,7 @@ export default function AdminCommunity() {
                             posts.map((post, index) => (
                                 <div
                                     key={post._id}
-                                    className="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
+                                    className="bg-white dark:bg-gray-800 rounded-2xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 hover:shadow-xl dark:hover:shadow-blue-900/10 transition-all duration-300 animate-fade-in-up"
                                     style={{ animationDelay: `${index * 0.1}s` }}
                                 >
                                     {/* Post Header */}
@@ -1139,57 +1139,57 @@ export default function AdminCommunity() {
                                                 <img
                                                     src={post.author?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                                                     alt={post.author?.username}
-                                                    className="w-12 h-12 rounded-full object-cover border-2 border-white shadow-md"
+                                                    className="w-12 h-12 rounded-full object-cover border-2 border-white dark:border-gray-700 shadow-md"
                                                 />
                                                 {post.author?.type === 'agent' && (
-                                                    <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[10px] p-1 rounded-full border-2 border-white" title="Agent">
+                                                    <div className="absolute -bottom-1 -right-1 bg-blue-500 text-white text-[10px] p-1 rounded-full border-2 border-white dark:border-gray-700" title="Agent">
                                                         <FaShieldAlt />
                                                     </div>
                                                 )}
                                             </div>
                                             <div>
-                                                <h3 className="font-bold text-gray-900 text-lg hover:text-blue-600 cursor-pointer transition-colors">
+                                                <h3 className="font-bold text-gray-900 dark:text-white text-lg hover:text-blue-600 dark:hover:text-blue-400 cursor-pointer transition-colors">
                                                     {post.author?.username}
                                                 </h3>
-                                                <div className="flex items-center gap-2 text-xs font-medium text-gray-500">
-                                                    <span className="flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
-                                                        <FaCalendarAlt className="text-gray-400" />
+                                                <div className="flex items-center gap-2 text-xs font-medium text-gray-500 dark:text-gray-400">
+                                                    <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700/50 px-2 py-0.5 rounded-full border border-gray-100 dark:border-gray-600">
+                                                        <FaCalendarAlt className="text-gray-400 dark:text-gray-500" />
                                                         {new Date(post.createdAt).toLocaleDateString(undefined, { month: 'short', day: 'numeric', year: 'numeric' })}
                                                     </span>
                                                     {post.location?.city && (
-                                                        <span className="flex items-center gap-1 bg-gray-50 px-2 py-0.5 rounded-full border border-gray-100">
-                                                            <FaMapMarkerAlt className="text-red-400" /> {post.location.city}
+                                                        <span className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700/50 px-2 py-0.5 rounded-full border border-gray-100 dark:border-gray-600">
+                                                            <FaMapMarkerAlt className="text-red-400 dark:text-red-500" /> {post.location.city}
                                                         </span>
                                                     )}
                                                 </div>
                                             </div>
                                         </div>
                                         <div className="flex flex-wrap items-center gap-2 justify-end">
-                                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider ${post.category === 'Safety' ? 'bg-red-50 text-red-600 border border-red-100' :
-                                                post.category === 'Events' ? 'bg-purple-50 text-purple-600 border border-purple-100' :
-                                                    post.category === 'Marketplace' ? 'bg-green-50 text-green-600 border border-green-100' :
-                                                        'bg-blue-50 text-blue-600 border border-blue-100'
+                                            <span className={`px-3 py-1 rounded-full text-xs font-bold uppercase tracking-wider transition-colors ${post.category === 'Safety' ? 'bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 border border-red-100 dark:border-red-800' :
+                                                post.category === 'Events' ? 'bg-purple-50 dark:bg-purple-900/20 text-purple-600 dark:text-purple-400 border border-purple-100 dark:border-purple-800' :
+                                                    post.category === 'Marketplace' ? 'bg-green-50 dark:bg-green-900/20 text-green-600 dark:text-green-400 border border-green-100 dark:border-green-800' :
+                                                        'bg-blue-50 dark:bg-blue-900/20 text-blue-600 dark:text-blue-400 border border-blue-100 dark:border-blue-800'
                                                 }`}>
                                                 {post.category}
                                             </span>
-                                            <div className="flex items-center gap-1 bg-gray-50 p-1 rounded-full border border-gray-100">
+                                            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700/50 p-1 rounded-full border border-gray-100 dark:border-gray-600">
                                                 <button
                                                     onClick={() => handlePinPost(post._id, post.isPinned)}
-                                                    className={`p-2 rounded-full hover:bg-white hover:shadow-sm transition-all ${post.isPinned ? 'text-blue-600' : 'text-gray-400'}`}
+                                                    className={`p-2 rounded-full hover:bg-white dark:hover:bg-gray-600 hover:shadow-sm transition-all ${post.isPinned ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500'}`}
                                                     title={post.isPinned ? "Unpin Post" : "Pin Post"}
                                                 >
                                                     <FaMapMarkerAlt className="transform rotate-45 text-sm" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleLockPost(post._id, post.isLocked)}
-                                                    className={`p-2 rounded-full hover:bg-white hover:shadow-sm transition-all ${post.isLocked ? 'text-orange-500' : 'text-gray-400'}`}
+                                                    className={`p-2 rounded-full hover:bg-white dark:hover:bg-gray-600 hover:shadow-sm transition-all ${post.isLocked ? 'text-orange-500' : 'text-gray-400 dark:text-gray-500'}`}
                                                     title={post.isLocked ? "Unlock Post" : "Lock Post"}
                                                 >
                                                     <FaLock className="text-sm" />
                                                 </button>
                                                 <button
                                                     onClick={() => handleDeletePost(post._id)}
-                                                    className="p-2 text-gray-400 hover:text-red-500 hover:bg-white hover:shadow-sm rounded-full transition-all"
+                                                    className="p-2 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-white dark:hover:bg-gray-600 hover:shadow-sm rounded-full transition-all"
                                                     title="Delete Post"
                                                 >
                                                     <FaTimes className="text-sm" />
@@ -1198,7 +1198,7 @@ export default function AdminCommunity() {
                                                 {(currentUser && (currentUser._id === post.author?._id || currentUser.role === 'admin' || currentUser.role === 'rootadmin')) && (
                                                     <button
                                                         onClick={() => setEditingPost({ id: post._id, content: post.content })}
-                                                        className="p-2 rounded-full hover:bg-blue-50 hover:text-blue-500 text-gray-400 transition-all"
+                                                        className="p-2 rounded-full hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-500 dark:hover:text-blue-400 text-gray-400 dark:text-gray-500 transition-all"
                                                         title="Edit Post"
                                                     >
                                                         <FaEdit className="text-sm" />
@@ -1209,8 +1209,8 @@ export default function AdminCommunity() {
                                     </div>
 
                                     {/* Post Content */}
-                                    <div className="mb-6 pl-2 border-l-4 border-gray-100 hover:border-blue-100 transition-colors">
-                                        <h2 className="text-xl font-bold text-gray-900 mb-2 leading-tight">{post.title}</h2>
+                                    <div className="mb-6 pl-2 border-l-4 border-gray-100 dark:border-gray-700 hover:border-blue-100 dark:hover:border-blue-900 transition-colors">
+                                        <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-2 leading-tight">{post.title}</h2>
 
                                         {editingPost?.id === post._id ? (
                                             <form onSubmit={(e) => handleUpdatePost(e, post._id)} className="w-full mb-2">
@@ -1218,7 +1218,7 @@ export default function AdminCommunity() {
                                                     <textarea
                                                         value={editingPost.content}
                                                         onChange={(e) => setEditingPost({ ...editingPost, content: e.target.value })}
-                                                        className="w-full bg-white border border-gray-300 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 min-h-[100px]"
+                                                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded-lg p-3 text-sm focus:outline-none focus:border-blue-500 text-gray-900 dark:text-white transition-colors min-h-[100px]"
                                                         autoFocus
                                                     />
                                                     <button
@@ -1228,15 +1228,15 @@ export default function AdminCommunity() {
                                                             type: 'edit-post',
                                                             id: post._id
                                                         }))}
-                                                        className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-all"
+                                                        className="absolute top-2 right-2 p-1.5 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-all"
                                                         title="Add Emoji"
                                                     >
                                                         <FaSmile className="text-base" />
                                                     </button>
                                                     {showEmojiPicker.show && showEmojiPicker.type === 'edit-post' && showEmojiPicker.id === post._id && (
-                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
-                                                            <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
-                                                                <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                                                            <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 border-b border-gray-100 dark:border-gray-600 rounded-t-lg">
+                                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-300">Pick an emoji</span>
                                                                 <button
                                                                     type="button"
                                                                     onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
@@ -1249,6 +1249,7 @@ export default function AdminCommunity() {
                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-post', post._id)}
                                                                 width={300}
                                                                 height={350}
+                                                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                 searchDisabled={false}
                                                                 skinTonesDisabled
                                                                 previewConfig={{ showPreview: false }}
@@ -1260,22 +1261,22 @@ export default function AdminCommunity() {
                                                     <button
                                                         type="button"
                                                         onClick={() => { setEditingPost(null); setShowEmojiPicker({ show: false, type: null, id: null }); }}
-                                                        className="text-xs text-gray-500 hover:text-gray-700 px-3 py-1.5 rounded bg-gray-100"
+                                                        className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-3 py-1.5 rounded bg-gray-100 dark:bg-gray-700 transition-colors"
                                                     >
                                                         Cancel
                                                     </button>
                                                     <button
                                                         type="submit"
-                                                        className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"
+                                                        className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700 shadow-md transition-colors"
                                                     >
                                                         Save Changes
                                                     </button>
                                                 </div>
                                             </form>
                                         ) : (
-                                            <p className="text-gray-600 whitespace-pre-line leading-relaxed">
+                                            <p className="text-gray-600 dark:text-gray-300 whitespace-pre-line leading-relaxed">
                                                 {formatContent(post.content)}
-                                                {post.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                {post.isEdited && <span className="text-[10px] text-gray-400 dark:text-gray-500 italic font-normal ml-2">(edited)</span>}
                                             </p>
                                         )}
                                         {/* Placeholder for optional post image if any */}
@@ -1283,16 +1284,16 @@ export default function AdminCommunity() {
 
                                         {/* Report Details (Admin View) */}
                                         {post.reports && post.reports.length > 0 && (
-                                            <div className="mt-4 bg-red-50/50 rounded-xl p-4 border border-red-100/50">
-                                                <div className="flex items-center gap-2 text-red-600 font-bold text-sm mb-2">
+                                            <div className="mt-4 bg-red-50/50 dark:bg-red-900/10 rounded-xl p-4 border border-red-100/50 dark:border-red-900/30">
+                                                <div className="flex items-center gap-2 text-red-600 dark:text-red-400 font-bold text-sm mb-2">
                                                     <FaFlag className="text-xs" />
                                                     <span>User Reports ({post.reports.length})</span>
                                                 </div>
                                                 <div className="space-y-2">
                                                     {post.reports.map((report, rIdx) => (
-                                                        <div key={rIdx} className="bg-white/80 p-2 rounded-lg text-xs border border-red-50 shadow-sm flex items-start gap-2">
-                                                            <div className="bg-red-100 text-red-600 px-1.5 py-0.5 rounded font-bold uppercase text-[10px]">Flag</div>
-                                                            <p className="text-gray-700 leading-normal italic">"{report.reason}"</p>
+                                                        <div key={rIdx} className="bg-white/80 dark:bg-gray-800/80 p-2 rounded-lg text-xs border border-red-50 dark:border-red-900/20 shadow-sm flex items-start gap-2">
+                                                            <div className="bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-400 px-1.5 py-0.5 rounded font-bold uppercase text-[10px]">Flag</div>
+                                                            <p className="text-gray-700 dark:text-gray-300 leading-normal italic">"{report.reason}"</p>
                                                         </div>
                                                     ))}
                                                 </div>
@@ -1301,26 +1302,26 @@ export default function AdminCommunity() {
                                     </div>
 
                                     {/* Post Actions */}
-                                    <div className="flex items-center justify-between pt-4 border-t border-gray-50">
+                                    <div className="flex items-center justify-between pt-4 border-t border-gray-50 dark:border-gray-700">
                                         <div className="flex items-center gap-4 w-full">
-                                            <div className="flex items-center gap-1 bg-gray-50 rounded-full px-1 border border-gray-100">
+                                            <div className="flex items-center gap-1 bg-gray-50 dark:bg-gray-700/50 rounded-full px-1 border border-gray-100 dark:border-gray-600 transition-colors">
                                                 <button
                                                     onClick={() => handleLike(post._id)}
                                                     className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${currentUser && post.likes?.includes(currentUser._id)
-                                                        ? 'text-blue-600'
-                                                        : 'text-gray-500 hover:text-blue-600'
+                                                        ? 'text-blue-600 dark:text-blue-400'
+                                                        : 'text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
                                                         }`}
                                                     title="Like"
                                                 >
                                                     <FaThumbsUp className={`text-base transform group-hover:scale-110 transition-transform ${currentUser && post.likes?.includes(currentUser._id) ? 'fill-current' : ''}`} />
                                                     <span className="font-semibold text-xs">{post.likes?.length || 0}</span>
                                                 </button>
-                                                <div className="w-[1px] h-4 bg-gray-200"></div>
+                                                <div className="w-[1px] h-4 bg-gray-200 dark:bg-gray-600"></div>
                                                 <button
                                                     onClick={() => handleDislike(post._id)}
                                                     className={`group flex items-center gap-1.5 px-2 py-1.5 rounded-full transition-all ${currentUser && post.dislikes?.includes(currentUser._id)
-                                                        ? 'text-red-500'
-                                                        : 'text-gray-500 hover:text-red-500'
+                                                        ? 'text-red-500 dark:text-red-400'
+                                                        : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'
                                                         }`}
                                                     title="Dislike"
                                                 >
@@ -1331,7 +1332,7 @@ export default function AdminCommunity() {
 
                                             <button
                                                 onClick={() => toggleComments(post._id)}
-                                                className="group flex items-center gap-2 px-3 py-1.5 rounded-full text-gray-500 hover:bg-blue-50 hover:text-blue-600 transition-all"
+                                                className="group flex items-center gap-2 px-3 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 hover:text-blue-600 dark:hover:text-blue-400 transition-all"
                                             >
                                                 <FaComment className="text-lg transform group-hover:scale-110 transition-transform" />
                                                 <span className="font-medium">{post.comments?.length || 0}</span>
@@ -1339,7 +1340,7 @@ export default function AdminCommunity() {
 
                                             <button
                                                 onClick={() => handleShare(post)}
-                                                className="group flex items-center gap-2 px-3 py-1.5 rounded-full text-gray-500 hover:bg-green-50 hover:text-green-600 transition-all ml-auto sm:ml-0"
+                                                className="group flex items-center gap-2 px-3 py-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:bg-green-50 dark:hover:bg-green-900/20 hover:text-green-600 dark:hover:text-green-400 transition-all ml-auto sm:ml-0"
                                             >
                                                 <FaShare className="text-lg transform group-hover:scale-110 transition-transform" />
                                                 <span className="hidden sm:inline font-medium">Share</span>
@@ -1349,7 +1350,7 @@ export default function AdminCommunity() {
 
                                     {/* Comments Section */}
                                     {expandedComments[post._id] && (
-                                        <div className="mt-4 pt-4 border-t border-gray-100 animate-fade-in">
+                                        <div className="mt-4 pt-4 border-t border-gray-100 dark:border-gray-700 animate-fade-in transition-colors">
                                             <div className="space-y-4 mb-4">
                                                 {post.comments && post.comments.length > 0 ? (
                                                     post.comments.map((comment, idx) => (
@@ -1362,21 +1363,26 @@ export default function AdminCommunity() {
                                                                 />
                                                             </div>
                                                             <div className="flex-1">
-                                                                <div className="bg-gray-50 rounded-2xl rounded-tl-none p-3 pr-8 relative">
+                                                                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-2xl rounded-tl-none p-3 pr-8 relative transition-colors">
                                                                     <div className="flex justify-between items-center mb-1">
-                                                                        <span className="font-semibold text-sm">{comment.user?.username}</span>
-                                                                        <span className="text-[10px] text-gray-500 mr-4">
+                                                                        <span className="font-semibold text-sm text-gray-900 dark:text-white">{comment.user?.username}</span>
+                                                                        <span className="text-[10px] text-gray-500 dark:text-gray-400 mr-4">
                                                                             {new Date(comment.createdAt || Date.now()).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                         </span>
                                                                     </div>
                                                                     {editingContent.id === comment._id && editingContent.type === 'comment' ? (
                                                                         <form onSubmit={(e) => handleUpdateComment(e, post._id, comment._id)} className="w-full mb-2">
-                                                                            {/* ... (keep form same) ... */}
+                                                                            <input
+                                                                                type="text"
+                                                                                value=""
+                                                                                readOnly
+                                                                                className="hidden" // Dummy input to prevent auto-focus issues
+                                                                            />
                                                                             <div className="relative">
                                                                                 <textarea
                                                                                     value={editingContent.content}
                                                                                     onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
-                                                                                    className="w-full bg-white border border-gray-300 rounded p-2 text-sm focus:outline-none focus:border-blue-500 min-h-[60px]"
+                                                                                    className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-sm focus:outline-none focus:border-blue-500 min-h-[60px] text-gray-900 dark:text-white transition-colors"
                                                                                     autoFocus
                                                                                 />
                                                                                 <button
@@ -1386,15 +1392,15 @@ export default function AdminCommunity() {
                                                                                         type: 'edit-comment',
                                                                                         id: comment._id
                                                                                     }))}
-                                                                                    className="absolute top-1 right-1 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-all"
+                                                                                    className="absolute top-1 right-1 p-1 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-all"
                                                                                     title="Add Emoji"
                                                                                 >
                                                                                     <FaSmile className="text-sm" />
                                                                                 </button>
                                                                                 {showEmojiPicker.show && showEmojiPicker.type === 'edit-comment' && showEmojiPicker.id === comment._id && (
-                                                                                    <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
-                                                                                        <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
-                                                                                            <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                                    <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                                                                                        <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 border-b border-gray-100 dark:border-gray-600 rounded-t-lg">
+                                                                                            <span className="text-xs font-semibold text-gray-500 dark:text-gray-300">Pick an emoji</span>
                                                                                             <button
                                                                                                 type="button"
                                                                                                 onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
@@ -1407,6 +1413,7 @@ export default function AdminCommunity() {
                                                                                             onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-comment', comment._id)}
                                                                                             width={300}
                                                                                             height={350}
+                                                                                            theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                                             searchDisabled={false}
                                                                                             skinTonesDisabled
                                                                                             previewConfig={{ showPreview: false }}
@@ -1418,7 +1425,7 @@ export default function AdminCommunity() {
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => { setEditingContent({ type: null, id: null, content: '' }); setShowEmojiPicker({ show: false, type: null, id: null }); }}
-                                                                                    className="text-xs text-gray-500 hover:text-gray-700 px-2 py-1"
+                                                                                    className="text-xs text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-2 py-1"
                                                                                 >
                                                                                     Cancel
                                                                                 </button>
@@ -1433,24 +1440,24 @@ export default function AdminCommunity() {
                                                                     ) : (
                                                                         <div className="flex flex-col gap-1">
                                                                             {comment.isDeleted && (
-                                                                                <div className={`flex items-center gap-2 ${comment.deletedBy === comment.user?._id ? 'bg-gray-100 border-gray-200 text-gray-600' : 'bg-red-50 border-red-100 text-red-600'} border p-1.5 rounded text-xs mb-1`}>
-                                                                                    {comment.deletedBy === comment.user?._id ? <FaUserTimes /> : <FaShieldAlt className="text-red-500" />}
+                                                                                <div className={`flex items-center gap-2 ${comment.deletedBy === comment.user?._id ? 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300' : 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800 text-red-600 dark:text-red-400'} border p-1.5 rounded text-xs mb-1`}>
+                                                                                    {comment.deletedBy === comment.user?._id ? <FaUserTimes /> : <FaShieldAlt className="text-red-500 dark:text-red-400" />}
                                                                                     <span className="font-semibold">{comment.deletedBy === comment.user?._id ? "This comment was deleted by user" : "This comment is deleted by admin"}</span>
                                                                                 </div>
                                                                             )}
-                                                                            <p className={`text-sm text-gray-700 break-words overflow-hidden leading-relaxed ${comment.isDeleted ? 'opacity-60 italic' : ''}`}>
+                                                                            <p className={`text-sm text-gray-700 dark:text-gray-300 break-words overflow-hidden leading-relaxed ${comment.isDeleted ? 'opacity-60 italic' : ''}`}>
                                                                                 {formatContent(comment.content)}
-                                                                                {comment.isEdited && <span className="text-[10px] text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                                {comment.isEdited && <span className="text-[10px] text-gray-400 dark:text-gray-500 italic font-normal ml-2">(edited)</span>}
                                                                             </p>
                                                                         </div>
                                                                     )}
 
                                                                     {/* Report Indicator */}
                                                                     {comment.reports && comment.reports.length > 0 && (
-                                                                        <div className="mt-2 bg-red-50 border border-red-100 p-2 rounded text-xs text-red-600 flex items-center gap-2">
+                                                                        <div className="mt-2 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 p-2 rounded text-xs text-red-600 dark:text-red-400 flex items-center gap-2">
                                                                             <FaExclamationTriangle />
                                                                             Reported: {comment.reports.length} times
-                                                                            <span className="text-gray-500">- Last reason: {comment.reports[comment.reports.length - 1].reason}</span>
+                                                                            <span className="text-gray-500 dark:text-gray-400">- Last reason: {comment.reports[comment.reports.length - 1].reason}</span>
                                                                         </div>
                                                                     )}
 
@@ -1459,13 +1466,13 @@ export default function AdminCommunity() {
                                                                         <div className="flex items-center gap-3">
                                                                             <button
                                                                                 onClick={() => handleCommentReaction(post._id, comment._id, 'like')}
-                                                                                className={`flex items-center gap-1 text-xs font-semibold ${comment.likes?.includes(currentUser?._id) ? 'text-blue-600' : 'text-gray-500 hover:text-blue-600'}`}
+                                                                                className={`flex items-center gap-1 text-xs font-semibold ${comment.likes?.includes(currentUser?._id) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'}`}
                                                                             >
                                                                                 <FaThumbsUp /> {comment.likes?.length || 0}
                                                                             </button>
                                                                             <button
                                                                                 onClick={() => handleCommentReaction(post._id, comment._id, 'dislike')}
-                                                                                className={`flex items-center gap-1 text-xs font-semibold ${comment.dislikes?.includes(currentUser?._id) ? 'text-red-500' : 'text-gray-500 hover:text-red-500'}`}
+                                                                                className={`flex items-center gap-1 text-xs font-semibold ${comment.dislikes?.includes(currentUser?._id) ? 'text-red-500 dark:text-red-400' : 'text-gray-500 dark:text-gray-400 hover:text-red-500 dark:hover:text-red-400'}`}
                                                                             >
                                                                                 <FaThumbsDown /> {comment.dislikes?.length || 0}
                                                                             </button>
@@ -1475,14 +1482,14 @@ export default function AdminCommunity() {
                                                                                 setActiveReplyInput(comment._id);
                                                                                 setReplyingTo({ postId: post._id, commentId: comment._id });
                                                                             }}
-                                                                            className="text-xs font-semibold text-gray-500 hover:text-blue-600 bg-gray-100 hover:bg-blue-50 px-2 py-1 rounded transition-colors"
+                                                                            className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-2 py-1 rounded transition-colors"
                                                                         >
                                                                             Reply
                                                                         </button>
                                                                         {comment.replies && comment.replies.length > 0 && (
                                                                             <button
                                                                                 onClick={() => setExpandedReplies(prev => ({ ...prev, [comment._id]: !prev[comment._id] }))}
-                                                                                className="text-xs font-semibold text-blue-600 hover:text-blue-800 flex items-center gap-1"
+                                                                                className="text-xs font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1"
                                                                             >
                                                                                 {expandedReplies[comment._id] ? <FaTimes size={10} /> : <FaComment size={10} />}
                                                                                 {comment.replies.length} Replies
@@ -1495,7 +1502,7 @@ export default function AdminCommunity() {
                                                                             {/* Admin Edit Comment Button */}
                                                                             <button
                                                                                 onClick={() => setEditingContent({ type: 'comment', id: comment._id, content: comment.content })}
-                                                                                className="absolute right-8 top-2 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                                                                className="absolute right-8 top-2 p-1 text-gray-400 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
                                                                                 title="Edit Comment (Admin)"
                                                                             >
                                                                                 <FaEdit className="text-xs" />
@@ -1504,7 +1511,7 @@ export default function AdminCommunity() {
                                                                             {/* Admin Delete Comment Button */}
                                                                             <button
                                                                                 onClick={() => handleDeleteComment(post._id, comment._id)}
-                                                                                className="absolute right-2 top-2 p-1 text-gray-400 hover:text-red-500 hover:bg-red-50 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
+                                                                                className="absolute right-2 top-2 p-1 text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full opacity-0 group-hover/comment:opacity-100 transition-opacity"
                                                                                 title="Delete Comment (Admin)"
                                                                             >
                                                                                 <FaTimes className="text-xs" />
@@ -1528,7 +1535,7 @@ export default function AdminCommunity() {
                                                                                 value={replyText}
                                                                                 onChange={(e) => handleInputChange(e, 'reply', comment._id)}
                                                                                 placeholder="Add a reply... (Type @ to mention property)"
-                                                                                className="flex-1 bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
+                                                                                className="flex-1 bg-white dark:bg-gray-700 border-b-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 text-gray-900 dark:text-white outline-none text-sm py-1 px-2 transition-colors"
                                                                             />
                                                                             <div className="flex gap-1 items-center">
                                                                                 <div className="relative">
@@ -1539,15 +1546,15 @@ export default function AdminCommunity() {
                                                                                             type: 'reply',
                                                                                             id: comment._id
                                                                                         }))}
-                                                                                        className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                                                                        className="p-1.5 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-all"
                                                                                         title="Add Emoji"
                                                                                     >
                                                                                         <FaSmile className="text-sm" />
                                                                                     </button>
                                                                                     {showEmojiPicker.show && showEmojiPicker.type === 'reply' && showEmojiPicker.id === comment._id && (
-                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
-                                                                                            <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
-                                                                                                <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white dark:bg-gray-800 rounded-lg">
+                                                                                            <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 border-b border-gray-100 dark:border-gray-600 rounded-t-lg">
+                                                                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-300">Pick an emoji</span>
                                                                                                 <button
                                                                                                     type="button"
                                                                                                     onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
@@ -1560,6 +1567,7 @@ export default function AdminCommunity() {
                                                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'reply', comment._id)}
                                                                                                 width={300}
                                                                                                 height={350}
+                                                                                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                                                 searchDisabled={false}
                                                                                                 skinTonesDisabled
                                                                                                 previewConfig={{ showPreview: false }}
@@ -1570,7 +1578,7 @@ export default function AdminCommunity() {
                                                                                 <button
                                                                                     type="button"
                                                                                     onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); setShowEmojiPicker({ show: false, type: null, id: null }); }}
-                                                                                    className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
+                                                                                    className="text-xs text-gray-500 dark:text-gray-400 px-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                                                                                 >
                                                                                     Cancel
                                                                                 </button>
@@ -1588,7 +1596,7 @@ export default function AdminCommunity() {
 
                                                                 {/* Infinite Recursive Replies */}
                                                                 {expandedReplies[comment._id] && comment.replies && (
-                                                                    <div className="mt-2 space-y-3 pl-2 sm:pl-4 border-l-2 border-gray-100 ml-1 sm:ml-2">
+                                                                    <div className="mt-2 space-y-3 pl-2 sm:pl-4 border-l-2 border-gray-100 dark:border-gray-700 ml-1 sm:ml-2 transition-colors">
                                                                         {(() => {
                                                                             const renderReplies = (parentId, depth = 0) => {
                                                                                 const currentReplies = comment.replies.filter(r => (r.parentReplyId || null) === (parentId || null));
@@ -1604,10 +1612,10 @@ export default function AdminCommunity() {
                                                                                                     className="w-6 h-6 rounded-full object-cover mt-1"
                                                                                                 />
                                                                                                 <div className="flex-1">
-                                                                                                    <div className="bg-gray-50/50 p-2 rounded-lg relative">
+                                                                                                    <div className="bg-gray-50/50 dark:bg-gray-700/50 p-2 rounded-lg relative transition-colors">
                                                                                                         <div className="flex items-center gap-2 mb-1">
-                                                                                                            <span className="text-sm font-bold text-gray-800">{reply.user?.username}</span>
-                                                                                                            <span className="text-xs text-gray-400">
+                                                                                                            <span className="text-sm font-bold text-gray-800 dark:text-white">{reply.user?.username}</span>
+                                                                                                            <span className="text-xs text-gray-400 dark:text-gray-500">
                                                                                                                 {new Date(reply.createdAt).toLocaleString('en-IN', { timeZone: 'Asia/Kolkata', day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit', hour12: true })}
                                                                                                             </span>
                                                                                                         </div>
@@ -1618,7 +1626,7 @@ export default function AdminCommunity() {
                                                                                                                     <textarea
                                                                                                                         value={editingContent.content}
                                                                                                                         onChange={(e) => setEditingContent({ ...editingContent, content: e.target.value })}
-                                                                                                                        className="w-full bg-white border border-gray-300 rounded p-2 text-xs focus:outline-none focus:border-blue-500 min-h-[50px]"
+                                                                                                                        className="w-full bg-white dark:bg-gray-700 border border-gray-300 dark:border-gray-600 rounded p-2 text-xs focus:outline-none focus:border-blue-500 min-h-[50px] text-gray-900 dark:text-white transition-colors"
                                                                                                                         autoFocus
                                                                                                                     />
                                                                                                                     <button
@@ -1628,15 +1636,15 @@ export default function AdminCommunity() {
                                                                                                                             type: 'edit-reply',
                                                                                                                             id: reply._id
                                                                                                                         }))}
-                                                                                                                        className="absolute top-1 right-1 p-1 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded transition-all"
+                                                                                                                        className="absolute top-1 right-1 p-1 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded transition-all"
                                                                                                                         title="Add Emoji"
                                                                                                                     >
                                                                                                                         <FaSmile className="text-sm" />
                                                                                                                     </button>
                                                                                                                     {showEmojiPicker.show && showEmojiPicker.type === 'edit-reply' && showEmojiPicker.id === reply._id && (
-                                                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
-                                                                                                                            <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
-                                                                                                                                <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                                                                                                                            <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 border-b border-gray-100 dark:border-gray-600 rounded-t-lg">
+                                                                                                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-300">Pick an emoji</span>
                                                                                                                                 <button
                                                                                                                                     type="button"
                                                                                                                                     onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
@@ -1649,6 +1657,7 @@ export default function AdminCommunity() {
                                                                                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-reply', reply._id)}
                                                                                                                                 width={300}
                                                                                                                                 height={350}
+                                                                                                                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                                                                                 searchDisabled={false}
                                                                                                                                 skinTonesDisabled
                                                                                                                                 previewConfig={{ showPreview: false }}
@@ -1660,7 +1669,7 @@ export default function AdminCommunity() {
                                                                                                                     <button
                                                                                                                         type="button"
                                                                                                                         onClick={() => { setEditingContent({ type: null, id: null, content: '' }); setShowEmojiPicker({ show: false, type: null, id: null }); }}
-                                                                                                                        className="text-[10px] text-gray-500 hover:text-gray-700 px-2 py-1"
+                                                                                                                        className="text-[10px] text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 px-2 py-1"
                                                                                                                     >
                                                                                                                         Cancel
                                                                                                                     </button>
@@ -1675,37 +1684,37 @@ export default function AdminCommunity() {
                                                                                                         ) : (
                                                                                                             <div className="flex flex-col gap-1">
                                                                                                                 {reply.isDeleted && (
-                                                                                                                    <div className={`flex items-center gap-2 ${reply.deletedBy === reply.user?._id ? 'bg-gray-100 border-gray-200 text-gray-600' : 'bg-red-50 border-red-100 text-red-600'} border p-1.5 rounded text-xs mb-1`}>
-                                                                                                                        {reply.deletedBy === reply.user?._id ? <FaUserTimes /> : <FaShieldAlt className="text-red-500" />}
+                                                                                                                    <div className={`flex items-center gap-2 ${reply.deletedBy === reply.user?._id ? 'bg-gray-100 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-600 dark:text-gray-300' : 'bg-red-50 dark:bg-red-900/20 border-red-100 dark:border-red-800 text-red-600 dark:text-red-400'} border p-1.5 rounded text-xs mb-1`}>
+                                                                                                                        {reply.deletedBy === reply.user?._id ? <FaUserTimes /> : <FaShieldAlt className="text-red-500 dark:text-red-400" />}
                                                                                                                         <span className="font-semibold">{reply.deletedBy === reply.user?._id ? "This reply was deleted by user" : "This reply is deleted by admin"}</span>
                                                                                                                     </div>
                                                                                                                 )}
-                                                                                                                <p className={`text-sm text-gray-700 break-words overflow-hidden leading-relaxed ${reply.isDeleted ? 'opacity-60 italic' : ''}`}>
+                                                                                                                <p className={`text-sm text-gray-700 dark:text-gray-300 break-words overflow-hidden leading-relaxed ${reply.isDeleted ? 'opacity-60 italic' : ''}`}>
                                                                                                                     {formatContent(reply.content)}
-                                                                                                                    {reply.isEdited && <span className="text-xs text-gray-400 italic font-normal ml-2">(edited)</span>}
+                                                                                                                    {reply.isEdited && <span className="text-xs text-gray-400 dark:text-gray-500 italic font-normal ml-2">(edited)</span>}
                                                                                                                 </p>
                                                                                                             </div>
                                                                                                         )}
 
                                                                                                         {/* Report Indicator */}
                                                                                                         {reply.reports && reply.reports.length > 0 && (
-                                                                                                            <div className="mt-1 bg-red-50 border border-red-100 p-1 rounded text-[10px] text-red-600 flex items-center gap-1">
+                                                                                                            <div className="mt-1 bg-red-50 dark:bg-red-900/20 border border-red-100 dark:border-red-800 p-1 rounded text-[10px] text-red-600 dark:text-red-400 flex items-center gap-1">
                                                                                                                 <FaExclamationTriangle />
                                                                                                                 Reported: {reply.reports.length}
-                                                                                                                <span className="text-gray-500 truncate">- {reply.reports[reply.reports.length - 1].reason}</span>
+                                                                                                                <span className="text-gray-500 dark:text-gray-400 truncate">- {reply.reports[reply.reports.length - 1].reason}</span>
                                                                                                             </div>
                                                                                                         )}
 
                                                                                                         <div className="flex items-center gap-3 mt-1.5">
                                                                                                             <button
                                                                                                                 onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'like')}
-                                                                                                                className={`flex items-center gap-1 text-xs font-semibold ${reply.likes?.includes(currentUser?._id) ? 'text-blue-600' : 'text-gray-400 hover:text-blue-600'}`}
+                                                                                                                className={`flex items-center gap-1 text-xs font-semibold ${reply.likes?.includes(currentUser?._id) ? 'text-blue-600 dark:text-blue-400' : 'text-gray-400 dark:text-gray-500 hover:text-blue-600 dark:hover:text-blue-400'}`}
                                                                                                             >
                                                                                                                 <FaThumbsUp /> {reply.likes?.length || 0}
                                                                                                             </button>
                                                                                                             <button
                                                                                                                 onClick={() => handleReplyReaction(post._id, comment._id, reply._id, 'dislike')}
-                                                                                                                className={`flex items-center gap-1 text-xs font-semibold ${reply.dislikes?.includes(currentUser?._id) ? 'text-red-500' : 'text-gray-400 hover:text-red-500'}`}
+                                                                                                                className={`flex items-center gap-1 text-xs font-semibold ${reply.dislikes?.includes(currentUser?._id) ? 'text-red-500 dark:text-red-400' : 'text-gray-400 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400'}`}
                                                                                                             >
                                                                                                                 <FaThumbsDown /> {reply.dislikes?.length || 0}
                                                                                                             </button>
@@ -1717,14 +1726,14 @@ export default function AdminCommunity() {
                                                                                                                         setReplyingTo({ postId: post._id, commentId: comment._id, userId: reply.user._id, username: reply.user.username });
                                                                                                                     }
                                                                                                                 }}
-                                                                                                                className="text-xs font-semibold text-gray-500 hover:text-blue-600 bg-gray-100/80 hover:bg-blue-50 px-1.5 py-0.5 rounded transition-colors outline-none"
+                                                                                                                className="text-xs font-semibold text-gray-500 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400 bg-gray-100/80 dark:bg-gray-700/50 hover:bg-blue-50 dark:hover:bg-blue-900/20 px-1.5 py-0.5 rounded transition-colors outline-none"
                                                                                                             >
                                                                                                                 Reply
                                                                                                             </button>
                                                                                                             {subReplies.length > 0 && (
                                                                                                                 <button
                                                                                                                     onClick={() => setExpandedReplies(prev => ({ ...prev, [reply._id]: !prev[reply._id] }))}
-                                                                                                                    className="text-[10px] font-semibold text-blue-600 hover:text-blue-800 outline-none"
+                                                                                                                    className="text-[10px] font-semibold text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 outline-none"
                                                                                                                 >
                                                                                                                     {expandedReplies[reply._id] ? 'Hide' : `View ${subReplies.length} Replies`}
                                                                                                                 </button>
@@ -1736,7 +1745,7 @@ export default function AdminCommunity() {
                                                                                                                 {/* Admin Edit Reply Button */}
                                                                                                                 <button
                                                                                                                     onClick={() => setEditingContent({ type: 'reply', id: reply._id, content: reply.content })}
-                                                                                                                    className="absolute right-6 top-1 p-1 text-gray-300 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
+                                                                                                                    className="absolute right-6 top-1 p-1 text-gray-300 dark:text-gray-500 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/20 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
                                                                                                                     title="Edit Reply (Admin)"
                                                                                                                 >
                                                                                                                     <FaEdit size={10} />
@@ -1745,7 +1754,7 @@ export default function AdminCommunity() {
                                                                                                                 {/* Admin Delete Reply Button */}
                                                                                                                 <button
                                                                                                                     onClick={() => handleDeleteReply(post._id, comment._id, reply._id)}
-                                                                                                                    className="absolute right-1 top-1 p-1 text-gray-300 hover:text-red-500 hover:bg-red-50 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
+                                                                                                                    className="absolute right-1 top-1 p-1 text-gray-300 dark:text-gray-500 hover:text-red-500 dark:hover:text-red-400 hover:bg-red-50 dark:hover:bg-red-900/20 rounded-full transition-all opacity-0 group-hover/reply:opacity-100"
                                                                                                                     title="Delete Reply (Admin)"
                                                                                                                 >
                                                                                                                     <FaTimes size={10} />
@@ -1768,7 +1777,7 @@ export default function AdminCommunity() {
                                                                                                                     value={replyText}
                                                                                                                     onChange={(e) => handleInputChange(e, 'reply', comment._id)}
                                                                                                                     placeholder={`Replying to ${reply.user?.username}...`}
-                                                                                                                    className="flex-1 bg-white border-b-2 border-gray-200 focus:border-blue-500 outline-none text-sm py-1 px-2"
+                                                                                                                    className="flex-1 bg-white dark:bg-gray-700 border-b-2 border-gray-200 dark:border-gray-600 focus:border-blue-500 text-gray-900 dark:text-white outline-none text-sm py-1 px-2 transition-colors"
                                                                                                                 />
                                                                                                                 <div className="flex gap-1 items-center">
                                                                                                                     <div className="relative">
@@ -1779,15 +1788,15 @@ export default function AdminCommunity() {
                                                                                                                                 type: 'reply',
                                                                                                                                 id: reply._id
                                                                                                                             }))}
-                                                                                                                            className="p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                                                                                                            className="p-1.5 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-all"
                                                                                                                             title="Add Emoji"
                                                                                                                         >
                                                                                                                             <FaSmile className="text-sm" />
                                                                                                                         </button>
                                                                                                                         {showEmojiPicker.show && showEmojiPicker.type === 'reply' && showEmojiPicker.id === reply._id && (
-                                                                                                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
-                                                                                                                                <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
-                                                                                                                                    <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                                                                            <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white dark:bg-gray-800 rounded-lg">
+                                                                                                                                <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 border-b border-gray-100 dark:border-gray-600 rounded-t-lg">
+                                                                                                                                    <span className="text-xs font-semibold text-gray-500 dark:text-gray-300">Pick an emoji</span>
                                                                                                                                     <button
                                                                                                                                         type="button"
                                                                                                                                         onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
@@ -1800,6 +1809,7 @@ export default function AdminCommunity() {
                                                                                                                                     onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'reply', reply._id)}
                                                                                                                                     width={300}
                                                                                                                                     height={350}
+                                                                                                                                    theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                                                                                     searchDisabled={false}
                                                                                                                                     skinTonesDisabled
                                                                                                                                     previewConfig={{ showPreview: false }}
@@ -1810,7 +1820,7 @@ export default function AdminCommunity() {
                                                                                                                     <button
                                                                                                                         type="button"
                                                                                                                         onClick={() => { setActiveReplyInput(null); setReplyText(''); setReplyingTo(null); setShowEmojiPicker({ show: false, type: null, id: null }); }}
-                                                                                                                        className="text-xs text-gray-500 px-2 hover:bg-gray-100 rounded"
+                                                                                                                        className="text-xs text-gray-500 dark:text-gray-400 px-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded transition-colors"
                                                                                                                     >
                                                                                                                         Cancel
                                                                                                                     </button>
@@ -1845,7 +1855,7 @@ export default function AdminCommunity() {
                                                         </div>
                                                     ))
                                                 ) : (
-                                                    <p className="text-center text-gray-500 text-sm py-2">No comments yet.</p>
+                                                    <p className="text-center text-gray-500 dark:text-gray-400 text-sm py-2">No comments yet.</p>
                                                 )}
                                             </div>
 
@@ -1861,7 +1871,7 @@ export default function AdminCommunity() {
                                                         <input
                                                             type="text"
                                                             placeholder="Write a comment... (Type @ to mention property)"
-                                                            className="w-full bg-gray-50 border border-gray-200 rounded-full pl-4 pr-16 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm"
+                                                            className="w-full bg-gray-50 dark:bg-gray-700/50 border border-gray-200 dark:border-gray-600 rounded-full pl-4 pr-16 py-2 focus:outline-none focus:ring-2 focus:ring-blue-500 text-sm text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
                                                             value={commentText[post._id] || ''}
                                                             onChange={(e) => handleInputChange(e, 'comment', post._id)}
                                                         />
@@ -1873,15 +1883,15 @@ export default function AdminCommunity() {
                                                                     type: 'comment',
                                                                     id: post._id
                                                                 }))}
-                                                                className="p-1 text-gray-400 hover:text-blue-500 transition-colors"
+                                                                className="p-1 text-gray-400 hover:text-blue-500 dark:hover:text-blue-400 transition-colors"
                                                                 title="Add Emoji"
                                                             >
                                                                 <FaSmile className="text-base" />
                                                             </button>
                                                             {showEmojiPicker.show && showEmojiPicker.type === 'comment' && showEmojiPicker.id === post._id && (
-                                                                <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
-                                                                    <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
-                                                                        <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                                                <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                                                                    <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 border-b border-gray-100 dark:border-gray-600 rounded-t-lg">
+                                                                        <span className="text-xs font-semibold text-gray-500 dark:text-gray-300">Pick an emoji</span>
                                                                         <button
                                                                             type="button"
                                                                             onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
@@ -1894,6 +1904,7 @@ export default function AdminCommunity() {
                                                                         onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'comment', post._id)}
                                                                         width={300}
                                                                         height={350}
+                                                                        theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                         searchDisabled={false}
                                                                         skinTonesDisabled
                                                                         previewConfig={{ showPreview: false }}
@@ -1921,29 +1932,29 @@ export default function AdminCommunity() {
                     {/* Sidebar */}
                     <div className="hidden lg:block space-y-6">
                         {/* Community Stats */}
-                        <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-6">
-                            <h3 className="text-lg font-bold text-gray-900 mb-4">Community Stats</h3>
+                        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-6 transition-colors">
+                            <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-4">Community Stats</h3>
                             <div className="space-y-4">
-                                <div className="flex justify-between items-center bg-blue-50 p-3 rounded-lg border border-blue-100">
+                                <div className="flex justify-between items-center bg-blue-50 dark:bg-blue-900/20 p-3 rounded-lg border border-blue-100 dark:border-blue-800">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-blue-100 rounded-full text-blue-600"><FaUsers /></div>
-                                        <span className="text-gray-700 font-medium">Active Members</span>
+                                        <div className="p-2 bg-blue-100 dark:bg-blue-800/50 rounded-full text-blue-600 dark:text-blue-300"><FaUsers /></div>
+                                        <span className="text-gray-700 dark:text-gray-300 font-medium">Active Members</span>
                                     </div>
-                                    <span className="font-bold text-gray-900 text-lg">{stats.activeMembers}</span>
+                                    <span className="font-bold text-gray-900 dark:text-white text-lg">{stats.activeMembers}</span>
                                 </div>
-                                <div className="flex justify-between items-center bg-green-50 p-3 rounded-lg border border-green-100">
+                                <div className="flex justify-between items-center bg-green-50 dark:bg-green-900/20 p-3 rounded-lg border border-green-100 dark:border-green-800">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-green-100 rounded-full text-green-600"><FaComment /></div>
-                                        <span className="text-gray-700 font-medium">Daily Posts</span>
+                                        <div className="p-2 bg-green-100 dark:bg-green-800/50 rounded-full text-green-600 dark:text-green-300"><FaComment /></div>
+                                        <span className="text-gray-700 dark:text-gray-300 font-medium">Daily Posts</span>
                                     </div>
-                                    <span className="font-bold text-gray-900 text-lg">{stats.dailyPosts}</span>
+                                    <span className="font-bold text-gray-900 dark:text-white text-lg">{stats.dailyPosts}</span>
                                 </div>
-                                <div className="flex justify-between items-center bg-purple-50 p-3 rounded-lg border border-purple-100">
+                                <div className="flex justify-between items-center bg-purple-50 dark:bg-purple-900/20 p-3 rounded-lg border border-purple-100 dark:border-purple-800">
                                     <div className="flex items-center gap-3">
-                                        <div className="p-2 bg-purple-100 rounded-full text-purple-600"><FaCalendarAlt /></div>
-                                        <span className="text-gray-700 font-medium">Events This Week</span>
+                                        <div className="p-2 bg-purple-100 dark:bg-purple-800/50 rounded-full text-purple-600 dark:text-purple-300"><FaCalendarAlt /></div>
+                                        <span className="text-gray-700 dark:text-gray-300 font-medium">Events This Week</span>
                                     </div>
-                                    <span className="font-bold text-gray-900 text-lg">{stats.eventsThisWeek}</span>
+                                    <span className="font-bold text-gray-900 dark:text-white text-lg">{stats.eventsThisWeek}</span>
                                 </div>
                             </div>
                         </div>
@@ -1978,12 +1989,12 @@ export default function AdminCommunity() {
             {/* Create Post Modal */}
             {showCreateModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                    <div className="bg-white rounded-2xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200 transition-colors">
                         <div className="flex justify-between items-center mb-6">
-                            <h2 className="text-2xl font-bold text-gray-900">Start a Discussion</h2>
+                            <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Start a Discussion</h2>
                             <button
                                 onClick={() => setShowCreateModal(false)}
-                                className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 p-2 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full transition-colors"
                             >
                                 <FaTimes />
                             </button>
@@ -1991,12 +2002,12 @@ export default function AdminCommunity() {
 
                         <form onSubmit={handleCreatePost} className="space-y-4">
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
                                 <input
                                     type="text"
                                     value={newPost.title}
                                     onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                                    className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                    className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                                     placeholder="What's on your mind?"
                                     required
                                 />
@@ -2004,11 +2015,11 @@ export default function AdminCommunity() {
 
                             <div className="grid grid-cols-2 gap-4">
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                                     <select
                                         value={newPost.category}
                                         onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                                     >
                                         {categories.filter(c => c.id !== 'All').map(cat => (
                                             <option key={cat.id} value={cat.id}>{cat.label}</option>
@@ -2016,25 +2027,25 @@ export default function AdminCommunity() {
                                     </select>
                                 </div>
                                 <div>
-                                    <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                    <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
                                     <input
                                         type="text"
                                         value={newPost.location.city}
                                         onChange={(e) => setNewPost({ ...newPost, location: { ...newPost.location, city: e.target.value } })}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                                         placeholder="e.g. Mumbai"
                                     />
                                 </div>
                             </div>
 
                             <div>
-                                <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content</label>
                                 <div className="relative">
                                     {showMentionSuggestions.show && showMentionSuggestions.type === 'post' && renderMentionsPanel("bottom-full mb-2")}
                                     <textarea
                                         value={newPost.content}
                                         onChange={(e) => handleInputChange(e, 'post')}
-                                        className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none h-32 resize-none"
+                                        className="w-full px-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none h-32 resize-none bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                                         placeholder="Share details... (Type @ to mention property)"
                                         required
                                     />
@@ -2045,15 +2056,15 @@ export default function AdminCommunity() {
                                             type: 'post',
                                             id: 'new-post'
                                         }))}
-                                        className="absolute right-2 bottom-2 p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 rounded-full transition-all"
+                                        className="absolute right-2 bottom-2 p-1.5 text-gray-400 hover:text-blue-500 hover:bg-blue-50 dark:hover:bg-blue-900/30 rounded-full transition-all"
                                         title="Add Emoji"
                                     >
                                         <FaSmile className="text-lg" />
                                     </button>
                                     {showEmojiPicker.show && showEmojiPicker.type === 'post' && (
-                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
-                                            <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
-                                                <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
+                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white dark:bg-gray-800 rounded-lg border border-gray-100 dark:border-gray-700">
+                                            <div className="flex justify-between items-center bg-gray-50 dark:bg-gray-700 px-3 py-2 border-b border-gray-100 dark:border-gray-600 rounded-t-lg">
+                                                <span className="text-xs font-semibold text-gray-500 dark:text-gray-300">Pick an emoji</span>
                                                 <button
                                                     type="button"
                                                     onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
@@ -2066,6 +2077,7 @@ export default function AdminCommunity() {
                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'post', 'new-post')}
                                                 width={300}
                                                 height={350}
+                                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                 searchDisabled={false}
                                                 skinTonesDisabled
                                                 previewConfig={{ showPreview: false }}
@@ -2079,7 +2091,7 @@ export default function AdminCommunity() {
                                 <button
                                     type="button"
                                     onClick={() => setShowCreateModal(false)}
-                                    className="px-6 py-2 text-gray-700 hover:bg-gray-100 rounded-lg mr-2 transition-colors"
+                                    className="px-6 py-2 text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-lg mr-2 transition-colors"
                                 >
                                     Cancel
                                 </button>
