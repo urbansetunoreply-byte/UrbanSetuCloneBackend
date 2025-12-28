@@ -459,23 +459,21 @@ export const restoreDeletedListing = async (req, res, next) => {
 
     // Ensure we keep the SAME ID (crucial for maintaining references)
     // listingData._id should be present. We use it to create the doc with explicit _id.
-    // Mongoose allows providing _id on creation.
 
     // Remove conflicting version fields
     delete listingData.__v;
 
-    // Force some status updates
-    // e.g. set availability to available if it was sold? Or keep original? Usually keep original state or reset to available.
-    // Let's reset to Default/Available unless explicitly told otherwise, or keep as is.
-    // Safe bet: keep as is, but maybe remove strict locks if any? 
-    // Actually, simply re-inserting is best to restore EXACT state.
+    // Explicitly update 'updatedAt' to now, to reflect the restoration event
+    // But KEEP 'createdAt' to preserve original listing age/history
+    listingData.updatedAt = new Date();
 
-    // Check if ID already exists (collision check, unlikely unless restored manually)
+    // Check if ID already exists (collision check)
     const existing = await Listing.findById(listingData._id);
     if (existing) {
       return next(errorHandler(409, 'A listing with this ID already exists (it may have been restored already).'));
     }
 
+    // Create new document with original data (restoring all status, progress, verification, etc.)
     const restoredListing = new Listing(listingData);
     await restoredListing.save();
 
