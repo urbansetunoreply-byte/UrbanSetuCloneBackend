@@ -311,18 +311,19 @@ export default function ContactSupport({ forceModalOpen = false, onModalClose = 
           )}
 
           {/* Enhanced Hover Tooltip - Only show if there are unread replies */}
-          {currentUser && unreadReplies > 0 && (
-            <div className="absolute bottom-full right-0 mb-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 dark:border-gray-700 transform -translate-y-1 transition-all duration-200">
-              <div className="flex items-center gap-2">
-                <span className="text-lg">💬</span>
-                <span className="font-medium">
-                  {unreadReplies} new repl{unreadReplies !== 1 ? 'ies' : 'y'}
-                </span>
-              </div>
-              {/* Tooltip arrow */}
-              <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white dark:border-t-gray-800"></div>
+          {/* Enhanced Hover Tooltip */}
+          <div className="absolute bottom-full right-0 mb-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-gray-200 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 dark:border-gray-700 transform -translate-y-1 transition-all duration-200">
+            <div className="flex items-center gap-2">
+              <span className="text-lg">💬</span>
+              <span className="font-medium">
+                {currentUser && unreadReplies > 0
+                  ? `${unreadReplies} new repl${unreadReplies !== 1 ? 'ies' : 'y'}`
+                  : 'Contact Support'}
+              </span>
             </div>
-          )}
+            {/* Tooltip arrow */}
+            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white dark:border-t-gray-800"></div>
+          </div>
         </button>
       </div>
 

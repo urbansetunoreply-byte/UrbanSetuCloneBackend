@@ -14,8 +14,18 @@ const ThemeToggle = ({ mobile = false }) => {
                 setTheme(e.newValue || 'system');
             }
         };
+
+        const handleThemeSync = (e) => {
+            setTheme(e.detail.theme);
+        };
+
         window.addEventListener('storage', handleStorage);
-        return () => window.removeEventListener('storage', handleStorage);
+        window.addEventListener('theme-change', handleThemeSync);
+
+        return () => {
+            window.removeEventListener('storage', handleStorage);
+            window.removeEventListener('theme-change', handleThemeSync);
+        };
     }, []);
 
     useEffect(() => {
@@ -33,10 +43,13 @@ const ThemeToggle = ({ mobile = false }) => {
         localStorage.setItem('theme', newTheme);
         setIsOpen(false);
 
-        // Dispatch storage event manually for same-tab updates
+        // Dispatch custom event for same-tab updates
+        window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme: newTheme } }));
+
+        // Dispatch storage event manually for other listeners
         window.dispatchEvent(new Event('storage'));
 
-        // Immediate application logic (similar to App.jsx)
+        // Immediate application logic
         if (newTheme === 'dark') {
             document.documentElement.classList.add('dark');
         } else if (newTheme === 'light') {
@@ -68,8 +81,8 @@ const ThemeToggle = ({ mobile = false }) => {
                             key={t.id}
                             onClick={() => handleThemeChange(t.id)}
                             className={`flex-1 flex flex-col items-center gap-1 p-2 rounded-lg border-2 transition-all ${theme === t.id
-                                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
-                                    : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
+                                ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400'
+                                : 'border-transparent text-gray-500 dark:text-gray-400 hover:bg-white dark:hover:bg-gray-700'
                                 }`}
                         >
                             <t.icon className={`text-lg ${theme === t.id ? t.color : ''}`} />
@@ -99,8 +112,8 @@ const ThemeToggle = ({ mobile = false }) => {
                             key={t.id}
                             onClick={() => handleThemeChange(t.id)}
                             className={`w-full flex items-center gap-3 px-4 py-2 text-sm transition-colors ${theme === t.id
-                                    ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold'
-                                    : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
+                                ? 'bg-blue-50 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400 font-bold'
+                                : 'text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700'
                                 }`}
                         >
                             <t.icon className={`${t.color} text-base`} />

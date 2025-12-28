@@ -847,6 +847,7 @@ export default function Settings() {
     scrollPositionRef.current = window.scrollY;
     setTheme(value);
     localStorage.setItem('theme', value);
+    window.dispatchEvent(new CustomEvent('theme-change', { detail: { theme: value } }));
 
     if (value === 'system') {
       const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
@@ -979,6 +980,15 @@ export default function Settings() {
     };
     applyTheme();
   }, [theme]);
+
+  // Listen for theme changes from other components (e.g., ThemeToggle)
+  useEffect(() => {
+    const handleThemeSync = (e) => {
+      setTheme(e.detail.theme);
+    };
+    window.addEventListener('theme-change', handleThemeSync);
+    return () => window.removeEventListener('theme-change', handleThemeSync);
+  }, []);
 
   // Apply font size on mount
   useEffect(() => {
