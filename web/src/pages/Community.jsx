@@ -1197,6 +1197,7 @@ export default function Community() {
                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-post', post._id)}
                                                                 width={300}
                                                                 height={400}
+                                                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                 previewConfig={{ showPreview: false }}
                                                             />
                                                         </div>
@@ -1211,28 +1212,7 @@ export default function Community() {
                                                         Cancel
                                                     </button>
 
-                                                    {showEmojiPicker.show && showEmojiPicker.type === 'edit-post' && (
-                                                        <div className="absolute bottom-full right-0 z-[100] mb-2 shadow-xl animate-fade-in bg-white rounded-lg">
-                                                            <div className="flex justify-between items-center bg-gray-50 px-3 py-2 border-b border-gray-100 rounded-t-lg">
-                                                                <span className="text-xs font-semibold text-gray-500">Pick an emoji</span>
-                                                                <button
-                                                                    type="button"
-                                                                    onClick={() => setShowEmojiPicker({ show: false, type: null, id: null })}
-                                                                    className="text-gray-400 hover:text-red-500 transition-colors"
-                                                                >
-                                                                    <FaTimes size={12} />
-                                                                </button>
-                                                            </div>
-                                                            <EmojiPicker
-                                                                onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-post')}
-                                                                width={300}
-                                                                height={350}
-                                                                searchDisabled={false}
-                                                                skinTonesDisabled
-                                                                previewConfig={{ showPreview: false }}
-                                                            />
-                                                        </div>
-                                                    )}
+
                                                     <button
                                                         type="submit"
                                                         className="text-xs bg-blue-600 text-white px-3 py-1.5 rounded hover:bg-blue-700"
@@ -1359,6 +1339,7 @@ export default function Community() {
                                                                                             onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-comment', comment._id)}
                                                                                             width={300}
                                                                                             height={350}
+                                                                                            theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                                             searchDisabled={false}
                                                                                             skinTonesDisabled
                                                                                             previewConfig={{ showPreview: false }}
@@ -1528,7 +1509,7 @@ export default function Community() {
                                                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'reply', comment._id)}
                                                                                                 width={300}
                                                                                                 height={350}
-                                                                                                theme={'auto'}
+                                                                                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                                                 searchDisabled={false}
                                                                                                 skinTonesDisabled
                                                                                                 previewConfig={{ showPreview: false }}
@@ -1620,6 +1601,7 @@ export default function Community() {
                                                                                                                                 onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'edit-reply', reply._id)}
                                                                                                                                 width={300}
                                                                                                                                 height={350}
+                                                                                                                                theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                                                                                 searchDisabled={false}
                                                                                                                                 skinTonesDisabled
                                                                                                                                 previewConfig={{ showPreview: false }}
@@ -1770,6 +1752,7 @@ export default function Community() {
                                                                                                                                     onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'reply', reply._id)}
                                                                                                                                     width={300}
                                                                                                                                     height={350}
+                                                                                                                                    theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                                                                                     searchDisabled={false}
                                                                                                                                     skinTonesDisabled
                                                                                                                                     previewConfig={{ showPreview: false }}
@@ -1864,6 +1847,7 @@ export default function Community() {
                                                                     onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'comment', post._id)}
                                                                     width={300}
                                                                     height={350}
+                                                                    theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                                     searchDisabled={false}
                                                                     skinTonesDisabled
                                                                     previewConfig={{ showPreview: false }}
@@ -1949,10 +1933,10 @@ export default function Community() {
                         <div className="fixed inset-0 bg-black/60 backdrop-blur-sm flex items-center justify-center z-50 p-4">
                             <div className="bg-white dark:bg-gray-900 rounded-2xl w-full max-w-lg p-6 animate-in fade-in zoom-in duration-200 shadow-2xl transition-colors duration-300">
                                 <div className="flex justify-between items-center mb-6">
-                                    <h2 className="text-2xl font-bold text-gray-900">Start a Discussion</h2>
+                                    <h2 className="text-2xl font-bold text-gray-900 dark:text-white">Start a Discussion</h2>
                                     <button
                                         onClick={() => setShowCreateModal(false)}
-                                        className="text-gray-500 hover:text-gray-700 p-2 hover:bg-gray-100 rounded-full transition-colors"
+                                        className="text-gray-500 hover:text-gray-700 dark:text-gray-400 dark:hover:text-gray-200 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                                     >
                                         <FaTimes />
                                     </button>
@@ -1960,12 +1944,12 @@ export default function Community() {
 
                                 <form onSubmit={handleCreatePost} className="space-y-4">
                                     <div>
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Title</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Title</label>
                                         <input
                                             type="text"
                                             value={newPost.title}
                                             onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                             placeholder="What's on your mind?"
                                             required
                                         />
@@ -1973,11 +1957,11 @@ export default function Community() {
 
                                     <div className="grid grid-cols-2 gap-4">
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">Category</label>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Category</label>
                                             <select
                                                 value={newPost.category}
                                                 onChange={(e) => setNewPost({ ...newPost, category: e.target.value })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                             >
                                                 {categories.filter(c => c.id !== 'All').map(cat => (
                                                     <option key={cat.id} value={cat.id}>{cat.label}</option>
@@ -1985,24 +1969,24 @@ export default function Community() {
                                             </select>
                                         </div>
                                         <div>
-                                            <label className="block text-sm font-medium text-gray-700 mb-1">City</label>
+                                            <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">City</label>
                                             <input
                                                 type="text"
                                                 value={newPost.location.city}
                                                 onChange={(e) => setNewPost({ ...newPost, location: { ...newPost.location, city: e.target.value } })}
-                                                className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                                                className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                                 placeholder="e.g. Mumbai"
                                             />
                                         </div>
                                     </div>
 
                                     <div className="relative">
-                                        <label className="block text-sm font-medium text-gray-700 mb-1">Content</label>
+                                        <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Content</label>
                                         {showMentionSuggestions.show && showMentionSuggestions.type === 'post' && renderMentionsPanel()}
                                         <textarea
                                             value={newPost.content}
                                             onChange={(e) => handleInputChange(e, 'post')}
-                                            className="w-full px-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none h-32 resize-none"
+                                            className="w-full px-4 py-2 border border-gray-300 dark:border-gray-700 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none h-32 resize-none bg-white dark:bg-gray-800 text-gray-900 dark:text-white"
                                             placeholder="Share details... Use @ to mention property"
                                             required
                                         />
@@ -2034,6 +2018,7 @@ export default function Community() {
                                                     onEmojiClick={(emojiData) => handleEmojiClick(emojiData, 'post', 'new-post')}
                                                     width={300}
                                                     height={350}
+                                                    theme={document.documentElement.classList.contains('dark') ? 'dark' : 'light'}
                                                     searchDisabled={false}
                                                     skinTonesDisabled
                                                     previewConfig={{ showPreview: false }}
