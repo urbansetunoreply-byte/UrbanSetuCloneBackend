@@ -902,14 +902,14 @@ export default function AdminReviews() {
 
             {/* Monthly Trends */}
             {analytics.monthlyTrends.length > 0 && (
-              <div className="mt-6 bg-white rounded-lg p-6 shadow-sm">
-                <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                  <FaArrowUp className="text-green-600" />
+              <div className="mt-6 bg-white dark:bg-gray-800 rounded-lg p-6 shadow-sm transition-colors">
+                <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-100 mb-4 flex items-center gap-2">
+                  <FaArrowUp className="text-green-600 dark:text-green-400" />
                   Monthly Review Trends
                 </h3>
                 <div className="flex items-end gap-2 h-32">
                   {analytics.monthlyTrends.map((trend, idx) => {
-                    const maxCount = Math.max(...analytics.monthlyTrends.map(t => t.count));
+                    const maxCount = Math.max(...analytics.monthlyTrends.map(t => t.count)) || 1;
                     const height = (trend.count / maxCount) * 100;
                     return (
                       <div key={idx} className="flex flex-col items-center flex-1">
@@ -918,7 +918,7 @@ export default function AdminReviews() {
                           style={{ height: `${height}%` }}
                           title={`${trend.month}: ${trend.count} reviews`}
                         ></div>
-                        <span className="text-xs text-gray-500 mt-2 transform -rotate-45 origin-left">
+                        <span className="text-xs text-gray-500 dark:text-gray-400 mt-2 transform -rotate-45 origin-left">
                           {trend.month.split('-')[1]}
                         </span>
                       </div>
@@ -1612,37 +1612,37 @@ export default function AdminReviews() {
                           </div>
                           <div className="space-y-2">
                             <div>
-                              <span className="font-medium text-gray-700">Property: </span>
-                              <span className="text-gray-900">{report.propertyName}</span>
+                              <span className="font-medium text-gray-700 dark:text-gray-300">Property: </span>
+                              <span className="text-gray-900 dark:text-gray-100">{report.propertyName}</span>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <div>
-                                <span className="font-medium text-gray-700">Reporter: </span>
-                                <span className="text-gray-900">{report.reporter || report.reporterUsername || 'Unknown'}</span>
+                                <span className="font-medium text-gray-700 dark:text-gray-300">Reporter: </span>
+                                <span className="text-gray-900 dark:text-gray-100">{report.reporter || report.reporterUsername || 'Unknown'}</span>
                               </div>
                               <div>
-                                <span className="font-medium text-gray-700">Email: </span>
-                                <span className="text-gray-900">{report.reporterEmail || 'Not available'}</span>
+                                <span className="font-medium text-gray-700 dark:text-gray-300">Email: </span>
+                                <span className="text-gray-900 dark:text-gray-100">{report.reporterEmail || 'Not available'}</span>
                               </div>
                             </div>
                             <div className="grid grid-cols-1 sm:grid-cols-2 gap-2">
                               <div>
-                                <span className="font-medium text-gray-700">Phone: </span>
-                                <span className="text-gray-900">{report.reporterPhone || 'Not available'}</span>
+                                <span className="font-medium text-gray-700 dark:text-gray-300">Phone: </span>
+                                <span className="text-gray-900 dark:text-gray-100">{report.reporterPhone || 'Not available'}</span>
                               </div>
                               <div>
-                                <span className="font-medium text-gray-700">Role: </span>
-                                <span className="text-gray-900 capitalize">{report.reporterRole || 'Not available'}</span>
+                                <span className="font-medium text-gray-700 dark:text-gray-300">Role: </span>
+                                <span className="text-gray-900 dark:text-gray-100 capitalize">{report.reporterRole || 'Not available'}</span>
                               </div>
                             </div>
                             <div>
-                              <span className="font-medium text-gray-700">Category: </span>
-                              <span className="text-gray-900">{report.category}</span>
+                              <span className="font-medium text-gray-700 dark:text-gray-300">Category: </span>
+                              <span className="text-gray-900 dark:text-gray-100">{report.category}</span>
                             </div>
                             {report.details && (
                               <div>
-                                <span className="font-medium text-gray-700">Details: </span>
-                                <span className="text-gray-900">{report.details}</span>
+                                <span className="font-medium text-gray-700 dark:text-gray-300">Details: </span>
+                                <span className="text-gray-900 dark:text-gray-100">{report.details}</span>
                               </div>
                             )}
                           </div>
