@@ -1196,7 +1196,7 @@ export default function AdminManagement() {
                   <select
                     value={adminApprovalFilter}
                     onChange={(e) => setAdminApprovalFilter(e.target.value)}
-                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 rounded-xl leading-5 bg-white text-gray-900 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
+                    className="block w-full pl-10 pr-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl leading-5 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-purple-500 focus:border-purple-500 transition-all duration-200 shadow-sm appearance-none cursor-pointer"
                   >
                     <option value="all">All Approval Status</option>
                     <option value="pending">Pending</option>
@@ -1228,18 +1228,18 @@ export default function AdminManagement() {
             </div>
           ) : tab === 'softbanned' ? (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <input value={softbannedFilters.q} onChange={e => setSoftbannedFilters(f => ({ ...f, q: e.target.value }))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
-              <select value={softbannedFilters.role} onChange={e => setSoftbannedFilters(f => ({ ...f, role: e.target.value }))} className="px-3 py-3 border rounded-xl">
+              <input value={softbannedFilters.q} onChange={e => setSoftbannedFilters(f => ({ ...f, q: e.target.value }))} placeholder="Search name/email" className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <select value={softbannedFilters.role} onChange={e => setSoftbannedFilters(f => ({ ...f, role: e.target.value }))} className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="all">All Roles</option>
                 <option value="user">User</option>
                 {currentUser.isDefaultAdmin && <option value="admin">Admin</option>}
               </select>
-              <input type="date" value={softbannedFilters.from} onChange={e => setSoftbannedFilters(f => ({ ...f, from: e.target.value }))} className="px-3 py-3 border rounded-xl" />
-              <input type="date" value={softbannedFilters.to} onChange={e => setSoftbannedFilters(f => ({ ...f, to: e.target.value }))} className="px-3 py-3 border rounded-xl" />
-              <input value={softbannedFilters.softbannedBy} onChange={e => setSoftbannedFilters(f => ({ ...f, softbannedBy: e.target.value }))} placeholder="Softbanned by (id or self)" className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={softbannedFilters.from} onChange={e => setSoftbannedFilters(f => ({ ...f, from: e.target.value }))} className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="date" value={softbannedFilters.to} onChange={e => setSoftbannedFilters(f => ({ ...f, to: e.target.value }))} className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input value={softbannedFilters.softbannedBy} onChange={e => setSoftbannedFilters(f => ({ ...f, softbannedBy: e.target.value }))} placeholder="Softbanned by (id or self)" className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <div className="flex items-center gap-2">
-                <button onClick={fetchSoftbannedAccounts} className="px-4 py-3 bg-red-600 text-white rounded-xl">Apply</button>
-                <button onClick={() => { setSoftbannedFilters({ q: '', role: 'all', softbannedBy: '', from: '', to: '' }); setTimeout(fetchSoftbannedAccounts, 0); }} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
+                <button onClick={fetchSoftbannedAccounts} className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors">Apply</button>
+                <button onClick={() => { setSoftbannedFilters({ q: '', role: 'all', softbannedBy: '', from: '', to: '' }); setTimeout(fetchSoftbannedAccounts, 0); }} className="px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl transition-colors">Clear</button>
               </div>
               <div className="col-span-full text-sm text-gray-600">
                 {currentUser.isDefaultAdmin ? 'You are viewing all softbanned accounts (users + admins).' : 'You are viewing only softbanned user accounts.'}
@@ -1247,18 +1247,18 @@ export default function AdminManagement() {
             </div>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-              <input value={purgedFilters.q} onChange={e => setPurgedFilters(f => ({ ...f, q: e.target.value }))} placeholder="Search name/email" className="px-3 py-3 border rounded-xl" />
-              <select value={purgedFilters.role} onChange={e => setPurgedFilters(f => ({ ...f, role: e.target.value }))} className="px-3 py-3 border rounded-xl">
+              <input value={purgedFilters.q} onChange={e => setPurgedFilters(f => ({ ...f, q: e.target.value }))} placeholder="Search name/email" className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <select value={purgedFilters.role} onChange={e => setPurgedFilters(f => ({ ...f, role: e.target.value }))} className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 focus:outline-none focus:ring-2 focus:ring-blue-500">
                 <option value="all">All Roles</option>
                 <option value="user">User</option>
                 {currentUser.isDefaultAdmin && <option value="admin">Admin</option>}
               </select>
-              <input type="date" value={purgedFilters.from} onChange={e => setPurgedFilters(f => ({ ...f, from: e.target.value }))} className="px-3 py-3 border rounded-xl" />
-              <input type="date" value={purgedFilters.to} onChange={e => setPurgedFilters(f => ({ ...f, to: e.target.value }))} className="px-3 py-3 border rounded-xl" />
-              <input value={purgedFilters.purgedBy} onChange={e => setPurgedFilters(f => ({ ...f, purgedBy: e.target.value }))} placeholder="Purged by (id)" className="px-3 py-3 border rounded-xl" />
+              <input type="date" value={purgedFilters.from} onChange={e => setPurgedFilters(f => ({ ...f, from: e.target.value }))} className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input type="date" value={purgedFilters.to} onChange={e => setPurgedFilters(f => ({ ...f, to: e.target.value }))} className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
+              <input value={purgedFilters.purgedBy} onChange={e => setPurgedFilters(f => ({ ...f, purgedBy: e.target.value }))} placeholder="Purged by (id)" className="px-3 py-3 border border-gray-300 dark:border-gray-700 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-200 placeholder-gray-500 dark:placeholder-gray-400 focus:outline-none focus:ring-2 focus:ring-blue-500" />
               <div className="flex items-center gap-2">
-                <button onClick={fetchPurgedAccounts} className="px-4 py-3 bg-red-600 text-white rounded-xl">Apply</button>
-                <button onClick={() => { setPurgedFilters({ q: '', role: 'all', purgedBy: '', from: '', to: '' }); setTimeout(fetchPurgedAccounts, 0); }} className="px-4 py-3 bg-gray-100 rounded-xl">Clear</button>
+                <button onClick={fetchPurgedAccounts} className="px-4 py-3 bg-red-600 hover:bg-red-700 text-white rounded-xl transition-colors">Apply</button>
+                <button onClick={() => { setPurgedFilters({ q: '', role: 'all', purgedBy: '', from: '', to: '' }); setTimeout(fetchPurgedAccounts, 0); }} className="px-4 py-3 bg-gray-100 dark:bg-gray-700 hover:bg-gray-200 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-200 rounded-xl transition-colors">Clear</button>
               </div>
               <div className="col-span-full text-sm text-gray-600">
                 {currentUser.isDefaultAdmin ? 'You are viewing all purged accounts (users + admins). These accounts are permanently removed.' : 'You are viewing only purged user accounts. These accounts are permanently removed.'}
