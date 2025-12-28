@@ -27,7 +27,7 @@ const AdminCoinCard = ({ loading: parentLoading }) => {
 
     if (loading || parentLoading) {
         return (
-            <div className="w-full min-h-[220px] rounded-2xl bg-white/50 border border-indigo-100 shadow-lg overflow-hidden relative">
+            <div className="w-full min-h-[220px] rounded-2xl bg-white/50 dark:bg-gray-800/50 border border-indigo-100 dark:border-gray-700 shadow-lg overflow-hidden relative">
                 <div className="absolute inset-0 bg-gradient-to-r from-transparent via-indigo-50/50 to-transparent -translate-x-full animate-[shimmer_2s_infinite]"></div>
                 <div className="p-6 space-y-8">
                     <div className="flex justify-between items-start">

@@ -390,7 +390,7 @@ export default function AdminHeader() {
               />
 
               {/* Menu Panel */}
-              <div className="relative ml-auto w-80 max-w-sm h-full bg-white shadow-2xl transform transition-transform duration-300 ease-in-out animate-mobile-menu-in">
+              <div className="relative ml-auto w-80 max-w-sm h-full bg-white dark:bg-gray-900 shadow-2xl transform transition-transform duration-300 ease-in-out animate-mobile-menu-in">
                 <div className="flex flex-col h-full">
                   {/* Header */}
                   <div className={`${getHeaderGradient()} p-6 text-white`}>
@@ -407,8 +407,8 @@ export default function AdminHeader() {
                   </div>
 
                   {/* Search */}
-                  <div className="p-6 border-b border-gray-200 relative">
-                    <form onSubmit={handleSearch} className={`flex items-center bg-gray-50 rounded-xl overflow-hidden focus-within:ring-2 ${getSearchFocusRingColor()} focus-within:bg-white transition-all`}>
+                  <div className="p-6 border-b border-gray-200 dark:border-gray-700 relative">
+                    <form onSubmit={handleSearch} className={`flex items-center bg-gray-50 dark:bg-gray-800 rounded-xl overflow-hidden focus-within:ring-2 ${getSearchFocusRingColor()} focus-within:bg-white dark:focus-within:bg-gray-700 transition-all`}>
                       <input
                         type="text"
                         placeholder="Search properties..."
