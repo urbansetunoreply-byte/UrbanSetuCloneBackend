@@ -170,28 +170,28 @@ export default function RentWallet() {
   const totalUpcoming = upcomingPayments.reduce((sum, p) => sum + p.amount, 0);
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-6xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 mb-4">
             <div>
-              <h1 className="text-3xl font-bold text-blue-700 mb-2">
+              <h1 className="text-3xl font-bold text-blue-700 dark:text-blue-400 mb-2">
                 <FaWallet className="inline mr-2" />
                 Rent Wallet
               </h1>
-              <p className="text-gray-600">
-                Contract ID: <span className="font-semibold break-all">{contract.contractId}</span>
+              <p className="text-gray-600 dark:text-gray-300">
+                Contract ID: <span className="font-semibold break-all text-gray-800 dark:text-gray-200">{contract.contractId}</span>
               </p>
               {contract.listingId && typeof contract.listingId === 'object' && (
-                <p className="text-gray-600">
-                  Property: <span className="font-semibold">{contract.listingId.name}</span>
+                <p className="text-gray-600 dark:text-gray-300">
+                  Property: <span className="font-semibold text-gray-800 dark:text-gray-200">{contract.listingId.name}</span>
                 </p>
               )}
             </div>
             <button
               onClick={() => navigate("/user/rental-contracts")}
-              className="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition-colors"
+              className="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
             >
               Back to Contracts
             </button>
@@ -199,7 +199,8 @@ export default function RentWallet() {
 
           {/* Tabs */}
           {/* Tabs - Scrollable on mobile */}
-          <div className="flex gap-2 border-b overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
+          {/* Tabs - Scrollable on mobile */}
+          <div className="flex gap-2 border-b border-gray-200 dark:border-gray-700 overflow-x-auto pb-2 scrollbar-hide -mx-4 px-4 md:mx-0 md:px-0">
             {[
               { id: 'overview', label: 'Overview', icon: FaWallet },
               { id: 'schedule', label: 'Payment Schedule', icon: FaCalendarAlt },
@@ -210,8 +211,8 @@ export default function RentWallet() {
                 key={tab.id}
                 onClick={() => setActiveTab(tab.id)}
                 className={`flex items-center gap-2 px-4 py-2 font-semibold transition whitespace-nowrap flex-shrink-0 ${activeTab === tab.id
-                  ? 'text-blue-600 border-b-2 border-blue-600'
-                  : 'text-gray-600 hover:text-blue-600'
+                  ? 'text-blue-600 dark:text-blue-400 border-b-2 border-blue-600 dark:border-blue-400'
+                  : 'text-gray-600 dark:text-gray-400 hover:text-blue-600 dark:hover:text-blue-400'
                   }`}
               >
                 <tab.icon />
@@ -250,40 +251,40 @@ export default function RentWallet() {
             {/* Wallet Statistics */}
             <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4">
               {/* Total Paid */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-gray-600 font-medium">{isTenant ? 'Total Paid' : 'Total Received'}</h3>
-                  <FaCheckCircle className="text-green-600 text-xl" />
+                  <h3 className="text-gray-600 dark:text-gray-300 font-medium">{isTenant ? 'Total Paid' : 'Total Received'}</h3>
+                  <FaCheckCircle className="text-green-600 dark:text-green-400 text-xl" />
                 </div>
-                <p className="text-2xl font-bold text-green-600">
+                <p className="text-2xl font-bold text-green-600 dark:text-green-400">
                   ₹{wallet.totalPaid?.toLocaleString('en-IN') || '0'}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">All-time payments</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">All-time payments</p>
               </div>
 
               {/* Total Due */}
-              <div className="bg-white rounded-xl shadow-lg p-6">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                 <div className="flex items-center justify-between mb-2">
-                  <h3 className="text-gray-600 font-medium">{isTenant ? 'Total Due' : 'Total Pending'}</h3>
-                  <FaMoneyBillWave className="text-blue-600 text-xl" />
+                  <h3 className="text-gray-600 dark:text-gray-300 font-medium">{isTenant ? 'Total Due' : 'Total Pending'}</h3>
+                  <FaMoneyBillWave className="text-blue-600 dark:text-blue-400 text-xl" />
                 </div>
-                <p className="text-2xl font-bold text-blue-600">
+                <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">
                   ₹{wallet.totalDue?.toLocaleString('en-IN') || '0'}
                 </p>
-                <p className="text-xs text-gray-500 mt-1">Remaining payments</p>
+                <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">Remaining payments</p>
               </div>
 
               {/* Overdue */}
               {totalOverdue > 0 && (
-                <div className="bg-white rounded-xl shadow-lg p-6 border-2 border-red-200">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-2 border-red-200 dark:border-red-800">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-gray-600 font-medium">Overdue</h3>
-                    <FaExclamationTriangle className="text-red-600 text-xl" />
+                    <h3 className="text-gray-600 dark:text-gray-300 font-medium">Overdue</h3>
+                    <FaExclamationTriangle className="text-red-600 dark:text-red-400 text-xl" />
                   </div>
-                  <p className="text-2xl font-bold text-red-600">
+                  <p className="text-2xl font-bold text-red-600 dark:text-red-400">
                     ₹{totalOverdue.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-xs text-red-500 mt-1">
+                  <p className="text-xs text-red-500 dark:text-red-400 mt-1">
                     {overduePayments.length} payment{overduePayments.length > 1 ? 's' : ''}
                   </p>
                 </div>
@@ -291,15 +292,15 @@ export default function RentWallet() {
 
               {/* Upcoming */}
               {totalUpcoming > 0 && (
-                <div className="bg-white rounded-xl shadow-lg p-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
                   <div className="flex items-center justify-between mb-2">
-                    <h3 className="text-gray-600 font-medium">Upcoming (30 days)</h3>
-                    <FaClock className="text-yellow-600 text-xl" />
+                    <h3 className="text-gray-600 dark:text-gray-300 font-medium">Upcoming (30 days)</h3>
+                    <FaClock className="text-yellow-600 dark:text-yellow-400 text-xl" />
                   </div>
-                  <p className="text-2xl font-bold text-yellow-600">
+                  <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">
                     ₹{totalUpcoming.toLocaleString('en-IN')}
                   </p>
-                  <p className="text-xs text-gray-500 mt-1">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                     {upcomingPayments.length} payment{upcomingPayments.length > 1 ? 's' : ''}
                   </p>
                 </div>
@@ -307,40 +308,40 @@ export default function RentWallet() {
             </div>
 
             {/* Contract Summary */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Contract Summary</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Contract Summary</h2>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <p className="text-gray-600 text-sm">Monthly Rent</p>
-                  <p className="font-semibold text-lg">₹{contract.lockedRentAmount?.toLocaleString('en-IN') || '0'}/month</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">Monthly Rent</p>
+                  <p className="font-semibold text-lg text-gray-900 dark:text-gray-200">₹{contract.lockedRentAmount?.toLocaleString('en-IN') || '0'}/month</p>
                 </div>
                 <div>
-                  <p className="text-gray-600 text-sm">Lock Duration</p>
-                  <p className="font-semibold text-lg">{contract.lockDuration} months</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">Lock Duration</p>
+                  <p className="font-semibold text-lg text-gray-900 dark:text-gray-200">{contract.lockDuration} months</p>
                 </div>
                 <div>
-                  <p className="text-gray-600 text-sm">Start Date</p>
-                  <p className="font-semibold text-lg">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">Start Date</p>
+                  <p className="font-semibold text-lg text-gray-900 dark:text-gray-200">
                     {new Date(contract.startDate).toLocaleDateString('en-GB')}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-600 text-sm">End Date</p>
-                  <p className="font-semibold text-lg">
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">End Date</p>
+                  <p className="font-semibold text-lg text-gray-900 dark:text-gray-200">
                     {new Date(contract.endDate).toLocaleDateString('en-GB')}
                   </p>
                 </div>
                 <div>
-                  <p className="text-gray-600 text-sm">Payment Due Date</p>
-                  <p className="font-semibold text-lg">Day {contract.dueDate} of each month</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">Payment Due Date</p>
+                  <p className="font-semibold text-lg text-gray-900 dark:text-gray-200">Day {contract.dueDate} of each month</p>
                 </div>
                 <div>
-                  <p className="text-gray-600 text-sm">Auto-Debit</p>
+                  <p className="text-gray-600 dark:text-gray-400 text-sm">Auto-Debit</p>
                   <p className="font-semibold text-lg">
                     {wallet.autoDebitEnabled ? (
-                      <span className="text-green-600">Enabled</span>
+                      <span className="text-green-600 dark:text-green-400">Enabled</span>
                     ) : (
-                      <span className="text-gray-500">Disabled</span>
+                      <span className="text-gray-500 dark:text-gray-400">Disabled</span>
                     )}
                   </p>
                 </div>
@@ -348,8 +349,8 @@ export default function RentWallet() {
             </div>
 
             {/* Recent Payments */}
-            <div className="bg-white rounded-xl shadow-lg p-6">
-              <h2 className="text-xl font-bold text-gray-800 mb-4">Recent Payments</h2>
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+              <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-4">Recent Payments</h2>
               {wallet.paymentSchedule && wallet.paymentSchedule.length > 0 ? (
                 <div className="space-y-2">
                   {wallet.paymentSchedule
@@ -357,21 +358,21 @@ export default function RentWallet() {
                     .sort((a, b) => new Date(b.paidAt || 0) - new Date(a.paidAt || 0))
                     .slice(0, 5)
                     .map((payment, index) => (
-                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 rounded-lg">
+                      <div key={index} className="flex items-center justify-between p-3 bg-gray-50 dark:bg-gray-700 rounded-lg">
                         <div>
-                          <p className="font-semibold">
+                          <p className="font-semibold text-gray-900 dark:text-white">
                             {new Date(payment.dueDate).toLocaleDateString('en-GB', { month: 'short', year: 'numeric' })}
                           </p>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Paid: {payment.paidAt ? new Date(payment.paidAt).toLocaleDateString('en-GB') : 'N/A'}
                           </p>
                         </div>
                         <div className="text-right">
-                          <p className="font-semibold text-green-600">
+                          <p className="font-semibold text-green-600 dark:text-green-400">
                             ₹{payment.amount.toLocaleString('en-IN')}
                           </p>
                           {payment.penaltyAmount > 0 && (
-                            <p className="text-xs text-red-600">
+                            <p className="text-xs text-red-600 dark:text-red-400">
                               Penalty: ₹{payment.penaltyAmount.toLocaleString('en-IN')}
                             </p>
                           )}
@@ -380,7 +381,7 @@ export default function RentWallet() {
                     ))}
                 </div>
               ) : (
-                <p className="text-gray-500">No payments yet.</p>
+                <p className="text-gray-500 dark:text-gray-400">No payments yet.</p>
               )}
             </div>
           </div>

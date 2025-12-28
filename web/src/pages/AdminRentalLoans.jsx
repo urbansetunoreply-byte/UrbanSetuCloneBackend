@@ -589,7 +589,7 @@ export default function AdminRentalLoans() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 border-b dark:border-gray-700 pb-2">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Approve Loan</h2>
                 <button
                   onClick={() => {
@@ -616,7 +616,7 @@ export default function AdminRentalLoans() {
                         type="checkbox"
                         checked={eligibilityCheck.passed}
                         onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, passed: e.target.checked })}
-                        className="rounded dark:bg-gray-700 dark:border-gray-600"
+                        className="rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-blue-500"
                       />
                       <span>Eligibility Passed</span>
                     </label>
@@ -652,7 +652,7 @@ export default function AdminRentalLoans() {
                         type="checkbox"
                         checked={eligibilityCheck.employmentVerified}
                         onChange={(e) => setEligibilityCheck({ ...eligibilityCheck, employmentVerified: e.target.checked })}
-                        className="rounded dark:bg-gray-700 dark:border-gray-600"
+                        className="rounded dark:bg-gray-700 dark:border-gray-600 focus:ring-blue-500"
                       />
                       <span>Employment Verified</span>
                     </label>
@@ -718,7 +718,7 @@ export default function AdminRentalLoans() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 border-b dark:border-gray-700 pb-2">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Reject Loan</h2>
                 <button
                   onClick={() => {
@@ -797,7 +797,7 @@ export default function AdminRentalLoans() {
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-md w-full p-6 relative">
-              <div className="flex items-center justify-between mb-4">
+              <div className="flex items-center justify-between mb-4 border-b dark:border-gray-700 pb-2">
                 <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Disburse Loan</h2>
                 <button
                   onClick={() => {

@@ -17,6 +17,26 @@ const buildPayMonthlyRentUrl = (contractId) => {
   return `${runtimeOrigin}/user/pay-monthly-rent?contractId=${contractId}&scheduleIndex=0`;
 };
 
+// Helper for status colors with dark mode support
+const getStatusClasses = (status) => {
+  switch (status) {
+    case 'active':
+      return 'bg-green-100 text-green-700 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
+    case 'pending_signature':
+      return 'bg-yellow-100 text-yellow-700 border-yellow-200 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800';
+    case 'draft':
+      return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
+    case 'expired':
+      return 'bg-red-100 text-red-700 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
+    case 'terminated':
+      return 'bg-orange-100 text-orange-700 border-orange-200 dark:bg-orange-900/30 dark:text-orange-300 dark:border-orange-800';
+    case 'rejected':
+      return 'bg-red-200 text-red-800 border-red-300 dark:bg-red-900/50 dark:text-red-200 dark:border-red-800';
+    default:
+      return 'bg-gray-100 text-gray-700 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
+  }
+};
+
 export default function RentalContracts() {
   usePageTitle("My Rental Contracts - UrbanSetu");
 
@@ -124,22 +144,7 @@ export default function RentalContracts() {
   };
 
   const getStatusColor = (status) => {
-    switch (status) {
-      case 'active':
-        return 'bg-green-100 text-green-700 border-green-200';
-      case 'pending_signature':
-        return 'bg-yellow-100 text-yellow-700 border-yellow-200';
-      case 'draft':
-        return 'bg-gray-100 text-gray-700 border-gray-200';
-      case 'expired':
-        return 'bg-red-100 text-red-700 border-red-200';
-      case 'terminated':
-        return 'bg-orange-100 text-orange-700 border-orange-200';
-      case 'rejected':
-        return 'bg-red-200 text-red-800 border-red-300';
-      default:
-        return 'bg-gray-100 text-gray-700 border-gray-200';
-    }
+    return getStatusClasses(status);
   };
 
   const getStatusLabel = (status) => {
@@ -310,20 +315,20 @@ export default function RentalContracts() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-6xl mx-auto">
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
           <div className="flex items-center justify-between mb-6 flex-wrap gap-4">
             <div>
-              <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3">
-                <FaFileContract className="text-blue-600" />
+              <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3">
+                <FaFileContract className="text-blue-600 dark:text-blue-400" />
                 My Rental Contracts
               </h1>
-              <p className="text-gray-600 mt-2">View and manage your rent-lock contracts</p>
+              <p className="text-gray-600 dark:text-gray-300 mt-2">View and manage your rent-lock contracts</p>
             </div>
             <button
               onClick={() => navigate('/user/services')}
-              className="px-4 py-2 bg-gray-100 text-gray-700 rounded-lg hover:bg-gray-200 font-semibold flex items-center gap-2"
+              className="px-4 py-2 bg-gray-100 text-gray-700 dark:bg-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-600 font-semibold flex items-center gap-2"
             >
               <FaTools />
               Services
@@ -338,7 +343,7 @@ export default function RentalContracts() {
                 onClick={() => setFilter(status)}
                 className={`px-4 py-2 rounded-lg font-medium transition ${filter === status
                   ? 'bg-blue-600 text-white'
-                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                  : 'bg-gray-100 text-gray-700 hover:bg-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:hover:bg-gray-600'
                   }`}
               >
                 {status === 'all' ? 'All Contracts' : getStatusLabel(status)}
@@ -348,10 +353,10 @@ export default function RentalContracts() {
         </div>
 
         {contracts.length === 0 ? (
-          <div className="bg-white rounded-xl shadow-lg p-12 text-center">
-            <FaFileContract className="text-6xl text-gray-300 mx-auto mb-4" />
-            <h3 className="text-xl font-semibold text-gray-600 mb-2">No Contracts Found</h3>
-            <p className="text-gray-500 mb-6">You don't have any rental contracts yet.</p>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-12 text-center">
+            <FaFileContract className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <h3 className="text-xl font-semibold text-gray-600 dark:text-gray-300 mb-2">No Contracts Found</h3>
+            <p className="text-gray-500 dark:text-gray-400 mb-6">You don't have any rental contracts yet.</p>
             <button
               onClick={() => navigate('/')}
               className="px-6 py-3 bg-blue-600 text-white rounded-lg hover:bg-blue-700"
@@ -377,18 +382,18 @@ export default function RentalContracts() {
               return (
                 <div
                   key={contract._id}
-                  className={`bg-white rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}
+                  className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 border-2 ${getStatusColor(contract.status)}`}
                 >
                   <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4">
                     <div className="flex-1">
                       <div className="flex items-center gap-3 mb-2">
-                        <FaFileContract className="text-2xl text-blue-600" />
+                        <FaFileContract className="text-2xl text-blue-600 dark:text-blue-400" />
                         <div>
-                          <h3 className="text-xl font-bold text-gray-800">
+                          <h3 className="text-xl font-bold text-gray-800 dark:text-white">
                             {listingId ? (
                               <Link
                                 to={`/listing/${listingId}`}
-                                className="text-blue-600 hover:text-blue-800 hover:underline"
+                                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 hover:underline"
                               >
                                 {listingName}
                               </Link>
@@ -396,7 +401,7 @@ export default function RentalContracts() {
                               listingName
                             )}
                           </h3>
-                          <p className="text-sm text-gray-600 font-mono">
+                          <p className="text-sm text-gray-600 dark:text-gray-400 font-mono">
                             {contract.contractId}
                           </p>
                         </div>
@@ -404,32 +409,32 @@ export default function RentalContracts() {
 
                       <div className="grid grid-cols-2 md:grid-cols-4 gap-4 mt-4 text-sm">
                         <div>
-                          <p className="text-gray-600 mb-1 flex items-center gap-1">
-                            <FaMoneyBillWave className="text-green-600" /> Monthly Rent
+                          <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+                            <FaMoneyBillWave className="text-green-600 dark:text-green-400" /> Monthly Rent
                           </p>
-                          <p className="font-semibold">
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">
                             ₹{contract.lockedRentAmount?.toLocaleString('en-IN') || contract.rentAmount?.toLocaleString('en-IN') || '0'}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-600 mb-1 flex items-center gap-1">
-                            <FaLock className="text-purple-600" /> Duration
+                          <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+                            <FaLock className="text-purple-600 dark:text-purple-400" /> Duration
                           </p>
-                          <p className="font-semibold">{contract.lockDuration} months</p>
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">{contract.lockDuration} months</p>
                         </div>
                         <div>
-                          <p className="text-gray-600 mb-1 flex items-center gap-1">
-                            <FaCalendarAlt className="text-indigo-600" /> Start Date
+                          <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+                            <FaCalendarAlt className="text-indigo-600 dark:text-indigo-400" /> Start Date
                           </p>
-                          <p className="font-semibold">
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">
                             {contract.startDate ? new Date(contract.startDate).toLocaleDateString('en-GB') : 'N/A'}
                           </p>
                         </div>
                         <div>
-                          <p className="text-gray-600 mb-1 flex items-center gap-1">
-                            <FaCalendarAlt className="text-red-600" /> End Date
+                          <p className="text-gray-600 dark:text-gray-400 mb-1 flex items-center gap-1">
+                            <FaCalendarAlt className="text-red-600 dark:text-red-400" /> End Date
                           </p>
-                          <p className="font-semibold">
+                          <p className="font-semibold text-gray-800 dark:text-gray-200">
                             {contract.endDate ? new Date(contract.endDate).toLocaleDateString('en-GB') : 'N/A'}
                           </p>
                         </div>
@@ -438,28 +443,28 @@ export default function RentalContracts() {
                       {/* Signature Status */}
                       <div className="mt-4 flex items-center gap-4">
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">Tenant:</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Tenant:</span>
                           {contract.tenantSignature?.signed ? (
-                            <FaCheckCircle className="text-green-600" />
+                            <FaCheckCircle className="text-green-600 dark:text-green-400" />
                           ) : (
-                            <FaTimesCircle className="text-yellow-600" />
+                            <FaTimesCircle className="text-yellow-600 dark:text-yellow-400" />
                           )}
                         </div>
                         <div className="flex items-center gap-2">
-                          <span className="text-sm text-gray-600">Landlord:</span>
+                          <span className="text-sm text-gray-600 dark:text-gray-400">Landlord:</span>
                           {contract.landlordSignature?.signed ? (
-                            <FaCheckCircle className="text-green-600" />
+                            <FaCheckCircle className="text-green-600 dark:text-green-400" />
                           ) : (
-                            <FaTimesCircle className="text-yellow-600" />
+                            <FaTimesCircle className="text-yellow-600 dark:text-yellow-400" />
                           )}
                         </div>
                       </div>
 
                       {/* Payment Status - Show monthly payment status for active contracts */}
                       {contract.status === 'active' && contract.wallet?.paymentSchedule && contract.wallet.paymentSchedule.length > 0 && (
-                        <div className="mt-4 bg-gray-50 rounded-lg p-4 border border-gray-200">
-                          <h4 className="font-semibold text-gray-800 mb-2 flex items-center gap-2">
-                            <FaMoneyBillWave className="text-green-600" /> Payment Status
+                        <div className="mt-4 bg-gray-50 dark:bg-gray-700/50 rounded-lg p-4 border border-gray-200 dark:border-gray-600">
+                          <h4 className="font-semibold text-gray-800 dark:text-white mb-2 flex items-center gap-2">
+                            <FaMoneyBillWave className="text-green-600 dark:text-green-400" /> Payment Status
                           </h4>
                           <div className="flex flex-wrap gap-2">
                             {contract.wallet.paymentSchedule
@@ -472,12 +477,12 @@ export default function RentalContracts() {
                                 <div
                                   key={idx}
                                   className={`px-3 py-1.5 rounded-lg text-xs font-semibold flex items-center gap-1 ${payment.status === 'completed'
-                                    ? 'bg-green-100 text-green-700 border border-green-300'
+                                    ? 'bg-green-100 text-green-700 border border-green-300 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800'
                                     : payment.status === 'overdue'
-                                      ? 'bg-red-100 text-red-700 border border-red-300'
+                                      ? 'bg-red-100 text-red-700 border border-red-300 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800'
                                       : payment.status === 'processing'
-                                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-300'
-                                        : 'bg-gray-100 text-gray-600 border border-gray-300'
+                                        ? 'bg-yellow-100 text-yellow-700 border border-yellow-300 dark:bg-yellow-900/30 dark:text-yellow-300 dark:border-yellow-800'
+                                        : 'bg-gray-100 text-gray-600 border border-gray-300 dark:bg-gray-800 dark:text-gray-400 dark:border-gray-600'
                                     }`}
                                   title={`${payment.status === 'completed' ? 'Paid' : payment.status === 'overdue' ? 'Overdue' : payment.status === 'processing' ? 'Processing' : 'Pending'} - Month ${payment.month}/${payment.year}`}
                                 >
@@ -497,16 +502,16 @@ export default function RentalContracts() {
                                 </div>
                               ))}
                             {contract.wallet.paymentSchedule.length > 6 && (
-                              <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300">
+                              <div className="px-3 py-1.5 rounded-lg text-xs font-semibold bg-blue-100 text-blue-700 border border-blue-300 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800">
                                 +{contract.wallet.paymentSchedule.length - 6} more
                               </div>
                             )}
                           </div>
                           {contract.wallet.totalPaid > 0 && (
-                            <div className="mt-2 text-xs text-gray-600">
-                              Total Paid: <span className="font-semibold text-green-600">₹{contract.wallet.totalPaid.toLocaleString('en-IN')}</span>
+                            <div className="mt-2 text-xs text-gray-600 dark:text-gray-400">
+                              Total Paid: <span className="font-semibold text-green-600 dark:text-green-400">₹{contract.wallet.totalPaid.toLocaleString('en-IN')}</span>
                               {contract.wallet.totalDue > 0 && (
-                                <> | Pending: <span className="font-semibold text-yellow-600">₹{contract.wallet.totalDue.toLocaleString('en-IN')}</span></>
+                                <> | Pending: <span className="font-semibold text-yellow-600 dark:text-yellow-400">₹{contract.wallet.totalDue.toLocaleString('en-IN')}</span></>
                               )}
                             </div>
                           )}
@@ -694,17 +699,17 @@ export default function RentalContracts() {
       {showPreviewModal && selectedContract && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Contract Details</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Contract Details</h2>
                 <button
                   onClick={() => {
                     setShowPreviewModal(false);
                     setSelectedContract(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                 >
-                  ×
+                  <FaTimes />
                 </button>
               </div>
               <ContractPreview
@@ -725,17 +730,17 @@ export default function RentalContracts() {
       {showReviewModal && signingContract && (
         <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
           <div className="flex min-h-full items-center justify-center p-4">
-            <div className="bg-white rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
+            <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-4xl w-full p-6 relative">
               <div className="flex items-center justify-between mb-4">
-                <h2 className="text-2xl font-bold text-gray-800">Review Contract</h2>
+                <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Review Contract</h2>
                 <button
                   onClick={() => {
                     setShowReviewModal(false);
                     setSigningContract(null);
                   }}
-                  className="text-gray-400 hover:text-gray-600 text-2xl"
+                  className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 text-2xl"
                 >
-                  ×
+                  <FaTimes />
                 </button>
               </div>
 
@@ -757,25 +762,25 @@ export default function RentalContracts() {
 
                 if (isLandlord && signingContract.status === 'pending_signature') {
                   return (
-                    <div className="mt-6 p-6 bg-gray-50 rounded-lg border-2 border-gray-200">
-                      <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                        <FaPen className="text-blue-600" /> Your Signature Required
+                    <div className="mt-6 p-6 bg-gray-50 dark:bg-gray-700 rounded-lg border-2 border-gray-200 dark:border-gray-600">
+                      <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                        <FaPen className="text-blue-600 dark:text-blue-400" /> Your Signature Required
                       </h3>
 
                       {landlordSigned ? (
-                        <div className="bg-green-50 border border-green-200 rounded-lg p-4 mb-4">
-                          <div className="flex items-center gap-2 text-green-700">
+                        <div className="bg-green-50 border border-green-200 dark:bg-green-900/10 dark:border-green-800 rounded-lg p-4 mb-4">
+                          <div className="flex items-center gap-2 text-green-700 dark:text-green-300">
                             <FaCheckCircle /> You have already signed this contract.
                           </div>
                           {signingContract.landlordSignature?.signedAt && (
-                            <p className="text-sm text-green-600 mt-2">
+                            <p className="text-sm text-green-600 dark:text-green-400 mt-2">
                               Signed on: {new Date(signingContract.landlordSignature.signedAt).toLocaleString('en-GB')}
                             </p>
                           )}
                         </div>
                       ) : (
                         <div>
-                          <p className="text-gray-600 mb-4">
+                          <p className="text-gray-600 dark:text-gray-300 mb-4">
                             Please review the contract above. If you agree to the terms, please sign below to proceed.
                           </p>
                           <button

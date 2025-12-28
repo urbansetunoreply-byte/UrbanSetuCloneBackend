@@ -858,29 +858,29 @@ export default function RentProperty() {
   // Show rejection message if contract is rejected or terminated
   if (contract && (contract.status === 'rejected' || contract.status === 'terminated')) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-4 md:px-8">
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 py-10 px-4 md:px-8">
         <div className="max-w-2xl mx-auto">
-          <div className="bg-white rounded-xl shadow-lg p-8 text-center">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 text-center">
             <div className="mb-6">
               <FaTimesCircle className="text-6xl text-red-500 mx-auto mb-4" />
-              <h2 className="text-3xl font-bold text-gray-800 mb-2">
+              <h2 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
                 {contract.status === 'rejected' ? 'Contract Rejected' : 'Contract Terminated'}
               </h2>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 {contract.status === 'rejected'
                   ? 'This contract was rejected by the seller before completion.'
                   : 'This contract was terminated before completion.'}
               </p>
               {contract.rejectionReason && contract.status === 'rejected' && (
-                <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-4 text-left">
-                  <p className="font-semibold text-red-800 mb-1">Rejection Reason:</p>
-                  <p className="text-red-700">{contract.rejectionReason}</p>
+                <div className="bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-4 text-left">
+                  <p className="font-semibold text-red-800 dark:text-red-200 mb-1">Rejection Reason:</p>
+                  <p className="text-red-700 dark:text-red-300">{contract.rejectionReason}</p>
                 </div>
               )}
               {contract.terminationReason && contract.status === 'terminated' && (
-                <div className="bg-orange-50 border border-orange-200 rounded-lg p-4 mb-4 text-left">
-                  <p className="font-semibold text-orange-800 mb-1">Termination Reason:</p>
-                  <p className="text-orange-700">{contract.terminationReason}</p>
+                <div className="bg-orange-50 dark:bg-orange-900/30 border border-orange-200 dark:border-orange-800 rounded-lg p-4 mb-4 text-left">
+                  <p className="font-semibold text-orange-800 dark:text-orange-200 mb-1">Termination Reason:</p>
+                  <p className="text-orange-700 dark:text-orange-300">{contract.terminationReason}</p>
                 </div>
               )}
               {(contract.rejectedAt || contract.terminatedAt) && (
@@ -899,7 +899,7 @@ export default function RentProperty() {
               </button>
               <button
                 onClick={() => navigate("/user/rental-contracts")}
-                className="px-6 py-3 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
+                className="px-6 py-3 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
               >
                 <FaFileContract /> View All Contracts
               </button>
@@ -957,10 +957,10 @@ export default function RentProperty() {
   const totalAmount = securityDeposit + monthlyRent; // Security deposit + first month rent (extra charges are monthly)
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Progress Steps */}
-        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8 mb-6">
           <div className="flex items-center justify-between w-full">
             {[1, 2, 3, 4, 5].map((s) => (
               <React.Fragment key={s}>
@@ -977,8 +977,8 @@ export default function RentProperty() {
                   <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-sm md:text-base font-bold transition-all duration-500 border-4 shadow-sm ${step > s
                     ? 'bg-blue-600 border-blue-600 text-white'
                     : step === s
-                      ? 'bg-white border-blue-600 text-blue-600 scale-110 shadow-[0_0_15px_rgba(37,99,235,0.4)]'
-                      : 'bg-gray-50 border-gray-200 text-gray-400 group-hover:border-blue-300 transition-colors'
+                      ? 'bg-white dark:bg-gray-800 border-blue-600 text-blue-600 scale-110 shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                      : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-400 group-hover:border-blue-300 dark:group-hover:border-blue-500 transition-colors'
                     }`}>
                     {step > s ? <FaCheck className="text-sm md:text-base" /> : s}
                   </div>
@@ -988,7 +988,7 @@ export default function RentProperty() {
                   </span>
                 </div>
                 {s < 5 && (
-                  <div className="flex-1 h-1.5 bg-gray-100 relative mx-2 rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-700 relative mx-2 rounded-full overflow-hidden">
                     <div
                       className={`absolute top-0 left-0 h-full bg-blue-600 transition-all duration-700 ease-out rounded-full ${step > s ? 'w-full' : 'w-0'
                         }`}
@@ -1004,14 +1004,14 @@ export default function RentProperty() {
 
         {/* Step 1: Plan Selection */}
         {step === 1 && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6">Select Rent-Lock Plan</h2>
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6">Select Rent-Lock Plan</h2>
 
             {/* Property Summary */}
-            <div className="bg-gray-50 p-4 rounded-lg mb-6">
-              <h3 className="font-semibold text-lg mb-2">{listing.name}</h3>
-              <p className="text-gray-600 text-sm mb-2">{listing.address || `${listing.city}, ${listing.state}`}</p>
-              <p className="text-blue-600 font-semibold">₹{monthlyRent.toLocaleString('en-IN')}/month</p>
+            <div className="bg-gray-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6">
+              <h3 className="font-semibold text-lg mb-2 text-gray-800 dark:text-white">{listing.name}</h3>
+              <p className="text-gray-600 dark:text-gray-300 text-sm mb-2">{listing.address || `${listing.city}, ${listing.state}`}</p>
+              <p className="text-blue-600 dark:text-blue-400 font-semibold">₹{monthlyRent.toLocaleString('en-IN')}/month</p>
             </div>
 
             {/* Plan Selection */}
@@ -1020,8 +1020,8 @@ export default function RentProperty() {
                 <label
                   key={plan}
                   className={`flex items-center p-4 border-2 rounded-lg cursor-pointer transition ${formData.rentLockPlan === plan
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-300 hover:border-blue-400'
+                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
                     } ${contract ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
                 >
                   <input
@@ -1035,8 +1035,8 @@ export default function RentProperty() {
                   />
                   <div className="flex-1">
                     <div className="flex items-center">
-                      <FaLock className="text-blue-600 mr-2" />
-                      <span className="font-semibold text-lg">
+                      <FaLock className="text-blue-600 dark:text-blue-400 mr-2" />
+                      <span className="font-semibold text-lg text-gray-800 dark:text-gray-200">
                         {plan === '1_year' ? '1 Year Rent-Lock' :
                           plan === '3_year' ? '3 Year Rent-Lock' :
                             plan === '5_year' ? '5 Year Secure Plan' :
@@ -1057,7 +1057,7 @@ export default function RentProperty() {
             {/* Custom Duration Input */}
             {formData.rentLockPlan === 'custom' && (
               <div className="mb-6">
-                <label className="block text-gray-700 font-medium mb-2">
+                <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                   Custom Lock Duration (months)
                 </label>
                 <input
@@ -1067,16 +1067,16 @@ export default function RentProperty() {
                   value={formData.customLockDuration}
                   onChange={(e) => setFormData(prev => ({ ...prev, customLockDuration: parseInt(e.target.value) || 12 }))}
                   disabled={!!contract}
-                  className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 ${contract ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                 />
               </div>
             )}
 
             {/* Move-in Date */}
             <div className="mb-6">
-              <label className="block text-gray-700 font-medium mb-2">
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
                 <FaCalendarAlt className="inline mr-2" />
-                Preferred Visit / Move-in Date <span className="text-gray-500 text-sm font-normal">(can be modified later)</span>
+                Preferred Visit / Move-in Date <span className="text-gray-500 dark:text-gray-400 text-sm font-normal">(can be modified later)</span>
               </label>
               <input
                 type="date"
@@ -1085,20 +1085,20 @@ export default function RentProperty() {
                 min={new Date().toISOString().split('T')[0]}
                 required
                 disabled={!!contract}
-                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${contract ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
               />
             </div>
 
             {/* Appointment style inputs */}
-            <div className={`mb-6 border border-gray-200 rounded-lg p-4 ${contract ? 'bg-gray-50 opacity-80' : ''}`}>
-              <h3 className="text-lg font-semibold text-gray-800 mb-4">Schedule Your Visit</h3>
+            <div className={`mb-6 border border-gray-200 dark:border-gray-600 rounded-lg p-4 ${contract ? 'bg-gray-50 dark:bg-gray-700 opacity-80' : ''}`}>
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4">Schedule Your Visit</h3>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Preferred Time</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Preferred Time</label>
                   <select
                     value={formData.appointmentTime}
                     onChange={(e) => handleAppointmentFieldChange('appointmentTime', e.target.value)}
-                    className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${contract ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                     required
                     disabled={!!contract}
                   >
@@ -1120,11 +1120,11 @@ export default function RentProperty() {
                   </select>
                 </div>
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-1">Purpose</label>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Purpose</label>
                   <select
                     value={formData.appointmentPurpose}
                     onChange={(e) => handleAppointmentFieldChange('appointmentPurpose', e.target.value)}
-                    className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                    className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white ${contract ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                     required
                     disabled={!!contract}
                   >
@@ -1136,27 +1136,27 @@ export default function RentProperty() {
                 </div>
               </div>
               <div className="mt-4">
-                <label className="block text-sm font-medium text-gray-700 mb-1">Message (optional)</label>
+                <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">Message (optional)</label>
                 <textarea
                   value={formData.appointmentMessage}
                   onChange={(e) => handleAppointmentFieldChange('appointmentMessage', e.target.value)}
                   rows="4"
                   placeholder="Tell the owner about your requirements, preferred slots, or anything else they'd need to know before the visit."
                   disabled={!!contract}
-                  className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none ${contract ? 'bg-gray-100 cursor-not-allowed' : ''}`}
+                  className={`w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 resize-none dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400 ${contract ? 'bg-gray-100 dark:bg-gray-600 cursor-not-allowed' : ''}`}
                 ></textarea>
               </div>
             </div>
 
             {/* AI Legal Assistant Section */}
-            <div className={`mb-6 border border-purple-200 bg-purple-50 rounded-lg p-4 ${contract ? 'opacity-60 pointer-events-none' : ''}`}>
+            <div className={`mb-6 border border-purple-200 dark:border-purple-800 bg-purple-50 dark:bg-purple-900/20 rounded-lg p-4 ${contract ? 'opacity-60 pointer-events-none' : ''}`}>
               <div className="flex items-center gap-2 mb-3">
                 <span className="bg-purple-600 text-white text-xs px-2 py-1 rounded-full uppercase font-bold">New</span>
-                <h3 className="text-lg font-semibold text-purple-900 border-none">AI Legal Assistant</h3>
+                <h3 className="text-lg font-semibold text-purple-900 dark:text-purple-300 border-none">AI Legal Assistant</h3>
               </div>
 
               <div className="mb-4">
-                <p className="text-sm text-purple-800 mb-2">
+                <p className="text-sm text-purple-800 dark:text-purple-300 mb-2">
                   Need specific terms? Describe them (e.g., "No loud music after 10 PM", "Landlord pays water bill") and our AI will draft a formal legal clause for you.
                 </p>
                 <div className="flex flex-col sm:flex-row gap-2">
@@ -1165,7 +1165,7 @@ export default function RentProperty() {
                     value={newClauseInput}
                     onChange={(e) => setNewClauseInput(e.target.value)}
                     placeholder="Describe your custom condition..."
-                    className="flex-1 p-3 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 w-full"
+                    className="flex-1 p-3 border border-purple-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 w-full dark:bg-gray-800 dark:border-purple-600 dark:text-white dark:placeholder-gray-400"
                     disabled={draftingClause || !!contract}
                     onKeyDown={(e) => e.key === 'Enter' && handleDraftClause()}
                   />
@@ -1191,13 +1191,13 @@ export default function RentProperty() {
               {/* List of Custom Clauses */}
               {customClauses.length > 0 && (
                 <div className="space-y-3">
-                  <h4 className="text-sm font-semibold text-purple-900">Added Clauses:</h4>
+                  <h4 className="text-sm font-semibold text-purple-900 dark:text-purple-300">Added Clauses:</h4>
                   {customClauses.map((clause, index) => (
-                    <div key={index} className="bg-white p-3 rounded border border-purple-200 flex justify-between items-start gap-3 shadow-sm">
-                      <p className="text-sm text-gray-800 italic">"{clause}"</p>
+                    <div key={index} className="bg-white dark:bg-gray-800 p-3 rounded border border-purple-200 dark:border-purple-800 flex justify-between items-start gap-3 shadow-sm">
+                      <p className="text-sm text-gray-800 dark:text-gray-300 italic">"{clause}"</p>
                       <button
                         onClick={() => removeClause(index)}
-                        className="text-red-500 hover:text-red-700 p-1"
+                        className="text-red-500 hover:text-red-700 dark:hover:text-red-400 p-1"
                         title="Remove clause"
                         disabled={!!contract}
                       >
@@ -1211,7 +1211,7 @@ export default function RentProperty() {
 
             {/* Deposit Plan Selection */}
             <div className="mb-6">
-              <label className="block text-gray-700 font-medium mb-3">
+              <label className="block text-gray-700 dark:text-gray-300 font-medium mb-3">
                 <FaShieldAlt className="inline mr-2" />
                 Select Deposit Plan
               </label>
@@ -1219,8 +1219,8 @@ export default function RentProperty() {
                 {/* Standard Deposit */}
                 <label
                   className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'standard'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-300 hover:border-blue-400'
+                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
                     } ${contract ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
                 >
                   <input
@@ -1234,13 +1234,13 @@ export default function RentProperty() {
                   />
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                      <span className="font-semibold text-lg">Standard Deposit (Default)</span>
-                      <span className="text-sm font-semibold text-blue-600">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
+                      <span className="font-semibold text-lg text-gray-800 dark:text-white">Standard Deposit (Default)</span>
+                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       Security Deposit = {depositDetails.depositMonths} month{depositDetails.depositMonths !== 1 ? 's' : ''} rent
                       <br />
-                      <span className="text-green-600">✓ Fully refundable</span>
+                      <span className="text-green-600 dark:text-green-400">✓ Fully refundable</span>
                     </p>
                   </div>
                 </label>
@@ -1248,8 +1248,8 @@ export default function RentProperty() {
                 {/* Low Deposit Plan */}
                 <label
                   className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'low'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-300 hover:border-blue-400'
+                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
                     } ${contract ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
                 >
                   <input
@@ -1263,15 +1263,15 @@ export default function RentProperty() {
                   />
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                      <span className="font-semibold text-lg">Low Deposit Plan</span>
-                      <span className="text-sm font-semibold text-blue-600">₹{depositDetails.depositAmount.toLocaleString('en-IN')} + ₹{depositDetails.extraMonthlyCharge}/month</span>
+                      <span className="font-semibold text-lg text-gray-800 dark:text-white">Low Deposit Plan</span>
+                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">₹{depositDetails.depositAmount.toLocaleString('en-IN')} + ₹{depositDetails.extraMonthlyCharge}/month</span>
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       Security Deposit = 1 month rent
                       <br />
-                      <span className="text-amber-600">+ ₹{depositDetails.extraMonthlyCharge} extra monthly charge</span>
+                      <span className="text-amber-600 dark:text-amber-500">+ ₹{depositDetails.extraMonthlyCharge} extra monthly charge</span>
                       <br />
-                      <span className="text-green-600">✓ Deposit fully refundable</span>
+                      <span className="text-green-600 dark:text-green-400">✓ Deposit fully refundable</span>
                     </p>
                   </div>
                 </label>
@@ -1279,8 +1279,8 @@ export default function RentProperty() {
                 {/* Zero Deposit Plan */}
                 <label
                   className={`flex items-start p-4 border-2 rounded-lg cursor-pointer transition ${formData.depositPlan === 'zero'
-                    ? 'border-blue-600 bg-blue-50'
-                    : 'border-gray-300 hover:border-blue-400'
+                    ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                    : 'border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-500'
                     } ${contract ? 'opacity-60 cursor-not-allowed pointer-events-none' : ''}`}
                 >
                   <input
@@ -1294,15 +1294,15 @@ export default function RentProperty() {
                   />
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between">
-                      <span className="font-semibold text-lg">Zero Deposit Plan</span>
-                      <span className="text-sm font-semibold text-blue-600">₹0 + ₹{depositDetails.insuranceFee}/month</span>
+                      <span className="font-semibold text-lg text-gray-800 dark:text-white">Zero Deposit Plan</span>
+                      <span className="text-sm font-semibold text-blue-600 dark:text-blue-400">₹0 + ₹{depositDetails.insuranceFee}/month</span>
                     </div>
-                    <p className="text-sm text-gray-600 mt-1">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                       Security Deposit = ₹0
                       <br />
-                      <span className="text-amber-600">+ ₹{depositDetails.insuranceFee}/month insurance fee</span>
+                      <span className="text-amber-600 dark:text-amber-500">+ ₹{depositDetails.insuranceFee}/month insurance fee</span>
                       <br />
-                      <span className="text-blue-600">ℹ️ Covers owner's risk; fully handled by platform</span>
+                      <span className="text-blue-600 dark:text-blue-400">ℹ️ Covers owner's risk; fully handled by platform</span>
                     </p>
                   </div>
                 </label>
@@ -1310,54 +1310,54 @@ export default function RentProperty() {
             </div>
 
             {/* Summary */}
-            <div className="bg-blue-50 p-4 rounded-lg mb-6 border border-blue-200">
-              <h4 className="font-semibold mb-3 text-lg">Summary</h4>
+            <div className="bg-blue-50 dark:bg-gray-700/50 p-4 rounded-lg mb-6 border border-blue-200 dark:border-blue-800">
+              <h4 className="font-semibold mb-3 text-lg text-gray-800 dark:text-white">Summary</h4>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
-                  <span className="text-gray-700">Monthly Rent:</span>
-                  <span className="font-semibold">₹{monthlyRent.toLocaleString('en-IN')}</span>
+                  <span className="text-gray-700 dark:text-gray-300">Monthly Rent:</span>
+                  <span className="font-semibold text-gray-800 dark:text-white">₹{monthlyRent.toLocaleString('en-IN')}</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-700">Lock Duration:</span>
-                  <span className="font-semibold">{lockDurationMonths} months (Rent stays fixed)</span>
+                  <span className="text-gray-700 dark:text-gray-300">Lock Duration:</span>
+                  <span className="font-semibold text-gray-800 dark:text-white">{lockDurationMonths} months (Rent stays fixed)</span>
                 </div>
                 <div className="flex justify-between">
-                  <span className="text-gray-700">Selected Deposit Plan:</span>
-                  <span className="font-semibold text-blue-700">{depositDetails.planName}</span>
+                  <span className="text-gray-700 dark:text-gray-300">Selected Deposit Plan:</span>
+                  <span className="font-semibold text-blue-700 dark:text-blue-400">{depositDetails.planName}</span>
                 </div>
                 {formData.depositPlan === 'standard' && (
-                  <div className="flex justify-between pl-4 border-l-2 border-blue-300">
-                    <span className="text-gray-600">Security Deposit ({depositDetails.depositMonths} month{depositDetails.depositMonths !== 1 ? 's' : ''}):</span>
-                    <span className="font-semibold">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
+                  <div className="flex justify-between pl-4 border-l-2 border-blue-300 dark:border-blue-600">
+                    <span className="text-gray-600 dark:text-gray-400">Security Deposit ({depositDetails.depositMonths} month{depositDetails.depositMonths !== 1 ? 's' : ''}):</span>
+                    <span className="font-semibold text-gray-800 dark:text-white">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 {formData.depositPlan === 'low' && (
-                  <div className="pl-4 border-l-2 border-blue-300 space-y-1">
+                  <div className="pl-4 border-l-2 border-blue-300 dark:border-blue-600 space-y-1">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Security Deposit (1 month):</span>
-                      <span className="font-semibold">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Security Deposit (1 month):</span>
+                      <span className="font-semibold text-gray-800 dark:text-white">₹{depositDetails.depositAmount.toLocaleString('en-IN')}</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Extra Monthly Charge:</span>
-                      <span className="font-semibold text-amber-600">₹{depositDetails.extraMonthlyCharge}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Extra Monthly Charge:</span>
+                      <span className="font-semibold text-amber-600 dark:text-amber-500">₹{depositDetails.extraMonthlyCharge}</span>
                     </div>
                   </div>
                 )}
                 {formData.depositPlan === 'zero' && (
-                  <div className="pl-4 border-l-2 border-blue-300 space-y-1">
+                  <div className="pl-4 border-l-2 border-blue-300 dark:border-blue-600 space-y-1">
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Security Deposit:</span>
-                      <span className="font-semibold">₹0</span>
+                      <span className="text-gray-600 dark:text-gray-400">Security Deposit:</span>
+                      <span className="font-semibold text-gray-800 dark:text-white">₹0</span>
                     </div>
                     <div className="flex justify-between">
-                      <span className="text-gray-600">Insurance Fee (monthly):</span>
-                      <span className="font-semibold text-amber-600">₹{depositDetails.insuranceFee}</span>
+                      <span className="text-gray-600 dark:text-gray-400">Insurance Fee (monthly):</span>
+                      <span className="font-semibold text-amber-600 dark:text-amber-500">₹{depositDetails.insuranceFee}</span>
                     </div>
                   </div>
                 )}
-                <div className="flex justify-between border-t pt-2 mt-2 font-semibold">
-                  <span className="text-gray-800">Total Payable Now:</span>
-                  <span className="text-blue-600 text-lg">
+                <div className="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-2 mt-2 font-semibold">
+                  <span className="text-gray-800 dark:text-white">Total Payable Now:</span>
+                  <span className="text-blue-600 dark:text-blue-400 text-lg">
                     {formData.depositPlan === 'zero'
                       ? `₹${(monthlyRent + depositDetails.insuranceFee).toLocaleString('en-IN')}`
                       : `₹${totalAmount.toLocaleString('en-IN')}`
@@ -1367,12 +1367,12 @@ export default function RentProperty() {
               </div>
 
               {/* Transparency Notes */}
-              <div className="mt-4 pt-4 border-t border-blue-200">
-                <p className="text-xs text-gray-600 mb-2">
+              <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800">
+                <p className="text-xs text-gray-600 dark:text-gray-400 mb-2">
                   <FaShieldAlt className="inline mr-1" />
                   <strong>Transparency Notes:</strong>
                 </p>
-                <ul className="text-xs text-gray-600 space-y-1 list-disc list-inside">
+                <ul className="text-xs text-gray-600 dark:text-gray-400 space-y-1 list-disc list-inside">
                   <li>Security deposit is fully refundable during move-out</li>
                   <li>No hidden charges</li>
                   <li>Rent stays fixed for the entire lock duration</li>
@@ -1386,12 +1386,12 @@ export default function RentProperty() {
               </div>
 
               {/* Why am I paying this? */}
-              <div className="mt-4 pt-4 border-t border-blue-200 bg-blue-100 rounded-lg p-3">
-                <p className="text-xs font-semibold text-gray-800 mb-2">
+              <div className="mt-4 pt-4 border-t border-blue-200 dark:border-blue-800 bg-blue-100 dark:bg-blue-900/30 rounded-lg p-3">
+                <p className="text-xs font-semibold text-gray-800 dark:text-white mb-2">
                   <FaMoneyBillWave className="inline mr-1" />
                   Why am I paying this?
                 </p>
-                <ul className="text-xs text-gray-700 space-y-1">
+                <ul className="text-xs text-gray-700 dark:text-gray-300 space-y-1">
                   <li>• 1st Month Rent: Standard rental payment</li>
                   <li>• Security Deposit: Refundable protection for property owner</li>
                   {formData.depositPlan === 'zero' && (
@@ -1445,7 +1445,7 @@ export default function RentProperty() {
                       setStep(step - 1);
                     }
                   }}
-                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
+                  className="px-6 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
                 >
                   <FaChevronLeft /> Back
                 </button>
@@ -1463,8 +1463,8 @@ export default function RentProperty() {
 
         {/* Step 3: Signing */}
         {step === 3 && contract && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 flex items-center gap-2">
               <FaFileContract /> Sign Contract
             </h2>
 
@@ -1566,7 +1566,7 @@ export default function RentProperty() {
                     setStep(step - 1);
                   }
                 }}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
+                className="px-6 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
               >
                 <FaChevronLeft /> Back
               </button>
@@ -1593,8 +1593,8 @@ export default function RentProperty() {
         {showSignatureModal && signingAs && (
           <div className="fixed inset-0 z-50 overflow-y-auto bg-black bg-opacity-50">
             <div className="flex min-h-full items-center justify-center p-4">
-              <div className="bg-white rounded-xl shadow-2xl max-w-2xl w-full p-6 relative">
-                <h3 className="text-2xl font-bold text-gray-800 mb-4">
+              <div className="bg-white dark:bg-gray-800 rounded-xl shadow-2xl max-w-2xl w-full p-6 relative">
+                <h3 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">
                   {signingAs === 'tenant' ? 'Sign as Tenant' : 'Sign as Landlord'}
                 </h3>
                 <DigitalSignature

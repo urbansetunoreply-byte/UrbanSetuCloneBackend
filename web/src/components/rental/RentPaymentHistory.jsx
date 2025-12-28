@@ -49,15 +49,15 @@ export default function RentPaymentHistory({ wallet, contract }) {
     switch (payment.status) {
       case 'completed':
       case 'paid':
-        return 'bg-green-100 text-green-800 border-green-200';
+        return 'bg-green-100 text-green-800 border-green-200 dark:bg-green-900/30 dark:text-green-300 dark:border-green-800';
       case 'failed':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
       case 'overdue':
-        return 'bg-red-100 text-red-800 border-red-200';
+        return 'bg-red-100 text-red-800 border-red-200 dark:bg-red-900/30 dark:text-red-300 dark:border-red-800';
       case 'processing':
-        return 'bg-blue-100 text-blue-800 border-blue-200';
+        return 'bg-blue-100 text-blue-800 border-blue-200 dark:bg-blue-900/30 dark:text-blue-300 dark:border-blue-800';
       default:
-        return 'bg-gray-100 text-gray-800 border-gray-200';
+        return 'bg-gray-100 text-gray-800 border-gray-200 dark:bg-gray-700 dark:text-gray-300 dark:border-gray-600';
     }
   };
 
@@ -309,21 +309,21 @@ export default function RentPaymentHistory({ wallet, contract }) {
   }, [wallet]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <h2 className="text-xl font-bold text-gray-800 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+      <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
         <FaHistory className="inline mr-2" />
         Payment History
       </h2>
 
       {/* Statistics */}
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 mb-6">
-        <div className="bg-blue-50 p-4 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Completed Payments</p>
-          <p className="text-2xl font-bold text-blue-600">{stats.total}</p>
+        <div className="bg-blue-50 dark:bg-blue-900/10 p-4 rounded-lg">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Completed Payments</p>
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.total}</p>
         </div>
-        <div className="bg-green-50 p-4 rounded-lg">
-          <p className="text-sm text-gray-600 mb-1">Total Rent Paid</p>
-          <p className="text-2xl font-bold text-green-600">
+        <div className="bg-green-50 dark:bg-green-900/10 p-4 rounded-lg">
+          <p className="text-sm text-gray-600 dark:text-gray-400 mb-1">Total Rent Paid</p>
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">
             ₹{stats.totalPaid.toLocaleString('en-IN')}
           </p>
         </div>
@@ -335,7 +335,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
 
         {/* Search */}
         <div className="w-full">
-          <label className="block text-gray-700 font-medium mb-2">
+          <label className="block text-gray-700 dark:text-gray-300 font-medium mb-2">
             <FaSearch className="inline mr-2" />
             Search
           </label>
@@ -344,7 +344,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
             placeholder="Search by date, amount, status..."
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
-            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+            className="w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-700 dark:border-gray-600 dark:text-white dark:placeholder-gray-400"
           />
         </div>
       </div>
@@ -368,7 +368,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
                     </div>
                     <div className="flex-1">
                       <div className="flex flex-wrap items-center gap-2 mb-1">
-                        <p className="font-semibold text-lg">
+                        <p className="font-semibold text-lg dark:text-gray-200">
                           {dueDate.toLocaleDateString('en-GB', {
                             month: 'long',
                             day: 'numeric',
@@ -379,12 +379,12 @@ export default function RentPaymentHistory({ wallet, contract }) {
                           {payment.status}
                         </span>
                         {isOverdue && (
-                          <span className="px-2 py-1 bg-red-200 text-red-800 text-xs font-semibold rounded">
+                          <span className="px-2 py-1 bg-red-200 dark:bg-red-900/50 text-red-800 dark:text-red-300 text-xs font-semibold rounded">
                             Overdue
                           </span>
                         )}
                       </div>
-                      <div className="text-sm space-y-1">
+                      <div className="text-sm space-y-1 text-gray-800 dark:text-gray-300">
                         {payment.paidAt && (
                           <p>
                             Paid: <span className="font-semibold">
@@ -399,10 +399,10 @@ export default function RentPaymentHistory({ wallet, contract }) {
                           </p>
                         )}
                         {payment.remarks && (
-                          <p className="text-gray-600">Note: {payment.remarks}</p>
+                          <p className="text-gray-600 dark:text-gray-400">Note: {payment.remarks}</p>
                         )}
                         {payment.paymentId && (
-                          <p className="text-xs text-gray-500">
+                          <p className="text-xs text-gray-500 dark:text-gray-500">
                             Payment ID: {typeof payment.paymentId === 'object' ? payment.paymentId.paymentId : payment.paymentId}
                           </p>
                         )}
@@ -411,12 +411,12 @@ export default function RentPaymentHistory({ wallet, contract }) {
                   </div>
 
                   <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto gap-4">
-                    <div className="text-left md:text-right">
+                    <div className="text-left md:text-right text-gray-800 dark:text-gray-200">
                       <p className="text-xl font-bold mb-1">
                         ₹{payment.amount.toLocaleString('en-IN')}
                       </p>
                       {payment.penaltyAmount > 0 && (
-                        <p className="text-sm text-red-600 mb-1">
+                        <p className="text-sm text-red-600 dark:text-red-400 mb-1">
                           Penalty: ₹{payment.penaltyAmount.toLocaleString('en-IN')}
                         </p>
                       )}
@@ -427,7 +427,7 @@ export default function RentPaymentHistory({ wallet, contract }) {
                     {payment.status === 'completed' && (
                       <button
                         onClick={() => handleDownloadReceipt(payment)}
-                        className="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition flex items-center justify-center gap-2"
+                        className="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition flex items-center justify-center gap-2"
                       >
                         <FaDownload />
                         Receipt
@@ -440,8 +440,8 @@ export default function RentPaymentHistory({ wallet, contract }) {
           })
         ) : (
           <div className="text-center py-12">
-            <FaHistory className="text-6xl text-gray-300 mx-auto mb-4" />
-            <p className="text-gray-500">No payments found.</p>
+            <FaHistory className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+            <p className="text-gray-500 dark:text-gray-400">No payments found.</p>
           </div>
         )}
       </div>

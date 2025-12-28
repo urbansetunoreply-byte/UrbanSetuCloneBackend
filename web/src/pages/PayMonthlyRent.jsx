@@ -346,21 +346,21 @@ export default function PayMonthlyRent() {
   const isOverdue = selectedPayment.status === 'overdue' || (selectedPayment.status === 'pending' && dueDate < new Date());
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-4 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-10 px-4 md:px-8">
       <div className="max-w-4xl mx-auto">
         {/* Header */}
-        <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-3 mb-2">
-            <FaMoneyBillWave className="text-blue-600" />
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-3 mb-2">
+            <FaMoneyBillWave className="text-blue-600 dark:text-blue-400" />
             Pay Monthly Rent
           </h1>
-          <p className="text-gray-600">
-            Contract ID: <span className="font-semibold">{contract.contractId}</span>
+          <p className="text-gray-600 dark:text-gray-300">
+            Contract ID: <span className="font-semibold text-gray-800 dark:text-gray-200">{contract.contractId}</span>
           </p>
         </div>
 
         {/* Progress Steps */}
-        <div className="bg-white rounded-xl shadow-lg p-6 md:p-8 mb-6">
+        <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 md:p-8 mb-6">
           <div className="flex items-center justify-between w-full">
             {[1, 2, 3, 4, 5].map((s) => (
               <React.Fragment key={s}>
@@ -375,8 +375,8 @@ export default function PayMonthlyRent() {
                   <div className={`w-10 h-10 md:w-12 md:h-12 rounded-full flex items-center justify-center text-sm md:text-base font-bold transition-all duration-500 border-4 shadow-sm ${step > s || paymentCompleted
                     ? 'bg-blue-600 border-blue-600 text-white'
                     : step === s
-                      ? 'bg-white border-blue-600 text-blue-600 scale-110 shadow-[0_0_15px_rgba(37,99,235,0.4)]'
-                      : 'bg-gray-50 border-gray-200 text-gray-400 group-hover:border-blue-300 transition-colors'
+                      ? 'bg-white dark:bg-gray-800 border-blue-600 text-blue-600 scale-110 shadow-[0_0_15px_rgba(37,99,235,0.4)]'
+                      : 'bg-gray-50 dark:bg-gray-700 border-gray-200 dark:border-gray-600 text-gray-400 group-hover:border-blue-300 dark:group-hover:border-blue-500 transition-colors'
                     }`}>
                     {step > s || paymentCompleted ? <FaCheck className="text-sm md:text-base" /> : s}
                   </div>
@@ -386,7 +386,7 @@ export default function PayMonthlyRent() {
                   </span>
                 </div>
                 {s < 5 && (
-                  <div className="flex-1 h-1.5 bg-gray-100 relative mx-2 rounded-full overflow-hidden">
+                  <div className="flex-1 h-1.5 bg-gray-100 dark:bg-gray-700 relative mx-2 rounded-full overflow-hidden">
                     <div
                       className={`absolute top-0 left-0 h-full bg-blue-600 transition-all duration-700 ease-out rounded-full ${step > s || paymentCompleted ? 'w-full' : 'w-0'
                         }`}
@@ -402,8 +402,8 @@ export default function PayMonthlyRent() {
 
         {/* Step 1: Select Payment Month */}
         {step === 1 && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 flex items-center gap-2">
               <FaCalendarAlt /> Select Payment Month
             </h2>
 
@@ -425,19 +425,19 @@ export default function PayMonthlyRent() {
                         setStep(2);
                       }}
                       className={`border-2 rounded-lg p-4 cursor-pointer transition ${selectedPayment?.scheduleIndex === originalIdx
-                        ? 'border-blue-600 bg-blue-50'
-                        : 'border-gray-200 hover:border-blue-300'
-                        } ${isPayOverdue ? 'bg-red-50 border-red-300' : ''}`}
+                        ? 'border-blue-600 bg-blue-50 dark:bg-blue-900/20'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-blue-300 dark:hover:border-blue-500'
+                        } ${isPayOverdue ? 'bg-red-50 dark:bg-red-900/20 border-red-300 dark:border-red-800' : 'dark:bg-gray-800'}`}
                     >
                       <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
                         <div>
-                          <h3 className="font-semibold text-lg text-gray-800">
+                          <h3 className="font-semibold text-lg text-gray-800 dark:text-white">
                             {payDueDate.toLocaleDateString('en-GB', {
                               month: 'long',
                               year: 'numeric'
                             })} Rent
                           </h3>
-                          <p className="text-sm text-gray-600">
+                          <p className="text-sm text-gray-600 dark:text-gray-400">
                             Due: {payDueDate.toLocaleDateString('en-GB', {
                               day: 'numeric',
                               month: 'long',
@@ -445,22 +445,22 @@ export default function PayMonthlyRent() {
                             })}
                           </p>
                           {isPayOverdue && (
-                            <span className="inline-block mt-2 px-2 py-1 bg-red-100 text-red-700 text-xs font-semibold rounded">
+                            <span className="inline-block mt-2 px-2 py-1 bg-red-100 text-red-700 dark:bg-red-900/30 dark:text-red-300 text-xs font-semibold rounded">
                               Overdue
                             </span>
                           )}
                           {payment.status === 'processing' && (
-                            <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 text-xs font-semibold rounded ml-2">
+                            <span className="inline-block mt-2 px-2 py-1 bg-blue-100 text-blue-700 dark:bg-blue-900/30 dark:text-blue-300 text-xs font-semibold rounded ml-2">
                               Payment in Progress
                             </span>
                           )}
                         </div>
                         <div className="text-left sm:text-right">
-                          <p className="text-xl font-bold text-gray-800">
+                          <p className="text-xl font-bold text-gray-800 dark:text-white">
                             ₹{(payment.amount || contract.lockedRentAmount || 0).toLocaleString('en-IN')}
                           </p>
                           {payment.penaltyAmount > 0 && (
-                            <p className="text-sm text-red-600">
+                            <p className="text-sm text-red-600 dark:text-red-400">
                               + Penalty: ₹{payment.penaltyAmount.toLocaleString('en-IN')}
                             </p>
                           )}
@@ -475,7 +475,7 @@ export default function PayMonthlyRent() {
               <div className="mt-6 flex flex-col-reverse sm:flex-row gap-4">
                 <button
                   onClick={() => navigate("/user/rental-contracts")}
-                  className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300"
+                  className="px-6 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600"
                 >
                   Cancel
                 </button>
@@ -492,23 +492,23 @@ export default function PayMonthlyRent() {
 
         {/* Step 2: Review Payment Details */}
         {step === 2 && selectedPayment && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 flex items-center gap-2">
               <FaFileContract /> Review Payment Details
             </h2>
 
-            <div className="bg-blue-50 p-6 rounded-lg mb-6 border border-blue-200">
+            <div className="bg-blue-50 dark:bg-gray-700/50 p-6 rounded-lg mb-6 border border-blue-200 dark:border-blue-800">
               <h3 className="font-semibold text-lg mb-4">Payment Summary</h3>
               <div className="space-y-2 text-sm">
                 <div className="flex justify-between">
                   <span>Month:</span>
-                  <span className="font-semibold">
+                  <span className="font-semibold text-gray-900 dark:text-white">
                     {dueDate.toLocaleDateString('en-GB', { month: 'long', year: 'numeric' })}
                   </span>
                 </div>
                 <div className="flex justify-between">
                   <span>Due Date:</span>
-                  <span className={`font-semibold ${isOverdue ? 'text-red-600' : ''}`}>
+                  <span className={`font-semibold ${isOverdue ? 'text-red-600 dark:text-red-400' : 'text-gray-900 dark:text-white'}`}>
                     {dueDate.toLocaleDateString('en-GB', {
                       day: 'numeric',
                       month: 'long',
@@ -519,10 +519,10 @@ export default function PayMonthlyRent() {
                 </div>
                 <div className="flex justify-between">
                   <span>Monthly Rent:</span>
-                  <span className="font-semibold">₹{(selectedPayment.amount || contract.lockedRentAmount || 0).toLocaleString('en-IN')}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">₹{(selectedPayment.amount || contract.lockedRentAmount || 0).toLocaleString('en-IN')}</span>
                 </div>
                 {selectedPayment.penaltyAmount > 0 && (
-                  <div className="flex justify-between text-red-600">
+                  <div className="flex justify-between text-red-600 dark:text-red-400">
                     <span>Late Fee:</span>
                     <span className="font-semibold">₹{selectedPayment.penaltyAmount.toLocaleString('en-IN')}</span>
                   </div>
@@ -530,12 +530,12 @@ export default function PayMonthlyRent() {
                 {contract.maintenanceCharges > 0 && (
                   <div className="flex justify-between">
                     <span>Maintenance:</span>
-                    <span className="font-semibold">₹{contract.maintenanceCharges.toLocaleString('en-IN')}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">₹{contract.maintenanceCharges.toLocaleString('en-IN')}</span>
                   </div>
                 )}
-                <div className="flex justify-between border-t pt-2 mt-2 font-bold text-lg">
-                  <span>Total Amount:</span>
-                  <span className="text-blue-600">₹{getTotalAmount().toLocaleString('en-IN')}</span>
+                <div className="flex justify-between border-t border-gray-200 dark:border-gray-600 pt-2 mt-2 font-bold text-lg">
+                  <span className="text-gray-900 dark:text-white">Total Amount:</span>
+                  <span className="text-blue-600 dark:text-blue-400">₹{getTotalAmount().toLocaleString('en-IN')}</span>
                 </div>
               </div>
             </div>
@@ -543,7 +543,7 @@ export default function PayMonthlyRent() {
             <div className="flex gap-4">
               <button
                 onClick={() => setStep(1)}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+                className="px-6 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center gap-2"
               >
                 <FaChevronLeft /> Back
               </button>
@@ -559,8 +559,8 @@ export default function PayMonthlyRent() {
 
         {/* Step 3: Contract Review */}
         {step === 3 && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 flex items-center gap-2">
               <FaFileContract /> Contract Review
             </h2>
 
@@ -577,7 +577,7 @@ export default function PayMonthlyRent() {
             <div className="flex gap-4">
               <button
                 onClick={() => setStep(2)}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center gap-2"
+                className="px-6 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center gap-2"
               >
                 <FaChevronLeft /> Back
               </button>
@@ -593,20 +593,20 @@ export default function PayMonthlyRent() {
 
         {/* Step 4: Payment */}
         {step === 4 && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
-            <h2 className="text-2xl font-bold text-blue-700 mb-6 flex items-center gap-2">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+            <h2 className="text-2xl font-bold text-blue-700 dark:text-blue-400 mb-6 flex items-center gap-2">
               <FaCreditCard /> Complete Payment
             </h2>
 
-            <div className="bg-blue-50 p-6 rounded-lg mb-6 border border-blue-200">
-              <h3 className="font-semibold text-lg mb-4">Payment Summary</h3>
-              <div className="space-y-2 text-sm">
+            <div className="bg-blue-50 dark:bg-gray-700/50 p-6 rounded-lg mb-6 border border-blue-200 dark:border-blue-800">
+              <h3 className="font-semibold text-lg mb-4 text-gray-800 dark:text-white">Payment Summary</h3>
+              <div className="space-y-2 text-sm text-gray-700 dark:text-gray-300">
                 <div className="flex justify-between">
                   <span>Monthly Rent:</span>
-                  <span className="font-semibold">₹{(selectedPayment?.amount || contract?.lockedRentAmount || 0).toLocaleString('en-IN')}</span>
+                  <span className="font-semibold text-gray-900 dark:text-white">₹{(selectedPayment?.amount || contract?.lockedRentAmount || 0).toLocaleString('en-IN')}</span>
                 </div>
                 {selectedPayment?.penaltyAmount > 0 && (
-                  <div className="flex justify-between text-red-600">
+                  <div className="flex justify-between text-red-600 dark:text-red-400">
                     <span>Late Fee:</span>
                     <span className="font-semibold">₹{selectedPayment.penaltyAmount.toLocaleString('en-IN')}</span>
                   </div>
@@ -614,24 +614,24 @@ export default function PayMonthlyRent() {
                 {contract?.maintenanceCharges > 0 && (
                   <div className="flex justify-between">
                     <span>Maintenance:</span>
-                    <span className="font-semibold">₹{contract.maintenanceCharges.toLocaleString('en-IN')}</span>
+                    <span className="font-semibold text-gray-900 dark:text-white">₹{contract.maintenanceCharges.toLocaleString('en-IN')}</span>
                   </div>
                 )}
                 {contract?.securityDeposit > 0 && contract?.depositPlan !== 'zero' && (
-                  <div className="flex justify-between pt-2 border-t border-blue-200">
-                    <span className="text-gray-600 italic">Note: Security deposit (₹{contract.securityDeposit.toLocaleString('en-IN')}) was paid upfront</span>
+                  <div className="flex justify-between pt-2 border-t border-blue-200 dark:border-blue-800">
+                    <span className="text-gray-600 dark:text-gray-400 italic">Note: Security deposit (₹{contract.securityDeposit.toLocaleString('en-IN')}) was paid upfront</span>
                   </div>
                 )}
-                <div className="border-t pt-2 mt-2">
+                <div className="border-t border-blue-200 dark:border-blue-800 pt-2 mt-2">
                   {coinsToRedeem > 0 && (
-                    <div className="flex justify-between text-green-600 mb-1">
+                    <div className="flex justify-between text-green-600 dark:text-green-400 mb-1">
                       <span className="flex items-center gap-1"><FaCoins className="text-xs" /> SetuCoins Discount:</span>
                       <span className="font-semibold">- ₹{Math.floor(coinsToRedeem / 10).toLocaleString('en-IN')}</span>
                     </div>
                   )}
                   <div className="flex justify-between font-bold text-lg">
-                    <span>Total Payable:</span>
-                    <span className="text-blue-600">₹{getTotalAmount().toLocaleString('en-IN')}</span>
+                    <span className="text-gray-900 dark:text-white">Total Payable:</span>
+                    <span className="text-blue-600 dark:text-blue-400">₹{getTotalAmount().toLocaleString('en-IN')}</span>
                   </div>
                 </div>
               </div>
@@ -639,14 +639,14 @@ export default function PayMonthlyRent() {
 
             {/* SetuCoins Earning Banner */}
             {getTotalAmount() >= 1000 && (
-              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 border border-yellow-200 rounded-lg p-4 mb-6 flex items-center justify-between shadow-sm">
+              <div className="bg-gradient-to-r from-yellow-50 to-amber-50 dark:from-yellow-900/20 dark:to-amber-900/20 border border-yellow-200 dark:border-yellow-800 rounded-lg p-4 mb-6 flex items-center justify-between shadow-sm">
                 <div className="flex items-center gap-3">
-                  <div className="p-2 bg-yellow-100 rounded-full text-yellow-600 shadow-inner">
+                  <div className="p-2 bg-yellow-100 dark:bg-yellow-800 rounded-full text-yellow-600 dark:text-yellow-400 shadow-inner">
                     <FaCoins className="text-xl" />
                   </div>
                   <div>
-                    <h4 className="font-bold text-gray-800 flex items-center gap-1">SetuCoins Rewards <span className="text-[10px] bg-yellow-100 text-yellow-700 px-1.5 py-0.5 rounded border border-yellow-200">LOYALTY</span></h4>
-                    <p className="text-sm text-gray-600">You will earn <span className="font-bold text-yellow-600 text-lg">{Math.floor(getTotalAmount() / 1000)} SetuCoins</span> with this payment!</p>
+                    <h4 className="font-bold text-gray-800 dark:text-white flex items-center gap-1">SetuCoins Rewards <span className="text-[10px] bg-yellow-100 dark:bg-yellow-900 text-yellow-700 dark:text-yellow-300 px-1.5 py-0.5 rounded border border-yellow-200 dark:border-yellow-700">LOYALTY</span></h4>
+                    <p className="text-sm text-gray-600 dark:text-gray-300">You will earn <span className="font-bold text-yellow-600 dark:text-yellow-400 text-lg">{Math.floor(getTotalAmount() / 1000)} SetuCoins</span> with this payment!</p>
                   </div>
                 </div>
                 <div className="hidden sm:block text-yellow-500 font-bold text-xl animate-pulse">+{Math.floor(getTotalAmount() / 1000)}</div>
@@ -655,19 +655,19 @@ export default function PayMonthlyRent() {
 
             {/* SetuCoins Redemption */}
             {coinBalance > 0 && (
-              <div className="bg-white p-4 rounded-lg border border-yellow-200 mb-6 shadow-sm">
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-yellow-200 dark:border-yellow-700 mb-6 shadow-sm">
                 <div className="flex items-center justify-between mb-3">
-                  <h4 className="font-semibold text-gray-800 flex items-center gap-2">
+                  <h4 className="font-semibold text-gray-800 dark:text-white flex items-center gap-2">
                     <FaCoins className={`text-yellow-500 ${coinsToRedeem > 0 ? 'animate-bounce' : ''}`} />
                     Pay with SetuCoins
                   </h4>
-                  <span className="text-xs font-medium bg-yellow-100 text-yellow-800 px-2 py-1 rounded-full">
+                  <span className="text-xs font-medium bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300 px-2 py-1 rounded-full">
                     Available: {coinBalance}
                   </span>
                 </div>
 
                 <div className="mb-4">
-                  <label className="block text-sm text-gray-600 mb-1">Redeem Coins for Discount</label>
+                  <label className="block text-sm text-gray-600 dark:text-gray-300 mb-1">Redeem Coins for Discount</label>
                   <div className="flex items-center gap-4">
                     <input
                       type="range"
@@ -676,31 +676,31 @@ export default function PayMonthlyRent() {
                       step="10"
                       value={coinsToRedeem}
                       onChange={(e) => setCoinsToRedeem(Number(e.target.value))}
-                      className="w-full h-2 bg-gray-200 rounded-lg appearance-none cursor-pointer accent-yellow-500"
+                      className="w-full h-2 bg-gray-200 dark:bg-gray-600 rounded-lg appearance-none cursor-pointer accent-yellow-500"
                     />
-                    <div className="min-w-[80px] text-right font-bold text-gray-700">
+                    <div className="min-w-[80px] text-right font-bold text-gray-700 dark:text-gray-200">
                       {coinsToRedeem} Coins
                     </div>
                   </div>
-                  <div className="flex justify-between text-xs text-gray-500 mt-1">
+                  <div className="flex justify-between text-xs text-gray-500 dark:text-gray-400 mt-1">
                     <span>0</span>
                     <span>Max Redeemable: {Math.min(coinBalance, getSubtotal() * 10)}</span>
                   </div>
                 </div>
 
                 {coinsToRedeem > 0 && (
-                  <div className="flex justify-between items-center bg-yellow-50 p-3 rounded-lg border border-yellow-100">
-                    <span className="text-sm text-yellow-800">Discount Applied:</span>
-                    <span className="font-bold text-yellow-700">- ₹{(Math.floor(coinsToRedeem / 10)).toLocaleString('en-IN')}</span>
+                  <div className="flex justify-between items-center bg-yellow-50 dark:bg-yellow-900/10 p-3 rounded-lg border border-yellow-100 dark:border-yellow-800">
+                    <span className="text-sm text-yellow-800 dark:text-yellow-300">Discount Applied:</span>
+                    <span className="font-bold text-yellow-700 dark:text-yellow-400">- ₹{(Math.floor(coinsToRedeem / 10)).toLocaleString('en-IN')}</span>
                   </div>
                 )}
               </div>
             )}
 
-            <div className="bg-white p-4 rounded-lg border border-gray-200 mt-4 mb-6">
-              <h4 className="font-semibold text-gray-800 mb-3">Select Payment Method</h4>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg border border-gray-200 dark:border-gray-700 mt-4 mb-6">
+              <h4 className="font-semibold text-gray-800 dark:text-white mb-3">Select Payment Method</h4>
               <div className="flex flex-col gap-3">
-                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedGateway === 'razorpay' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedGateway === 'razorpay' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>
                   <input
                     type="radio"
                     name="gateway"
@@ -711,14 +711,14 @@ export default function PayMonthlyRent() {
                   />
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center">
-                      <span className="font-medium text-gray-800">Razorpay (India)</span>
-                      <span className="font-bold text-gray-800">₹{getTotalAmount().toLocaleString('en-IN')}</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-200">Razorpay (India)</span>
+                      <span className="font-bold text-gray-800 dark:text-gray-200">₹{getTotalAmount().toLocaleString('en-IN')}</span>
                     </div>
-                    <div className="text-xs text-gray-500">Pay via UPI, Cards, Netbanking (INR)</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Pay via UPI, Cards, Netbanking (INR)</div>
                   </div>
                 </label>
 
-                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedGateway === 'paypal' ? 'border-blue-500 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}>
+                <label className={`flex items-center gap-3 p-3 rounded-lg border cursor-pointer transition-all ${selectedGateway === 'paypal' ? 'border-blue-500 bg-blue-50 dark:bg-blue-900/20' : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'}`}>
                   <input
                     type="radio"
                     name="gateway"
@@ -729,10 +729,10 @@ export default function PayMonthlyRent() {
                   />
                   <div className="flex-1">
                     <div className="flex flex-col sm:flex-row justify-between sm:items-center">
-                      <span className="font-medium text-gray-800">PayPal (International)</span>
-                      <span className="font-bold text-gray-800">$ {((getTotalAmount() / 84).toFixed(2))}</span>
+                      <span className="font-medium text-gray-800 dark:text-gray-200">PayPal (International)</span>
+                      <span className="font-bold text-gray-800 dark:text-gray-200">$ {((getTotalAmount() / 84).toFixed(2))}</span>
                     </div>
-                    <div className="text-xs text-gray-500">Pay via PayPal Wallet or Cards (USD)</div>
+                    <div className="text-xs text-gray-500 dark:text-gray-400">Pay via PayPal Wallet or Cards (USD)</div>
                   </div>
                 </label>
               </div>
@@ -741,7 +741,7 @@ export default function PayMonthlyRent() {
             <div className="flex flex-col-reverse sm:flex-row gap-4">
               <button
                 onClick={() => setStep(3)}
-                className="px-6 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 flex items-center justify-center gap-2"
+                className="px-6 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 flex items-center justify-center gap-2"
               >
                 <FaChevronLeft /> Back
               </button>
@@ -767,25 +767,25 @@ export default function PayMonthlyRent() {
 
         {/* Step 5: Confirmation */}
         {step === 5 && paymentCompleted && (
-          <div className="bg-white rounded-xl shadow-lg p-6">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
             <div className="text-center">
               <FaCheckCircle className="text-green-500 text-6xl mx-auto mb-4" />
-              <h2 className="text-2xl font-bold text-gray-800 mb-4">Payment Successful!</h2>
-              <p className="text-gray-600 mb-6">
+              <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-4">Payment Successful!</h2>
+              <p className="text-gray-600 dark:text-gray-300 mb-6">
                 Your rent payment has been processed successfully and is being held in escrow.
               </p>
 
               {/* SetuCoins Earned Success */}
               {createdPayment && createdPayment.amount >= 1000 && (
-                <div className="flex flex-col items-center justify-center p-4 bg-yellow-50 rounded-xl border border-yellow-200 mb-6 max-w-md mx-auto animate-[fadeIn_0.5s_ease-out]">
+                <div className="flex flex-col items-center justify-center p-4 bg-yellow-50 dark:bg-yellow-900/20 rounded-xl border border-yellow-200 dark:border-yellow-800 mb-6 max-w-md mx-auto animate-[fadeIn_0.5s_ease-out]">
                   <div className="flex items-center gap-2 mb-1">
                     <FaCoins className="text-yellow-500 text-2xl animate-bounce" />
-                    <span className="font-bold text-gray-800 text-lg">SetuCoins Earned!</span>
+                    <span className="font-bold text-gray-800 dark:text-white text-lg">SetuCoins Earned!</span>
                   </div>
-                  <p className="text-gray-600 text-center">
-                    Congratulations! You've earned <span className="font-bold text-yellow-600 text-xl mx-1">+{Math.floor(createdPayment.amount / 1000)}</span> coins.
+                  <p className="text-gray-600 dark:text-gray-300 text-center">
+                    Congratulations! You've earned <span className="font-bold text-yellow-600 dark:text-yellow-400 text-xl mx-1">+{Math.floor(createdPayment.amount / 1000)}</span> coins.
                   </p>
-                  <p className="text-xs text-gray-500 mt-2">Maintain your streak to earn bonus coins!</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">Maintain your streak to earn bonus coins!</p>
                 </div>
               )}
 

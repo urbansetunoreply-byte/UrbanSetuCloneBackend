@@ -34,13 +34,13 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
     switch (payment.status) {
       case 'completed':
       case 'paid':
-        return 'bg-green-50 border-green-200';
+        return 'bg-green-50 dark:bg-green-900/10 border-green-200 dark:border-green-800';
       case 'overdue':
-        return 'bg-red-50 border-red-200';
+        return 'bg-red-50 dark:bg-red-900/10 border-red-200 dark:border-red-800';
       case 'processing':
-        return 'bg-blue-50 border-blue-200';
+        return 'bg-blue-50 dark:bg-blue-900/10 border-blue-200 dark:border-blue-800';
       default:
-        return 'bg-gray-50 border-gray-200';
+        return 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700';
     }
   };
 
@@ -105,33 +105,33 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
   }, [payments]);
 
   return (
-    <div className="bg-white rounded-xl shadow-lg p-6">
-      <h2 className="text-xl font-bold text-gray-800 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6">
+      <h2 className="text-xl font-bold text-gray-800 dark:text-white mb-6">
         <FaCalendarAlt className="inline mr-2" />
         Payment Schedule
       </h2>
 
       {/* Statistics */}
       <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4 mb-6">
-        <div className="bg-gray-50 p-4 rounded-lg text-center">
-          <p className="text-2xl font-bold text-gray-800">{stats.total}</p>
-          <p className="text-xs text-gray-600 mt-1">Total</p>
+        <div className="bg-gray-50 dark:bg-gray-700 p-4 rounded-lg text-center">
+          <p className="text-2xl font-bold text-gray-800 dark:text-white">{stats.total}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Total</p>
         </div>
-        <div className="bg-green-50 p-4 rounded-lg text-center">
-          <p className="text-2xl font-bold text-green-600">{stats.completed}</p>
-          <p className="text-xs text-gray-600 mt-1">Paid</p>
+        <div className="bg-green-50 dark:bg-green-900/30 p-4 rounded-lg text-center">
+          <p className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.completed}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Paid</p>
         </div>
-        <div className="bg-yellow-50 p-4 rounded-lg text-center">
-          <p className="text-2xl font-bold text-yellow-600">{stats.pending}</p>
-          <p className="text-xs text-gray-600 mt-1">Pending</p>
+        <div className="bg-yellow-50 dark:bg-yellow-900/30 p-4 rounded-lg text-center">
+          <p className="text-2xl font-bold text-yellow-600 dark:text-yellow-400">{stats.pending}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Pending</p>
         </div>
-        <div className="bg-red-50 p-4 rounded-lg text-center">
-          <p className="text-2xl font-bold text-red-600">{stats.overdue}</p>
-          <p className="text-xs text-gray-600 mt-1">Overdue</p>
+        <div className="bg-red-50 dark:bg-red-900/30 p-4 rounded-lg text-center">
+          <p className="text-2xl font-bold text-red-600 dark:text-red-400">{stats.overdue}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Overdue</p>
         </div>
-        <div className="bg-blue-50 p-4 rounded-lg text-center">
-          <p className="text-2xl font-bold text-blue-600">{stats.processing}</p>
-          <p className="text-xs text-gray-600 mt-1">Processing</p>
+        <div className="bg-blue-50 dark:bg-blue-900/30 p-4 rounded-lg text-center">
+          <p className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.processing}</p>
+          <p className="text-xs text-gray-600 dark:text-gray-300 mt-1">Processing</p>
         </div>
       </div>
 
@@ -141,7 +141,7 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
           .sort((a, b) => a - b) // Sort years ascending
           .map(year => (
             <div key={year}>
-              <h3 className="text-lg font-semibold text-gray-700 mb-3">{year}</h3>
+              <h3 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3">{year}</h3>
               <div className="space-y-2">
                 {paymentsByYear[year].map((payment, index) => {
                   const dueDate = new Date(payment.dueDate);
@@ -160,7 +160,7 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
                           </div>
                           <div className="flex-1">
                             <div className="flex flex-wrap items-center gap-2 mb-1">
-                              <p className="font-semibold text-gray-800">
+                              <p className="font-semibold text-gray-800 dark:text-white">
                                 {dueDate.toLocaleDateString('en-GB', {
                                   month: 'long',
                                   day: 'numeric',
@@ -173,16 +173,16 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
                                 </span>
                               )}
                               {isUpcoming && (
-                                <span className="px-2 py-1 bg-yellow-100 text-yellow-700 text-xs font-semibold rounded">
+                                <span className="px-2 py-1 bg-yellow-100 dark:bg-yellow-900/30 text-yellow-700 dark:text-yellow-300 text-xs font-semibold rounded">
                                   Upcoming
                                 </span>
                               )}
                             </div>
-                            <p className="text-sm text-gray-600">
+                            <p className="text-sm text-gray-600 dark:text-gray-400">
                               Status: <span className="font-semibold capitalize">{payment.status}</span>
                             </p>
                             {payment.paidAt && (
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Paid: {new Date(payment.paidAt).toLocaleDateString('en-GB')}
                               </p>
                             )}
@@ -191,11 +191,11 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
 
                         <div className="flex flex-row md:flex-col items-center md:items-end justify-between w-full md:w-auto mt-2 md:mt-0 gap-4">
                           <div className="text-left md:text-right">
-                            <p className="text-xl font-bold text-gray-800 mb-1">
+                            <p className="text-xl font-bold text-gray-800 dark:text-white mb-1">
                               ₹{payment.amount.toLocaleString('en-IN')}
                             </p>
                             {payment.penaltyAmount > 0 && (
-                              <p className="text-sm text-red-600">
+                              <p className="text-sm text-red-600 dark:text-red-400">
                                 + Penalty: ₹{payment.penaltyAmount.toLocaleString('en-IN')}
                               </p>
                             )}
@@ -206,7 +206,7 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
                               </p>
                             )}
                             {payment.status === 'pending' && (
-                              <p className="text-xs text-gray-500 mt-1">
+                              <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">
                                 Due: {contract.dueDate} of month
                               </p>
                             )}
@@ -251,7 +251,7 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
                                   toast.error("Receipt ID not found.");
                                 }
                               }}
-                              className="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 font-semibold transition flex items-center justify-center gap-2"
+                              className="w-full md:w-auto px-4 py-2 bg-gray-200 text-gray-700 dark:bg-gray-700 dark:text-gray-300 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 font-semibold transition flex items-center justify-center gap-2"
                             >
                               <FaDownload />
                               Receipt
@@ -269,8 +269,8 @@ export default function PaymentSchedule({ wallet, contract, isTenant }) {
 
       {payments.length === 0 && (
         <div className="text-center py-12">
-          <FaCalendarAlt className="text-6xl text-gray-300 mx-auto mb-4" />
-          <p className="text-gray-500">No payment schedule available.</p>
+          <FaCalendarAlt className="text-6xl text-gray-300 dark:text-gray-600 mx-auto mb-4" />
+          <p className="text-gray-500 dark:text-gray-400">No payment schedule available.</p>
         </div>
       )}
 
