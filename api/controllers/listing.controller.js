@@ -432,6 +432,17 @@ export const updateListing = async (req, res, next) => {
     const oldDiscount = listing.discountPrice;
     const oldEffective = (listing.offer && oldDiscount) ? oldDiscount : oldRegular;
 
+    // Restrict 360° Virtual Tour updates to verified properties
+    if (req.body.virtualTourImages && !isAdmin && !listing.isVerified) {
+      const currentImages = listing.virtualTourImages || [];
+      const newImages = req.body.virtualTourImages;
+
+      // Check if images are being modified (allow identical updates which happen when submitting strictly other fields)
+      if (JSON.stringify(currentImages) !== JSON.stringify(newImages)) {
+        return next(errorHandler(403, '360° virtual tours are a premium feature available only for verified properties. Please verify your property to manage virtual tours.'));
+      }
+    }
+
     const updateListing = await Listing.findByIdAndUpdate(req.params.id, updateData, { new: true })
 
     // Debug updated ESG data

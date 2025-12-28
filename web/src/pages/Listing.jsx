@@ -2044,7 +2044,29 @@ export default function Listing() {
               <div className="space-y-6 mb-6">
 
                 {/* 360° Images Section */}
-                {listing.virtualTourImages && listing.virtualTourImages.length > 0 && (
+                {/* 360° Virtual Tour Section */}
+
+                {/* 1. Prompt for Unverified Owner */}
+                {currentUser && currentUser._id === listing.userRef && !listing.isVerified && (
+                  <div className="border border-dashed border-indigo-200 rounded-lg p-6 bg-indigo-50/50 text-center my-6 shadow-sm">
+                    <div className="bg-white w-16 h-16 rounded-full flex items-center justify-center mx-auto mb-4 shadow-sm border border-indigo-100">
+                      <FaCompass className="text-indigo-600 text-3xl" />
+                    </div>
+                    <h4 className="font-bold text-gray-900 mb-2 text-lg">Unlock Immersive 360° Tours! 🔒</h4>
+                    <p className="text-gray-600 text-sm mb-6 max-w-md mx-auto leading-relaxed">
+                      Get your property verified to enable 360° virtual tours. Verified listings with 360° views get up to <strong>3x more engagement</strong> and trust.
+                    </p>
+                    <button
+                      onClick={() => navigate(`/user/property-verification?listingId=${listing._id}`)}
+                      className="bg-indigo-600 text-white px-6 py-2.5 rounded-lg text-sm font-bold hover:bg-indigo-700 transition shadow-lg shadow-indigo-200 transform hover:-translate-y-0.5"
+                    >
+                      Verify Property Now
+                    </button>
+                  </div>
+                )}
+
+                {/* 2. Viewer for Verified Listings */}
+                {listing.isVerified && listing.virtualTourImages && listing.virtualTourImages.length > 0 && (
                   <div className="border rounded-lg p-3 bg-white shadow-sm">
                     <h4 className="font-semibold text-gray-800 mb-3 flex items-center gap-2">
                       <FaCompass className="text-indigo-600" /> 360° Virtual Tour ({listing.virtualTourImages.length})

@@ -9282,6 +9282,7 @@ export const sendPropertyCreatedPendingVerificationEmail = async (email, listing
               <h3 style="color: #065f46; margin: 0 0 10px 0;">✨ Benefits of Verification</h3>
               <p style="color: #065f46; margin: 5px 0;">✓ Verified badge on your listing</p>
               <p style="color: #065f46; margin: 5px 0;">✓ Higher visibility in search results</p>
+              <p style="color: #065f46; margin: 5px 0;">✓ Unlock premium 360° virtual tours</p>
               <p style="color: #065f46; margin: 5px 0;">✓ Increased trust from potential ${propertyType === 'rent' ? 'tenants' : 'buyers'}</p>
               <p style="color: #065f46; margin: 5px 0;">✓ Faster inquiries and bookings</p>
             </div>
@@ -9503,6 +9504,9 @@ export const sendPropertyPublishedAfterVerificationEmail = async (email, listing
               <h3>✅ Verification Complete!</h3>
               <p><strong>Great news!</strong> Your property has been successfully verified by our team.</p>
               <p>Your listing is now live and visible to thousands of potential ${propertyType === 'rent' ? 'tenants' : 'buyers'}!</p>
+              <div style="background-color: #d1fae5; border: 1px dashed #059669; border-radius: 6px; padding: 10px; margin-top: 15px;">
+                <p style="color: #065f46; margin: 0; font-size: 14px;"><strong>🌟 Premium Status Unlocked:</strong> Your verified property is now eligible for immersive 360° virtual tours. Add them anytime to wow your audience!</p>
+              </div>
               ${badgeNumber ? `<p style="margin-top: 10px;"><strong>Verification Badge:</strong> ${badgeNumber}</p>` : ''}
             </div>
             
