@@ -10,6 +10,7 @@ const AdminListingsSkeleton = () => {
                     <div className="flex flex-col md:flex-row md:items-center md:justify-between mb-6">
                         <div className="h-8 w-64 bg-blue-200 rounded"></div>
                         <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-2 sm:gap-2 mt-4 md:mt-0">
+                            <div className="h-10 w-24 bg-gray-400 rounded-lg"></div>
                             <div className="h-10 w-24 bg-red-200 rounded-lg"></div>
                             <div className="h-10 w-48 bg-purple-200 rounded-lg"></div>
                         </div>
