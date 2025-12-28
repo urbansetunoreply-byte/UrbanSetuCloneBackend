@@ -10,12 +10,12 @@ const UserAvatar = ({
   profileVisibility
 }) => {
   const isPrivate = profileVisibility === 'private' || user?.profileVisibility === 'private';
-  const borderClass = showBorder && !className.includes('border-') ? 'border-4 border-blue-200' : '';
+  const borderClass = showBorder && !className.includes('border-') ? 'border-4 border-blue-200 dark:border-blue-900' : '';
   const baseClasses = `${size} rounded-full ${borderClass} flex items-center justify-center text-white font-bold ${className}`;
 
   if (isPrivate) {
     return (
-      <div className={`${baseClasses} bg-gray-300 shadow-lg aspect-square text-gray-600`}>
+      <div className={`${baseClasses} bg-gray-300 dark:bg-gray-700 shadow-lg aspect-square text-gray-600 dark:text-gray-400`}>
         <FaUser className={textSize.replace('text-', 'text-[length:inherit] ')} style={{ fontSize: '50%' }} />
       </div>
     );

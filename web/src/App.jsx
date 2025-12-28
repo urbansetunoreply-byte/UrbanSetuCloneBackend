@@ -341,19 +341,53 @@ function AppRoutes({ bootstrapped }) {
   const navigate = useNavigate(); // Fix: ensure navigate is defined
   const { playNotification } = useSoundEffects();
 
-  // Apply persisted theme (light/dark) globally on initial load
+  // Apply persisted theme (light/dark/system) globally and listen for changes
   useEffect(() => {
-    try {
-      const savedTheme = localStorage.getItem('theme');
-      if (savedTheme === 'dark') {
-        document.documentElement.classList.add('dark');
-      } else {
+    const applyTheme = () => {
+      try {
+        const savedTheme = localStorage.getItem('theme');
+        if (savedTheme === 'dark') {
+          document.documentElement.classList.add('dark');
+        } else if (savedTheme === 'light') {
+          document.documentElement.classList.remove('dark');
+        } else {
+          // System default or no preference
+          if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+            document.documentElement.classList.add('dark');
+          } else {
+            document.documentElement.classList.remove('dark');
+          }
+        }
+      } catch (_) {
         document.documentElement.classList.remove('dark');
       }
-    } catch (_) {
-      // If localStorage is unavailable, fall back to default light theme
-      document.documentElement.classList.remove('dark');
-    }
+    };
+
+    applyTheme();
+
+    const mediaQuery = window.matchMedia('(prefers-color-scheme: dark)');
+    const handleChange = () => {
+      // Only re-apply if theme is set to system (or not set)
+      const savedTheme = localStorage.getItem('theme');
+      if (!savedTheme || savedTheme === 'system') {
+        applyTheme();
+      }
+    };
+
+    mediaQuery.addEventListener('change', handleChange);
+
+    // Also listen for storage changes (e.g. from Settings tab)
+    const handleStorage = (e) => {
+      if (e.key === 'theme') {
+        applyTheme();
+      }
+    };
+    window.addEventListener('storage', handleStorage);
+
+    return () => {
+      mediaQuery.removeEventListener('change', handleChange);
+      window.removeEventListener('storage', handleStorage);
+    };
   }, []);
 
   // Sync tabs on login/logout (Global Session Management)

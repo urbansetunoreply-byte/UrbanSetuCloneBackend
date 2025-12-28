@@ -744,26 +744,26 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
             )}
         >
             {/* Right Side - Sign In Form */}
-            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 min-h-screen">
+            <div className="w-full lg:w-1/2 flex items-center justify-center p-6 md:p-12 bg-gray-50 dark:bg-gray-900 min-h-screen">
                 <div className="w-full max-w-[440px] animate-fade-in">
                     <div className="text-center mb-10">
                         <div className="inline-flex items-center justify-center w-16 h-16 rounded-full bg-blue-100 text-blue-600 mb-6 shadow-sm">
                             <LogIn className="w-8 h-8" />
                         </div>
-                        <h2 className="text-3xl font-bold text-gray-900 mb-2 tracking-tight">
+                        <h2 className="text-3xl font-bold text-gray-900 dark:text-white mb-2 tracking-tight">
                             Sign In
                         </h2>
-                        <p className="text-gray-500 text-lg">Welcome back! Please enter your details.</p>
+                        <p className="text-gray-500 dark:text-gray-400 text-lg">Welcome back! Please enter your details.</p>
                     </div>
 
                     {/* Sign In Method Toggle Tabs */}
-                    <div className="flex p-1 bg-gray-100 rounded-xl mb-8 relative border border-gray-200">
-                        <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white rounded-lg shadow-sm transition-all duration-300 ease-out transform ${loginMethod === "otp" ? "translate-x-full left-1" : "left-1"}`}></div>
+                    <div className="flex p-1 bg-gray-100 dark:bg-gray-800 rounded-xl mb-8 relative border border-gray-200 dark:border-gray-700">
+                        <div className={`absolute top-1 bottom-1 w-[calc(50%-4px)] bg-white dark:bg-gray-700 rounded-lg shadow-sm transition-all duration-300 ease-out transform ${loginMethod === "otp" ? "translate-x-full left-1" : "left-1"}`}></div>
                         <button
                             type="button"
                             disabled={authInProgress !== null || otpSent}
                             onClick={() => onTabClick("password")}
-                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "password" ? "text-gray-900" : "text-gray-500 hover:text-gray-700"} disabled:opacity-50`}
+                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "password" ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"} disabled:opacity-50`}
                         >
                             Password
                         </button>
@@ -771,22 +771,22 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             type="button"
                             disabled={authInProgress !== null}
                             onClick={() => onTabClick("otp")}
-                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "otp" ? "text-gray-900" : "text-gray-500 hover:text-gray-700"} disabled:opacity-50`}
+                            className={`flex-1 py-2.5 px-4 rounded-lg text-sm font-semibold relative z-10 transition-colors duration-200 ${loginMethod === "otp" ? "text-gray-900 dark:text-white" : "text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200"} disabled:opacity-50`}
                         >
                             OTP
                         </button>
                     </div>
 
-                    <div className="bg-white rounded-2xl shadow-xl border border-gray-100 p-6 md:p-8 relative overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-xl border border-gray-100 dark:border-gray-700 p-6 md:p-8 relative overflow-hidden">
                         {/* Decorative background element for card */}
-                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
+                        <div className="absolute top-0 right-0 w-32 h-32 bg-blue-50 dark:bg-blue-900/20 rounded-full -mr-16 -mt-16 opacity-50 pointer-events-none"></div>
 
                         {loginMethod === "password" ? (
                             // Password Sign In Form
                             <form onSubmit={emailStep ? handleSubmit : handleEmailContinue} className="space-y-5 relative z-10">
                                 <div className="animate-fade-in delay-100">
                                     {!emailStep && (
-                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
                                             Email Address
                                         </label>
                                     )}
@@ -831,7 +831,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
                                 {emailStep && (
                                     <div className="animate-fade-in">
-                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                                        <label htmlFor="password" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
                                             Password
                                         </label>
                                         <FormField
@@ -848,7 +848,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                 <button
                                                     type="button"
                                                     disabled={authInProgress === 'google' || authInProgress === 'password' || loading}
-                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 hover:text-gray-600 transition-colors focus:outline-none"
+                                                    className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-400 dark:text-gray-500 hover:text-gray-600 dark:hover:text-gray-300 transition-colors focus:outline-none"
                                                     tabIndex={-1}
                                                     onClick={() => setShowPassword((prev) => !prev)}
                                                 >
@@ -910,7 +910,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                             <form onSubmit={otpSent ? handleOtpLogin : handleSendOTP} className="space-y-5 relative z-10">
                                 <div className="animate-fade-in delay-100">
                                     {!otpSent && (
-                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                                        <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
                                             Email Address
                                         </label>
                                     )}
@@ -970,12 +970,12 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                 {otpSent && (
                                     <div className="animate-fade-in">
                                         {otpSuccessMessage && (
-                                            <div className="bg-green-50 border border-green-200 rounded-lg p-3 mb-4 text-green-700 text-sm flex items-center gap-2">
+                                            <div className="bg-green-50 dark:bg-green-900/30 border border-green-200 dark:border-green-800 rounded-lg p-3 mb-4 text-green-700 dark:text-green-400 text-sm flex items-center gap-2">
                                                 <svg className="w-4 h-4 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 13l4 4L19 7" /></svg>
                                                 {otpSuccessMessage}
                                             </div>
                                         )}
-                                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-1.5 ml-1">
+                                        <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1.5 ml-1">
                                             OTP Code
                                         </label>
                                         <input
@@ -994,11 +994,11 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                                                     handleOtpLogin(e);
                                                 }
                                             }}
-                                            className={`w-full px-4 py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 text-center text-2xl tracking-[0.5em] font-medium text-gray-800 placeholder:text-gray-300 ${otpVerifyingLoading ? 'bg-gray-100 opacity-70' : ''}`}
+                                            className={`w-full px-4 py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-4 focus:ring-blue-500/10 focus:border-blue-500 transition-all duration-200 text-center text-2xl tracking-[0.5em] font-medium text-gray-800 dark:text-gray-100 placeholder:text-gray-300 dark:placeholder:text-gray-600 bg-white dark:bg-gray-800 ${otpVerifyingLoading ? 'bg-gray-100 dark:bg-gray-700 opacity-70' : ''}`}
                                             maxLength="6"
                                             required
                                         />
-                                        <p className="text-center text-sm text-gray-500 mt-2">
+                                        <p className="text-center text-sm text-gray-500 dark:text-gray-400 mt-2">
                                             Enter the 6-digit code sent to your email
                                         </p>
                                     </div>
@@ -1058,10 +1058,10 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
 
                         <div className="relative my-8">
                             <div className="absolute inset-0 flex items-center">
-                                <div className="w-full border-t border-gray-200"></div>
+                                <div className="w-full border-t border-gray-200 dark:border-gray-700"></div>
                             </div>
                             <div className="relative flex justify-center text-sm">
-                                <span className="px-3 bg-white text-gray-400 font-medium">OR CONTINUE WITH</span>
+                                <span className="px-3 bg-white dark:bg-gray-800 text-gray-400 dark:text-gray-500 font-medium">OR CONTINUE WITH</span>
                             </div>
                         </div>
 
@@ -1084,7 +1084,7 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                         )}
 
                         <div className="mt-8 text-center">
-                            <p className="text-gray-500 font-medium">
+                            <p className="text-gray-500 dark:text-gray-400 font-medium">
                                 Don't have an account?{" "}
                                 <Link
                                     to={`/sign-up${location.search}`}
@@ -1097,8 +1097,8 @@ export default function SignIn({ bootstrapped, sessionChecked }) {
                     </div>
 
                     <div className="mt-8 text-center">
-                        <p className="text-xs text-gray-400">
-                            By signing in, you agree to our <a href="/terms" className="hover:text-gray-600 transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-gray-600 transition-colors underline">Privacy Policy</a>.
+                        <p className="text-xs text-gray-400 dark:text-gray-500">
+                            By signing in, you agree to our <a href="/terms" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Terms of Service</a> and <a href="/privacy" className="hover:text-gray-600 dark:hover:text-gray-300 transition-colors underline">Privacy Policy</a>.
                         </p>
                     </div>
                 </div>

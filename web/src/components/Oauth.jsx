@@ -146,12 +146,12 @@ export default function Oauth({ pageType, disabled = false, onAuthStart = null, 
                 type="button"
                 onClick={handleGoogleClick}
                 disabled={isLoading || disabled}
-                className="flex items-center justify-center w-full gap-2 px-4 py-2 mt-4 text-sm font-medium text-gray-700 bg-white border border-gray-300 rounded-md shadow-sm hover:bg-gray-100 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex items-center justify-center w-full gap-2 px-4 py-2 mt-4 text-sm font-medium text-gray-700 dark:text-gray-200 bg-white dark:bg-gray-800 border border-gray-300 dark:border-gray-600 rounded-md shadow-sm hover:bg-gray-100 dark:hover:bg-gray-700 transition duration-200 focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent disabled:opacity-50 disabled:cursor-not-allowed"
                 aria-label={`${pageType === "signIn" ? "Sign In" : "Sign Up"} with Google`}
             >
                 {isLoading ? (
                     <>
-                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600"></div>
+                        <div className="animate-spin rounded-full h-5 w-5 border-b-2 border-gray-600 dark:border-gray-300"></div>
                         {error ? 'Retrying...' : 'Signing In...'}
                     </>
                 ) : (
@@ -163,7 +163,7 @@ export default function Oauth({ pageType, disabled = false, onAuthStart = null, 
             </button>
 
             {error && (
-                <div className="mt-2 p-2 text-sm text-red-600 bg-red-50 border border-red-200 rounded-md">
+                <div className="mt-2 p-2 text-sm text-red-600 dark:text-red-400 bg-red-50 dark:bg-red-900/30 border border-red-200 dark:border-red-800 rounded-md">
                     {error}
                 </div>
             )}

@@ -1243,7 +1243,7 @@ export default function Profile() {
   };
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-10 px-2 md:px-8">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-950 min-h-screen py-10 px-2 md:px-8 transition-colors duration-300">
       {/* Signout Loading Modal */}
       {isSigningOut && (
         <div className="fixed inset-0 bg-black/50 backdrop-blur-sm flex items-center justify-center z-[9999]">
@@ -1280,7 +1280,7 @@ export default function Profile() {
               <div className={`mt-4 sm:mt-0 w-full ${isVisible ? animationClasses.fadeInLeft + ' animation-delay-300' : 'opacity-0 -translate-x-8'}`}>
                 {/* Name and Role Section */}
                 <div className="text-center sm:text-left mb-4">
-                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 flex flex-wrap items-center justify-center sm:justify-start gap-2">
+                  <h1 className="text-2xl sm:text-3xl font-bold text-gray-800 dark:text-white mb-1 transition-colors duration-300 flex flex-wrap items-center justify-center sm:justify-start gap-2">
                     <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                       {currentUser.username}
                     </span>
@@ -1312,12 +1312,12 @@ export default function Profile() {
                     const _ = storageUpdateTrigger;
                     const showEmail = localStorage.getItem('showEmail') === 'true';
                     return showEmail ? (
-                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-md">
+                      <div className="bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded-lg p-3 border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-md">
                         <div className="flex items-center">
                           <FaEnvelope className="w-4 h-4 mr-3 text-blue-500 flex-shrink-0" />
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs text-gray-500 font-medium mb-1">Email</p>
-                            <p className="text-gray-700 text-sm break-all">{currentUser.email}</p>
+                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Email</p>
+                            <p className="text-gray-700 dark:text-gray-200 text-sm break-all">{currentUser.email}</p>
                           </div>
                         </div>
                       </div>
@@ -1330,12 +1330,12 @@ export default function Profile() {
                     const _ = storageUpdateTrigger;
                     const showPhone = localStorage.getItem('showPhone') === 'true';
                     return showPhone ? (
-                      <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-green-300 transition-all duration-300 hover:shadow-md">
+                      <div className="bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded-lg p-3 border border-gray-200 hover:border-green-300 transition-all duration-300 hover:shadow-md">
                         <div className="flex items-center">
                           <FaPhone className="w-4 h-4 mr-3 text-green-500 flex-shrink-0" />
                           <div className="min-w-0 flex-1">
-                            <p className="text-xs text-gray-500 font-medium mb-1">Mobile</p>
-                            <p className="text-gray-700 text-sm">
+                            <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Mobile</p>
+                            <p className="text-gray-700 dark:text-gray-200 text-sm">
                               {currentUser.mobileNumber && currentUser.mobileNumber !== "0000000000"
                                 ? `+91 ${currentUser.mobileNumber.slice(0, 5)} ${currentUser.mobileNumber.slice(5)}`
                                 : "Not provided"
@@ -1351,23 +1351,23 @@ export default function Profile() {
                   })()}
 
                   {/* Gender */}
-                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-purple-300 transition-all duration-300 hover:shadow-md">
+                  <div className="bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded-lg p-3 border border-gray-200 hover:border-purple-300 transition-all duration-300 hover:shadow-md">
                     <div className="flex items-center">
                       <FaUser className="w-4 h-4 mr-3 text-purple-500 flex-shrink-0" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Gender</p>
-                        <p className="text-gray-700 text-sm capitalize">{currentUser.gender || "Not provided"}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Gender</p>
+                        <p className="text-gray-700 dark:text-gray-200 text-sm capitalize">{currentUser.gender || "Not provided"}</p>
                       </div>
                     </div>
                   </div>
 
                   {/* Address */}
-                  <div className="bg-gray-50 rounded-lg p-3 border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-md">
+                  <div className="bg-gray-50 dark:bg-gray-700 dark:border-gray-600 rounded-lg p-3 border border-gray-200 hover:border-blue-300 transition-all duration-300 hover:shadow-md">
                     <div className="flex items-start">
                       <FaHome className="w-4 h-4 mr-3 text-blue-500 flex-shrink-0 mt-0.5" />
                       <div className="min-w-0 flex-1">
-                        <p className="text-xs text-gray-500 font-medium mb-1">Address</p>
-                        <p className="text-gray-700 text-sm break-words">{currentUser.address || "Not provided"}</p>
+                        <p className="text-xs text-gray-500 dark:text-gray-400 font-medium mb-1">Address</p>
+                        <p className="text-gray-700 dark:text-gray-200 text-sm break-words">{currentUser.address || "Not provided"}</p>
                       </div>
                     </div>
                   </div>
@@ -1406,7 +1406,7 @@ export default function Profile() {
 
                 {/* Member Since */}
                 <div className="text-center sm:text-left">
-                  <p className="text-sm text-gray-500 transition-all duration-300 hover:text-gray-700">
+                  <p className="text-sm text-gray-500 dark:text-gray-400 font-mono mb-4 transition-colors duration-300">
                     <FaCalendarAlt className="w-3 h-3 inline mr-1" />
                     Member since {formatDate(currentUser.createdAt)}
                   </p>
@@ -1427,8 +1427,8 @@ export default function Profile() {
 
         {/* Edit Profile Form - show below profile card, push stats down when editing */}
         {isEditing && (
-          <div className={`bg-white rounded-xl shadow-lg p-8 mb-6 ${animationClasses.slideInUp}`}>
-            <h2 className="text-2xl font-bold text-gray-800 mb-6 flex items-center group">
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-6 ${animationClasses.slideInUp}`}>
+            <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6 flex items-center group">
               <FaEdit className={`w-5 h-5 mr-2 text-blue-600 transition-transform duration-300 group-hover:${animationClasses.wiggle}`} />
               <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
                 Edit Profile Information
@@ -1484,11 +1484,11 @@ export default function Profile() {
                     </div>
                     {/* DiceBear Avatar Customization */}
                     <div className="mt-4 w-full flex flex-col items-center">
-                      <div className="font-semibold text-gray-700 mb-2">Or create a custom DiceBear avatar:</div>
+                      <div className="font-semibold text-gray-700 dark:text-gray-300 mb-2">Or create a custom DiceBear avatar:</div>
                       <div className="flex flex-col sm:flex-row gap-2 items-center w-full">
-                        <label className="font-medium text-sm">Style:</label>
+                        <label className="font-medium text-sm dark:text-gray-300">Style:</label>
                         <select
-                          className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400"
+                          className="border p-2 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-400 dark:bg-gray-700 dark:border-gray-600 dark:text-white"
                           value={dicebearAvatar.style}
                           onChange={e => {
                             setDicebearAvatar({ style: e.target.value, filters: {} });
@@ -1592,7 +1592,7 @@ export default function Profile() {
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                     <FaUser className="w-4 h-4 mr-2" />
                     Username
                   </label>
@@ -1603,7 +1603,7 @@ export default function Profile() {
                       placeholder="Enter username"
                       value={formData.username || ''}
                       onChange={handleChangeWithValidation}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-12"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-12"
                     />
                     {/* Show green tick for username (always accepted) */}
                     {formData.username && formData.username.trim() && (
@@ -1615,7 +1615,7 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                     <FaEnvelope className="w-4 h-4 mr-2" />
                     Email Address
                   </label>
@@ -1629,12 +1629,12 @@ export default function Profile() {
                       readOnly={!emailEditMode || (emailEditMode && otpSent) || otpLoading}
                       disabled={otpLoading}
                       className={`w-full p-3 border rounded-lg focus:outline-none focus:ring-2 focus:border-transparent transition-all ${!emailEditMode || (emailEditMode && otpSent) || otpLoading
-                        ? 'bg-gray-100 cursor-not-allowed border-green-500 pr-20'
+                        ? 'bg-gray-100 dark:bg-gray-700 dark:border-gray-600 dark:text-white cursor-not-allowed border-green-500 pr-20'
                         : emailValidation.available === false
                           ? 'border-red-500 focus:ring-red-500 pr-12'
                           : emailValidation.available === true
                             ? 'border-green-500 focus:ring-green-500 pr-12'
-                            : 'border-gray-300 focus:ring-blue-500 pr-12'
+                            : 'border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500 pr-12'
                         }`}
                     />
                     {emailValidation.loading && (
@@ -1759,7 +1759,7 @@ export default function Profile() {
 
                   {/* OTP sent message */}
                   {otpSent && !emailVerified && (
-                    <p className="text-sm text-gray-600 mt-2">
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-2">
                       OTP sent to {formData.email}
                     </p>
                   )}
@@ -1767,7 +1767,7 @@ export default function Profile() {
                   {/* OTP Verification Field */}
                   {otpSent && !emailVerified && (
                     <div className="mt-3">
-                      <label htmlFor="otp" className="block text-sm font-medium text-gray-700 mb-2">
+                      <label htmlFor="otp" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                         Enter OTP
                       </label>
                       <div className="flex flex-row gap-2">
@@ -1792,7 +1792,7 @@ export default function Profile() {
                               }
                             }
                           }}
-                          className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base ${verifyLoading ? 'bg-gray-100 cursor-not-allowed' : ''
+                          className={`flex-1 px-3 py-2 sm:px-4 sm:py-3 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-200 text-sm sm:text-base dark:bg-gray-700 dark:text-white ${verifyLoading ? 'bg-gray-100 dark:bg-gray-900 cursor-not-allowed' : ''
                             }`}
                           maxLength="6"
                         />
@@ -1806,7 +1806,7 @@ export default function Profile() {
                         </button>
                       </div>
                       <div className="flex items-center justify-between mt-2">
-                        <p className="text-xs text-gray-500">
+                        <p className="text-xs text-gray-500 dark:text-gray-400">
                           Enter the 6-digit code sent to your email
                         </p>
                         <div className="flex items-center gap-2">
@@ -1854,7 +1854,7 @@ export default function Profile() {
                   )}
                   {emailValidation.message && !emailError && (
                     <div className={`text-sm mt-1 ${emailValidation.available === true ? 'text-green-600' :
-                      emailValidation.available === false ? 'text-red-600' : 'text-gray-600'
+                      emailValidation.available === false ? 'text-red-600' : 'text-gray-600 dark:text-gray-400'
                       }`}>
                       {emailValidation.message}
                     </div>
@@ -1862,7 +1862,7 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                     <FaPhone className="w-4 h-4 mr-2" />
                     Mobile Number
                   </label>
@@ -1879,7 +1879,7 @@ export default function Profile() {
                         ? 'border-red-500 focus:ring-red-500'
                         : mobileValidation.available === true
                           ? 'border-green-500 focus:ring-green-500'
-                          : 'border-gray-300 focus:ring-blue-500'
+                          : 'border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white focus:ring-blue-500'
                         }`}
                     />
                     {mobileValidation.loading && (
@@ -1906,7 +1906,7 @@ export default function Profile() {
                   )}
                   {mobileValidation.message && !mobileError && (
                     <div className={`text-sm mt-1 ${mobileValidation.available === true ? 'text-green-600' :
-                      mobileValidation.available === false ? 'text-red-600' : 'text-gray-600'
+                      mobileValidation.available === false ? 'text-red-600' : 'text-gray-600 dark:text-gray-400'
                       }`}>
                       {mobileValidation.message}
                     </div>
@@ -1914,7 +1914,7 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <label htmlFor="gender" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                     <FaUser className="w-4 h-4 mr-2" />
                     Gender
                   </label>
@@ -1923,7 +1923,7 @@ export default function Profile() {
                       id="gender"
                       value={formData.gender || ''}
                       onChange={handleChangeWithValidation}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-12"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-12"
                     >
                       <option value="">Select gender</option>
                       <option value="male">Male</option>
@@ -1941,7 +1941,7 @@ export default function Profile() {
                 </div>
 
                 <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2 flex items-center">
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2 flex items-center">
                     <FaHome className="w-4 h-4 mr-2" />
                     Address
                   </label>
@@ -1952,7 +1952,7 @@ export default function Profile() {
                       placeholder="Enter your address"
                       value={formData.address || ''}
                       onChange={handleChangeWithValidation}
-                      className="w-full p-3 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-12"
+                      className="w-full p-3 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-green-500 focus:border-transparent transition-all pr-12"
                     />
                     {/* Show green tick for address (always accepted) */}
                     {formData.address && formData.address.trim() && (
@@ -2053,64 +2053,64 @@ export default function Profile() {
 
         {/* Stats Section - show below profile card if not editing, below edit form if editing */}
         <div className={`grid grid-cols-1 md:grid-cols-2 ${isAdmin ? 'lg:grid-cols-3' : 'lg:grid-cols-4'} gap-4 mb-6`}>
-          <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-450' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-blue-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-450' : 'opacity-0 scale-95'}`}>
+            <div className={`bg-blue-100 dark:bg-blue-900 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-blue-200 dark:group-hover:bg-blue-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
               {isAdmin ? (
-                <FaStar className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
+                <FaStar className="w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 max-w-none transition-colors duration-300" />
               ) : (
-                <FaHome className="w-5 h-5 text-blue-600 group-hover:text-blue-700 transition-colors duration-300" />
+                <FaHome className="w-5 h-5 text-blue-600 dark:text-blue-400 group-hover:text-blue-700 transition-colors duration-300" />
               )}
             </div>
-            <h3 className="text-xl font-bold text-gray-800 group-hover:text-blue-600 transition-colors duration-300">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
               {statsAnimated ? <AnimatedCounter end={userStats.listings} delay={500} /> : userStats.listings}
             </h3>
-            <p className="text-sm text-gray-600 group-hover:text-blue-500 transition-colors duration-300">
+            <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-blue-500 transition-colors duration-300">
               {isAdmin ? 'Reviews' : 'My Listings'}
             </p>
           </div>
-          <div className={`bg-white rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-600' : 'opacity-0 scale-95'}`}>
-            <div className={`bg-green-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
-              <FaCalendarAlt className="w-5 h-5 text-green-600 group-hover:text-green-700 transition-colors duration-300" />
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-600' : 'opacity-0 scale-95'}`}>
+            <div className={`bg-green-100 dark:bg-green-900 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-green-200 dark:group-hover:bg-green-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+              <FaCalendarAlt className="w-5 h-5 text-green-600 dark:text-green-400 group-hover:text-green-700 transition-colors duration-300" />
             </div>
-            <h3 className="text-xl font-bold text-gray-800 group-hover:text-green-600 transition-colors duration-300">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white group-hover:text-green-600 dark:group-hover:text-green-400 transition-colors duration-300">
               {statsAnimated ? <AnimatedCounter end={userStats.appointments} delay={650} /> : userStats.appointments}
             </h3>
-            <p className="text-sm text-gray-600 group-hover:text-green-500 transition-colors duration-300">Appointments</p>
+            <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-green-500 transition-colors duration-300">Appointments</p>
           </div>
-          <div className={`bg-white rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
-            <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 transition-all duration-300 ${isAdmin ? 'bg-indigo-100 group-hover:bg-indigo-200' : 'bg-red-100 group-hover:bg-red-200'} ${animationClasses.heartbeat} group-hover:scale-110`}>
+          <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg ${isAdmin ? 'p-6' : 'p-4'} text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-750' : 'opacity-0 scale-95'}`}>
+            <div className={`w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 transition-all duration-300 ${isAdmin ? 'bg-indigo-100 group-hover:bg-indigo-200 dark:bg-indigo-900 dark:group-hover:bg-indigo-800' : 'bg-red-100 group-hover:bg-red-200 dark:bg-red-900 dark:group-hover:bg-red-800'} ${animationClasses.heartbeat} group-hover:scale-110`}>
               {isAdmin ? (
-                <FaHome className="w-5 h-5 text-indigo-600 group-hover:text-indigo-700 transition-colors duration-300" />
+                <FaHome className="w-5 h-5 text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 transition-colors duration-300" />
               ) : (
-                <FaHeart className="w-5 h-5 text-red-600 group-hover:text-red-700 transition-colors duration-300" />
+                <FaHeart className="w-5 h-5 text-red-600 dark:text-red-400 group-hover:text-red-700 transition-colors duration-300" />
               )}
             </div>
-            <h3 className="text-xl font-bold text-gray-800 transition-colors duration-300">
+            <h3 className="text-xl font-bold text-gray-800 dark:text-white transition-colors duration-300">
               {isAdmin
                 ? (statsAnimated ? <AnimatedCounter end={userStats.listings} delay={800} /> : userStats.listings)
                 : (statsAnimated ? <AnimatedCounter end={userStats.wishlist} delay={800} /> : userStats.wishlist)
               }
             </h3>
-            <p className="text-sm text-gray-600 transition-colors duration-300">
+            <p className="text-sm text-gray-600 dark:text-gray-400 transition-colors duration-300">
               {isAdmin ? 'All Properties' : 'Wishlist Items'}
             </p>
           </div>
           {!isAdmin && (
-            <div className={`bg-white rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
-              <div className={`bg-indigo-100 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-200 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
-                <FaStar className="w-5 h-5 text-indigo-600 group-hover:text-indigo-700 transition-colors duration-300" />
+            <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-4 text-center group hover:shadow-2xl transition-all duration-500 hover:scale-105 hover:-translate-y-2 ${isVisible ? animationClasses.scaleIn + ' animation-delay-900' : 'opacity-0 scale-95'}`}>
+              <div className={`bg-indigo-100 dark:bg-indigo-900 w-10 h-10 rounded-full flex items-center justify-center mx-auto mb-3 group-hover:bg-indigo-200 dark:group-hover:bg-indigo-800 transition-all duration-300 ${animationClasses.float} group-hover:scale-110`}>
+                <FaStar className="w-5 h-5 text-indigo-600 dark:text-indigo-400 group-hover:text-indigo-700 transition-colors duration-300" />
               </div>
-              <h3 className="text-xl font-bold text-gray-800 group-hover:text-indigo-600 transition-colors duration-300">
+              <h3 className="text-xl font-bold text-gray-800 dark:text-white group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
                 {statsAnimated ? <AnimatedCounter end={userStats.referrals || 0} delay={1050} /> : (userStats.referrals || 0)}
               </h3>
-              <p className="text-sm text-gray-600 group-hover:text-indigo-500 transition-colors duration-300">Total Referrals</p>
+              <p className="text-sm text-gray-600 dark:text-gray-400 group-hover:text-indigo-500 transition-colors duration-300">Total Referrals</p>
             </div>
           )}
         </div>
 
         {/* Quick Actions Section */}
-        <div className={`bg-white rounded-xl shadow-lg p-8 mb-6 ${isVisible ? animationClasses.fadeInUp + ' animation-delay-300' : 'opacity-0 translate-y-8'}`}>
-          <h2 className="text-2xl font-bold text-gray-800 mb-6">
+        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-8 mb-6 ${isVisible ? animationClasses.fadeInUp + ' animation-delay-300' : 'opacity-0 translate-y-8'}`}>
+          <h2 className="text-2xl font-bold text-gray-800 dark:text-white mb-6">
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Quick Actions
             </span>
@@ -2348,7 +2348,7 @@ export default function Profile() {
         </div>
 
         {/* Settings Section */}
-        <div className={`bg-white rounded-xl shadow-lg p-8 ${isVisible ? animationClasses.fadeInUp + ' animation-delay-600' : 'opacity-0 translate-y-8'}`}>
+        <div className={`bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 sm:p-8 mb-6 relative overflow-hidden group ${isVisible ? animationClasses.fadeInUp + ' animation-delay-150' : 'opacity-0 translate-y-8'}`}>
           <h2 className="text-2xl font-bold text-gray-800 mb-6">
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               Account Settings

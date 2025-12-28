@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate, Link } from "react-router-dom";
-import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner, FaBullhorn } from "react-icons/fa";
+import { FaKey, FaTrash, FaSignOutAlt, FaUser, FaTools, FaCloudUploadAlt, FaClipboardList, FaMobileAlt, FaCrown, FaTimes, FaCheck, FaBell, FaEnvelope, FaLock, FaGlobe, FaPalette, FaDownload, FaHistory, FaCode, FaShieldAlt, FaEye, FaEyeSlash, FaMoon, FaSun, FaLanguage, FaClock, FaFileDownload, FaDatabase, FaExclamationTriangle, FaPhone, FaVideo, FaInfoCircle, FaUsers, FaSpinner, FaBullhorn, FaDesktop } from "react-icons/fa";
 import { authenticatedFetch } from '../utils/auth';
 import {
   deleteUserStart,
@@ -847,7 +847,14 @@ export default function Settings() {
     scrollPositionRef.current = window.scrollY;
     setTheme(value);
     localStorage.setItem('theme', value);
-    document.documentElement.classList.toggle('dark', value === 'dark');
+
+    if (value === 'system') {
+      const systemTheme = window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
+      document.documentElement.classList.toggle('dark', systemTheme === 'dark');
+    } else {
+      document.documentElement.classList.toggle('dark', value === 'dark');
+    }
+
     showToast(t('messages.theme_updated'));
   };
 
@@ -954,13 +961,23 @@ export default function Settings() {
     return () => clearTimeout(timeoutId);
   }, [emailNotifications, inAppNotifications, pushNotifications, notificationSound, profileVisibility, showEmail, showPhone, dataSharing, language, timezone, dateFormat, theme, fontSize]);
 
-  // Apply theme on mount
+  // Apply theme on mount and change
   useEffect(() => {
-    if (theme === 'dark') {
-      document.documentElement.classList.add('dark');
-    } else {
-      document.documentElement.classList.remove('dark');
-    }
+    const applyTheme = () => {
+      if (theme === 'dark') {
+        document.documentElement.classList.add('dark');
+      } else if (theme === 'light') {
+        document.documentElement.classList.remove('dark');
+      } else {
+        // System
+        if (window.matchMedia('(prefers-color-scheme: dark)').matches) {
+          document.documentElement.classList.add('dark');
+        } else {
+          document.documentElement.classList.remove('dark');
+        }
+      }
+    };
+    applyTheme();
   }, [theme]);
 
   // Apply font size on mount
@@ -973,10 +990,10 @@ export default function Settings() {
   }
 
   const SettingSection = ({ title, icon: Icon, children }) => (
-    <div className="bg-white rounded-xl shadow-lg p-6 mb-6">
+    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-lg p-6 mb-6 transition-colors duration-200">
       <div className="flex items-center mb-4">
-        {Icon && <Icon className="w-5 h-5 mr-2 text-blue-600" />}
-        <h2 className="text-xl font-bold text-gray-800">{title}</h2>
+        {Icon && <Icon className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-400" />}
+        <h2 className="text-xl font-bold text-gray-800 dark:text-white">{title}</h2>
       </div>
       {children}
     </div>
@@ -989,10 +1006,10 @@ export default function Settings() {
       onChange(e.target.checked);
     };
     return (
-      <div className="flex items-center justify-between py-3 border-b border-gray-200 last:border-b-0">
+      <div className="flex items-center justify-between py-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
         <div className="flex-1">
-          <p className="font-medium text-gray-800">{label}</p>
-          {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+          <p className="font-medium text-gray-800 dark:text-gray-200">{label}</p>
+          {description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>}
         </div>
         <label className="relative inline-flex items-center cursor-pointer">
           <input
@@ -1001,7 +1018,7 @@ export default function Settings() {
             onChange={handleChange}
             className="sr-only peer"
           />
-          <div className="w-11 h-6 bg-gray-200 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
+          <div className="w-11 h-6 bg-gray-200 dark:bg-gray-600 peer-focus:outline-none peer-focus:ring-4 peer-focus:ring-blue-300 dark:peer-focus:ring-blue-800 rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:left-[2px] after:bg-white after:border-gray-300 dark:after:border-gray-500 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-blue-600"></div>
         </label>
       </div>
     );
@@ -1014,30 +1031,30 @@ export default function Settings() {
       onChange(e.target.value);
     };
     return (
-      <div className="py-3 border-b border-gray-200 last:border-b-0">
+      <div className="py-3 border-b border-gray-200 dark:border-gray-700 last:border-b-0">
         <div className="mb-2">
           <div className="flex items-center gap-2">
-            <p className="font-medium text-gray-800">{label}</p>
+            <p className="font-medium text-gray-800 dark:text-gray-200">{label}</p>
             {onInfoClick && (
               <button
                 type="button"
                 onClick={onInfoClick}
-                className="text-blue-500 hover:text-blue-700 transition-colors"
+                className="text-blue-500 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 transition-colors"
                 title="More information"
               >
                 <FaInfoCircle />
               </button>
             )}
             {isLoading && (
-              <FaSpinner className="animate-spin text-blue-500" />
+              <FaSpinner className="animate-spin text-blue-500 dark:text-blue-400" />
             )}
           </div>
-          {description && <p className="text-sm text-gray-500 mt-1">{description}</p>}
+          {description && <p className="text-sm text-gray-500 dark:text-gray-400 mt-1">{description}</p>}
         </div>
         <select
           value={value}
           onChange={handleChange}
-          className="w-full p-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+          className="w-full p-2 border border-gray-300 dark:border-gray-600 dark:bg-gray-700 dark:text-white rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
         >
           {options.map(opt => (
             <option key={opt.value} value={opt.value}>{opt.label}</option>
@@ -1048,17 +1065,17 @@ export default function Settings() {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 py-10 px-2 md:px-8">
+    <div className="min-h-screen bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-950 py-10 px-2 md:px-8 transition-colors duration-300">
       {/* Signout Loading Modal */}
 
       <div className="max-w-4xl mx-auto">
         <div className="mb-6">
-          <h1 className="text-3xl font-bold text-gray-800 mb-2">
+          <h1 className="text-3xl font-bold text-gray-800 dark:text-white mb-2">
             <span className="bg-gradient-to-r from-blue-600 to-purple-600 bg-clip-text text-transparent">
               {t('settings.title')}
             </span>
           </h1>
-          <p className="text-gray-600">{t('settings.subtitle')}</p>
+          <p className="text-gray-600 dark:text-gray-400">{t('settings.subtitle')}</p>
         </div>
 
         {/* Security Settings */}
@@ -1237,6 +1254,13 @@ export default function Settings() {
                 >
                   <FaMoon className="w-5 h-5 mx-auto mb-1 text-gray-700" />
                   <span className="text-sm font-medium">{t('settings.theme_dark')}</span>
+                </button>
+                <button
+                  onClick={() => handleThemeChange('system')}
+                  className={`flex-1 p-3 rounded-lg border-2 transition-all ${theme === 'system' ? 'border-blue-600 bg-blue-50' : 'border-gray-200 hover:border-gray-300'}`}
+                >
+                  <FaDesktop className="w-5 h-5 mx-auto mb-1 text-gray-500" />
+                  <span className="text-sm font-medium">{t('settings.theme_system') || 'System'}</span>
                 </button>
               </div>
             </div>

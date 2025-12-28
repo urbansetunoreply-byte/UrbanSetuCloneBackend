@@ -1,5 +1,6 @@
 /** @type {import('tailwindcss').Config} */
 export default {
+  darkMode: 'class',
   content: [
     "./index.html",
     "./src/**/*.{js,ts,jsx,tsx}",
@@ -29,52 +30,52 @@ export default {
           },
         },
         'slideInRight': {
-          '0%': { 
-            opacity: '0', 
-            transform: 'translateX(100%)' 
+          '0%': {
+            opacity: '0',
+            transform: 'translateX(100%)'
           },
-          '100%': { 
-            opacity: '1', 
-            transform: 'translateX(0)' 
+          '100%': {
+            opacity: '1',
+            transform: 'translateX(0)'
           },
         },
         'slideOutRight': {
-          '0%': { 
-            opacity: '1', 
-            transform: 'translateX(0)' 
+          '0%': {
+            opacity: '1',
+            transform: 'translateX(0)'
           },
-          '100%': { 
-            opacity: '0', 
-            transform: 'translateX(100%)' 
+          '100%': {
+            opacity: '0',
+            transform: 'translateX(100%)'
           },
         },
         'backdropBlurIn': {
-          '0%': { 
+          '0%': {
             'backdrop-filter': 'blur(0px)',
             'background-color': 'rgba(0, 0, 0, 0)'
           },
-          '100%': { 
+          '100%': {
             'backdrop-filter': 'blur(8px)',
             'background-color': 'rgba(0, 0, 0, 0.6)'
           },
         },
         'backdropBlurOut': {
-          '0%': { 
+          '0%': {
             'backdrop-filter': 'blur(8px)',
             'background-color': 'rgba(0, 0, 0, 0.6)'
           },
-          '100%': { 
+          '100%': {
             'backdrop-filter': 'blur(0px)',
             'background-color': 'rgba(0, 0, 0, 0)'
           },
         },
         'menuItemIn': {
-          '0%': { 
-            opacity: '0', 
+          '0%': {
+            opacity: '0',
             transform: 'translateX(20px) scale(0.95)'
           },
-          '100%': { 
-            opacity: '1', 
+          '100%': {
+            opacity: '1',
             transform: 'translateX(0) scale(1)'
           },
         },

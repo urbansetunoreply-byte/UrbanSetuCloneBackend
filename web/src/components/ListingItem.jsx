@@ -87,7 +87,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
   }
 
   return (
-    <div className="group relative bg-white/90 backdrop-blur-xl rounded-2xl overflow-hidden border border-gray-100 shadow-2xl transition-transform duration-200 hover:-translate-y-0.5">
+    <div className="group relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-xl rounded-2xl overflow-hidden border border-gray-100 dark:border-gray-700 shadow-2xl transition-transform duration-200 hover:-translate-y-0.5">
       {/* Offer Badge */}
       {listing.offer && getDiscountPercentage() > 0 && (
         <div className="absolute top-2 sm:top-3 left-2 sm:left-3 z-20">
@@ -102,7 +102,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
         onDelete ? (
           <button
             onClick={(e) => { e.preventDefault(); e.stopPropagation(); onDelete(listing._id); }}
-            className="absolute top-2 sm:top-4 right-2 sm:right-4 p-2 rounded-full transition z-20 bg-red-100 text-red-600 hover:bg-red-500 hover:text-white"
+            className="absolute top-2 sm:top-4 right-2 sm:right-4 p-2 rounded-full transition z-20 bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-500 hover:text-white dark:hover:text-white"
             title="Delete property"
           >
             <FaTrash className="text-base sm:text-lg" />
@@ -113,7 +113,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
           <div className="relative">
             <button
               onClick={handleWishList}
-              className={`p-2 rounded-full transition ${isInWishlistState ? 'bg-red-500 text-white' : 'bg-gray-200 text-red-500'
+              className={`p-2 rounded-full transition ${isInWishlistState ? 'bg-red-500 text-white' : 'bg-gray-200 dark:bg-gray-700 text-red-500 dark:text-red-400'
                 }`}
               title={isInWishlistState ? 'Remove from wishlist' : 'Add to wishlist'}
             >
@@ -145,8 +145,8 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
               />
             </div>
           ) : (
-            <div className="aspect-[16/10] w-full bg-gray-100 flex items-center justify-center">
-              <div className="text-center text-gray-500">
+            <div className="aspect-[16/10] w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+              <div className="text-center text-gray-500 dark:text-gray-400">
                 <div className="text-4xl mb-2">🏠</div>
                 <p className="text-sm">No Image</p>
               </div>
@@ -157,11 +157,11 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
         <div className="p-3 sm:p-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-2 flex-1 min-w-0">
-              <p className="text-gray-700 font-semibold text-base sm:text-lg truncate">
+              <p className="text-gray-700 dark:text-gray-200 font-semibold text-base sm:text-lg truncate">
                 {listing.name}
               </p>
               {listing.isVerified && (
-                <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full text-[10px] font-semibold flex items-center gap-1 whitespace-nowrap">
+                <span className="px-2 py-0.5 bg-green-100 dark:bg-green-900/50 text-green-700 dark:text-green-400 rounded-full text-[10px] font-semibold flex items-center gap-1 whitespace-nowrap">
                   <FaCheckCircle className="text-[10px]" /> Verified
                 </span>
               )}
@@ -174,7 +174,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
                   e.stopPropagation();
                   onDelete(listing._id);
                 }}
-                className="ml-2 p-1 rounded-full bg-red-100 text-red-600 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1 text-xs"
+                className="ml-2 p-1 rounded-full bg-red-100 text-red-600 dark:bg-red-900/30 dark:text-red-400 hover:bg-red-500 hover:text-white transition-all flex items-center gap-1 text-xs"
                 title="Remove from watchlist"
               >
                 <FaTrash className="text-xs" />
@@ -182,7 +182,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
               </button>
             )}
           </div>
-          <div className="text-xs sm:text-sm text-gray-600 flex items-center gap-1 mt-1">
+          <div className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 flex items-center gap-1 mt-1">
             <MapPin className="w-4 h-4 text-red-500" />
             <p className="truncate">
               {maskAddress(
@@ -198,36 +198,36 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
               )}
             </p>
           </div>
-          <p className="text-gray-600 text-xs sm:text-sm mt-2 truncate">{listing.description}</p>
+          <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-2 truncate">{listing.description}</p>
           <div className="mt-2">
             {listing.offer && getDiscountPercentage() > 0 ? (
               <div className="space-y-1">
                 <div className="flex items-center gap-2">
-                  <p className="text-base sm:text-lg font-bold text-blue-500">
+                  <p className="text-base sm:text-lg font-bold text-blue-500 dark:text-blue-400">
                     {formatINR(listing.discountPrice)}
                     {listing.type === 'rent' && ' / month'}
                   </p>
-                  <p className="text-xs sm:text-sm text-gray-500 line-through">
+                  <p className="text-xs sm:text-sm text-gray-500 dark:text-gray-500 line-through">
                     {formatINR(listing.regularPrice)}
                   </p>
                 </div>
                 <div className="flex items-center gap-1">
-                  <span className="text-xs sm:text-sm text-green-600 font-semibold bg-green-50 px-2 py-1 rounded-full">
+                  <span className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-semibold bg-green-50 dark:bg-green-900/30 px-2 py-1 rounded-full">
                     Save ₹{(listing.regularPrice - listing.discountPrice).toLocaleString('en-IN')}
                   </span>
-                  <span className="text-xs sm:text-sm text-green-600 font-semibold">
+                  <span className="text-xs sm:text-sm text-green-600 dark:text-green-400 font-semibold">
                     ({getDiscountPercentage()}% off)
                   </span>
                 </div>
               </div>
             ) : (
-              <p className="text-base sm:text-lg font-bold text-blue-500">
+              <p className="text-base sm:text-lg font-bold text-blue-500 dark:text-blue-400">
                 {formatINR(listing.regularPrice)}
                 {listing.type === 'rent' && ' / month'}
               </p>
             )}
           </div>
-          <div className="flex items-center gap-3 text-gray-700 text-xs sm:text-sm mt-2">
+          <div className="flex items-center gap-3 text-gray-700 dark:text-gray-300 text-xs sm:text-sm mt-2">
             <span className="inline-flex items-center gap-1"><BedDouble className="w-4 h-4" /> {listing.bedrooms} {listing.bedrooms > 1 ? 'beds' : 'bed'}</span>
             <span className="inline-flex items-center gap-1"><Bath className="w-4 h-4" /> {listing.bathrooms} {listing.bathrooms > 1 ? 'baths' : 'bath'}</span>
           </div>
@@ -235,13 +235,13 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
           {/* Property Features - Special Offer + Type badge */}
           <div className="mt-2 flex flex-wrap items-center gap-1">
             {listing.offer && (
-              <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+              <span className="text-xs bg-blue-100 dark:bg-blue-900/40 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-medium">
                 Special Offer
               </span>
             )}
             {listing.type && (
               <span
-                className={`text-xs px-2 py-1 rounded-full font-medium ${listing.type === 'rent' ? 'bg-teal-100 text-teal-700' : 'bg-purple-100 text-purple-700'
+                className={`text-xs px-2 py-1 rounded-full font-medium ${listing.type === 'rent' ? 'bg-teal-100 dark:bg-teal-900/40 text-teal-700 dark:text-teal-300' : 'bg-purple-100 dark:bg-purple-900/40 text-purple-700 dark:text-purple-300'
                   }`}
               >
                 {listing.type === 'rent' ? 'Rent' : 'Sale'}
@@ -253,7 +253,7 @@ export default function ListingItem({ listing, onDelete, onWishToggle }) {
 
       <div className="mt-2 sm:mt-4">
         {currentUser && currentUser._id === listing.userRef ? (
-          <div className="w-full text-red-500 font-semibold text-center py-2 sm:py-3 rounded-lg bg-red-50 border border-red-200">
+          <div className="w-full text-red-500 dark:text-red-400 font-semibold text-center py-2 sm:py-3 rounded-lg bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800">
             You cannot book/rent your own property.
           </div>
         ) : (
