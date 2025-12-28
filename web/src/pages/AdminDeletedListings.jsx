@@ -118,26 +118,26 @@ export default function AdminDeletedListings() {
     };
 
     return (
-        <div className="min-h-screen bg-gray-50 flex flex-col relative">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 flex flex-col relative transition-colors duration-300">
             <div className="flex-1 max-w-7xl w-full mx-auto px-4 py-8">
                 <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-8 gap-4">
                     <div>
-                        <h1 className="text-3xl font-bold text-gray-800 flex items-center gap-2">
+                        <h1 className="text-3xl font-bold text-gray-800 dark:text-white flex items-center gap-2">
                             <FaTrash className="text-red-500" />
                             Deleted Listings Log
                         </h1>
-                        <p className="text-gray-600 mt-1">Manage and restore deleted properties</p>
+                        <p className="text-gray-600 dark:text-gray-400 mt-1">Manage and restore deleted properties</p>
                     </div>
                     <Link
                         to="/admin/listings"
-                        className="px-4 py-2 bg-gray-200 text-gray-700 rounded-lg hover:bg-gray-300 transition font-medium"
+                        className="px-4 py-2 bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-200 rounded-lg hover:bg-gray-300 dark:hover:bg-gray-600 transition font-medium"
                     >
                         ← Back to All Listings
                     </Link>
                 </div>
 
                 {/* Filters */}
-                <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-4 mb-6">
+                <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-4 mb-6 transition-colors duration-300">
                     <div className="flex flex-col md:flex-row gap-4">
                         <div className="flex-1 relative">
                             <FaSearch className="absolute left-3 top-3 text-gray-400" />
@@ -146,14 +146,14 @@ export default function AdminDeletedListings() {
                                 placeholder="Search by property name, owner, or address..."
                                 value={filters.searchTerm}
                                 onChange={(e) => setFilters(prev => ({ ...prev, searchTerm: e.target.value }))}
-                                className="w-full pl-10 pr-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full pl-10 pr-4 py-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400 transition-colors"
                             />
                         </div>
                         <div className="w-full md:w-48">
                             <select
                                 value={filters.deletionType}
                                 onChange={(e) => setFilters(prev => ({ ...prev, deletionType: e.target.value }))}
-                                className="w-full px-4 py-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500"
+                                className="w-full px-4 py-2 border dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 bg-white dark:bg-gray-700 text-gray-900 dark:text-white transition-colors"
                             >
                                 <option value="all">All Deletions</option>
                                 <option value="owner">Deleted by Owner</option>
@@ -167,7 +167,7 @@ export default function AdminDeletedListings() {
                 {loading ? (
                     <AdminDeletedListingsSkeleton />
                 ) : error ? (
-                    <div className="bg-red-50 text-red-600 p-8 rounded-xl text-center">
+                    <div className="bg-red-50 dark:bg-red-900/20 text-red-600 dark:text-red-400 p-8 rounded-xl text-center">
                         <FaExclamationTriangle className="mx-auto text-4xl mb-4 opacity-50" />
                         <p className="text-lg font-medium">{error}</p>
                         <button
@@ -178,32 +178,32 @@ export default function AdminDeletedListings() {
                         </button>
                     </div>
                 ) : listings.length === 0 ? (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 p-12 text-center">
-                        <div className="w-20 h-20 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                            <FaTrash className="text-gray-400 text-3xl" />
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 p-12 text-center transition-colors duration-300">
+                        <div className="w-20 h-20 bg-gray-100 dark:bg-gray-700 rounded-full flex items-center justify-center mx-auto mb-4">
+                            <FaTrash className="text-gray-400 dark:text-gray-500 text-3xl" />
                         </div>
-                        <h3 className="text-xl font-bold text-gray-800 mb-2">No Deleted Listings Found</h3>
-                        <p className="text-gray-500">There are no deleted properties matching your filters.</p>
+                        <h3 className="text-xl font-bold text-gray-800 dark:text-white mb-2">No Deleted Listings Found</h3>
+                        <p className="text-gray-500 dark:text-gray-400">There are no deleted properties matching your filters.</p>
                     </div>
                 ) : (
-                    <div className="bg-white rounded-xl shadow-sm border border-gray-100 overflow-hidden">
+                    <div className="bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700 overflow-hidden transition-colors duration-300">
                         <div className="overflow-x-auto">
                             <table className="w-full text-left border-collapse">
-                                <thead className="bg-gray-50 border-b border-gray-200">
+                                <thead className="bg-gray-50 dark:bg-gray-700/50 border-b border-gray-200 dark:border-gray-700">
                                     <tr>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Property</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Deleted Info</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Owner</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider">Restoration</th>
-                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 uppercase tracking-wider text-right">Actions</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Property</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Deleted Info</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Owner</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider">Restoration</th>
+                                        <th className="px-6 py-4 text-xs font-semibold text-gray-500 dark:text-gray-400 uppercase tracking-wider text-right">Actions</th>
                                     </tr>
                                 </thead>
-                                <tbody className="divide-y divide-gray-100">
+                                <tbody className="divide-y divide-gray-100 dark:divide-gray-700">
                                     {listings.map((item) => (
-                                        <tr key={item._id} className="hover:bg-gray-50 transition-colors">
+                                        <tr key={item._id} className="hover:bg-gray-50 dark:hover:bg-gray-700/50 transition-colors">
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-3">
-                                                    <div className="w-12 h-12 bg-gray-200 rounded-lg overflow-hidden flex-shrink-0">
+                                                    <div className="w-12 h-12 bg-gray-200 dark:bg-gray-700 rounded-lg overflow-hidden flex-shrink-0">
                                                         {item.listingData.imageUrls?.[0] ? (
                                                             <img
                                                                 src={item.listingData.imageUrls[0]}
@@ -220,15 +220,15 @@ export default function AdminDeletedListings() {
                                                         <Link
                                                             to={`/listing/${item.originalListingId}`}
                                                             target="_blank"
-                                                            className="font-semibold text-gray-900 truncate max-w-[200px] hover:text-blue-600 hover:underline block"
+                                                            className="font-semibold text-gray-900 dark:text-white truncate max-w-[200px] hover:text-blue-600 hover:underline block"
                                                             title={item.listingData.name}
                                                         >
                                                             {item.listingData.name}
                                                         </Link>
-                                                        <div className="text-xs text-gray-500 truncate max-w-[200px]">
+                                                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate max-w-[200px]">
                                                             {item.listingData.address}
                                                         </div>
-                                                        <div className="text-xs text-blue-600 font-medium mt-0.5">
+                                                        <div className="text-xs text-blue-600 dark:text-blue-400 font-medium mt-0.5">
                                                             {item.listingData.type === 'rent' ? 'For Rent' : 'For Sale'}
                                                         </div>
                                                     </div>
@@ -237,22 +237,22 @@ export default function AdminDeletedListings() {
                                             <td className="px-6 py-4">
                                                 <div className="flex flex-col gap-1">
                                                     <span className={`inline-flex items-center gap-1 w-fit px-2 py-0.5 rounded text-xs font-semibold ${item.deletionType === 'admin'
-                                                        ? 'bg-purple-100 text-purple-700'
-                                                        : 'bg-orange-100 text-orange-700'
+                                                        ? 'bg-purple-100 text-purple-700 dark:bg-purple-900/30 dark:text-purple-300'
+                                                        : 'bg-orange-100 text-orange-700 dark:bg-orange-900/30 dark:text-orange-300'
                                                         }`}>
                                                         {item.deletionType === 'admin' ? <FaUserShield className="text-[10px]" /> : <FaUser className="text-[10px]" />}
                                                         {item.deletionType === 'admin' ? 'Deleted by Admin' : 'Deleted by Owner'}
                                                     </span>
-                                                    <span className="text-xs text-gray-500">
+                                                    <span className="text-xs text-gray-500 dark:text-gray-400">
                                                         {formatDate(item.deletedAt)}
                                                     </span>
                                                     {item.deletionType === 'admin' && (
-                                                        <div className="text-xs text-gray-600 mt-1 italic">
+                                                        <div className="text-xs text-gray-600 dark:text-gray-400 mt-1 italic">
                                                             By: {item.deletedBy?.username || 'Unknown Admin'}
                                                         </div>
                                                     )}
                                                     {item.deletionReason && (
-                                                        <div className="text-xs bg-gray-100 p-1 rounded mt-1 text-gray-600 max-w-[200px] truncate" title={item.deletionReason}>
+                                                        <div className="text-xs bg-gray-100 dark:bg-gray-700 p-1 rounded mt-1 text-gray-600 dark:text-gray-300 max-w-[200px] truncate" title={item.deletionReason}>
                                                             Reason: {item.deletionReason}
                                                         </div>
                                                     )}
@@ -260,7 +260,7 @@ export default function AdminDeletedListings() {
                                             </td>
                                             <td className="px-6 py-4">
                                                 <div className="flex items-center gap-2">
-                                                    <div className="w-8 h-8 rounded-full bg-gray-200 overflow-hidden">
+                                                    <div className="w-8 h-8 rounded-full bg-gray-200 dark:bg-gray-700 overflow-hidden">
                                                         <img
                                                             src={item.userRef?.avatar || "https://cdn.pixabay.com/photo/2015/10/05/22/37/blank-profile-picture-973460_1280.png"}
                                                             alt=""
@@ -268,30 +268,30 @@ export default function AdminDeletedListings() {
                                                         />
                                                     </div>
                                                     <div className="flex flex-col">
-                                                        <span className="text-sm font-medium text-gray-900">{item.userRef?.username || 'Unknown'}</span>
-                                                        <span className="text-xs text-gray-500">{item.userRef?.email}</span>
+                                                        <span className="text-sm font-medium text-gray-900 dark:text-white">{item.userRef?.username || 'Unknown'}</span>
+                                                        <span className="text-xs text-gray-500 dark:text-gray-400">{item.userRef?.email}</span>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-4">
                                                 {item.deletionType === 'owner' && item.tokenExpiry ? (
                                                     <div className="flex flex-col gap-1">
-                                                        <span className={`text-xs font-medium ${getDaysRemaining(item.tokenExpiry) < 5 ? 'text-red-600' : 'text-green-600'}`}>
+                                                        <span className={`text-xs font-medium ${getDaysRemaining(item.tokenExpiry) < 5 ? 'text-red-600 dark:text-red-400' : 'text-green-600 dark:text-green-400'}`}>
                                                             {getDaysRemaining(item.tokenExpiry)} days remaining
                                                         </span>
-                                                        <span className="text-[10px] text-gray-400">
+                                                        <span className="text-[10px] text-gray-400 dark:text-gray-500">
                                                             Expires: {new Date(item.tokenExpiry).toLocaleDateString()}
                                                         </span>
                                                     </div>
                                                 ) : (
-                                                    <span className="text-xs text-gray-400">No user token</span>
+                                                    <span className="text-xs text-gray-400 dark:text-gray-500">No user token</span>
                                                 )}
                                             </td>
                                             <td className="px-6 py-4 text-right">
                                                 <button
                                                     onClick={() => handleRestoreClick(item)}
                                                     disabled={restoringId === item._id}
-                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 text-green-700 rounded-lg hover:bg-green-100 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
+                                                    className="inline-flex items-center gap-2 px-4 py-2 bg-green-50 dark:bg-green-900/20 text-green-700 dark:text-green-400 rounded-lg hover:bg-green-100 dark:hover:bg-green-900/40 transition disabled:opacity-50 disabled:cursor-not-allowed text-sm font-medium"
                                                 >
                                                     {restoringId === item._id ? (
                                                         <span className="animate-spin h-4 w-4 border-2 border-current border-t-transparent rounded-full" />
@@ -313,17 +313,17 @@ export default function AdminDeletedListings() {
             {/* Restore Confirmation Modal */}
             {showConfirmModal && selectedListingToRestore && (
                 <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm">
-                    <div className="bg-white rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all scale-100">
+                    <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-2xl max-w-md w-full overflow-hidden transform transition-all scale-100">
                         <div className="p-6">
-                            <div className="w-16 h-16 bg-green-100 rounded-full flex items-center justify-center mx-auto mb-4">
-                                <FaUndo className="text-green-600 text-2xl" />
+                            <div className="w-16 h-16 bg-green-100 dark:bg-green-900/30 rounded-full flex items-center justify-center mx-auto mb-4">
+                                <FaUndo className="text-green-600 dark:text-green-400 text-2xl" />
                             </div>
 
-                            <h3 className="text-xl font-bold text-center text-gray-900 mb-2">
+                            <h3 className="text-xl font-bold text-center text-gray-900 dark:text-white mb-2">
                                 Restore Property?
                             </h3>
 
-                            <p className="text-center text-gray-500 mb-6">
+                            <p className="text-center text-gray-500 dark:text-gray-400 mb-6">
                                 You are about to restore <strong>{selectedListingToRestore.listingData.name}</strong>.
                                 <br /><br />
                                 This will make the property active again on the platform and notify the owner via email.
@@ -332,14 +332,14 @@ export default function AdminDeletedListings() {
                             <div className="flex items-center gap-3">
                                 <button
                                     onClick={() => setShowConfirmModal(false)}
-                                    className="flex-1 px-4 py-2.5 bg-gray-100 text-gray-700 font-medium rounded-xl hover:bg-gray-200 transition-colors"
+                                    className="flex-1 px-4 py-2.5 bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 font-medium rounded-xl hover:bg-gray-200 dark:hover:bg-gray-600 transition-colors"
                                 >
                                     Cancel
                                 </button>
                                 <button
                                     onClick={confirmRestore}
                                     disabled={restoringId !== null}
-                                    className="flex-1 px-4 py-2.5 bg-green-600 text-white font-medium rounded-xl hover:bg-green-700 transition-colors shadow-lg shadow-green-200 flex justify-center items-center gap-2"
+                                    className="flex-1 px-4 py-2.5 bg-green-600 hover:bg-green-700 text-white font-medium rounded-xl transition-colors shadow-lg shadow-green-200 dark:shadow-none flex justify-center items-center gap-2"
                                 >
                                     {restoringId !== null ? (
                                         <span className="animate-spin h-4 w-4 border-2 border-white border-t-transparent rounded-full" />

@@ -41,6 +41,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
   const [removalNote, setRemovalNote] = useState('');
   const [showDeleteModal, setShowDeleteModal] = useState(false);
   const [reviewToDelete, setReviewToDelete] = useState(null);
+  const [showReplyDeleteModal, setShowReplyDeleteModal] = useState(false);
+  const [replyToDelete, setReplyToDelete] = useState(null);
+  const [replyDeleteLoading, setReplyDeleteLoading] = useState(false);
 
   // Lock body scroll when modals are open (including edit modal)
   useEffect(() => {
@@ -312,6 +315,31 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
     } finally {
       setShowDeleteModal(false);
       setReviewToDelete(null);
+    }
+  };
+
+  const confirmDeleteReply = async () => {
+    if (!replyToDelete) return;
+    setReplyDeleteLoading(true);
+    try {
+      const res = await fetch(`${API_BASE_URL}/api/review/reply/${replyToDelete._id}`, {
+        method: 'DELETE',
+        credentials: 'include',
+      });
+      const data = await res.json();
+      if (res.ok) {
+        toast.success('Reply deleted successfully');
+        // Socket should handle the UI update, but we can also manually remove it from state if needed
+        // Assuming socket 'reviewReplyUpdated' will handle it.
+      } else {
+        toast.error(data.message || 'Failed to delete reply');
+      }
+    } catch (error) {
+      toast.error('Network error. Please try again.');
+    } finally {
+      setReplyDeleteLoading(false);
+      setShowReplyDeleteModal(false);
+      setReplyToDelete(null);
     }
   };
 
@@ -604,12 +632,9 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
     setEditingReply(null);
   };
 
-  const handleDeleteReply = async (replyId) => {
-    if (!window.confirm('Delete this reply?')) return;
-    await fetch(`${API_BASE_URL}/api/review/reply/${replyId}`, {
-      method: 'DELETE',
-      credentials: 'include',
-    });
+  const handleDeleteReply = (reply) => {
+    setReplyToDelete(reply);
+    setShowReplyDeleteModal(true);
   };
 
   const handleEditOwnerResponse = (review) => {
@@ -1031,7 +1056,7 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                             )}
                           {(reply.userId === currentUser._id || isAdminUser(currentUser)) && (
                             <button
-                              onClick={() => handleDeleteReply(reply._id)}
+                              onClick={() => handleDeleteReply(reply)}
                               className="text-red-600 hover:text-red-800 transition-colors"
                               title="Delete reply"
                             >
@@ -1326,6 +1351,63 @@ export default function ReviewList({ listingId, onReviewDeleted, listingOwnerId 
                 >
                   <FaTrash size={12} />
                   Delete Review
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Reply Delete Confirmation Modal */}
+      {showReplyDeleteModal && replyToDelete && (
+        <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4 text-left">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full mx-4 shadow-xl border border-transparent dark:border-gray-700">
+            <div className="p-4 sm:p-6">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                <FaTrash className="text-red-500" />
+                Delete Reply
+              </h3>
+
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
+                Are you sure you want to delete this reply? This action cannot be undone.
+              </p>
+
+              <div className="bg-gray-50 dark:bg-gray-700 rounded-lg p-3 mb-4">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className="font-medium text-gray-800 dark:text-white text-sm">{replyToDelete.userName}</span>
+                </div>
+                <p className="text-sm text-gray-700 dark:text-gray-200 line-clamp-3">{replyToDelete.comment}</p>
+              </div>
+
+              <div className="flex gap-3 justify-end">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setShowReplyDeleteModal(false);
+                    setReplyToDelete(null);
+                  }}
+                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
+                  disabled={replyDeleteLoading}
+                >
+                  Cancel
+                </button>
+                <button
+                  type="button"
+                  onClick={confirmDeleteReply}
+                  className="px-4 py-2 rounded bg-red-600 text-white font-semibold hover:bg-red-700 transition-colors flex items-center gap-2"
+                  disabled={replyDeleteLoading}
+                >
+                  {replyDeleteLoading ? (
+                    <span className="flex items-center gap-2">
+                      <div className="animate-spin rounded-full h-3 w-3 border-b-2 border-white"></div>
+                      Deleting...
+                    </span>
+                  ) : (
+                    <>
+                      <FaTrash size={12} />
+                      Delete Reply
+                    </>
+                  )}
                 </button>
               </div>
             </div>

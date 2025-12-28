@@ -452,21 +452,21 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
     <ul className={`${mobile ? 'flex flex-col gap-1' : 'flex items-center space-x-1'}`}>
       {/* Admin Navigation Links */}
       <Link to="/admin" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaHome className={`${mobile ? 'text-lg text-blue-500' : 'text-base text-blue-500'}`} />
           <span>Dashboard</span>
         </li>
       </Link>
 
       <Link to="/admin/create-listing" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaPlus className={`${mobile ? 'text-lg text-green-500' : 'text-base text-green-500'}`} />
           <span>Add Property</span>
         </li>
       </Link>
 
       <Link to="/admin/listings" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaList className={`${mobile ? 'text-lg text-purple-500' : 'text-base text-purple-500'}`} />
           <span>All Listings</span>
         </li>
@@ -474,7 +474,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
 
       {/* Movers removed; Services now includes movers section */}
       <Link to="/admin/services" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium animate-mobile-item-in-delay-3' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaTools className={`${mobile ? 'text-lg text-purple-600' : 'text-base text-purple-600'}`} />
           <span>Services</span>
         </li>
@@ -482,7 +482,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
 
       {currentUser && currentUser.role === 'rootadmin' && currentUser.adminApprovalStatus === 'approved' && (
         <Link to="/admin/requests" onClick={onNavigate}>
-          <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium relative animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base relative flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+          <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium relative animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base relative flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
             <FaUserCheck className={`${mobile ? 'text-lg text-orange-500' : 'text-base text-orange-500'}`} />
             <span>Requests</span>
             {pendingCount > 0 && (
@@ -495,14 +495,14 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
       )}
 
       <Link to="/admin/community" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium animate-mobile-item-in-delay-1' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaUsers className={`${mobile ? 'text-lg text-pink-500' : 'text-base text-pink-500'}`} />
           <span>Community</span>
         </li>
       </Link>
 
       <Link to="/admin/explore" onClick={onNavigate}>
-        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
+        <li className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium animate-mobile-item-in-delay-2' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}>
           <FaCompass className={`${mobile ? 'text-lg text-teal-500' : 'text-base text-teal-500'}`} />
           <span>Explore</span>
         </li>
@@ -512,12 +512,12 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
         <ThemeToggle mobile={mobile} />
       </li>
 
-      <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium' : 'flex items-center'}`}>
+      <li className={`${mobile ? 'flex items-center gap-3 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium' : 'flex items-center'}`}>
         <NotificationBell mobile={mobile} />
       </li>
 
       <li
-        className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 text-gray-700 font-medium cursor-pointer animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base cursor-pointer flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}
+        className={`${mobile ? 'flex items-center gap-2 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 text-gray-700 dark:text-gray-200 font-medium cursor-pointer animate-mobile-item-in' : 'text-white hover:text-yellow-300 transition-colors duration-300 font-medium text-base cursor-pointer flex items-center gap-1 px-2 py-1 rounded-lg hover:bg-white/10'}`}
         onClick={() => { handleSignout(); if (onNavigate) onNavigate(); }}
       >
         <LogOut className={`${mobile ? 'text-lg text-red-500' : 'text-base text-red-500'}`} />
@@ -546,7 +546,7 @@ function AdminNavLinks({ mobile = false, onNavigate, pendingCount, handleSignout
       {currentUser && mobile && (
         <li>
           <div
-            className="cursor-pointer transition-transform duration-300 hover:scale-110 p-3 rounded-lg hover:bg-gray-50 transition-all duration-300 flex items-center gap-3 text-gray-700 font-medium"
+            className="cursor-pointer transition-transform duration-300 hover:scale-110 p-3 rounded-lg hover:bg-gray-50 dark:hover:bg-gray-800 transition-all duration-300 flex items-center gap-3 text-gray-700 dark:text-gray-200 font-medium"
             onClick={() => { navigate("/admin/profile"); if (onNavigate) onNavigate(); }}
             title="Profile"
           >

@@ -357,7 +357,7 @@ export default function UserReviews() {
     return [...Array(5)].map((_, index) => (
       <FaStar
         key={index}
-        className={`text-lg ${index < rating ? 'text-yellow-400' : 'text-gray-300'
+        className={`text-lg ${index < rating ? 'text-yellow-400' : 'text-gray-300 dark:text-gray-600'
           }`}
       />
     ));
@@ -375,17 +375,17 @@ export default function UserReviews() {
     // Handle null/undefined status
     if (!status) {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
           Unknown
         </span>
       );
     }
 
     const statusConfig = {
-      pending: { color: 'bg-yellow-100 text-yellow-800', icon: FaCheck },
-      approved: { color: 'bg-green-100 text-green-800', icon: FaCheck },
-      rejected: { color: 'bg-red-100 text-red-800', icon: FaTimes },
-      removed: { color: 'bg-gray-100 text-gray-800', icon: FaTimes }
+      pending: { color: 'bg-yellow-100 dark:bg-yellow-900/30 text-yellow-800 dark:text-yellow-300', icon: FaCheck },
+      approved: { color: 'bg-green-100 dark:bg-green-900/30 text-green-800 dark:text-green-300', icon: FaCheck },
+      rejected: { color: 'bg-red-100 dark:bg-red-900/30 text-red-800 dark:text-red-300', icon: FaTimes },
+      removed: { color: 'bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200', icon: FaTimes }
     };
 
     const config = statusConfig[status];
@@ -393,7 +393,7 @@ export default function UserReviews() {
     // Handle unknown status
     if (!config) {
       return (
-        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 text-gray-800">
+        <span className="inline-flex items-center px-2.5 py-0.5 rounded-full text-xs font-medium bg-gray-100 dark:bg-gray-700 text-gray-800 dark:text-gray-200">
           {status.charAt(0).toUpperCase() + status.slice(1)}
         </span>
       );
@@ -453,18 +453,18 @@ export default function UserReviews() {
   }
 
   return (
-    <div className="bg-gradient-to-br from-blue-50 to-purple-100 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8 overflow-x-hidden">
-      <div className="max-w-6xl mx-auto bg-white rounded-xl shadow-lg p-2 sm:p-4 lg:p-6">
+    <div className="bg-gradient-to-br from-blue-50 to-purple-100 dark:from-gray-900 dark:to-gray-800 min-h-screen py-2 sm:py-10 px-1 sm:px-2 md:px-8 overflow-x-hidden transition-colors duration-300">
+      <div className="max-w-6xl mx-auto bg-white dark:bg-gray-800 rounded-xl shadow-lg p-2 sm:p-4 lg:p-6 transition-colors duration-300">
         {/* Header */}
         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between mb-6 gap-4">
           <div className="flex items-center gap-3">
-            <FaStar className="text-3xl text-blue-700" />
+            <FaStar className="text-3xl text-blue-700 dark:text-blue-400" />
             <div>
-              <h1 className="text-2xl sm:text-3xl font-extrabold text-blue-700">My Reviews</h1>
-              <p className="text-sm text-gray-600">
+              <h1 className="text-2xl sm:text-3xl font-extrabold text-blue-700 dark:text-white">My Reviews</h1>
+              <p className="text-sm text-gray-600 dark:text-gray-400">
                 {filteredAndSortedReviews.length} of {reviews.length} reviews
                 {analytics.totalReviews > 0 && (
-                  <span className="ml-2 text-blue-600 font-semibold">
+                  <span className="ml-2 text-blue-600 dark:text-blue-400 font-semibold">
                     • Avg Rating: {analytics.averageRating.toFixed(1)} ⭐
                   </span>
                 )}
@@ -475,17 +475,17 @@ export default function UserReviews() {
             {/* Mobile: Stack buttons vertically, Desktop: Horizontal */}
             <div className="flex flex-wrap items-center gap-2">
               {/* View Mode Toggle */}
-              <div className="flex bg-gray-100 rounded-lg p-1">
+              <div className="flex bg-gray-100 dark:bg-gray-700 rounded-lg p-1">
                 <button
                   onClick={() => setViewMode('grid')}
-                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white shadow' : 'text-gray-500'}`}
+                  className={`p-2 rounded ${viewMode === 'grid' ? 'bg-white dark:bg-gray-600 shadow text-blue-600 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`}
                   title="Grid View"
                 >
                   <FaBars className="text-sm" />
                 </button>
                 <button
                   onClick={() => setViewMode('list')}
-                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-white shadow' : 'text-gray-500'}`}
+                  className={`p-2 rounded ${viewMode === 'list' ? 'bg-white dark:bg-gray-600 shadow text-blue-600 dark:text-blue-300' : 'text-gray-500 dark:text-gray-400'}`}
                   title="List View"
                 >
                   <FaBars className="rotate-90 text-sm" />
@@ -495,7 +495,7 @@ export default function UserReviews() {
               {/* Analytics Toggle */}
               <button
                 onClick={() => setShowAnalytics(!showAnalytics)}
-                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showAnalytics ? 'bg-blue-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
               >
                 <FaChartLine className="text-xs sm:text-sm" />
@@ -505,7 +505,7 @@ export default function UserReviews() {
               {/* Stats Toggle */}
               <button
                 onClick={() => setShowStats(!showStats)}
-                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 text-gray-700 hover:bg-gray-200'
+                className={`px-2 sm:px-3 py-2 rounded-lg transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm ${showStats ? 'bg-purple-600 text-white' : 'bg-gray-100 dark:bg-gray-700 text-gray-700 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600'
                   }`}
               >
                 <FaChartBar className="text-xs sm:text-sm" />
@@ -519,7 +519,7 @@ export default function UserReviews() {
               <button
                 onClick={handleRefresh}
                 disabled={loading}
-                className="px-2 sm:px-3 py-2 rounded-lg bg-green-100 text-green-700 hover:bg-green-200 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm disabled:opacity-50"
+                className="px-2 sm:px-3 py-2 rounded-lg bg-green-100 dark:bg-green-900/30 text-green-700 dark:text-green-300 hover:bg-green-200 dark:hover:bg-green-900/50 transition-colors flex items-center gap-1 sm:gap-2 text-xs sm:text-sm disabled:opacity-50"
               >
                 <FaSync className={`text-xs sm:text-sm ${loading ? 'animate-spin' : ''}`} />
                 <span className="hidden sm:inline">Refresh</span>
@@ -540,34 +540,34 @@ export default function UserReviews() {
 
         {/* Analytics Dashboard */}
         {showAnalytics && (
-          <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 p-6 rounded-lg border border-blue-200">
-            <h3 className="text-lg font-semibold text-blue-800 mb-4 flex items-center gap-2">
-              <FaChartLine className="text-blue-600" />
+          <div className="mb-6 bg-gradient-to-r from-blue-50 to-purple-50 dark:from-gray-700 dark:to-gray-700 p-6 rounded-lg border border-blue-200 dark:border-gray-600">
+            <h3 className="text-lg font-semibold text-blue-800 dark:text-blue-300 mb-4 flex items-center gap-2">
+              <FaChartLine className="text-blue-600 dark:text-blue-400" />
               Review Analytics
             </h3>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Total Reviews</p>
-                <p className="text-lg sm:text-2xl font-bold text-blue-600">{analytics.totalReviews}</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Reviews</p>
+                <p className="text-lg sm:text-2xl font-bold text-blue-600 dark:text-blue-400">{analytics.totalReviews}</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Average Rating</p>
-                <p className="text-sm sm:text-2xl font-bold text-green-600">{analytics.averageRating.toFixed(1)} ⭐</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Average Rating</p>
+                <p className="text-sm sm:text-2xl font-bold text-green-600 dark:text-green-400">{analytics.averageRating.toFixed(1)} ⭐</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Approved</p>
-                <p className="text-lg sm:text-2xl font-bold text-green-600">{analytics.approvedReviews}</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Approved</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">{analytics.approvedReviews}</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Pending</p>
-                <p className="text-lg sm:text-2xl font-bold text-yellow-600">{analytics.pendingReviews}</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Pending</p>
+                <p className="text-lg sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">{analytics.pendingReviews}</p>
               </div>
             </div>
 
             {/* Rating Distribution */}
             <div className="mt-6">
-              <div className="bg-white p-4 rounded-lg shadow-sm">
-                <h4 className="font-semibold text-gray-800 mb-3">Rating Distribution</h4>
+              <div className="bg-white dark:bg-gray-800 p-4 rounded-lg shadow-sm">
+                <h4 className="font-semibold text-gray-800 dark:text-gray-200 mb-3">Rating Distribution</h4>
                 <div className="space-y-2">
                   {[5, 4, 3, 2, 1].map(rating => {
                     const count = analytics.ratingDistribution[rating] || 0;
@@ -575,16 +575,16 @@ export default function UserReviews() {
                     return (
                       <div key={rating} className="flex items-center gap-2">
                         <div className="flex items-center gap-1 w-6">
-                          <span className="text-xs font-medium">{rating}</span>
+                          <span className="text-xs font-medium dark:text-gray-300">{rating}</span>
                           <FaStar className="text-yellow-400 text-xs" />
                         </div>
-                        <div className="flex-1 bg-gray-200 rounded-full h-2">
+                        <div className="flex-1 bg-gray-200 dark:bg-gray-700 rounded-full h-2">
                           <div
                             className="bg-yellow-400 h-2 rounded-full transition-all duration-300"
                             style={{ width: `${percentage}%` }}
                           ></div>
                         </div>
-                        <span className="text-xs text-gray-600 w-8 text-right">{count}</span>
+                        <span className="text-xs text-gray-600 dark:text-gray-400 w-8 text-right">{count}</span>
                       </div>
                     );
                   })}
@@ -596,49 +596,49 @@ export default function UserReviews() {
 
         {/* Stats Section */}
         {showStats && reviews.length > 0 && (
-          <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 p-6 rounded-lg border border-purple-200">
-            <h3 className="text-lg font-semibold text-purple-800 mb-4 flex items-center gap-2">
-              <FaChartBar className="text-purple-600" />
+          <div className="mb-6 bg-gradient-to-r from-purple-50 to-pink-50 dark:from-purple-900/20 dark:to-pink-900/20 p-6 rounded-lg border border-purple-200 dark:border-purple-800">
+            <h3 className="text-lg font-semibold text-purple-800 dark:text-purple-300 mb-4 flex items-center gap-2">
+              <FaChartBar className="text-purple-600 dark:text-purple-400" />
               Review Statistics
             </h3>
             <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 sm:gap-4">
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Total Reviews</p>
-                <p className="text-lg sm:text-2xl font-bold text-purple-600">{analytics.totalReviews}</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Total Reviews</p>
+                <p className="text-lg sm:text-2xl font-bold text-purple-600 dark:text-purple-400">{analytics.totalReviews}</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Average Rating</p>
-                <p className="text-sm sm:text-2xl font-bold text-green-600">{analytics.averageRating.toFixed(1)} ⭐</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Average Rating</p>
+                <p className="text-sm sm:text-2xl font-bold text-green-600 dark:text-green-400">{analytics.averageRating.toFixed(1)} ⭐</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Approved</p>
-                <p className="text-lg sm:text-2xl font-bold text-green-600">{analytics.approvedReviews}</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Approved</p>
+                <p className="text-lg sm:text-2xl font-bold text-green-600 dark:text-green-400">{analytics.approvedReviews}</p>
               </div>
-              <div className="bg-white p-3 sm:p-4 rounded-lg shadow-sm">
-                <p className="text-xs sm:text-sm text-gray-600">Pending</p>
-                <p className="text-lg sm:text-2xl font-bold text-yellow-600">{analytics.pendingReviews}</p>
+              <div className="bg-white dark:bg-gray-800 p-3 sm:p-4 rounded-lg shadow-sm">
+                <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400">Pending</p>
+                <p className="text-lg sm:text-2xl font-bold text-yellow-600 dark:text-yellow-400">{analytics.pendingReviews}</p>
               </div>
             </div>
 
             {/* Top Properties */}
             {analytics.topProperties.length > 0 && (
               <div className="mt-6">
-                <h4 className="text-lg font-semibold text-gray-700 mb-4">Most Reviewed Properties</h4>
+                <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">Most Reviewed Properties</h4>
                 <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
                   {analytics.topProperties.map((property, index) => (
-                    <div key={index} className="border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+                    <div key={index} className="border border-gray-200 dark:border-gray-700 rounded-lg p-4 hover:shadow-md transition-shadow bg-white dark:bg-gray-800">
                       <div className="flex items-start justify-between mb-3">
                         <div className="flex-1 min-w-0">
                           <div className="flex items-center gap-2 mb-1">
-                            <span className="text-xs bg-blue-100 text-blue-700 px-2 py-1 rounded-full font-medium">
+                            <span className="text-xs bg-blue-100 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 px-2 py-1 rounded-full font-medium">
                               #{index + 1}
                             </span>
-                            <h5 className="font-semibold text-gray-800 truncate">{property.name}</h5>
+                            <h5 className="font-semibold text-gray-800 dark:text-gray-200 truncate">{property.name}</h5>
                           </div>
                           <div className="flex items-center gap-2 mt-1">
                             <div className="flex items-center gap-1">
                               <FaStar className="text-yellow-400 text-sm" />
-                              <span className="text-sm text-gray-600">{property.avgRating.toFixed(1)}</span>
+                              <span className="text-sm text-gray-600 dark:text-gray-400">{property.avgRating.toFixed(1)}</span>
                             </div>
                             <span className="text-sm text-gray-500">•</span>
                             <span className="text-sm text-gray-500">{property.count} reviews</span>
@@ -664,7 +664,7 @@ export default function UserReviews() {
                 placeholder="Search by property name, city, state, review comment, admin note, or review date..."
                 value={search}
                 onChange={e => setSearch(e.target.value)}
-                className="w-full pl-10 pr-4 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                className="w-full pl-10 pr-4 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white placeholder-gray-500 dark:placeholder-gray-400"
               />
             </div>
 
@@ -672,7 +672,7 @@ export default function UserReviews() {
             <div className="flex flex-col sm:flex-row gap-4">
               {/* Status Filter */}
               <div className="flex items-center gap-2">
-                <FaFilter className="text-gray-500" />
+                <FaFilter className="text-gray-500 dark:text-gray-400" />
                 <select
                   value={statusFilter}
                   onChange={e => {
@@ -683,7 +683,7 @@ export default function UserReviews() {
                       toast.info('Showing all reviews');
                     }
                   }}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="">All Statuses</option>
                   <option value="pending">Pending</option>
@@ -695,11 +695,11 @@ export default function UserReviews() {
 
               {/* Sort Options */}
               <div className="flex items-center gap-2">
-                <FaSort className="text-gray-500" />
+                <FaSort className="text-gray-500 dark:text-gray-400" />
                 <select
                   value={sortBy}
                   onChange={e => setSortBy(e.target.value)}
-                  className="px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                  className="px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-900 dark:text-white"
                 >
                   <option value="dateAdded">Date Added</option>
                   <option value="rating">Rating: High to Low</option>
@@ -711,8 +711,8 @@ export default function UserReviews() {
         )}
 
         {error && (
-          <div className="bg-red-50 border border-red-200 rounded-lg p-4 mb-6">
-            <p className="text-red-800">{error}</p>
+          <div className="bg-red-50 dark:bg-red-900/20 border border-red-200 dark:border-red-800 rounded-lg p-4 mb-6">
+            <p className="text-red-800 dark:text-red-300">{error}</p>
           </div>
         )}
 
@@ -720,8 +720,8 @@ export default function UserReviews() {
         {reviews.length === 0 ? (
           <div className="text-center py-10 sm:py-16">
             <div className="text-6xl sm:text-8xl mb-4">⭐</div>
-            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 mb-2">No reviews yet</h3>
-            <p className="text-gray-600 mb-6">Share your property experiences with the community.</p>
+            <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-2">No reviews yet</h3>
+            <p className="text-gray-600 dark:text-gray-400 mb-6">Share your property experiences with the community.</p>
             <Link
               to="/search"
               className="inline-flex items-center gap-2 bg-blue-600 text-white px-6 py-3 rounded-lg hover:bg-blue-700 transition-colors"
@@ -733,8 +733,8 @@ export default function UserReviews() {
         ) : filteredAndSortedReviews.length === 0 ? (
           <div className="text-center py-10">
             <div className="text-4xl mb-4">🔍</div>
-            <h3 className="text-xl font-semibold text-gray-800 mb-2">No reviews found</h3>
-            <p className="text-gray-600">Try adjusting your search or filter criteria.</p>
+            <h3 className="text-xl font-semibold text-gray-800 dark:text-gray-200 mb-2">No reviews found</h3>
+            <p className="text-gray-600 dark:text-gray-400">Try adjusting your search or filter criteria.</p>
           </div>
         ) : (
           <div className={viewMode === 'grid'
@@ -742,15 +742,15 @@ export default function UserReviews() {
             : "space-y-4 overflow-x-hidden"
           }>
             {filteredAndSortedReviews.map((review) => (
-              <div key={review._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white rounded-lg shadow-sm border w-full overflow-hidden' : ''}`}>
+              <div key={review._id} className={`relative group ${viewMode === 'list' ? 'flex items-center gap-4 p-4 bg-white dark:bg-gray-800 rounded-lg shadow-sm border dark:border-gray-700 w-full overflow-hidden' : ''}`}>
                 <div className={viewMode === 'list' ? 'flex-1' : ''}>
-                  <div className={`border border-gray-200 rounded-lg hover:shadow-md transition-shadow ${viewMode === 'grid' ? 'p-3 h-full flex flex-col' : 'p-3 sm:p-6 overflow-x-auto'} mb-4`}>
+                  <div className={`border border-gray-200 dark:border-gray-700 rounded-lg hover:shadow-md transition-shadow ${viewMode === 'grid' ? 'p-3 h-full flex flex-col bg-white dark:bg-gray-800' : 'p-3 sm:p-6 overflow-x-auto bg-white dark:bg-gray-800'} mb-4`}>
                     <div className="flex flex-col gap-2 sm:gap-4 lg:flex-row lg:items-start lg:justify-between">
                       {/* Review Content */}
                       <div className="flex-1">
                         <div className="flex items-center gap-2 mb-3">
                           {getStatusBadge(review.status)}
-                          <span className="text-sm text-gray-500">
+                          <span className="text-sm text-gray-500 dark:text-gray-400">
                             {formatDate(review.createdAt)}
                           </span>
                         </div>
@@ -759,22 +759,22 @@ export default function UserReviews() {
                           <div className="flex items-center gap-1">
                             {renderStars(review.rating)}
                           </div>
-                          <span className={`text-gray-600 font-medium ${viewMode === 'grid' ? 'text-sm' : 'text-sm'}`}>
+                          <span className={`text-gray-600 dark:text-gray-400 font-medium ${viewMode === 'grid' ? 'text-sm' : 'text-sm'}`}>
                             {review.rating} star{review.rating > 1 ? 's' : ''}
                           </span>
                         </div>
 
-                        <p className={`text-gray-700 mb-3 ${viewMode === 'grid' ? 'text-sm line-clamp-2' : 'line-clamp-3'}`}>{review.comment}</p>
+                        <p className={`text-gray-700 dark:text-gray-300 mb-3 ${viewMode === 'grid' ? 'text-sm line-clamp-2' : 'line-clamp-3'}`}>{review.comment}</p>
 
                         {/* Property Info */}
                         {review.listingId && (
-                          <div className={`bg-gray-50 rounded-lg ${viewMode === 'grid' ? 'p-2' : 'p-3'}`}>
-                            <h4 className={`font-semibold text-gray-800 ${viewMode === 'grid' ? 'text-sm' : ''}`}>
-                              <a href={`/user/listing/${review.listingId && typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="text-blue-600 hover:underline" target="_blank" rel="noopener noreferrer">
+                          <div className={`bg-gray-50 dark:bg-gray-700/50 rounded-lg ${viewMode === 'grid' ? 'p-2' : 'p-3'}`}>
+                            <h4 className={`font-semibold text-gray-800 dark:text-gray-200 ${viewMode === 'grid' ? 'text-sm' : ''}`}>
+                              <a href={`/user/listing/${review.listingId && typeof review.listingId === 'object' ? review.listingId._id : review.listingId}`} className="text-blue-600 dark:text-blue-400 hover:underline" target="_blank" rel="noopener noreferrer">
                                 {review.listingId?.name}
                               </a>
                             </h4>
-                            <p className={`text-gray-600 ${viewMode === 'grid' ? 'text-xs' : 'text-sm'}`}>
+                            <p className={`text-gray-600 dark:text-gray-400 ${viewMode === 'grid' ? 'text-xs' : 'text-sm'}`}>
                               {review.listingId?.city}, {review.listingId?.state}
                             </p>
                           </div>
@@ -782,8 +782,8 @@ export default function UserReviews() {
 
                         {/* Admin Note */}
                         {review.adminNote && (
-                          <div className="mt-3 p-3 bg-blue-50 rounded-lg">
-                            <p className="text-sm text-blue-800">
+                          <div className="mt-3 p-3 bg-blue-50 dark:bg-blue-900/20 rounded-lg border border-blue-100 dark:border-blue-900/30">
+                            <p className="text-sm text-blue-800 dark:text-blue-300">
                               <strong>Admin Note:</strong> {review.adminNote}
                             </p>
                           </div>
@@ -826,12 +826,12 @@ export default function UserReviews() {
           title="Open Watchlist"
         >
           <span className="w-7 h-7 text-white text-2xl">👁️</span>
-          <div className="absolute bottom-full right-0 mb-3 bg-white text-gray-800 text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 transform -translate-y-1 transition-all duration-200">
+          <div className="absolute bottom-full right-0 mb-3 bg-white dark:bg-gray-800 text-gray-800 dark:text-white text-sm px-4 py-2 rounded-xl shadow-2xl hidden group-hover:block z-10 whitespace-nowrap border border-gray-100 dark:border-gray-700 transform -translate-y-1 transition-all duration-200">
             <div className="flex items-center gap-2">
               <span className="text-lg">👁️</span>
               <span className="font-medium">Watchlist</span>
             </div>
-            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white"></div>
+            <div className="absolute top-full right-4 w-0 h-0 border-l-4 border-r-4 border-t-4 border-transparent border-t-white dark:border-t-gray-800"></div>
           </div>
         </button>
       </div>
@@ -839,9 +839,9 @@ export default function UserReviews() {
       {/* Edit Review Modal */}
       {editingReview && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-lg max-w-xs sm:max-w-md w-full">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-xs sm:max-w-md w-full">
             <div className="p-4 sm:p-6">
-              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 mb-2 sm:mb-4">Edit Review</h2>
+              <h2 className="text-lg sm:text-xl font-semibold text-gray-800 dark:text-white mb-2 sm:mb-4">Edit Review</h2>
               <ReviewForm
                 listingId={typeof editingReview.listingId === 'object' ? editingReview.listingId._id : editingReview.listingId}
                 existingReview={editingReview}
@@ -849,7 +849,7 @@ export default function UserReviews() {
               />
               <button
                 onClick={() => setEditingReview(null)}
-                className="mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600"
+                className="mt-4 w-full bg-gray-500 text-white px-4 py-2 rounded-lg hover:bg-gray-600 transition-colors"
               >
                 Cancel
               </button>
@@ -861,28 +861,28 @@ export default function UserReviews() {
       {/* Delete Review Confirmation Modal */}
       {showDeleteModal && reviewToDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-lg max-w-md w-full mx-4 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full mx-4 shadow-xl">
             <div className="p-4 sm:p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaTrash className="text-red-500" />
                 Delete Review
               </h3>
 
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 Are you sure you want to delete this review? This action cannot be undone.
               </p>
 
               {/* Show review details for confirmation */}
-              <div className="bg-gray-50 rounded-lg p-3 mb-4">
+              <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-3 mb-4 border border-gray-100 dark:border-gray-700">
                 <div className="flex items-center gap-2 mb-2">
                   {renderStars(reviewToDelete.rating)}
-                  <span className="text-sm text-gray-600">
+                  <span className="text-sm text-gray-600 dark:text-gray-400">
                     {reviewToDelete.rating} star{reviewToDelete.rating > 1 ? 's' : ''}
                   </span>
                 </div>
-                <p className="text-sm text-gray-700 line-clamp-3">{reviewToDelete.comment}</p>
+                <p className="text-sm text-gray-700 dark:text-gray-300 line-clamp-3">{reviewToDelete.comment}</p>
                 {reviewToDelete.listingId && (
-                  <p className="text-xs text-gray-500 mt-2">
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-2">
                     Property: {reviewToDelete.listingId?.name}
                   </p>
                 )}
@@ -895,7 +895,7 @@ export default function UserReviews() {
                     setShowDeleteModal(false);
                     setReviewToDelete(null);
                   }}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancel
                 </button>
@@ -914,20 +914,20 @@ export default function UserReviews() {
       )}
       {showPermanentDeleteModal && reviewToPermanentlyDelete && (
         <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-2 sm:p-4">
-          <div className="bg-white rounded-lg max-w-md w-full mx-4 shadow-xl">
+          <div className="bg-white dark:bg-gray-800 rounded-lg max-w-md w-full mx-4 shadow-xl">
             <div className="p-4 sm:p-6">
-              <h3 className="text-lg font-semibold text-gray-800 mb-4 flex items-center gap-2">
+              <h3 className="text-lg font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
                 <FaTrash className="text-red-500" />
                 Remove From List
               </h3>
-              <p className="text-gray-600 mb-4">
+              <p className="text-gray-600 dark:text-gray-300 mb-4">
                 This review is already tagged as removed. Do you want to remove it from your reviews list permanently?
               </p>
               <div className="flex gap-3 justify-end">
                 <button
                   type="button"
                   onClick={() => { setShowPermanentDeleteModal(false); setReviewToPermanentlyDelete(null); }}
-                  className="px-4 py-2 rounded bg-gray-200 text-gray-800 font-semibold hover:bg-gray-300 transition-colors"
+                  className="px-4 py-2 rounded bg-gray-200 dark:bg-gray-700 text-gray-800 dark:text-gray-200 font-semibold hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors"
                 >
                   Cancel
                 </button>
@@ -946,4 +946,4 @@ export default function UserReviews() {
       )}
     </div>
   );
-} 
+}
