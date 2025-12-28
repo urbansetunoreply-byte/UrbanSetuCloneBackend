@@ -376,16 +376,16 @@ const PaymentDashboard = () => {
 
               {/* Monthly Stats Chart */}
               {monthlyStats.length > 0 && (
-                <div className="bg-gray-50 rounded-lg p-6">
-                  <h3 className="text-xl font-semibold text-gray-800 mb-4 flex items-center gap-2">
-                    <FaChartLine className="text-blue-600" />
+                <div className="bg-gray-50 dark:bg-gray-700/50 rounded-lg p-6">
+                  <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 flex items-center gap-2">
+                    <FaChartLine className="text-blue-600 dark:text-blue-400" />
                     Monthly Payment Trends (USD & INR)
                   </h3>
                   <div className="space-y-4">
                     {monthlyStats.map((month, index) => (
                       <div key={index} className="flex items-center justify-between">
                         <div className="flex items-center gap-4">
-                          <div className="w-20 text-sm text-gray-600 dark:text-gray-400">
+                          <div className="w-20 text-sm text-gray-600 dark:text-gray-300">
                             {new Date(month._id.year, month._id.month - 1).toLocaleDateString('en-US', { month: 'short', year: 'numeric' })}
                           </div>
                           <div className="flex-1 bg-gray-200 dark:bg-gray-600 rounded-full h-4 relative">
@@ -461,39 +461,51 @@ const PaymentDashboard = () => {
 
           {activeTab === 'history' && (
             <div className="space-y-6">
-              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4">
-                <input id="admin-pay-q" placeholder="Search payment ID, receipt, user" className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5 gap-3 mb-4 items-end">
+                <div>
+                  <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Search</label>
+                  <input id="admin-pay-q" placeholder="Payment ID, receipt..." className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                </div>
                 <div className="flex gap-2">
                   <div className="flex-1">
                     <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">From</label>
-                    <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                    <input id="admin-pay-from" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
                   </div>
                   <div className="flex-1">
                     <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">To</label>
-                    <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
+                    <input id="admin-pay-to" type="date" max={new Date().toISOString().split('T')[0]} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} />
                   </div>
                 </div>
 
-                <select id="admin-pay-status" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full">
-                  <option value="">All Status</option>
-                  <option value="completed">Completed</option>
-                  <option value="pending">Pending</option>
-                  <option value="failed">Failed</option>
-                  <option value="refunded">Refunded</option>
-                  <option value="partially_refunded">Partially Refunded</option>
-                </select>
-                <select id="admin-pay-gateway" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full">
-                  <option value="">All Gateways</option>
-                  <option value="paypal">PayPal</option>
-                  <option value="razorpay">Razorpay</option>
-                </select>
-                <select id="admin-pay-paymentType" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full">
-                  <option value="">All Types</option>
-                  <option value="advance">Advance Payment</option>
-                  <option value="monthly_rent">Monthly Rent</option>
-                  <option value="security_deposit">Security Deposit</option>
-                  <option value="booking_fee">Booking Fee</option>
-                </select>
+                <div>
+                  <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Status</label>
+                  <select id="admin-pay-status" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]">
+                    <option value="">All Status</option>
+                    <option value="completed">Completed</option>
+                    <option value="pending">Pending</option>
+                    <option value="failed">Failed</option>
+                    <option value="refunded">Refunded</option>
+                    <option value="partially_refunded">Partially Refunded</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Gateway</label>
+                  <select id="admin-pay-gateway" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]">
+                    <option value="">All Gateways</option>
+                    <option value="paypal">PayPal</option>
+                    <option value="razorpay">Razorpay</option>
+                  </select>
+                </div>
+                <div>
+                  <label className="text-xs text-gray-500 dark:text-gray-400 block mb-1">Type</label>
+                  <select id="admin-pay-paymentType" onChange={async () => { setUsdPaymentsPage(1); setInrPaymentsPage(1); await fetchAdminPayments(); }} className="px-3 py-2 border dark:border-gray-700 bg-white dark:bg-gray-700 text-gray-900 dark:text-white rounded-lg text-sm w-full h-[38px]">
+                    <option value="">All Types</option>
+                    <option value="advance">Advance Payment</option>
+                    <option value="monthly_rent">Monthly Rent</option>
+                    <option value="security_deposit">Security Deposit</option>
+                    <option value="booking_fee">Booking Fee</option>
+                  </select>
+                </div>
               </div>
               <div>
                 <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-3">USD Payments ($)</h3>
@@ -512,7 +524,7 @@ const PaymentDashboard = () => {
                         } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
-                            <div className="font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
+                            <div className="font-semibold text-gray-800 dark:text-white flex items-center gap-2 flex-wrap">
                               {p.appointmentId?.propertyName || 'Property Payment'}
                               {p.paymentType && (
                                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' :
@@ -527,7 +539,7 @@ const PaymentDashboard = () => {
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-gray-500 flex flex-wrap items-center gap-2 mt-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-2 mt-1">
                               <span>Buyer: {p.userId?.username || 'N/A'}</span>
                               {p.paymentType === 'monthly_rent' && p.rentMonth && p.rentYear && (
                                 <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
@@ -551,13 +563,13 @@ const PaymentDashboard = () => {
                                 Refunded: $ {Number(p.refundAmount).toFixed(2)}
                               </div>
                             )}
-                            <div className="text-xs text-gray-500 space-y-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                               {p.completedAt ? (
                                 <div className="text-right">
                                   <div className="font-medium">Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-400 dark:text-gray-500">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
-                                  <div className="text-gray-300 dark:text-gray-600 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
-                                  <div className="text-gray-300 dark:text-gray-600">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
+                                  <div className="text-gray-300 dark:text-gray-500 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                                  <div className="text-gray-300 dark:text-gray-500">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                                   {p.refundedAt && (
                                     <>
                                       <div className="text-red-400 mt-1">Refunded: {new Date(p.refundedAt).toLocaleDateString('en-GB')}</div>
@@ -568,7 +580,7 @@ const PaymentDashboard = () => {
                               ) : (
                                 <div className="text-right">
                                   <div className="font-medium">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
-                                  <div className="text-gray-400">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
+                                  <div className="text-gray-400 dark:text-gray-500">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                                 </div>
                               )}
                             </div>
@@ -652,7 +664,7 @@ const PaymentDashboard = () => {
                         } hover:shadow-lg transition-all`} onClick={() => handlePaymentClick(p)}>
                         <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-3">
                           <div className="flex-1">
-                            <div className="font-semibold text-gray-800 flex items-center gap-2 flex-wrap">
+                            <div className="font-semibold text-gray-800 dark:text-white flex items-center gap-2 flex-wrap">
                               {p.appointmentId?.propertyName || 'Property Payment'}
                               {p.paymentType && (
                                 <span className={`px-2 py-0.5 rounded-full text-xs font-semibold ${p.paymentType === 'monthly_rent' ? 'bg-green-100 dark:bg-green-900/40 text-green-700 dark:text-green-300' :
@@ -667,7 +679,7 @@ const PaymentDashboard = () => {
                                 </span>
                               )}
                             </div>
-                            <div className="text-xs text-gray-500 flex flex-wrap items-center gap-2 mt-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 flex flex-wrap items-center gap-2 mt-1">
                               <span>Buyer: {p.userId?.username || 'N/A'}</span>
                               {p.paymentType === 'monthly_rent' && p.rentMonth && p.rentYear && (
                                 <span className="px-2 py-0.5 rounded-full bg-indigo-100 text-indigo-700">
@@ -691,13 +703,13 @@ const PaymentDashboard = () => {
                                 Refunded: ₹ {Number(p.refundAmount).toFixed(2)}
                               </div>
                             )}
-                            <div className="text-xs text-gray-500 space-y-1">
+                            <div className="text-xs text-gray-500 dark:text-gray-400 space-y-1">
                               {p.completedAt ? (
                                 <div className="text-right">
                                   <div className="font-medium">Paid: {new Date(p.completedAt).toLocaleDateString('en-GB')}</div>
                                   <div className="text-gray-400 dark:text-gray-500">{new Date(p.completedAt).toLocaleTimeString('en-GB')}</div>
-                                  <div className="text-gray-300 dark:text-gray-600 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
-                                  <div className="text-gray-300 dark:text-gray-600">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
+                                  <div className="text-gray-300 dark:text-gray-500 mt-1">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
+                                  <div className="text-gray-300 dark:text-gray-500">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                                   {p.refundedAt && (
                                     <>
                                       <div className="text-red-400 mt-1">Refunded: {new Date(p.refundedAt).toLocaleDateString('en-GB')}</div>
@@ -708,7 +720,7 @@ const PaymentDashboard = () => {
                               ) : (
                                 <div className="text-right">
                                   <div className="font-medium">Created: {new Date(p.createdAt).toLocaleDateString('en-GB')}</div>
-                                  <div className="text-gray-400">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
+                                  <div className="text-gray-400 dark:text-gray-500">{new Date(p.createdAt).toLocaleTimeString('en-GB')}</div>
                                 </div>
                               )}
                             </div>
