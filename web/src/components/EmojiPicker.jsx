@@ -12,9 +12,9 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
   useEffect(() => {
     if (isOpen && buttonRef.current && pickerRef.current) {
       const buttonRect = buttonRef.current.getBoundingClientRect();
-      const chatContainer = buttonRef.current.closest('.flex-1.overflow-y-auto.space-y-2') || 
-                           buttonRef.current.closest('.flex-1.overflow-y-auto') ||
-                           buttonRef.current.closest('[class*="flex-1"][class*="overflow-y-auto"]');
+      const chatContainer = buttonRef.current.closest('.flex-1.overflow-y-auto.space-y-2') ||
+        buttonRef.current.closest('.flex-1.overflow-y-auto') ||
+        buttonRef.current.closest('[class*="flex-1"][class*="overflow-y-auto"]');
       const containerRect = chatContainer ? chatContainer.getBoundingClientRect() : {
         top: 0,
         left: 0,
@@ -72,7 +72,7 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
               try {
                 const length = el.value.length;
                 el.setSelectionRange(length, length);
-              } catch (_) {}
+              } catch (_) { }
             };
             setTimeout(() => {
               el.focus();
@@ -92,7 +92,7 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
               try {
                 const length = el.value.length;
                 el.setSelectionRange(length, length);
-              } catch (_) {}
+              } catch (_) { }
             }, 100);
           }
         }
@@ -180,7 +180,7 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
     // Do not force focus on mobile; only maintain focus if already focused
     const wasFocused = inputRef && inputRef.current && document.activeElement === inputRef.current;
     if (wasFocused) {
-      try { inputRef.current.focus(); } catch (_) {}
+      try { inputRef.current.focus(); } catch (_) { }
     }
   };
 
@@ -189,9 +189,8 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
   // Dynamic positioning classes and styles - constrained within chatbox (desktop), fixed overlay (mobile)
   const isMobile = window.innerWidth < 768;
   // Force above positioning on desktop to avoid overlapping the input area
-  let positionClasses = `absolute z-[60] bg-white rounded-lg shadow-xl border border-gray-200 ${
-    true ? 'bottom-full mb-2' : 'top-full mt-2'
-  }`;
+  let positionClasses = `absolute z-[60] bg-white rounded-lg shadow-xl border border-gray-200 ${true ? 'bottom-full mb-2' : 'top-full mt-2'
+    }`;
   if (position.center && isMobile) {
     positionClasses += '';
   } else {
@@ -251,10 +250,8 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
       width: `${pickerWidth}px`,
       maxWidth: '350px',
       maxHeight: `${effectiveMaxHeight}px`,
-      background: 'white',
       borderRadius: '0.5rem',
       boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-      border: '1px solid rgba(229,231,235,1)',
       overflowY: 'auto',
       overflowX: 'hidden',
       WebkitOverflowScrolling: 'touch', // momentum scroll on iOS
@@ -265,6 +262,7 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
     return createPortal(
       <div
         ref={pickerRef}
+        className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
         style={fixedStyles}
         onMouseDown={(e) => { e.preventDefault(); }}
         onWheel={(e) => { e.stopPropagation(); }}
@@ -272,11 +270,11 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
         onTouchMove={(e) => { e.stopPropagation(); }}
       >
         {/* Header */}
-        <div className="flex items-center justify-between px-3 py-2 border-b bg-white sticky top-0 z-10 rounded-t-lg">
-          <span className="text-sm font-semibold text-gray-700">Emoji</span>
+        <div className="flex items-center justify-between px-3 py-2 border-b bg-white dark:bg-gray-800 dark:border-gray-700 sticky top-0 z-10 rounded-t-lg">
+          <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Emoji</span>
           <button
             type="button"
-            className="p-1.5 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+            className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
             onClick={() => setIsOpen(false)}
             aria-label="Close emoji picker"
           >
@@ -295,11 +293,11 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
           width={pickerWidth}
           height={pickerHeight}
           lazyLoadEmojis={true}
-          theme="light"
+          theme="auto"
           emojiStyle="google"
           categories={[
             'suggested',
-            'smileys_people', 
+            'smileys_people',
             'animals_nature',
             'food_drink',
             'travel_places',
@@ -323,8 +321,8 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
   const placeAbove = spaceAboveViewport >= effectiveMaxHeight + desktopMargin || spaceAboveViewport >= spaceBelowViewport;
   const computedTop = buttonRect
     ? (placeAbove
-        ? Math.max(16, buttonRect.top - effectiveMaxHeight - desktopMargin)
-        : Math.min(window.innerHeight - effectiveMaxHeight - 16, buttonRect.bottom + desktopMargin))
+      ? Math.max(16, buttonRect.top - effectiveMaxHeight - desktopMargin)
+      : Math.min(window.innerHeight - effectiveMaxHeight - 16, buttonRect.bottom + desktopMargin))
     : Math.max(16, window.innerHeight - effectiveMaxHeight - 88);
   const computedLeft = buttonRect
     ? viewportLeftClamp(buttonRect.right - pickerWidth)
@@ -338,10 +336,8 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
     width: `${pickerWidth}px`,
     maxWidth: '350px',
     height: `${effectiveMaxHeight}px`,
-    background: 'white',
     borderRadius: '0.5rem',
     boxShadow: '0 10px 25px rgba(0,0,0,0.15)',
-    border: '1px solid rgba(229,231,235,1)',
     overflow: 'hidden',
     display: 'flex',
     flexDirection: 'column'
@@ -350,6 +346,7 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
   return createPortal(
     <div
       ref={pickerRef}
+      className="bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700"
       style={desktopFixedStyles}
       onMouseDown={(e) => { e.preventDefault(); }}
       onWheel={(e) => { e.stopPropagation(); }}
@@ -357,11 +354,11 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
       onTouchMove={(e) => { e.stopPropagation(); }}
     >
       {/* Header */}
-      <div className="flex items-center justify-between px-3 py-2 border-b bg-white sticky top-0 z-10 rounded-t-lg">
-        <span className="text-sm font-semibold text-gray-700">Emoji</span>
+      <div className="flex items-center justify-between px-3 py-2 border-b bg-white dark:bg-gray-800 dark:border-gray-700 sticky top-0 z-10 rounded-t-lg">
+        <span className="text-sm font-semibold text-gray-700 dark:text-gray-200">Emoji</span>
         <button
           type="button"
-          className="p-1.5 rounded-full text-gray-500 hover:text-gray-700 hover:bg-gray-100"
+          className="p-1.5 rounded-full text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 hover:bg-gray-100 dark:hover:bg-gray-700"
           onClick={() => setIsOpen(false)}
           aria-label="Close emoji picker"
         >
@@ -391,11 +388,11 @@ const CustomEmojiPicker = ({ onEmojiClick, isOpen, setIsOpen, buttonRef, inputRe
           width={pickerWidth}
           height={effectiveMaxHeight - 60}
           lazyLoadEmojis={true}
-          theme="light"
+          theme="auto"
           emojiStyle="google"
           categories={[
             'suggested',
-            'smileys_people', 
+            'smileys_people',
             'animals_nature',
             'food_drink',
             'travel_places',
@@ -444,7 +441,7 @@ export const EmojiButton = ({ onEmojiClick, className = "", inputRef }) => {
         if (wasFocused && inputEl) {
           const moveCaretToEnd = () => {
             const length = inputEl.value.length;
-            try { inputEl.setSelectionRange(length, length); } catch (_) {}
+            try { inputEl.setSelectionRange(length, length); } catch (_) { }
           };
           inputEl.focus();
           moveCaretToEnd();
@@ -457,7 +454,7 @@ export const EmojiButton = ({ onEmojiClick, className = "", inputRef }) => {
         if (inputEl) {
           const moveCaretToEnd = () => {
             const length = inputEl.value.length;
-            try { inputEl.setSelectionRange(length, length); } catch (_) {}
+            try { inputEl.setSelectionRange(length, length); } catch (_) { }
           };
           inputEl.focus();
           moveCaretToEnd();
@@ -469,7 +466,7 @@ export const EmojiButton = ({ onEmojiClick, className = "", inputRef }) => {
     } else {
       // Desktop: when opening picker, focus input for better caret behavior
       if (openingPicker && inputEl) {
-        try { inputEl.focus(); } catch (_) {}
+        try { inputEl.focus(); } catch (_) { }
       }
     }
     setIsPickerOpen(openingPicker);

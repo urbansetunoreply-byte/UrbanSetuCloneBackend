@@ -67,7 +67,7 @@ export default function Offers() {
     ];
 
     return (
-        <div className="min-h-screen bg-gray-50 font-sans text-slate-800 pb-20">
+        <div className="min-h-screen bg-gray-50 dark:bg-gray-900 font-sans text-slate-800 pb-20">
             {/* Hero Section */}
             <div className="bg-gradient-to-br from-indigo-900 via-blue-900 to-slate-900 text-white relative overflow-hidden py-16 sm:py-24">
                 <div className="absolute top-0 left-0 w-full h-full overflow-hidden opacity-20 pointer-events-none">
@@ -93,10 +93,10 @@ export default function Offers() {
                 {/* Bank Offers Grid */}
                 <div className="mb-12 animate-fade-in-up" style={{ animationDelay: "0.2s" }}>
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="p-3 bg-white rounded-xl shadow-sm border border-gray-100">
-                            <Landmark className="w-6 h-6 text-blue-600" />
+                        <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm border border-gray-100 dark:border-gray-700">
+                            <Landmark className="w-6 h-6 text-blue-600 dark:text-blue-400" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-800">Home Loan Offers</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Home Loan Offers</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
@@ -106,18 +106,18 @@ export default function Offers() {
                                 href={offer.link}
                                 target="_blank"
                                 rel="noreferrer"
-                                className={`group p-6 rounded-2xl border transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-white ${offer.color.replace('bg-', 'hover:bg-opacity-20 ')} hover:border-transparent`} // simplified hover logic
+                                className={`group p-6 rounded-2xl border dark:border-gray-700 transition-all duration-300 hover:-translate-y-1 hover:shadow-xl bg-white dark:bg-gray-800 ${offer.color.replace('bg-', 'hover:bg-opacity-20 ')} hover:border-transparent`} // simplified hover logic
                             >
-                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${offer.color}`}>
+                                <div className={`w-12 h-12 rounded-xl flex items-center justify-center mb-4 ${offer.color} dark:bg-opacity-20`}>
                                     {offer.icon}
                                 </div>
-                                <h3 className="text-lg font-bold text-gray-900 mb-2 group-hover:text-blue-700 transition-colors">
+                                <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-2 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
                                     {offer.name}
                                 </h3>
-                                <p className="text-gray-600 text-sm mb-4 leading-relaxed">
+                                <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed">
                                     {offer.desc}
                                 </p>
-                                <div className="flex items-center text-sm font-semibold text-blue-600 group-hover:gap-2 transition-all">
+                                <div className="flex items-center text-sm font-semibold text-blue-600 dark:text-blue-400 group-hover:gap-2 transition-all">
                                     Apply Now <ArrowRight className="w-4 h-4 ml-1" />
                                 </div>
                             </a>
@@ -128,10 +128,10 @@ export default function Offers() {
                 {/* Services Section */}
                 <div className="mb-12 animate-fade-in-up" style={{ animationDelay: "0.3s" }}>
                     <div className="flex items-center gap-3 mb-6">
-                        <div className="p-3 bg-white rounded-xl shadow-sm">
-                            <CheckCircle2 className="w-6 h-6 text-green-600" />
+                        <div className="p-3 bg-white dark:bg-gray-800 rounded-xl shadow-sm dark:shadow-none border border-gray-100 dark:border-gray-700">
+                            <CheckCircle2 className="w-6 h-6 text-green-600 dark:text-green-400" />
                         </div>
-                        <h2 className="text-2xl font-bold text-gray-800">Essential Services</h2>
+                        <h2 className="text-2xl font-bold text-gray-800 dark:text-white">Essential Services</h2>
                     </div>
 
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
@@ -141,17 +141,17 @@ export default function Offers() {
                                 href={service.link}
                                 target="_blank"
                                 rel="noreferrer"
-                                className={`flex items-start gap-4 p-6 rounded-2xl bg-white border border-gray-100 shadow-sm hover:shadow-lg transition-all duration-300 group hover:border-blue-100`}
+                                className={`flex items-start gap-4 p-6 rounded-2xl bg-white dark:bg-gray-800 border border-gray-100 dark:border-gray-700 shadow-sm hover:shadow-lg transition-all duration-300 group hover:border-blue-100 dark:hover:border-blue-900`}
                             >
-                                <div className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center ${service.color}`}>
+                                <div className={`w-14 h-14 shrink-0 rounded-2xl flex items-center justify-center ${service.color} dark:bg-gray-700 dark:text-white dark:bg-opacity-30`}>
                                     {service.icon}
                                 </div>
                                 <div>
-                                    <h3 className="text-xl font-bold text-gray-900 mb-1 group-hover:text-blue-700 transition-colors">
+                                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-1 group-hover:text-blue-700 dark:group-hover:text-blue-400 transition-colors">
                                         {service.name}
                                     </h3>
-                                    <p className="text-gray-600 mb-3">{service.desc}</p>
-                                    <span className="text-sm font-semibold text-blue-600 underline decoration-transparent group-hover:decoration-blue-600 transition-all">
+                                    <p className="text-gray-600 dark:text-gray-400 mb-3">{service.desc}</p>
+                                    <span className="text-sm font-semibold text-blue-600 dark:text-blue-400 underline decoration-transparent group-hover:decoration-blue-600 transition-all">
                                         Check Rates & Availability
                                     </span>
                                 </div>
