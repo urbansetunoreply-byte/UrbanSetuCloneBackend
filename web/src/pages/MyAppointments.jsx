@@ -1649,7 +1649,7 @@ export default function MyAppointments() {
                       {/* Status text below role */}
                       {!canSeeContactInfo ? (
                         <div className="mt-2">
-                          <span className="text-gray-600 dark:text-gray-300 font-medium text-xs bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                          <span className="text-gray-600 dark:text-white font-medium text-xs bg-gray-100 dark:bg-gray-600 px-3 py-1 rounded-full border border-transparent dark:border-gray-500 shadow-sm">
                             Not available
                           </span>
                         </div>
@@ -1667,7 +1667,7 @@ export default function MyAppointments() {
                         </div>
                       ) : (
                         <div className="mt-2">
-                          <span className="text-gray-600 dark:text-gray-300 font-medium text-xs bg-gray-100 dark:bg-gray-700 px-3 py-1 rounded-full">
+                          <span className="text-gray-600 dark:text-white font-medium text-xs bg-gray-100 dark:bg-gray-600 px-3 py-1 rounded-full border border-transparent dark:border-gray-500 shadow-sm">
                             {(() => {
                               if (!selectedOtherParty.lastSeen) return 'Offline';
 
@@ -10077,9 +10077,9 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               {/* Multi-Image Preview Modal - Positioned as overlay */}
               {showImagePreviewModal && selectedFiles.length > 0 && (
                 <div className="absolute inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] overflow-y-auto">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-medium text-gray-700">
+                      <span className="text-lg font-medium text-gray-700 dark:text-white">
                         Image Preview ({selectedFiles.length} image{selectedFiles.length !== 1 ? 's' : ''})
                       </span>
                       <button
@@ -10089,7 +10089,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           setPreviewIndex(0);
                           setShowImagePreviewModal(false);
                         }}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                       >
                         <FaTimes className="w-5 h-5" />
                       </button>
@@ -10129,7 +10129,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                       </div>
 
                       {/* Image Counter */}
-                      <div className="text-center text-sm text-gray-600 mb-3">
+                      <div className="text-center text-sm text-gray-600 dark:text-gray-300 mb-3">
                         {previewIndex + 1} of {selectedFiles.length}
                       </div>
 
@@ -10141,7 +10141,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                               onClick={() => setPreviewIndex(index)}
                               className={`flex-shrink-0 w-12 h-12 rounded-lg border-2 transition-all duration-200 ${index === previewIndex
                                 ? 'border-blue-500 shadow-lg'
-                                : 'border-gray-300 hover:border-gray-400'
+                                : 'border-gray-300 dark:border-gray-600 hover:border-gray-400 dark:hover:border-gray-500'
                                 }`}
                             >
                               <img
@@ -10191,7 +10191,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         {/* Add More Images Button - Only show when less than 10 images */}
                         {selectedFiles.length < 10 && (
                           <div className="relative">
-                            <label className="flex-shrink-0 w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 hover:border-blue-400 hover:bg-blue-50 transition-all duration-200 cursor-pointer flex items-center justify-center group">
+                            <label className="flex-shrink-0 w-12 h-12 rounded-lg border-2 border-dashed border-gray-300 dark:border-gray-600 hover:border-blue-400 dark:hover:border-blue-400 hover:bg-blue-50 dark:hover:bg-blue-900/30 transition-all duration-200 cursor-pointer flex items-center justify-center group">
                               <input
                                 type="file"
                                 accept="image/*"
@@ -10237,7 +10237,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           ...prev,
                           [selectedFiles[previewIndex]?.name]: e.target.value
                         }))}
-                        className="w-full px-3 py-2 pr-10 border border-gray-300 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent"
+                        className="w-full px-3 py-2 pr-10 border border-gray-300 dark:border-gray-600 rounded-lg text-sm resize-none focus:ring-2 focus:ring-blue-500 focus:border-transparent bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                         rows={3}
                         maxLength={500}
                       />
@@ -10267,7 +10267,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                     </div>
 
                     <div className="flex justify-between items-center">
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-300">
                         {uploadingFile && currentFileIndex >= 0 ? (
                           <span>
                             Uploading {currentFileIndex + 1} / {selectedFiles.length}
@@ -10327,18 +10327,18 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               {/* Video Preview Modal */}
               {showVideoPreviewModal && selectedVideo && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-4xl w-full max-h-[90vh] flex flex-col">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-medium text-gray-700">Video Preview</span>
+                      <span className="text-lg font-medium text-gray-700 dark:text-white">Video Preview</span>
                       <button
                         onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); }}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                       >
                         <FaTimes className="w-5 h-5" />
                       </button>
                     </div>
                     <div className="flex-1 mb-4 min-h-0">
-                      <video controls className="w-full h-full max-h-[60vh] rounded-lg border" src={videoObjectURL} />
+                      <video controls className="w-full h-full max-h-[60vh] rounded-lg border dark:border-gray-600" src={videoObjectURL} />
                     </div>
 
                     {/* Caption for Video */}
@@ -10349,7 +10349,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           placeholder={`Add a caption for ${selectedVideo.name}...`}
                           value={videoCaption}
                           onChange={(e) => setVideoCaption(e.target.value)}
-                          className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                           rows={2}
                           maxLength={500}
                         />
@@ -10372,13 +10372,13 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           />
                         </div>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 text-right">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                         {videoCaption.length}/500
                       </div>
                     </div>
 
                     <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedVideo.name}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 truncate flex-1 mr-4">{selectedVideo.name}</div>
                       <div className="flex gap-2 flex-shrink-0">
                         {uploadingFile ? (
                           <>
@@ -10397,7 +10397,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           </>
                         ) : (
                           <>
-                            <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                            <button onClick={() => { setSelectedVideo(null); setShowVideoPreviewModal(false); setVideoCaption(''); }} className="px-4 py-2 rounded-lg border dark:border-gray-600 text-gray-700 dark:text-gray-300">Cancel</button>
                             <button onClick={handleSendSelectedVideo} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                           </>
                         )}
@@ -10410,12 +10410,12 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               {/* Audio Preview Modal */}
               {showAudioPreviewModal && selectedAudio && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-2xl w-full max-h-[90vh] flex flex-col">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-medium text-gray-700">Audio Preview</span>
+                      <span className="text-lg font-medium text-gray-700 dark:text-white">Audio Preview</span>
                       <button
                         onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                       >
                         <FaTimes className="w-5 h-5" />
                       </button>
@@ -10430,7 +10430,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           placeholder={`Add a caption for ${selectedAudio.name}...`}
                           value={audioCaption}
                           onChange={(e) => setAudioCaption(e.target.value)}
-                          className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                           rows={2}
                           maxLength={500}
                         />
@@ -10453,16 +10453,16 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           />
                         </div>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 text-right">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                         {audioCaption.length}/500
                       </div>
                     </div>
                     <div className="flex items-center justify-between">
-                      <div className="text-sm text-gray-600 truncate flex-1 mr-4">{selectedAudio.name}</div>
+                      <div className="text-sm text-gray-600 dark:text-gray-300 truncate flex-1 mr-4">{selectedAudio.name}</div>
                       <div className="flex items-center gap-2">
                         <button
                           onClick={() => { setSelectedAudio(null); setShowAudioPreviewModal(false); }}
-                          className="py-2 px-4 rounded-lg text-sm font-medium border hover:bg-gray-50"
+                          className="py-2 px-4 rounded-lg text-sm font-medium border dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-700 text-gray-700 dark:text-gray-300"
                         >Cancel</button>
                         <button
                           onClick={handleSendSelectedAudio}
@@ -10487,24 +10487,24 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               {/* Record Audio Modal */}
               {showRecordAudioModal && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-md w-full">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-medium text-gray-700">Record Audio</span>
+                      <span className="text-lg font-medium text-gray-700 dark:text-white">Record Audio</span>
                       <button
                         onClick={cancelAudioRecording}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                       >
                         <FaTimes className="w-5 h-5" />
                       </button>
                     </div>
                     <div className="flex flex-col items-center gap-4 py-4">
-                      <div className={`w-24 h-24 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-100' : 'bg-gray-100'}`}>
-                        <svg className={`w-10 h-10 ${isRecording ? 'text-red-600 animate-pulse' : 'text-gray-600'}`} viewBox="0 0 24 24" fill="currentColor">
+                      <div className={`w-24 h-24 rounded-full flex items-center justify-center ${isRecording ? 'bg-red-100 dark:bg-red-900/30' : 'bg-gray-100 dark:bg-gray-700'}`}>
+                        <svg className={`w-10 h-10 ${isRecording ? 'text-red-600 dark:text-red-400 animate-pulse' : 'text-gray-600 dark:text-gray-400'}`} viewBox="0 0 24 24" fill="currentColor">
                           <path d="M12 14a3 3 0 003-3V7a3 3 0 10-6 0v4a3 3 0 003 3z" />
                           <path d="M19 11a7 7 0 11-14 0h2a5 5 0 0010 0h2z" />
                         </svg>
                       </div>
-                      <div className="text-sm text-gray-600">
+                      <div className="text-sm text-gray-600 dark:text-gray-300">
                         {isRecording ? (
                           isPaused ?
                             `${Math.floor(recordingElapsedMs / 60000).toString().padStart(2, '0')}:${Math.floor((recordingElapsedMs % 60000) / 1000).toString().padStart(2, '0')} (Paused)` :
@@ -10524,7 +10524,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             )}
                           </>
                         )}
-                        <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border">Cancel</button>
+                        <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border dark:border-gray-600 text-gray-700 dark:text-gray-300">Cancel</button>
                       </div>
                       <div className="text-xs text-gray-500">Your mic input stays on device until you choose to send.</div>
                     </div>
@@ -10535,21 +10535,21 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
               {/* Document Preview Modal */}
               {showDocumentPreviewModal && selectedDocument && (
                 <div className="fixed inset-0 bg-black bg-opacity-50 flex items-center justify-center z-50 p-4">
-                  <div className="bg-white border-2 border-gray-200 rounded-lg p-4 shadow-2xl max-w-md w-full">
+                  <div className="bg-white dark:bg-gray-800 border-2 border-gray-200 dark:border-gray-700 rounded-lg p-4 shadow-2xl max-w-md w-full">
                     <div className="flex items-center justify-between mb-3">
-                      <span className="text-lg font-medium text-gray-700">Document Preview</span>
+                      <span className="text-lg font-medium text-gray-700 dark:text-white">Document Preview</span>
                       <button
                         onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); }}
-                        className="text-gray-400 hover:text-gray-600 hover:bg-gray-100 rounded-full p-2 transition-colors"
+                        className="text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 rounded-full p-2 transition-colors"
                       >
                         <FaTimes className="w-5 h-5" />
                       </button>
                     </div>
                     <div className="mb-4 flex items-center gap-3">
-                      <div className="w-12 h-12 bg-gray-100 rounded flex items-center justify-center text-gray-600">📄</div>
+                      <div className="w-12 h-12 bg-gray-100 dark:bg-gray-700 rounded flex items-center justify-center text-gray-600 dark:text-gray-300">📄</div>
                       <div className="min-w-0">
-                        <div className="text-sm font-medium truncate">{selectedDocument.name}</div>
-                        <div className="text-xs text-gray-500 truncate">{selectedDocument.type || 'Document'}</div>
+                        <div className="text-sm font-medium truncate text-gray-800 dark:text-white">{selectedDocument.name}</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 truncate">{selectedDocument.type || 'Document'}</div>
                       </div>
                     </div>
 
@@ -10561,7 +10561,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           placeholder={`Add a caption for ${selectedDocument.name}...`}
                           value={documentCaption}
                           onChange={(e) => setDocumentCaption(e.target.value)}
-                          className="w-full p-3 pr-12 border border-gray-300 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                          className="w-full p-3 pr-12 border border-gray-300 dark:border-gray-600 rounded-lg resize-none focus:ring-2 focus:ring-blue-500 focus:border-blue-500 bg-white dark:bg-gray-700 text-gray-800 dark:text-white"
                           rows={2}
                           maxLength={500}
                         />
@@ -10584,7 +10584,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                           />
                         </div>
                       </div>
-                      <div className="text-xs text-gray-500 mt-1 text-right">
+                      <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">
                         {documentCaption.length}/500
                       </div>
                     </div>
@@ -10607,7 +10607,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         </>
                       ) : (
                         <>
-                          <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border">Cancel</button>
+                          <button onClick={() => { setSelectedDocument(null); setShowDocumentPreviewModal(false); setDocumentCaption(''); }} className="px-4 py-2 rounded-lg border dark:border-gray-600 text-gray-700 dark:text-gray-300">Cancel</button>
                           <button onClick={handleSendSelectedDocument} className="px-4 py-2 rounded-lg bg-blue-600 text-white">Send</button>
                         </>
                       )}
