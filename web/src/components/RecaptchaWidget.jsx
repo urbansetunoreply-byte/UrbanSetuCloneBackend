@@ -100,9 +100,16 @@ const RecaptchaWidget = ({
 
   if (!isLoaded) {
     return (
-      <div className={`flex items-center justify-center p-4 ${className} dark:bg-gray-800 transition-colors`}>
-        <div className="animate-spin rounded-full h-6 w-6 border-b-2 border-blue-600"></div>
-        <span className="ml-2 text-sm text-gray-600 dark:text-gray-400">Loading reCAPTCHA...</span>
+      <div className={`flex flex-col items-center justify-center p-6 border border-gray-100 dark:border-gray-700 rounded-xl bg-white/50 dark:bg-gray-800/50 backdrop-blur-sm animate-pulse ${className}`}>
+        <div className="relative">
+          <div className="w-10 h-10 rounded-full border-4 border-blue-600/20 dark:border-blue-400/20 border-t-blue-600 dark:border-t-blue-400 animate-spin"></div>
+          <div className="absolute inset-0 flex items-center justify-center">
+            <div className="w-2 h-2 bg-blue-600 dark:bg-blue-400 rounded-full animate-ping"></div>
+          </div>
+        </div>
+        <span className="mt-3 text-sm font-medium text-gray-600 dark:text-gray-400 text-center">
+          Preparing Verification...
+        </span>
       </div>
     );
   }
@@ -131,13 +138,13 @@ const RecaptchaWidget = ({
         <ReCAPTCHA
           ref={recaptchaRef}
           sitekey={config.SITE_KEY}
+          {...config.OPTIONS}
           onChange={handleVerify}
           onExpired={handleExpire}
           onErrored={handleError}
           size={size}
           theme={activeTheme}
           disabled={disabled}
-          {...config.OPTIONS}
         />
       </div>
     );
