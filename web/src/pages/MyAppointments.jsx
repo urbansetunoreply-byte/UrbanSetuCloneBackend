@@ -1704,7 +1704,7 @@ export default function MyAppointments() {
                   <div className="space-y-4">
                     {canSeeContactInfo ? (
                       <>
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-blue-500">
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-blue-500">
                           <FaEnvelope className="text-blue-500 dark:text-blue-400 w-5 h-5 flex-shrink-0" />
                           <div className="flex-1">
                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Email</p>
@@ -1718,7 +1718,7 @@ export default function MyAppointments() {
                           </div>
                         </div>
 
-                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-green-500">
+                        <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-green-500">
                           <FaPhone className="text-green-500 dark:text-green-400 w-5 h-5 flex-shrink-0" />
                           <div className="flex-1">
                             <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Phone</p>
@@ -1737,7 +1737,7 @@ export default function MyAppointments() {
                         </div>
                       </>
                     ) : (
-                      <div className="flex items-center gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/10 rounded-lg border-l-4 border-yellow-500">
+                      <div className="flex items-center gap-3 p-3 bg-yellow-50 dark:bg-yellow-900/20 rounded-lg border-l-4 border-yellow-500">
                         <FaExclamationTriangle className="text-yellow-500 w-5 h-5 flex-shrink-0" />
                         <div>
                           <p className="text-xs text-yellow-700 dark:text-yellow-400 uppercase tracking-wide font-semibold">Contact Information Restricted</p>
@@ -1746,7 +1746,7 @@ export default function MyAppointments() {
                       </div>
                     )}
 
-                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700/50 rounded-lg border-l-4 border-purple-500">
+                    <div className="flex items-center gap-3 p-3 bg-gray-50 dark:bg-gray-700 rounded-lg border-l-4 border-purple-500">
                       <FaCalendar className="text-purple-500 dark:text-purple-400 w-5 h-5 flex-shrink-0" />
                       <div>
                         <p className="text-xs text-gray-500 dark:text-gray-400 uppercase tracking-wide font-semibold">Member Since</p>
@@ -10294,7 +10294,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
                               <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
                             </div>
-                            <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 w-10 text-right">{uploadProgress}%</span>
                           </>
                         ) : (
                           <>
@@ -10392,7 +10392,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                               <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
                                 <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
                               </div>
-                              <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                              <span className="text-sm text-gray-700 dark:text-gray-300 w-10 text-right">{uploadProgress}%</span>
                             </div>
                           </>
                         ) : (
@@ -10477,7 +10477,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         <div className="w-full bg-gray-200 rounded-full h-2">
                           <div className="bg-blue-600 h-2 rounded-full" style={{ width: `${uploadProgress}%` }} />
                         </div>
-                        <div className="text-xs text-gray-500 mt-1 text-right">{uploadProgress}%</div>
+                        <div className="text-xs text-gray-500 dark:text-gray-400 mt-1 text-right">{uploadProgress}%</div>
                       </div>
                     )}
                   </div>
@@ -10526,7 +10526,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                         )}
                         <button onClick={cancelAudioRecording} className="px-4 py-2 rounded-lg border dark:border-gray-600 text-gray-700 dark:text-gray-300">Cancel</button>
                       </div>
-                      <div className="text-xs text-gray-500">Your mic input stays on device until you choose to send.</div>
+                      <div className="text-xs text-gray-500 dark:text-gray-400">Your mic input stays on device until you choose to send.</div>
                     </div>
                   </div>
                 </div>
@@ -10602,7 +10602,7 @@ function AppointmentRow({ appt, currentUser, handleStatusUpdate, handleTokenPaid
                             <div className="w-24 h-2 bg-gray-200 rounded-full overflow-hidden">
                               <div className="h-2 bg-blue-600 rounded-full transition-all" style={{ width: `${uploadProgress}%` }}></div>
                             </div>
-                            <span className="text-sm text-gray-700 w-10 text-right">{uploadProgress}%</span>
+                            <span className="text-sm text-gray-700 dark:text-gray-300 w-10 text-right">{uploadProgress}%</span>
                           </div>
                         </>
                       ) : (
